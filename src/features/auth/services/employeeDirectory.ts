@@ -14,6 +14,7 @@ export type LocalEmployeeRecord = {
 export const LOCAL_EMPLOYEE_DIRECTORY: LocalEmployeeRecord[] = [
   { name: 'Trương Dương', employeeCode: '20286233', departmentId: 'fmcg' },
   { name: 'Thiên Phú', employeeCode: '20401122', departmentId: 'fmcg' },
+  { name: 'Hoàng An', employeeCode: '20401122', departmentId: 'fmcg' },
 ];
 
 export function findLocalEmployeeByCode(employeeCode: string): LocalEmployeeRecord | undefined {

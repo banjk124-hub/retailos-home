@@ -1,5 +1,6 @@
 /* RetailOS 0.3 visual tokens and department states */
 :root {
+  color-scheme: light;
   --brand-color-primary: #d92736;
   --brand-color-primary-deep: #a91829;
   --brand-color-primary-soft: #fff0f1;
@@ -27,11 +28,65 @@
   --brand-glass-blur: 28px;
   --brand-glass-tint: rgba(188,35,52,.12);
   --brand-motion-ease: cubic-bezier(.2,.75,.25,1);
+  --surface-page: #fffafa;
+  --surface-card: rgba(255,255,255,.82);
+  --surface-raised: rgba(255,255,255,.92);
+  --surface-muted: rgba(246,239,240,.86);
+  --surface-input: rgba(255,255,255,.9);
+  --surface-control: rgba(255,255,255,.72);
+  --surface-control-hover: rgba(255,255,255,.9);
+  --text-primary: #302a30;
+  --text-secondary: #716970;
+  --text-muted: #918890;
+  --border-soft: rgba(105,77,83,.18);
+  --shadow-card: 0 12px 32px rgba(45,25,31,.075), inset 0 1px 0 rgba(255,255,255,.9);
+  --status-success: #187456;
+  --status-warning: #98601f;
+  --status-error: #b42332;
+  --status-info: #356a8d;
+  --ink: var(--retail-ink);
+  --blue: var(--retail-red);
+  --blue-dark: var(--retail-red-deep);
+  --glass: var(--retail-glass);
 }
 
-:root { color: var(--retail-ink); background: #fffafa; --ink: var(--retail-ink); --blue: var(--retail-red); --blue-dark: var(--retail-red-deep); --glass: var(--retail-glass); }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --brand-color-primary-soft: rgba(201,48,66,.2);
+  --brand-focus-ring: rgba(255,157,168,.82);
+  --brand-glass-surface: linear-gradient(145deg, rgba(48,41,49,.88), rgba(33,28,35,.76));
+  --brand-glass-surface-strong: linear-gradient(145deg, rgba(53,45,54,.96), rgba(36,30,38,.92));
+  --brand-glass-border: rgba(255,239,243,.16);
+  --brand-glass-shadow: 0 24px 70px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.08);
+  --brand-glass-tint: rgba(209,61,77,.18);
+  --surface-page: #131114;
+  --surface-card: rgba(36,31,37,.88);
+  --surface-raised: rgba(46,39,47,.94);
+  --surface-muted: rgba(55,46,54,.9);
+  --surface-input: rgba(38,33,39,.96);
+  --surface-control: rgba(255,255,255,.075);
+  --surface-control-hover: rgba(255,255,255,.13);
+  --text-primary: #f6eff2;
+  --text-secondary: #c8bbc2;
+  --text-muted: #a99ba3;
+  --border-soft: rgba(255,231,236,.16);
+  --shadow-card: 0 12px 32px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+  --retail-glass: rgba(41,35,43,.78);
+  --retail-glass-line: rgba(255,239,243,.16);
+  --retail-ink: #f4edf0;
+  --retail-muted: #b7a9b1;
+  --ink: #f4edf0;
+  --glass: rgba(41,35,43,.78);
+  --status-success: #75d5b0;
+  --status-warning: #f0c17e;
+  --status-error: #ff9ca6;
+  --status-info: #8ecaf0;
+  background: var(--surface-page);
+}
+
+body { color: var(--text-primary); }
 ::selection { background: #ffd9dd; color: #75101c; }
-button:focus-visible,input:focus-visible,select:focus-visible { outline-color: #e65c68a8; }
+button:focus-visible,input:focus-visible,select:focus-visible { outline-color: var(--brand-focus-ring); }
 .brand-mark,.mini-brand,.login-icon,.login-submit,.submit-arrow,.transition-mark { background: linear-gradient(145deg,#ed4654,#bd1d2c); }
 .brand-name span,.showcase-copy h1 span,.showcase-copy .eyebrow,.eyebrow,.login-icon,.login-heading .eyebrow,.glass-card-foot svg,.select-chevron,.login-security-note svg { color: var(--retail-red); }
 .login-screen { background: radial-gradient(ellipse at 8% 0%,#ffe7e9 0,transparent 40%),radial-gradient(ellipse at 100% 100%,#fff0f1 0,transparent 38%),#fffafa; }

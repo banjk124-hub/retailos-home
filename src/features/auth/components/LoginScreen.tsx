@@ -198,7 +198,7 @@ export default function LoginScreen({ onAuthenticated }: Props) {
           <span className="auth-orbit-dot auth-orbit-dot--two" />
         </div>
 
-        <div className="auth-story-foot"><span><span className="auth-foot-dot" /> HỆ THỐNG SẴN SÀNG</span><span>RETAILOS</span></div>
+        <div className="auth-story-foot"><span><span className="auth-foot-dot" /> TRUY CẬP NỘI BỘ</span><span>RETAILOS</span></div>
       </section>
 
       <section className="auth-form-side" aria-labelledby="auth-title">

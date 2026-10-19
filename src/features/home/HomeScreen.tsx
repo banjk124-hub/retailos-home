@@ -33,6 +33,7 @@ type Props = {
 };
 type Module = { id: ModuleDataId; title: string; description: string; icon: typeof Warehouse; tone: string; group: string; status?: string };
 type ModuleLibrary = { id: string; title: string; description: string; icon: typeof Warehouse; tone: string; moduleIds: ModuleDataId[] };
+type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'partial' | 'unavailable';
 
 const modules: Module[] = [
   { id: 'inventory', title: 'Tồn kho', description: 'Tồn thực tế & định mức', icon: Warehouse, tone: 'blue', group: 'Kiểm soát hàng hóa', status: 'Snapshot' },
@@ -106,6 +107,7 @@ export default function HomeScreen({
   const [isNotificationsClosing, setIsNotificationsClosing] = useState(false);
   const notificationsCloseTimer = useRef<number | null>(null);
   const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
+  const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
   const [selectedNotice, setSelectedNotice] = useState<SnapshotNotice | null>(null);
   const [isNoticeClosing, setIsNoticeClosing] = useState(false);
   const noticeCloseTimer = useRef<number | null>(null);
@@ -121,6 +123,15 @@ export default function HomeScreen({
   const suppressLibraryClickRef = useRef(false);
   const [activeLibraryPage, setActiveLibraryPage] = useState(0);
   const [toast, setToast] = useState('');
+  const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
+    ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
+    : snapshotNoticeStatus === 'empty'
+      ? 'Chưa có snapshot trên thiết bị. Cảnh báo sẽ xuất hiện sau khi dữ liệu được đồng bộ.'
+      : snapshotNoticeStatus === 'partial'
+        ? 'Không đọc được đầy đủ snapshot; danh sách cảnh báo có thể chưa đầy đủ.'
+        : snapshotNoticeStatus === 'unavailable'
+          ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
+          : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
   useEffect(() => {
     void loadBarcodeScanner().catch((error: unknown) => {
       console.error('Không thể tải trước máy quét barcode:', error);
@@ -156,17 +167,26 @@ export default function HomeScreen({
   useEffect(() => {
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
+      setSnapshotNoticeStatus('loading');
       const results = await Promise.allSettled(MODULE_DATA_IDS.map(getCachedModuleSnapshot));
       if (!isCurrent) return;
       const snapshots = results.flatMap((result) => {
         if (result.status === 'fulfilled') return result.value ? [result.value] : [];
         return [];
       });
+      const failedCount = results.filter((result) => result.status === 'rejected').length;
       const cacheError = results.find((result) => result.status === 'rejected');
       if (cacheError?.status === 'rejected') {
         console.error('Không thể đọc một hoặc nhiều snapshot để tính thông báo:', cacheError.reason);
       }
       setPriorityNotices(calculateSnapshotNotices(snapshots));
+      setSnapshotNoticeStatus(failedCount === results.length
+        ? 'unavailable'
+        : failedCount > 0
+          ? 'partial'
+          : snapshots.length === 0
+            ? 'empty'
+            : 'ready');
     };
 
     void loadSnapshotNotices();
@@ -597,11 +617,11 @@ export default function HomeScreen({
             <span className="topbar-brand-mark"><Command size={17} /></span>
             <div className="topbar-identity-copy">
               <strong>Xin chào, {employee.name.split(/\s+/).slice(-1)[0]}</strong>
-              <span><DepartmentIcon size={12} />{department.label} · Sẵn sàng</span>
+              <span><DepartmentIcon size={12} />{department.label}</span>
             </div>
           </div>
           <div className="topbar-actions">
-            <span className={`topbar-status ${isOffline ? 'offline' : ''}`} role="img" aria-label={isOffline ? 'Offline' : 'Đang hoạt động'} title={isOffline ? 'Offline' : 'Đang hoạt động'}><i /></span>
+            <span className={`topbar-status ${isOffline ? 'offline' : ''}`} role="img" aria-label={isOffline ? 'Ngoại tuyến' : 'Trực tuyến'} title={isOffline ? 'Ngoại tuyến' : 'Trực tuyến'}><i /></span>
             {canInstall && <button className="topbar-action-button install-icon-button" type="button" aria-label="Cài đặt ứng dụng" title="Cài đặt ứng dụng" onClick={onInstall}><ArrowUpRight size={17} /></button>}
             <button
               className="topbar-action-button appearance-button"
@@ -615,8 +635,16 @@ export default function HomeScreen({
             <button
               ref={notificationsButtonRef}
               type="button"
-              className={`topbar-action-button notification-button ${priorityNotices.length ? 'has-notices' : 'no-notices'} ${showNotifications && !isNotificationsClosing ? 'selected' : ''}`}
-              aria-label={priorityNotices.length ? `Thông báo, ${priorityNotices.length} cảnh báo` : 'Thông báo, chưa có cảnh báo'}
+              className={`topbar-action-button notification-button ${priorityNotices.length ? 'has-notices' : 'no-notices'} notice-state-${snapshotNoticeStatus} ${showNotifications && !isNotificationsClosing ? 'selected' : ''}`}
+              aria-label={priorityNotices.length
+                ? `Thông báo, ${priorityNotices.length} cảnh báo`
+                : snapshotNoticeStatus === 'ready'
+                  ? 'Thông báo, không phát hiện cảnh báo'
+                  : snapshotNoticeStatus === 'empty'
+                    ? 'Thông báo, chưa có dữ liệu snapshot'
+                    : snapshotNoticeStatus === 'loading'
+                      ? 'Thông báo, đang kiểm tra dữ liệu'
+                      : 'Thông báo, chưa thể xác định trạng thái cảnh báo'}
               aria-expanded={showNotifications && !isNotificationsClosing}
               onClick={toggleNotifications}
             >
@@ -628,13 +656,16 @@ export default function HomeScreen({
           {showNotifications && <div className={`notification-popover topbar-notification-popover ${isNotificationsClosing ? 'notification-closing' : ''}`}>
             <div className="popover-heading"><strong>Cảnh báo từ dữ liệu</strong><button className="icon-button small" onClick={closeNotifications} aria-label="Đóng"><X size={16} /></button></div>
             {priorityNotices.length === 0
-              ? <p className="notification-empty">Chưa có cảnh báo. Nội dung chỉ xuất hiện khi snapshot đã đồng bộ và quy tắc trên app phát hiện vấn đề.</p>
-              : priorityNotices.map((notice) => { const Icon = notice.icon; return <button key={notice.id} type="button" className="notification-item notification-item-button" onClick={(event) => openNotice(notice, event.currentTarget)}><span className={`notification-symbol ${notice.tone}`}><Icon size={18} /></span><span className="notification-item-copy"><strong>{notice.title}</strong><span>{notice.summary}</span></span><ArrowUpRight size={15} className="notification-open-icon" /></button>; })}
+              ? <p className={`notification-empty notification-empty--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</p>
+              : <>
+                {snapshotNoticeStatus !== 'ready' && snapshotNoticeStatus !== 'empty' && <p className={`notification-status-notice notification-status-notice--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</p>}
+                {priorityNotices.map((notice) => { const Icon = notice.icon; return <button key={notice.id} type="button" className="notification-item notification-item-button" onClick={(event) => openNotice(notice, event.currentTarget)}><span className={`notification-symbol ${notice.tone}`}><Icon size={18} /></span><span className="notification-item-copy"><strong>{notice.title}</strong><span>{notice.summary}</span></span><ArrowUpRight size={15} className="notification-open-icon" /></button>; })}
+              </>}
           </div>}
         </div>
       </header>
 
-      {isOffline && <div className="offline-banner"><Activity size={16} aria-hidden="true" /> Ngoại tuyến · Dữ liệu đã lưu</div>}
+      {isOffline && <div className="offline-banner"><Activity size={16} aria-hidden="true" /> Ngoại tuyến</div>}
 
       <div className="content-wrap">
         <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} aria-label="Không gian RetailOS">
@@ -642,7 +673,7 @@ export default function HomeScreen({
           <div className="spotlight-glow" />
           <div className="spotlight-main-content">
             <div className="spotlight-copy">
-              <div className="spotlight-kicker"><span className="spotlight-live" /> RETAILOS</div>
+              <div className="spotlight-kicker">RETAILOS</div>
               <h2>Vận hành<br />thật rõ.</h2>
               <p>Công cụ bán lẻ, một nơi.</p>
               <button className="spotlight-button spotlight-tools-button" aria-label="Mở thư viện chức năng" title="Thư viện chức năng" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
@@ -667,9 +698,10 @@ export default function HomeScreen({
                 id="spotlight-notification-list"
                 aria-label="Thông báo ưu tiên"
               >
-                {priorityNotices.length === 0 && <div className="spotlight-notification-empty">
-                  Chưa có cảnh báo từ snapshot. App sẽ tự tính khi dữ liệu được đồng bộ.
+                {priorityNotices.length === 0 && <div className={`spotlight-notification-empty spotlight-notification-empty--${snapshotNoticeStatus}`} role="status">
+                  {snapshotNoticeStatusMessage}
                 </div>}
+                {priorityNotices.length > 0 && snapshotNoticeStatus !== 'ready' && snapshotNoticeStatus !== 'empty' && <div className={`spotlight-notification-empty spotlight-notification-empty--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</div>}
                 {priorityNotices.map((notice, index) => {
                   const Icon = notice.icon;
                   const isCollapsedGroupPreview = isMobileViewport && !areSpotlightNotificationsExpanded && index === 0;
@@ -716,7 +748,7 @@ export default function HomeScreen({
               </div>
               <span className="calendar-open-hint"><span>Mở lịch</span><ArrowUpRight size={13} /></span>
             </button>
-            <div className="spotlight-glass-tile spotlight-tile-float"><span className={`spotlight-dept-icon dept-icon-${department.id}`}><DepartmentIcon size={15} /></span><span>{department.label}</span><span className="spotlight-status-dot" /></div>
+            <div className="spotlight-glass-tile spotlight-tile-float"><span className={`spotlight-dept-icon dept-icon-${department.id}`}><DepartmentIcon size={15} /></span><span>{department.label}</span></div>
             <span className="spotlight-glass-chip"><Sparkles size={13} /> WORKSPACE</span>
           </div>
         </section>
