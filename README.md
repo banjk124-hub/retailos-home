@@ -83,6 +83,7 @@ Lớp đồng bộ yêu cầu access token do xác thực backend cấp qua `syn
 - `src/features/home/`: Home và trạng thái giao diện riêng.
 - Home có năm thư viện: Kiểm soát hàng hóa, Xử lý hàng hóa, Doanh số, Date sản phẩm và Kiểm kê. Cảnh báo chỉ xuất hiện khi snapshot cache có dữ liệu để quy tắc frontend tính toán; không còn nội dung bản tin demo.
 - `src/features/scanner/`: scanner camera/barcode có thể tái sử dụng.
+- Home có khu Công cụ thử nghiệm: chọn snapshot cache bất kỳ để xuất XLSX, CSV, PDF (qua hộp thoại in/lưu PDF của trình duyệt), TXT hoặc PPTX; có thể chụp ảnh camera thành JPEG để tải xuống/chia sẻ. Công cụ xuất làm việc trên `data.rows` hoặc mảng/object tổng quát, chưa áp đặt schema nghiệp vụ và không tải dữ liệu/ảnh lên server. Thư viện tạo file được tải động khi người dùng xuất để giảm chi phí khởi tạo Home.
 - `src/features/notifications/`: đăng ký Web Push phía client.
 - `src/shared/`: cấu hình bộ phận và UI dùng chung.
 - `src/styles/`: CSS theo lớp; `performance.css` giảm hiệu ứng nặng trên thiết bị di động.

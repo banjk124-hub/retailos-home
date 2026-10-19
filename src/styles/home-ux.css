@@ -585,6 +585,158 @@
   to { transform: scale(1.085) translate3d(.35%, -1%, 0); }
 }
 
+.app-shell .export-tools-section { margin-top: 32px; scroll-margin-top: 90px; }
+.app-shell .export-tools-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 0;
+  color: #252e43;
+  font-size: clamp(19px, 2.2vw, 24px);
+  font-weight: 800;
+  letter-spacing: -.6px;
+}
+.app-shell .export-tools-title svg { color: #bd2939; }
+.app-shell .export-tools-section > .section-heading { align-items: flex-end; }
+.app-shell .export-refresh-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 12px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 5px 15px rgba(65,35,41,.06), inset 0 1px 0 #fff;
+  color: #6d5660;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 750;
+}
+.app-shell .export-refresh-button:disabled { opacity: .62; }
+.export-tools-grid { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(270px,.7fr); gap: 15px; margin-top: 15px; }
+.export-tool-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.86);
+  border-radius: 19px;
+  background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(255,248,249,.7));
+  box-shadow: 0 12px 28px rgba(70,34,42,.07), inset 0 1px 0 rgba(255,255,255,.96);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+.export-tool-heading { display: flex; align-items: center; gap: 11px; }
+.export-tool-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #e6e8fa;
+  border-radius: 13px;
+  background: linear-gradient(145deg,#f0f2ff,#e5e9ff);
+  color: #6373c5;
+  box-shadow: inset 0 1px 0 #fff;
+}
+.export-photo-icon { border-color: #f3dfe1; background: linear-gradient(145deg,#fff0f1,#f9e2e4); color: #b52a39; }
+.export-tool-heading h3 { margin: 0; color: #303a50; font-size: 14px; font-weight: 800; }
+.export-tool-heading p { margin: 4px 0 0; color: #929bad; font-size: 10px; line-height: 1.4; }
+.export-empty-state {
+  margin: 16px 0 0;
+  padding: 13px;
+  border: 1px dashed #e4dadd;
+  border-radius: 12px;
+  color: #81767a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.export-select-label { display: block; margin-top: 16px; color: #7d7580; font-size: 10px; font-weight: 800; }
+.export-snapshot-select {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 0 12px;
+  border: 1px solid #e8e1e3;
+  border-radius: 11px;
+  background: rgba(255,255,255,.88);
+  color: #3c3942;
+  font: inherit;
+  font-size: 12px;
+}
+.export-snapshot-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 8px; color: #929bad; font-size: 9px; }
+.export-preview-wrap { overflow: auto; margin-top: 12px; border: 1px solid #eee6e7; border-radius: 12px; background: rgba(255,255,255,.74); }
+.export-preview-table { width: 100%; border-collapse: collapse; table-layout: auto; }
+.export-preview-table th,
+.export-preview-table td { max-width: 190px; overflow: hidden; padding: 8px 9px; border-bottom: 1px solid #f0eaeb; color: #60606b; font-size: 9px; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.export-preview-table th { background: rgba(246,237,239,.76); color: #8b3540; font-weight: 800; }
+.export-preview-footnote { display: block; padding: 7px 9px; color: #9a9196; font-size: 9px; }
+.export-format-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.export-format-button {
+  min-width: 0;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid rgba(230,224,226,.9);
+  border-radius: 12px;
+  background: rgba(255,255,255,.72);
+  color: #80555d;
+  text-align: left;
+}
+.export-format-button:disabled { cursor: not-allowed; opacity: .48; }
+.export-format-button > span { display: grid; gap: 2px; }
+.export-format-button strong { overflow: hidden; color: #4e4550; font-size: 10px; text-overflow: ellipsis; }
+.export-format-button small { color: #9b9298; font-size: 8px; }
+.export-inline-warning { margin: 10px 0 0; color: #a74a4f; font-size: 10px; line-height: 1.5; }
+.export-feedback { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0 0; color: #43856b; font-size: 10px; line-height: 1.5; }
+.export-feedback svg { flex: 0 0 auto; }
+.export-spinning { animation: export-spin 1s linear infinite; }
+@keyframes export-spin { to { transform: rotate(360deg); } }
+.photo-camera-view,
+.photo-empty-preview,
+.photo-capture-preview {
+  position: relative;
+  width: 100%;
+  height: 205px;
+  overflow: hidden;
+  margin-top: 15px;
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 14px;
+  background: linear-gradient(145deg,#312b32,#171418);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16);
+}
+.photo-camera-view video { width: 100%; height: 100%; object-fit: cover; }
+.photo-capture-preview { object-fit: contain; background: #252126; }
+.photo-empty-preview { display: grid; place-items: center; align-content: center; gap: 9px; padding: 18px; color: rgba(255,255,255,.72); text-align: center; }
+.photo-empty-preview span { max-width: 260px; font-size: 10px; line-height: 1.5; }
+.photo-camera-live { position: absolute; top: 9px; left: 9px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 99px; background: rgba(23,18,21,.44); color: #fff; font-size: 8px; font-weight: 800; letter-spacing: .6px; }
+.photo-camera-live i { width: 6px; height: 6px; border-radius: 50%; background: #ff5364; box-shadow: 0 0 0 3px rgba(255,83,100,.18); }
+.photo-action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
+.photo-capture-button,
+.photo-secondary-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(110deg,#c93241,#aa1e2d);
+  box-shadow: 0 6px 15px rgba(157,29,45,.16), inset 0 1px 0 rgba(255,255,255,.28);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+}
+.photo-secondary-button { border: 1px solid #e9dfe1; background: rgba(255,255,255,.78); box-shadow: inset 0 1px 0 #fff; color: #725e64; }
+.photo-start-button { width: 100%; margin-top: 11px; }
+.photo-privacy-note { display: flex; align-items: flex-start; gap: 6px; margin: 11px 0 0; color: #979098; font-size: 9px; line-height: 1.45; }
+.photo-privacy-note svg { flex: 0 0 auto; color: #bd6972; }
+
 @media (max-width: 700px) {
   .mobile-nav {
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -646,6 +798,15 @@
   .app-shell .app-library-description { line-height: 1.35; }
   .app-shell .app-library-page-modules { gap: 6px; margin-top: 12px; }
   .app-shell .app-library-page-modules > span { padding: 7px 8px; font-size: 10px; }
+  .app-shell .export-tools-section { margin-top: 25px; }
+  .export-tools-grid { grid-template-columns: minmax(0,1fr); gap: 11px; }
+  .export-tool-card { padding: 14px; border-radius: 16px; }
+  .export-format-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+  .export-format-button { min-height: 52px; justify-content: flex-start; gap: 6px; padding: 6px; }
+  .export-format-button > svg { width: 16px; flex: 0 0 auto; }
+  .export-format-button strong { font-size: 9px; }
+  .export-format-button small { font-size: 8px; }
+  .photo-camera-view,.photo-empty-preview,.photo-capture-preview { height: clamp(170px,38vh,280px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -657,6 +818,7 @@
   .app-shell .app-library-page-card,
   .app-shell .app-library-page-card::after { transition: none; }
   .app-shell .spotlight-supermarket-scene { animation: none; }
+  .export-spinning { animation: none; }
   .app-shell .app-library-page-card,
   .app-shell .app-library-page-card.is-active { transform: none; }
   .app-shell .app-library-track { scroll-behavior: auto; }

@@ -13,6 +13,7 @@ import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { getCameraErrorMessage } from '../scanner/services/cameraErrors';
+import ExportTools from './ExportTools';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
@@ -587,7 +588,7 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
               <div className="spotlight-kicker"><span className="spotlight-live" /> RETAILOS</div>
               <h2>Vận hành<br />thật rõ.</h2>
               <p>Công cụ bán lẻ, một nơi.</p>
-              <button className="spotlight-button spotlight-tools-button" aria-label="Mở công cụ" title="Công cụ" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+              <button className="spotlight-button spotlight-tools-button" aria-label="Mở thư viện chức năng" title="Thư viện chức năng" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
                 <Grid2X2 size={18} />
               </button>
             </div>
@@ -726,6 +727,8 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
           }
           {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
         </section>
+
+        <ExportTools />
 
         <section className="lower-grid" id="activity"><div className="panel-card activity-panel"><div className="panel-heading"><h2 className="icon-section-title" aria-label="Hoạt động"><Activity size={22} aria-hidden="true" /></h2></div><div className="activity-empty"><span className="activity-empty-icon"><Activity size={18} /></span><div><strong>Chưa có hoạt động</strong></div></div></div></section>
         <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><Command size={14} /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
