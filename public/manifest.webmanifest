@@ -1,0 +1,19 @@
+{
+  "name": "RetailOS",
+  "short_name": "RetailOS",
+  "description": "Trung tâm điều hành bán lẻ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffafa",
+  "theme_color": "#d92736",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "version": "0.3.0"
+}

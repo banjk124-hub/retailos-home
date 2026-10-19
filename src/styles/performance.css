@@ -1,0 +1,63 @@
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .ambient-background {
+    display: none;
+  }
+
+  .page-glass-dock {
+    border-color: rgba(255, 255, 255, .42);
+    background: rgba(255, 250, 250, .36);
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    animation: none;
+  }
+
+  .page-glass-dock::before,
+  .page-glass-highlight {
+    display: none;
+    animation: none;
+  }
+
+  .app-shell :is(
+    .topbar-dock,
+    .metric-card,
+    .module-card,
+    .panel-card,
+    .user-context-chip,
+    .date-chip,
+    .toast-message,
+    .spotlight-glass-tile,
+    .spotlight-glass-chip,
+    .spotlight-notification,
+    .mobile-nav,
+    .notification-popover,
+    .calendar-modal,
+    .app-library-modal,
+    .notice-detail-modal
+  ) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .app-shell :is(.spotlight-orbit, .spotlight-glow, .hero-orb, .dept-wave) {
+    animation: none !important;
+  }
+
+  .app-shell .spotlight-tile-main {
+    animation: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .app-shell :is(.metric-card, .module-card, .panel-card, .spotlight-notification, .mobile-nav) {
+    box-shadow: 0 5px 16px rgba(74, 32, 38, .055), inset 0 1px 0 rgba(255, 255, 255, .72);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-background,
+  .page-glass-dock,
+  .app-shell :is(.spotlight-orbit, .spotlight-glow, .hero-orb, .dept-wave, .spotlight-tile-main) {
+    animation: none !important;
+  }
+}

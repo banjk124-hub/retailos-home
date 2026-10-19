@@ -1,0 +1,67 @@
+/* Shared interaction language: consistent response across every button. */
+button:not(:disabled) {
+  -webkit-tap-highlight-color: transparent;
+  transition-property: color, background-color, border-color, box-shadow, transform, filter;
+  transition-duration: 280ms;
+  transition-timing-function: cubic-bezier(.2,.75,.25,1);
+}
+
+button:not(:disabled):active {
+  transform: scale(.975);
+  filter: none;
+  transition-duration: 100ms;
+}
+
+/* State changes glide rather than popping between selected controls. */
+.side-nav-item,
+.filter-pill,
+.mobile-nav button,
+.mobile-nav-icon,
+.icon-button,
+.text-button,
+.module-card,
+.module-arrow,
+.attention-copy button,
+.panel-footer-button {
+  transition-timing-function: cubic-bezier(.2,.75,.25,1);
+}
+
+.side-nav-item.active,
+.filter-pill.active,
+.mobile-nav button.active .mobile-nav-icon {
+  animation: retail-selection-arrive 360ms cubic-bezier(.2,.75,.25,1) both;
+}
+
+@keyframes retail-selection-arrive {
+  0% { transform: translateY(2px) scale(.97); filter: blur(.7px); }
+  72% { transform: translateY(-.5px) scale(1.008); filter: blur(0); }
+  100% { transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active,
+  .side-nav-item.active,
+  .filter-pill.active,
+  .mobile-nav button.active .mobile-nav-icon {
+    animation: none !important;
+  }
+  button:not(:disabled) { transition-duration: 0.01ms !important; }
+}
+
+
+/* Readable metadata sizing: the first prototype used several 6–8px labels. */
+@media (max-width: 700px) {
+  .app-shell :is(.system-status, .breadcrumb, .workspace-copy span, .help-card span,
+    .profile-copy span, .top-profile-copy small, .welcome-copy .eyebrow,
+    .hero-kicker, .metric-label, .metric-unit, .metric-note, .metric-trend,
+    .section-kicker, .section-heading p, .sample-tag, .module-card-bottom,
+    .activity-copy span, .activity-status, .attention-copy p, .attention-copy button,
+    .attention-foot, .app-footer, .mobile-nav button) {
+    font-size: max(9px, .7rem);
+  }
+  .login-screen :is(.showcase-copy .eyebrow, .field-label, .login-heading .eyebrow,
+    .login-security-note, .login-disclaimer) {
+    font-size: max(10px, .72rem);
+  }
+  .app-shell :is(.metric-label, .hero-kicker, .section-kicker) { letter-spacing: .45px; }
+}
