@@ -57,6 +57,52 @@
   min-height: 0;
   padding-top: 22px;
   padding-bottom: 20px;
+  overflow: hidden;
+  background: #5d1821;
+}
+.app-shell .topbar-dock {
+  border-color: rgba(255,255,255,.66);
+  background:
+    radial-gradient(ellipse at 5% 0%, rgba(255,255,255,.58), transparent 46%),
+    linear-gradient(115deg, rgba(255,255,255,.42), rgba(255,248,249,.24) 56%, rgba(255,255,255,.35));
+  box-shadow:
+    0 12px 34px rgba(105,34,42,.08),
+    inset 0 1px 0 rgba(255,255,255,.78),
+    inset 0 -1px 0 rgba(255,255,255,.24);
+  backdrop-filter: blur(30px) saturate(185%);
+  -webkit-backdrop-filter: blur(30px) saturate(185%);
+}
+.app-shell .home-spotlight::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(50, 12, 21, .74) 0%, rgba(76, 18, 28, .54) 47%, rgba(53, 17, 28, .3) 100%),
+    linear-gradient(0deg, rgba(46, 13, 23, .36), rgba(79, 19, 28, .12));
+  content: "";
+  pointer-events: none;
+}
+.app-shell .spotlight-supermarket-scene {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 53%;
+  opacity: .9;
+  transform: scale(1.035);
+  animation: supermarket-scene-drift 32s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.app-shell .spotlight-glow {
+  z-index: 1;
+  pointer-events: none;
+}
+.app-shell .spotlight-main-content,
+.app-shell .spotlight-art {
+  position: relative;
+  z-index: 2;
 }
 
 .app-shell .spotlight-main-content .spotlight-copy h2 {
@@ -299,14 +345,14 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   isolation: isolate;
   overflow: visible;
-  background: linear-gradient(135deg, rgba(255,255,255,.82), rgba(255,246,247,.76));
-  border-color: rgba(255,255,255,.84);
+  background: linear-gradient(135deg, rgba(255,255,255,.43), rgba(255,246,247,.31));
+  border-color: rgba(255,255,255,.62);
   box-shadow:
-    0 14px 36px rgba(91, 35, 44, .15),
-    inset 0 1px 0 rgba(255,255,255,.96),
-    inset 0 -1px 0 rgba(255,255,255,.34);
-  backdrop-filter: blur(24px) saturate(170%);
-  -webkit-backdrop-filter: blur(24px) saturate(170%);
+    0 14px 36px rgba(91, 35, 44, .12),
+    inset 0 1px 0 rgba(255,255,255,.75),
+    inset 0 -1px 0 rgba(255,255,255,.22);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
 }
 .mobile-nav::before {
   position: absolute;
@@ -318,16 +364,16 @@
   border: 1px solid rgba(255,255,255,.7);
   border-radius: 18px 18px 14px 14px;
   background:
-    linear-gradient(145deg, rgba(230,89,102,.68), rgba(170,29,47,.78)),
-    rgba(197,38,53,.56);
+    linear-gradient(145deg, rgba(230,89,102,.5), rgba(170,29,47,.58)),
+    rgba(197,38,53,.32);
   box-shadow:
     0 9px 25px rgba(157,29,45,.25),
     inset 0 1px 0 rgba(255,255,255,.66),
     inset 0 -1px 0 rgba(117,14,29,.16);
   content: "";
   transform: translateX(-50%);
-  backdrop-filter: blur(18px) saturate(155%);
-  -webkit-backdrop-filter: blur(18px) saturate(155%);
+  backdrop-filter: blur(26px) saturate(185%);
+  -webkit-backdrop-filter: blur(26px) saturate(185%);
   pointer-events: none;
 }
 .mobile-nav > button { position: relative; z-index: 1; }
@@ -534,12 +580,19 @@
 }
 @keyframes barcode-result-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes barcode-result-card-in { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes supermarket-scene-drift {
+  from { transform: scale(1.035) translate3d(-.35%, 0, 0); }
+  to { transform: scale(1.085) translate3d(.35%, -1%, 0); }
+}
 
 @media (max-width: 700px) {
   .mobile-nav {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
     border-radius: 22px;
+    background: linear-gradient(135deg, rgba(255,255,255,.39), rgba(255,246,247,.27));
+    backdrop-filter: blur(28px) saturate(185%);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
   }
   .mobile-nav .mobile-nav-icon { width: 42px; height: 42px; }
   .mobile-nav .barcode-nav-item { min-height: 56px; margin-top: -14px; }
@@ -569,6 +622,12 @@
     margin-bottom: 17px;
     border-radius: 18px;
   }
+  .app-shell .spotlight-supermarket-scene { object-position: 52% center; }
+  .app-shell .home-spotlight::before {
+    background:
+      linear-gradient(90deg, rgba(45, 12, 21, .69), rgba(61, 16, 27, .39)),
+      linear-gradient(0deg, rgba(42, 12, 21, .42), rgba(68, 16, 27, .1));
+  }
 
   .app-shell .spotlight-main-content .spotlight-copy h2 {
     margin: 6px 0 3px;
@@ -597,6 +656,7 @@
   .mobile-nav .barcode-nav-item .mobile-nav-icon,
   .app-shell .app-library-page-card,
   .app-shell .app-library-page-card::after { transition: none; }
+  .app-shell .spotlight-supermarket-scene { animation: none; }
   .app-shell .app-library-page-card,
   .app-shell .app-library-page-card.is-active { transform: none; }
   .app-shell .app-library-track { scroll-behavior: auto; }

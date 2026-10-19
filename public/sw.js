@@ -1,10 +1,13 @@
-const CACHE_NAME = 'retailos-shell-v7';
+const CACHE_NAME = 'retailos-shell-v8';
 const APP_BASE_URL = new URL('./', self.registration.scope).pathname;
 const APP_SHELL = [
   APP_BASE_URL,
   `${APP_BASE_URL}index.html`,
   `${APP_BASE_URL}manifest.webmanifest`,
   `${APP_BASE_URL}icon.svg`,
+  `${APP_BASE_URL}supermarket-scenes/market-morning.svg`,
+  `${APP_BASE_URL}supermarket-scenes/market-fresh.svg`,
+  `${APP_BASE_URL}supermarket-scenes/market-evening.svg`,
 ];
 
 self.addEventListener('install', (event) => {

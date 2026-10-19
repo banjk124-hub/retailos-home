@@ -14,7 +14,9 @@ import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeR
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { getCameraErrorMessage } from '../scanner/services/cameraErrors';
 
-const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
+const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
+const BarcodeScanner = lazy(loadBarcodeScanner);
+const supermarketScenes = ['market-morning.svg', 'market-fresh.svg', 'market-evening.svg'];
 
 type Props = {
   employee: EmployeeSession;
@@ -71,6 +73,13 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
+  const supermarketSceneUrl = useMemo(() => {
+    const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
+    const yearStart = new Date(today.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((today.getTime() - yearStart.getTime()) / 86_400_000);
+    const scene = supermarketScenes[dayOfYear % supermarketScenes.length];
+    return `${import.meta.env.BASE_URL}supermarket-scenes/${scene}`;
+  }, [calendarNow]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [isCalendarClosing, setIsCalendarClosing] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -103,6 +112,11 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
   const libraryTrackRef = useRef<HTMLDivElement>(null);
   const [activeLibraryPage, setActiveLibraryPage] = useState(0);
   const [toast, setToast] = useState('');
+  useEffect(() => {
+    void loadBarcodeScanner().catch((error: unknown) => {
+      console.error('Không thể tải trước máy quét barcode:', error);
+    });
+  }, []);
   useEffect(() => () => {
     barcodeRequestIdRef.current += 1;
     barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -566,6 +580,7 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
 
       <div className="content-wrap">
         <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} aria-label="Không gian RetailOS">
+          <img key={supermarketSceneUrl} className="spotlight-supermarket-scene" src={supermarketSceneUrl} alt="" aria-hidden="true" />
           <div className="spotlight-glow" />
           <div className="spotlight-main-content">
             <div className="spotlight-copy">

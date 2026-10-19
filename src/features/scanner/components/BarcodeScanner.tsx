@@ -71,6 +71,7 @@ export default function BarcodeScanner({ onDetected, onClose, initialStream, ini
         video: { facingMode: { ideal: 'environment' } },
       });
       streamRef.current = stream;
+      setIsScanning(true);
       const controls = await reader.decodeFromStream(
         stream,
         videoRef.current,
@@ -90,11 +91,11 @@ export default function BarcodeScanner({ onDetected, onClose, initialStream, ini
         return;
       }
       controlsRef.current = controls;
-      setIsScanning(true);
     } catch (cause) {
       streamRef.current?.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
       if (isDisposedRef.current) return;
+      setIsScanning(false);
       setError(getCameraErrorMessage(cause));
     } finally {
       isStartingRef.current = false;

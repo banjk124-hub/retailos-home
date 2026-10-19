@@ -57,7 +57,8 @@ URL GitHub Pages của repository này dự kiến là `https://banjk124-hub.git
 - `public/sw.js`: cache app shell, offline fallback và nhận/click Web Push. Khi đổi quy tắc cache, tăng `CACHE_NAME`.
 - `src/main.tsx`: đăng ký service worker trong production dưới base path của app.
 - Quyền camera/thông báo cần thao tác trực tiếp của người dùng. Website không thể tự mở trang cài đặt Android/iOS.
-- Dock di động có nút quét barcode tự mở camera và đọc mã bằng `src/features/scanner/components/BarcodeScanner.tsx`. Sau khi quét, app tra cứu snapshot đã cache của danh mục, tồn kho, giá/vốn và date sản phẩm theo các trường barcode/EAN/UPC/GTIN/SKU/mã hàng phổ biến; thông tin hàng tìm thấy hiển thị ngay trên app. Kết quả hiện chỉ đọc từ cache thiết bị, chưa gửi thao tác hay dữ liệu sang backend.
+- Dock di động có nút quét barcode tự mở camera và đọc mã bằng `src/features/scanner/components/BarcodeScanner.tsx`; Home tải trước scanner để giảm thời gian chờ khi chạm quét. Sau khi quét, app tra cứu snapshot đã cache của danh mục, tồn kho, giá/vốn và date sản phẩm theo các trường barcode/EAN/UPC/GTIN/SKU/mã hàng phổ biến; thông tin hàng tìm thấy hiển thị ngay trên app. Kết quả hiện chỉ đọc từ cache thiết bị, chưa gửi thao tác hay dữ liệu sang backend.
+- Spotlight giữ nguyên các nút/chức năng ở lớp trước và dùng ảnh minh họa siêu thị local ở `public/supermarket-scenes/`; ảnh đổi theo ngày, chuyển động chậm, và được precache cùng app shell cho chế độ offline.
 - Web Push client có ở `src/features/notifications/pushNotifications.ts`. Để đăng ký subscription cần cấu hình `VITE_VAPID_PUBLIC_KEY` và `VITE_PUSH_SUBSCRIPTION_URL` trong môi trường deploy. Endpoint backend và VAPID private key chưa được cung cấp/triển khai; không đưa khóa riêng vào frontend.
 
 ## Luồng dữ liệu snapshot từ Apps Script

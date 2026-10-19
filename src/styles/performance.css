@@ -19,7 +19,6 @@
   }
 
   .app-shell :is(
-    .topbar-dock,
     .metric-card,
     .module-card,
     .panel-card,
@@ -29,7 +28,6 @@
     .spotlight-glass-tile,
     .spotlight-glass-chip,
     .spotlight-notification,
-    .mobile-nav,
     .notification-popover,
     .calendar-modal,
     .app-library-modal,
@@ -37,6 +35,12 @@
   ) {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+  }
+
+  .app-shell .topbar-dock,
+  .app-shell .mobile-nav {
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
   }
 
   .app-shell :is(.spotlight-orbit, .spotlight-glow, .hero-orb, .dept-wave) {
