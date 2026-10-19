@@ -2,18 +2,18 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
   Activity, ArrowLeft, ArrowRight, ArrowUpRight, Bell, Boxes, ChartNoAxesCombined, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  ClipboardList, Command, CreditCard, Grid2X2, House, LifeBuoy, LogOut, PackageSearch, ScanBarcode,
+  ClipboardList, Command, CreditCard, Grid2X2, House, LifeBuoy, LogOut, Moon, Monitor, PackageSearch, ScanBarcode, Sun,
   Search, ShieldCheck, SlidersHorizontal, Sparkles, Truck, UserRound, Warehouse, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
+import type { AppearancePreference } from '../../shared/hooks/useAdaptiveAppearance';
 import { Brand } from '../../shared/components/Brand';
 import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT, type ModuleDataId } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { getCameraErrorMessage } from '../scanner/services/cameraErrors';
-import ExportTools from './ExportTools';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
@@ -27,6 +27,9 @@ type Props = {
   isOffline: boolean;
   canInstall: boolean;
   onInstall: () => Promise<void> | void;
+  appearancePreference: AppearancePreference;
+  isLowPowerMode: boolean;
+  onCycleAppearance: () => void;
 };
 type Module = { id: ModuleDataId; title: string; description: string; icon: typeof Warehouse; tone: string; group: string; status?: string };
 type ModuleLibrary = { id: string; title: string; description: string; icon: typeof Warehouse; tone: string; moduleIds: ModuleDataId[] };
@@ -55,7 +58,10 @@ const navItems = [
   { id: 'settings', label: 'Cài đặt', icon: SlidersHorizontal },
 ];
 
-export default function HomeScreen({ employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall }: Props) {
+export default function HomeScreen({
+  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall,
+  appearancePreference, isLowPowerMode, onCycleAppearance,
+}: Props) {
   const DepartmentIcon = department.icon;
   const initialUiState = useRef(readHomeUiState()).current;
   const [activeNav, setActiveNav] = useState(initialUiState.activeNav);
@@ -111,6 +117,8 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const libraryTrackRef = useRef<HTMLDivElement>(null);
+  const libraryDragRef = useRef<{ pointerId: number; startX: number; startScrollLeft: number; moved: boolean; holdTimer: number | null } | null>(null);
+  const suppressLibraryClickRef = useRef(false);
   const [activeLibraryPage, setActiveLibraryPage] = useState(0);
   const [toast, setToast] = useState('');
   useEffect(() => {
@@ -122,6 +130,9 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
     barcodeRequestIdRef.current += 1;
     barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
     barcodeStreamRef.current = null;
+    const holdTimer = libraryDragRef.current?.holdTimer;
+    if (holdTimer !== null && holdTimer !== undefined) window.clearTimeout(holdTimer);
+    libraryDragRef.current = null;
   }, []);
   useEffect(() => {
     if (!isBarcodeScannerOpen) return;
@@ -290,6 +301,43 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
       return distance < closest.distance ? { index, distance } : closest;
     }, { index: 0, distance: Number.POSITIVE_INFINITY });
     setActiveLibraryPage((current) => current === closestPage.index ? current : closestPage.index);
+  };
+  const startLibraryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    const track = event.currentTarget;
+    const drag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: track.scrollLeft,
+      moved: false,
+      holdTimer: window.setTimeout(() => track.classList.add('is-pointer-held'), 260),
+    };
+    libraryDragRef.current = drag;
+    track.setPointerCapture(event.pointerId);
+  };
+  const moveLibraryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = libraryDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const distance = event.clientX - drag.startX;
+    if (!drag.moved && Math.abs(distance) < 6) return;
+    drag.moved = true;
+    if (drag.holdTimer !== null) window.clearTimeout(drag.holdTimer);
+    event.currentTarget.classList.add('is-pointer-dragging');
+    event.currentTarget.scrollLeft = drag.startScrollLeft - distance;
+    event.preventDefault();
+  };
+  const finishLibraryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = libraryDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (drag.holdTimer !== null) window.clearTimeout(drag.holdTimer);
+    const track = event.currentTarget;
+    track.classList.remove('is-pointer-held', 'is-pointer-dragging');
+    libraryDragRef.current = null;
+    if (drag.moved) {
+      suppressLibraryClickRef.current = true;
+      window.setTimeout(() => { suppressLibraryClickRef.current = false; }, 0);
+    }
+    if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
   };
   const toggleNotifications = () => {
     if (notificationsCloseTimer.current !== null) {
@@ -556,6 +604,15 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
             <span className={`topbar-status ${isOffline ? 'offline' : ''}`} role="img" aria-label={isOffline ? 'Offline' : 'Đang hoạt động'} title={isOffline ? 'Offline' : 'Đang hoạt động'}><i /></span>
             {canInstall && <button className="topbar-action-button install-icon-button" type="button" aria-label="Cài đặt ứng dụng" title="Cài đặt ứng dụng" onClick={onInstall}><ArrowUpRight size={17} /></button>}
             <button
+              className="topbar-action-button appearance-button"
+              type="button"
+              aria-label={`Giao diện ${appearancePreference === 'system' ? 'theo thiết bị' : appearancePreference === 'dark' ? 'tối' : 'sáng'}. Chạm để đổi chế độ`}
+              title={`${appearancePreference === 'system' ? 'Theo thiết bị' : appearancePreference === 'dark' ? 'Tối' : 'Sáng'}${isLowPowerMode ? ' · Tiết kiệm hiệu ứng' : ''}`}
+              onClick={onCycleAppearance}
+            >
+              {appearancePreference === 'system' ? <Monitor size={17} /> : appearancePreference === 'dark' ? <Moon size={17} /> : <Sun size={17} />}
+            </button>
+            <button
               ref={notificationsButtonRef}
               type="button"
               className={`topbar-action-button notification-button ${priorityNotices.length ? 'has-notices' : 'no-notices'} ${showNotifications && !isNotificationsClosing ? 'selected' : ''}`}
@@ -694,6 +751,17 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
               aria-label="Thư viện chức năng, vuốt ngang để xem thêm"
               tabIndex={0}
               onScroll={updateActiveLibraryPage}
+              onPointerDown={startLibraryDrag}
+              onPointerMove={moveLibraryDrag}
+              onPointerUp={finishLibraryDrag}
+              onPointerCancel={finishLibraryDrag}
+              onLostPointerCapture={finishLibraryDrag}
+              onClickCapture={(event) => {
+                if (!suppressLibraryClickRef.current) return;
+                suppressLibraryClickRef.current = false;
+                event.preventDefault();
+                event.stopPropagation();
+              }}
               onKeyDown={(event) => {
                 if (event.key === 'ArrowLeft') {
                   event.preventDefault();
@@ -728,8 +796,6 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
           {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
         </section>
 
-        <ExportTools />
-
         <section className="lower-grid" id="activity"><div className="panel-card activity-panel"><div className="panel-heading"><h2 className="icon-section-title" aria-label="Hoạt động"><Activity size={22} aria-hidden="true" /></h2></div><div className="activity-empty"><span className="activity-empty-icon"><Activity size={18} /></span><div><strong>Chưa có hoạt động</strong></div></div></div></section>
         <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><Command size={14} /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
       </div>
@@ -760,13 +826,20 @@ export default function HomeScreen({ employee, department, onLogout, isEnteringH
     }}>
       <section className="barcode-result-card" role="dialog" aria-modal="true" aria-labelledby="barcode-result-title">
         <header className="barcode-result-header">
-          <span className="barcode-result-icon"><ScanBarcode size={21} /></span>
-          <div><span className="library-eyebrow">TRA CỨU SẢN PHẨM</span><h2 id="barcode-result-title">Kết quả quét mã</h2></div>
+          <span className={`barcode-result-icon ${barcodeLookup.records && barcodeLookup.records.length > 0 ? 'is-found' : ''}`}>
+            {barcodeLookup.records && barcodeLookup.records.length > 0 ? <Check size={21} /> : <ScanBarcode size={21} />}
+          </span>
+          <div><span className="library-eyebrow">{barcodeLookup.records === null ? 'ĐANG TRA CỨU' : 'TRA CỨU SẢN PHẨM'}</span><h2 id="barcode-result-title">{barcodeLookup.records === null ? 'Đang tìm dữ liệu' : 'Kết quả quét mã'}</h2></div>
           <button type="button" className="barcode-scanner-close" aria-label="Đóng kết quả" onClick={() => setBarcodeLookup(null)}><X size={19} /></button>
         </header>
+        <ol className="barcode-flow-steps" aria-label="Tiến trình quét barcode">
+          <li className="is-complete"><span>01</span>Quét mã</li>
+          <li className={barcodeLookup.records === null ? 'is-active' : 'is-complete'}><span>02</span>Tra cứu</li>
+          <li className={barcodeLookup.records !== null ? 'is-active' : ''}><span>03</span>Kết quả</li>
+        </ol>
         <div className="barcode-result-code"><span>Mã barcode</span><strong>{barcodeLookup.barcode}</strong></div>
         {barcodeLookup.records === null
-          ? <p className="barcode-result-message" role="status">Đang tra cứu thông tin sản phẩm trong dữ liệu đã lưu…</p>
+          ? <div className="barcode-lookup-loading" role="status"><span className="barcode-lookup-spinner" /><div><strong>Đang tra cứu snapshot</strong><span>Đối chiếu dữ liệu đã lưu trên thiết bị…</span></div></div>
           : barcodeLookup.records.length > 0
             ? <>
               {barcodeLookup.error && <p className="barcode-result-message" role="alert">{barcodeLookup.error}</p>}

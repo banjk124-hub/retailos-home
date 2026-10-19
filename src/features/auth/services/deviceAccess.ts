@@ -12,7 +12,7 @@ export const DEVICE_ACCESS: DeviceAccessDefinition[] = [
   {
     id: 'camera',
     label: 'Camera',
-    description: 'Cấp một lần cho trang RetailOS; dùng lại khi quét mã và chụp ảnh.',
+    description: 'Dùng để quét barcode trong ứng dụng.',
   },
   {
     id: 'notifications',

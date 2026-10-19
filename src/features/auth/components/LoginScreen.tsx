@@ -162,7 +162,7 @@ export default function LoginScreen({ onAuthenticated }: Props) {
             </div>;
           })}
         </div>
-        <p className="device-access-privacy">Sau khi cho phép camera, các tính năng quét mã và chụp ảnh dùng chung quyền của trang này. Trình duyệt lưu quyền cho đến khi bạn đổi trong cài đặt.</p>
+        <p className="device-access-privacy">Sau khi cho phép camera, trình duyệt lưu quyền cho trang này để tính năng quét barcode có thể sử dụng. Bạn có thể đổi quyền trong cài đặt trình duyệt.</p>
         <button className="auth-submit auth-loading-continue" type="button" onClick={continueToApp}>
           <span>Tiếp tục vào RetailOS</span>
           <span className="auth-submit-icon"><ArrowRight size={18} /></span>

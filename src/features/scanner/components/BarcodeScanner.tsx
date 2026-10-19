@@ -134,6 +134,12 @@ export default function BarcodeScanner({ onDetected, onClose, initialStream, ini
         <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng máy quét"><X size={19} /></button>
       </header>
 
+      <ol className="barcode-flow-steps" aria-label="Tiến trình quét barcode">
+        <li className="is-active"><span>01</span>Quét mã</li>
+        <li><span>02</span>Tra cứu</li>
+        <li><span>03</span>Kết quả</li>
+      </ol>
+
       <div className={`barcode-scanner-view ${isScanning ? 'is-scanning' : ''}`}>
         <video ref={videoRef} muted playsInline aria-label="Hình ảnh camera để quét mã vạch" />
         {isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}

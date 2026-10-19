@@ -1,0 +1,269 @@
+:root {
+  color-scheme: light;
+  --surface-page: #fffafa;
+  --surface-card: rgba(255,255,255,.82);
+  --surface-raised: rgba(255,255,255,.92);
+  --surface-muted: rgba(246,239,240,.86);
+  --surface-input: rgba(255,255,255,.9);
+  --text-primary: #302a30;
+  --text-secondary: #817880;
+  --text-muted: #a098a0;
+  --border-soft: rgba(130,94,101,.15);
+  --shadow-card: 0 12px 32px rgba(45,25,31,.075), inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-page: #131114;
+  --surface-card: rgba(36,31,37,.88);
+  --surface-raised: rgba(46,39,47,.94);
+  --surface-muted: rgba(55,46,54,.9);
+  --surface-input: rgba(38,33,39,.96);
+  --text-primary: #f4edf0;
+  --text-secondary: #c2b4bb;
+  --text-muted: #988991;
+  --border-soft: rgba(255,231,236,.14);
+  --shadow-card: 0 12px 32px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+  --brand-glass-surface: linear-gradient(145deg, rgba(48,41,49,.88), rgba(33,28,35,.76));
+  --brand-glass-surface-strong: linear-gradient(145deg, rgba(53,45,54,.96), rgba(36,30,38,.92));
+  --brand-glass-border: rgba(255,239,243,.16);
+  --brand-glass-shadow: 0 24px 70px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.08);
+  --brand-glass-tint: rgba(209,61,77,.18);
+  --retail-glass: rgba(41,35,43,.78);
+  --retail-glass-line: rgba(255,239,243,.16);
+  --retail-ink: #f4edf0;
+  --retail-muted: #b7a9b1;
+  --ink: #f4edf0;
+  --glass: rgba(41,35,43,.78);
+  background: #131114;
+}
+
+:root[data-theme="dark"] body {
+  background: #131114;
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(.retailos-scene, .retailos-interface, .app-shell, .main-area) {
+  background-color: var(--surface-page);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .app-shell {
+  background-image: radial-gradient(ellipse at 75% -15%,rgba(117,36,48,.2),transparent 34%), linear-gradient(#171418,#131114);
+}
+
+:root[data-theme="dark"] .ambient-background {
+  background: radial-gradient(ellipse at 52% 48%,rgba(46,37,46,.72),transparent 72%), linear-gradient(145deg,#171418,#111014 55%,#1b1519);
+}
+
+:root[data-theme="dark"] .page-glass-dock {
+  border-color: rgba(255,238,242,.12);
+  background: rgba(33,28,35,.42);
+}
+
+:root[data-theme="dark"] :is(.sidebar, .topbar, .topbar-dock, .notification-popover, .app-library-modal, .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card) {
+  border-color: var(--border-soft);
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-theme="dark"] :is(.topbar, .topbar-dock, .notification-popover, .app-library-modal, .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card) {
+  background-image: var(--brand-glass-surface-strong);
+  backdrop-filter: blur(var(--brand-glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--brand-glass-blur)) saturate(140%);
+}
+
+:root[data-theme="dark"] :is(.metric-card, .module-card, .panel-card, .app-library-page-card, .user-context-chip, .date-chip, .toast-message, .calendar-day, .barcode-result-record, .barcode-result-code, .barcode-lookup-loading, .device-access-item, .auth-form-card, .auth-loading-card) {
+  border-color: var(--border-soft);
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-theme="dark"] :is(.metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .notification-item, .calendar-day, .barcode-result-record, .barcode-result-code, .barcode-lookup-loading, .device-access-item, .auth-form-card, .auth-loading-card) {
+  background-image: none;
+}
+
+:root[data-theme="dark"] :is(.topbar-identity-copy strong, .workspace-copy strong, .profile-copy strong, .welcome-copy h1, .section-heading h2, .app-library-card-title, .app-library-page-card .app-library-card-title, .metric-value, .module-title-row h3, .panel-heading h2, .activity-copy strong, .barcode-result-header h2, .barcode-result-record h3, .barcode-result-record dd, .barcode-lookup-loading strong, .device-access-copy strong, .auth-form-card h1, .auth-loading-card h1) {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(.topbar-identity-copy span, .welcome-copy > p, .section-heading p, .app-library-description, .metric-unit, .module-card p, .activity-copy span, .barcode-result-code span, .barcode-result-record dt, .barcode-lookup-loading div span, .device-access-copy small, .auth-form-card p, .auth-loading-card p) {
+  color: var(--text-secondary);
+}
+
+:root[data-theme="dark"] :is(.search-field, .filter-pill, .notification-empty, .barcode-result-action, .barcode-scanner-close, .device-access-request, .auth-input-wrap, .auth-input-wrap input, .auth-input-wrap select) {
+  border-color: var(--border-soft);
+  background-color: var(--surface-input);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(.mobile-nav, .topbar-dock) {
+  border-color: rgba(255,239,243,.2);
+  background: linear-gradient(140deg,rgba(52,44,54,.88),rgba(31,27,34,.84));
+}
+
+:root[data-theme="dark"] .app-library-page-card {
+  background-image: radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--library-tone-bg) 25%, transparent), transparent 52%), linear-gradient(145deg, rgba(48,41,49,.94), rgba(34,29,36,.92));
+}
+
+:root[data-theme="dark"] .spotlight-notification-empty {
+  border-color: rgba(255,255,255,.18);
+  background: rgba(24,17,20,.38);
+}
+
+:root[data-theme="dark"] .auth-page {
+  background: radial-gradient(ellipse at 8% 0%,rgba(116,37,50,.22),transparent 40%), #131114;
+}
+
+:root[data-theme="dark"] .auth-input-wrap input {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(.auth-page, .auth-loading-card, .auth-form-card) {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .auth-page {
+  --auth-ink: #f4edf0;
+  --auth-muted: #c2b4bb;
+  --auth-line: rgba(255,231,236,.16);
+}
+
+:root[data-theme="dark"] .auth-layout {
+  border-color: var(--border-soft);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-theme="dark"] .auth-form-side {
+  background: linear-gradient(145deg,#211c23,#181519);
+}
+
+:root[data-theme="dark"] :is(.auth-heading h2, .auth-field > label, .auth-loading-card h1) {
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .auth-field > label span {
+  color: var(--text-muted);
+}
+
+:root[data-theme="dark"] .device-access-copy small + small {
+  color: var(--text-muted);
+}
+
+:root[data-theme="dark"] :is(.auth-form-card, .auth-loading-card) {
+  border-color: var(--border-soft);
+  background-color: var(--surface-card);
+  background-image: var(--brand-glass-surface-strong);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-theme="dark"] .barcode-flow-steps {
+  border-color: var(--border-soft);
+  background: rgba(23,19,25,.38);
+}
+
+:root[data-theme="dark"] .barcode-flow-steps li { color: var(--text-muted); }
+:root[data-theme="dark"] .barcode-flow-steps li.is-active { color: #ffc3ca; }
+
+:root[data-theme="dark"] .offline-banner {
+  border-color: rgba(239,181,126,.25);
+  background: rgba(109,66,27,.35);
+  color: #ffd4a2;
+}
+
+:root[data-power-mode="conserve"] {
+  --brand-glass-blur: 12px;
+  --brand-motion-enter: 180ms ease-out;
+  --brand-motion-interaction: 110ms ease-out;
+  --brand-glass-shadow: 0 8px 22px rgba(40,20,26,.12), inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+:root[data-power-mode="conserve"] .ambient-background,
+:root[data-power-mode="conserve"] .page-glass-dock,
+:root[data-power-mode="conserve"] .spotlight-supermarket-scene,
+:root[data-power-mode="conserve"] .spotlight-orbit,
+:root[data-power-mode="conserve"] .spotlight-glow,
+:root[data-power-mode="conserve"] .hero-orb,
+:root[data-power-mode="conserve"] .dept-wave {
+  animation: none !important;
+}
+
+:root[data-power-mode="conserve"] .ambient-background {
+  display: none;
+}
+
+:root[data-power-mode="conserve"] .app-shell :is(.metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+:root[data-power-mode="conserve"] :is(.app-shell, .barcode-result-backdrop, .barcode-scanner, .barcode-result-card, .barcode-scanner-card, .topbar-dock, .mobile-nav, .notification-popover) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+:root[data-power-mode="conserve"] .app-library-page-card {
+  will-change: auto;
+  transition-duration: 140ms;
+}
+
+.app-library-track {
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 4px;
+  touch-action: pan-x pan-y;
+}
+
+.app-shell :is(button, a, .app-library-page-card, .module-card) {
+  -webkit-tap-highlight-color: transparent;
+  transition-timing-function: var(--brand-motion-ease);
+}
+
+.app-shell :is(button, .app-library-page-card, .module-card):active {
+  transform: scale(.975);
+  transition-duration: var(--brand-motion-interaction);
+}
+
+.appearance-button { color: var(--retail-red-deep); }
+:root[data-theme="dark"] .appearance-button { color: #ffd0d5; }
+
+@media (max-width: 700px) {
+  .app-shell { min-width: 0; overflow-x: clip; }
+  .content-wrap { width: 100%; min-width: 0; }
+  .app-shell :is(button, a, input, select, .filter-pill) { min-height: 44px; }
+  .app-shell .topbar-actions { gap: 6px; }
+  .app-shell .topbar-action-button { width: 42px; height: 42px; }
+  .app-shell .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .app-shell .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .app-shell .app-library-track { scroll-snap-type: x mandatory; cursor: auto; }
+  .app-shell .app-library-page-card { flex-basis: min(88vw, 390px); scroll-snap-stop: always; }
+  .barcode-flow-steps { padding: 8px; }
+  .barcode-flow-steps li { gap: 5px; font-size: 9px; }
+  .barcode-flow-steps li:not(:last-child)::after { margin-inline: 5px; }
+}
+
+@media (max-width: 380px) {
+  .app-shell .topbar-actions { gap: 3px; }
+  .app-shell .topbar-action-button { width: 38px; height: 38px; }
+  .app-shell .app-library-page-card { flex-basis: 86vw; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-library-page-card:hover,
+  .module-card:hover { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

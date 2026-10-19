@@ -12,6 +12,7 @@ import './styles/mobile-tuning.css';
 import './styles/login-refresh.css';
 import './styles/performance.css';
 import './styles/home-ux.css';
+import './styles/adaptive-appearance.css';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

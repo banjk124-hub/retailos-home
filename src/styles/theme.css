@@ -1,14 +1,32 @@
 /* RetailOS 0.3 visual tokens and department states */
 :root {
-  --retail-red: #d92736;
-  --retail-red-deep: #a91829;
-  --retail-red-soft: #fff0f1;
-  --retail-ink: #242329;
-  --retail-muted: #85818a;
-  --retail-white: #fff;
+  --brand-color-primary: #d92736;
+  --brand-color-primary-deep: #a91829;
+  --brand-color-primary-soft: #fff0f1;
+  --brand-color-ink: #242329;
+  --brand-color-muted: #85818a;
+  --brand-color-white: #fff;
+  --brand-focus-ring: rgba(230,92,104,.66);
+  --brand-radius-card: 22px;
+  --brand-radius-control: 12px;
+  --retail-red: var(--brand-color-primary);
+  --retail-red-deep: var(--brand-color-primary-deep);
+  --retail-red-soft: var(--brand-color-primary-soft);
+  --retail-ink: var(--brand-color-ink);
+  --retail-muted: var(--brand-color-muted);
+  --retail-white: var(--brand-color-white);
   --retail-glass: rgba(255,255,255,.72);
   --retail-glass-line: rgba(255,255,255,.84);
   --retail-red-shadow: 0 14px 35px rgba(191, 31, 49, .14);
+  --brand-motion-enter: 280ms cubic-bezier(.2,.8,.2,1);
+  --brand-motion-interaction: 160ms cubic-bezier(.2,.75,.25,1);
+  --brand-glass-surface: linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,245,246,.5));
+  --brand-glass-surface-strong: linear-gradient(145deg, rgba(255,255,255,.9), rgba(255,247,248,.74));
+  --brand-glass-border: rgba(255,255,255,.82);
+  --brand-glass-shadow: 0 24px 70px rgba(59,24,31,.24), inset 0 1px 0 rgba(255,255,255,.9);
+  --brand-glass-blur: 28px;
+  --brand-glass-tint: rgba(188,35,52,.12);
+  --brand-motion-ease: cubic-bezier(.2,.75,.25,1);
 }
 
 :root { color: var(--retail-ink); background: #fffafa; --ink: var(--retail-ink); --blue: var(--retail-red); --blue-dark: var(--retail-red-deep); --glass: var(--retail-glass); }

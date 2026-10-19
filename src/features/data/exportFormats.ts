@@ -121,6 +121,41 @@ export async function downloadXlsx(table: ExportTable, fileName: string): Promis
   downloadBlob(blob, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 }
 
+export async function downloadPptx(
+  table: ExportTable,
+  title: string,
+  snapshotDate: string,
+  fileName: string,
+): Promise<void> {
+  if (table.columns.length === 0) throw new Error('Snapshot không có cột dữ liệu để xuất.');
+  const PptxGenJS = (await import('pptxgenjs')).default;
+  const presentation = new PptxGenJS();
+  presentation.layout = 'LAYOUT_WIDE';
+  presentation.author = 'RetailOS';
+  presentation.subject = `Snapshot ${snapshotDate}`;
+  presentation.title = title;
+  const chunks = Array.from({ length: Math.max(1, Math.ceil(table.rows.length / 16)) }, (_, index) =>
+    table.rows.slice(index * 16, (index + 1) * 16),
+  );
+  chunks.forEach((rows, pageIndex) => {
+    const slide = presentation.addSlide();
+    slide.background = { color: 'F8F4F4' };
+    slide.addText(title, { x: .55, y: .34, w: 10.8, h: .38, fontFace: 'Aptos', fontSize: 22, bold: true, color: '8F1E2B' });
+    slide.addText(`Snapshot ${snapshotDate} · ${table.rows.length} dòng · Trang ${pageIndex + 1}/${chunks.length}`, {
+      x: .58, y: .82, w: 11, h: .22, fontFace: 'Aptos', fontSize: 9, color: '717987',
+    });
+    const tableRows = [
+      table.columns.map((column) => ({ text: column, options: { bold: true, color: 'FFFFFF', fill: 'A92534' } })),
+      ...rows.map((row) => table.columns.map((column) => ({ text: formatExportValue(row[column]) }))),
+    ];
+    slide.addTable(tableRows, {
+      x: .55, y: 1.22, w: 12.2, h: 5.65, border: { type: 'solid', color: 'E2D8DA', pt: .5 },
+      fontFace: 'Aptos', fontSize: 9, color: '35313A', margin: .07, rowH: .28,
+    });
+  });
+  await presentation.writeFile({ fileName });
+}
+
 export function downloadBlob(blob: Blob, fileName: string, type = 'application/octet-stream'): void {
   const url = URL.createObjectURL(new Blob([blob], { type }));
   const anchor = document.createElement('a');

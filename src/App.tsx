@@ -5,6 +5,7 @@ import { clearCachedModuleData } from './features/data/moduleDataService';
 import type { EmployeeSession } from './features/auth/types';
 import HomeScreen from './features/home/HomeScreen';
 import { getDepartment } from './shared/config/departments';
+import { useAdaptiveAppearance } from './shared/hooks/useAdaptiveAppearance';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -27,6 +28,7 @@ function PageGlassDock() {
 }
 
 export default function App() {
+  const appearance = useAdaptiveAppearance();
   const [employee, setEmployee] = useState<EmployeeSession | null>(() => readSession());
   const [isEnteringHome, setIsEnteringHome] = useState(false);
   const [isLeavingHome, setIsLeavingHome] = useState(false);
@@ -133,6 +135,9 @@ export default function App() {
           isOffline={isOffline}
           canInstall={canInstall}
           onInstall={handleInstall}
+          appearancePreference={appearance.preference}
+          isLowPowerMode={appearance.isLowPower}
+          onCycleAppearance={appearance.cyclePreference}
         />
       </div>
     </div>
