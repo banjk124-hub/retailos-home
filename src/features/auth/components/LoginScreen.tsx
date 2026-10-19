@@ -162,7 +162,7 @@ export default function LoginScreen({ onAuthenticated }: Props) {
             </div>;
           })}
         </div>
-        <p className="device-access-privacy">Bạn có thể tiếp tục mà không cấp quyền. Quyền được lưu theo cài đặt của thiết bị/trình duyệt.</p>
+        <p className="device-access-privacy">Sau khi cho phép camera, các tính năng quét mã và chụp ảnh dùng chung quyền của trang này. Trình duyệt lưu quyền cho đến khi bạn đổi trong cài đặt.</p>
         <button className="auth-submit auth-loading-continue" type="button" onClick={continueToApp}>
           <span>Tiếp tục vào RetailOS</span>
           <span className="auth-submit-icon"><ArrowRight size={18} /></span>

@@ -25,6 +25,11 @@ const moduleLabels: Record<ModuleDataId, string> = {
 };
 
 type ExportFormat = 'xlsx' | 'csv' | 'pdf' | 'txt' | 'pptx';
+type SnapshotOption = {
+  key: string;
+  snapshot: CachedModuleSnapshot;
+  isSample: boolean;
+};
 
 const exportFormats: Array<{ id: ExportFormat; label: string; detail: string; icon: typeof FileText }> = [
   { id: 'xlsx', label: 'Excel', detail: '.xlsx', icon: FileSpreadsheet },
@@ -32,6 +37,43 @@ const exportFormats: Array<{ id: ExportFormat; label: string; detail: string; ic
   { id: 'pdf', label: 'PDF', detail: 'In / Lưu PDF', icon: FileText },
   { id: 'txt', label: 'Văn bản', detail: '.txt', icon: FileText },
   { id: 'pptx', label: 'PowerPoint', detail: '.pptx', icon: Presentation },
+];
+
+const sampleSnapshotDate = new Date().toISOString().slice(0, 10);
+const sampleSnapshots: CachedModuleSnapshot[] = [
+  {
+    moduleId: 'products',
+    version: 'demo-1',
+    snapshotDate: sampleSnapshotDate,
+    cachedAt: sampleSnapshotDate,
+    data: [
+      { barcode: '8934673601123', sku: 'CF-001', productName: 'Cà phê rang xay 500g', category: 'Đồ uống', unit: 'Gói', retailPrice: 89000, active: true },
+      { barcode: '8938501672048', sku: 'SN-014', productName: 'Bánh quy bơ hộp 300g', category: 'Bánh kẹo', unit: 'Hộp', retailPrice: 62500, active: true },
+      { barcode: '8936049128506', sku: 'NU-032', productName: 'Nước suối 500ml', category: 'Đồ uống', unit: 'Chai', retailPrice: 7000, active: true },
+    ],
+  },
+  {
+    moduleId: 'inventory',
+    version: 'demo-1',
+    snapshotDate: sampleSnapshotDate,
+    cachedAt: sampleSnapshotDate,
+    data: [
+      { sku: 'CF-001', productName: 'Cà phê rang xay 500g', store: 'Cửa hàng trung tâm', onHand: 36, minimumStock: 12, unit: 'Gói' },
+      { sku: 'SN-014', productName: 'Bánh quy bơ hộp 300g', store: 'Cửa hàng trung tâm', onHand: 8, minimumStock: 10, unit: 'Hộp' },
+      { sku: 'NU-032', productName: 'Nước suối 500ml', store: 'Cửa hàng trung tâm', onHand: 124, minimumStock: 48, unit: 'Chai' },
+    ],
+  },
+  {
+    moduleId: 'sales',
+    version: 'demo-1',
+    snapshotDate: sampleSnapshotDate,
+    cachedAt: sampleSnapshotDate,
+    data: [
+      { date: sampleSnapshotDate, store: 'Cửa hàng trung tâm', sku: 'CF-001', productName: 'Cà phê rang xay 500g', quantity: 12, revenue: 1068000 },
+      { date: sampleSnapshotDate, store: 'Cửa hàng trung tâm', sku: 'SN-014', productName: 'Bánh quy bơ hộp 300g', quantity: 7, revenue: 437500 },
+      { date: sampleSnapshotDate, store: 'Cửa hàng trung tâm', sku: 'NU-032', productName: 'Nước suối 500ml', quantity: 38, revenue: 266000 },
+    ],
+  },
 ];
 
 function makeFileStem(moduleId: ModuleDataId, snapshotDate: string): string {
@@ -47,7 +89,7 @@ export default function ExportTools() {
   const [snapshots, setSnapshots] = useState<CachedModuleSnapshot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [selectedModule, setSelectedModule] = useState<ModuleDataId | ''>('');
+  const [selectedSnapshotKey, setSelectedSnapshotKey] = useState('');
   const [busyFormat, setBusyFormat] = useState<ExportFormat | null>(null);
   const [exportMessage, setExportMessage] = useState('');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -72,9 +114,14 @@ export default function ExportTools() {
       result.status === 'fulfilled' && result.value ? [result.value] : [],
     );
     setSnapshots(availableSnapshots);
-    setSelectedModule((current) => availableSnapshots.some((snapshot) => snapshot.moduleId === current)
+    const availableKeys = new Set([
+      ...availableSnapshots.map((snapshot) => `cache-${snapshot.moduleId}`),
+      ...sampleSnapshots.map((snapshot) => `sample-${snapshot.moduleId}`),
+    ]);
+    setSelectedSnapshotKey((current) => availableKeys.has(current)
       ? current
-      : availableSnapshots[0]?.moduleId ?? '');
+      : availableSnapshots[0] ? `cache-${availableSnapshots[0].moduleId}` : `sample-${sampleSnapshots[0].moduleId}`,
+    );
     setIsLoading(false);
   };
 
@@ -116,7 +163,12 @@ export default function ExportTools() {
     if (capturedPhoto) URL.revokeObjectURL(capturedPhoto.url);
   }, [capturedPhoto]);
 
-  const selectedSnapshot = snapshots.find((snapshot) => snapshot.moduleId === selectedModule);
+  const snapshotOptions = useMemo<SnapshotOption[]>(() => [
+    ...snapshots.map((snapshot) => ({ key: `cache-${snapshot.moduleId}`, snapshot, isSample: false })),
+    ...sampleSnapshots.map((snapshot) => ({ key: `sample-${snapshot.moduleId}`, snapshot, isSample: true })),
+  ], [snapshots]);
+  const selectedOption = snapshotOptions.find((option) => option.key === selectedSnapshotKey);
+  const selectedSnapshot = selectedOption?.snapshot;
   const table = useMemo(
     () => selectedSnapshot ? snapshotToExportTable(selectedSnapshot.data) : { columns: [], rows: [] },
     [selectedSnapshot],
@@ -202,13 +254,14 @@ export default function ExportTools() {
     setExportMessage('');
     try {
       const title = moduleLabels[selectedSnapshot.moduleId];
-      const fileStem = makeFileStem(selectedSnapshot.moduleId, selectedSnapshot.snapshotDate);
+      const exportTitle = selectedOption?.isSample ? `MẪU THỬ · ${title}` : title;
+      const fileStem = `${makeFileStem(selectedSnapshot.moduleId, selectedSnapshot.snapshotDate)}${selectedOption?.isSample ? '-mau-thu' : ''}`;
       if (format === 'csv') {
         downloadBlob(new Blob(['\uFEFF', createCsvContent(table)], { type: 'text/csv;charset=utf-8' }), `${fileStem}.csv`, 'text/csv;charset=utf-8');
       } else if (format === 'txt') {
-        downloadBlob(new Blob([createTextReport(title, selectedSnapshot.snapshotDate, table)], { type: 'text/plain;charset=utf-8' }), `${fileStem}.txt`, 'text/plain;charset=utf-8');
+        downloadBlob(new Blob([createTextReport(exportTitle, selectedSnapshot.snapshotDate, table)], { type: 'text/plain;charset=utf-8' }), `${fileStem}.txt`, 'text/plain;charset=utf-8');
       } else if (format === 'pdf') {
-        openPdfPrintView(title, selectedSnapshot.snapshotDate, table);
+        openPdfPrintView(exportTitle, selectedSnapshot.snapshotDate, table);
       } else if (format === 'xlsx') {
         await downloadXlsx(table, `${fileStem}.xlsx`);
       } else {
@@ -217,14 +270,14 @@ export default function ExportTools() {
         presentation.layout = 'LAYOUT_WIDE';
         presentation.author = 'RetailOS';
         presentation.subject = `Snapshot ${selectedSnapshot.snapshotDate}`;
-        presentation.title = title;
+        presentation.title = exportTitle;
         const chunks = Array.from({ length: Math.max(1, Math.ceil(table.rows.length / 16)) }, (_, index) =>
           table.rows.slice(index * 16, (index + 1) * 16),
         );
         chunks.forEach((rows, pageIndex) => {
           const slide = presentation.addSlide();
           slide.background = { color: 'F8F4F4' };
-          slide.addText(title, { x: .55, y: .34, w: 10.8, h: .38, fontFace: 'Aptos', fontSize: 22, bold: true, color: '8F1E2B' });
+          slide.addText(exportTitle, { x: .55, y: .34, w: 10.8, h: .38, fontFace: 'Aptos', fontSize: 22, bold: true, color: '8F1E2B' });
           slide.addText(`Snapshot ${selectedSnapshot.snapshotDate} · ${table.rows.length} dòng · Trang ${pageIndex + 1}/${chunks.length}`, {
             x: .58, y: .82, w: 11, h: .22, fontFace: 'Aptos', fontSize: 9, color: '717987',
           });
@@ -241,7 +294,7 @@ export default function ExportTools() {
       }
       setExportMessage(format === 'pdf'
         ? 'Đã mở hộp thoại in. Chọn “Lưu dưới dạng PDF” để tạo file.'
-        : `Đã tạo file ${format.toUpperCase()} từ snapshot đang lưu trên thiết bị.`);
+        : `Đã tạo file ${format.toUpperCase()} từ ${selectedOption?.isSample ? 'dữ liệu mẫu thử' : 'snapshot đang lưu trên thiết bị'}.`);
     } catch (error) {
       console.error(`Không thể xuất snapshot thành ${format}:`, error);
       setExportMessage(getExportError(error));
@@ -262,15 +315,14 @@ export default function ExportTools() {
         <div className="export-tool-heading"><span className="export-tool-icon"><FileSpreadsheet size={19} /></span><div><h3>Xuất snapshot</h3><p>Chọn snapshot và định dạng file.</p></div></div>
         {isLoading
           ? <p className="export-empty-state" role="status">Đang đọc dữ liệu cache…</p>
-          : snapshots.length === 0
-            ? <p className="export-empty-state">{loadError || 'Chưa có snapshot được cache. Đồng bộ dữ liệu trước khi xuất file.'}</p>
             : <>
-              <label className="export-select-label" htmlFor="export-snapshot-select">Nguồn dữ liệu</label>
-              <select id="export-snapshot-select" className="export-snapshot-select" value={selectedModule} onChange={(event) => setSelectedModule(event.target.value as ModuleDataId)}>
-                {snapshots.map((snapshot) => <option key={snapshot.moduleId} value={snapshot.moduleId}>{moduleLabels[snapshot.moduleId]} · {snapshot.snapshotDate}</option>)}
-              </select>
-              {selectedSnapshot && <div className="export-snapshot-meta"><span>{table.rows.length.toLocaleString('vi-VN')} dòng</span><span>Snapshot {selectedSnapshot.snapshotDate}</span></div>}
+              {snapshots.length === 0 && <p className="export-sample-notice">Chưa có snapshot thật trên thiết bị. Có thể chọn dữ liệu mẫu để thử xuất file; dữ liệu mẫu không đồng bộ lên hệ thống.</p>}
               {loadError && <p className="export-inline-warning">{loadError}</p>}
+              <label className="export-select-label" htmlFor="export-snapshot-select">Nguồn dữ liệu</label>
+              <select id="export-snapshot-select" className="export-snapshot-select" value={selectedSnapshotKey} onChange={(event) => setSelectedSnapshotKey(event.target.value)}>
+                {snapshotOptions.map(({ key, snapshot, isSample }) => <option key={key} value={key}>{isSample ? 'MẪU THỬ · ' : ''}{moduleLabels[snapshot.moduleId]} · {snapshot.snapshotDate}</option>)}
+              </select>
+              {selectedSnapshot && <div className="export-snapshot-meta"><span>{table.rows.length.toLocaleString('vi-VN')} dòng{selectedOption?.isSample ? ' · Dữ liệu mẫu' : ''}</span><span>Snapshot {selectedSnapshot.snapshotDate}</span></div>}
               {table.columns.length > 0 && <div className="export-preview-wrap" role="region" aria-label="Bản xem trước dữ liệu">
                 <table className="export-preview-table"><thead><tr>{table.columns.slice(0, 5).map((column) => <th key={column}>{column}</th>)}</tr></thead>
                   <tbody>{previewRows.map((row, rowIndex) => <tr key={rowIndex}>{table.columns.slice(0, 5).map((column) => <td key={column}>{formatExportValue(row[column]) || '—'}</td>)}</tr>)}</tbody>
@@ -290,16 +342,13 @@ export default function ExportTools() {
       <article className="export-tool-card export-photo-card">
         <div className="export-tool-heading"><span className="export-tool-icon export-photo-icon"><Camera size={19} /></span><div><h3>Chụp ảnh JPEG</h3><p>Chụp bằng camera thiết bị, không tải ảnh lên server.</p></div></div>
         {cameraStream
-          ? <div className="photo-camera-view"><video ref={cameraVideoRef} autoPlay muted playsInline aria-label="Xem trước camera chụp ảnh" /><span className="photo-camera-live"><i /> CAMERA LIVE</span></div>
+          ? <div className="photo-empty-preview"><Camera size={30} /><span>Camera đang mở ở chế độ xem lớn. Chụp ảnh hoặc đóng chế độ camera để tiếp tục.</span></div>
           : capturedPhoto
             ? <img className="photo-capture-preview" src={capturedPhoto.url} alt="Ảnh JPEG vừa chụp" />
             : <div className="photo-empty-preview"><Camera size={30} /><span>{cameraError || 'Camera sẽ bật khi bạn chạm nút bên dưới.'}</span></div>}
         {cameraError && <p className="export-inline-warning" role="alert">{cameraError}</p>}
         {cameraStream
-          ? <div className="photo-action-row">
-            <button type="button" className="photo-capture-button" onClick={() => { void capturePhoto(); }}><Camera size={17} />Chụp ảnh</button>
-            <button type="button" className="photo-secondary-button" onClick={stopCamera}>Tắt camera</button>
-          </div>
+          ? null
           : capturedPhoto
             ? <div className="photo-action-row">
               <button type="button" className="photo-capture-button" onClick={downloadPhoto}><Download size={17} />Tải JPEG</button>
@@ -311,5 +360,15 @@ export default function ExportTools() {
         <p className="photo-privacy-note"><ImageDown size={14} />Ảnh được tạo trên thiết bị. Không có server upload.</p>
       </article>
     </div>
+    {cameraStream && <div className="photo-camera-overlay" role="dialog" aria-modal="true" aria-label="Camera chụp ảnh">
+      <div className="photo-camera-fullscreen">
+        <video ref={cameraVideoRef} autoPlay muted playsInline aria-label="Xem trước camera chụp ảnh" />
+        <span className="photo-camera-live"><i /> CAMERA LIVE</span>
+        <div className="photo-camera-controls">
+          <button type="button" className="photo-secondary-button" onClick={stopCamera}>Đóng camera</button>
+          <button type="button" className="photo-capture-button" onClick={() => { void capturePhoto(); }}><Camera size={18} />Chụp ảnh</button>
+        </div>
+      </div>
+    </div>}
   </section>;
 }

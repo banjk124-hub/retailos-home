@@ -549,21 +549,22 @@
   -webkit-overflow-scrolling: touch;
 }
 .barcode-scanner-card {
-  width: min(100%, 480px);
-  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
+  display: flex;
+  width: min(94vw, 1180px);
+  height: min(90dvh, 900px);
+  max-height: 90dvh;
+  flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 .barcode-scanner-view {
   min-height: 0;
-  max-height: min(48dvh, 440px);
-  aspect-ratio: 4 / 3;
+  max-height: none;
 }
 .barcode-scanner-view video {
-  min-width: 100%;
-  min-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
 }
 .barcode-scanner-action,
 .barcode-scanner-close,
@@ -714,6 +715,49 @@
 .photo-empty-preview span { max-width: 260px; font-size: 10px; line-height: 1.5; }
 .photo-camera-live { position: absolute; top: 9px; left: 9px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 99px; background: rgba(23,18,21,.44); color: #fff; font-size: 8px; font-weight: 800; letter-spacing: .6px; }
 .photo-camera-live i { width: 6px; height: 6px; border-radius: 50%; background: #ff5364; box-shadow: 0 0 0 3px rgba(255,83,100,.18); }
+.photo-camera-overlay {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(3vh, env(safe-area-inset-top)) max(3vw, env(safe-area-inset-right)) max(3vh, env(safe-area-inset-bottom)) max(3vw, env(safe-area-inset-left));
+  background: rgba(18,14,16,.92);
+  backdrop-filter: blur(8px);
+}
+.photo-camera-fullscreen {
+  position: relative;
+  width: min(94vw, 1180px);
+  height: min(90dvh, 900px);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: clamp(16px, 2vw, 24px);
+  background: #171418;
+  box-shadow: 0 24px 80px rgba(0,0,0,.5);
+}
+.photo-camera-fullscreen video { width: 100%; height: 100%; object-fit: contain; }
+.photo-camera-controls {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, rgba(15,12,14,.82), transparent);
+}
+.photo-camera-controls button { min-height: 48px; padding-inline: 20px; font-size: 12px; }
+.export-sample-notice {
+  margin: 14px 0 0;
+  padding: 11px 12px;
+  border: 1px solid #f1d6a6;
+  border-radius: 11px;
+  background: #fff8e9;
+  color: #80602e;
+  font-size: 10px;
+  line-height: 1.5;
+}
 .photo-action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
 .photo-capture-button,
 .photo-secondary-button {
@@ -751,16 +795,18 @@
   .mobile-nav .barcode-nav-item .mobile-nav-icon { width: 52px; height: 52px; }
   .barcode-result-card { max-height: min(78vh, 680px); padding: 16px; border-radius: 19px; }
   .barcode-result-record dl > div { grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: 8px; padding: 8px 9px; }
-  .barcode-scanner { place-items: center; padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom)); }
+  .barcode-scanner { place-items: center; padding: max(2vh, env(safe-area-inset-top)) max(2vw, env(safe-area-inset-right)) max(2vh, env(safe-area-inset-bottom)) max(2vw, env(safe-area-inset-left)); }
   .barcode-scanner-card {
-    width: min(100%, 480px);
-    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px);
-    padding: 15px;
-    border-radius: 19px;
+    width: 96vw;
+    height: 90dvh;
+    max-height: 90dvh;
+    padding: 12px;
+    border-radius: 16px;
   }
   .barcode-scanner-view {
     width: 100%;
-    height: clamp(180px, 40dvh, 360px);
+    height: auto;
+    min-height: 0;
     max-height: none;
     aspect-ratio: auto;
     margin-top: 12px;
@@ -807,6 +853,10 @@
   .export-format-button strong { font-size: 9px; }
   .export-format-button small { font-size: 8px; }
   .photo-camera-view,.photo-empty-preview,.photo-capture-preview { height: clamp(170px,38vh,280px); }
+  .photo-camera-overlay { padding: max(2vh, env(safe-area-inset-top)) max(2vw, env(safe-area-inset-right)) max(2vh, env(safe-area-inset-bottom)) max(2vw, env(safe-area-inset-left)); }
+  .photo-camera-fullscreen { width: 94vw; height: 90dvh; border-radius: 16px; }
+  .photo-camera-controls { gap: 8px; padding: 14px 12px max(14px, env(safe-area-inset-bottom)); }
+  .photo-camera-controls button { min-height: 48px; padding-inline: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

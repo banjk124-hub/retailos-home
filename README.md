@@ -16,7 +16,7 @@ npm run dev
 
 Vite tự reload khi lưu code. Chạy `npm run build` trước khi đưa thay đổi lên GitHub để kiểm tra TypeScript và production bundle.
 
-Để mở app trên điện thoại trong cùng mạng, có thể chạy `npm run dev -- --host 0.0.0.0`; tuy nhiên URL LAN mặc định dạng `http://192.168.x.x:5173` không phải secure context nên Android/iOS sẽ chặn camera và không hiện hộp thoại xin quyền. Hãy kiểm tra camera trên GitHub Pages sau khi deploy (HTTPS), hoặc dùng một HTTPS development origin có chứng chỉ được thiết bị tin cậy. Trên HTTPS, chạm **Quét mã** sẽ gọi quyền camera từ thao tác người dùng; lần đầu trình duyệt/hệ điều hành sẽ yêu cầu xác nhận. Website không thể tự bỏ qua quyết định từ chối hay tự mở trang cài đặt.
+Để mở app trên điện thoại trong cùng mạng, có thể chạy `npm run dev -- --host 0.0.0.0`; tuy nhiên URL LAN mặc định dạng `http://192.168.x.x:5173` không phải secure context nên Android/iOS sẽ chặn camera và không hiện hộp thoại xin quyền. Hãy kiểm tra camera trên GitHub Pages sau khi deploy (HTTPS), hoặc dùng một HTTPS development origin có chứng chỉ được thiết bị tin cậy. Trên HTTPS, cấp quyền camera một lần ở màn hình khởi tạo phiên; các tính năng quét barcode và chụp ảnh dùng chung quyền của trang RetailOS. Trình duyệt/hệ điều hành quản lý thời hạn quyền và người dùng có thể thu hồi quyền trong cài đặt; website không thể giữ quyền trái với lựa chọn đó hoặc tự mở trang cài đặt. Camera chỉ bật khi dùng tính năng, rồi tắt khi đóng hoặc chuyển app xuống nền.
 
 ## Cấp tài khoản prototype
 
@@ -56,8 +56,8 @@ URL GitHub Pages của repository này dự kiến là `https://banjk124-hub.git
 - `public/manifest.webmanifest`: metadata/cài đặt PWA; đường dẫn tương đối để hỗ trợ GitHub Pages project site.
 - `public/sw.js`: cache app shell, offline fallback và nhận/click Web Push. Khi đổi quy tắc cache, tăng `CACHE_NAME`.
 - `src/main.tsx`: đăng ký service worker trong production dưới base path của app.
-- Quyền camera/thông báo cần thao tác trực tiếp của người dùng. Website không thể tự mở trang cài đặt Android/iOS.
-- Dock di động có nút quét barcode tự mở camera và đọc mã bằng `src/features/scanner/components/BarcodeScanner.tsx`; Home tải trước scanner để giảm thời gian chờ khi chạm quét. Sau khi quét, app tra cứu snapshot đã cache của danh mục, tồn kho, giá/vốn và date sản phẩm theo các trường barcode/EAN/UPC/GTIN/SKU/mã hàng phổ biến; thông tin hàng tìm thấy hiển thị ngay trên app. Kết quả hiện chỉ đọc từ cache thiết bị, chưa gửi thao tác hay dữ liệu sang backend.
+- Quyền camera/thông báo cần thao tác trực tiếp của người dùng. Quyền camera được dùng chung giữa quét barcode và chụp ảnh theo quyền của cùng trang web. Website không thể tự mở trang cài đặt Android/iOS hoặc ngăn người dùng thu hồi quyền.
+- Dock di động có nút quét barcode tự mở camera và đọc mã bằng `src/features/scanner/components/BarcodeScanner.tsx`; vùng camera chiếm gần toàn màn hình để dễ căn chỉnh. Home tải trước scanner để giảm thời gian chờ khi chạm quét. Sau khi quét, app tra cứu snapshot đã cache của danh mục, tồn kho, giá/vốn và date sản phẩm theo các trường barcode/EAN/UPC/GTIN/SKU/mã hàng phổ biến; thông tin hàng tìm thấy hiển thị ngay trên app. Kết quả hiện chỉ đọc từ cache thiết bị, chưa gửi thao tác hay dữ liệu sang backend.
 - Spotlight giữ nguyên các nút/chức năng ở lớp trước và dùng ảnh minh họa siêu thị local ở `public/supermarket-scenes/`; ảnh đổi theo ngày, chuyển động chậm, và được precache cùng app shell cho chế độ offline.
 - Web Push client có ở `src/features/notifications/pushNotifications.ts`. Để đăng ký subscription cần cấu hình `VITE_VAPID_PUBLIC_KEY` và `VITE_PUSH_SUBSCRIPTION_URL` trong môi trường deploy. Endpoint backend và VAPID private key chưa được cung cấp/triển khai; không đưa khóa riêng vào frontend.
 
@@ -83,7 +83,7 @@ Lớp đồng bộ yêu cầu access token do xác thực backend cấp qua `syn
 - `src/features/home/`: Home và trạng thái giao diện riêng.
 - Home có năm thư viện: Kiểm soát hàng hóa, Xử lý hàng hóa, Doanh số, Date sản phẩm và Kiểm kê. Cảnh báo chỉ xuất hiện khi snapshot cache có dữ liệu để quy tắc frontend tính toán; không còn nội dung bản tin demo.
 - `src/features/scanner/`: scanner camera/barcode có thể tái sử dụng.
-- Home có khu Công cụ thử nghiệm: chọn snapshot cache bất kỳ để xuất XLSX, CSV, PDF (qua hộp thoại in/lưu PDF của trình duyệt), TXT hoặc PPTX; có thể chụp ảnh camera thành JPEG để tải xuống/chia sẻ. Công cụ xuất làm việc trên `data.rows` hoặc mảng/object tổng quát, chưa áp đặt schema nghiệp vụ và không tải dữ liệu/ảnh lên server. Thư viện tạo file được tải động khi người dùng xuất để giảm chi phí khởi tạo Home.
+- Home có khu Công cụ thử nghiệm: chọn snapshot cache bất kỳ hoặc dữ liệu mẫu tồn kho, sản phẩm, doanh số để xuất XLSX, CSV, PDF (qua hộp thoại in/lưu PDF của trình duyệt), TXT hoặc PPTX; file dữ liệu mẫu có hậu tố `mau-thu` và không được ghi vào cache nghiệp vụ. Có thể chụp ảnh camera thành JPEG ở chế độ xem gần toàn màn hình để tải xuống/chia sẻ. Công cụ xuất làm việc trên `data.rows` hoặc mảng/object tổng quát, chưa áp đặt schema nghiệp vụ và không tải dữ liệu/ảnh lên server. Thư viện tạo file được tải động khi người dùng xuất để giảm chi phí khởi tạo Home.
 - `src/features/notifications/`: đăng ký Web Push phía client.
 - `src/shared/`: cấu hình bộ phận và UI dùng chung.
 - `src/styles/`: CSS theo lớp; `performance.css` giảm hiệu ứng nặng trên thiết bị di động.
