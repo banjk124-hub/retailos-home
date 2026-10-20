@@ -13,6 +13,8 @@ import './styles/login-refresh.css';
 import './styles/performance.css';
 import './styles/home-ux.css';
 import './styles/adaptive-appearance.css';
+import './styles/home-engine.css';
+import './styles/home-redesign.css';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

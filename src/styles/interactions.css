@@ -2,14 +2,14 @@
 button:not(:disabled) {
   -webkit-tap-highlight-color: transparent;
   transition-property: color, background-color, border-color, box-shadow, transform, filter;
-  transition-duration: 280ms;
-  transition-timing-function: cubic-bezier(.2,.75,.25,1);
+  transition-duration: var(--motion-duration-interaction);
+  transition-timing-function: var(--motion-ease-standard);
 }
 
 button:not(:disabled):active {
   transform: scale(.975);
   filter: none;
-  transition-duration: 100ms;
+  transition-duration: var(--motion-duration-fast);
 }
 
 /* State changes glide rather than popping between selected controls. */

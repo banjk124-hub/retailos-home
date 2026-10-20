@@ -47,10 +47,10 @@
   width: min(100%, 1080px);
   min-height: min(690px, calc(100svh - 56px));
   overflow: hidden;
-  border: 1px solid #fff;
-  border-radius: 28px;
+  border: 1px solid var(--glass-border-modal);
+  border-radius: var(--brand-radius-card);
   background: #fff;
-  box-shadow: 0 32px 90px #391b2017, 0 4px 18px #391b2008;
+  box-shadow: var(--shadow-ambient), var(--glass-highlight);
   animation: auth-layout-in .72s cubic-bezier(.2, .75, .25, 1) both;
 }
 
@@ -676,20 +676,20 @@
   width: min(94vw, 1180px);
   height: min(90dvh, 900px);
   flex-direction: column;
-  padding: clamp(14px, 2.5vw, 26px);
-  border: 1px solid var(--brand-glass-border);
-  border-radius: clamp(16px, 2vw, 24px);
+  padding: clamp(var(--space-4), 2.5vw, var(--space-6));
+  border: 1px solid var(--glass-border-modal);
+  border-radius: clamp(var(--radius-lg), 2vw, var(--radius-2xl));
   background: var(--brand-glass-surface-strong);
-  box-shadow: var(--brand-glass-shadow);
-  backdrop-filter: blur(var(--brand-glass-blur)) saturate(155%);
-  -webkit-backdrop-filter: blur(var(--brand-glass-blur)) saturate(155%);
+  box-shadow: var(--shadow-modal), var(--glass-highlight);
+  backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
+  -webkit-backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
   animation: brand-glass-panel-in var(--brand-motion-enter) both;
 }
 
 .barcode-scanner-header { display: flex; align-items: center; gap: 11px; }
 .barcode-scanner-title-icon { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; border-radius: 12px; background: #fff0f1; color: #b32332; }
-.barcode-scanner-header h2 { margin: 0; color: #302629; font-size: 16px; }
-.barcode-scanner-header p { margin: 4px 0 0; color: #8d8184; font-size: 10px; }
+.barcode-scanner-header h2 { margin: 0; color: #302629; font-size: var(--font-size-lg); }
+.barcode-scanner-header p { margin: var(--space-1) 0 0; color: #8d8184; font-size: var(--font-size-xs); }
 .barcode-scanner-close { display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; margin-left: auto; border: 0; border-radius: 10px; background: #f6f1f1; color: #65595c; cursor: pointer; }
 
 .barcode-scanner-view {

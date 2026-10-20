@@ -29,9 +29,9 @@
 }
 
 :root[data-theme="dark"] :is(.topbar, .topbar-dock, .notification-popover, .app-library-modal, .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card) {
-  background-image: var(--brand-glass-surface-strong);
-  backdrop-filter: blur(var(--brand-glass-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--brand-glass-blur)) saturate(140%);
+  background-image: var(--glass-surface-modal);
+  backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
+  -webkit-backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
 }
 
 :root[data-theme="dark"] :is(.metric-card, .module-card, .panel-card, .app-library-page-card, .user-context-chip, .date-chip, .toast-message, .calendar-day, .calendar-month-day, .barcode-result-record, .barcode-result-code, .barcode-lookup-loading, .device-access-item, .auth-form-card, .auth-loading-card) {
@@ -135,10 +135,17 @@
 }
 
 :root[data-power-mode="conserve"] {
-  --brand-glass-blur: 12px;
-  --brand-motion-enter: 180ms ease-out;
-  --brand-motion-interaction: 110ms ease-out;
-  --brand-glass-shadow: 0 8px 22px rgba(40,20,26,.12), inset 0 1px 0 rgba(255,255,255,.55);
+  --glass-blur-card: 0px;
+  --glass-blur-elevated: 8px;
+  --glass-blur-modal: 10px;
+  --brand-glass-blur: var(--glass-blur-modal);
+  --motion-duration-enter: 180ms;
+  --motion-duration-interaction: 110ms;
+  --brand-motion-enter: var(--motion-duration-enter) ease-out;
+  --brand-motion-interaction: var(--motion-duration-interaction) ease-out;
+  --shadow-elevated: 0 8px 22px rgba(40,20,26,.12), inset 0 1px 0 rgba(255,255,255,.55);
+  --shadow-modal: 0 12px 30px rgba(40,20,26,.18), inset 0 1px 0 rgba(255,255,255,.58);
+  --brand-glass-shadow: var(--shadow-modal);
 }
 
 :root[data-power-mode="conserve"] .ambient-background,
@@ -535,7 +542,7 @@
 .notification-status-notice--unavailable {
   border-color: rgba(180,35,50,.22);
   background: rgba(255,235,237,.8);
-  color: var(--status-error);
+  color: var(--color-error);
 }
 
 .notification-empty--loading,
@@ -574,47 +581,49 @@
 :root[data-theme="dark"] .notification-status-notice--unavailable {
   border-color: rgba(255,156,166,.26);
   background: rgba(109,32,43,.32);
-  color: var(--status-error);
+  color: var(--color-error);
 }
 
 :root:not([data-theme="dark"]) .topbar-action-button.notification-button.notice-state-partial:not(.selected) {
   border-color: rgba(180,83,38,.3);
   background: linear-gradient(145deg,rgba(255,241,224,.96),rgba(250,224,199,.88));
-  color: var(--status-warning);
+  color: var(--color-warning);
 }
 
 :root:not([data-theme="dark"]) .topbar-action-button.notification-button.notice-state-unavailable:not(.selected) {
   border-color: rgba(180,35,50,.28);
   background: linear-gradient(145deg,rgba(255,235,237,.96),rgba(250,215,220,.9));
-  color: var(--status-error);
+  color: var(--color-error);
 }
 
 :root[data-theme="dark"] .topbar-action-button.notification-button.notice-state-partial:not(.selected) {
   border-color: rgba(240,193,126,.3);
   background: linear-gradient(145deg,rgba(109,66,27,.42),rgba(73,48,31,.4));
-  color: var(--status-warning);
+  color: var(--color-warning);
 }
 
 :root[data-theme="dark"] .topbar-action-button.notification-button.notice-state-unavailable:not(.selected) {
   border-color: rgba(255,156,166,.3);
   background: linear-gradient(145deg,rgba(109,32,43,.42),rgba(75,28,38,.4));
-  color: var(--status-error);
+  color: var(--color-error);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root:not([data-theme="dark"]) .app-shell :is(
-    .topbar-dock, .mobile-nav, .notification-popover, .app-library-modal,
+    .topbar, .topbar-dock, .mobile-nav, .notification-popover, .app-library-modal,
     .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card,
-    .metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message
+    .app-library-page-card, .metric-card, .module-card, .panel-card,
+    .user-context-chip, .date-chip, .toast-message
   ),
   :root:not([data-theme="dark"]) :is(.auth-form-card, .auth-loading-card) {
-    background-color: rgba(255,255,255,.97);
+    background-color: rgba(255,255,255,.96);
   }
 
   :root[data-theme="dark"] .app-shell :is(
-    .topbar-dock, .mobile-nav, .notification-popover, .app-library-modal,
+    .topbar, .topbar-dock, .mobile-nav, .notification-popover, .app-library-modal,
     .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card,
-    .metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message
+    .app-library-page-card, .metric-card, .module-card, .panel-card,
+    .user-context-chip, .date-chip, .toast-message
   ),
   :root[data-theme="dark"] :is(.auth-form-card, .auth-loading-card) {
     background-color: #262128;

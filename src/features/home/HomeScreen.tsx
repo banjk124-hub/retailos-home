@@ -1,9 +1,9 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
-  Activity, ArrowLeft, ArrowRight, ArrowUpRight, Bell, Boxes, ChartNoAxesCombined, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  ClipboardList, Command, CreditCard, Grid2X2, House, LifeBuoy, LogOut, Moon, Monitor, PackageSearch, ScanBarcode, Sun,
-  Search, ShieldCheck, SlidersHorizontal, Sparkles, Truck, UserRound, Warehouse, X,
+  Activity, ArrowRight, ArrowUpRight, Bell, Boxes, ChartNoAxesCombined, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
+  ClipboardList, Command, CreditCard, Grid2X2, House, LogOut, Moon, Monitor, PackageSearch, ScanBarcode, Sun,
+  Search, ShieldCheck, SlidersHorizontal, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
@@ -14,6 +14,7 @@ import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { getCameraErrorMessage } from '../scanner/services/cameraErrors';
+import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
@@ -118,10 +119,6 @@ export default function HomeScreen({
   const libraryCloseTimer = useRef<number | null>(null);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const libraryTrackRef = useRef<HTMLDivElement>(null);
-  const libraryDragRef = useRef<{ pointerId: number; startX: number; startScrollLeft: number; moved: boolean; holdTimer: number | null } | null>(null);
-  const suppressLibraryClickRef = useRef(false);
-  const [activeLibraryPage, setActiveLibraryPage] = useState(0);
   const [toast, setToast] = useState('');
   const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
     ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
@@ -141,9 +138,6 @@ export default function HomeScreen({
     barcodeRequestIdRef.current += 1;
     barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
     barcodeStreamRef.current = null;
-    const holdTimer = libraryDragRef.current?.holdTimer;
-    if (holdTimer !== null && holdTimer !== undefined) window.clearTimeout(holdTimer);
-    libraryDragRef.current = null;
   }, []);
   useEffect(() => {
     if (!isBarcodeScannerOpen) return;
@@ -213,10 +207,6 @@ export default function HomeScreen({
   const visibleLibraries = useMemo(() => moduleLibraries
     .map((library) => ({ ...library, modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)) }))
     .filter((library) => library.modules.length > 0), [filteredModules]);
-  useEffect(() => {
-    setActiveLibraryPage(0);
-    libraryTrackRef.current?.scrollTo({ left: 0 });
-  }, [search]);
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
     const mondayOffset = (today.getDay() + 6) % 7;
@@ -300,64 +290,6 @@ export default function HomeScreen({
       setSelectedLibrary(null);
       setIsLibraryClosing(false);
     }, 220);
-  };
-  const goToLibraryPage = (index: number) => {
-    const track = libraryTrackRef.current;
-    const page = track?.querySelectorAll<HTMLElement>('[data-library-page]')[index];
-    if (!track || !page) return;
-    track.scrollTo({
-      left: track.scrollLeft + page.getBoundingClientRect().left - track.getBoundingClientRect().left,
-      behavior: 'smooth',
-    });
-    setActiveLibraryPage(index);
-  };
-  const updateActiveLibraryPage = () => {
-    const track = libraryTrackRef.current;
-    if (!track) return;
-    const trackLeft = track.getBoundingClientRect().left;
-    const pages = Array.from(track.querySelectorAll<HTMLElement>('[data-library-page]'));
-    const closestPage = pages.reduce((closest, page, index) => {
-      const distance = Math.abs(page.getBoundingClientRect().left - trackLeft);
-      return distance < closest.distance ? { index, distance } : closest;
-    }, { index: 0, distance: Number.POSITIVE_INFINITY });
-    setActiveLibraryPage((current) => current === closestPage.index ? current : closestPage.index);
-  };
-  const startLibraryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0) return;
-    const track = event.currentTarget;
-    const drag = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startScrollLeft: track.scrollLeft,
-      moved: false,
-      holdTimer: window.setTimeout(() => track.classList.add('is-pointer-held'), 260),
-    };
-    libraryDragRef.current = drag;
-    track.setPointerCapture(event.pointerId);
-  };
-  const moveLibraryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const drag = libraryDragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    const distance = event.clientX - drag.startX;
-    if (!drag.moved && Math.abs(distance) < 6) return;
-    drag.moved = true;
-    if (drag.holdTimer !== null) window.clearTimeout(drag.holdTimer);
-    event.currentTarget.classList.add('is-pointer-dragging');
-    event.currentTarget.scrollLeft = drag.startScrollLeft - distance;
-    event.preventDefault();
-  };
-  const finishLibraryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const drag = libraryDragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    if (drag.holdTimer !== null) window.clearTimeout(drag.holdTimer);
-    const track = event.currentTarget;
-    track.classList.remove('is-pointer-held', 'is-pointer-dragging');
-    libraryDragRef.current = null;
-    if (drag.moved) {
-      suppressLibraryClickRef.current = true;
-      window.setTimeout(() => { suppressLibraryClickRef.current = false; }, 0);
-    }
-    if (track.hasPointerCapture(event.pointerId)) track.releasePointerCapture(event.pointerId);
   };
   const toggleNotifications = () => {
     if (notificationsCloseTimer.current !== null) {
@@ -602,22 +534,15 @@ export default function HomeScreen({
   }
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
-    <aside className="sidebar">
-      <Brand />
-      <div className="workspace-switcher"><div className="workspace-avatar">RO</div><div className="workspace-copy"><strong>RetailOS</strong><span>Không gian làm việc</span></div><ChevronRight size={16} className="muted-icon" /></div>
-      <div className="nav-label">KHÔNG GIAN LÀM VIỆC</div>
-      <nav className="side-nav" aria-label="Điều hướng chính">{navItems.map((item) => { const Icon = item.icon; return <button key={item.id} className={`side-nav-item ${activeNav === item.id ? 'active' : ''}`} onClick={() => handleNav(item.id)}><Icon size={18} /><span>{item.label}</span>{item.id === 'activity' && <span className="nav-dot" />}</button>; })}</nav>
-      <div className="sidebar-bottom"><div className="help-card"><div className="help-icon"><LifeBuoy size={18} /></div><div><strong>Cần hỗ trợ?</strong><span>Trung tâm trợ giúp</span></div><ArrowRight size={15} /></div><div className="profile-row"><div className={`profile-avatar dept-profile-avatar dept-icon-${department.id}`}><DepartmentIcon size={17} /></div><div className="profile-copy"><strong>{employee.name}</strong><span>{employee.department}</span></div><button className="icon-button small" aria-label="Đăng xuất" onClick={onLogout}><LogOut size={17} /></button></div></div>
-    </aside>
-
-    <main className="main-area">
-      <header className={`topbar ${isChromeIdle ? 'chrome-hidden' : ''}`} id="home">
+    <main className="home-main">
+      <header className={`topbar home-topbar ${isChromeIdle ? 'chrome-hidden' : ''}`} id="home">
         <div className="topbar-dock">
-          <div className="topbar-identity">
-            <span className="topbar-brand-mark"><Command size={17} /></span>
+          <div className="home-topbar-identity">
+            <Brand />
+            <span className="home-topbar-divider" aria-hidden="true" />
             <div className="topbar-identity-copy">
-              <strong>Xin chào, {employee.name.split(/\s+/).slice(-1)[0]}</strong>
-              <span><DepartmentIcon size={12} />{department.label}</span>
+              <strong>{employee.name}</strong>
+              <span><DepartmentIcon size={13} />{department.label}</span>
             </div>
           </div>
           <div className="topbar-actions">
@@ -667,20 +592,20 @@ export default function HomeScreen({
 
       {isOffline && <div className="offline-banner"><Activity size={16} aria-hidden="true" /> Ngoại tuyến</div>}
 
-      <div className="content-wrap">
+      <div className="content-wrap home-content">
         <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} aria-label="Không gian RetailOS">
           <img key={supermarketSceneUrl} className="spotlight-supermarket-scene" src={supermarketSceneUrl} alt="" aria-hidden="true" />
           <div className="spotlight-glow" />
           <div className="spotlight-main-content">
             <div className="spotlight-copy">
-              <div className="spotlight-kicker">RETAILOS</div>
-              <h2>Vận hành<br />thật rõ.</h2>
-              <p>Công cụ bán lẻ, một nơi.</p>
-              <button className="spotlight-button spotlight-tools-button" aria-label="Mở thư viện chức năng" title="Thư viện chức năng" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
-                <Grid2X2 size={18} />
+              <div className="spotlight-kicker"><span className="spotlight-kicker-mark"><Command size={13} /></span> RETAIL OPERATIONS</div>
+              <h2>Vận hành<br /><span>thật rõ.</span></h2>
+              <p>Công cụ bán lẻ, một không gian làm việc.</p>
+              <button className="spotlight-button spotlight-tools-button" type="button" aria-label="Mở thư viện chức năng" title="Thư viện chức năng" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+                <Grid2X2 size={17} /><span>Khám phá chức năng</span><ArrowRight size={15} />
               </button>
             </div>
-            <div className="spotlight-notifications" aria-label="Cảnh báo từ snapshot">
+            <div className="spotlight-notifications hero-notice-panel" aria-label="Cảnh báo từ snapshot">
               <button
                 type="button"
                 className="spotlight-notifications-heading spotlight-notifications-toggle"
@@ -735,7 +660,7 @@ export default function HomeScreen({
               </div>
             </div>
           </div>
-          <div className="spotlight-art">
+          <div className="spotlight-art hero-calendar-panel">
             <div className="spotlight-orbit orbit-one" />
             <div className="spotlight-orbit orbit-two" />
             <button ref={calendarButtonRef} type="button" className="spotlight-glass-tile spotlight-tile-main" aria-label="Mở lịch chi tiết" onClick={openCalendar}>
@@ -749,82 +674,19 @@ export default function HomeScreen({
               <span className="calendar-open-hint"><span>Mở lịch</span><ArrowUpRight size={13} /></span>
             </button>
             <div className="spotlight-glass-tile spotlight-tile-float"><span className={`spotlight-dept-icon dept-icon-${department.id}`}><DepartmentIcon size={15} /></span><span>{department.label}</span></div>
-            <span className="spotlight-glass-chip"><Sparkles size={13} /> WORKSPACE</span>
+            <span className="spotlight-glass-chip"><Sparkles size={13} /> {department.label}</span>
           </div>
         </section>
 
         <section className="section-block app-library-section" id="modules">
           <div className="section-heading app-library-heading">
-            <div><span className="library-eyebrow">KHÔNG GIAN CHỨC NĂNG</span><h2>Thư viện</h2><p>{filteredModules.length} công cụ · Vuốt ngang để khám phá</p></div>
-            <label className="search-field" aria-label="Tìm công cụ"><Search size={16} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm..." aria-label="Tìm công cụ" />{search && <button type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><X size={14} /></button>}</label>
+            <div className="module-heading-copy"><span className="library-eyebrow">KHÔNG GIAN CHỨC NĂNG</span><h2>Thư viện nghiệp vụ</h2><p>{filteredModules.length} chức năng trong {visibleLibraries.length} nhóm</p></div>
+            <label className="search-field home-search-field" aria-label="Tìm công cụ"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm chức năng..." aria-label="Tìm công cụ" />{search && <button type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><X size={15} /></button>}</label>
           </div>
-          {visibleLibraries.length > 0 && <div className="app-library-pages">
-            <div className="app-library-page-controls" aria-label="Điều hướng thư viện">
-              <span className="app-library-page-count"><strong>{String(activeLibraryPage + 1).padStart(2, '0')}</strong><span>/</span>{String(visibleLibraries.length).padStart(2, '0')}</span>
-              <div className="app-library-page-dots" role="group" aria-label="Chọn trang thư viện">
-                {visibleLibraries.map((library, index) => <button
-                  key={library.id}
-                  type="button"
-                  aria-label={`Trang ${index + 1}: ${library.title}`}
-                  aria-current={activeLibraryPage === index ? 'page' : undefined}
-                  className={activeLibraryPage === index ? 'active' : ''}
-                  onClick={() => goToLibraryPage(index)}
-                />)}
-              </div>
-              <div className="app-library-page-arrows">
-                <button type="button" aria-label="Thư viện trước" disabled={activeLibraryPage === 0} onClick={() => goToLibraryPage(activeLibraryPage - 1)}><ChevronLeft size={17} /></button>
-                <button type="button" aria-label="Thư viện tiếp theo" disabled={activeLibraryPage >= visibleLibraries.length - 1} onClick={() => goToLibraryPage(activeLibraryPage + 1)}><ChevronRight size={17} /></button>
-              </div>
-            </div>
-            <div
-              ref={libraryTrackRef}
-              className="app-library-track"
-              role="region"
-              aria-label="Thư viện chức năng, vuốt ngang để xem thêm"
-              tabIndex={0}
-              onScroll={updateActiveLibraryPage}
-              onPointerDown={startLibraryDrag}
-              onPointerMove={moveLibraryDrag}
-              onPointerUp={finishLibraryDrag}
-              onPointerCancel={finishLibraryDrag}
-              onLostPointerCapture={finishLibraryDrag}
-              onClickCapture={(event) => {
-                if (!suppressLibraryClickRef.current) return;
-                suppressLibraryClickRef.current = false;
-                event.preventDefault();
-                event.stopPropagation();
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'ArrowLeft') {
-                  event.preventDefault();
-                  goToLibraryPage(Math.max(0, activeLibraryPage - 1));
-                } else if (event.key === 'ArrowRight') {
-                  event.preventDefault();
-                  goToLibraryPage(Math.min(visibleLibraries.length - 1, activeLibraryPage + 1));
-                }
-              }}
-            >
-            {visibleLibraries.map((library, index) => {
-              const LibraryIcon = library.icon;
-              return <button
-                key={library.id}
-                type="button"
-                data-library-page
-                className={`app-library-card app-library-page-card ${activeLibraryPage === index ? 'is-active' : ''} library-${library.tone}`}
-                style={{ '--library-index': index } as React.CSSProperties}
-                aria-label={`Mở thư viện ${library.title}, ${library.modules.length} chức năng`}
-                onClick={(event) => openLibrary(library, event.currentTarget)}
-              >
-                <span className="app-library-card-top"><span className="app-library-icon"><LibraryIcon size={22} /></span><span className="app-library-count"><span>PAGE {String(index + 1).padStart(2, '0')}</span>{library.modules.length} chức năng</span></span>
-                <span className="app-library-card-title">{library.title}</span>
-                <span className="app-library-description">{library.description}</span>
-                <span className="app-library-page-modules">{library.modules.map((module) => { const Icon = module.icon; return <span key={module.id}><Icon size={14} />{module.title}</span>; })}</span>
-                <span className="app-library-card-footer"><span>Mở thư viện</span><ArrowUpRight size={16} /></span>
-              </button>;
-            })}
-            </div>
-          </div>
-          }
+          {visibleLibraries.length > 0 && <ModuleLibraryEngine
+            groups={visibleLibraries}
+            onOpen={(library, trigger) => openLibrary(library, trigger)}
+          />}
           {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
         </section>
 
@@ -964,3 +826,4 @@ export default function HomeScreen({
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
+

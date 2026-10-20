@@ -61,16 +61,13 @@
   background: #5d1821;
 }
 .app-shell .topbar-dock {
-  border-color: rgba(255,255,255,.66);
+  border-color: var(--glass-border-elevated);
   background:
-    radial-gradient(ellipse at 5% 0%, rgba(255,255,255,.58), transparent 46%),
-    linear-gradient(115deg, rgba(255,255,255,.42), rgba(255,248,249,.24) 56%, rgba(255,255,255,.35));
-  box-shadow:
-    0 12px 34px rgba(105,34,42,.08),
-    inset 0 1px 0 rgba(255,255,255,.78),
-    inset 0 -1px 0 rgba(255,255,255,.24);
-  backdrop-filter: blur(30px) saturate(185%);
-  -webkit-backdrop-filter: blur(30px) saturate(185%);
+    radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.48), transparent 48%),
+    var(--glass-surface-elevated);
+  box-shadow: var(--shadow-elevated), var(--glass-highlight);
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
 }
 .app-shell .home-spotlight::before {
   position: absolute;
@@ -182,15 +179,15 @@
   transform: translateY(5px) scale(.965) rotateY(-1deg);
   transform-origin: center bottom;
   opacity: .82;
-  border-color: rgba(255, 255, 255, .78);
+  border-color: var(--glass-border-card);
   background:
     radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--library-tone-bg) 86%, transparent), transparent 52%),
-    linear-gradient(145deg, rgba(255,255,255,.98), rgba(250,248,250,.94));
+    var(--glass-surface-card);
   box-shadow:
     0 3px 5px rgba(42, 27, 35, .035),
     0 15px 28px rgba(58, 29, 39, .09),
     0 28px 48px rgba(73, 31, 42, .055),
-    inset 0 1px 0 rgba(255,255,255,.98);
+    var(--glass-highlight);
   transition:
     transform 360ms cubic-bezier(.2,.8,.2,1),
     opacity 280ms ease,
@@ -340,22 +337,23 @@
 }
 
 .app-shell :is(button, a, input, select):focus-visible {
-  outline: 2px solid rgba(189, 38, 53, .62);
-  outline-offset: 3px;
+  outline: var(--focus-ring-width) solid var(--brand-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-shadow);
 }
 
 .mobile-nav {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   isolation: isolate;
   overflow: visible;
-  background: linear-gradient(135deg, rgba(255,255,255,.43), rgba(255,246,247,.31));
-  border-color: rgba(255,255,255,.62);
-  box-shadow:
-    0 14px 36px rgba(91, 35, 44, .12),
-    inset 0 1px 0 rgba(255,255,255,.75),
-    inset 0 -1px 0 rgba(255,255,255,.22);
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,246,247,.18)),
+    var(--glass-surface-elevated);
+  border-color: var(--glass-border-elevated);
+  box-shadow: var(--shadow-elevated), var(--glass-highlight);
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+  border-radius: var(--radius-xl);
 }
 .mobile-nav::before {
   position: absolute;
@@ -375,8 +373,8 @@
     inset 0 -1px 0 rgba(117,14,29,.16);
   content: "";
   transform: translateX(-50%);
-  backdrop-filter: blur(26px) saturate(185%);
-  -webkit-backdrop-filter: blur(26px) saturate(185%);
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
   pointer-events: none;
 }
 .mobile-nav > button { position: relative; z-index: 1; }
@@ -679,10 +677,12 @@
   .mobile-nav {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
-    border-radius: 22px;
-    background: linear-gradient(135deg, rgba(255,255,255,.39), rgba(255,246,247,.27));
-    backdrop-filter: blur(28px) saturate(185%);
-    -webkit-backdrop-filter: blur(28px) saturate(185%);
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,246,247,.16)),
+      var(--glass-surface-elevated);
+    backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+    -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
   }
   .mobile-nav .mobile-nav-icon { width: 42px; height: 42px; }
   .mobile-nav .barcode-nav-item { min-height: 56px; margin-top: -14px; }
