@@ -312,7 +312,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           </form>
           <div className="stocktake-shortcuts">
             <button type="button" onClick={() => setScreen('history')}><History size={18} /><span>Lịch sử thao tác</span><ChevronRight size={16} /></button>
-            <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({exports.length})</span><ChevronRight size={16} /></button>
+            <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({exports.filter((item) => item.sessionId === session?.id).length})</span><ChevronRight size={16} /></button>
           </div>
           <div className="stocktake-zone-history"><div className="stocktake-section-title">Vùng trong phiên</div>
             {zones.filter((zone) => zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); await logStocktakeAction({ sessionId: zone.sessionId, zoneId: zone.id, action: 'ZONE_RESUMED', details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.` }); await refresh(); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
@@ -352,18 +352,18 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
         {screen === 'history' && <>
           <div className="stocktake-history-zones"><div className="stocktake-section-title">TẤT CẢ VÙNG VÀ PHIÊN BẢN</div>
-            {[...zones].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <article key={zone.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{zone.zoneCode} · Revision {zone.revision}</strong><p>{zone.status === 'superseded' ? 'Đã được thay thế' : zone.status === 'exported' ? 'Đã xuất · bản khóa' : 'Bản nháp'}</p><small>{localDate(zone.createdAt)}</small></div></article>)}
+            {zones.filter((zone) => zone.sessionId === session?.id).sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <article key={zone.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{zone.zoneCode} · Revision {zone.revision}</strong><p>{zone.status === 'superseded' ? 'Đã được thay thế' : zone.status === 'exported' ? 'Đã xuất · bản khóa' : 'Bản nháp'}</p><small>{localDate(zone.createdAt)}</small></div></article>)}
             {zones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
           <div className="stocktake-history-list">
-            {logs.map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{log.action}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
+            {logs.filter((log) => log.sessionId === session?.id).map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{log.action}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
             {logs.length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
           </div>
         </>}
 
         {screen === 'exports' && <div className="stocktake-history-list">
-          {exports.map((item) => <article key={item.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{item.fileName}</strong><p>{item.zoneCode} · Revision {item.revision} · {item.entryCount} dòng</p><small>{localDate(item.exportedAt)}</small></div><button type="button" onClick={() => downloadPreviousExport(item)} aria-label="Tải lại file"><Download size={16} /></button></article>)}
+          {exports.filter((item) => item.sessionId === session?.id).map((item) => <article key={item.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{item.fileName}</strong><p>{item.zoneCode} · Revision {item.revision} · {item.entryCount} dòng</p><small>{localDate(item.exportedAt)}</small></div><button type="button" onClick={() => downloadPreviousExport(item)} aria-label="Tải lại file"><Download size={16} /></button></article>)}
           {exports.length === 0 && <p className="stocktake-muted">Chưa có file xuất.</p>}
         </div>}
 
