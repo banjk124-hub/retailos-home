@@ -19,7 +19,7 @@ export type RetailModule = {
   /** Data snapshot support is separate from whether a complete workflow UI exists. */
   dataSource: 'snapshot';
   /** Current UI status; do not present planned modules as working workflows. */
-  availability: 'integrating';
+  availability: 'integrating' | 'ready';
 };
 
 export type ModuleLibraryDefinition = {
@@ -38,7 +38,7 @@ export const MODULE_REGISTRY: RetailModule[] = [
   { id: 'delivery', title: 'Điều chuyển hàng', description: 'Tuyến và giao nhận', tone: 'rose', group: 'Xử lý hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
   { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', tone: 'green', group: 'Doanh số', dataSource: 'snapshot', availability: 'integrating' },
   { id: 'product-dates', title: 'Date sản phẩm', description: 'Hạn sử dụng và lô hàng', tone: 'amber', group: 'Date sản phẩm', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'stocktake', title: 'Kiểm kê', description: 'Chênh lệch và tiến độ kiểm kê', tone: 'green', group: 'Kiểm kê', dataSource: 'snapshot', availability: 'integrating' },
+  { id: 'stocktake', title: 'Kiểm kê', description: 'Quét, rà soát và xuất file theo vùng', tone: 'green', group: 'Kiểm kê', dataSource: 'snapshot', availability: 'ready' },
 ];
 
 export const MODULE_LIBRARIES: ModuleLibraryDefinition[] = [
