@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import BarcodeScanner from '../../scanner/components/BarcodeScanner';
 import type { EmployeeSession } from '../../auth/types';
+import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
 import { createStocktakeId, logStocktakeAction, stocktakeStore } from '../services/stocktakeLocalStore';
 import { createStocktakeFile, downloadStocktakeText } from '../services/stocktakeExport';
@@ -21,6 +22,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [logs, setLogs] = useState<Awaited<ReturnType<typeof stocktakeStore.getLogs>>>([]);
   const [exports, setExports] = useState<StocktakeExport[]>([]);
   const [screen, setScreen] = useState<Screen>('home');
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [zoneInput, setZoneInput] = useState('');
   const [pendingZone, setPendingZone] = useState<{ code: string; prefix: string; number: string; previous?: StocktakeZone } | null>(null);
   const [currentZone, setCurrentZone] = useState<StocktakeZone | null>(null);
@@ -31,6 +33,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
 
   const refresh = useCallback(async () => {
     const [allZones, allLogs, allExports] = await Promise.all([
@@ -47,17 +50,17 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setBusy(true);
       setError('');
       try {
-        if (!employee.employeeCode.trim()) {
+        if (!resolvedEmployeeCode) {
           throw new Error('Phiên đăng nhập hiện tại chưa có mã nhân viên. Vui lòng đăng xuất và đăng nhập lại để tạo phiên kiểm kê.');
         }
         const sessions = await stocktakeStore.getSessions();
         let current = sessions
-          .filter((item) => item.employeeCode === employee.employeeCode && item.status === 'active')
+          .filter((item) => item.employeeCode === resolvedEmployeeCode && item.status === 'active')
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
         if (!current) {
           current = {
             id: createStocktakeId('session'),
-            employeeCode: employee.employeeCode,
+            employeeCode: resolvedEmployeeCode,
             employeeName: employee.name,
             department: employee.department,
             createdAt: new Date().toISOString(),
@@ -77,7 +80,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     };
     void initialize();
     return () => { active = false; };
-  }, [employee.employeeCode, employee.name, employee.department, refresh]);
+  }, [resolvedEmployeeCode, employee.name, employee.department, refresh]);
 
   const currentEntries = useMemo(
     () => entries.filter((entry) => entry.zoneId === currentZone?.id).sort((a, b) => a.sequence - b.sequence),
@@ -147,6 +150,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const acceptBarcode = (value: string) => {
+    setScannerOpen(false);
     setBarcode(value.trim());
     setQuantity('1');
     setManualEntry(false);
@@ -255,6 +259,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const clearAll = async () => {
     try {
       await stocktakeStore.clearAll();
+      setScannerOpen(false);
       setSession(null);
       setCurrentZone(null);
       setEntries([]);
@@ -317,17 +322,17 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'scan' && currentZone && <>
           <div className="stocktake-zone-banner"><div><small>VÙNG ĐANG KIỂM KÊ</small><strong>{currentZone.zoneCode}</strong></div><span>REV {currentZone.revision}</span></div>
           <div className="stocktake-count"><strong>{currentEntries.length}</strong><span>dòng đã ghi nhận</span></div>
-          <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => setBarcode('')}><Camera size={18} /> Mở máy quét</button>
+          <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => setScannerOpen(true)}><Camera size={18} /> Mở máy quét</button>
           <div className="stocktake-entry-form">
             <label htmlFor="stocktake-barcode">Barcode vừa quét / nhập thủ công</label>
             <input id="stocktake-barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Quét mã hoặc nhập barcode" />
             <label htmlFor="stocktake-quantity">Số lượng</label>
             <input id="stocktake-quantity" type="number" min="0.001" step="any" inputMode="decimal" value={quantity} onChange={(event) => setQuantity(event.target.value)} />
-            <button className="stocktake-primary" type="button" onClick={() => { setManualEntry(!barcode ? true : false); void saveEntry(); }}><Check size={17} /> {editingEntry ? 'Lưu chỉnh sửa' : 'Lưu số lượng'}</button>
+            <button className="stocktake-primary" type="button" onClick={() => { void saveEntry(); }}><Check size={17} /> {editingEntry ? 'Lưu chỉnh sửa' : 'Lưu số lượng'}</button>
           </div>
           <div className="stocktake-scan-actions"><button type="button" onClick={() => void openReview()}>Kiểm tra và xuất vùng <ChevronRight size={16} /></button><button type="button" onClick={() => { setScreen('home'); setCurrentZone(null); }}>Tạm dừng vùng</button></div>
           {currentEntries.slice(-5).reverse().map((entry) => <div className="stocktake-recent-entry" key={entry.id}><span>{entry.barcode}</span><strong>× {entry.quantity}</strong><button type="button" onClick={() => editEntry(entry)} aria-label="Sửa dòng"><RefreshCw size={14} /></button></div>)}
-          {false && <BarcodeScanner initialStream={null} initialError="" onDetected={acceptBarcode} onClose={() => setScreen('scan')} />}
+          <button className="stocktake-secondary" type="button" onClick={() => { setManualEntry(true); setEditingEntry(null); setBarcode(''); setQuantity('1'); }}>Nhập barcode thủ công</button>
         </>}
 
         {screen === 'review' && currentZone && <>
@@ -356,7 +361,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         <footer className="stocktake-footer"><span>Dữ liệu được lưu cục bộ trên thiết bị</span><span>RetailOS</span></footer>
       </section>
 
-      {screen === 'scan' && <div className="stocktake-scanner-layer"><BarcodeScanner initialStream={null} initialError="" onDetected={acceptBarcode} onClose={() => setScreen('scan')} /></div>}
+      {scannerOpen && screen === 'scan' && <div className="stocktake-scanner-layer"><BarcodeScanner initialStream={null} initialError="" onDetected={acceptBarcode} onClose={() => setScannerOpen(false)} /></div>}
 
       {pendingZone?.previous && <div className="stocktake-confirm-backdrop"><section className="stocktake-confirm" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-replace-title"><h3 id="stocktake-replace-title">Vùng {pendingZone.code} đã tồn tại</h3><p>Tiếp tục sẽ thay thế dữ liệu hiện hành của vùng này bằng một revision mới. Dữ liệu cũ vẫn được giữ trong lịch sử, không thể dùng làm dữ liệu hiện hành.</p><div><button type="button" className="stocktake-secondary" onClick={() => setPendingZone(null)}>Hủy</button><button type="button" className="stocktake-danger-button" onClick={() => void beginZone(true)}>Xác nhận làm lại vùng</button></div></section></div>}
 
