@@ -9,7 +9,7 @@
 .stocktake-employee>div{display:grid;gap:4px}.stocktake-employee small,.stocktake-muted{font-size:12px;color:#968991}
 .stocktake-zone-form,.stocktake-entry-form{display:grid;gap:10px;margin-top:18px}
 .stocktake-zone-form label,.stocktake-entry-form label{font-size:12px;font-weight:800;color:#574951}
-.stocktake-zone-form input,.stocktake-entry-form input{width:100%;min-height:48px;box-sizing:border-box;padding:0 14px;border:1px solid #e8dfe3;border-radius:13px;background:#fff;color:#30272c;font:600 16px inherit;outline:none}
+.stocktake-zone-form input,.stocktake-entry-form input{width:100%;min-height:48px;box-sizing:border-box;padding:0 14px;border:1px solid #e8dfe3;border-radius:13px;background:#fff;color:#30272c;font:600 16px system-ui,sans-serif;outline:none}
 .stocktake-zone-form input:focus,.stocktake-entry-form input:focus{border-color:#c84b5d;box-shadow:0 0 0 3px rgba(199,46,66,.1)}
 .stocktake-zone-form small{font-size:11px;color:#93868c}
 .stocktake-primary,.stocktake-secondary,.stocktake-danger-button{min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 16px;border:0;border-radius:13px;font-size:13px;font-weight:800;cursor:pointer}
@@ -48,3 +48,5 @@
 .stocktake-scanner-layer .barcode-scanner-card{max-height:94dvh;overflow:auto}
 @media(max-width:600px){.stocktake-backdrop{display:block;padding:0;background:#f8f4f5;backdrop-filter:none}.stocktake-panel{width:100%;height:100dvh;max-height:none;box-sizing:border-box;padding:calc(14px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none}.stocktake-shortcuts{grid-template-columns:1fr 1fr}.stocktake-header{position:sticky;top:0;z-index:2;background:#fff;padding:4px 0 13px}.stocktake-scanner-layer{padding:0}.stocktake-scanner-layer .barcode-scanner{width:100%;height:100dvh;max-height:100dvh}.stocktake-scanner-layer .barcode-scanner-card{height:100%;max-height:100%;border-radius:0}}
 @media(prefers-reduced-motion:reduce){.stocktake-backdrop *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.stocktake-history-zones article{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid #f0e9ec}.stocktake-history-zones article>div{flex:1;min-width:0}.stocktake-history-zones strong{font-size:12px}.stocktake-history-zones p{margin:4px 0;font-size:11px;color:#786a70}.stocktake-history-zones small{font-size:10px;color:#a09399}.stocktake-history-log-heading{margin-top:22px;padding-top:16px;border-top:1px solid #eee7ea}
