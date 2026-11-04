@@ -222,8 +222,10 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const openReview = async () => {
-    if (!currentZone) return;
+    if (!currentZone || !session) return;
     await loadZoneEntries(currentZone);
+    await logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_REVIEW_OPENED', details: `Mở kiểm tra dữ liệu vùng ${currentZone.zoneCode}, revision ${currentZone.revision}.` });
+    await refresh();
     setScreen('review');
   };
 
@@ -313,7 +315,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
             <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({exports.length})</span><ChevronRight size={16} /></button>
           </div>
           <div className="stocktake-zone-history"><div className="stocktake-section-title">Vùng trong phiên</div>
-            {zones.filter((zone) => zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
+            {zones.filter((zone) => zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); await logStocktakeAction({ sessionId: zone.sessionId, zoneId: zone.id, action: 'ZONE_RESUMED', details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.` }); await refresh(); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
             {zones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <button className="stocktake-danger-link" type="button" onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa toàn bộ dữ liệu kiểm kê trên thiết bị</button>
@@ -322,7 +324,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'scan' && currentZone && <>
           <div className="stocktake-zone-banner"><div><small>VÙNG ĐANG KIỂM KÊ</small><strong>{currentZone.zoneCode}</strong></div><span>REV {currentZone.revision}</span></div>
           <div className="stocktake-count"><strong>{currentEntries.length}</strong><span>dòng đã ghi nhận</span></div>
-          <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => setScannerOpen(true)}><Camera size={18} /> Mở máy quét</button>
+          <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => { setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>
           <div className="stocktake-entry-form">
             <label htmlFor="stocktake-barcode">Barcode vừa quét / nhập thủ công</label>
             <input id="stocktake-barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Quét mã hoặc nhập barcode" />
@@ -330,7 +332,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
             <input id="stocktake-quantity" type="number" min="0.001" step="any" inputMode="decimal" value={quantity} onChange={(event) => setQuantity(event.target.value)} />
             <button className="stocktake-primary" type="button" onClick={() => { void saveEntry(); }}><Check size={17} /> {editingEntry ? 'Lưu chỉnh sửa' : 'Lưu số lượng'}</button>
           </div>
-          <div className="stocktake-scan-actions"><button type="button" onClick={() => void openReview()}>Kiểm tra và xuất vùng <ChevronRight size={16} /></button><button type="button" onClick={() => { setScreen('home'); setCurrentZone(null); }}>Tạm dừng vùng</button></div>
+          <div className="stocktake-scan-actions"><button type="button" onClick={() => void openReview()}>Kiểm tra và xuất vùng <ChevronRight size={16} /></button><button type="button" onClick={() => { if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_PAUSED', details: `Tạm dừng vùng ${currentZone.zoneCode}.` }); setScreen('home'); setCurrentZone(null); }}>Tạm dừng vùng</button></div>
           {currentEntries.slice(-5).reverse().map((entry) => <div className="stocktake-recent-entry" key={entry.id}><span>{entry.barcode}</span><strong>× {entry.quantity}</strong><button type="button" onClick={() => editEntry(entry)} aria-label="Sửa dòng"><RefreshCw size={14} /></button></div>)}
           <button className="stocktake-secondary" type="button" onClick={() => { setManualEntry(true); setEditingEntry(null); setBarcode(''); setQuantity('1'); }}>Nhập barcode thủ công</button>
         </>}
@@ -338,20 +340,27 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'review' && currentZone && <>
           <div className="stocktake-zone-banner"><div><small>DỮ LIỆU DỰ KIẾN XUẤT</small><strong>{currentZone.zoneCode}</strong></div><span>{currentEntries.length} ARTICLE</span></div>
           <div className="stocktake-review-note">Kiểm tra và chỉnh sửa từng dòng trước khi xuất. Barcode trùng nhau được giữ nguyên thành các dòng riêng.</div>
-          <button className="stocktake-secondary" type="button" onClick={() => { setEditingEntry(null); setBarcode(''); setQuantity('1'); setManualEntry(true); setScreen('scan'); }}><Plus size={16} /> Thêm dòng thủ công</button>
+          {currentZone.status !== 'exported' && <button className="stocktake-secondary" type="button" onClick={() => { setEditingEntry(null); setBarcode(''); setQuantity('1'); setManualEntry(true); setScreen('scan'); }}><Plus size={16} /> Thêm dòng thủ công</button>}
           <div className="stocktake-review-list">
-            {currentEntries.map((entry) => <div className="stocktake-review-row" key={entry.id}><div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div><b>{entry.quantity}</b><button type="button" onClick={() => { editEntry(entry); setScreen('scan'); }} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button><button type="button" onClick={() => void removeEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button></div>)}
+            {currentEntries.map((entry) => <div className="stocktake-review-row" key={entry.id}><div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div><b>{entry.quantity}</b>{currentZone.status !== 'exported' && <><button type="button" onClick={() => { editEntry(entry); setScreen('scan'); }} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button><button type="button" onClick={() => void removeEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button></>}</div>)}
             {currentEntries.length === 0 && <p className="stocktake-muted">Chưa có dòng ARTICLE.</p>}
           </div>
           <div className="stocktake-export-preview"><small>XEM TRƯỚC ĐỊNH DẠNG FILE</small><code>NHAN VIEN,{session?.employeeCode},YYYY/MM/DD,HH:mm:ss<br />ADRESSE,{currentZone.prefix},{currentZone.number}<br />{currentEntries.slice(0,3).map((entry) => `ARTICLE,${entry.barcode},${entry.quantity}`).join('\n')}{currentEntries.length > 3 ? '\n…' : ''}</code></div>
-          <button className="stocktake-primary" type="button" disabled={currentEntries.length === 0} onClick={() => { if (window.confirm(`Xác nhận xuất ${currentZone.zoneCode} với ${currentEntries.length} dòng? File sẽ được tải về thiết bị.`)) void exportCurrentZone(); }}><Download size={18} /> Xác nhận xuất file</button>
+          {currentZone.status === 'exported' ? <p className="stocktake-review-note">Revision này đã xuất file và được khóa để bảo toàn dữ liệu. Muốn làm lại, nhập lại mã vùng tại màn hình chính để tạo revision mới.</p> : <button className="stocktake-primary" type="button" disabled={currentEntries.length === 0} onClick={() => { if (window.confirm(`Xác nhận xuất ${currentZone.zoneCode} với ${currentEntries.length} dòng? File sẽ được tải về thiết bị.`)) void exportCurrentZone(); }}><Download size={18} /> Xác nhận xuất file</button>}
           <button className="stocktake-secondary" type="button" onClick={() => setScreen('scan')}>Quay lại quét / chỉnh sửa</button>
         </>}
 
-        {screen === 'history' && <div className="stocktake-history-list">
-          {logs.map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{log.action}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
-          {logs.length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
-        </div>}
+        {screen === 'history' && <>
+          <div className="stocktake-history-zones"><div className="stocktake-section-title">TẤT CẢ VÙNG VÀ PHIÊN BẢN</div>
+            {[...zones].sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <article key={zone.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{zone.zoneCode} · Revision {zone.revision}</strong><p>{zone.status === 'superseded' ? 'Đã được thay thế' : zone.status === 'exported' ? 'Đã xuất · bản khóa' : 'Bản nháp'}</p><small>{localDate(zone.createdAt)}</small></div></article>)}
+            {zones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
+          </div>
+          <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
+          <div className="stocktake-history-list">
+            {logs.map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{log.action}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
+            {logs.length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
+          </div>
+        </>}
 
         {screen === 'exports' && <div className="stocktake-history-list">
           {exports.map((item) => <article key={item.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{item.fileName}</strong><p>{item.zoneCode} · Revision {item.revision} · {item.entryCount} dòng</p><small>{localDate(item.exportedAt)}</small></div><button type="button" onClick={() => downloadPreviousExport(item)} aria-label="Tải lại file"><Download size={16} /></button></article>)}
