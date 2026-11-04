@@ -353,7 +353,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'history' && <>
           <div className="stocktake-history-zones"><div className="stocktake-section-title">TẤT CẢ VÙNG VÀ PHIÊN BẢN</div>
             {zones.filter((zone) => zone.sessionId === session?.id).sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <article key={zone.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{zone.zoneCode} · Revision {zone.revision}</strong><p>{zone.status === 'superseded' ? 'Đã được thay thế' : zone.status === 'exported' ? 'Đã xuất · bản khóa' : 'Bản nháp'}</p><small>{localDate(zone.createdAt)}</small></div></article>)}
-            {zones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
+            {zones.filter((zone) => zone.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
           <div className="stocktake-history-list">
