@@ -140,7 +140,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     const previous = zones
       .filter((zone) => zone.sessionId === session.id && zone.zoneCode === normalized && zone.status !== 'superseded')
       .sort((a, b) => b.revision - a.revision)[0];
-    const pending = { code: normalized, prefix: match[1], number: match[2], previous };
+    const pending = { code: normalized, prefix: match[1], number: match[2], ...(previous ? { previous } : {}) };
     if (previous) {
       setPendingZone(pending);
       return;
