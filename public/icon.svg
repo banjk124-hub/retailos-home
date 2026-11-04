@@ -1,9 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ed4654"/><stop offset="1" stop-color="#a91829"/></linearGradient></defs>
-  <rect width="512" height="512" rx="142" fill="url(#g)"/>
-  <g fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M256 105v302M105 256h302M149 149l214 214M363 149 149 363" opacity=".95"/>
-    <circle cx="256" cy="256" r="83" fill="#fff0f1" stroke="#fff"/>
-    <circle cx="256" cy="256" r="31" fill="#d92736" stroke="#d92736"/>
+  <defs>
+    <linearGradient id="retailos-brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4515d"/>
+      <stop offset="1" stop-color="#b9142a"/>
+    </linearGradient>
+    <radialGradient id="retailos-light" cx="25%" cy="8%" r="100%">
+      <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="142" fill="url(#retailos-brand)"/>
+  <rect width="512" height="512" rx="142" fill="url(#retailos-light)"/>
+  <g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M136 389V123h139c73 0 111 42 111 100s-38 99-111 99H136m126-99 114 166"/>
+    <path d="M104 423h304" opacity=".72"/>
   </g>
+  <circle cx="397" cy="104" r="24" fill="#fff"/>
+  <circle cx="397" cy="104" r="9" fill="#e51f2d"/>
 </svg>

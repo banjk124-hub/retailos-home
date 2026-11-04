@@ -114,16 +114,6 @@
   .app-shell .module-card-description { font-size: 11px; }
   .app-shell .home-library-grid { gap: 8px; }
 }
-/* Dark mode follows existing data-theme; no new preference/state is introduced. */
-:root[data-theme="dark"] .app-shell .notification-popover,
-:root[data-theme="dark"] .app-shell .app-library-modal,
-:root[data-theme="dark"] .app-shell .calendar-modal,
-:root[data-theme="dark"] .app-shell .notice-detail-modal {
-  background: linear-gradient(145deg,rgba(39,31,39,.97),rgba(28,23,30,.96));
-  border-color: rgba(255,255,255,.14);
-  color: #f7eff2;
-}
 @media (prefers-reduced-motion: reduce) {
-  .app-shell .module-card, .app-shell .app-library-card, .app-shell .spotlight-button,
-  .app-shell .topbar-action-button, .app-shell .icon-button { transition: none; }
+  .app-shell .module-card, .app-shell .app-library-card, .app-shell .spotlight-button, .app-shell .topbar-action-button, .app-shell .icon-button { transition: none; }
 }

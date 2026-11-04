@@ -12,3 +12,8 @@ export function saveLastLoginName(name: string): void {
   try { localStorage.setItem(LAST_LOGIN_NAME_KEY, normalized); }
   catch { /* The login flow still works when browser storage is unavailable. */ }
 }
+
+export function clearLastLoginName(): void {
+  try { localStorage.removeItem(LAST_LOGIN_NAME_KEY); }
+  catch { /* The login flow still works when browser storage is unavailable. */ }
+}

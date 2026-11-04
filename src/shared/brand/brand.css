@@ -1,0 +1,238 @@
+:root {
+  --retailos-brand-primary: var(--brand-color-primary, #d92736);
+  --retailos-brand-primary-deep: var(--brand-color-primary-deep, #a91829);
+  --retailos-brand-ink: #252d43;
+  --retailos-brand-muted: #8c95a7;
+  --retailos-brand-white: #fff;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+  color: var(--retailos-brand-ink);
+}
+
+.brand-mark {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 14px;
+  background: linear-gradient(145deg,var(--retailos-brand-primary),var(--retailos-brand-primary-deep));
+  box-shadow: 0 7px 17px rgba(181,29,44,.25),inset 0 1px 0 rgba(255,255,255,.28);
+  color: var(--retailos-brand-white);
+}
+
+.brand-name {
+  color: var(--retailos-brand-ink);
+  font: 800 22px/1 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  letter-spacing: -1.1px;
+}
+
+.brand-name > span {
+  color: var(--retailos-brand-primary);
+}
+
+.brand-caption {
+  margin-top: 5px;
+  color: var(--retailos-brand-muted);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.65px;
+}
+
+.brand-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.retailos-brand--surface-dark {
+  --retailos-brand-ink: #fff;
+  --retailos-brand-muted: rgba(255,255,255,.66);
+}
+
+.retailos-brand--stacked {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.retailos-brand--symbol {
+  display: inline-grid;
+  width: 39px;
+  height: 39px;
+  place-items: center;
+}
+
+.retailos-brand--symbol .brand-mark {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+}
+
+.retailos-brand--splash {
+  gap: 16px;
+}
+
+.retailos-brand--splash .brand-mark {
+  width: 64px;
+  height: 64px;
+  border-radius: 21px;
+}
+
+.retailos-brand--splash .retailos-brand-glyph {
+  width: 72%;
+  height: 72%;
+}
+
+.retailos-brand--splash .brand-name {
+  font-size: 34px;
+}
+
+.retailos-brand--splash .brand-caption {
+  font-size: 9px;
+  letter-spacing: .2em;
+}
+
+.retailos-brand-motion {
+  display: inline-flex;
+  min-width: 0;
+}
+
+.retailos-brand-glyph {
+  display: block;
+  overflow: visible;
+}
+
+.brand-mark .retailos-brand-glyph {
+  width: 72%;
+  height: 72%;
+}
+
+.retailos-brand-glyph__spine,
+.retailos-brand-glyph__letter,
+.retailos-brand-glyph__shelf {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.2;
+}
+
+.retailos-brand-glyph__signal {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: retailos-brand-signal-enter var(--motion-duration-fast) var(--motion-ease-enter) both;
+}
+
+.brand-mark .retailos-brand-glyph__spine,
+.brand-mark .retailos-brand-glyph__letter,
+.brand-mark .retailos-brand-glyph__shelf {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: retailos-brand-draw var(--motion-duration-emphasized) var(--motion-ease-spatial) both;
+}
+
+.brand-mark .retailos-brand-glyph__letter { animation-delay: var(--motion-stagger-medium); }
+.brand-mark .retailos-brand-glyph__shelf { animation-delay: var(--motion-stagger-long); }
+
+.brand-mark .retailos-brand-glyph__signal {
+  opacity: 0;
+  animation: retailos-brand-signal-enter var(--motion-duration-fast) var(--motion-stagger-long) var(--motion-ease-enter) both;
+}
+
+.retailos-background__mark {
+  position: absolute;
+  right: max(-8vw, -90px);
+  bottom: max(-25vw, -210px);
+  width: min(56vw, 620px);
+  height: auto;
+  color: var(--brand-background-accent);
+  opacity: var(--brand-background-mark-opacity, .035);
+  filter: drop-shadow(0 20px 40px rgba(134, 30, 43, .08));
+  animation: retailos-brand-mark-enter var(--motion-duration-transition) var(--motion-ease-spatial) both;
+}
+
+.app-shell .spotlight-brand-scene .retailos-brand-glyph {
+  width: 67%;
+  height: 67%;
+  filter: drop-shadow(0 8px 18px rgba(20,4,9,.22));
+}
+
+.app-shell .spotlight-brand-scene .retailos-brand-glyph__spine,
+.app-shell .spotlight-brand-scene .retailos-brand-glyph__letter,
+.app-shell .spotlight-brand-scene .retailos-brand-glyph__shelf {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: retailos-brand-draw var(--motion-duration-transition) var(--motion-ease-spatial) both;
+}
+
+.app-shell .spotlight-brand-scene .retailos-brand-glyph__letter { animation-delay: var(--motion-stagger-medium); }
+.app-shell .spotlight-brand-scene .retailos-brand-glyph__shelf { animation-delay: var(--motion-stagger-long); }
+
+@media (prefers-reduced-motion: reduce) {
+  .retailos-background__mark,
+  .retailos-brand-glyph__signal,
+  .brand-mark .retailos-brand-glyph__spine,
+  .brand-mark .retailos-brand-glyph__letter,
+  .brand-mark .retailos-brand-glyph__shelf,
+  .app-shell .spotlight-brand-scene .retailos-brand-glyph__spine,
+  .app-shell .spotlight-brand-scene .retailos-brand-glyph__letter,
+  .app-shell .spotlight-brand-scene .retailos-brand-glyph__shelf {
+    animation: none !important;
+  }
+
+  .brand-mark .retailos-brand-glyph__spine,
+  .brand-mark .retailos-brand-glyph__letter,
+  .brand-mark .retailos-brand-glyph__shelf,
+  .app-shell .spotlight-brand-scene .retailos-brand-glyph__spine,
+  .app-shell .spotlight-brand-scene .retailos-brand-glyph__letter,
+  .app-shell .spotlight-brand-scene .retailos-brand-glyph__shelf {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+
+  .brand-mark .retailos-brand-glyph__signal { opacity: 1; }
+}
+
+:root[data-power-mode="conserve"] .retailos-background__mark,
+:root[data-power-mode="conserve"] .retailos-brand-glyph__signal {
+  animation: none;
+}
+
+:root[data-power-mode="conserve"] .brand-mark .retailos-brand-glyph__spine,
+:root[data-power-mode="conserve"] .brand-mark .retailos-brand-glyph__letter,
+:root[data-power-mode="conserve"] .brand-mark .retailos-brand-glyph__shelf,
+:root[data-power-mode="conserve"] .app-shell .spotlight-brand-scene .retailos-brand-glyph__spine,
+:root[data-power-mode="conserve"] .app-shell .spotlight-brand-scene .retailos-brand-glyph__letter,
+:root[data-power-mode="conserve"] .app-shell .spotlight-brand-scene .retailos-brand-glyph__shelf {
+  animation: none;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+
+:root[data-power-mode="conserve"] .brand-mark .retailos-brand-glyph__signal {
+  opacity: 1;
+}
+
+@keyframes retailos-brand-mark-enter {
+  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.98); }
+  to { opacity: var(--brand-background-mark-opacity, .035); transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes retailos-brand-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes retailos-brand-signal-enter {
+  from { opacity: 0; transform: scale(.2); }
+  to { opacity: 1; transform: scale(1); }
+}

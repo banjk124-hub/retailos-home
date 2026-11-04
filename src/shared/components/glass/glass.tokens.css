@@ -1,0 +1,143 @@
+:root {
+  --glass-white-rgb: 255, 255, 255;
+  --glass-red-rgb: 217, 39, 54;
+  --glass-ink-rgb: 48, 42, 48;
+  --glass-neutral-rgb: 118, 105, 111;
+  --glass-transition-duration: var(--motion-duration-interaction, 180ms);
+  --glass-transition-easing: var(--motion-ease-standard, cubic-bezier(.2, .75, .25, 1));
+  --glass-focus-ring: 0 0 0 3px rgba(var(--glass-red-rgb), .1);
+  --glass-focus-ring-strong: 0 0 0 3px rgba(var(--glass-red-rgb), .18);
+
+  --glass-soft-tint-rgb: var(--glass-white-rgb);
+  --glass-soft-opacity: .38;
+  --glass-soft-secondary-opacity: .28;
+  --glass-soft-fallback-opacity: .75;
+  --glass-soft-blur: 5px;
+  --glass-soft-saturation: 1.12;
+  --glass-soft-border-rgb: var(--glass-white-rgb);
+  --glass-soft-border-opacity: .56;
+  --glass-soft-highlight-opacity: .72;
+  --glass-soft-reflection-opacity: .22;
+  --glass-soft-edge-opacity: .15;
+  --glass-soft-shadow: 0 8px 26px rgba(57, 29, 35, .065);
+  --glass-soft-ambient-rgb: 255, 231, 234;
+  --glass-soft-ambient-opacity: .24;
+  --glass-soft-foreground: var(--text-primary, #302a30);
+
+  --glass-frosted-tint-rgb: var(--glass-white-rgb);
+  --glass-frosted-opacity: .61;
+  --glass-frosted-secondary-opacity: .43;
+  --glass-frosted-fallback-opacity: .91;
+  --glass-frosted-blur: 16px;
+  --glass-frosted-saturation: 1.32;
+  --glass-frosted-border-rgb: var(--glass-white-rgb);
+  --glass-frosted-border-opacity: .78;
+  --glass-frosted-highlight-opacity: .94;
+  --glass-frosted-reflection-opacity: .36;
+  --glass-frosted-edge-opacity: .22;
+  --glass-frosted-shadow: 0 24px 70px rgba(68, 23, 31, .17);
+  --glass-frosted-ambient-rgb: 255, 222, 226;
+  --glass-frosted-ambient-opacity: .32;
+  --glass-frosted-foreground: var(--text-primary, #302a30);
+
+  --glass-elevated-tint-rgb: var(--glass-white-rgb);
+  --glass-elevated-opacity: .52;
+  --glass-elevated-secondary-opacity: .36;
+  --glass-elevated-fallback-opacity: .88;
+  --glass-elevated-blur: 18px;
+  --glass-elevated-saturation: 1.38;
+  --glass-elevated-border-rgb: var(--glass-white-rgb);
+  --glass-elevated-border-opacity: .74;
+  --glass-elevated-highlight-opacity: .9;
+  --glass-elevated-reflection-opacity: .32;
+  --glass-elevated-edge-opacity: .19;
+  --glass-elevated-shadow: 0 18px 48px rgba(53, 24, 31, .15);
+  --glass-elevated-ambient-rgb: 255, 229, 232;
+  --glass-elevated-ambient-opacity: .25;
+  --glass-elevated-foreground: var(--text-primary, #302a30);
+
+  --glass-floating-tint-rgb: var(--glass-white-rgb);
+  --glass-floating-opacity: .43;
+  --glass-floating-secondary-opacity: .3;
+  --glass-floating-fallback-opacity: .84;
+  --glass-floating-blur: 18px;
+  --glass-floating-saturation: 1.34;
+  --glass-floating-border-rgb: var(--glass-white-rgb);
+  --glass-floating-border-opacity: .7;
+  --glass-floating-highlight-opacity: .88;
+  --glass-floating-reflection-opacity: .3;
+  --glass-floating-edge-opacity: .2;
+  --glass-floating-shadow: 0 16px 42px rgba(48, 23, 29, .16);
+  --glass-floating-ambient-rgb: 255, 220, 224;
+  --glass-floating-ambient-opacity: .22;
+  --glass-floating-foreground: var(--text-primary, #302a30);
+
+  --glass-control-tint-rgb: var(--glass-white-rgb);
+  --glass-control-opacity: .56;
+  --glass-control-secondary-opacity: .42;
+  --glass-control-fallback-opacity: .93;
+  --glass-control-blur: 6px;
+  --glass-control-saturation: 1.16;
+  --glass-control-border-rgb: 132, 91, 99;
+  --glass-control-border-opacity: .2;
+  --glass-control-highlight-opacity: .8;
+  --glass-control-reflection-opacity: .2;
+  --glass-control-edge-opacity: .12;
+  --glass-control-shadow: inset 0 1px 2px rgba(56, 31, 37, .025), 0 7px 20px rgba(56, 31, 37, .045);
+  --glass-control-ambient-rgb: 255, 235, 237;
+  --glass-control-ambient-opacity: .18;
+  --glass-control-foreground: var(--text-primary, #302a30);
+
+  --glass-dark-tint-rgb: 31, 27, 31;
+  --glass-dark-opacity: .48;
+  --glass-dark-secondary-opacity: .34;
+  --glass-dark-fallback-opacity: .94;
+  --glass-dark-blur: 14px;
+  --glass-dark-saturation: 1.22;
+  --glass-dark-border-rgb: var(--glass-white-rgb);
+  --glass-dark-border-opacity: .34;
+  --glass-dark-highlight-opacity: .48;
+  --glass-dark-reflection-opacity: .27;
+  --glass-dark-edge-opacity: .12;
+  --glass-dark-shadow: 0 18px 48px rgba(10, 8, 10, .28);
+  --glass-dark-ambient-rgb: 229, 31, 45;
+  --glass-dark-ambient-opacity: .18;
+  --glass-dark-foreground: #fff;
+
+  /* Compatibility aliases for existing surfaces while they migrate to GlassSurface. */
+  --shadow-card: var(--glass-soft-shadow), inset 0 1px 0 rgba(255, 255, 255, .72);
+  --shadow-elevated: var(--glass-elevated-shadow), inset 0 1px 0 rgba(255, 255, 255, .86);
+  --shadow-modal: 0 24px 64px rgba(35, 17, 22, .22), inset 0 1px 0 rgba(255, 255, 255, .82);
+  --glass-surface-base: #fffafa;
+  --glass-surface-card: linear-gradient(145deg, rgba(255, 255, 255, .72), rgba(255, 246, 247, .54));
+  --glass-surface-elevated: linear-gradient(135deg, rgba(255, 255, 255, .67), rgba(255, 244, 246, .46));
+  --glass-surface-modal: linear-gradient(145deg, rgba(255, 255, 255, .88), rgba(255, 247, 248, .76));
+  --glass-border-card: rgba(255, 255, 255, .78);
+  --glass-border-elevated: rgba(255, 255, 255, .72);
+  --glass-border-modal: rgba(255, 255, 255, .88);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, .94), inset 0 -1px 0 rgba(255, 255, 255, .32);
+  --glass-blur-card: var(--glass-soft-blur);
+  --glass-blur-elevated: var(--glass-elevated-blur);
+  --glass-blur-modal: var(--glass-elevated-blur);
+  --glass-saturation-card: 125%;
+  --glass-saturation-elevated: 145%;
+  --glass-saturation-modal: 150%;
+  --brand-glass-surface: var(--glass-surface-elevated);
+  --brand-glass-surface-strong: var(--glass-surface-modal);
+  --brand-glass-border: var(--glass-border-modal);
+  --brand-glass-shadow: var(--shadow-modal);
+  --brand-glass-blur: var(--glass-blur-modal);
+  --brand-glass-tint: rgba(188, 35, 52, .12);
+}
+
+:root[data-power-mode="conserve"] {
+  --glass-soft-blur: 0px;
+  --glass-frosted-blur: 8px;
+  --glass-elevated-blur: 8px;
+  --glass-floating-blur: 8px;
+  --glass-control-blur: 0px;
+  --glass-dark-blur: 8px;
+  --glass-elevated-shadow: 0 8px 22px rgba(40, 20, 26, .12), inset 0 1px 0 rgba(255, 255, 255, .55);
+  --glass-floating-shadow: 0 8px 22px rgba(40, 20, 26, .12), inset 0 1px 0 rgba(255, 255, 255, .55);
+  --glass-dark-shadow: 0 12px 30px rgba(40, 20, 26, .18), inset 0 1px 0 rgba(255, 255, 255, .58);
+}

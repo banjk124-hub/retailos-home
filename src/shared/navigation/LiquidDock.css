@@ -1,0 +1,277 @@
+.liquid-dock {
+  position: fixed;
+  z-index: 60;
+  right: max(28px, env(safe-area-inset-right));
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  width: min(390px, calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  box-sizing: border-box;
+  padding: 6px;
+  overflow: visible;
+  border-radius: 25px;
+  color: #54474a;
+  transition:
+    opacity var(--motion-duration-fast) var(--motion-ease-standard),
+    transform var(--motion-duration-standard) var(--motion-ease-spatial);
+}
+
+.liquid-dock[data-keyboard-open="true"] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+.liquid-dock[data-hidden="true"] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+}
+
+.liquid-dock__track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--dock-slot-count), minmax(0, 1fr));
+  align-items: center;
+  min-height: 64px;
+}
+
+.liquid-dock__indicator {
+  position: absolute;
+  z-index: 0;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: calc(100% / var(--dock-slot-count));
+  pointer-events: none;
+  transform: translateX(calc(var(--dock-slot) * 100%));
+  transition: transform var(--motion-duration-emphasized) var(--motion-spring-responsive);
+}
+
+.liquid-dock__indicator-surface {
+  position: absolute;
+  inset: 0 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .86);
+  border-radius: 19px;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(255, 255, 255, .9), transparent 62%),
+    linear-gradient(145deg, rgba(255, 255, 255, .58), rgba(255, 235, 238, .38));
+  box-shadow:
+    0 5px 16px rgba(157, 29, 45, .11),
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    inset 0 -1px 0 rgba(255, 255, 255, .42);
+  transform-origin: center;
+  transition:
+    border-radius var(--motion-duration-fast) var(--motion-ease-standard),
+    background-color var(--motion-duration-standard) var(--motion-ease-standard);
+}
+
+.liquid-dock__indicator-surface::after {
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 12%;
+  height: 1px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  content: "";
+}
+
+.liquid-dock__indicator[data-direction="right"] .liquid-dock__indicator-surface {
+  border-radius: 22px 16px 16px 22px;
+}
+
+.liquid-dock__indicator[data-direction="left"] .liquid-dock__indicator-surface {
+  border-radius: 16px 22px 22px 16px;
+}
+
+.liquid-dock__indicator[data-moving="true"] .liquid-dock__indicator-surface {
+  animation: liquid-dock-deform 280ms var(--motion-ease-spatial) both;
+}
+
+.liquid-dock__indicator[data-direction="right"][data-moving="true"] .liquid-dock__indicator-surface {
+  transform-origin: left center;
+}
+
+.liquid-dock__indicator[data-direction="left"][data-moving="true"] .liquid-dock__indicator-surface {
+  transform-origin: right center;
+}
+
+.liquid-dock__item,
+.liquid-dock__action {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  min-height: 56px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 3px 1px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: #77686c;
+  cursor: pointer;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    color var(--motion-duration-standard) var(--motion-ease-standard),
+    transform var(--motion-duration-fast) var(--motion-spring-responsive);
+}
+
+.liquid-dock__item:hover:not(:disabled),
+.liquid-dock__item.is-active {
+  color: #aa2032;
+}
+
+.liquid-dock__item:active:not(:disabled),
+.liquid-dock__action:active:not(:disabled) {
+  transform: scale(.94);
+}
+
+.liquid-dock__item:disabled,
+.liquid-dock__action:disabled {
+  color: #988e90;
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+.liquid-dock__icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+}
+
+.liquid-dock__label {
+  max-width: 100%;
+  overflow: hidden;
+  color: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liquid-dock__item.is-active .liquid-dock__label {
+  font-weight: 800;
+}
+
+.liquid-dock__action {
+  color: #fff;
+}
+
+.liquid-dock__action:hover:not(:disabled) {
+  color: #fff;
+}
+
+.liquid-dock__action-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-top: -15px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .82);
+  border-radius: 17px;
+  background:
+    radial-gradient(ellipse at 20% 5%, rgba(255, 255, 255, .42), transparent 56%),
+    linear-gradient(145deg, #e34b5b, #b51d31);
+  box-shadow:
+    0 8px 19px rgba(157, 29, 45, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .42),
+    inset 0 -2px 0 rgba(111, 13, 28, .2);
+  transition: transform var(--motion-duration-fast) var(--motion-spring-responsive);
+}
+
+.liquid-dock__action:active:not(:disabled) .liquid-dock__action-icon {
+  transform: translateY(2px) scale(.93);
+}
+
+.liquid-dock :is(button):focus-visible {
+  outline: 3px solid rgba(189, 38, 53, .42);
+  outline-offset: 2px;
+}
+
+@keyframes liquid-dock-deform {
+  0% { transform: scaleX(.86); }
+  64% { transform: scaleX(1.08); }
+  100% { transform: scaleX(1); }
+}
+
+@media (min-width: 701px) and (max-width: 1099px) {
+  .liquid-dock {
+    right: max(18px, env(safe-area-inset-right));
+    width: min(380px, calc(100vw - 36px));
+  }
+}
+
+@media (max-width: 700px) {
+  .liquid-dock {
+    right: auto;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    width: min(620px, calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .liquid-dock {
+    width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
+    left: max(8px, env(safe-area-inset-left));
+  }
+
+  .liquid-dock__label {
+    font-size: 8px;
+  }
+
+  .liquid-dock__action-icon {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-dock,
+  .liquid-dock *,
+  .liquid-dock *::before,
+  .liquid-dock *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  .liquid-dock__indicator-surface {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+:root[data-motion-preference="reduced"] .liquid-dock__indicator,
+:root[data-power-mode="conserve"] .liquid-dock__indicator {
+  transition: none !important;
+}
+
+:root[data-motion-preference="reduced"] .liquid-dock__indicator-surface,
+:root[data-power-mode="conserve"] .liquid-dock__indicator-surface {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+:root[data-power-mode="conserve"] .liquid-dock {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .liquid-dock {
+    background-color: rgba(255, 255, 255, .95);
+  }
+}

@@ -79,21 +79,9 @@
   content: "";
   pointer-events: none;
 }
-.app-shell .spotlight-supermarket-scene {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 53%;
-  opacity: .9;
-  transform: scale(1.035);
-  animation: supermarket-scene-drift 32s ease-in-out infinite alternate;
-  pointer-events: none;
-}
 .app-shell .spotlight-glow {
-  z-index: 1;
+  z-index: 0;
+  background: linear-gradient(90deg,rgba(29,14,20,.12),rgba(67,15,26,.04) 70%,rgba(229,31,45,.08));
   pointer-events: none;
 }
 .app-shell .spotlight-main-content,
@@ -318,8 +306,7 @@
 }
 
 .app-shell .topbar-action-button:active:not(:disabled),
-.app-shell .icon-button:active:not(:disabled),
-.app-shell .mobile-nav button:active:not(:disabled) {
+.app-shell .icon-button:active:not(:disabled) {
   transform: scale(.92);
 }
 
@@ -342,86 +329,6 @@
   box-shadow: var(--focus-ring-shadow);
 }
 
-.mobile-nav {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  isolation: isolate;
-  overflow: visible;
-  background:
-    linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,246,247,.18)),
-    var(--glass-surface-elevated);
-  border-color: var(--glass-border-elevated);
-  box-shadow: var(--shadow-elevated), var(--glass-highlight);
-  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-  border-radius: var(--radius-xl);
-}
-.mobile-nav::before {
-  position: absolute;
-  z-index: 0;
-  top: -14px;
-  left: 50%;
-  width: 82px;
-  height: 48px;
-  border: 1px solid rgba(255,255,255,.7);
-  border-radius: 18px 18px 14px 14px;
-  background:
-    linear-gradient(145deg, rgba(230,89,102,.5), rgba(170,29,47,.58)),
-    rgba(197,38,53,.32);
-  box-shadow:
-    0 9px 25px rgba(157,29,45,.25),
-    inset 0 1px 0 rgba(255,255,255,.66),
-    inset 0 -1px 0 rgba(117,14,29,.16);
-  content: "";
-  transform: translateX(-50%);
-  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-  pointer-events: none;
-}
-.mobile-nav > button { position: relative; z-index: 1; }
-.mobile-nav .mobile-nav-icon {
-  width: 48px;
-  height: 42px;
-  border: 1px solid transparent;
-  color: #7d6a6d;
-  transition: transform 260ms cubic-bezier(.2,.8,.2,1), color 220ms ease, background 220ms ease, box-shadow 220ms ease;
-}
-.mobile-nav .mobile-nav-icon svg { width: 24px; height: 24px; }
-.mobile-nav button.active .mobile-nav-icon {
-  border-color: rgba(255,255,255,.72);
-  background: rgba(255,255,255,.65);
-  color: #b32332;
-  box-shadow: 0 5px 14px rgba(157,29,45,.1), inset 0 1px 0 rgba(255,255,255,.94);
-}
-.mobile-nav .barcode-nav-item {
-  overflow: visible;
-  min-height: 56px;
-  margin-top: -15px;
-  padding: 0;
-  color: #fff;
-}
-.mobile-nav .barcode-nav-item .mobile-nav-icon {
-  width: 53px;
-  height: 53px;
-  border: 1px solid rgba(255,255,255,.8);
-  border-radius: 18px;
-  background: linear-gradient(145deg, #e24b5a, #ac1e30);
-  color: #fff;
-  box-shadow:
-    0 8px 19px rgba(157,29,45,.28),
-    inset 0 1px 0 rgba(255,255,255,.42),
-    inset 0 -2px 0 rgba(111,13,28,.2);
-  transform: translateY(-1px);
-}
-.mobile-nav .barcode-nav-item .mobile-nav-icon svg { width: 27px; height: 27px; }
-.mobile-nav .barcode-nav-item:active .mobile-nav-icon {
-  transform: translateY(1px) scale(.91);
-  box-shadow: 0 4px 10px rgba(157,29,45,.24), inset 0 1px 0 rgba(255,255,255,.36);
-}
-.mobile-nav .barcode-nav-item:focus-visible { outline: none; }
-.mobile-nav .barcode-nav-item:focus-visible .mobile-nav-icon {
-  outline: 3px solid rgba(189,38,53,.36);
-  outline-offset: 3px;
-}
 .barcode-result-backdrop {
   position: fixed;
   z-index: 1001;
@@ -674,19 +581,6 @@
 }
 
 @media (max-width: 700px) {
-  .mobile-nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
-    border-radius: var(--radius-xl);
-    background:
-      linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,246,247,.16)),
-      var(--glass-surface-elevated);
-    backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-    -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-  }
-  .mobile-nav .mobile-nav-icon { width: 42px; height: 42px; }
-  .mobile-nav .barcode-nav-item { min-height: 56px; margin-top: -14px; }
-  .mobile-nav .barcode-nav-item .mobile-nav-icon { width: 52px; height: 52px; }
   .barcode-result-card { max-height: 90dvh; padding: 16px; border-radius: 19px; }
   .barcode-result-record dl > div { grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: 8px; padding: 8px 9px; }
   .barcode-scanner { place-items: center; padding: max(2vh, env(safe-area-inset-top)) max(2vw, env(safe-area-inset-right)) max(2vh, env(safe-area-inset-bottom)) max(2vw, env(safe-area-inset-left)); }
@@ -714,7 +608,6 @@
     margin-bottom: 17px;
     border-radius: 18px;
   }
-  .app-shell .spotlight-supermarket-scene { object-position: 52% center; }
   .app-shell .home-spotlight::before {
     background:
       linear-gradient(90deg, rgba(45, 12, 21, .69), rgba(61, 16, 27, .39)),
@@ -751,11 +644,8 @@
   .barcode-scanner-view.is-scanning,
   .barcode-scan-frame i { animation: none; }
   .app-shell .app-library-page-dots button,
-  .mobile-nav .mobile-nav-icon,
-  .mobile-nav .barcode-nav-item .mobile-nav-icon,
   .app-shell .app-library-page-card,
   .app-shell .app-library-page-card::after { transition: none; }
-  .app-shell .spotlight-supermarket-scene { animation: none; }
   .app-shell .app-library-page-card,
   .app-shell .app-library-page-card.is-active { transform: none; }
   .app-shell .app-library-track { scroll-behavior: auto; }

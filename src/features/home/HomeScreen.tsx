@@ -1,24 +1,30 @@
-﻿import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
-  Activity, ArrowRight, ArrowUpRight, Bell, Boxes, ChartNoAxesCombined, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  ClipboardList, Command, CreditCard, Grid2X2, House, LogOut, Moon, Monitor, PackageSearch, ScanBarcode, Sun,
-  Search, ShieldCheck, SlidersHorizontal, Sparkles, Truck, Warehouse, X,
+  Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
+  ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode,
+  Search, ShieldCheck, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
-import type { AppearancePreference } from '../../shared/hooks/useAdaptiveAppearance';
-import { Brand } from '../../shared/components/Brand';
+import { Brand, BrandMark } from '../../shared/brand';
+import { GlassSurface } from '../../shared/components/glass';
 import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT, type ModuleDataId } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { getCameraErrorMessage } from '../scanner/services/cameraErrors';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
+import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
+import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
+import { LiquidDock } from '../../shared/navigation';
+import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
+import type { MotionOrigin } from '../../shared/motion';
+import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
+import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
-const supermarketScenes = ['market-morning.svg', 'market-fresh.svg', 'market-evening.svg'];
 
 type Props = {
   employee: EmployeeSession;
@@ -28,45 +34,28 @@ type Props = {
   isOffline: boolean;
   canInstall: boolean;
   onInstall: () => Promise<void> | void;
-  appearancePreference: AppearancePreference;
-  isLowPowerMode: boolean;
-  onCycleAppearance: () => void;
 };
-type Module = { id: ModuleDataId; title: string; description: string; icon: typeof Warehouse; tone: string; group: string; status?: string };
-type ModuleLibrary = { id: string; title: string; description: string; icon: typeof Warehouse; tone: string; moduleIds: ModuleDataId[] };
 type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'partial' | 'unavailable';
+type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
-const modules: Module[] = [
-  { id: 'inventory', title: 'Tồn kho', description: 'Tồn thực tế & định mức', icon: Warehouse, tone: 'blue', group: 'Kiểm soát hàng hóa', status: 'Snapshot' },
-  { id: 'price', title: 'Giá & vốn', description: 'Giá bán và giá vốn', icon: CreditCard, tone: 'violet', group: 'Kiểm soát hàng hóa', status: 'Snapshot' },
-  { id: 'products', title: 'Danh mục hàng hóa', description: 'Tra cứu tên và barcode', icon: PackageSearch, tone: 'cyan', group: 'Kiểm soát hàng hóa', status: 'Snapshot' },
-  { id: 'orders', title: 'Nhập / xuất hàng', description: 'Luồng xử lý hàng hóa', icon: ClipboardList, tone: 'amber', group: 'Xử lý hàng hóa', status: 'Snapshot' },
-  { id: 'delivery', title: 'Điều chuyển hàng', description: 'Tuyến và giao nhận', icon: Truck, tone: 'rose', group: 'Xử lý hàng hóa', status: 'Snapshot' },
-  { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', icon: Activity, tone: 'green', group: 'Doanh số', status: 'Snapshot' },
-  { id: 'product-dates', title: 'Date sản phẩm', description: 'Hạn sử dụng và lô hàng', icon: CalendarDays, tone: 'amber', group: 'Date sản phẩm', status: 'Snapshot' },
-  { id: 'stocktake', title: 'Kiểm kê', description: 'Chênh lệch và tiến độ kiểm kê', icon: Check, tone: 'green', group: 'Kiểm kê', status: 'Snapshot' },
-];
-const moduleLibraries: ModuleLibrary[] = [
-  { id: 'goods-control', title: 'Kiểm soát hàng hóa', description: 'Tồn kho, giá và danh mục', icon: Warehouse, tone: 'blue', moduleIds: ['inventory', 'price', 'products'] },
-  { id: 'goods-processing', title: 'Xử lý hàng hóa', description: 'Nhập, xuất và điều chuyển', icon: Truck, tone: 'amber', moduleIds: ['orders', 'delivery'] },
-  { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', icon: Activity, tone: 'green', moduleIds: ['sales'] },
-  { id: 'product-dates', title: 'Date sản phẩm', description: 'Theo dõi hạn sử dụng', icon: CalendarDays, tone: 'rose', moduleIds: ['product-dates'] },
-  { id: 'stocktake', title: 'Kiểm kê', description: 'Tiến độ và chênh lệch', icon: Check, tone: 'violet', moduleIds: ['stocktake'] },
-];
 const navItems = [
-  { id: 'home', label: 'Trang chủ', icon: House },
-  { id: 'modules', label: 'Module', icon: Boxes },
-  { id: 'activity', label: 'Hoạt động', icon: ChartNoAxesCombined },
-  { id: 'settings', label: 'Cài đặt', icon: SlidersHorizontal },
+  { id: 'home', label: 'Trang chủ' },
+  { id: 'modules', label: 'Module' },
+  { id: 'activity', label: 'Hoạt động' },
+  { id: 'settings', label: 'Cài đặt' },
 ];
 
 export default function HomeScreen({
   employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall,
-  appearancePreference, isLowPowerMode, onCycleAppearance,
 }: Props) {
-  const DepartmentIcon = department.icon;
+  const DepartmentIcon = getDepartmentIcon(department.id);
+  const { prefersReducedMotion } = useMotionState();
   const initialUiState = useRef(readHomeUiState()).current;
-  const [activeNav, setActiveNav] = useState(initialUiState.activeNav);
+  const [activeNav, setActiveNav] = useState(
+    navItems.some((item) => item.id === initialUiState.activeNav && item.id !== 'settings')
+      ? initialUiState.activeNav
+      : 'home',
+  );
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [barcodeStream, setBarcodeStream] = useState<MediaStream | null>(null);
   const [barcodeCameraError, setBarcodeCameraError] = useState('');
@@ -82,13 +71,6 @@ export default function HomeScreen({
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
-  const supermarketSceneUrl = useMemo(() => {
-    const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
-    const yearStart = new Date(today.getFullYear(), 0, 1);
-    const dayOfYear = Math.floor((today.getTime() - yearStart.getTime()) / 86_400_000);
-    const scene = supermarketScenes[dayOfYear % supermarketScenes.length];
-    return `${import.meta.env.BASE_URL}supermarket-scenes/${scene}`;
-  }, [calendarNow]);
   const [showCalendar, setShowCalendar] = useState(false);
   const [isCalendarClosing, setIsCalendarClosing] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -109,14 +91,16 @@ export default function HomeScreen({
   const notificationsCloseTimer = useRef<number | null>(null);
   const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
   const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
+  const [pushSetupStatus, setPushSetupStatus] = useState<PushSetupStatus>('idle');
+  const [pushSetupError, setPushSetupError] = useState('');
   const [selectedNotice, setSelectedNotice] = useState<SnapshotNotice | null>(null);
   const [isNoticeClosing, setIsNoticeClosing] = useState(false);
   const noticeCloseTimer = useRef<number | null>(null);
   const noticeCloseButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibrary | null>(null);
+  const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
+  const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
-  const libraryCloseTimer = useRef<number | null>(null);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [toast, setToast] = useState('');
@@ -129,6 +113,41 @@ export default function HomeScreen({
         : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
+  const enablePushNotifications = async () => {
+    if (pushSetupStatus === 'loading' || pushSetupStatus === 'ready') return;
+    setPushSetupStatus('loading');
+    setPushSetupError('');
+    try {
+      const permission: DeviceAccessStatus = await requestDeviceAccess('notifications');
+      if (permission !== 'granted') {
+        const permissionMessages: Record<DeviceAccessStatus, string> = {
+          checking: 'Đang kiểm tra quyền thông báo. Thử lại sau giây lát.',
+          prompt: 'Chưa cấp quyền thông báo trên trình duyệt.',
+          granted: '',
+          denied: 'Quyền thông báo đã bị chặn. Hãy đổi quyền của trang trong cài đặt trình duyệt.',
+          unsupported: 'Trình duyệt này không hỗ trợ thông báo đẩy.',
+          'needs-install': 'Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.',
+          error: 'Không thể yêu cầu quyền thông báo lúc này.',
+        };
+        setPushSetupError(permissionMessages[permission]);
+        setPushSetupStatus(permission === 'checking' ? 'error' : permission);
+        return;
+      }
+      const result = await subscribeForPushNotifications();
+      if (result === 'ready') {
+        setPushSetupStatus('ready');
+      } else {
+        setPushSetupError('Thông báo đẩy chưa được cấu hình.');
+        setPushSetupStatus('error');
+      }
+    } catch (error) {
+      console.error('Không thể thiết lập thông báo đẩy theo yêu cầu của người dùng:', error);
+      setPushSetupError(error instanceof Error
+        ? error.message
+        : 'Không thể thiết lập thông báo đẩy lúc này.');
+      setPushSetupStatus('error');
+    }
+  };
   useEffect(() => {
     void loadBarcodeScanner().catch((error: unknown) => {
       console.error('Không thể tải trước máy quét barcode:', error);
@@ -202,10 +221,15 @@ export default function HomeScreen({
 
   const filteredModules = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('vi');
-    return modules.filter((module) => !query || `${module.title} ${module.description} ${module.group}`.toLocaleLowerCase('vi').includes(query));
+    return MODULE_REGISTRY.filter((module) =>
+      !query || `${module.title} ${module.description} ${module.group}`.toLocaleLowerCase('vi').includes(query),
+    );
   }, [search]);
-  const visibleLibraries = useMemo(() => moduleLibraries
-    .map((library) => ({ ...library, modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)) }))
+  const visibleLibraries = useMemo(() => MODULE_LIBRARIES
+    .map((library) => ({
+      ...library,
+      modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)),
+    }))
     .filter((library) => library.modules.length > 0), [filteredModules]);
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
@@ -277,19 +301,27 @@ export default function HomeScreen({
       setIsNoticeClosing(false);
     }, 240);
   };
-  const openLibrary = (library: ModuleLibrary, trigger: HTMLButtonElement) => {
+  const openLibrary = (library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
     libraryTriggerRef.current = trigger;
+    setLibraryOrigin(getMotionOrigin(trigger));
     setIsLibraryClosing(false);
     setSelectedLibrary(library);
   };
   const closeLibrary = () => {
-    if (libraryCloseTimer.current !== null) return;
-    setIsLibraryClosing(true);
-    libraryCloseTimer.current = window.setTimeout(() => {
-      libraryCloseTimer.current = null;
+    if (isLibraryClosing) return;
+    if (prefersReducedMotion) {
       setSelectedLibrary(null);
+      setLibraryOrigin(undefined);
       setIsLibraryClosing(false);
-    }, 220);
+      return;
+    }
+    setIsLibraryClosing(true);
+  };
+  const finishLibraryClose = (event: React.AnimationEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget || event.animationName !== MOTION_CONFIG.animations.sheetExit) return;
+    setSelectedLibrary(null);
+    setLibraryOrigin(undefined);
+    setIsLibraryClosing(false);
   };
   const toggleNotifications = () => {
     if (notificationsCloseTimer.current !== null) {
@@ -369,10 +401,6 @@ export default function HomeScreen({
       window.clearTimeout(noticeCloseTimer.current);
       noticeCloseTimer.current = null;
     }
-    if (libraryCloseTimer.current !== null) {
-      window.clearTimeout(libraryCloseTimer.current);
-      libraryCloseTimer.current = null;
-    }
   }, []);
 
   const openCalendar = () => {
@@ -412,6 +440,34 @@ export default function HomeScreen({
   useEffect(() => {
     saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: window.scrollY });
   }, [activeNav, search]);
+
+  useEffect(() => {
+    let frame = 0;
+    const syncActiveSection = () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        const activationLine = window.innerHeight * 0.38;
+        const modulesTop = document.getElementById('modules')?.getBoundingClientRect().top ?? Infinity;
+        const activityTop = document.getElementById('activity')?.getBoundingClientRect().top ?? Infinity;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const isAtBottom = maxScroll > 0 && window.scrollY >= maxScroll - 2;
+        const nextActiveNav = isAtBottom || activityTop <= activationLine
+          ? 'activity'
+          : modulesTop <= activationLine
+            ? 'modules'
+            : 'home';
+        setActiveNav((current) => current === nextActiveNav ? current : nextActiveNav);
+        frame = 0;
+      });
+    };
+
+    window.addEventListener('scroll', syncActiveSection, { passive: true });
+    syncActiveSection();
+    return () => {
+      window.removeEventListener('scroll', syncActiveSection);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     const persistCurrentUi = () => saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: window.scrollY });
@@ -526,37 +582,28 @@ export default function HomeScreen({
     }
   };
   const handleNav = (id: string) => {
-    setActiveNav(id);
-    if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+    if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+    else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'settings') announce('Thiết lập và phân quyền sẽ được cấu hình ở bước tiếp theo.');
-    else window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+    else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
+  };
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
       <header className={`topbar home-topbar ${isChromeIdle ? 'chrome-hidden' : ''}`} id="home">
         <div className="topbar-dock">
           <div className="home-topbar-identity">
-            <Brand />
+            <Brand variant="compact" surface="light" />
             <span className="home-topbar-divider" aria-hidden="true" />
             <div className="topbar-identity-copy">
               <strong>{employee.name}</strong>
-              <span><DepartmentIcon size={13} />{department.label}</span>
+              <span><MotionIcon icon={DepartmentIcon} variant="department" size={13} />{department.label}</span>
             </div>
           </div>
           <div className="topbar-actions">
             <span className={`topbar-status ${isOffline ? 'offline' : ''}`} role="img" aria-label={isOffline ? 'Ngoại tuyến' : 'Trực tuyến'} title={isOffline ? 'Ngoại tuyến' : 'Trực tuyến'}><i /></span>
             {canInstall && <button className="topbar-action-button install-icon-button" type="button" aria-label="Cài đặt ứng dụng" title="Cài đặt ứng dụng" onClick={onInstall}><ArrowUpRight size={17} /></button>}
-            <button
-              className="topbar-action-button appearance-button"
-              type="button"
-              aria-label={`Giao diện ${appearancePreference === 'system' ? 'theo thiết bị' : appearancePreference === 'dark' ? 'tối' : 'sáng'}. Chạm để đổi chế độ`}
-              title={`${appearancePreference === 'system' ? 'Theo thiết bị' : appearancePreference === 'dark' ? 'Tối' : 'Sáng'}${isLowPowerMode ? ' · Tiết kiệm hiệu ứng' : ''}`}
-              onClick={onCycleAppearance}
-            >
-              {appearancePreference === 'system' ? <Monitor size={17} /> : appearancePreference === 'dark' ? <Moon size={17} /> : <Sun size={17} />}
-            </button>
             <button
               ref={notificationsButtonRef}
               type="button"
@@ -573,7 +620,7 @@ export default function HomeScreen({
               aria-expanded={showNotifications && !isNotificationsClosing}
               onClick={toggleNotifications}
             >
-              <Bell size={18} />
+              <MotionIcon icon={Bell} variant="bell" state={showNotifications ? 'active' : 'idle'} />
               {priorityNotices.length > 0 && <i aria-hidden="true" />}
             </button>
             <button className="topbar-action-button topbar-logout" type="button" aria-label="Đăng xuất" title="Đăng xuất" onClick={onLogout}><LogOut size={17} /></button>
@@ -584,8 +631,30 @@ export default function HomeScreen({
               ? <p className={`notification-empty notification-empty--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</p>
               : <>
                 {snapshotNoticeStatus !== 'ready' && snapshotNoticeStatus !== 'empty' && <p className={`notification-status-notice notification-status-notice--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</p>}
-                {priorityNotices.map((notice) => { const Icon = notice.icon; return <button key={notice.id} type="button" className="notification-item notification-item-button" onClick={(event) => openNotice(notice, event.currentTarget)}><span className={`notification-symbol ${notice.tone}`}><Icon size={18} /></span><span className="notification-item-copy"><strong>{notice.title}</strong><span>{notice.summary}</span></span><ArrowUpRight size={15} className="notification-open-icon" /></button>; })}
+                {priorityNotices.map((notice) => <button key={notice.id} type="button" className="notification-item notification-item-button" onClick={(event) => openNotice(notice, event.currentTarget)}><span className={`notification-symbol ${notice.tone}`}><MotionIcon icon={getModuleIcon(notice.moduleId)} variant="module" size={18} /></span><span className="notification-item-copy"><strong>{notice.title}</strong><span>{notice.summary}</span></span><ArrowUpRight size={15} className="notification-open-icon" /></button>)}
               </>}
+            {isPushConfigured() && <div className="push-notification-setup">
+              {pushSetupStatus === 'ready'
+                ? <p className="push-notification-setup__status is-ready" role="status"><Check size={15} />Đã đăng ký thông báo đẩy trên thiết bị.</p>
+                : <>
+                  {pushSetupStatus === 'loading' && <p className="push-notification-setup__status" role="status">Đang thiết lập thông báo đẩy…</p>}
+                  {pushSetupStatus === 'denied' && <p className="push-notification-setup__status is-error" role="status">Quyền thông báo đã bị chặn. Hãy đổi quyền của trang trong cài đặt trình duyệt.</p>}
+                  {pushSetupStatus === 'unsupported' && <p className="push-notification-setup__status is-error" role="status">Trình duyệt này không hỗ trợ thông báo đẩy.</p>}
+                  {pushSetupStatus === 'needs-install' && <p className="push-notification-setup__status" role="status">Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.</p>}
+                  {pushSetupStatus === 'error' && <p className="push-notification-setup__status is-error" role="alert">{pushSetupError}</p>}
+                  {(pushSetupStatus === 'idle' || pushSetupStatus === 'prompt' || pushSetupStatus === 'error') && <GlassSurface
+                    as="button"
+                    material="control"
+                    interactive
+                    className="push-notification-setup__action ro-button"
+                    type="button"
+                    onClick={() => { void enablePushNotifications(); }}
+                  >
+                    <Bell size={15} />
+                    {pushSetupStatus === 'prompt' ? 'Thử cấp quyền lại' : pushSetupStatus === 'error' ? 'Thử kết nối lại' : 'Bật thông báo đẩy'}
+                  </GlassSurface>}
+                </>}
+            </div>}
           </div>}
         </div>
       </header>
@@ -594,11 +663,13 @@ export default function HomeScreen({
 
       <div className="content-wrap home-content">
         <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} aria-label="Không gian RetailOS">
-          <img key={supermarketSceneUrl} className="spotlight-supermarket-scene" src={supermarketSceneUrl} alt="" aria-hidden="true" />
+          <div className="spotlight-brand-scene" aria-hidden="true">
+            <BrandMark />
+          </div>
           <div className="spotlight-glow" />
           <div className="spotlight-main-content">
             <div className="spotlight-copy">
-              <div className="spotlight-kicker"><span className="spotlight-kicker-mark"><Command size={13} /></span> RETAIL OPERATIONS</div>
+              <div className="spotlight-kicker"><span className="spotlight-kicker-mark"><BrandMark /></span> RETAIL OPERATIONS</div>
               <h2>Vận hành<br /><span>thật rõ.</span></h2>
               <p>Công cụ bán lẻ, một không gian làm việc.</p>
               <button className="spotlight-button spotlight-tools-button" type="button" aria-label="Mở thư viện chức năng" title="Thư viện chức năng" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
@@ -628,7 +699,7 @@ export default function HomeScreen({
                 </div>}
                 {priorityNotices.length > 0 && snapshotNoticeStatus !== 'ready' && snapshotNoticeStatus !== 'empty' && <div className={`spotlight-notification-empty spotlight-notification-empty--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</div>}
                 {priorityNotices.map((notice, index) => {
-                  const Icon = notice.icon;
+                  const NoticeIcon = getModuleIcon(notice.moduleId);
                   const isCollapsedGroupPreview = isMobileViewport && !areSpotlightNotificationsExpanded && index === 0;
                   return <button
                     key={notice.id}
@@ -648,7 +719,7 @@ export default function HomeScreen({
                       openNotice(notice, event.currentTarget);
                     }}
                   >
-                    <span className="spotlight-notification-icon"><Icon size={15} /></span>
+                    <span className="spotlight-notification-icon"><MotionIcon icon={NoticeIcon} variant="module" size={15} /></span>
                     <span className="spotlight-notification-copy">
                       <span className="spotlight-notification-meta"><strong>RetailOS</strong><span>·</span><span>{notice.category}</span></span>
                       <strong className="spotlight-notification-title">{notice.title}</strong>
@@ -681,7 +752,7 @@ export default function HomeScreen({
         <section className="section-block app-library-section" id="modules">
           <div className="section-heading app-library-heading">
             <div className="module-heading-copy"><span className="library-eyebrow">KHÔNG GIAN CHỨC NĂNG</span><h2>Thư viện nghiệp vụ</h2><p>{filteredModules.length} chức năng trong {visibleLibraries.length} nhóm</p></div>
-            <label className="search-field home-search-field" aria-label="Tìm công cụ"><Search size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm chức năng..." aria-label="Tìm công cụ" />{search && <button type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><X size={15} /></button>}</label>
+            <label className="search-field home-search-field" aria-label="Tìm công cụ"><MotionIcon icon={Search} variant="search" active={Boolean(search)} size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm chức năng..." aria-label="Tìm công cụ" />{search && <button className="search-clear-button" type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><MotionIcon icon={X} variant="search" active size={15} /></button>}</label>
           </div>
           {visibleLibraries.length > 0 && <ModuleLibraryEngine
             groups={visibleLibraries}
@@ -691,22 +762,25 @@ export default function HomeScreen({
         </section>
 
         <section className="lower-grid" id="activity"><div className="panel-card activity-panel"><div className="panel-heading"><h2 className="icon-section-title" aria-label="Hoạt động"><Activity size={22} aria-hidden="true" /></h2></div><div className="activity-empty"><span className="activity-empty-icon"><Activity size={18} /></span><div><strong>Chưa có hoạt động</strong></div></div></div></section>
-        <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><Command size={14} /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
+        <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><BrandMark /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
       </div>
     </main>
 
     </div>
-    <nav className={`mobile-nav ${isChromeIdle ? 'chrome-hidden' : ''}`} aria-label="Điều hướng di động">
-      {navItems.slice(0, 2).map((item, index) => {
-        const Icon = item.icon;
-        return <button key={item.id} type="button" title={item.label} aria-label={item.label} style={{ '--nav-index': index } as React.CSSProperties} className={activeNav === item.id ? 'active' : ''} onClick={() => handleNav(item.id)}><span className="mobile-nav-icon"><Icon size={23} strokeWidth={2.1} /></span><span aria-hidden="true">{item.label}</span></button>;
-      })}
-      <button type="button" className="barcode-nav-item" title="Quét barcode" aria-label="Mở máy quét barcode" onClick={openBarcodeScanner}><span className="mobile-nav-icon"><ScanBarcode size={27} strokeWidth={2.1} /></span><span aria-hidden="true">Quét mã</span></button>
-      {navItems.slice(2).map((item, index) => {
-        const Icon = item.icon;
-        return <button key={item.id} type="button" title={item.label} aria-label={item.label} style={{ '--nav-index': index + 3 } as React.CSSProperties} className={activeNav === item.id ? 'active' : ''} onClick={() => handleNav(item.id)}><span className="mobile-nav-icon"><Icon size={23} strokeWidth={2.1} /></span><span aria-hidden="true">{item.label}</span></button>;
-      })}
-    </nav>
+    <LiquidDock
+      hidden={isChromeIdle}
+      items={navItems.map((item) => ({
+        ...item,
+        icon: getHomeNavigationIcon(item.id),
+      }))}
+      activeId={activeNav}
+      onSelect={handleNav}
+      action={{
+        label: 'Quét mã',
+        icon: ScanBarcode,
+        onSelect: openBarcodeScanner,
+      }}
+    />
     {isBarcodeScannerOpen && <Suspense fallback={<section className="barcode-scanner" role="status"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Đang tải máy quét barcode…</p></div></section>}>
       <BarcodeScanner
         initialStream={barcodeStream}
@@ -783,39 +857,47 @@ export default function HomeScreen({
       </section>
     </div>}
     {selectedLibrary && (() => {
-      const LibraryIcon = selectedLibrary.icon;
-      return <div className={`app-library-backdrop ${isLibraryClosing ? 'app-library-closing' : ''}`} onClick={(event) => { if (event.target === event.currentTarget) closeLibrary(); }}>
-        <section className={`app-library-modal library-${selectedLibrary.tone}`} role="dialog" aria-modal="true" aria-labelledby="app-library-title">
+      const LibraryIcon = getLibraryIcon(selectedLibrary.id);
+      return <div className="app-library-backdrop motion-backdrop" data-motion-preset="sheet-backdrop" data-motion-state={isLibraryClosing ? 'exit' : 'enter'} onClick={(event) => { if (event.target === event.currentTarget) closeLibrary(); }}>
+        <MotionSheet
+          origin={libraryOrigin}
+          exiting={isLibraryClosing}
+          className={`app-library-modal library-${selectedLibrary.tone}`}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="app-library-title"
+          onAnimationEnd={finishLibraryClose}
+        >
           <header className="app-library-modal-header">
             <div className="app-library-modal-identity">
-              <span className="app-library-icon"><LibraryIcon size={22} /></span>
+              <span className="app-library-icon"><MotionIcon icon={LibraryIcon} variant="module" size={22} /></span>
               <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).length} chức năng</p></div>
             </div>
             <button ref={libraryCloseButtonRef} type="button" className="icon-button" aria-label="Đóng thư viện" onClick={closeLibrary}><X size={18} /></button>
           </header>
           <div className="app-library-modules">
-            {filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).map((module, index) => {
-              const Icon = module.icon;
-              return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} style={{ '--library-index': index } as React.CSSProperties} onClick={() => announce(`${module.title} · Demo`)}>
-                <span className="module-icon"><Icon size={20} /></span><span className="app-library-module-copy"><strong>{module.title}</strong><small>{module.description}</small></span><ArrowUpRight size={16} className="app-library-module-arrow" />
+            {filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).map((module) => {
+              const ModuleIcon = getModuleIcon(module.id);
+              return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`)}>
+                <span className="module-icon"><MotionIcon icon={ModuleIcon} variant="module" size={20} /></span><span className="app-library-module-copy"><strong>{module.title}</strong><small>{module.description}</small><span className="module-availability">Đang tích hợp</span></span><ArrowUpRight size={16} className="app-library-module-arrow" />
               </button>;
             })}
           </div>
-          <p className="app-library-note"><ShieldCheck size={14} /> Thư viện nghiệp vụ · Dữ liệu tải theo quyền được cấp</p>
-        </section>
+          <p className="app-library-note"><ShieldCheck size={14} /> Trạng thái giao diện và trạng thái snapshot được quản lý riêng</p>
+        </MotionSheet>
       </div>;
     })()}
     {selectedNotice && (() => {
-      const NoticeIcon = selectedNotice.icon;
+      const NoticeIcon = getModuleIcon(selectedNotice.moduleId);
       return <div className={`notice-detail-backdrop ${isNoticeClosing ? 'notice-detail-closing' : ''}`} onClick={(event) => { if (event.target === event.currentTarget) closeNotice(); }}>
         <section className="notice-detail-modal" role="dialog" aria-modal="true" aria-labelledby="notice-detail-title">
           <header className="notice-detail-header">
-            <span className={`notice-detail-icon ${selectedNotice.tone}`}><NoticeIcon size={21} /></span>
+            <span className={`notice-detail-icon ${selectedNotice.tone}`}><MotionIcon icon={NoticeIcon} variant="module" size={21} /></span>
             <div><span className="notice-detail-kicker">{selectedNotice.category} · SNAPSHOT {new Date(selectedNotice.snapshotDate).toLocaleDateString('vi-VN')}</span><h2 id="notice-detail-title">{selectedNotice.title}</h2></div>
             <button ref={noticeCloseButtonRef} type="button" className="icon-button" aria-label="Đóng bản tin" onClick={closeNotice}><X size={18} /></button>
           </header>
           <div className="notice-detail-content">
-            <div className="notice-detail-author"><span className="notice-detail-brand"><Command size={15} /></span><span><strong>RetailOS</strong><small>Bản tin ưu tiên</small></span></div>
+            <div className="notice-detail-author"><span className="notice-detail-brand"><BrandMark /></span><span><strong>RetailOS</strong><small>Bản tin ưu tiên</small></span></div>
             <p>{selectedNotice.summary}</p>
             <div className="notice-detail-message">{selectedNotice.details}</div>
           </div>
@@ -826,4 +908,3 @@ export default function HomeScreen({
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
-

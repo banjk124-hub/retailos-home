@@ -1,6 +1,4 @@
-import { Activity, CalendarDays, Warehouse } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import type { CachedModuleSnapshot } from '../data/moduleDataService';
+import type { CachedModuleSnapshot, ModuleDataId } from '../data/moduleDataService';
 
 export type SnapshotNotice = {
   id: string;
@@ -8,7 +6,7 @@ export type SnapshotNotice = {
   summary: string;
   details: string;
   category: string;
-  icon: LucideIcon;
+  moduleId: ModuleDataId;
   tone: string;
   snapshotDate: string;
 };
@@ -75,7 +73,7 @@ export function calculateSnapshotNotices(snapshots: CachedModuleSnapshot[], now 
         summary: `${lowStockCount} mặt hàng chạm hoặc thấp hơn định mức tồn.`,
         details: 'Cảnh báo được tính từ snapshot tồn kho và định mức tối thiểu đã đồng bộ.',
         category: 'KIỂM SOÁT HÀNG HÓA',
-        icon: Warehouse,
+        moduleId: 'inventory',
         tone: 'amber',
         snapshotDate: inventory.snapshotDate,
       });
@@ -98,7 +96,7 @@ export function calculateSnapshotNotices(snapshots: CachedModuleSnapshot[], now 
         summary: `${dueCount} mặt hàng có hạn dùng trong 7 ngày tới hoặc đã quá hạn.`,
         details: 'Cảnh báo được tính ở frontend từ ngày hạn sử dụng trong snapshot sản phẩm.',
         category: 'DATE SẢN PHẨM',
-        icon: CalendarDays,
+        moduleId: 'product-dates',
         tone: 'rose',
         snapshotDate: productDates.snapshotDate,
       });
@@ -117,7 +115,7 @@ export function calculateSnapshotNotices(snapshots: CachedModuleSnapshot[], now 
         summary: `${belowTargetCount} chỉ tiêu doanh số đang thấp hơn mức mục tiêu.`,
         details: 'Cảnh báo được tính ở frontend bằng cách đối chiếu doanh số thực tế và mục tiêu trong snapshot.',
         category: 'DOANH SỐ',
-        icon: Activity,
+        moduleId: 'sales',
         tone: 'blue',
         snapshotDate: sales.snapshotDate,
       });

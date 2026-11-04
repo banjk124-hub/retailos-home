@@ -1,88 +1,65 @@
-﻿
-import { ArrowUpRight, Boxes } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import type { ModuleDataId } from '../../data/moduleDataService';
+import { ArrowUpRight } from 'lucide-react';
+import type { ModuleLibraryDefinition, RetailModule } from '../moduleRegistry';
+import { GlassSurface } from '../../../shared/components/glass';
+import { MotionCard } from '../../../shared/motion';
+import { getLibraryIcon, getModuleIcon, MotionIcon } from '../../../shared/icons';
 
-type ModuleItem = {
-  id: ModuleDataId;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  tone: string;
-  group: string;
-  status?: string;
-};
-
-type LibraryGroup = {
-  id: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-  tone: string;
-  moduleIds: ModuleDataId[];
-  modules: ModuleItem[];
-};
+type LibraryGroup = ModuleLibraryDefinition & { modules: RetailModule[] };
 
 type Props = {
   groups: LibraryGroup[];
-  onOpen: (
-    group: Omit<LibraryGroup, 'modules'>,
-    trigger: HTMLButtonElement,
-  ) => void;
+  onOpen: (group: ModuleLibraryDefinition, trigger: HTMLButtonElement) => void;
 };
 
 export function ModuleLibraryEngine({ groups, onOpen }: Props) {
   return (
     <div className="library-engine" aria-label="Nhóm chức năng">
       {groups.map((group, index) => {
-        const GroupIcon = group.icon ?? Boxes;
-
+        const GroupIcon = getLibraryIcon(group.id);
         return (
-          <button
-            key={group.id}
-            type="button"
-            className={`library-engine__group library-engine__tone-${group.tone}`}
-            aria-label={`Mở thư viện ${group.title}, ${group.modules.length} chức năng`}
-            onClick={(event) => {
-              const { modules: _modules, ...library } = group;
-              onOpen(library, event.currentTarget);
-            }}
-          >
-            <span className="library-engine__head">
-              <span className="library-engine__icon">
-                <GroupIcon size={23} aria-hidden={true} />
+          <MotionCard key={group.id}>
+            <GlassSurface
+              as="button"
+              material="soft"
+              interactive
+              type="button"
+              className={`library-engine__group library-engine__tone-${group.tone}`}
+              aria-label={`Mở thư viện ${group.title}, ${group.modules.length} chức năng`}
+              onClick={(event) => onOpen({
+                id: group.id,
+                title: group.title,
+                description: group.description,
+                tone: group.tone,
+                moduleIds: group.moduleIds,
+              }, event.currentTarget)}
+            >
+              <span className="library-engine__glow" aria-hidden="true" />
+              <span className="library-engine__head">
+                <span className="library-engine__icon"><MotionIcon icon={GroupIcon} variant="module" size={23} /></span>
+                <span className="library-engine__count">
+                  <span>NHÓM {String(index + 1).padStart(2, '0')}</span>
+                  <strong>{group.modules.length} chức năng</strong>
+                </span>
               </span>
-
-              <span className="library-engine__count">
-                <span>NHÓM {String(index + 1).padStart(2, '0')}</span>
-                <strong>{group.modules.length} chức năng</strong>
+              <span className="library-engine__title">{group.title}</span>
+              <span className="library-engine__description">{group.description}</span>
+              <span className="library-engine__modules">
+                {group.modules.map((module) => {
+                  const ModuleIcon = getModuleIcon(module.id);
+                  return (
+                    <span key={module.id}>
+                      <MotionIcon icon={ModuleIcon} variant="module" size={14} />
+                      {module.title}
+                    </span>
+                  );
+                })}
               </span>
-            </span>
-
-            <span className="library-engine__title">{group.title}</span>
-
-            <span className="library-engine__description">
-              {group.description}
-            </span>
-
-            <span className="library-engine__modules">
-              {group.modules.map((module) => {
-                const ModuleIcon = module.icon;
-
-                return (
-                  <span key={module.id}>
-                    <ModuleIcon size={14} aria-hidden={true} />
-                    {module.title}
-                  </span>
-                );
-              })}
-            </span>
-
-            <span className="library-engine__footer">
-              <span>Xem nhóm</span>
-              <ArrowUpRight size={16} aria-hidden={true} />
-            </span>
-          </button>
+              <span className="library-engine__footer">
+                <span>Mở thư viện</span>
+                <ArrowUpRight size={16} aria-hidden={true} />
+              </span>
+            </GlassSurface>
+          </MotionCard>
         );
       })}
     </div>

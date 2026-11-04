@@ -2264,7 +2264,6 @@ button:not(:disabled):active {
   background: rgba(32,25,30,.28);
   backdrop-filter: blur(12px) saturate(120%);
   -webkit-backdrop-filter: blur(12px) saturate(120%);
-  animation: calendar-backdrop-in 260ms ease both;
 }
 .app-library-modal {
   --library-tone: #bd2939;
@@ -2281,7 +2280,6 @@ button:not(:disabled):active {
   box-shadow: 0 30px 90px rgba(34,24,29,.23), inset 0 1px 0 rgba(255,255,255,.96);
   backdrop-filter: blur(28px) saturate(155%);
   -webkit-backdrop-filter: blur(28px) saturate(155%);
-  animation: app-library-modal-in 420ms cubic-bezier(.16,1,.3,1) both;
 }
 .app-library-modal-header {
   display: flex;
@@ -2313,8 +2311,8 @@ button:not(:disabled):active {
   box-shadow: inset 0 1px 0 rgba(255,255,255,.95);
   text-align: left;
   cursor: pointer;
-  animation: app-library-module-in 380ms cubic-bezier(.2,.75,.25,1) both;
-  animation-delay: calc(120ms + var(--library-index, 0) * 70ms);
+  animation: motion-fade-up var(--motion-duration-emphasized) var(--motion-ease-spatial) both;
+  animation-delay: var(--motion-stagger-short);
   transition: transform 220ms, border-color 220ms, box-shadow 220ms, background 220ms;
 }
 .app-library-module:hover {
@@ -2340,23 +2338,9 @@ button:not(:disabled):active {
   font-size: 9px;
 }
 .app-library-note svg { flex: 0 0 auto; color: #8aa997; }
-.app-library-closing { animation: calendar-backdrop-out 220ms ease-in both; }
-.app-library-closing .app-library-modal { animation: app-library-modal-out 220ms cubic-bezier(.4,0,1,1) both; }
 @keyframes app-library-card-in {
   from { opacity: 0; transform: translateY(13px) scale(.97); filter: blur(5px); }
   to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-}
-@keyframes app-library-modal-in {
-  0% { opacity: 0; transform: translateY(22px) scale(.94); filter: blur(10px); }
-  70% { opacity: 1; transform: translateY(-2px) scale(1.008); filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-}
-@keyframes app-library-modal-out {
-  to { opacity: 0; transform: translateY(15px) scale(.96); filter: blur(7px); }
-}
-@keyframes app-library-module-in {
-  from { opacity: 0; transform: translateY(9px) scale(.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 @media (max-width: 700px) {
   .app-library-section { scroll-margin-top: calc(80px + env(safe-area-inset-top)); }
@@ -2379,10 +2363,7 @@ button:not(:disabled):active {
 }
 @media (prefers-reduced-motion: reduce) {
   .app-library-card,
-  .app-library-backdrop,
-  .app-library-modal,
-  .app-library-module,
-  .app-library-closing .app-library-modal {
+  .app-library-module {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }

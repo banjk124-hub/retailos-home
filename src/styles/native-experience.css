@@ -1,0 +1,302 @@
+.retailos-background {
+  position: fixed;
+  z-index: -3;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 82% 12%, rgba(245, 91, 104, .11), transparent 37%),
+    radial-gradient(ellipse at 9% 82%, rgba(231, 43, 61, .055), transparent 42%),
+    linear-gradient(145deg, #fffdfd 0%, #f8f4f4 52%, #fffafa 100%);
+}
+
+.retailos-background::before,
+.retailos-background::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.retailos-background::before {
+  inset: 5% -18% auto auto;
+  width: min(76vw, 820px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, .76);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .78), transparent 34%),
+    radial-gradient(circle at 63% 70%, rgba(230, 46, 63, .09), transparent 54%);
+  box-shadow: inset 0 0 65px rgba(255, 255, 255, .48), 0 20px 70px rgba(108, 47, 57, .035);
+  animation: retailos-brand-orbit 34s ease-in-out infinite alternate;
+}
+
+.retailos-background::after {
+  inset: auto auto -30% -22%;
+  width: min(68vw, 720px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(226, 42, 59, .055);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(226, 42, 59, .055), rgba(255, 255, 255, .02) 58%, transparent 70%);
+}
+
+.retailos-background__glow {
+  position: absolute;
+  width: min(43vw, 500px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand-background-accent) 15%, transparent), transparent 69%);
+  opacity: var(--brand-background-glow, .6);
+}
+
+.retailos-background__glow--primary { top: -20%; left: -12%; }
+.retailos-background__glow--secondary { right: -14%; bottom: -27%; }
+
+.retailos-background__halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(78vw, 920px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, .44);
+  border-radius: 50%;
+  box-shadow: inset 0 0 80px rgba(255, 255, 255, .24);
+  transform: translate(-50%, -50%);
+}
+
+.retailos-interface .app-shell {
+  background: transparent;
+}
+
+.ambient-background {
+  background:
+    radial-gradient(ellipse at 52% 48%, rgba(255, 255, 255, .16), transparent 72%),
+    linear-gradient(145deg, rgba(255, 249, 249, .18), rgba(248, 247, 248, .12) 48%, rgba(255, 247, 247, .16));
+}
+
+.ro-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform var(--motion-duration-interaction) var(--motion-ease-spring),
+    background-color var(--motion-duration-interaction) var(--motion-ease-standard),
+    border-color var(--motion-duration-interaction) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-interaction) var(--motion-ease-standard),
+    color var(--motion-duration-interaction) var(--motion-ease-standard);
+}
+
+.ro-button--primary {
+  color: #fff;
+  background: linear-gradient(135deg, #ed3343, #bd1429);
+  box-shadow: 0 10px 24px rgba(189, 20, 41, .22), inset 0 1px 0 rgba(255, 255, 255, .28);
+}
+
+.ro-button--secondary {
+  color: var(--text-primary);
+  border-color: var(--border-soft);
+  background: var(--surface-raised);
+}
+
+.ro-button--ghost {
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.ro-button--destructive {
+  color: #fff;
+  background: linear-gradient(135deg, #d93645, #a7192b);
+  box-shadow: 0 8px 20px rgba(167, 25, 43, .2);
+}
+
+.ro-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.ro-button:active:not(:disabled) {
+  transform: scale(.975);
+}
+
+.ro-button:disabled,
+.ro-button[aria-disabled="true"] {
+  opacity: .52;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.ro-button[data-loading="true"] {
+  cursor: progress;
+}
+
+.ro-button[data-loading="true"]::after {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  content: "";
+  animation: motion-icon-spin var(--motion-duration-emphasized) linear infinite;
+}
+
+.ro-button--primary[data-loading="true"]::after,
+.ro-button--destructive[data-loading="true"]::after {
+  border-color: rgba(255, 255, 255, .9);
+  border-right-color: transparent;
+}
+
+.ro-icon-motion--search.is-active svg {
+  transform: rotate(-8deg) scale(1.04);
+}
+
+.search-clear-button .ro-icon-motion--search svg {
+  transform: rotate(-90deg) scale(.8);
+}
+
+.search-clear-button:hover .ro-icon-motion--search svg,
+.search-clear-button:focus-visible .ro-icon-motion--search svg {
+  transform: rotate(0) scale(1);
+}
+
+.app-shell .topbar {
+  border-color: var(--glass-border-elevated);
+  background: var(--glass-surface-elevated);
+  box-shadow: var(--shadow-elevated), var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+}
+
+.app-shell .topbar-action-button,
+.app-shell .icon-button {
+  border-color: var(--glass-border-card);
+  background: var(--glass-surface-card);
+  box-shadow: var(--shadow-card), var(--glass-highlight);
+}
+
+.app-shell .home-search-field > .ro-icon-motion {
+  color: var(--text-secondary);
+}
+
+.app-shell .app-library-modal,
+.app-shell .calendar-modal,
+.app-shell .notice-detail-modal,
+.app-shell .barcode-result-card {
+  border-color: var(--glass-border-modal);
+  background: var(--glass-surface-modal);
+  box-shadow: var(--shadow-modal), var(--glass-highlight);
+  -webkit-backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
+  backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
+}
+
+.app-shell .app-library-modal,
+.app-shell .calendar-modal,
+.app-shell .notice-detail-modal,
+.app-shell .barcode-result-card,
+.app-shell .notification-popover {
+  animation-duration: var(--motion-duration-enter);
+  animation-timing-function: var(--motion-ease-spring);
+}
+
+.app-transition-enter,
+.home-enter {
+  animation-timing-function: var(--motion-ease-enter);
+}
+
+.app-transition-leave {
+  animation-timing-function: var(--motion-ease-exit);
+}
+
+.app-library-modal,
+.calendar-modal,
+.notice-detail-modal,
+.barcode-result-card {
+  background-clip: padding-box;
+}
+
+@media (max-width: 700px) {
+  .app-shell .home-content {
+    padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+
+}
+
+.push-notification-setup {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.push-notification-setup__status {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.push-notification-setup__status svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.push-notification-setup__status.is-ready {
+  color: var(--color-success);
+}
+
+.push-notification-setup__status.is-error {
+  color: var(--color-error);
+}
+
+.push-notification-setup__action {
+  justify-self: start;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 11px;
+}
+
+@media (max-width: 700px) and (hover: none) {
+  .app-shell .library-engine__group:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 700px) and (prefers-reduced-motion: no-preference) {
+  .app-shell .library-engine__group:active,
+  .ro-button:active:not(:disabled) {
+    transform: scale(.975);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retailos-background::before,
+  .ro-icon-motion svg,
+  .ro-button,
+  .app-shell .library-engine__group,
+  .topbar-action-button .ro-icon-motion--bell svg,
+  .ro-button[data-loading="true"]::after,
+  .app-transition-leave,
+  .home-enter,
+  .home-enter-active .content-wrap > * {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+:root[data-power-mode="conserve"] .retailos-background::before {
+  animation: none;
+}
+
+@keyframes retailos-brand-orbit {
+  from { transform: translate3d(0, 0, 0) rotate(-5deg); }
+  to { transform: translate3d(-2%, 2%, 0) rotate(4deg); }
+}
