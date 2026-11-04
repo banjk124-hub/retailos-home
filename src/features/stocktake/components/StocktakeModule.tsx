@@ -15,6 +15,24 @@ function localDate(value: string): string {
   return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 }
 
+function actionLabel(action: string): string {
+  const labels: Record<string, string> = {
+    SESSION_CREATED: 'Tạo phiên kiểm kê',
+    ZONE_STARTED: 'Bắt đầu vùng',
+    ZONE_REPLACED: 'Thay thế dữ liệu vùng',
+    ZONE_RESUMED: 'Mở lại vùng',
+    ZONE_PAUSED: 'Tạm dừng vùng',
+    SCANNER_OPENED: 'Mở máy quét',
+    ENTRY_SCANNED: 'Ghi nhận barcode',
+    ENTRY_ADDED_MANUALLY: 'Thêm dòng thủ công',
+    ENTRY_EDITED: 'Chỉnh sửa dòng',
+    ENTRY_DELETED: 'Xóa dòng',
+    ZONE_REVIEW_OPENED: 'Mở kiểm tra dữ liệu',
+    ZONE_EXPORTED: 'Xuất file vùng',
+  };
+  return labels[action] ?? action;
+}
+
 export default function StocktakeModule({ employee, onClose }: Props) {
   const [session, setSession] = useState<StocktakeSession | null>(null);
   const [zones, setZones] = useState<StocktakeZone[]>([]);
@@ -362,7 +380,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           </div>
           <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
           <div className="stocktake-history-list">
-            {logs.filter((log) => log.sessionId === session?.id).map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{log.action}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
+            {logs.filter((log) => log.sessionId === session?.id).map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{actionLabel(log.action)}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
             {logs.filter((log) => log.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
           </div>
         </>}
