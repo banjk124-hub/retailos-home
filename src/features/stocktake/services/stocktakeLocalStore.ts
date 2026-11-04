@@ -27,9 +27,12 @@ async function withStore<T>(storeName: StoreName, mode: IDBTransactionMode, acti
   try {
     return await new Promise<T>((resolve, reject) => {
       const tx = db.transaction(storeName, mode);
+      let result: T;
       const request = action(tx.objectStore(storeName));
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => { result = request.result; };
       request.onerror = () => reject(request.error ?? new Error('Không thể truy cập dữ liệu kiểm kê.'));
+      tx.oncomplete = () => resolve(result);
+      tx.onerror = () => reject(tx.error ?? new Error('Thao tác kiểm kê thất bại.'));
       tx.onabort = () => reject(tx.error ?? new Error('Thao tác kiểm kê bị hủy.'));
     });
   } finally {
