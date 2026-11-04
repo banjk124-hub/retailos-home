@@ -347,7 +347,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           </div>
           <div className="stocktake-export-preview"><small>XEM TRƯỚC ĐỊNH DẠNG FILE</small><code>NHAN VIEN,{session?.employeeCode},YYYY/MM/DD,HH:mm:ss<br />ADRESSE,{currentZone.prefix},{currentZone.number}<br />{currentEntries.slice(0,3).map((entry) => `ARTICLE,${entry.barcode},${entry.quantity}`).join('\n')}{currentEntries.length > 3 ? '\n…' : ''}</code></div>
           {currentZone.status === 'exported' ? <p className="stocktake-review-note">Revision này đã xuất file và được khóa để bảo toàn dữ liệu. Muốn làm lại, nhập lại mã vùng tại màn hình chính để tạo revision mới.</p> : <button className="stocktake-primary" type="button" disabled={currentEntries.length === 0} onClick={() => { if (window.confirm(`Xác nhận xuất ${currentZone.zoneCode} với ${currentEntries.length} dòng? File sẽ được tải về thiết bị.`)) void exportCurrentZone(); }}><Download size={18} /> Xác nhận xuất file</button>}
-          <button className="stocktake-secondary" type="button" onClick={() => setScreen('scan')}>Quay lại quét / chỉnh sửa</button>
+          {currentZone.status !== 'exported' && <button className="stocktake-secondary" type="button" onClick={() => setScreen('scan')}>Quay lại quét / chỉnh sửa</button>}
         </>}
 
         {screen === 'history' && <>
