@@ -259,6 +259,11 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const clearAll = async () => {
+    if (!resolvedEmployeeCode) {
+      setError('Không thể xóa hoặc tạo phiên kiểm kê khi chưa xác định được mã nhân viên.');
+      setShowClearConfirm(false);
+      return;
+    }
     try {
       await stocktakeStore.clearAll();
       setScannerOpen(false);
@@ -318,7 +323,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
             {zones.filter((zone) => zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); await logStocktakeAction({ sessionId: zone.sessionId, zoneId: zone.id, action: 'ZONE_RESUMED', details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.` }); await refresh(); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
             {zones.filter((zone) => zone.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
-          <button className="stocktake-danger-link" type="button" onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa toàn bộ dữ liệu kiểm kê trên thiết bị</button>
+          <button className="stocktake-danger-link" type="button" disabled={!session} onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa toàn bộ dữ liệu kiểm kê trên thiết bị</button>
         </>}
 
         {screen === 'scan' && currentZone && <>
