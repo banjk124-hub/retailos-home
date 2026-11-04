@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-11-03
+Last updated: 2026-11-04
 
 ## Baseline observed
 - Branch: `main`.
@@ -123,3 +123,20 @@ Last updated: 2026-11-03
 - Captured 28 comprehensive screenshots, 5 precise transition screenshots, and 6 per-viewport auth-anchor screenshots under `artifacts/ui-qa/phase-5.2/screenshots/`. Saved the Login viewport Playwright trace at `artifacts/ui-qa/phase-5.2/traces/login-viewports-20261102T184640950Z.zip`; it contains no authenticated identity or credentials.
 - Final validation after the reveal-radius change: `npm run build` passed (TypeScript plus Vite, 1,890 modules); `npm run build:pages` passed (Pages base, 1,890 modules); `git diff --check` passed. The browser runs reported zero console errors and zero page errors. No test or lint script exists in `package.json`.
 - Limitations: QA was in desktop Chromium with emulated viewports, not real iPhone Safari or Android Chrome hardware. Native browser chrome, keyboard, touch, and device safe-area behavior remain unverified. No deploy, push, or commit was performed.
+
+
+## Stocktake local workflow — initial implementation
+- Added `src/features/stocktake/` with an isolated IndexedDB database (`retailos-stocktake`) and stores for sessions, zones, entries, action logs, and export snapshots. This does not modify the shared module snapshot database or auth/session storage.
+- Connected the Stocktake tile in the Home module library to a working feature screen. Other module tiles retain their existing integration notice.
+- Reused the existing ZXing `BarcodeScanner` component. A scan is followed by quantity entry and an explicit save; barcode rows are kept individually, including duplicate barcodes.
+- Added uppercase zone parsing. For example, `AT01` is serialized as `ADRESSE,AT,01`; the numeric suffix is kept as text to preserve leading zeroes.
+- Re-entering a zone warns before replacement. Confirmation marks the previous zone revision as superseded and creates a new revision; previous entries and exports remain available in history.
+- Added a review step before export. Draft entries can be added, edited, and deleted with action-log records. Exported revisions are locked; rework requires starting a new revision.
+- Export creates a plain-text `.txt` snapshot with `NHAN VIEN`, `ADRESSE`, and one `ARTICLE` line per entry. The date/time is captured at export confirmation. Exported file content is retained in IndexedDB for re-download.
+- Added history for zone revisions and user actions, plus a scoped clear operation that deletes only Stocktake data. It does not clear authentication, service-worker assets, or other module snapshots.
+- Employee code is taken from the live auth session or resolved against the existing local employee directory after session restoration. No auth/session persistence contract was changed.
+- Updated the module registry to mark Stocktake as implemented and display its availability accurately.
+- Files added: `src/features/stocktake/types/stocktake.types.ts`, `src/features/stocktake/services/stocktakeLocalStore.ts`, `src/features/stocktake/services/stocktakeExport.ts`, `src/features/stocktake/components/StocktakeModule.tsx`, `src/features/stocktake/components/stocktake.css`.
+- Files updated: `src/features/home/HomeScreen.tsx`, `src/features/home/moduleRegistry.ts`, `src/main.tsx`.
+- Validation status: source-level inspection only. A local TypeScript/build run, browser workflow test, and real Android camera test have not been run in this implementation environment. Do not treat the feature as production-verified until these checks pass.
+- Known limitation: the current employee directory is frontend-local and contains the existing prototype account records; this is not secure authorization. Employee code resolution after restored login depends on a unique name + department match in that directory.
