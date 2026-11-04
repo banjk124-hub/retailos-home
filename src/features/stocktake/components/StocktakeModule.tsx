@@ -92,10 +92,10 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     setEntries(allEntries.filter((entry) => entry.zoneId === zone.id).sort((a, b) => a.sequence - b.sequence));
   };
 
-  const beginZone = async (replace: boolean) => {
-    if (!session || !pendingZone) return;
+  const beginZone = async (replace: boolean, requested = pendingZone) => {
+    if (!session || !requested) return;
     try {
-      const previous = pendingZone.previous;
+      const previous = requested.previous;
       let revision = 1;
       if (previous) {
         revision = previous.revision + 1;
@@ -104,9 +104,9 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       const zone: StocktakeZone = {
         id: createStocktakeId('zone'),
         sessionId: session.id,
-        zoneCode: pendingZone.code,
-        prefix: pendingZone.prefix,
-        number: pendingZone.number,
+        zoneCode: requested.code,
+        prefix: requested.prefix,
+        number: requested.number,
         revision,
         status: 'draft',
         createdAt: new Date().toISOString(),
@@ -146,7 +146,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       return;
     }
     setPendingZone(pending);
-    await beginZone(false);
+    await beginZone(false, pending);
   };
 
   const acceptBarcode = (value: string) => {
