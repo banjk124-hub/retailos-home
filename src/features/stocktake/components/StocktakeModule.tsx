@@ -316,7 +316,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           </div>
           <div className="stocktake-zone-history"><div className="stocktake-section-title">Vùng trong phiên</div>
             {zones.filter((zone) => zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); await logStocktakeAction({ sessionId: zone.sessionId, zoneId: zone.id, action: 'ZONE_RESUMED', details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.` }); await refresh(); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
-            {zones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
+            {zones.filter((zone) => zone.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <button className="stocktake-danger-link" type="button" onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa toàn bộ dữ liệu kiểm kê trên thiết bị</button>
         </>}
@@ -358,13 +358,13 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
           <div className="stocktake-history-list">
             {logs.filter((log) => log.sessionId === session?.id).map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{log.action}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
-            {logs.length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
+            {logs.filter((log) => log.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
           </div>
         </>}
 
         {screen === 'exports' && <div className="stocktake-history-list">
           {exports.filter((item) => item.sessionId === session?.id).map((item) => <article key={item.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{item.fileName}</strong><p>{item.zoneCode} · Revision {item.revision} · {item.entryCount} dòng</p><small>{localDate(item.exportedAt)}</small></div><button type="button" onClick={() => downloadPreviousExport(item)} aria-label="Tải lại file"><Download size={16} /></button></article>)}
-          {exports.length === 0 && <p className="stocktake-muted">Chưa có file xuất.</p>}
+          {exports.filter((item) => item.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có file xuất.</p>}
         </div>}
 
         <footer className="stocktake-footer"><span>Dữ liệu được lưu cục bộ trên thiết bị</span><span>RetailOS</span></footer>
