@@ -167,3 +167,16 @@ Last updated: 2026-11-04
 - Validation: GitHub compare confirms branch is ahead of main with no divergence at review time. Source diff was inspected. No local npm install, TypeScript build, Pages build, automated tests, or physical-device QA has been run by this remote GitHub session. The branch is prepared for local verification; do not call Phase 1.2A complete until those checks pass.
 - Known remaining work: add focused automated tests for validator and lifecycle races using the repository's installed tooling; inspect cameraSession ownership/race behavior; then measure performance and handle track-ended recovery in later slices. A separate `DECISIONS.md` was not created because the GitHub Contents create-file action returned HTTP 422 (`sha` missing); accepted decisions are consolidated in `ARCHITECTURE.md` for now.
 - Next action for local checkout: fetch branch, inspect `git status --short` before switching, install dependencies if needed, run `npm run build` and `npm run build:pages`, exercise scanner on Android/iOS, report any failures for a minimal patch. Do not merge until verification is accepted.
+
+
+## Phase 1.2E — Scan confirmation feedback (2026-11-05)
+- Branch: phase-1-2e-scanner-feedback, based on pushed main commit ef7b6ff14e2cdfeeee24a7d6349f19b7b3405c1a.
+- Added src/features/scanner/services/scannerFeedback.ts to coordinate optional audio and haptic confirmation after the scanner accepts a valid result.
+- Raised the existing Web Audio gain target from 0.16 to 0.24. Tone frequency (1760 Hz), attack, and duration remain unchanged.
+- Added a single 25 ms navigator.vibrate pulse when the API exists. Unsupported platforms, including iOS Safari when it does not expose the API, continue without blocking the scan callback.
+- useScannerEngine now triggers the shared feedback service only after format validation and single/continuous acceptance checks. Haptics default on and can be disabled through the hook/BarcodeScanner option. Audio remains independently controlled by the existing audioFeedback option and gesture-unlock flow.
+- No dependency, business contract, persistence, camera lifecycle, decoder interval, resolution, or PWA/deployment changes were made.
+- Validation limitation: this remote GitHub implementation session cannot run the user's local npm scripts or physical-device QA. Do not mark Phase 1.2E complete until local build and Android/iOS behavior are checked.
+- Local verification commands: npm run build, npm run build:pages, and git diff --check.
+- Device QA: compare beep loudness at normal device volume; confirm one short vibration on supported Android; confirm iOS continues scanning without vibration errors; verify invalid/cooldown-blocked detections do not trigger feedback; verify Home and Stocktake behavior.
+- Next step: user checks out this branch and runs local verification. Keep branch unmerged and undeployed.
