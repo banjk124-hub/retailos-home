@@ -26,7 +26,7 @@ export function playScannerBeep(): void {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(1760, now);
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.16, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.24, now + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.105);
 
     oscillator.connect(gain);
