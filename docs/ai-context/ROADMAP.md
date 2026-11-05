@@ -1,6 +1,6 @@
 # RetailOS — Engineering Roadmap
 
-Last reviewed: 2026-11-05  
+Last reviewed: 2026-11-05
 Status: active working plan; verify source and status before starting a phase.
 
 ## Roadmap governance
