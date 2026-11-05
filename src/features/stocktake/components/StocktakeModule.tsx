@@ -11,6 +11,7 @@ import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone }
 import { createStocktakeId, logStocktakeAction, stocktakeStore } from '../services/stocktakeLocalStore';
 import { createStocktakeFile, downloadStocktakeText } from '../services/stocktakeExport';
 import { unlockScannerAudio } from '../../scanner/services/scannerAudio';
+import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
 import './stocktake.css';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
@@ -352,7 +353,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'scan' && currentZone && <>
           <div className="stocktake-zone-banner"><div><small>VÙNG ĐANG KIỂM KÊ</small><strong>{currentZone.zoneCode}</strong></div><span>REV {currentZone.revision}</span></div>
           <div className="stocktake-count"><strong>{currentEntries.length}</strong><span>dòng đã ghi nhận</span></div>
-          <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => { void unlockScannerAudio(); setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>
+          {isScannerSupportedDevice() && <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => { void unlockScannerAudio(); setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>}
           <div className="stocktake-entry-form">
             <label htmlFor="stocktake-barcode">Barcode vừa quét / nhập thủ công</label>
             <input id="stocktake-barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Quét mã hoặc nhập barcode" />
