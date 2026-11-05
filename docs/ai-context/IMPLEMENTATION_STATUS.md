@@ -123,3 +123,13 @@ Last updated: 2026-11-04
 - Captured 28 comprehensive screenshots, 5 precise transition screenshots, and 6 per-viewport auth-anchor screenshots under `artifacts/ui-qa/phase-5.2/screenshots/`. Saved the Login viewport Playwright trace at `artifacts/ui-qa/phase-5.2/traces/login-viewports-20261102T184640950Z.zip`; it contains no authenticated identity or credentials.
 - Final validation after the reveal-radius change: `npm run build` passed (TypeScript plus Vite, 1,890 modules); `npm run build:pages` passed (Pages base, 1,890 modules); `git diff --check` passed. The browser runs reported zero console errors and zero page errors. No test or lint script exists in `package.json`.
 - Limitations: QA was in desktop Chromium with emulated viewports, not real iPhone Safari or Android Chrome hardware. Native browser chrome, keyboard, touch, and device safe-area behavior remain unverified. No deploy, push, or commit was performed.
+
+
+## 2026-11-05 — Scanner foundation and project continuity (in progress)
+- Reviewed current `main`: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198`.
+- Created isolated work branch: `phase/1.2-scanner-foundation-and-project-continuity`; no merge or deployment performed.
+- Confirmed source risks: scanner start only guards while startup is pending, not when a decoder is already attached; lifecycle events can request overlapping restarts; decoder has no explicit whitelist for EAN-13/EAN-8/CODE-128; decoded text is passed directly to the feature callback without a format/payload validation boundary.
+- Confirmed `package.json` has `build` and `build:pages` but no test/lint script. `@zxing/browser ^0.2.1` is declared; do not import ZXing transitive symbols without confirming package exports/dependency graph.
+- Governance objective: establish repository-based AI handoff, phase roadmap, decision log and session protocol so a different AI/chat can continue from source-controlled state.
+- Verification limitation: this session has inspected GitHub source only. It has not inspected the user's local working tree, run npm scripts, run tests, or performed real Android/iOS device QA. Do not mark implementation or validation complete until those checks occur.
+- Next action: implement Phase 1.2A correctness/lifecycle in small increments; inspect local `git status --short` and baseline before local checkout; validate with tests/build; update this record with exact evidence.
