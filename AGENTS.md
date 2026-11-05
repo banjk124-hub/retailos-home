@@ -34,7 +34,7 @@ Report: objective, files changed, behavior changed, tests actually run, results,
 
 
 ## Cross-session continuity contract (added 2026-11-05)
-- At session start, read `docs/ai-context/AI_HANDOFF.md` first, then follow its mandatory reading order. If that file is not present yet, use the sequence in the existing skill and context docs.
+- At session start, read `docs/ai-context/PROJECT_CONTEXT.md` first as the canonical project entry point, then read `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, and the relevant skill.
 - Keep `PROJECT_CONTEXT.md` for durable product facts/constraints; `ARCHITECTURE.md` for invariants and boundaries; `ROADMAP.md` for phase scope/acceptance gates; `DECISIONS.md` for accepted durable decisions; `IMPLEMENTATION_STATUS.md` for verified state/history; `SESSION_LOG.md` for concise handoffs.
 - Every implementation session must update status and handoff evidence in the same change set. If a phase or acceptance criterion changes, update roadmap. If an invariant/decision changes, record it explicitly.
 - Do not rely on chat history or model memory as the project source of truth. The repository documents and current source are authoritative.
