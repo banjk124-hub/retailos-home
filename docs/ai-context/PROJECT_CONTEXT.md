@@ -25,3 +25,9 @@ RetailOS is a mobile-first operational PWA for a supermarket branch. It aims to 
 - Explain technical decisions with exact files/commands and distinguish known facts from assumptions.
 - Do not ask the user to provide OAuth secrets in chat.
 - The user expects architecture-level reasoning, not cosmetic patches presented as a complete redesign.
+
+
+## Cross-AI continuity
+- Canonical entry point: `docs/ai-context/AI_HANDOFF.md` (when available); it defines reading order, session start/end, conflict resolution and completion criteria.
+- Durable context is maintained in repository documents, not in chat-only summaries. Every task branch must keep project context, architecture, roadmap, decisions, implementation status and session handoff synchronized with code.
+- Current engineering focus (2026-11-05): Scanner Phase 1.2 correctness/lifecycle before performance tuning. See `IMPLEMENTATION_STATUS.md` and `ROADMAP.md` for verified status.
