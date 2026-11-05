@@ -123,3 +123,47 @@ Last updated: 2026-11-04
 - Captured 28 comprehensive screenshots, 5 precise transition screenshots, and 6 per-viewport auth-anchor screenshots under `artifacts/ui-qa/phase-5.2/screenshots/`. Saved the Login viewport Playwright trace at `artifacts/ui-qa/phase-5.2/traces/login-viewports-20261102T184640950Z.zip`; it contains no authenticated identity or credentials.
 - Final validation after the reveal-radius change: `npm run build` passed (TypeScript plus Vite, 1,890 modules); `npm run build:pages` passed (Pages base, 1,890 modules); `git diff --check` passed. The browser runs reported zero console errors and zero page errors. No test or lint script exists in `package.json`.
 - Limitations: QA was in desktop Chromium with emulated viewports, not real iPhone Safari or Android Chrome hardware. Native browser chrome, keyboard, touch, and device safe-area behavior remain unverified. No deploy, push, or commit was performed.
+
+
+## 2026-11-05 — Scanner foundation and project continuity (in progress)
+- Reviewed current `main`: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198`.
+- Created isolated work branch: `phase/1.2-scanner-foundation-and-project-continuity`; no merge or deployment performed.
+- Confirmed source risks: scanner start only guards while startup is pending, not when a decoder is already attached; lifecycle events can request overlapping restarts; decoder has no explicit whitelist for EAN-13/EAN-8/CODE-128; decoded text is passed directly to the feature callback without a format/payload validation boundary.
+- Confirmed `package.json` has `build` and `build:pages` but no test/lint script. `@zxing/browser ^0.2.1` is declared; do not import ZXing transitive symbols without confirming package exports/dependency graph.
+- Governance objective: establish repository-based AI handoff, phase roadmap, decision log and session protocol so a different AI/chat can continue from source-controlled state.
+- Verification limitation: this session has inspected GitHub source only. It has not inspected the user's local working tree, run npm scripts, run tests, or performed real Android/iOS device QA. Do not mark implementation or validation complete until those checks occur.
+- Next action: implement Phase 1.2A correctness/lifecycle in small increments; inspect local `git status --short` and baseline before local checkout; validate with tests/build; update this record with exact evidence.
+
+
+## Phase 1.2 — Scanner foundation and cross-AI continuity
+
+### Phase roadmap and acceptance gates
+**1.2A Correctness/lifecycle (current slice)**
+- Explicitly whitelist EAN-13, EAN-8, CODE-128.
+- Validate decoded format/payload before callbacks; preserve CODE-128 as string.
+- Prevent concurrent decoder attachment; coalesce lifecycle restarts; stop single-scan decoder even when the first result arrives before decoder controls are assigned.
+- Reject stale async work after close/pause and preserve existing Home/Stocktake contracts.
+- Acceptance: branch builds; local regression checks; Android Chrome and iOS Safari camera QA; no duplicate decoder, stale callback, or duplicate single-mode callback.
+
+**1.2B Camera performance/diagnostics**
+- Measure acquisition, video readiness, decoder attach, first valid scan, resume latency and actual track settings.
+- Compare 960x540 and 1280x720 plus decode intervals around 100/120/150 ms on representative devices. Do not change current values based on assumption alone.
+
+**1.2C Audio and continuous scan**
+- Keep audio optional and non-blocking; beep only after accepted result.
+- Define same-code lockout separately from persisted data deduplication. Preserve duplicate Stocktake records.
+- Keep Home/Stocktake single mode until continuous mode is tested.
+
+**1.2D Regression/release**
+- Verify Home cached lookup; Stocktake form-fill/explicit save; duplicate rows; manual entry; permission denied/dismissed/revoked; background/foreground; focus/pageshow; close while camera request is pending; ended track.
+- Run `npm run build`, `npm run build:pages`, targeted tests and `git diff --check`.
+- User performs local verification and explicitly approves merge/deploy.
+
+### 2026-11-05 — Current branch handoff
+- Branch: `phase/1.2-scanner-foundation-and-project-continuity`.
+- Base main: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198`.
+- Source changes on branch: decoder-active guard; centralized `SUPPORTED_BARCODE_FORMATS` whitelist for EAN-13/EAN-8/CODE-128; format-specific payload validation; stop-after-attach handling for the single-scan callback race; `@zxing/library ^0.23.0` declared as a direct dependency and lockfile root dependency.
+- Documentation changes: `AGENTS.md` cross-session operating rules; `AI_HANDOFF.md` canonical AI entry point; `PROJECT_CONTEXT.md` product context/session protocol; `ARCHITECTURE.md` scanner invariants and accepted ADRs; `ROADMAP.md` phase scope/acceptance gates; `SESSION_LOG.md` chronological handoff; this file contains verified implementation status.
+- Validation: GitHub compare confirms branch is ahead of main with no divergence at review time. Source diff was inspected. No local npm install, TypeScript build, Pages build, automated tests, or physical-device QA has been run by this remote GitHub session. The branch is prepared for local verification; do not call Phase 1.2A complete until those checks pass.
+- Known remaining work: add focused automated tests for validator and lifecycle races using the repository's installed tooling; inspect cameraSession ownership/race behavior; then measure performance and handle track-ended recovery in later slices. A separate `DECISIONS.md` was not created because the GitHub Contents create-file action returned HTTP 422 (`sha` missing); accepted decisions are consolidated in `ARCHITECTURE.md` for now.
+- Next action for local checkout: fetch branch, inspect `git status --short` before switching, install dependencies if needed, run `npm run build` and `npm run build:pages`, exercise scanner on Android/iOS, report any failures for a minimal patch. Do not merge until verification is accepted.
