@@ -130,11 +130,11 @@ export function useScannerEngine({
         if (!result || disposedRef.current || !desiredActiveRef.current) return;
         const value = result.getText();
         const format = result.getBarcodeFormat();
-        const isValidEan = (format === BarcodeFormat.EAN_13 && /^\\d{13}$/.test(value))
-          || (format === BarcodeFormat.EAN_8 && /^\\d{8}$/.test(value));
+        const isValidEan = (format === BarcodeFormat.EAN_13 && /^\d{13}$/.test(value))
+          || (format === BarcodeFormat.EAN_8 && /^\d{8}$/.test(value));
         const isValidCode128 = format === BarcodeFormat.CODE_128
           && value.length > 0
-          && !/[\\u0000-\\u001f\\u007f]/.test(value);
+          && !/[\u0000-\u001f\u007f]/.test(value);
         if (!isValidEan && !isValidCode128) return;
         const now = Date.now();
         if (mode === 'single' && detectedOnceRef.current) return;
