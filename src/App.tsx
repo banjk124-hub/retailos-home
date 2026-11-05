@@ -13,6 +13,7 @@ import { getDepartmentIcon, MotionIcon } from './shared/icons';
 import { MOTION_CONFIG, useMotionState } from './shared/motion';
 import type { MotionOrigin } from './shared/motion';
 import type { CSSProperties } from 'react';
+import { releaseCameraStream } from './shared/services/cameraSession';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -125,6 +126,7 @@ export default function App() {
   }, []);
 
   const handleLogout = useCallback(() => {
+    releaseCameraStream();
     setIsLeavingHome(true);
     window.setTimeout(() => {
       clearSession();
