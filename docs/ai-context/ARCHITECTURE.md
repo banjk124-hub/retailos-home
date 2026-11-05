@@ -51,3 +51,31 @@ Do not collapse these into a single boolean such as `available`.
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save semantics, duplicate Stocktake rows, and manual entry.
 - Do not tune resolution/decode interval until actual device settings and scan latency are measured.
 - See `ROADMAP.md` for phase acceptance criteria and `DECISIONS.md` for accepted decisions.
+
+
+## Accepted engineering decisions — Scanner Phase 1.2 (2026-11-05)
+
+### ADR-001 — Protect existing feature contracts
+Status: Accepted.
+- Home scan continues to call its existing cached barcode lookup.
+- Stocktake scan continues to populate the form; saving remains an explicit user action.
+- Duplicate Stocktake rows remain separate records; manual entry remains available.
+- Scanner does not require catalog existence and does not change IndexedDB, auth/session, Apps Script, service-worker, module ID, or deployment contracts.
+
+### ADR-002 — Explicit store barcode symbologies
+Status: Accepted.
+- The scanner accepts EAN-13, EAN-8 and CODE-128 only.
+- EAN payloads must match their symbology's numeric length. CODE-128 is preserved as an opaque string and is not coerced to a number.
+- Do not add a product lookup at scanner-engine level.
+
+### ADR-003 — One decoder per active session
+Status: Accepted.
+- Start/pause/resume/close are idempotent and generation-safe.
+- A live decoder prevents a second decode loop from attaching to the same session.
+- Existing decoder controls must be stopped before a replacement is attached; asynchronous single-scan attachment must stop immediately if a result arrived before controls were returned.
+- Camera performance tuning follows correctness and real-device measurements.
+
+### ADR-004 — Branch-first integration
+Status: Accepted.
+- Implementation is prepared on a scoped branch. Local checks and device QA are performed before integration.
+- No AI task merges to main or deploys without explicit user approval.
