@@ -77,7 +77,10 @@ self.addEventListener('notificationclick', (event) => {
   const destination = isInsideApp ? requestedUrl.href : baseUrl.href;
 
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-    const existingClient = clients.find((client) => new URL(client.url).origin === self.location.origin);
+    const existingClient = clients.find((client) => {
+      const clientUrl = new URL(client.url);
+      return clientUrl.origin === baseUrl.origin && clientUrl.pathname.startsWith(baseUrl.pathname);
+    });
     if (existingClient) {
       if ('navigate' in existingClient) return existingClient.navigate(destination).then(() => existingClient.focus());
       return existingClient.focus();
