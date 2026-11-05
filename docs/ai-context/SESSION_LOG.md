@@ -12,10 +12,10 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
   - `useScannerEngine.ts` guards concurrent starts only while `startingRef` is true; it does not guard an already attached decoder.
   - visibility/pageshow/focus events can request a restart while asynchronous startup is in flight.
   - ZXing reader is constructed without a format whitelist.
-  - feature callback receives `result.getText()` without a scanner-level format/payload validation boundary.
+  - feature callback receives `result.getText()` without a scanner-level format/payload validation boundary (resolved on the Phase 1.2 branch).
   - `cameraSession.ts` uses a global stream singleton and generation token; no explicit session owner/lease.
   - package scripts contain build and preview commands but no test/lint command.
-- Scope: Phase 1.2A first, plus durable handoff/roadmap/decision/process documents.
+- Scope: Phase 1.2A correctness slice plus durable handoff/roadmap/decision/process documents.
 - Protected contracts: Home cached lookup; Stocktake form fill and explicit save; duplicate Stocktake rows; manual entry; IndexedDB, auth/session, Apps Script, service worker, deployment path.
-- Validation state: repository source inspection only so far. No local working-tree inspection, build, tests, or device QA has been performed by this session.
-- Next action: inspect current local branch/status/diff and baseline build before finalizing code changes; then implement the smallest 1.2A vertical slice and record exact test evidence.
+- Validation state: GitHub source/diff review only. No local working-tree inspection, npm install, build, automated test, or physical-device QA has been performed.
+- Next action: user checks out this branch locally, inspects local status, runs `npm run build` and `npm run build:pages`, then exercises scanner on Android/iOS. Report failures for a minimal patch. Merge only after user accepts local verification.
