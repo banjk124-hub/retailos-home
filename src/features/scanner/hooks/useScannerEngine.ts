@@ -146,6 +146,7 @@ export function useScannerEngine({
         onDetectedRef.current(value);
 
         if (mode === 'single') {
+          stopAfterAttachRef.current = true;
           controlsRef.current?.stop();
           controlsRef.current = null;
           setIsScanning(false);
@@ -161,8 +162,13 @@ export function useScannerEngine({
         controls.stop();
         return;
       }
-      controlsRef.current = controls;
-      setIsScanning(true);
+      if (mode === 'single' && stopAfterAttachRef.current) {
+        controls.stop();
+        setIsScanning(false);
+      } else {
+        controlsRef.current = controls;
+        setIsScanning(true);
+      }
     } catch (cause) {
       if (!disposedRef.current && desiredActiveRef.current && !isAbortError(cause)) {
         setError(getCameraErrorMessage(cause));
