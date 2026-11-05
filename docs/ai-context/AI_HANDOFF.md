@@ -12,11 +12,13 @@
 
 ## Mandatory reading order
 1. `AGENTS.md` — non-negotiable operating contract.
-2. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
-3. `docs/ai-context/PROJECT_CONTEXT.md` — product intent and constraints.
+2. `docs/ai-context/PROJECT_CONTEXT.md` — product intent and session protocol.
+3. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
 4. `docs/ai-context/ARCHITECTURE.md` — boundaries and invariants.
 5. `docs/ai-context/ROADMAP.md` — phases, dependencies, and acceptance gates.
 6. `docs/ai-context/IMPLEMENTATION_STATUS.md` — latest verified state and chronological record.
+
+Durable engineering decisions are recorded in `ARCHITECTURE.md`; there is currently no separate `DECISIONS.md`.
 7. Relevant feature source, tests, package scripts, and current git diff.
 
 If any item is missing or contradicts the current source, stop treating this handoff as authoritative for that detail. Inspect the repository, then update the relevant document in the same change set.
@@ -25,10 +27,10 @@ If any item is missing or contradicts the current source, stop treating this han
 - Last reviewed main commit before this phase: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198` (2026-11-05).
 - Work branch for this initiative: `phase/1.2-scanner-foundation-and-project-continuity`.
 - This branch is intentionally separate from `main`; do not merge or deploy without explicit user approval.
-- Scanner stack uses `@zxing/browser ^0.2.1`; no direct `@zxing/library` dependency is declared in `package.json`.
+- Scanner stack declares `@zxing/browser ^0.2.1` and `@zxing/library ^0.23.0` directly.
 - Current package scripts observed: `dev`, `build`, `build:pages`, `preview`, `preview:pages`. No test or lint script was defined at the time of review.
-- Existing scanner supports EAN-13, EAN-8 and CODE-128 as the store's required formats, but the current decoder construction has no explicit format whitelist.
-- Scanner lifecycle currently uses `startingRef` and a restart flag; repeated focus/pageshow/visibility events may request a restart while an existing decoder is active. Treat single-decoder idempotency as a priority correctness requirement.
+- Phase 1.2 branch now configures an explicit EAN-13/EAN-8/CODE-128 whitelist and validates decoded payload format/length before feature callbacks.
+- Phase 1.2 branch adds a live-controls guard and handles a single-scan result arriving before ZXing returns its controls. Local TypeScript/build and device verification are still pending.
 - These are review findings, not proof of device-level failure. Confirm against the current branch before making claims.
 
 ## Non-negotiable working rules
@@ -56,7 +58,7 @@ If any item is missing or contradicts the current source, stop treating this han
 3. Update `IMPLEMENTATION_STATUS.md` with exact files, behavior, commands, results, unverified paths, and next step.
 4. Update `ROADMAP.md` if phase scope, dependencies, or acceptance criteria changed.
 5. Update `ARCHITECTURE.md` or `PROJECT_CONTEXT.md` only when durable invariants or project facts changed.
-6. Record decisions in `DECISIONS.md` when they affect future implementation.
+6. Record durable decisions in `ARCHITECTURE.md` until a dedicated decision log is justified.
 7. Leave a concise handoff: branch, base/head commit, completed work, remaining work, blockers, exact next action.
 8. Do not merge/deploy.
 
