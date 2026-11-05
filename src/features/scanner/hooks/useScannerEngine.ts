@@ -17,6 +17,12 @@ function isAbortError(error: unknown): boolean {
   return error instanceof DOMException && error.name === 'AbortError';
 }
 
+// Keep visibility checks behind a function so TypeScript does not incorrectly
+// narrow document.visibilityState across asynchronous camera operations.
+function isDocumentHidden(): boolean {
+  return document.visibilityState === 'hidden';
+}
+
 /**
  * Shared scanner engine hook.
  * Feature modules own their own presentation and call this hook for camera,
@@ -62,7 +68,7 @@ export function useScannerEngine({
   }, [stopDecoder]);
 
   const startScanner = useCallback(async () => {
-    if (disposedRef.current || !desiredActiveRef.current || document.visibilityState === 'hidden') return;
+    if (disposedRef.current || !desiredActiveRef.current || isDocumentHidden()) return;
     if (startingRef.current) {
       restartRequestedRef.current = true;
       return;
@@ -80,7 +86,7 @@ export function useScannerEngine({
       if (
         disposedRef.current ||
         !desiredActiveRef.current ||
-        document.visibilityState === 'hidden' ||
+        isDocumentHidden() ||
         generation !== startGenerationRef.current ||
         !videoRef.current
       ) {
@@ -99,7 +105,7 @@ export function useScannerEngine({
       if (
         disposedRef.current ||
         !desiredActiveRef.current ||
-        document.visibilityState === 'hidden' ||
+        isDocumentHidden() ||
         generation !== startGenerationRef.current
       ) {
         releaseCameraStream();
@@ -129,7 +135,7 @@ export function useScannerEngine({
       if (
         disposedRef.current ||
         !desiredActiveRef.current ||
-        document.visibilityState === 'hidden' ||
+        isDocumentHidden() ||
         generation !== startGenerationRef.current
       ) {
         controls.stop();
@@ -151,7 +157,7 @@ export function useScannerEngine({
         restartRequestedRef.current &&
         desiredActiveRef.current &&
         !disposedRef.current &&
-        document.visibilityState !== 'hidden'
+        !isDocumentHidden()
       ) {
         restartRequestedRef.current = false;
         queueMicrotask(() => { void startScanner(); });
@@ -175,14 +181,14 @@ export function useScannerEngine({
     void startScanner();
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
+      if (isDocumentHidden()) {
         pauseScanner();
       } else if (desiredActiveRef.current && !disposedRef.current) {
         void startScanner();
       }
     };
     const resumeFromPageShow = () => {
-      if (document.visibilityState !== 'hidden' && desiredActiveRef.current) void startScanner();
+      if (!isDocumentHidden() && desiredActiveRef.current) void startScanner();
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
