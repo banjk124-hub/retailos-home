@@ -7,6 +7,12 @@ import { playScannerBeep, unlockScannerAudio } from '../services/scannerAudio';
 
 export type ScannerMode = 'single' | 'continuous';
 
+const SUPPORTED_BARCODE_FORMATS = [
+  BarcodeFormat.EAN_13,
+  BarcodeFormat.EAN_8,
+  BarcodeFormat.CODE_128,
+] as const;
+
 type Options = {
   onDetected: (value: string) => void;
   mode?: ScannerMode;
@@ -119,12 +125,8 @@ export function useScannerEngine({
         return;
       }
 
-      const hints = new Map();
-      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-        BarcodeFormat.EAN_13,
-        BarcodeFormat.EAN_8,
-        BarcodeFormat.CODE_128,
-      ]);
+      const hints = new Map<DecodeHintType, any>();
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [...SUPPORTED_BARCODE_FORMATS]);
       const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 70 });
       const controls = await reader.decodeFromStream(stream, video, (result) => {
         if (!result || disposedRef.current || !desiredActiveRef.current) return;
