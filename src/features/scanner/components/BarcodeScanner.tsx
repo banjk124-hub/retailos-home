@@ -3,6 +3,7 @@ import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
 import { AlertTriangle, Camera, X } from 'lucide-react';
 import { getCameraErrorMessage } from '../services/cameraErrors';
 import { acquireCameraStream, releaseCameraStream } from '../../../shared/services/cameraSession';
+import { playScannerBeep, unlockScannerAudio } from '../services/scannerAudio';
 
 type Props = {
   onDetected: (value: string) => void;
@@ -10,15 +11,30 @@ type Props = {
   /** single closes through the caller after one result; continuous keeps decoding. */
   mode?: 'single' | 'continuous';
   scanCooldownMs?: number;
+  /** Feature-level choice; enabled by default for barcode capture feedback. */
+  audioFeedback?: boolean;
 };
 
-export default function BarcodeScanner({ onDetected, onClose, mode = 'single', scanCooldownMs = 700 }: Props) {
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError';
+}
+
+export default function BarcodeScanner({
+  onDetected,
+  onClose,
+  mode = 'single',
+  scanCooldownMs = 700,
+  audioFeedback = true,
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const onDetectedRef = useRef(onDetected);
   const disposedRef = useRef(false);
+  const desiredActiveRef = useRef(true);
   const startingRef = useRef(false);
+  const restartRequestedRef = useRef(false);
+  const startGenerationRef = useRef(0);
   const lastDetectedAtRef = useRef(0);
   const detectedOnceRef = useRef(false);
   const [isStarting, setIsStarting] = useState(true);
@@ -27,31 +43,49 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
 
   useEffect(() => { onDetectedRef.current = onDetected; }, [onDetected]);
 
-  const stopScanner = useCallback((release = true) => {
+  const stopDecoder = useCallback(() => {
     controlsRef.current?.stop();
     controlsRef.current = null;
-    if (release) {
-      releaseCameraStream();
-      streamRef.current = null;
-    }
     setIsScanning(false);
   }, []);
 
+  const stopScanner = useCallback((release = true) => {
+    stopDecoder();
+    if (release) {
+      releaseCameraStream();
+      streamRef.current = null;
+      if (videoRef.current) videoRef.current.srcObject = null;
+    }
+  }, [stopDecoder]);
+
   const startScanner = useCallback(async () => {
-    if (startingRef.current || disposedRef.current || !videoRef.current) return;
+    if (disposedRef.current || !desiredActiveRef.current || document.visibilityState === 'hidden') return;
+    if (startingRef.current) {
+      restartRequestedRef.current = true;
+      return;
+    }
+
     startingRef.current = true;
+    restartRequestedRef.current = false;
+    const generation = ++startGenerationRef.current;
     setIsStarting(true);
     setError('');
     detectedOnceRef.current = false;
 
     try {
       const stream = await acquireCameraStream();
-      if (disposedRef.current || !videoRef.current) {
-        // getUserMedia cannot be cancelled reliably; release a stream that resolves after unmount.
+      if (
+        disposedRef.current ||
+        !desiredActiveRef.current ||
+        document.visibilityState === 'hidden' ||
+        generation !== startGenerationRef.current ||
+        !videoRef.current
+      ) {
         releaseCameraStream();
         streamRef.current = null;
         return;
       }
+
       streamRef.current = stream;
       const video = videoRef.current;
       video.srcObject = stream;
@@ -59,29 +93,49 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
       video.playsInline = true;
       await video.play();
 
+      if (
+        disposedRef.current ||
+        !desiredActiveRef.current ||
+        document.visibilityState === 'hidden' ||
+        generation !== startGenerationRef.current
+      ) {
+        releaseCameraStream();
+        streamRef.current = null;
+        return;
+      }
+
       const reader = new BrowserMultiFormatReader(undefined, { delayBetweenScanAttempts: 70 });
       const controls = await reader.decodeFromStream(stream, video, (result) => {
-        if (!result || disposedRef.current) return;
+        if (!result || disposedRef.current || !desiredActiveRef.current) return;
         const now = Date.now();
         if (mode === 'single' && detectedOnceRef.current) return;
         if (mode === 'continuous' && now - lastDetectedAtRef.current < scanCooldownMs) return;
+
         detectedOnceRef.current = true;
         lastDetectedAtRef.current = now;
+        if (audioFeedback) playScannerBeep();
         onDetectedRef.current(result.getText());
+
         if (mode === 'single') {
           controlsRef.current?.stop();
           controlsRef.current = null;
           setIsScanning(false);
         }
       });
-      if (disposedRef.current) {
+
+      if (
+        disposedRef.current ||
+        !desiredActiveRef.current ||
+        document.visibilityState === 'hidden' ||
+        generation !== startGenerationRef.current
+      ) {
         controls.stop();
         return;
       }
       controlsRef.current = controls;
       setIsScanning(true);
     } catch (cause) {
-      if (!disposedRef.current) {
+      if (!disposedRef.current && desiredActiveRef.current && !isAbortError(cause)) {
         setError(getCameraErrorMessage(cause));
         releaseCameraStream();
         streamRef.current = null;
@@ -89,33 +143,77 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
     } finally {
       startingRef.current = false;
       if (!disposedRef.current) setIsStarting(false);
+
+      // If the app returned to foreground while getUserMedia was still settling,
+      // perform one fresh start after the previous attempt has fully unwound.
+      if (
+        restartRequestedRef.current &&
+        desiredActiveRef.current &&
+        !disposedRef.current &&
+        document.visibilityState !== 'hidden'
+      ) {
+        restartRequestedRef.current = false;
+        queueMicrotask(() => { void startScanner(); });
+      }
     }
-  }, [mode, scanCooldownMs]);
+  }, [audioFeedback, mode, scanCooldownMs]);
 
   useEffect(() => {
     disposedRef.current = false;
+    desiredActiveRef.current = true;
     void startScanner();
+
     const pauseForBackground = () => {
       if (document.visibilityState === 'hidden') {
+        startGenerationRef.current += 1;
+        restartRequestedRef.current = false;
         stopScanner(true);
-        if (!disposedRef.current) setError('Camera đã tạm dừng khi ứng dụng chuyển nền. Chạm “Thử lại” để tiếp tục quét.');
+        setIsStarting(false);
+        return;
+      }
+
+      if (desiredActiveRef.current && !disposedRef.current) {
+        // visibilitychange/pageshow/focus may fire together; startScanner
+        // coalesces them into a single in-flight camera request.
+        void startScanner();
       }
     };
+    const resumeFromPageShow = () => {
+      if (document.visibilityState !== 'hidden' && desiredActiveRef.current) void startScanner();
+    };
+
     document.addEventListener('visibilitychange', pauseForBackground);
+    window.addEventListener('pageshow', resumeFromPageShow);
+    window.addEventListener('focus', resumeFromPageShow);
+
     return () => {
       disposedRef.current = true;
+      desiredActiveRef.current = false;
+      startGenerationRef.current += 1;
+      restartRequestedRef.current = false;
       document.removeEventListener('visibilitychange', pauseForBackground);
+      window.removeEventListener('pageshow', resumeFromPageShow);
+      window.removeEventListener('focus', resumeFromPageShow);
       stopScanner(true);
       if (videoRef.current) videoRef.current.srcObject = null;
     };
   }, [startScanner, stopScanner]);
 
   const handleClose = () => {
+    desiredActiveRef.current = false;
+    startGenerationRef.current += 1;
+    restartRequestedRef.current = false;
     stopScanner(true);
     onClose();
   };
 
-  return <section className="barcode-scanner" role="dialog" aria-modal="true" aria-labelledby="barcode-scanner-title">
+  return <section
+    className="barcode-scanner"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="barcode-scanner-title"
+    onPointerDown={() => { if (audioFeedback) void unlockScannerAudio(); }}
+  >
     <div className="barcode-scanner-card">
       <header className="barcode-scanner-header">
         <span className="barcode-scanner-title-icon"><Camera size={19} /></span>
