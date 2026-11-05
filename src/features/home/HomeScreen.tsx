@@ -13,7 +13,6 @@ import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVEN
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
-import { getCameraErrorMessage } from '../scanner/services/cameraErrors';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
 import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
 import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
@@ -22,6 +21,7 @@ import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../
 import type { MotionOrigin } from '../../shared/motion';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
+import { releaseCameraStream } from '../../shared/services/cameraSession';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
@@ -57,10 +57,6 @@ export default function HomeScreen({
       : 'home',
   );
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
-  const [barcodeStream, setBarcodeStream] = useState<MediaStream | null>(null);
-  const [barcodeCameraError, setBarcodeCameraError] = useState('');
-  const barcodeRequestIdRef = useRef(0);
-  const barcodeStreamRef = useRef<MediaStream | null>(null);
   const [barcodeLookup, setBarcodeLookup] = useState<{
     barcode: string;
     records: BarcodeProductRecord[] | null;
@@ -153,30 +149,6 @@ export default function HomeScreen({
       console.error('Không thể tải trước máy quét barcode:', error);
     });
   }, []);
-  useEffect(() => () => {
-    barcodeRequestIdRef.current += 1;
-    barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
-    barcodeStreamRef.current = null;
-  }, []);
-  useEffect(() => {
-    if (!isBarcodeScannerOpen) return;
-    const stopCameraForBackground = () => {
-      barcodeRequestIdRef.current += 1;
-      barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
-      barcodeStreamRef.current = null;
-      setBarcodeStream(null);
-      setBarcodeCameraError('Camera đã tạm dừng khi ứng dụng chuyển nền. Chạm “Thử lại” để tiếp tục quét.');
-    };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') stopCameraForBackground();
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pagehide', stopCameraForBackground);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pagehide', stopCameraForBackground);
-    };
-  }, [isBarcodeScannerOpen]);
   useEffect(() => {
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
@@ -518,10 +490,6 @@ export default function HomeScreen({
     window.setTimeout(() => setToast(''), 2600);
   };
   const handleBarcodeDetected = (barcode: string) => {
-    barcodeRequestIdRef.current += 1;
-    barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
-    barcodeStreamRef.current = null;
-    setBarcodeStream(null);
     setIsBarcodeScannerOpen(false);
     setBarcodeLookup({ barcode, records: null });
     void lookupCachedBarcode(barcode).then(({ records, failedSources }) => {
@@ -542,45 +510,10 @@ export default function HomeScreen({
     });
   };
   const closeBarcodeScanner = () => {
-    barcodeRequestIdRef.current += 1;
-    barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
-    barcodeStreamRef.current = null;
-    setBarcodeStream(null);
-    setBarcodeCameraError('');
+    releaseCameraStream();
     setIsBarcodeScannerOpen(false);
   };
-  const openBarcodeScanner = () => {
-    setIsBarcodeScannerOpen(true);
-    setBarcodeCameraError('');
-    setBarcodeStream(null);
-    barcodeStreamRef.current?.getTracks().forEach((track) => track.stop());
-    barcodeStreamRef.current = null;
-
-    const requestId = ++barcodeRequestIdRef.current;
-    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-        setBarcodeCameraError('Camera chỉ hoạt động trên HTTPS hoặc localhost. Hãy mở ứng dụng bằng địa chỉ bảo mật rồi thử lại.');
-        return;
-    }
-
-    try {
-        // Request camera synchronously from the user gesture; some mobile browsers reject effect-triggered prompts.
-        void navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: { ideal: 'environment' } },
-        }).then((stream) => {
-          if (requestId !== barcodeRequestIdRef.current) {
-            stream.getTracks().forEach((track) => track.stop());
-            return;
-          }
-          barcodeStreamRef.current = stream;
-          setBarcodeStream(stream);
-        }).catch((error: unknown) => {
-          if (requestId === barcodeRequestIdRef.current) setBarcodeCameraError(getCameraErrorMessage(error));
-        });
-    } catch (error) {
-        setBarcodeCameraError(getCameraErrorMessage(error));
-    }
-  };
+  const openBarcodeScanner = () => setIsBarcodeScannerOpen(true);
   const handleNav = (id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
@@ -782,12 +715,7 @@ export default function HomeScreen({
       }}
     />
     {isBarcodeScannerOpen && <Suspense fallback={<section className="barcode-scanner" role="status"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Đang tải máy quét barcode…</p></div></section>}>
-      <BarcodeScanner
-        initialStream={barcodeStream}
-        initialError={barcodeCameraError}
-        onDetected={handleBarcodeDetected}
-        onClose={closeBarcodeScanner}
-      />
+      <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" />
     </Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
