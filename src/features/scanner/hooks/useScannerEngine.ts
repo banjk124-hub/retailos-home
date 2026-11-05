@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
+import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { getCameraErrorMessage } from '../services/cameraErrors';
 import { acquireCameraStream, releaseCameraStream } from '../../../shared/services/cameraSession';
 import { playScannerBeep, unlockScannerAudio } from '../services/scannerAudio';
@@ -45,6 +46,7 @@ export function useScannerEngine({
   const startGenerationRef = useRef(0);
   const lastDetectedAtRef = useRef(0);
   const detectedOnceRef = useRef(false);
+  const stopAfterAttachRef = useRef(false);
   const [isStarting, setIsStarting] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
@@ -69,6 +71,9 @@ export function useScannerEngine({
 
   const startScanner = useCallback(async () => {
     if (disposedRef.current || !desiredActiveRef.current || isDocumentHidden()) return;
+    // A live decoder already owns this session. Focus/pageshow events must not
+    // attach another decode loop to the same MediaStream.
+    if (controlsRef.current) return;
     if (startingRef.current) {
       restartRequestedRef.current = true;
       return;
@@ -80,6 +85,7 @@ export function useScannerEngine({
     setIsStarting(true);
     setError('');
     detectedOnceRef.current = false;
+    stopAfterAttachRef.current = false;
 
     try {
       const stream = await acquireCameraStream();
@@ -113,9 +119,23 @@ export function useScannerEngine({
         return;
       }
 
-      const reader = new BrowserMultiFormatReader(undefined, { delayBetweenScanAttempts: 70 });
+      const hints = new Map();
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.CODE_128,
+      ]);
+      const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 70 });
       const controls = await reader.decodeFromStream(stream, video, (result) => {
         if (!result || disposedRef.current || !desiredActiveRef.current) return;
+        const value = result.getText();
+        const format = result.getBarcodeFormat();
+        const isValidEan = (format === BarcodeFormat.EAN_13 && /^\\d{13}$/.test(value))
+          || (format === BarcodeFormat.EAN_8 && /^\\d{8}$/.test(value));
+        const isValidCode128 = format === BarcodeFormat.CODE_128
+          && value.length > 0
+          && !/[\\u0000-\\u001f\\u007f]/.test(value);
+        if (!isValidEan && !isValidCode128) return;
         const now = Date.now();
         if (mode === 'single' && detectedOnceRef.current) return;
         if (mode === 'continuous' && now - lastDetectedAtRef.current < scanCooldownMs) return;
@@ -123,7 +143,7 @@ export function useScannerEngine({
         detectedOnceRef.current = true;
         lastDetectedAtRef.current = now;
         if (audioFeedback) playScannerBeep();
-        onDetectedRef.current(result.getText());
+        onDetectedRef.current(value);
 
         if (mode === 'single') {
           controlsRef.current?.stop();
