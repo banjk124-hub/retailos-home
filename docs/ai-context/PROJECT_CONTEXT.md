@@ -28,20 +28,21 @@ RetailOS is a mobile-first operational PWA for a supermarket branch. It aims to 
 
 
 ## Cross-AI continuity
-- Canonical entry point: `docs/ai-context/AI_HANDOFF.md` (when available); it defines reading order, session start/end, conflict resolution and completion criteria.
+- Canonical entry point: `docs/ai-context/AI_HANDOFF.md`; it defines reading order, session start/end, conflict resolution and completion criteria.
 - Durable context is maintained in repository documents, not in chat-only summaries. Every task branch must keep project context, architecture, roadmap, decisions, implementation status and session handoff synchronized with code.
 - Current engineering focus (2026-11-05): Scanner Phase 1.2 correctness/lifecycle before performance tuning. See `IMPLEMENTATION_STATUS.md` and `ROADMAP.md` for verified status.
 
 
 ## Canonical AI entry point and session protocol (2026-11-05)
-This file is the first-read entry point for every AI agent, chat session, or contributor.
+This file is the product-context reference linked from the canonical `AI_HANDOFF.md` entry point.
 
 ### Mandatory reading order
 1. `AGENTS.md` — operating contract and safety rules.
-2. This file — product context, constraints, and this session protocol.
-3. `docs/ai-context/ARCHITECTURE.md` — boundaries and protected invariants.
-4. `docs/ai-context/IMPLEMENTATION_STATUS.md` — verified state, active phase, validation evidence, and next action.
-5. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
+2. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
+3. This file — product context and constraints.
+4. `docs/ai-context/ARCHITECTURE.md` — boundaries and protected invariants.
+5. `docs/ai-context/ROADMAP.md` — phase scope and acceptance gates.
+6. `docs/ai-context/IMPLEMENTATION_STATUS.md` — verified state, validation evidence, and next action.
 6. Relevant source, package/config files, git status and diff.
 
 ### Start-of-session checklist
