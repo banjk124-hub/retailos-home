@@ -79,3 +79,13 @@ Status: Accepted.
 Status: Accepted.
 - Implementation is prepared on a scoped branch. Local checks and device QA are performed before integration.
 - No AI task merges to main or deploys without explicit user approval.
+
+
+### ADR-005 — Best-effort scan confirmation feedback (2026-11-05)
+Status: Accepted for Phase 1.2E.
+- A valid accepted barcode event may trigger a short audio confirmation and a short vibration where the browser/device supports it.
+- Audio and haptic feedback are best-effort capabilities. Failure or lack of platform support must never block barcode delivery or camera operation.
+- Audio remains unlocked only from a direct user gesture; no autoplay permission workaround is introduced.
+- Vibration uses a single short 25 ms pulse through the browser Vibration API. Unsupported platforms (including iOS Safari where the API is not available) continue without vibration.
+- The scanner engine owns the single accepted-result feedback event so Home and Stocktake receive consistent behavior. Consumer contracts and persistence semantics remain unchanged.
+- The confirmation tone gain is raised from 0.16 to 0.24; duration and frequency remain unchanged.

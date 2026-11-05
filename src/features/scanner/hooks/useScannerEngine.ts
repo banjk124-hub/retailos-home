@@ -3,7 +3,8 @@ import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { getCameraErrorMessage } from '../services/cameraErrors';
 import { acquireCameraStream, releaseCameraStream } from '../../../shared/services/cameraSession';
-import { playScannerBeep, unlockScannerAudio } from '../services/scannerAudio';
+import { playScannerFeedback } from '../services/scannerFeedback';
+import { unlockScannerAudio } from '../services/scannerAudio';
 
 export type ScannerMode = 'single' | 'continuous';
 
@@ -18,6 +19,7 @@ type Options = {
   mode?: ScannerMode;
   scanCooldownMs?: number;
   audioFeedback?: boolean;
+  hapticFeedback?: boolean;
 };
 
 function isAbortError(error: unknown): boolean {
@@ -40,6 +42,7 @@ export function useScannerEngine({
   mode = 'single',
   scanCooldownMs = 700,
   audioFeedback = true,
+  hapticFeedback = true,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
@@ -144,7 +147,7 @@ export function useScannerEngine({
 
         detectedOnceRef.current = true;
         lastDetectedAtRef.current = now;
-        if (audioFeedback) playScannerBeep();
+        playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
         onDetectedRef.current(value);
 
         if (mode === 'single') {
@@ -191,7 +194,7 @@ export function useScannerEngine({
         queueMicrotask(() => { void startScanner(); });
       }
     }
-  }, [audioFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const closeScanner = useCallback(() => {
     desiredActiveRef.current = false;
