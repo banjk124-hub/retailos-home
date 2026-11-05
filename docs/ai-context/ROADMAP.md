@@ -92,6 +92,29 @@ Release gate:
 - User verifies the branch locally.
 - Explicit user approval is required before merge to `main` or deployment.
 
+
+### 1.2E — Scan confirmation feedback
+**Goal:** make accepted barcode confirmation perceptible without coupling feedback availability to scanner correctness.
+
+Scope:
+- Raise the existing short confirmation tone gain conservatively from 0.16 to 0.24; retain its current frequency and duration.
+- Add a shared feedback service that coordinates audio and optional haptic feedback after a barcode passes format validation and mode/cooldown acceptance.
+- Use one short 25 ms vibration pulse when the browser exposes the Vibration API.
+- Keep audio gesture-unlocked and optional. Haptic/audio failures must never block the barcode callback.
+- Allow the shared scanner hook and BarcodeScanner presentation to disable haptic feedback explicitly; default it on.
+- Do not add dependencies, settings persistence, new UI controls, or changes to Home/Stocktake business behavior.
+
+Acceptance criteria:
+- Exactly one feedback attempt for each accepted result; none for invalid, unsupported, single-mode duplicate, or cooldown-blocked results.
+- Audio remains non-blocking and retains the existing gesture unlock behavior.
+- Android browsers that support Vibration API receive a short pulse; unsupported platforms continue normally without error.
+- iOS Safari is treated as unsupported unless the runtime exposes navigator.vibrate; no promise of vibration on iOS.
+- Barcode callback, Home cached lookup, Stocktake form-fill/explicit-save, and duplicate Stocktake record behavior remain unchanged.
+- npm run build, npm run build:pages, and git diff --check pass locally; physical device QA is reported separately.
+
+### 1.2E implementation boundary
+This slice changes confirmation feedback only. Camera lifecycle, camera acquisition timing, decoder scheduling, resolution, snapshot decoding, and background-resume behavior remain out of scope for 1.2E and are reserved for 1.2F/1.2G.
+
 ## Future platform roadmap (not authorized by this scanner phase)
 - Continue modularizing app shell, module registry, data contracts, providers and local-first sync only when supported by a separate audit and bounded proposal.
 - Do not expand this phase into backend replacement, database migration, auth redesign, or visual redesign.
