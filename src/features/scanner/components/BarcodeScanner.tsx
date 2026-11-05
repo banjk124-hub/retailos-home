@@ -16,6 +16,7 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const onDetectedRef = useRef(onDetected);
   const disposedRef = useRef(false);
   const startingRef = useRef(false);
   const lastDetectedAtRef = useRef(0);
@@ -23,6 +24,8 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
   const [isStarting, setIsStarting] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => { onDetectedRef.current = onDetected; }, [onDetected]);
 
   const stopScanner = useCallback((release = true) => {
     controlsRef.current?.stop();
@@ -59,7 +62,7 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
         if (mode === 'continuous' && now - lastDetectedAtRef.current < scanCooldownMs) return;
         detectedOnceRef.current = true;
         lastDetectedAtRef.current = now;
-        onDetected(result.getText());
+        onDetectedRef.current(result.getText());
         if (mode === 'single') {
           controlsRef.current?.stop();
           controlsRef.current = null;
@@ -82,7 +85,7 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
       startingRef.current = false;
       if (!disposedRef.current) setIsStarting(false);
     }
-  }, [mode, onDetected, scanCooldownMs]);
+  }, [mode, scanCooldownMs]);
 
   useEffect(() => {
     disposedRef.current = false;
