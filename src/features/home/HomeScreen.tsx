@@ -23,6 +23,7 @@ import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/d
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { releaseCameraStream } from '../../shared/services/cameraSession';
+import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
@@ -515,7 +516,10 @@ export default function HomeScreen({
     releaseCameraStream();
     setIsBarcodeScannerOpen(false);
   };
-  const openBarcodeScanner = () => setIsBarcodeScannerOpen(true);
+  const openBarcodeScanner = () => {
+    void unlockScannerAudio();
+    setIsBarcodeScannerOpen(true);
+  };
   const handleNav = (id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
