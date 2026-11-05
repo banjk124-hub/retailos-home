@@ -13,6 +13,7 @@ import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVEN
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
+import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
 import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
 import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
@@ -714,11 +715,11 @@ export default function HomeScreen({
       }))}
       activeId={activeNav}
       onSelect={handleNav}
-      action={{
+      action={isScannerSupportedDevice() ? {
         label: 'Quét mã',
         icon: ScanBarcode,
         onSelect: openBarcodeScanner,
-      }}
+      } : undefined}
     />
     {isBarcodeScannerOpen && <Suspense fallback={<section className="barcode-scanner" role="status"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Đang tải máy quét barcode…</p></div></section>}>
       <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" />
