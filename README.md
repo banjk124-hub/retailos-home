@@ -99,3 +99,15 @@ Lớp đồng bộ yêu cầu access token do xác thực backend cấp qua `syn
 - Không nhúng dữ liệu nội bộ hoặc bí mật vào bundle frontend/GitHub Pages.
 - Web Push cần backend nhận subscription và gửi push; quyền thông báo của trình duyệt một mình chưa gửi được thông báo.
 - Cần kiểm thử quyền camera, cài PWA và push trên Android thật và iOS/iPadOS thật trước khi triển khai sử dụng rộng rãi.
+
+
+## Module Kiểm kê (local-first)
+- Mở từ Thư viện nghiệp vụ → Kiểm kê.
+- Phiên kiểm kê, vùng, các lượt barcode, nhật ký và bản xuất được lưu trong IndexedDB riêng `retailos-stocktake`.
+- Nhập vùng theo dạng chữ + số, ví dụ `AT01`; file xuất có dòng `ADRESSE,AT,01`.
+- Mỗi lượt quét được lưu thành một dòng ARTICLE riêng; barcode trùng không tự gộp.
+- Trước khi xuất, nhân viên có thể thêm/sửa/xóa dòng và xem trước nội dung file.
+- Nhập lại vùng đã tồn tại sẽ yêu cầu xác nhận và tạo revision mới; revision cũ vẫn nằm trong lịch sử. Revision đã xuất được khóa.
+- File `.txt` dùng thời điểm xuất thực tế và có thể tải lại từ lịch sử file.
+- Xóa dữ liệu trong module chỉ xóa kho IndexedDB của Kiểm kê, không xóa cache module khác hoặc phiên đăng nhập.
+- Dữ liệu hiện chỉ lưu trên thiết bị; chưa đồng bộ lên backend hoặc thiết bị khác. Cần kiểm tra build và QA camera trên Android trước khi triển khai sử dụng thực tế.

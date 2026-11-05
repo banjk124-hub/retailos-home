@@ -21,6 +21,7 @@ import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../
 import type { MotionOrigin } from '../../shared/motion';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
+import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { releaseCameraStream } from '../../shared/services/cameraSession';
 
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
@@ -95,6 +96,7 @@ export default function HomeScreen({
   const noticeCloseButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
+  const [isStocktakeOpen, setIsStocktakeOpen] = useState(false);
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
@@ -806,8 +808,15 @@ export default function HomeScreen({
           <div className="app-library-modules">
             {filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).map((module) => {
               const ModuleIcon = getModuleIcon(module.id);
-              return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`)}>
-                <span className="module-icon"><MotionIcon icon={ModuleIcon} variant="module" size={20} /></span><span className="app-library-module-copy"><strong>{module.title}</strong><small>{module.description}</small><span className="module-availability">Đang tích hợp</span></span><ArrowUpRight size={16} className="app-library-module-arrow" />
+              return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => {
+                if (module.id === 'stocktake') {
+                  setSelectedLibrary(null);
+                  setIsStocktakeOpen(true);
+                  return;
+                }
+                announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`);
+              }}>
+                <span className="module-icon"><MotionIcon icon={ModuleIcon} variant="module" size={20} /></span><span className="app-library-module-copy"><strong>{module.title}</strong><small>{module.description}</small><span className="module-availability">{module.availability === 'ready' ? 'Đã triển khai' : 'Đang tích hợp'}</span></span><ArrowUpRight size={16} className="app-library-module-arrow" />
               </button>;
             })}
           </div>
@@ -833,6 +842,7 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
+    {isStocktakeOpen && <StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} />}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }

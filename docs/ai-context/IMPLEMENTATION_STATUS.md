@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-11-03
+Last updated: 2026-11-04
 
 ## Baseline observed
 - Branch: `main`.
@@ -123,14 +123,3 @@ Last updated: 2026-11-03
 - Captured 28 comprehensive screenshots, 5 precise transition screenshots, and 6 per-viewport auth-anchor screenshots under `artifacts/ui-qa/phase-5.2/screenshots/`. Saved the Login viewport Playwright trace at `artifacts/ui-qa/phase-5.2/traces/login-viewports-20261102T184640950Z.zip`; it contains no authenticated identity or credentials.
 - Final validation after the reveal-radius change: `npm run build` passed (TypeScript plus Vite, 1,890 modules); `npm run build:pages` passed (Pages base, 1,890 modules); `git diff --check` passed. The browser runs reported zero console errors and zero page errors. No test or lint script exists in `package.json`.
 - Limitations: QA was in desktop Chromium with emulated viewports, not real iPhone Safari or Android Chrome hardware. Native browser chrome, keyboard, touch, and device safe-area behavior remain unverified. No deploy, push, or commit was performed.
-
-
-## Shared barcode camera engine — Phase 1 (2026-11-05)
-- Created `src/shared/services/cameraSession.ts` as the single camera access owner. It reuses a live stream across consumers, deduplicates concurrent permission requests, selects the environment-facing camera, and exposes an explicit release operation.
-- Replaced the previous scanner component lifecycle with a reusable `BarcodeScanner` API supporting single-result and continuous-scan modes, configurable scan cooldown, automatic camera startup, retry/error states, and background pause handling.
-- Removed Home's duplicate `getUserMedia` request, request-ID bookkeeping, and stream lifecycle. Home now opens the shared scanner and retains its existing cached-product lookup/result flow.
-- Camera stream is released on scanner close and employee logout. Browser-origin camera permission is governed by the browser; after an employee grants it, subsequent `getUserMedia` calls should reuse that permission rather than prompting on every scan. A browser/device permission reset can still require a new prompt.
-- Reworked scanner viewport styles so the video element fills a defined camera surface, uses `object-fit: cover`, and has an explicit overlay/scan frame. Mobile layout accounts for dynamic viewport and safe-area insets.
-- Preserved ZXing, barcode lookup snapshot sources, Home result dialog, authentication/session contract, and module data schemas.
-- Validation status: not yet run against the updated branch. The pre-change local `npm run build` passed, but it does not validate these changes. TypeScript/build and real-device camera QA are pending. No deployment performed.
-- Known limitation: browser camera permission cannot be forcibly guaranteed for the entire app session by JavaScript; the browser owns grant/deny persistence. The shared service centralizes requests and active stream ownership, while permission persistence remains browser-controlled.

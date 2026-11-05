@@ -1,0 +1,52 @@
+.stocktake-backdrop{position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:clamp(8px,2vw,24px);background:rgba(24,17,21,.48);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.stocktake-panel{position:relative;width:min(100%,720px);max-height:min(92dvh,900px);overflow:auto;padding:clamp(16px,3vw,26px);border:1px solid rgba(255,255,255,.8);border-radius:26px;background:linear-gradient(155deg,#fff 0%,#fbf8f9 100%);box-shadow:0 28px 90px rgba(29,13,19,.24);color:#29232a}
+.stocktake-header{display:flex;align-items:center;gap:13px;padding-bottom:18px;border-bottom:1px solid #eee7ea}
+.stocktake-header>div{flex:1;min-width:0}.stocktake-header h2{margin:3px 0 0;font-size:clamp(21px,4vw,27px);letter-spacing:-.7px}.stocktake-eyebrow,.stocktake-section-title,.stocktake-export-preview>small{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#a08f97}
+.stocktake-icon-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid #eee5e9;border-radius:13px;background:#fff;color:#51434a;cursor:pointer}
+.stocktake-session-chip{padding:7px 10px;border-radius:10px;background:#f7eaed;color:#a21e32;font-size:11px;font-weight:800}
+.stocktake-employee{display:flex;align-items:center;gap:12px;margin:20px 0;padding:13px;border:1px solid #f0e8eb;border-radius:16px;background:#fff}
+.stocktake-avatar{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#f9e9ec;color:#b11d32;font-weight:800}
+.stocktake-employee>div{display:grid;gap:4px}.stocktake-employee small,.stocktake-muted{font-size:12px;color:#968991}
+.stocktake-zone-form,.stocktake-entry-form{display:grid;gap:10px;margin-top:18px}
+.stocktake-zone-form label,.stocktake-entry-form label{font-size:12px;font-weight:800;color:#574951}
+.stocktake-zone-form input,.stocktake-entry-form input{width:100%;min-height:48px;box-sizing:border-box;padding:0 14px;border:1px solid #e8dfe3;border-radius:13px;background:#fff;color:#30272c;font:600 16px system-ui,sans-serif;outline:none}
+.stocktake-zone-form input:focus,.stocktake-entry-form input:focus{border-color:#c84b5d;box-shadow:0 0 0 3px rgba(199,46,66,.1)}
+.stocktake-zone-form small{font-size:11px;color:#93868c}
+.stocktake-primary,.stocktake-secondary,.stocktake-danger-button{min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 16px;border:0;border-radius:13px;font-size:13px;font-weight:800;cursor:pointer}
+.stocktake-primary{background:linear-gradient(110deg,#b91f35,#dc3447);color:#fff;box-shadow:0 8px 20px rgba(190,31,54,.18)}
+.stocktake-primary:disabled{opacity:.45;cursor:not-allowed}.stocktake-secondary{width:100%;margin:8px 0;background:#f5edef;color:#6b4c56;border:1px solid #eee0e4}
+.stocktake-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.stocktake-shortcuts button,.stocktake-zone-history>button{min-width:0;display:flex;align-items:center;gap:9px;padding:13px;border:1px solid #eee6e9;border-radius:14px;background:#fff;color:#5d4c54;text-align:left;cursor:pointer}
+.stocktake-shortcuts button span{flex:1;font-size:12px;font-weight:700}
+.stocktake-zone-history{margin-top:20px}.stocktake-section-title{margin-bottom:9px}
+.stocktake-zone-history>button{width:100%;margin-top:8px}.stocktake-zone-history>button span{flex:1;display:grid;gap:4px}.stocktake-zone-history>button strong{font-size:14px}.stocktake-zone-history>button small{font-size:10px;color:#988a90}.stocktake-zone-history>button em{font-size:10px;font-style:normal;color:#a52a3d}
+.stocktake-danger-link{display:flex;align-items:center;gap:7px;margin:18px auto 2px;padding:9px;border:0;background:transparent;color:#b12c40;font-size:11px;font-weight:700;cursor:pointer}
+.stocktake-zone-banner{display:flex;align-items:center;justify-content:space-between;margin:18px 0;padding:15px 16px;border:1px solid #f0dfe4;border-radius:16px;background:linear-gradient(120deg,#fff,#fbf0f2)}
+.stocktake-zone-banner>div{display:grid;gap:4px}.stocktake-zone-banner small{font-size:9px;letter-spacing:1px;color:#9b7c85;font-weight:800}.stocktake-zone-banner strong{font-size:25px;letter-spacing:-.5px;color:#9e1d32}.stocktake-zone-banner>span{font-size:10px;font-weight:800;color:#a32b3e}
+.stocktake-count{display:flex;align-items:baseline;gap:8px;margin:12px 2px}.stocktake-count strong{font-size:35px;letter-spacing:-1px}.stocktake-count span{font-size:12px;color:#95878d}
+.stocktake-scan-button{width:100%;min-height:56px;font-size:15px}
+.stocktake-entry-form{padding:15px;border:1px solid #eee5e9;border-radius:17px;background:#fff}
+.stocktake-entry-form input{min-height:44px;font-size:15px}
+.stocktake-scan-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0}
+.stocktake-scan-actions button{display:inline-flex;align-items:center;gap:6px;padding:8px 0;border:0;background:transparent;color:#a3263a;font-size:12px;font-weight:800;cursor:pointer}
+.stocktake-scan-actions button+button{color:#88777f;font-weight:600}
+.stocktake-recent-entry,.stocktake-review-row{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid #f0e9ec}
+.stocktake-recent-entry span,.stocktake-review-row>div{flex:1;min-width:0;font-variant-numeric:tabular-nums}.stocktake-recent-entry strong{font-size:13px}
+.stocktake-recent-entry button,.stocktake-review-row button,.stocktake-history-list article>button{width:34px;height:34px;display:grid;place-items:center;border:1px solid #eee5e9;border-radius:10px;background:#fff;color:#8b6570;cursor:pointer}
+.stocktake-review-note{margin:12px 0;padding:12px;border-radius:12px;background:#f8f1f3;color:#79636c;font-size:11px;line-height:1.55}
+.stocktake-review-row>div{display:grid;gap:4px}.stocktake-review-row strong{font-size:12px;overflow-wrap:anywhere}.stocktake-review-row small{font-size:10px;color:#978991}.stocktake-review-row>b{min-width:36px;text-align:right;font-size:13px}
+.stocktake-export-preview{display:grid;gap:9px;margin:16px 0;padding:14px;border:1px solid #eee5e9;border-radius:14px;background:#2b2529;color:#f7edf0}
+.stocktake-export-preview>small{color:#d7aeb8}.stocktake-export-preview code{font-size:10px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;color:#fff}
+.stocktake-history-list{display:grid;gap:0;padding-top:12px}.stocktake-history-list article{display:flex;align-items:flex-start;gap:11px;padding:13px 0;border-bottom:1px solid #f0e9ec}.stocktake-history-list article>div{flex:1;min-width:0}.stocktake-history-list strong{font-size:12px;overflow-wrap:anywhere}.stocktake-history-list p{margin:4px 0;font-size:11px;line-height:1.5;color:#786a70}.stocktake-history-list small{font-size:10px;color:#a09399}.stocktake-history-icon{width:32px;height:32px;display:grid;place-items:center;flex-shrink:0;border-radius:10px;background:#f8ecef;color:#ae3347}
+.stocktake-error{margin:13px 0;padding:11px 13px;border:1px solid #f1cbd1;border-radius:12px;background:#fff2f3;color:#a51f34;font-size:12px;line-height:1.5}
+.stocktake-footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px;padding-top:13px;border-top:1px solid #eee7ea;color:#a09399;font-size:10px}
+.stocktake-confirm-backdrop{position:fixed;z-index:140;inset:0;display:grid;place-items:center;padding:18px;background:rgba(30,20,24,.48);backdrop-filter:blur(8px)}
+.stocktake-confirm{width:min(100%,420px);padding:22px;border:1px solid #fff;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.22)}
+.stocktake-confirm h3{margin:0 0 9px;font-size:19px}.stocktake-confirm p{font-size:13px;line-height:1.6;color:#766870}.stocktake-confirm>div{display:flex;gap:9px;margin-top:17px}.stocktake-confirm>div>*{flex:1}.stocktake-danger-button{background:#b51f34;color:#fff}
+.stocktake-scanner-layer{position:fixed;z-index:135;inset:0;display:grid;place-items:center;padding:10px;background:rgba(17,13,15,.76)}
+.stocktake-scanner-layer .barcode-scanner{position:relative;inset:auto;width:min(100%,560px);max-height:94dvh;overflow:auto}
+.stocktake-scanner-layer .barcode-scanner-card{max-height:94dvh;overflow:auto}
+@media(max-width:600px){.stocktake-backdrop{display:block;padding:0;background:#f8f4f5;backdrop-filter:none}.stocktake-panel{width:100%;height:100dvh;max-height:none;box-sizing:border-box;padding:calc(14px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none}.stocktake-shortcuts{grid-template-columns:1fr 1fr}.stocktake-header{position:sticky;top:0;z-index:2;background:#fff;padding:4px 0 13px}.stocktake-scanner-layer{padding:0}.stocktake-scanner-layer .barcode-scanner{width:100%;height:100dvh;max-height:100dvh}.stocktake-scanner-layer .barcode-scanner-card{height:100%;max-height:100%;border-radius:0}}
+@media(prefers-reduced-motion:reduce){.stocktake-backdrop *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.stocktake-history-zones article{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid #f0e9ec}.stocktake-history-zones article>div{flex:1;min-width:0}.stocktake-history-zones strong{font-size:12px}.stocktake-history-zones p{margin:4px 0;font-size:11px;color:#786a70}.stocktake-history-zones small{font-size:10px;color:#a09399}.stocktake-history-log-heading{margin-top:22px;padding-top:16px;border-top:1px solid #eee7ea}

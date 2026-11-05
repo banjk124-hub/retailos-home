@@ -46,7 +46,12 @@ export default function BarcodeScanner({ onDetected, onClose, mode = 'single', s
 
     try {
       const stream = await acquireCameraStream();
-      if (disposedRef.current || !videoRef.current) return;
+      if (disposedRef.current || !videoRef.current) {
+        // getUserMedia cannot be cancelled reliably; release a stream that resolves after unmount.
+        releaseCameraStream();
+        streamRef.current = null;
+        return;
+      }
       streamRef.current = stream;
       const video = videoRef.current;
       video.srcObject = stream;

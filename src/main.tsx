@@ -20,6 +20,7 @@ import './shared/components/glass/glass.tokens.css';
 import './shared/components/glass/glass.materials.css';
 import './shared/navigation/LiquidDock.css';
 import './styles/login-experience.css';
+import './features/stocktake/components/stocktake.css';
 import { MotionBoundary, MotionProvider } from './shared/motion';
 
 createRoot(document.getElementById('root')!).render(
