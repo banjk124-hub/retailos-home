@@ -180,3 +180,11 @@ Last updated: 2026-11-04
 - Local verification commands: npm run build, npm run build:pages, and git diff --check.
 - Device QA: compare beep loudness at normal device volume; confirm one short vibration on supported Android; confirm iOS continues scanning without vibration errors; verify invalid/cooldown-blocked detections do not trigger feedback; verify Home and Stocktake behavior.
 - Next step: user checks out this branch and runs local verification. Keep branch unmerged and undeployed.
+
+### Local verification evidence — Phase 1.2E
+- User checked out `phase-1-2e-scanner-feedback`; Git reported the branch tracks `origin/phase-1-2e-scanner-feedback` and was up to date.
+- User ran `npm run build`: passed. TypeScript project build completed; Vite 6.4.4 transformed 1,899 modules and produced production assets.
+- User ran `npm run build:pages`: passed. TypeScript project build completed; Vite 6.4.4 transformed 1,899 modules and produced GitHub Pages-base assets.
+- User ran `git diff main...HEAD --check`: no output was reported, consistent with a clean whitespace/conflict-marker check.
+- These results establish compile/build readiness only. No physical Android/iOS scanner feedback QA has yet been reported. No automated test script is currently defined.
+- The initial `git status --short` showed untracked `artifacts/` and a path printed as `"tatus --short"`. Preserve both; inspect locally before any cleanup. They are not assumed to be part of this phase.
