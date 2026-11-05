@@ -8,6 +8,7 @@ type Props = {
   mode?: ScannerMode;
   scanCooldownMs?: number;
   audioFeedback?: boolean;
+  hapticFeedback?: boolean;
 };
 
 /**
@@ -20,8 +21,9 @@ export default function BarcodeScanner({
   mode = 'single',
   scanCooldownMs = 700,
   audioFeedback = true,
+  hapticFeedback = true,
 }: Props) {
-  const scanner = useScannerEngine({ onDetected, mode, scanCooldownMs, audioFeedback });
+  const scanner = useScannerEngine({ onDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback });
 
   const handleClose = () => {
     scanner.closeScanner();
