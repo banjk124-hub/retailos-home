@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
-import BarcodeScanner from '../../scanner/components/BarcodeScanner';
+import { lazy, Suspense } from 'react';
+
+const BarcodeScanner = lazy(
+  () => import('../../scanner/components/BarcodeScanner')
+);
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
@@ -393,7 +397,17 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         <footer className="stocktake-footer"><span>Dữ liệu được lưu cục bộ trên thiết bị</span><span>RetailOS</span></footer>
       </section>
 
-      {scannerOpen && screen === 'scan' && <div className="stocktake-scanner-layer"><BarcodeScanner initialStream={null} initialError="" onDetected={acceptBarcode} onClose={() => setScannerOpen(false)} /></div>}
+      {scannerOpen && screen === 'scan' && (
+  <div className="stocktake-scanner-layer">
+    <Suspense fallback={<div>Đang tải máy quét...</div>}>
+      <BarcodeScanner
+        mode="single"
+        onDetected={acceptBarcode}
+        onClose={() => setScannerOpen(false)}
+      />
+    </Suspense>
+  </div>
+)}
 
       {pendingZone?.previous && <div className="stocktake-confirm-backdrop"><section className="stocktake-confirm" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-replace-title"><h3 id="stocktake-replace-title">Vùng {pendingZone.code} đã tồn tại</h3><p>Tiếp tục sẽ thay thế dữ liệu hiện hành của vùng này bằng một revision mới. Dữ liệu cũ vẫn được giữ trong lịch sử, không thể dùng làm dữ liệu hiện hành.</p><div><button type="button" className="stocktake-secondary" onClick={() => setPendingZone(null)}>Hủy</button><button type="button" className="stocktake-danger-button" onClick={() => void beginZone(true)}>Xác nhận làm lại vùng</button></div></section></div>}
 
