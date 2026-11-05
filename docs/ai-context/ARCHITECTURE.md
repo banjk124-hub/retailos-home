@@ -41,3 +41,13 @@ Do not collapse these into a single boolean such as `available`.
 - Never push/deploy without user approval.
 - Verify build commands from `package.json` and `vite.config.ts` first.
 - Check Git diff and exclude secrets, generated artifacts, `node_modules`, and user data.
+
+
+## Scanner invariants (Phase 1.2)
+- Supported store symbologies: EAN-13, EAN-8 and CODE-128. The decoder must whitelist these explicitly; verify the installed ZXing API before importing types or adding dependencies.
+- One active decoder per scanner session. Start, pause, resume and close must be idempotent; stale asynchronous work must not attach a stream or deliver callbacks after cancellation.
+- Validate decoded format and payload before invoking feature callbacks. EAN values are format-specific; CODE-128 remains an opaque string and must not be coerced to numeric.
+- Scanner layer must not require catalog existence. Unknown barcodes remain valid operational input where the consuming workflow permits them.
+- Preserve Home cached lookup, Stocktake form-fill/explicit-save semantics, duplicate Stocktake rows, and manual entry.
+- Do not tune resolution/decode interval until actual device settings and scan latency are measured.
+- See `ROADMAP.md` for phase acceptance criteria and `DECISIONS.md` for accepted decisions.
