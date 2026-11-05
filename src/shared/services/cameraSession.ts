@@ -48,6 +48,9 @@ export async function acquireCameraStream(): Promise<MediaStream> {
 /** Invalidate pending getUserMedia work and release any active stream. */
 export function releaseCameraStream(): void {
   requestGeneration += 1;
+  // Detach an unresolved request so a newly opened scanner can start a fresh one.
+  // The old request still self-cancels when getUserMedia eventually resolves.
+  pendingRequest = null;
   const stream = activeStream;
   activeStream = null;
   stream?.getTracks().forEach((track) => track.stop());
