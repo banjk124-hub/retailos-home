@@ -133,3 +133,37 @@ Last updated: 2026-11-04
 - Governance objective: establish repository-based AI handoff, phase roadmap, decision log and session protocol so a different AI/chat can continue from source-controlled state.
 - Verification limitation: this session has inspected GitHub source only. It has not inspected the user's local working tree, run npm scripts, run tests, or performed real Android/iOS device QA. Do not mark implementation or validation complete until those checks occur.
 - Next action: implement Phase 1.2A correctness/lifecycle in small increments; inspect local `git status --short` and baseline before local checkout; validate with tests/build; update this record with exact evidence.
+
+
+## Phase 1.2 — Scanner foundation and cross-AI continuity
+
+### Phase roadmap and acceptance gates
+**1.2A Correctness/lifecycle (current slice)**
+- Explicitly whitelist EAN-13, EAN-8, CODE-128.
+- Validate decoded format/payload before callbacks; preserve CODE-128 as string.
+- Prevent concurrent decoder attachment; coalesce lifecycle restarts; stop single-scan decoder even when the first result arrives before decoder controls are assigned.
+- Reject stale async work after close/pause and preserve existing Home/Stocktake contracts.
+- Acceptance: branch builds; local regression checks; Android Chrome and iOS Safari camera QA; no duplicate decoder, stale callback, or duplicate single-mode callback.
+
+**1.2B Camera performance/diagnostics**
+- Measure acquisition, video readiness, decoder attach, first valid scan, resume latency and actual track settings.
+- Compare 960x540 and 1280x720 plus decode intervals around 100/120/150 ms on representative devices. Do not change current values based on assumption alone.
+
+**1.2C Audio and continuous scan**
+- Keep audio optional and non-blocking; beep only after accepted result.
+- Define same-code lockout separately from persisted data deduplication. Preserve duplicate Stocktake records.
+- Keep Home/Stocktake single mode until continuous mode is tested.
+
+**1.2D Regression/release**
+- Verify Home cached lookup; Stocktake form-fill/explicit save; duplicate rows; manual entry; permission denied/dismissed/revoked; background/foreground; focus/pageshow; close while camera request is pending; ended track.
+- Run `npm run build`, `npm run build:pages`, targeted tests and `git diff --check`.
+- User performs local verification and explicitly approves merge/deploy.
+
+### 2026-11-05 — Current branch handoff
+- Branch: `phase/1.2-scanner-foundation-and-project-continuity`.
+- Base main: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198`.
+- Source changes on branch: decoder-active guard; ZXing format whitelist for EAN-13/EAN-8/CODE-128; format-specific payload validation; stop-after-attach handling for the single-scan callback race; `@zxing/library ^0.23.0` declared as a direct dependency and lockfile root dependency.
+- Documentation changes: AGENTS cross-session operating rules; PROJECT_CONTEXT canonical AI entry point/session protocol; ARCHITECTURE scanner invariants and accepted decisions; this file contains phase roadmap and verified handoff.
+- Validation: no local npm install, TypeScript build, Pages build, automated tests, or physical-device QA has been run by this remote GitHub session. The branch is prepared for local verification; do not call Phase 1.2A complete until those checks pass.
+- Known remaining work: add focused automated tests for validator and lifecycle races using the repository's installed tooling; inspect cameraSession ownership/race behavior; then measure performance and handle track-ended recovery in later slices.
+- Next action for local checkout: fetch branch, inspect `git status --short` before switching, install dependencies if needed, run `npm run build` and `npm run build:pages`, exercise scanner on Android/iOS, report any failures for a minimal patch. Do not merge until verification is accepted.
