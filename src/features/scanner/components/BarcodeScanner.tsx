@@ -1,125 +1,109 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
 import { AlertTriangle, Camera, X } from 'lucide-react';
 import { getCameraErrorMessage } from '../services/cameraErrors';
+import { acquireCameraStream, releaseCameraStream } from '../../../shared/services/cameraSession';
 
 type Props = {
   onDetected: (value: string) => void;
   onClose: () => void;
-  initialStream: MediaStream | null;
-  initialError: string;
+  /** single closes through the caller after one result; continuous keeps decoding. */
+  mode?: 'single' | 'continuous';
+  scanCooldownMs?: number;
 };
 
-export default function BarcodeScanner({ onDetected, onClose, initialStream, initialError }: Props) {
+export default function BarcodeScanner({ onDetected, onClose, mode = 'single', scanCooldownMs = 700 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const isDisposedRef = useRef(false);
-  const isStartingRef = useRef(false);
-  const hasDetectedRef = useRef(false);
-  const [isStarting, setIsStarting] = useState(false);
+  const disposedRef = useRef(false);
+  const startingRef = useRef(false);
+  const lastDetectedAtRef = useRef(0);
+  const detectedOnceRef = useRef(false);
+  const [isStarting, setIsStarting] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    isDisposedRef.current = false;
-    return () => {
-      isDisposedRef.current = true;
-      controlsRef.current?.stop();
-      controlsRef.current = null;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
+  const stopScanner = useCallback((release = true) => {
+    controlsRef.current?.stop();
+    controlsRef.current = null;
+    if (release) {
+      releaseCameraStream();
       streamRef.current = null;
-    };
-  }, []);
-  useEffect(() => {
-    const stopForBackground = () => {
-      controlsRef.current?.stop();
-      controlsRef.current = null;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      setIsScanning(false);
-      if (!isDisposedRef.current) {
-        setError('Camera đã tạm dừng khi ứng dụng chuyển nền. Chạm “Thử lại” để tiếp tục quét.');
-      }
-    };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') stopForBackground();
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pagehide', stopForBackground);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pagehide', stopForBackground);
-    };
+    }
+    setIsScanning(false);
   }, []);
 
-  const startScanner = async (providedStream?: MediaStream) => {
-    if (!videoRef.current || isStartingRef.current || isStarting || isScanning) return;
-    if (!providedStream && (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia)) {
-      setError('Camera chỉ hoạt động trên HTTPS hoặc localhost. Hãy mở ứng dụng bằng địa chỉ bảo mật rồi thử lại.');
-      return;
-    }
-    isStartingRef.current = true;
+  const startScanner = useCallback(async () => {
+    if (startingRef.current || disposedRef.current || !videoRef.current) return;
+    startingRef.current = true;
     setIsStarting(true);
     setError('');
-    hasDetectedRef.current = false;
+    detectedOnceRef.current = false;
 
     try {
-      const reader = new BrowserMultiFormatReader();
-      const stream = providedStream ?? await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: { ideal: 'environment' } },
-      });
+      const stream = await acquireCameraStream();
+      if (disposedRef.current || !videoRef.current) return;
       streamRef.current = stream;
-      setIsScanning(true);
-      const controls = await reader.decodeFromStream(
-        stream,
-        videoRef.current,
-        (result, _decodeError, scannerControls) => {
-          if (!result || hasDetectedRef.current) return;
-          hasDetectedRef.current = true;
-          scannerControls.stop();
+      const video = videoRef.current;
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
+      await video.play();
+
+      const reader = new BrowserMultiFormatReader(undefined, { delayBetweenScanAttempts: 70 });
+      const controls = await reader.decodeFromStream(stream, video, (result) => {
+        if (!result || disposedRef.current) return;
+        const now = Date.now();
+        if (mode === 'single' && detectedOnceRef.current) return;
+        if (mode === 'continuous' && now - lastDetectedAtRef.current < scanCooldownMs) return;
+        detectedOnceRef.current = true;
+        lastDetectedAtRef.current = now;
+        onDetected(result.getText());
+        if (mode === 'single') {
+          controlsRef.current?.stop();
           controlsRef.current = null;
-          streamRef.current = null;
           setIsScanning(false);
-          onDetected(result.getText());
-        },
-      );
-      if (isDisposedRef.current) {
+        }
+      });
+      if (disposedRef.current) {
         controls.stop();
-        streamRef.current = null;
         return;
       }
       controlsRef.current = controls;
+      setIsScanning(true);
     } catch (cause) {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      if (isDisposedRef.current) return;
-      setIsScanning(false);
-      setError(getCameraErrorMessage(cause));
+      if (!disposedRef.current) {
+        setError(getCameraErrorMessage(cause));
+        releaseCameraStream();
+        streamRef.current = null;
+      }
     } finally {
-      isStartingRef.current = false;
-      setIsStarting(false);
+      startingRef.current = false;
+      if (!disposedRef.current) setIsStarting(false);
     }
-  };
+  }, [mode, onDetected, scanCooldownMs]);
 
   useEffect(() => {
-    if (initialStream) void startScanner(initialStream);
-  }, [initialStream]);
-  useEffect(() => {
-    if (initialError) setError(initialError);
-  }, [initialError]);
-
-  const stopScanner = () => {
-    controlsRef.current?.stop();
-    controlsRef.current = null;
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    setIsScanning(false);
-  };
+    disposedRef.current = false;
+    void startScanner();
+    const pauseForBackground = () => {
+      if (document.visibilityState === 'hidden') {
+        stopScanner(true);
+        if (!disposedRef.current) setError('Camera đã tạm dừng khi ứng dụng chuyển nền. Chạm “Thử lại” để tiếp tục quét.');
+      }
+    };
+    document.addEventListener('visibilitychange', pauseForBackground);
+    return () => {
+      disposedRef.current = true;
+      document.removeEventListener('visibilitychange', pauseForBackground);
+      stopScanner(true);
+      if (videoRef.current) videoRef.current.srcObject = null;
+    };
+  }, [startScanner, stopScanner]);
 
   const handleClose = () => {
-    stopScanner();
+    stopScanner(true);
     onClose();
   };
 
@@ -127,41 +111,19 @@ export default function BarcodeScanner({ onDetected, onClose, initialStream, ini
     <div className="barcode-scanner-card">
       <header className="barcode-scanner-header">
         <span className="barcode-scanner-title-icon"><Camera size={19} /></span>
-        <div>
-          <h2 id="barcode-scanner-title">Quét mã vạch</h2>
-          <p>Đưa mã vạch vào khung hình</p>
-        </div>
+        <div><h2 id="barcode-scanner-title">Quét mã vạch</h2><p>Đưa mã vạch vào khung hình</p></div>
         <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng máy quét"><X size={19} /></button>
       </header>
-
-      <ol className="barcode-flow-steps" aria-label="Tiến trình quét barcode">
-        <li className="is-active"><span>01</span>Quét mã</li>
-        <li><span>02</span>Tra cứu</li>
-        <li><span>03</span>Kết quả</li>
-      </ol>
-
       <div className={`barcode-scanner-view ${isScanning ? 'is-scanning' : ''}`}>
-        <video ref={videoRef} muted playsInline aria-label="Hình ảnh camera để quét mã vạch" />
+        <video ref={videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để quét mã vạch" />
         {isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
-        {!isScanning && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>{isStarting ? 'Đang kết nối camera để bắt đầu quét…' : error ? 'Không thể tự mở camera. Kiểm tra quyền truy cập rồi thử lại.' : 'Đang chuẩn bị camera…'}</span></div>}
+        {isStarting && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Đang kết nối camera…</span></div>}
+        {!isStarting && error && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Camera chưa sẵn sàng</span></div>}
       </div>
-
       <p className="barcode-scanner-hint">Giữ mã vạch rõ nét, đủ sáng và nằm trong khung.</p>
       {error && <p className="barcode-scanner-error" role="alert"><AlertTriangle size={16} />{error}</p>}
-
-      {isScanning
-        ? <button className="barcode-scanner-action barcode-scanner-action--secondary" type="button" onClick={stopScanner}>Dừng camera</button>
-        : <button
-          className="barcode-scanner-action"
-          type="button"
-          disabled={isStarting}
-          onClick={() => { void startScanner(); }}
-        >
-          <Camera size={17} />{isStarting ? 'Đang mở camera…' : 'Bắt đầu quét'}
-        </button>}
-
       {error && <button className="barcode-scanner-retry" type="button" onClick={() => { void startScanner(); }}>Thử lại</button>}
-      <span className="barcode-scanner-status" aria-live="polite">{isScanning ? 'Đang quét…' : 'Camera tắt'}</span>
+      <span className="barcode-scanner-status" aria-live="polite">{isScanning ? 'Đang quét…' : isStarting ? 'Đang mở camera…' : 'Camera tắt'}</span>
     </div>
   </section>;
 }
