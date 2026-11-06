@@ -27,7 +27,7 @@ function hasValidEanChecksum(value: string): boolean {
   const body = value.slice(0, -1);
   const expected = Number(value.slice(-1));
   const sum = [...body].reduce((total, digit, index) => {
-    const weight = (body.length - index) % 2 === 0 ? 3 : 1;
+    const weight = (body.length - index) % 2 === 1 ? 3 : 1;
     return total + Number(digit) * weight;
   }, 0);
   return (10 - (sum % 10)) % 10 === expected;
