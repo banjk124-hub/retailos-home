@@ -71,9 +71,10 @@ export class UniversalScannerSession implements ScannerSession {
     if (this.startPromise) return this.startPromise;
     const pending = this.startInternal();
     this.startPromise = pending;
-    void pending.finally(() => {
-      if (this.startPromise === pending) this.startPromise = null;
-    });
+    void pending.then(
+      () => { if (this.startPromise === pending) this.startPromise = null; },
+      () => { if (this.startPromise === pending) this.startPromise = null; },
+    );
     return pending;
   }
 
