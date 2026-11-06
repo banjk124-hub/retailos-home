@@ -19,6 +19,7 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   CODE_128: BarcodeFormat.CODE_128,
 };
 
+const MAX_FRAME_WIDTH = 1280;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
     format,
@@ -76,18 +77,20 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private context: CanvasRenderingContext2D | null = null;
   private formats: ScannerSymbology[] = [];
   private decoding = false;
+  private disposed = false;
+  private lastUnexpectedErrorLogAt = 0;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
+    if (this.disposed) throw new Error('ZXing adapter has been disposed.');
     const requested = [...new Set(formats)];
     if (requested.length === 0) {
       throw new Error('At least one barcode format must be requested.');
     }
 
     const hints = new Map<DecodeHintType, unknown>();
-    hints.set(
-      DecodeHintType.POSSIBLE_FORMATS,
-      requested.map((format) => FORMAT_MAP[format]),
-    );
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, requested.map((format) => FORMAT_MAP[format]));
+    hints.set(DecodeHintType.TRY_HARDER, true);
+    hints.set(DecodeHintType.CHARACTER_SET, 'UTF-8');
 
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -106,7 +109,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     source: CanvasImageSource,
     timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(),
   ): Promise<DecoderOutput[]> {
-    if (!this.reader || !this.canvas || !this.context) {
+    if (this.disposed || !this.reader || !this.canvas || !this.context) {
       throw new Error('ZXing adapter has not been initialized.');
     }
 
@@ -115,7 +118,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
 
     this.decoding = true;
     try {
-      const { width, height } = getFrameDimensions(source);
+      const dimensions = getFrameDimensions(source);
+      const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
+      const width = Math.max(1, Math.round(dimensions.width * scale));
+      const height = Math.max(1, Math.round(dimensions.height * scale));
       this.canvas.width = width;
       this.canvas.height = height;
       this.context.drawImage(source, 0, 0, width, height);
@@ -139,9 +145,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           timestamp,
           decoder: { id: this.id },
         }];
-      } catch {
-        // NotFound / checksum / format exceptions are expected for ordinary
-        // video frames that do not contain a readable supported barcode.
+      } catch (error) {
+        // Normal misses are expected for video frames without a readable code.
+        // Unexpected failures are rate-limited so a broken decoder is observable.
+        const name = error instanceof Error ? error.name : '';
+        const expectedMiss = ['NotFoundException', 'ChecksumException', 'FormatException'].includes(name);
+        const now = Date.now();
+        if (!expectedMiss && now - this.lastUnexpectedErrorLogAt >= 5_000) {
+          this.lastUnexpectedErrorLogAt = now;
+          console.warn('[RetailOS Scanner] Unexpected ZXing decode failure:', error);
+        }
         return [];
       } finally {
         this.reader.reset();
@@ -152,6 +165,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   }
 
   dispose(): void {
+    this.disposed = true;
     this.reader?.reset();
     this.reader = null;
     this.context = null;

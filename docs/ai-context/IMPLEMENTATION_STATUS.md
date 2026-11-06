@@ -142,7 +142,7 @@ Last updated: 2026-11-04
 - Reviewed current `main`: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198`.
 - Created isolated work branch: `phase/1.2-scanner-foundation-and-project-continuity`; no merge or deployment performed.
 - Confirmed source risks: scanner start only guards while startup is pending, not when a decoder is already attached; lifecycle events can request overlapping restarts; decoder has no explicit whitelist for EAN-13/EAN-8/CODE-128; decoded text is passed directly to the feature callback without a format/payload validation boundary.
-- Confirmed `package.json` has `build` and `build:pages` but no test/lint script. `@zxing/browser ^0.2.1` is declared; do not import ZXing transitive symbols without confirming package exports/dependency graph.
+- Confirmed `package.json` has `build` and `build:pages` but no test/lint script. `@zxing/library ^0.23.0` is the direct ZXing decoder dependency; `@zxing/browser` is not used.
 - Governance objective: establish repository-based AI handoff, phase roadmap, decision log and session protocol so a different AI/chat can continue from source-controlled state.
 - Verification limitation: this session has inspected GitHub source only. It has not inspected the user's local working tree, run npm scripts, run tests, or performed real Android/iOS device QA. Do not mark implementation or validation complete until those checks occur.
 - Next action: implement Phase 1.2A correctness/lifecycle in small increments; inspect local `git status --short` and baseline before local checkout; validate with tests/build; update this record with exact evidence.

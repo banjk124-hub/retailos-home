@@ -71,8 +71,6 @@ export type ScannerCapabilities = {
   secureContext: boolean;
   mediaDevices: boolean;
   getUserMedia: boolean;
-  nativeBarcodeDetector: boolean;
-  nativeFormats: ScannerSymbology[];
   requestVideoFrameCallback: boolean;
   worker: boolean;
   webAssembly: boolean;

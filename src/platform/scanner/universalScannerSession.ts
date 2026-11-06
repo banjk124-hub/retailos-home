@@ -7,7 +7,7 @@ import type {
 } from './contracts';
 import { acquireCameraStream, releaseCameraStream, subscribeCameraTrackEnded } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
-import { ZBarWasmDecoderAdapter } from './decoders/zbarWasmDecoder';
+import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 
 function scannerError(cause: unknown): ScannerError {
   const name = cause instanceof DOMException ? cause.name : '';
@@ -52,6 +52,7 @@ export class UniversalScannerSession implements ScannerSession {
   private frameKind: 'video' | 'raf' | null = null;
   private generation = 0;
   private decoding = false;
+  private lastDecodeAt = 0;
   private startPromise: Promise<void> | null = null;
   private diagnosticStartedAt = Date.now();
   private diagnosticFrames = 0;
@@ -135,7 +136,7 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async createDecoder(): Promise<ScannerDecoderAdapter> {
-    const decoder = new ZBarWasmDecoderAdapter();
+    const decoder = new ZXingDecoderAdapter();
     try {
       await decoder.initialize({ formats: this.options.formats });
       return decoder;
@@ -167,11 +168,14 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async processFrame(timestamp: number, generation: number): Promise<void> {
-    if (this.decoding || !this.decoder || this.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    const minDecodeIntervalMs = 110;
+    if (this.decoding || !this.decoder || this.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA
+      || timestamp - this.lastDecodeAt < minDecodeIntervalMs) {
       this.scheduleNextFrame(generation);
       return;
     }
     this.decoding = true;
+    this.lastDecodeAt = timestamp;
     try {
       const results = await this.decoder.decode(this.video, timestamp);
       if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
