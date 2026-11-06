@@ -9,8 +9,6 @@ import { acquireCameraStream, releaseCameraStream, subscribeCameraTrackEnded } f
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZBarWasmDecoderAdapter } from './decoders/zbarWasmDecoder';
 
-const FORMATS: ScannerSymbology[] = ['EAN_8', 'EAN_13', 'CODE_128'];
-
 function scannerError(cause: unknown): ScannerError {
   const name = cause instanceof DOMException ? cause.name : '';
   const message = cause instanceof Error ? cause.message : 'Không thể khởi động máy quét.';
@@ -19,20 +17,19 @@ function scannerError(cause: unknown): ScannerError {
   }
   if (name === 'NotFoundError') return { code: 'DEVICE_NOT_FOUND', message: 'Không tìm thấy camera trên thiết bị.', recoverable: true, cause };
   if (name === 'NotReadableError') return { code: 'DEVICE_BUSY', message: 'Camera đang được ứng dụng khác sử dụng.', recoverable: true, cause };
+  if (name === 'AbortError') return { code: 'LIFECYCLE_CONFLICT', message: 'Yêu cầu camera cũ đã bị hủy. Hãy thử mở lại máy quét.', recoverable: true, cause };
   if (!window.isSecureContext) return { code: 'INSECURE_CONTEXT', message: 'Camera cần HTTPS hoặc localhost.', recoverable: false, cause };
   return { code: 'UNKNOWN', message, recoverable: true, cause };
 }
 
 function isValidValue(value: string, symbology: ScannerSymbology): boolean {
-  if (symbology === 'EAN_8') return /^\d{8}$/.test(value);
-  if (symbology === 'EAN_13') return /^\d{13}$/.test(value);
-  return value.length > 0 && !/[\u0000-\u001f\u007f]/.test(value);
+  const normalized = value.trim();
+  if (symbology === 'EAN_8') return /^\d{8}$/.test(normalized);
+  if (symbology === 'EAN_13') return /^\d{13}$/.test(normalized);
+  return normalized.length > 0 && !/[\u0000-\u001f\u007f]/.test(normalized);
 }
 
-/**
- * One live scanner session. It owns exactly one camera lease, one decoder and
- * one bounded frame loop. Feature components own presentation and actions.
- */
+/** Owns one camera lease, one decoder and one bounded frame loop. */
 export class UniversalScannerSession implements ScannerSession {
   readonly id = `scanner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   private currentState: ScannerLifecycleState = 'idle';
@@ -42,16 +39,13 @@ export class UniversalScannerSession implements ScannerSession {
   private frameKind: 'video' | 'raf' | null = null;
   private generation = 0;
   private decoding = false;
+  private startPromise: Promise<void> | null = null;
   private lastAcceptedAt = 0;
   private acceptedSingle = false;
   private disposed = false;
   private unsubscribeTrackEnded: (() => void) | null = null;
 
-  constructor(
-    private readonly video: HTMLVideoElement,
-    private readonly options: ScannerOpenOptions,
-  ) {}
-
+  constructor(private readonly video: HTMLVideoElement, private readonly options: ScannerOpenOptions) {}
   get state(): ScannerLifecycleState { return this.currentState; }
 
   private setState(state: ScannerLifecycleState): void {
@@ -59,8 +53,18 @@ export class UniversalScannerSession implements ScannerSession {
     this.options.onStateChange?.(state);
   }
 
-  async start(): Promise<void> {
-    if (this.disposed || this.currentState === 'scanning' || this.currentState === 'requesting') return;
+  start(): Promise<void> {
+    if (this.disposed || this.currentState === 'scanning') return Promise.resolve();
+    if (this.startPromise) return this.startPromise;
+    const pending = this.startInternal();
+    this.startPromise = pending;
+    void pending.finally(() => {
+      if (this.startPromise === pending) this.startPromise = null;
+    });
+    return pending;
+  }
+
+  private async startInternal(): Promise<void> {
     const generation = ++this.generation;
     this.setState('requesting');
     try {
@@ -84,6 +88,7 @@ export class UniversalScannerSession implements ScannerSession {
         this.setState('error');
         this.options.onError?.({ code: 'STREAM_INTERRUPTED', message: 'Kết nối camera bị gián đoạn. Hãy nhấn thử lại để kết nối.', recoverable: true });
       });
+
       this.video.srcObject = stream;
       this.video.muted = true;
       this.video.playsInline = true;
@@ -91,33 +96,37 @@ export class UniversalScannerSession implements ScannerSession {
       if (this.disposed || generation !== this.generation) return;
 
       this.setState('initializing');
-      this.decoder = await this.createDecoder();
+      const decoder = await this.createDecoder();
       if (this.disposed || generation !== this.generation) {
-        await this.decoder.dispose();
-        this.decoder = null;
+        await decoder.dispose();
         return;
       }
+      this.decoder = decoder;
       this.acceptedSingle = false;
       this.setState('scanning');
       this.scheduleNextFrame(generation);
     } catch (cause) {
+      if (generation !== this.generation || this.disposed) return;
       await this.teardown(true);
-      if (!this.disposed && generation === this.generation) {
-        const error = scannerError(cause);
-        this.setState('error');
-        this.options.onError?.(error);
-      }
+      const error = scannerError(cause);
+      this.setState('error');
+      this.options.onError?.(error);
     }
   }
 
   private async createDecoder(): Promise<ScannerDecoderAdapter> {
     const decoder = new ZBarWasmDecoderAdapter();
-    await decoder.initialize({ formats: this.options.formats });
-    return decoder;
+    try {
+      await decoder.initialize({ formats: this.options.formats });
+      return decoder;
+    } catch (error) {
+      await decoder.dispose();
+      throw error;
+    }
   }
 
   private scheduleNextFrame(generation: number): void {
-    if (this.disposed || generation !== this.generation || this.currentState !== 'scanning') return;
+    if (this.disposed || generation !== this.generation || this.currentState !== 'scanning' || this.frameHandle !== null) return;
     const video = this.video as HTMLVideoElement & {
       requestVideoFrameCallback?: (callback: (now: number) => void) => number;
       cancelVideoFrameCallback?: (handle: number) => void;
@@ -148,20 +157,27 @@ export class UniversalScannerSession implements ScannerSession {
       if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
       const now = Date.now();
       for (const result of results) {
-        if (!isValidValue(result.value, result.symbology)) continue;
+        const value = result.value.trim();
+        if (!isValidValue(value, result.symbology)) continue;
         if (this.options.mode === 'single' && this.acceptedSingle) break;
         if (this.options.mode === 'continuous' && now - this.lastAcceptedAt < (this.options.sameCodeCooldownMs ?? 700)) continue;
         this.acceptedSingle = true;
         this.lastAcceptedAt = now;
-        this.options.onResult(result);
+        this.options.onResult({ ...result, value });
         if (this.options.mode === 'single') {
           await this.close();
           return;
         }
       }
     } catch (cause) {
-      const error = { code: 'DECODER_FAILED' as const, message: cause instanceof Error ? cause.message : 'Lỗi giải mã barcode.', recoverable: true, cause };
-      this.options.onError?.(error);
+      if (generation === this.generation && !this.disposed) {
+        this.options.onError?.({
+          code: 'DECODER_FAILED',
+          message: cause instanceof Error ? cause.message : 'Lỗi giải mã barcode.',
+          recoverable: true,
+          cause,
+        });
+      }
     } finally {
       this.decoding = false;
       this.scheduleNextFrame(generation);
@@ -189,9 +205,7 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async teardown(release: boolean): Promise<void> {
-    const video = this.video as HTMLVideoElement & {
-      cancelVideoFrameCallback?: (handle: number) => void;
-    };
+    const video = this.video as HTMLVideoElement & { cancelVideoFrameCallback?: (handle: number) => void };
     if (this.frameHandle !== null) {
       if (this.frameKind === 'video' && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(this.frameHandle);
       else if (this.frameKind === 'raf') window.cancelAnimationFrame(this.frameHandle);
@@ -207,6 +221,5 @@ export class UniversalScannerSession implements ScannerSession {
     this.stream = null;
     if (this.video.srcObject === stream) this.video.srcObject = null;
     if (release && stream) releaseCameraStream(stream);
-    this.decoding = false;
   }
 }
