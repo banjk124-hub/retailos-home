@@ -75,7 +75,12 @@ export function subscribeCameraTrackEnded(
  * prevents a stale scanner startup from stopping a newer scanner's camera.
  */
 export function releaseCameraStream(expectedStream?: MediaStream): void {
-  if (expectedStream && activeStream !== expectedStream) return;
+  if (expectedStream) {
+    if (activeStream !== expectedStream) return;
+    activeStream = null;
+    expectedStream.getTracks().forEach((track) => track.stop());
+    return;
+  }
 
   requestGeneration += 1;
   // Detach an unresolved request so a newly opened scanner can start a fresh one.
