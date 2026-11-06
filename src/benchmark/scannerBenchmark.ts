@@ -108,7 +108,24 @@ async function runBackend(
   let geometry = 0;
   let errors = 0;
   try {
-    await adapter.initialize({ formats: [fixture.expectedSymbology] });
+    try {
+      await adapter.initialize({ formats: [fixture.expectedSymbology] });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      errors = attempts;
+      for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        records.push({
+          ...metadata, fixtureId: fixture.file.name, expectedValue: fixture.expectedValue,
+          expectedSymbology: fixture.expectedSymbology, backend, attempt,
+          success: false, falsePositive: false, timeToDecodeMs: 0,
+          decodeLatencyMs: 0, geometryAvailable: false, notes: `Initialization unavailable: ${message}`,
+        });
+      }
+      return {
+        summary: { fixtureId: fixture.file.name, backend, correct, falsePositive, median: 0, p95: 0, geometry, errors },
+        records,
+      };
+    }
     for (let attempt = -warmup; attempt < attempts; attempt += 1) {
       const started = performance.now();
       try {
