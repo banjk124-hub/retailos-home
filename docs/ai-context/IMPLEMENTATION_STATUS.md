@@ -1,5 +1,18 @@
 # Implementation status
 
+Last updated: 2026-11-06
+
+## Local preflight tooling — implementation branch `tooling/local-preflight`
+- Added `npm run preflight` backed by `scripts/preflight.mjs`.
+- The runner executes, in order: `npm run build`, `npm run build:pages`, `git diff --check`, and `git diff --cached --check`. It stops on the first non-zero exit and returns a failing process code.
+- Added `.github/workflows/ci.yml`: GitHub Actions runs `npm ci` and `npm run preflight` for pull requests targeting `main` and pushes to `main`.
+- No new dependencies; `package-lock.json` is unchanged.
+- First user Local run passed both builds and both diff checks on Windows/Node v24.16.0. It emitted Node DEP0190 because the runner used `shell: true`; the runner has now been patched to invoke npm's CLI through `process.execPath` and run all commands with `shell: false`. The patched version still requires a fresh Local run. This branch is prepared for local checkout and verification; do not merge until the user confirms.
+- This preflight does not replace manual UI, browser, camera, offline, or real-device QA. It also does not inspect untracked-file contents or guarantee the working tree is safe to commit.
+- Next action: user checks out this branch, preserves and inspects existing local untracked files, runs `npm run preflight`, and reports the complete output. Fix any failure on this branch before PR/merge.
+
+# Implementation status
+
 Last updated: 2026-11-04
 
 ## Baseline observed
