@@ -113,7 +113,7 @@ async function runBackend(
   backend: string,
   createAdapter: () => ScannerDecoderAdapter,
   fixture: Fixture,
-  bitmap: ImageBitmap,
+  bitmap: CanvasImageSource,
   warmup: number,
   attempts: number,
   metadata: Omit<Row, 'fixtureId'|'expectedValue'|'expectedSymbology'|'backend'|'attempt'|'success'|'falsePositive'|'timeToDecodeMs'|'decodeLatencyMs'|'geometryAvailable'|'notes'>,
