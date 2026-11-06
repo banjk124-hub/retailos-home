@@ -22,10 +22,23 @@ function scannerError(cause: unknown): ScannerError {
   return { code: 'UNKNOWN', message, recoverable: true, cause };
 }
 
+function hasValidEanChecksum(value: string): boolean {
+  if (!/^\d+$/.test(value) || (value.length !== 8 && value.length !== 13)) return false;
+  const body = value.slice(0, -1);
+  const expected = Number(value.slice(-1));
+  const sum = [...body].reduce((total, digit, index) => {
+    const weight = (body.length - index) % 2 === 0 ? 3 : 1;
+    return total + Number(digit) * weight;
+  }, 0);
+  return (10 - (sum % 10)) % 10 === expected;
+}
+
 function isValidValue(value: string, symbology: ScannerSymbology): boolean {
   const normalized = value.trim();
-  if (symbology === 'EAN_8') return /^\d{8}$/.test(normalized);
-  if (symbology === 'EAN_13') return /^\d{13}$/.test(normalized);
+  if (symbology === 'EAN_8' || symbology === 'EAN_13') {
+    const expectedLength = symbology === 'EAN_8' ? 8 : 13;
+    return normalized.length === expectedLength && hasValidEanChecksum(normalized);
+  }
   return normalized.length > 0 && !/[\u0000-\u001f\u007f]/.test(normalized);
 }
 
