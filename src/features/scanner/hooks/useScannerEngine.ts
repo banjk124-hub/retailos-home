@@ -73,6 +73,12 @@ export function useScannerEngine({
     setIsScanning(false);
   }, []);
 
+  const detachOwnedStream = useCallback((stream: MediaStream) => {
+    releaseCameraStream(stream);
+    if (streamRef.current === stream) streamRef.current = null;
+    if (videoRef.current?.srcObject === stream) videoRef.current.srcObject = null;
+  }, []);
+
   const pauseScanner = useCallback(() => {
     startGenerationRef.current += 1;
     restartRequestedRef.current = false;
@@ -114,8 +120,7 @@ export function useScannerEngine({
         generation !== startGenerationRef.current ||
         !videoRef.current
       ) {
-        releaseCameraStream();
-        streamRef.current = null;
+        detachOwnedStream(stream);
         return;
       }
       if (!stream.getVideoTracks().some((track) => track.readyState === 'live')) {
@@ -135,8 +140,7 @@ export function useScannerEngine({
         isDocumentHidden() ||
         generation !== startGenerationRef.current
       ) {
-        releaseCameraStream();
-        streamRef.current = null;
+        detachOwnedStream(stream);
         return;
       }
 
@@ -188,10 +192,18 @@ export function useScannerEngine({
         setIsScanning(true);
       }
     } catch (cause) {
-      if (!disposedRef.current && desiredActiveRef.current && !isAbortError(cause)) {
+      // A failed/stale startup must never release a stream acquired by a newer
+      // scanner instance. Only surface errors for this still-current attempt.
+      const ownedStream = streamRef.current;
+      if (ownedStream) detachOwnedStream(ownedStream);
+
+      if (
+        generation === startGenerationRef.current &&
+        !disposedRef.current &&
+        desiredActiveRef.current &&
+        !isAbortError(cause)
+      ) {
         setError(getCameraErrorMessage(cause));
-        releaseCameraStream();
-        streamRef.current = null;
       }
     } finally {
       startingRef.current = false;
@@ -207,7 +219,7 @@ export function useScannerEngine({
         queueMicrotask(() => { void startScanner(true); });
       }
     }
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, detachOwnedStream, hapticFeedback, mode, scanCooldownMs]);
 
   const closeScanner = useCallback(() => {
     desiredActiveRef.current = false;
