@@ -220,3 +220,16 @@ Last updated: 2026-11-04
 - No build/test/device verification has yet been run after this follow-up patch. The previously reported Local preflight PASS predates these two latest source commits and must be rerun after synchronization.
 - Keep branch unmerged and undeployed.
 - Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
+
+
+## Universal Scanner Engine — Phase 2.0 (in progress, 2026-11-06)
+
+- Branch: `phase-2-universal-scanner-foundation`, created from the current `main` baseline. Main is unchanged.
+- Added `docs/ai-context/SCANNER_ENGINE_SPEC.md` defining platform/core/decoder/feedback/feature boundaries and lifecycle invariants.
+- Added `docs/ai-context/SCANNER_BENCHMARK_PLAN.md` defining Native BarcodeDetector, current ZXing, and verified ZBar/WASM candidate comparison plus iOS/Android fixture matrix.
+- Added `src/platform/scanner/contracts.ts` for normalized symbology, geometry, profiles, lifecycle, capabilities, result, errors, and session contracts.
+- Added `src/platform/scanner/capabilities.ts` to detect browser capabilities without prompting for camera access. Native format names are mapped from the API's lowercase identifiers.
+- No dependency added. No production scanner, Home, Stocktake, authentication, data, PWA, or deployment behavior changed.
+- Verification pending: branch CI/build and local preflight. No physical iOS/Android benchmark results exist yet. Phase 2.0 is not complete until compile/build validation succeeds; Phase 2.1 cannot select a decoder until real-device evidence is recorded.
+- Next: open a draft PR to run repository CI, review results, then synchronize branch locally for `npm run preflight` and physical-device benchmark.
+- Keep branch unmerged and undeployed pending user acceptance.
