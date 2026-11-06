@@ -1,0 +1,20 @@
+[1mdiff --git a/package-lock.json b/package-lock.json[m
+[1mindex 1e04a88..559a87b 100644[m
+[1m--- a/package-lock.json[m
+[1m+++ b/package-lock.json[m
+[36m@@ -1359,7 +1359,6 @@[m
+       "resolved": "https://registry.npmjs.org/@zxing/library/-/library-0.23.0.tgz",[m
+       "integrity": "sha512-6fkkoFwP8CHxl6ugnPsj74PLJgX2iRv5zczGAyt5OBzQgxFhuhF0NCEc4t4OvSr8xAv2MRLlI0Iu9ZGDZQ2urA==",[m
+       "license": "Apache-2.0",[m
+[31m-      "peer": true,[m
+       "dependencies": {[m
+         "ts-custom-error": "^3.3.1"[m
+       },[m
+[36m@@ -2011,7 +2010,6 @@[m
+       "resolved": "https://registry.npmjs.org/ts-custom-error/-/ts-custom-error-3.3.1.tgz",[m
+       "integrity": "sha512-5OX1tzOjxWEgsr/YEUWSuPrQ00deKLh6D7OTWcvNHm12/7QPyRh8SYpyWvA4IZv8H/+GQWQEh/kwo95Q9OVW1A==",[m
+       "license": "MIT",[m
+[31m-      "peer": true,[m
+       "engines": {[m
+         "node": ">=14.0.0"[m
+       }[m
