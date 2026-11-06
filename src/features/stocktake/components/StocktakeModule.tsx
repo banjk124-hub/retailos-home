@@ -3,7 +3,7 @@ import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, His
 import { lazy, Suspense } from 'react';
 
 const BarcodeScanner = lazy(
-  () => import('../../scanner/components/BarcodeScanner')
+  () => import('./StocktakeScanner')
 );
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
@@ -402,7 +402,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       {scannerOpen && screen === 'scan' && (
   <div className="stocktake-scanner-layer">
     <Suspense fallback={<div>Đang tải máy quét...</div>}>
-      <BarcodeScanner
+      <StocktakeScanner
         mode="single"
         onDetected={acceptBarcode}
         onClose={() => setScannerOpen(false)}
