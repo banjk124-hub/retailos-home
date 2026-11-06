@@ -7,12 +7,27 @@ export type ScannerDiagnosticsSession = {
 
 let nextSessionId = 1;
 
+/** Expose only non-identifying camera characteristics; omit deviceId/groupId. */
+export function getSafeCameraTrackSettings(track: MediaStreamTrack | undefined): Record<string, unknown> | null {
+  if (!track) return null;
+  const settings = track.getSettings();
+  return {
+    width: settings.width ?? null,
+    height: settings.height ?? null,
+    frameRate: settings.frameRate ?? null,
+    facingMode: settings.facingMode ?? null,
+    aspectRatio: settings.aspectRatio ?? null,
+    resizeMode: settings.resizeMode ?? null,
+  };
+}
+
+
 function elapsedSince(startedAt: number): number {
   return Math.round((performance.now() - startedAt) * 10) / 10;
 }
 
 /**
- * Lightweight, opt-in-by-use scanner telemetry.
+ * Lightweight, session-scoped scanner telemetry.
  * Never records barcode contents, product data, or user identity.
  */
 export function beginScannerDiagnostics(): ScannerDiagnosticsSession {
