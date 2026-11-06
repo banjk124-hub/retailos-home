@@ -4,11 +4,29 @@ let requestGeneration = 0;
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
 
 /**
- * Shared camera stream lifecycle.
- *
- * getUserMedia cannot be cancelled once requested. A generation token ensures
- * that a stream resolving after pause/close is stopped instead of being
- * accidentally attached to a later scanner session.
+ * Best-effort continuous autofocus. Camera capabilities differ across iOS,
+ * Android and browser versions, so unsupported constraints must never block
+ * camera startup.
+ */
+async function optimizeVideoTrack(track: MediaStreamTrack): Promise<void> {
+  try {
+    const capabilities = track.getCapabilities() as MediaTrackCapabilities & {
+      focusMode?: string[];
+    };
+    if (capabilities.focusMode?.includes('continuous')) {
+      await track.applyConstraints({
+        advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
+      });
+    }
+  } catch (error) {
+    // iOS Safari and some Android camera providers reject optional focus modes.
+    console.debug('[RetailOS Camera] Optional autofocus constraint unavailable:', error);
+  }
+}
+
+/**
+ * Shared camera stream lifecycle. A single stream is shared by scanner
+ * consumers; stale getUserMedia resolutions are stopped using a generation.
  */
 export async function acquireCameraStream(): Promise<MediaStream> {
   if (activeStream?.getTracks().some((track) => track.readyState === 'live')) return activeStream;
@@ -24,24 +42,23 @@ export async function acquireCameraStream(): Promise<MediaStream> {
       facingMode: { ideal: 'environment' },
       width: { ideal: 1280 },
       height: { ideal: 720 },
+      frameRate: { ideal: 30, max: 30 },
     },
-  }).then((stream) => {
+  }).then(async (stream) => {
     if (generation !== requestGeneration) {
       stream.getTracks().forEach((track) => track.stop());
       throw new DOMException('Camera request was superseded.', 'AbortError');
     }
 
     activeStream = stream;
-    stream.getVideoTracks().forEach((track) => {
+    const videoTracks = stream.getVideoTracks();
+    await Promise.all(videoTracks.map(optimizeVideoTrack));
+    videoTracks.forEach((track) => {
       track.addEventListener('ended', () => {
         if (activeStream !== stream) return;
-
-        // A stream may expose more than one video track. Notify consumers only
-        // when the stream no longer has a live video source.
         const hasLiveVideoTrack = stream.getVideoTracks()
           .some((videoTrack) => videoTrack.readyState === 'live');
         if (hasLiveVideoTrack) return;
-
         activeStream = null;
         trackEndedListeners.forEach((listener) => listener(stream));
       }, { once: true });
@@ -55,24 +72,14 @@ export async function acquireCameraStream(): Promise<MediaStream> {
   return request;
 }
 
-/**
- * Subscribe to unexpected termination of the currently owned video stream.
- * Intentional release does not emit this event because stopping a track does
- * not dispatch the browser's "ended" event.
- */
-export function subscribeCameraTrackEnded(
-  listener: (stream: MediaStream) => void,
-): () => void {
+export function subscribeCameraTrackEnded(listener: (stream: MediaStream) => void): () => void {
   trackEndedListeners.add(listener);
-  return () => {
-    trackEndedListeners.delete(listener);
-  };
+  return () => trackEndedListeners.delete(listener);
 }
 
 /**
- * Invalidate pending camera work and release the active stream.
- * When an expected stream is supplied, release only that exact stream. This
- * prevents a stale scanner startup from stopping a newer scanner's camera.
+ * Invalidate pending camera work and release the active stream. Supplying an
+ * expected stream prevents an old session from stopping a newer camera lease.
  */
 export function releaseCameraStream(expectedStream?: MediaStream): void {
   if (expectedStream) {
@@ -83,8 +90,6 @@ export function releaseCameraStream(expectedStream?: MediaStream): void {
   }
 
   requestGeneration += 1;
-  // Detach an unresolved request so a newly opened scanner can start a fresh one.
-  // The old request still self-cancels when getUserMedia eventually resolves.
   pendingRequest = null;
   const stream = activeStream;
   activeStream = null;
