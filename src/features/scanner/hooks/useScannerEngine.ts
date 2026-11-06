@@ -1,22 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
-import { BarcodeFormat, DecodeHintType } from '@zxing/library';
-import { getCameraErrorMessage } from '../services/cameraErrors';
-import {
-  acquireCameraStream,
-  releaseCameraStream,
-  subscribeCameraTrackEnded,
-} from '../../../shared/services/cameraSession';
+import type { ScannerLifecycleState, ScannerSession } from '../../../platform/scanner/contracts';
+import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
 
 export type ScannerMode = 'single' | 'continuous';
-
-const SUPPORTED_BARCODE_FORMATS = [
-  BarcodeFormat.EAN_13,
-  BarcodeFormat.EAN_8,
-  BarcodeFormat.CODE_128,
-] as const;
 
 type Options = {
   onDetected: (value: string) => void;
@@ -26,21 +14,11 @@ type Options = {
   hapticFeedback?: boolean;
 };
 
-function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'AbortError';
-}
-
-// Keep visibility checks behind a function so TypeScript does not incorrectly
-// narrow document.visibilityState across asynchronous camera operations.
 function isDocumentHidden(): boolean {
   return document.visibilityState === 'hidden';
 }
 
-/**
- * Shared scanner engine hook.
- * Feature modules own their own presentation and call this hook for camera,
- * decoder, lifecycle, result and audio behavior.
- */
+/** React bridge only: feature callbacks and presentation stay outside runtime. */
 export function useScannerEngine({
   onDetected,
   mode = 'single',
@@ -49,251 +27,105 @@ export function useScannerEngine({
   hapticFeedback = true,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const controlsRef = useRef<IScannerControls | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const sessionRef = useRef<ScannerSession | null>(null);
   const onDetectedRef = useRef(onDetected);
-  const disposedRef = useRef(false);
   const desiredActiveRef = useRef(true);
-  const startingRef = useRef(false);
-  const restartRequestedRef = useRef(false);
-  const startGenerationRef = useRef(0);
-  const automaticRecoveryAttemptsRef = useRef(0);
-  const lastDetectedAtRef = useRef(0);
-  const detectedOnceRef = useRef(false);
-  const stopAfterAttachRef = useRef(false);
+  const recoveryAttemptsRef = useRef(0);
   const [isStarting, setIsStarting] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => { onDetectedRef.current = onDetected; }, [onDetected]);
 
-  const stopDecoder = useCallback(() => {
-    controlsRef.current?.stop();
-    controlsRef.current = null;
+  const startScanner = useCallback(async () => {
+    if (!desiredActiveRef.current || isDocumentHidden()) return;
+    const video = videoRef.current;
+    if (!video) return;
+    setError('');
+    setIsStarting(true);
+
+    let session = sessionRef.current;
+    if (!session || session.state === 'disposed') {
+      session = new UniversalScannerSession(video, {
+        profile: 'HIGH',
+        formats: ['EAN_8', 'EAN_13', 'CODE_128'],
+        mode,
+        sameCodeCooldownMs: scanCooldownMs,
+        audioFeedback,
+        hapticFeedback,
+        onResult: (result) => {
+          playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
+          onDetectedRef.current(result.value);
+        },
+        onStateChange: (state: ScannerLifecycleState) => {
+          setIsStarting(state === 'requesting' || state === 'initializing');
+          setIsScanning(state === 'scanning');
+          if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
+        },
+        onError: (scannerError) => {
+          setError(scannerError.message);
+          setIsStarting(false);
+          setIsScanning(false);
+        },
+      });
+      sessionRef.current = session;
+    }
+    try {
+      await session.start();
+    } finally {
+      setIsStarting(false);
+    }
+  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+
+  const pauseScanner = useCallback(async () => {
+    await sessionRef.current?.suspend('hidden');
+    setIsStarting(false);
     setIsScanning(false);
   }, []);
 
-  const detachOwnedStream = useCallback((stream: MediaStream) => {
-    releaseCameraStream(stream);
-    if (streamRef.current === stream) streamRef.current = null;
-    if (videoRef.current?.srcObject === stream) videoRef.current.srcObject = null;
+  const closeScanner = useCallback(async () => {
+    desiredActiveRef.current = false;
+    const session = sessionRef.current;
+    sessionRef.current = null;
+    await session?.close();
+    setIsStarting(false);
+    setIsScanning(false);
   }, []);
 
-  const pauseScanner = useCallback(() => {
-    startGenerationRef.current += 1;
-    restartRequestedRef.current = false;
-    stopDecoder();
-    releaseCameraStream();
-    streamRef.current = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setIsStarting(false);
-  }, [stopDecoder]);
-
-  // automatic=true is reserved for browser lifecycle events and the one-shot
-  // recovery path. A direct call from the Retry control starts a fresh recovery
-  // budget, so repeated automatic interruptions cannot form an endless loop.
-  const startScanner = useCallback(async (automatic = false) => {
-    if (!automatic) automaticRecoveryAttemptsRef.current = 0;
-    if (disposedRef.current || !desiredActiveRef.current || isDocumentHidden()) return;
-    // A live decoder already owns this session. Focus/pageshow events must not
-    // attach another decode loop to the same MediaStream.
-    if (controlsRef.current) return;
-    if (startingRef.current) {
-      if (automatic) restartRequestedRef.current = true;
-      return;
-    }
-
-    startingRef.current = true;
-    restartRequestedRef.current = false;
-    const generation = ++startGenerationRef.current;
-    setIsStarting(true);
-    setError('');
-    detectedOnceRef.current = false;
-    stopAfterAttachRef.current = false;
-
-    try {
-      const stream = await acquireCameraStream();
-      if (
-        disposedRef.current ||
-        !desiredActiveRef.current ||
-        isDocumentHidden() ||
-        generation !== startGenerationRef.current ||
-        !videoRef.current
-      ) {
-        detachOwnedStream(stream);
-        return;
-      }
-      if (!stream.getVideoTracks().some((track) => track.readyState === 'live')) {
-        throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
-      }
-
-      streamRef.current = stream;
-      const video = videoRef.current;
-      video.srcObject = stream;
-      video.muted = true;
-      video.playsInline = true;
-      await video.play();
-
-      if (
-        disposedRef.current ||
-        !desiredActiveRef.current ||
-        isDocumentHidden() ||
-        generation !== startGenerationRef.current
-      ) {
-        detachOwnedStream(stream);
-        return;
-      }
-
-      const hints = new Map<DecodeHintType, any>();
-      hints.set(DecodeHintType.POSSIBLE_FORMATS, [...SUPPORTED_BARCODE_FORMATS]);
-      const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 70 });
-      const controls = await reader.decodeFromStream(stream, video, (result) => {
-        if (!result || disposedRef.current || !desiredActiveRef.current) return;
-        const value = result.getText();
-        const format = result.getBarcodeFormat();
-        const isValidEan = (format === BarcodeFormat.EAN_13 && /^\d{13}$/.test(value))
-          || (format === BarcodeFormat.EAN_8 && /^\d{8}$/.test(value));
-        const isValidCode128 = format === BarcodeFormat.CODE_128
-          && value.length > 0
-          && !/[\u0000-\u001f\u007f]/.test(value);
-        if (!isValidEan && !isValidCode128) return;
-        const now = Date.now();
-        if (mode === 'single' && detectedOnceRef.current) return;
-        if (mode === 'continuous' && now - lastDetectedAtRef.current < scanCooldownMs) return;
-
-        detectedOnceRef.current = true;
-        lastDetectedAtRef.current = now;
-        playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
-        onDetectedRef.current(value);
-
-        if (mode === 'single') {
-          stopAfterAttachRef.current = true;
-          controlsRef.current?.stop();
-          controlsRef.current = null;
-          setIsScanning(false);
-        }
-      });
-
-      if (
-        disposedRef.current ||
-        !desiredActiveRef.current ||
-        isDocumentHidden() ||
-        generation !== startGenerationRef.current ||
-        !stream.getVideoTracks().some((track) => track.readyState === 'live')
-      ) {
-        controls.stop();
-        return;
-      }
-      if (mode === 'single' && stopAfterAttachRef.current) {
-        controls.stop();
-        setIsScanning(false);
-      } else {
-        controlsRef.current = controls;
-        setIsScanning(true);
-      }
-    } catch (cause) {
-      // A failed/stale startup must never release a stream acquired by a newer
-      // scanner instance. Only surface errors for this still-current attempt.
-      const ownedStream = streamRef.current;
-      if (ownedStream) detachOwnedStream(ownedStream);
-
-      if (
-        generation === startGenerationRef.current &&
-        !disposedRef.current &&
-        desiredActiveRef.current &&
-        !isAbortError(cause)
-      ) {
-        setError(getCameraErrorMessage(cause));
-      }
-    } finally {
-      startingRef.current = false;
-      if (!disposedRef.current) setIsStarting(false);
-
-      if (
-        restartRequestedRef.current &&
-        desiredActiveRef.current &&
-        !disposedRef.current &&
-        !isDocumentHidden()
-      ) {
-        restartRequestedRef.current = false;
-        queueMicrotask(() => { void startScanner(true); });
-      }
-    }
-  }, [audioFeedback, detachOwnedStream, hapticFeedback, mode, scanCooldownMs]);
-
-  const closeScanner = useCallback(() => {
-    desiredActiveRef.current = false;
-    startGenerationRef.current += 1;
-    restartRequestedRef.current = false;
-    stopDecoder();
-    releaseCameraStream();
-    streamRef.current = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
-  }, [stopDecoder]);
-
   useEffect(() => {
-    disposedRef.current = false;
     desiredActiveRef.current = true;
     void startScanner();
 
-    const unsubscribeTrackEnded = subscribeCameraTrackEnded((endedStream) => {
-      // Ignore events from a stream that no longer belongs to this hook.
-      if (streamRef.current !== endedStream) return;
-
-      startGenerationRef.current += 1;
-      stopDecoder();
-      streamRef.current = null;
-      if (videoRef.current?.srcObject === endedStream) {
-        videoRef.current.srcObject = null;
-      }
-      setIsStarting(false);
-
-      if (disposedRef.current || !desiredActiveRef.current || isDocumentHidden()) return;
-
-      if (automaticRecoveryAttemptsRef.current >= 1) {
-        setError('Camera bị ngắt kết nối nhiều lần. Hãy nhấn thử lại để kết nối lại.');
+    const handleVisibility = () => {
+      if (isDocumentHidden()) {
+        void pauseScanner();
         return;
       }
-
-      automaticRecoveryAttemptsRef.current += 1;
-      setError('Kết nối camera bị gián đoạn. Đang thử kết nối lại…');
-      if (startingRef.current) {
-        restartRequestedRef.current = true;
-      } else {
-        queueMicrotask(() => { void startScanner(true); });
+      if (!desiredActiveRef.current) return;
+      if (recoveryAttemptsRef.current >= 1) {
+        setError('Camera đã bị gián đoạn. Hãy nhấn thử lại để kết nối.');
+        return;
       }
-    });
-
-    const handleVisibilityChange = () => {
-      if (isDocumentHidden()) {
-        pauseScanner();
-      } else if (desiredActiveRef.current && !disposedRef.current) {
-        void startScanner(true);
+      recoveryAttemptsRef.current += 1;
+      void startScanner();
+    };
+    const handlePageShow = () => {
+      if (!isDocumentHidden() && desiredActiveRef.current && sessionRef.current?.state !== 'scanning') {
+        void startScanner();
       }
     };
-    const resumeFromPageShow = () => {
-      if (!isDocumentHidden() && desiredActiveRef.current) void startScanner(true);
-    };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pageshow', resumeFromPageShow);
-    window.addEventListener('focus', resumeFromPageShow);
-
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pageshow', handlePageShow);
     return () => {
-      disposedRef.current = true;
       desiredActiveRef.current = false;
-      startGenerationRef.current += 1;
-      restartRequestedRef.current = false;
-      unsubscribeTrackEnded();
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pageshow', resumeFromPageShow);
-      window.removeEventListener('focus', resumeFromPageShow);
-      stopDecoder();
-      releaseCameraStream();
-      streamRef.current = null;
-      if (videoRef.current) videoRef.current.srcObject = null;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pageshow', handlePageShow);
+      const session = sessionRef.current;
+      sessionRef.current = null;
+      void session?.close();
     };
-  }, [pauseScanner, startScanner, stopDecoder]);
+  }, [pauseScanner, startScanner]);
 
   return {
     videoRef,
