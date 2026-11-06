@@ -86,20 +86,14 @@ export class NativeBarcodeDetectorAdapter implements ScannerDecoderAdapter {
     }
 
     const detections = await this.detector.detect(source);
-    const frameWidth = source instanceof HTMLVideoElement
-      ? source.videoWidth
-      : source instanceof HTMLCanvasElement
-        ? source.width
-        : source instanceof ImageBitmap
-          ? source.width
-          : 0;
-    const frameHeight = source instanceof HTMLVideoElement
-      ? source.videoHeight
-      : source instanceof HTMLCanvasElement
-        ? source.height
-        : source instanceof ImageBitmap
-          ? source.height
-          : 0;
+    const frame = source as CanvasImageSource & {
+      videoWidth?: number;
+      videoHeight?: number;
+      width?: number;
+      height?: number;
+    };
+    const frameWidth = frame.videoWidth ?? frame.width ?? 0;
+    const frameHeight = frame.videoHeight ?? frame.height ?? 0;
 
     return detections.flatMap((detection): DecoderOutput[] => {
       const symbology = detection.format
