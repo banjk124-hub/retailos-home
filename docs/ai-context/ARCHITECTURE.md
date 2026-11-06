@@ -100,3 +100,17 @@ Status: Proposed implementation on `phase-1-2f-camera-lifecycle`; pending Local 
 - Preserve camera constraints (1280×720), ZXing decode interval (70 ms), supported barcode formats, feedback, Home lookup, Stocktake form-fill/explicit-save, and all data/auth/session contracts.
 - This decision does not add camera ownership leases, background polling, dependencies, or performance tuning. Device-specific behavior remains subject to Android Chrome and iOS Safari QA.
 - Stream-specific cleanup must be identity-guarded: a stale scanner attempt may release only the exact stream it acquired and must not invalidate a different active stream or a newer pending getUserMedia request. No-argument release remains the intentional global invalidation path for pause/close/logout.
+
+
+## Universal Scanner Engine — Phase 2 contract (2026-11-06)
+
+- New platform-neutral contracts live initially under `src/platform/scanner/`; they are not yet wired into production features.
+- Capability detection must not request camera permission. Native BarcodeDetector is optional and must be gated by exact required symbology support.
+- Native BarcodeDetector format identifiers use the API's lowercase names (for example `ean_8`, `ean_13`, `code_128`); map them to RetailOS normalized symbologies.
+- Feature modules own presentation, overlay, result placement, and business actions. The platform engine owns camera acquisition, lifecycle, decoder scheduling, and feedback.
+- Geometry uses source-frame pixel coordinates plus frame dimensions. Consumers transform coordinates for video crop, object-fit, orientation, and mirroring.
+- Camera profiles are constraints/hints. Always record actual track settings; never assume requested dimensions were granted.
+- Decoder choice remains open until the same fixture suite and physical iOS/Android devices have been measured.
+- The current ZXing scanner remains the production path during the parallel foundation phase.
+- Preserve Home cached lookup and Stocktake form-fill/explicit-save, duplicate entries, and manual-entry behavior.
+- See `SCANNER_ENGINE_SPEC.md` and `SCANNER_BENCHMARK_PLAN.md`. No direct main merge or deployment without user approval.
