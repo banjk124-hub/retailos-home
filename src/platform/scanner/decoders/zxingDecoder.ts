@@ -77,7 +77,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private formats: ScannerSymbology[] = [];
   private decoding = false;
 
-  initialize({ formats }: DecoderInitOptions): void {
+  async initialize({ formats }: DecoderInitOptions): Promise<void> {
     const requested = [...new Set(formats)];
     if (requested.length === 0) {
       throw new Error('At least one barcode format must be requested.');
