@@ -1,6 +1,7 @@
 let activeStream: MediaStream | null = null;
 let pendingRequest: Promise<MediaStream> | null = null;
 let requestGeneration = 0;
+const trackEndedListeners = new Set<(stream: MediaStream) => void>();
 
 /**
  * Shared camera stream lifecycle.
@@ -33,7 +34,16 @@ export async function acquireCameraStream(): Promise<MediaStream> {
     activeStream = stream;
     stream.getVideoTracks().forEach((track) => {
       track.addEventListener('ended', () => {
-        if (activeStream === stream) activeStream = null;
+        if (activeStream !== stream) return;
+
+        // A stream may expose more than one video track. Notify consumers only
+        // when the stream no longer has a live video source.
+        const hasLiveVideoTrack = stream.getVideoTracks()
+          .some((videoTrack) => videoTrack.readyState === 'live');
+        if (hasLiveVideoTrack) return;
+
+        activeStream = null;
+        trackEndedListeners.forEach((listener) => listener(stream));
       }, { once: true });
     });
     return stream;
@@ -43,6 +53,20 @@ export async function acquireCameraStream(): Promise<MediaStream> {
 
   pendingRequest = request;
   return request;
+}
+
+/**
+ * Subscribe to unexpected termination of the currently owned video stream.
+ * Intentional release does not emit this event because stopping a track does
+ * not dispatch the browser's "ended" event.
+ */
+export function subscribeCameraTrackEnded(
+  listener: (stream: MediaStream) => void,
+): () => void {
+  trackEndedListeners.add(listener);
+  return () => {
+    trackEndedListeners.delete(listener);
+  };
 }
 
 /** Invalidate pending getUserMedia work and release any active stream. */
