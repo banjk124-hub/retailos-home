@@ -9,6 +9,13 @@ import {
 } from '../../../shared/services/cameraSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
+import {
+  beginScannerDiagnostics,
+  finishScannerDiagnostics,
+  markScannerDiagnostics,
+  recordFirstScannerResult,
+  type ScannerDiagnosticsSession,
+} from '../services/scannerDiagnostics';
 
 export type ScannerMode = 'single' | 'continuous';
 
@@ -61,6 +68,7 @@ export function useScannerEngine({
   const lastDetectedAtRef = useRef(0);
   const detectedOnceRef = useRef(false);
   const stopAfterAttachRef = useRef(false);
+  const diagnosticsRef = useRef<ScannerDiagnosticsSession | null>(null);
   const [isStarting, setIsStarting] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
@@ -80,6 +88,8 @@ export function useScannerEngine({
   }, []);
 
   const pauseScanner = useCallback(() => {
+    finishScannerDiagnostics(diagnosticsRef.current, 'pause');
+    diagnosticsRef.current = null;
     startGenerationRef.current += 1;
     restartRequestedRef.current = false;
     stopDecoder();
@@ -106,6 +116,8 @@ export function useScannerEngine({
     startingRef.current = true;
     restartRequestedRef.current = false;
     const generation = ++startGenerationRef.current;
+    const diagnostics = beginScannerDiagnostics();
+    diagnosticsRef.current = diagnostics;
     setIsStarting(true);
     setError('');
     detectedOnceRef.current = false;
@@ -113,6 +125,10 @@ export function useScannerEngine({
 
     try {
       const stream = await acquireCameraStream();
+      const videoTrack = stream.getVideoTracks()[0];
+      markScannerDiagnostics(diagnostics, 'camera-acquired', {
+        trackSettings: videoTrack?.getSettings() ?? null,
+      });
       if (
         disposedRef.current ||
         !desiredActiveRef.current ||
@@ -133,6 +149,12 @@ export function useScannerEngine({
       video.muted = true;
       video.playsInline = true;
       await video.play();
+      markScannerDiagnostics(diagnostics, 'video-playing', {
+        videoWidth: video.videoWidth,
+        videoHeight: video.videoHeight,
+        readyState: video.readyState,
+        trackSettings: videoTrack?.getSettings() ?? null,
+      });
 
       if (
         disposedRef.current ||
@@ -147,6 +169,9 @@ export function useScannerEngine({
       const hints = new Map<DecodeHintType, any>();
       hints.set(DecodeHintType.POSSIBLE_FORMATS, [...SUPPORTED_BARCODE_FORMATS]);
       const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 70 });
+      markScannerDiagnostics(diagnostics, 'decoder-starting', {
+        configuredDelayBetweenScanAttemptsMs: 70,
+      });
       const controls = await reader.decodeFromStream(stream, video, (result) => {
         if (!result || disposedRef.current || !desiredActiveRef.current) return;
         const value = result.getText();
@@ -163,6 +188,11 @@ export function useScannerEngine({
 
         detectedOnceRef.current = true;
         lastDetectedAtRef.current = now;
+        recordFirstScannerResult(diagnostics, {
+          format: BarcodeFormat[format],
+          videoWidth: video.videoWidth,
+          videoHeight: video.videoHeight,
+        });
         playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
         onDetectedRef.current(value);
 
@@ -174,6 +204,7 @@ export function useScannerEngine({
         }
       });
 
+      markScannerDiagnostics(diagnostics, 'decoder-attached');
       if (
         disposedRef.current ||
         !desiredActiveRef.current ||
@@ -182,10 +213,14 @@ export function useScannerEngine({
         !stream.getVideoTracks().some((track) => track.readyState === 'live')
       ) {
         controls.stop();
+        finishScannerDiagnostics(diagnostics, 'startup-invalidated');
+        if (diagnosticsRef.current === diagnostics) diagnosticsRef.current = null;
         return;
       }
       if (mode === 'single' && stopAfterAttachRef.current) {
         controls.stop();
+        finishScannerDiagnostics(diagnostics, 'single-scan-complete');
+        if (diagnosticsRef.current === diagnostics) diagnosticsRef.current = null;
         setIsScanning(false);
       } else {
         controlsRef.current = controls;
@@ -196,6 +231,8 @@ export function useScannerEngine({
       // scanner instance. Only surface errors for this still-current attempt.
       const ownedStream = streamRef.current;
       if (ownedStream) detachOwnedStream(ownedStream);
+      finishScannerDiagnostics(diagnostics, 'startup-error');
+      if (diagnosticsRef.current === diagnostics) diagnosticsRef.current = null;
 
       if (
         generation === startGenerationRef.current &&
@@ -222,6 +259,8 @@ export function useScannerEngine({
   }, [audioFeedback, detachOwnedStream, hapticFeedback, mode, scanCooldownMs]);
 
   const closeScanner = useCallback(() => {
+    finishScannerDiagnostics(diagnosticsRef.current, 'close');
+    diagnosticsRef.current = null;
     desiredActiveRef.current = false;
     startGenerationRef.current += 1;
     restartRequestedRef.current = false;
@@ -240,6 +279,8 @@ export function useScannerEngine({
       // Ignore events from a stream that no longer belongs to this hook.
       if (streamRef.current !== endedStream) return;
 
+      finishScannerDiagnostics(diagnosticsRef.current, 'camera-track-ended');
+      diagnosticsRef.current = null;
       startGenerationRef.current += 1;
       stopDecoder();
       streamRef.current = null;
@@ -280,6 +321,8 @@ export function useScannerEngine({
     window.addEventListener('focus', resumeFromPageShow);
 
     return () => {
+      finishScannerDiagnostics(diagnosticsRef.current, 'unmount');
+      diagnosticsRef.current = null;
       disposedRef.current = true;
       desiredActiveRef.current = false;
       startGenerationRef.current += 1;
