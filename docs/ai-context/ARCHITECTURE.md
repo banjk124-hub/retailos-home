@@ -89,3 +89,13 @@ Status: Accepted for Phase 1.2E.
 - Vibration uses a single short 25 ms pulse through the browser Vibration API. Unsupported platforms (including iOS Safari where the API is not available) continue without vibration.
 - The scanner engine owns the single accepted-result feedback event so Home and Stocktake receive consistent behavior. Consumer contracts and persistence semantics remain unchanged.
 - The confirmation tone gain is raised from 0.16 to 0.24; duration and frequency remain unchanged.
+
+
+### ADR-006 — Recover from unexpected camera track termination (2026-11-06)
+Status: Proposed implementation on `phase-1-2f-camera-lifecycle`; pending Local verification and acceptance.
+- The shared camera-session service publishes a stream-identity event only when its active stream has no remaining live video tracks.
+- Scanner consumers must ignore termination events for streams they do not currently own, invalidate stale asynchronous decoder work, stop decoder controls, and detach only the matching video stream.
+- The scanner may make at most one automatic recovery attempt per open scanner session. Repeated interruption becomes a visible recoverable error; a direct user retry resets that one-attempt budget.
+- Intentional pause, close, unmount, and `releaseCameraStream()` remain non-recovery paths. Stale `getUserMedia` results remain generation-invalidated and must never attach after cancellation.
+- Preserve camera constraints (1280×720), ZXing decode interval (70 ms), supported barcode formats, feedback, Home lookup, Stocktake form-fill/explicit-save, and all data/auth/session contracts.
+- This decision does not add camera ownership leases, background polling, dependencies, or performance tuning. Device-specific behavior remains subject to Android Chrome and iOS Safari QA.
