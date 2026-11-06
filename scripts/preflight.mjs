@@ -1,16 +1,22 @@
 import { spawnSync } from "node:child_process";
 
-const isWindows = process.platform === "win32";
+const npmCli = process.env.npm_execpath;
+
+if (!npmCli) {
+  console.error("PREFLIGHT must be started with: npm run preflight");
+  process.exit(1);
+}
+
 const checks = [
   {
     name: "Production build (TypeScript + Vite)",
-    command: "npm",
-    args: ["run", "build"],
+    command: process.execPath,
+    args: [npmCli, "run", "build"],
   },
   {
     name: "GitHub Pages build (TypeScript + Vite base path)",
-    command: "npm",
-    args: ["run", "build:pages"],
+    command: process.execPath,
+    args: [npmCli, "run", "build:pages"],
   },
   {
     name: "Unstaged diff whitespace check",
@@ -29,7 +35,7 @@ function run(check) {
 
   const result = spawnSync(check.command, check.args, {
     stdio: "inherit",
-    shell: isWindows,
+    shell: false,
   });
 
   if (result.error) {
