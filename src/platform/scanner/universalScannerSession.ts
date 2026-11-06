@@ -93,7 +93,7 @@ export class UniversalScannerSession implements ScannerSession {
       this.setState('scanning');
       this.scheduleNextFrame(generation);
     } catch (cause) {
-      await this.teardown(false);
+      await this.teardown(true);
       if (!this.disposed && generation === this.generation) {
         const error = scannerError(cause);
         this.setState('error');
