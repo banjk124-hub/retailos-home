@@ -17,7 +17,6 @@ export function getSafeCameraTrackSettings(track: MediaStreamTrack | undefined):
     frameRate: settings.frameRate ?? null,
     facingMode: settings.facingMode ?? null,
     aspectRatio: settings.aspectRatio ?? null,
-    resizeMode: settings.resizeMode ?? null,
   };
 }
 
