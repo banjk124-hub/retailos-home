@@ -66,6 +66,24 @@ filesInput.addEventListener('change', () => {
   status.textContent = fixtures.length ? `${fixtures.length} fixture(s) loaded. Enter expected values before running.` : '';
 });
 
+async function loadFixtureImage(file: File): Promise<{ source: CanvasImageSource; dispose: () => void }> {
+  if (typeof createImageBitmap === 'function') {
+    const bitmap = await createImageBitmap(file);
+    return { source: bitmap, dispose: () => bitmap.close() };
+  }
+  const url = URL.createObjectURL(file);
+  const image = new Image();
+  image.decoding = 'async';
+  image.src = url;
+  try {
+    await image.decode();
+    return { source: image, dispose: () => URL.revokeObjectURL(url) };
+  } catch (error) {
+    URL.revokeObjectURL(url);
+    throw error;
+  }
+}
+
 function percentile(values: number[], p: number): number {
   if (!values.length) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -199,17 +217,17 @@ runButton.addEventListener('click', async () => {
     let completed = 0;
     const total = fixtures.length * backends.length;
     for (const fixture of fixtures) {
-      const bitmap = await createImageBitmap(fixture.file);
+      const loadedImage = await loadFixtureImage(fixture.file);
       try {
         for (const backend of backends) {
           completed += 1;
           status.textContent = `Running ${completed}/${total}: ${fixture.file.name} — ${backend.name}`;
-          const result = await runBackend(backend.name, backend.create, fixture, bitmap, warmup, attempts, metadata);
+          const result = await runBackend(backend.name, backend.create, fixture, loadedImage.source, warmup, attempts, metadata);
           summaries.push(result.summary);
           rows.push(...result.records);
         }
       } finally {
-        bitmap.close();
+        loadedImage.dispose();
       }
     }
     summaries.forEach((item) => {
