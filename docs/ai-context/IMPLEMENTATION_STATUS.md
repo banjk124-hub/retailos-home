@@ -233,3 +233,15 @@ Last updated: 2026-11-04
 - Verification pending: branch CI/build and local preflight. No physical iOS/Android benchmark results exist yet. Phase 2.0 is not complete until compile/build validation succeeds; Phase 2.1 cannot select a decoder until real-device evidence is recorded.
 - Next: open a draft PR to run repository CI, review results, then synchronize branch locally for `npm run preflight` and physical-device benchmark.
 - Keep branch unmerged and undeployed pending user acceptance.
+
+
+## Universal Scanner Engine — Phase 2.1A (in progress, 2026-11-06)
+
+- Local user preflight on Windows / Node v24.16.0 passed: TypeScript + Vite production build, GitHub Pages build, unstaged diff check, staged diff check.
+- GitHub Actions run for PR #7 completed successfully on the Phase 2.0 foundation commit.
+- Added `src/platform/scanner/decoders/decoderAdapter.ts`: decoder-only adapter contract with no camera, scheduler, UI, or business ownership.
+- Added `src/platform/scanner/decoders/nativeBarcodeDetector.ts`: optional browser-native adapter with exact supported-format gating, normalized RetailOS symbologies, string payload preservation, and source-frame geometry where exposed.
+- Added `docs/ai-context/SCANNER_BENCHMARK_FIXTURES.md`: fixture capture, paired-run controls, false-positive definition, metrics, and privacy rules.
+- These additions are not wired to production scanning. Existing ZXing flow and feature behavior remain untouched.
+- CI must rerun on the latest branch head. Local preflight must be rerun after syncing the latest commits. No physical iOS/Android benchmark has been performed yet.
+- Next implementation slice: add a ZXing adapter and a browser benchmark harness for the same fixture set; then compare physical-device results before selecting any default backend.
