@@ -17,7 +17,7 @@ Status: active working plan; verify source and status before starting a phase.
 
 Scope:
 - Centralize accepted symbologies: EAN-13, EAN-8, CODE-128.
-- Configure ZXing using the declared direct dependencies `@zxing/browser` and `@zxing/library`; do not rely on undeclared transitive imports.
+- Use `@zxing/library` as the sole barcode decoder dependency; keep the camera lifecycle and frame scheduling in the shared scanner runtime.
 - Add a pure barcode validation boundary based on decoded format and payload.
 - Preserve CODE-128 as a string; do not coerce to numeric.
 - Make start idempotent and serialize start/stop/pause/resume transitions.
