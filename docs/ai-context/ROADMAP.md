@@ -52,7 +52,7 @@ Scope:
 - Record camera acquisition duration, video readiness, decoder attach, first valid result, resume latency, actual track settings, and failure category.
 - Add low-overhead diagnostics with no personal/product data leakage.
 - Compare actual device behavior at 960×540 and 1280×720; test decode intervals around 100/120/150 ms.
-- Handle ended tracks and recoverable camera interruptions.
+- Measure and optimize performance separately from the lifecycle recovery slice. Unexpected ended-track recovery is implemented in Phase 1.2F and remains subject to device QA.
 
 Acceptance criteria:
 - Measurements available for representative Android Chrome and iOS Safari devices.
@@ -118,3 +118,30 @@ This slice changes confirmation feedback only. Camera lifecycle, camera acquisit
 ## Future platform roadmap (not authorized by this scanner phase)
 - Continue modularizing app shell, module registry, data contracts, providers and local-first sync only when supported by a separate audit and bounded proposal.
 - Do not expand this phase into backend replacement, database migration, auth redesign, or visual redesign.
+
+
+### 1.2F — Camera lifecycle recovery
+**Goal:** recover safely from an unexpected loss of the active video track without leaving a stale decoder attached or creating an automatic retry loop.
+
+Scope:
+- Publish a stream-identity lifecycle notification from `cameraSession.ts` when the active stream has no remaining live video tracks.
+- In `useScannerEngine.ts`, accept the notification only for the stream currently attached to that scanner; invalidate pending decoder work, stop existing controls, clear the matching video source, and synchronize scanning state.
+- Permit one automatic recovery attempt per open scanner session. If the stream is interrupted again, surface a recoverable error and wait for an explicit user retry.
+- Reset the automatic-recovery budget on a direct retry; browser focus/pageshow/visibility resumes do not reset it.
+- Preserve generation invalidation for pending `getUserMedia` calls and prevent recovery after close, unmount, or while the document is hidden.
+
+Protected behavior:
+- Keep camera constraints at 1280×720 and ZXing decode cadence at 70 ms.
+- Keep EAN-13, EAN-8 and CODE-128 validation, accepted-result feedback, and single/continuous mode semantics unchanged.
+- Preserve Home cached lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, and all auth/session, data, PWA and deployment contracts.
+- No new dependency, diagnostics UI, polling, camera lease system, or performance tuning.
+
+Acceptance criteria:
+- An ended event from an obsolete stream is ignored.
+- An ended event from the currently attached stream stops the decoder and detaches only that stream.
+- Pending decoder attachment cannot become active after the stream ends or the scanner closes.
+- At most one automatic recovery attempt occurs per open scanner session; a further interruption requires user retry.
+- Repeated focus/pageshow events cannot create concurrent decoder loops or reset the retry budget.
+- Intentional pause/close/unmount does not trigger automatic recovery.
+- Local `npm run preflight` passes; Home and Stocktake scanner workflows and physical Android/iOS camera recovery are checked separately.
+- Phase remains in progress until Local verification and device QA evidence are recorded.
