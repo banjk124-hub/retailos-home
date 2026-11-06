@@ -220,3 +220,13 @@ Last updated: 2026-11-04
 - No build/test/device verification has yet been run after this follow-up patch. The previously reported Local preflight PASS predates these two latest source commits and must be rerun after synchronization.
 - Keep branch unmerged and undeployed.
 - Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
+
+
+## Phase 1.2B-A — Scanner performance diagnostics (2026-11-06)
+- Created isolated GitHub branch `phase-1-2b-scanner-diagnostics` from `main` at `69397cf7be1aed5e9d6b57efc2f72b7a974856cc`. This branch contains only the diagnostics slice; it is not merged or deployed.
+- Added `src/features/scanner/services/scannerDiagnostics.ts` and instrumented `useScannerEngine.ts` to record session start/end, camera acquisition, actual video-track settings, video playback/readiness dimensions, decoder start/attachment, and first valid result latency.
+- Diagnostic events intentionally exclude barcode text, product data, employee identity, and other business payloads. Current output is structured `console.info` under the `[RetailOS Scanner]` prefix. Each scanner session produces a small number of events; no polling or network telemetry is added.
+- The existing camera constraints (1280×720), ZXing attempt delay (70 ms), accepted formats, callback behavior, feedback, Home lookup, Stocktake form-fill/explicit-save, and camera lifecycle behavior are unchanged.
+- Validation status: GitHub source edits only. No TypeScript build, Pages build, automated test, browser run, or device QA has been executed after these changes. No automated test script is defined specifically for scanner diagnostics.
+- Next: inspect branch diff, run `npm run preflight` locally, then use iOS Safari Web Inspector or an equivalent console capture to collect the structured events during repeated scans. Compare the measured camera/video/decoder/first-result timings before changing resolution, decode cadence, or decoder implementation.
+- Keep branch unmerged and undeployed pending Local build and iOS/Android verification.
