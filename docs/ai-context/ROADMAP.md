@@ -186,3 +186,11 @@ Acceptance criteria:
 - Migrate only after device QA and regression tests. Keep legacy scanner available until acceptance.
 
 **Release gate:** branch-local build/tests, fixture benchmark evidence, iOS and Android physical-device QA, Home/Stocktake regression, diff review, and explicit user approval. No merge/deploy without approval.
+
+
+### Phase 2.1A — Decoder adapter boundary (implemented on branch)
+- Added a decoder-only `ScannerDecoderAdapter` contract. It cannot own camera acquisition, frame scheduling, UI, or business actions.
+- Added an optional Native BarcodeDetector adapter. It requests only explicitly supported symbologies, maps browser format IDs to RetailOS enums, preserves payload strings, and returns source-frame geometry when available.
+- Native backend remains opt-in and is not connected to production camera flow.
+- Added a repeatable fixture protocol for EAN-8, EAN-13, CODE-128, negative and multi-code cases.
+- Next: add a ZXing adapter against the existing installed packages and a benchmark runner that can execute identical still-image fixtures against both adapters. Then run on physical devices.
