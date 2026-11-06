@@ -136,6 +136,8 @@ export function useScannerEngine({
         generation !== startGenerationRef.current ||
         !videoRef.current
       ) {
+        finishScannerDiagnostics(diagnostics, 'camera-acquisition-stale');
+        if (diagnosticsRef.current === diagnostics) diagnosticsRef.current = null;
         detachOwnedStream(stream);
         return;
       }
@@ -162,6 +164,8 @@ export function useScannerEngine({
         isDocumentHidden() ||
         generation !== startGenerationRef.current
       ) {
+        finishScannerDiagnostics(diagnostics, 'video-startup-stale');
+        if (diagnosticsRef.current === diagnostics) diagnosticsRef.current = null;
         detachOwnedStream(stream);
         return;
       }
