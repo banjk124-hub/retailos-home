@@ -219,3 +219,4 @@ Last updated: 2026-11-04
 - Updated useScannerEngine.ts to use identity-guarded cleanup for streams acquired by a stale startup and to surface startup errors only when the attempt's generation is still current. This prevents stale async completion from releasing or reporting against a newer scanner session.
 - No build/test/device verification has yet been run after this follow-up patch. The previously reported Local preflight PASS predates these two latest source commits and must be rerun after synchronization.
 - Keep branch unmerged and undeployed.
+- Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
