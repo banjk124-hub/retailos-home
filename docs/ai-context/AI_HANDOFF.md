@@ -28,7 +28,7 @@ If any item is missing or contradicts the current source, stop treating this han
 - Latest active work branch: `phase-1-2e-scanner-feedback` (Phase 1.2E scan confirmation feedback), based on pushed main commit `ef7b6ff14e2cdfeeee24a7d6349f19b7b3405c1a`.
 - Previous Phase 1.2 foundation branch has been merged into `main` and deployed; Phase 1.2E remains unmerged and undeployed.
 - This branch is intentionally separate from `main`; do not merge or deploy without explicit user approval.
-- Scanner stack declares `@zxing/browser ^0.2.1` and `@zxing/library ^0.23.0` directly.
+- Scanner stack uses `@zxing/library ^0.23.0` as its only decoder dependency; ZBar and browser-native decoding are not part of the runtime.
 - Current package scripts observed: `dev`, `build`, `build:pages`, `preview`, `preview:pages`. No test or lint script was defined at the time of review.
 - Main contains the Phase 1.2 scanner foundation: explicit EAN-13/EAN-8/CODE-128 whitelist and payload validation. The active Phase 1.2E branch adds a louder accepted-result beep and best-effort 25 ms vibration where supported.
 - Scanner engine has a live-controls guard and handles a single-scan result arriving before ZXing returns its controls. Phase 1.2E local TypeScript/build and device verification are still pending.
