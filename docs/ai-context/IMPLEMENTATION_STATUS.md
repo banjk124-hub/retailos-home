@@ -201,3 +201,22 @@ Last updated: 2026-11-04
 - User ran `git diff main...HEAD --check`: no output was reported, consistent with a clean whitespace/conflict-marker check.
 - These results establish compile/build readiness only. No physical Android/iOS scanner feedback QA has yet been reported. No automated test script is currently defined.
 - The initial `git status --short` showed untracked `artifacts/` and a path printed as `"tatus --short"`. Preserve both; inspect locally before any cleanup. They are not assumed to be part of this phase.
+
+
+
+## Phase 1.2F — Camera lifecycle recovery (in progress, 2026-11-06)
+- GitHub branch: `phase-1-2f-camera-lifecycle`, created from `main`. The matching Local branch exists, but its synchronization to this GitHub head has not yet been verified.
+- Source changes: `cameraSession.ts` now publishes stream-identity notifications when the active stream has no remaining live video tracks. `useScannerEngine.ts` ignores obsolete stream events, invalidates stale async decoder work, stops decoder controls, detaches the matching video source, and allows one automatic recovery attempt per open scanner session.
+- A repeated interruption surfaces a Vietnamese recoverable error. A direct user retry resets the automatic-recovery budget; browser focus/pageshow/visibility resumes do not.
+- Preserved in source: 1280×720 camera constraints, 70 ms ZXing cadence, EAN-13/EAN-8/CODE-128 validation, accepted-result feedback, Home lookup, Stocktake form-fill/explicit-save, and data/auth/session/PWA contracts.
+- No dependency, presentation component, polling, camera lease system, or performance tuning was added.
+- Remote GitHub source writes completed. No post-patch TypeScript/build/test/browser/device QA has been executed in this session.
+- The user's earlier Local `npm run preflight` passed before this patch; it is only a baseline, not verification of the current branch.
+- Next: synchronize this branch to Local while preserving untracked `artifacts/` and `tatus --short`; inspect the full diff; rerun `npm run preflight`; test ended-track, close-while-pending, focus/pageshow, manual retry, Home and Stocktake behavior on Android Chrome and iOS Safari.
+## Phase 1.2F — stale camera ownership race hardening (2026-11-06)
+- During the full source review, identified a race in the shared singleton camera service: a stale scanner startup could call the global releaseCameraStream() after a newer scanner instance had acquired a different stream, potentially stopping the newer camera.
+- Updated releaseCameraStream(expectedStream?) to support identity-guarded release. Calls without an argument retain the existing intentional global invalidation behavior used by pause/close/logout; calls with a stream release only when that exact stream is still active.
+- Updated useScannerEngine.ts to use identity-guarded cleanup for streams acquired by a stale startup and to surface startup errors only when the attempt's generation is still current. This prevents stale async completion from releasing or reporting against a newer scanner session.
+- No build/test/device verification has yet been run after this follow-up patch. The previously reported Local preflight PASS predates these two latest source commits and must be rerun after synchronization.
+- Keep branch unmerged and undeployed.
+- Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.

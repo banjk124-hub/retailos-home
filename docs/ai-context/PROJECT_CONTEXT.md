@@ -61,3 +61,9 @@ This file is the product-context reference linked from the canonical `AI_HANDOFF
 
 ### Source-of-truth policy
 Repository source and current tests/config are authoritative for actual behavior. These documents are authoritative for process, intended architecture, phase acceptance, and known limitations. Chat history and AI memory are historical hints only. When sources conflict, inspect current code, document the discrepancy, and correct the relevant repository document; never silently invent a reconciliation.
+
+
+## Active engineering focus — 2026-11-06
+- Current task branch: `phase-1-2f-camera-lifecycle` (GitHub branch created from `main`; not merged or deployed).
+- Current scanner slice: unexpected video-track termination notification and bounded lifecycle recovery. See `ROADMAP.md` Phase 1.2F, `ARCHITECTURE.md` ADR-006 and `IMPLEMENTATION_STATUS.md`.
+- The user's Local preflight passed before the current remote patch; post-sync verification and Android/iOS device QA remain required.

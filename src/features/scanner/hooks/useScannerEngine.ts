@@ -2,7 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { getCameraErrorMessage } from '../services/cameraErrors';
-import { acquireCameraStream, releaseCameraStream } from '../../../shared/services/cameraSession';
+import {
+  acquireCameraStream,
+  releaseCameraStream,
+  subscribeCameraTrackEnded,
+} from '../../../shared/services/cameraSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
 
@@ -53,6 +57,7 @@ export function useScannerEngine({
   const startingRef = useRef(false);
   const restartRequestedRef = useRef(false);
   const startGenerationRef = useRef(0);
+  const automaticRecoveryAttemptsRef = useRef(0);
   const lastDetectedAtRef = useRef(0);
   const detectedOnceRef = useRef(false);
   const stopAfterAttachRef = useRef(false);
@@ -68,6 +73,12 @@ export function useScannerEngine({
     setIsScanning(false);
   }, []);
 
+  const detachOwnedStream = useCallback((stream: MediaStream) => {
+    releaseCameraStream(stream);
+    if (streamRef.current === stream) streamRef.current = null;
+    if (videoRef.current?.srcObject === stream) videoRef.current.srcObject = null;
+  }, []);
+
   const pauseScanner = useCallback(() => {
     startGenerationRef.current += 1;
     restartRequestedRef.current = false;
@@ -78,13 +89,17 @@ export function useScannerEngine({
     setIsStarting(false);
   }, [stopDecoder]);
 
-  const startScanner = useCallback(async () => {
+  // automatic=true is reserved for browser lifecycle events and the one-shot
+  // recovery path. A direct call from the Retry control starts a fresh recovery
+  // budget, so repeated automatic interruptions cannot form an endless loop.
+  const startScanner = useCallback(async (automatic = false) => {
+    if (!automatic) automaticRecoveryAttemptsRef.current = 0;
     if (disposedRef.current || !desiredActiveRef.current || isDocumentHidden()) return;
     // A live decoder already owns this session. Focus/pageshow events must not
     // attach another decode loop to the same MediaStream.
     if (controlsRef.current) return;
     if (startingRef.current) {
-      restartRequestedRef.current = true;
+      if (automatic) restartRequestedRef.current = true;
       return;
     }
 
@@ -105,9 +120,11 @@ export function useScannerEngine({
         generation !== startGenerationRef.current ||
         !videoRef.current
       ) {
-        releaseCameraStream();
-        streamRef.current = null;
+        detachOwnedStream(stream);
         return;
+      }
+      if (!stream.getVideoTracks().some((track) => track.readyState === 'live')) {
+        throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
       }
 
       streamRef.current = stream;
@@ -123,8 +140,7 @@ export function useScannerEngine({
         isDocumentHidden() ||
         generation !== startGenerationRef.current
       ) {
-        releaseCameraStream();
-        streamRef.current = null;
+        detachOwnedStream(stream);
         return;
       }
 
@@ -162,7 +178,8 @@ export function useScannerEngine({
         disposedRef.current ||
         !desiredActiveRef.current ||
         isDocumentHidden() ||
-        generation !== startGenerationRef.current
+        generation !== startGenerationRef.current ||
+        !stream.getVideoTracks().some((track) => track.readyState === 'live')
       ) {
         controls.stop();
         return;
@@ -175,10 +192,18 @@ export function useScannerEngine({
         setIsScanning(true);
       }
     } catch (cause) {
-      if (!disposedRef.current && desiredActiveRef.current && !isAbortError(cause)) {
+      // A failed/stale startup must never release a stream acquired by a newer
+      // scanner instance. Only surface errors for this still-current attempt.
+      const ownedStream = streamRef.current;
+      if (ownedStream) detachOwnedStream(ownedStream);
+
+      if (
+        generation === startGenerationRef.current &&
+        !disposedRef.current &&
+        desiredActiveRef.current &&
+        !isAbortError(cause)
+      ) {
         setError(getCameraErrorMessage(cause));
-        releaseCameraStream();
-        streamRef.current = null;
       }
     } finally {
       startingRef.current = false;
@@ -191,10 +216,10 @@ export function useScannerEngine({
         !isDocumentHidden()
       ) {
         restartRequestedRef.current = false;
-        queueMicrotask(() => { void startScanner(); });
+        queueMicrotask(() => { void startScanner(true); });
       }
     }
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, detachOwnedStream, hapticFeedback, mode, scanCooldownMs]);
 
   const closeScanner = useCallback(() => {
     desiredActiveRef.current = false;
@@ -211,15 +236,43 @@ export function useScannerEngine({
     desiredActiveRef.current = true;
     void startScanner();
 
+    const unsubscribeTrackEnded = subscribeCameraTrackEnded((endedStream) => {
+      // Ignore events from a stream that no longer belongs to this hook.
+      if (streamRef.current !== endedStream) return;
+
+      startGenerationRef.current += 1;
+      stopDecoder();
+      streamRef.current = null;
+      if (videoRef.current?.srcObject === endedStream) {
+        videoRef.current.srcObject = null;
+      }
+      setIsStarting(false);
+
+      if (disposedRef.current || !desiredActiveRef.current || isDocumentHidden()) return;
+
+      if (automaticRecoveryAttemptsRef.current >= 1) {
+        setError('Camera bị ngắt kết nối nhiều lần. Hãy nhấn thử lại để kết nối lại.');
+        return;
+      }
+
+      automaticRecoveryAttemptsRef.current += 1;
+      setError('Kết nối camera bị gián đoạn. Đang thử kết nối lại…');
+      if (startingRef.current) {
+        restartRequestedRef.current = true;
+      } else {
+        queueMicrotask(() => { void startScanner(true); });
+      }
+    });
+
     const handleVisibilityChange = () => {
       if (isDocumentHidden()) {
         pauseScanner();
       } else if (desiredActiveRef.current && !disposedRef.current) {
-        void startScanner();
+        void startScanner(true);
       }
     };
     const resumeFromPageShow = () => {
-      if (!isDocumentHidden() && desiredActiveRef.current) void startScanner();
+      if (!isDocumentHidden() && desiredActiveRef.current) void startScanner(true);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -231,6 +284,7 @@ export function useScannerEngine({
       desiredActiveRef.current = false;
       startGenerationRef.current += 1;
       restartRequestedRef.current = false;
+      unsubscribeTrackEnded();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', resumeFromPageShow);
       window.removeEventListener('focus', resumeFromPageShow);
