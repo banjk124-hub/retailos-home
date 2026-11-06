@@ -213,3 +213,9 @@ Last updated: 2026-11-04
 - Remote GitHub source writes completed. No post-patch TypeScript/build/test/browser/device QA has been executed in this session.
 - The user's earlier Local `npm run preflight` passed before this patch; it is only a baseline, not verification of the current branch.
 - Next: synchronize this branch to Local while preserving untracked `artifacts/` and `tatus --short`; inspect the full diff; rerun `npm run preflight`; test ended-track, close-while-pending, focus/pageshow, manual retry, Home and Stocktake behavior on Android Chrome and iOS Safari.
+## Phase 1.2F — stale camera ownership race hardening (2026-11-06)
+- During the full source review, identified a race in the shared singleton camera service: a stale scanner startup could call the global releaseCameraStream() after a newer scanner instance had acquired a different stream, potentially stopping the newer camera.
+- Updated releaseCameraStream(expectedStream?) to support identity-guarded release. Calls without an argument retain the existing intentional global invalidation behavior used by pause/close/logout; calls with a stream release only when that exact stream is still active.
+- Updated useScannerEngine.ts to use identity-guarded cleanup for streams acquired by a stale startup and to surface startup errors only when the attempt's generation is still current. This prevents stale async completion from releasing or reporting against a newer scanner session.
+- No build/test/device verification has yet been run after this follow-up patch. The previously reported Local preflight PASS predates these two latest source commits and must be rerun after synchronization.
+- Keep branch unmerged and undeployed.
