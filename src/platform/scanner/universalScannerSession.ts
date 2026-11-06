@@ -53,6 +53,12 @@ export class UniversalScannerSession implements ScannerSession {
   private generation = 0;
   private decoding = false;
   private startPromise: Promise<void> | null = null;
+  private diagnosticStartedAt = Date.now();
+  private diagnosticFrames = 0;
+  private diagnosticFramesWithSymbols = 0;
+  private diagnosticAccepted = 0;
+  private diagnosticRejected = 0;
+  private diagnosticErrors = 0;
   private lastAcceptedAt = 0;
   private acceptedSingle = false;
   private disposed = false;
@@ -169,14 +175,20 @@ export class UniversalScannerSession implements ScannerSession {
     try {
       const results = await this.decoder.decode(this.video, timestamp);
       if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
+      this.diagnosticFrames += 1;
+      if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
       const now = Date.now();
       for (const result of results) {
         const value = result.value.trim();
-        if (!isValidValue(value, result.symbology)) continue;
+        if (!isValidValue(value, result.symbology)) {
+          this.diagnosticRejected += 1;
+          continue;
+        }
         if (this.options.mode === 'single' && this.acceptedSingle) break;
         if (this.options.mode === 'continuous' && now - this.lastAcceptedAt < (this.options.sameCodeCooldownMs ?? 700)) continue;
         this.acceptedSingle = true;
         this.lastAcceptedAt = now;
+        this.diagnosticAccepted += 1;
         this.options.onResult({ ...result, value });
         if (this.options.mode === 'single') {
           await this.close();
@@ -184,6 +196,7 @@ export class UniversalScannerSession implements ScannerSession {
         }
       }
     } catch (cause) {
+      this.diagnosticErrors += 1;
       if (generation === this.generation && !this.disposed) {
         this.options.onError?.({
           code: 'DECODER_FAILED',
@@ -193,9 +206,29 @@ export class UniversalScannerSession implements ScannerSession {
         });
       }
     } finally {
+      this.emitDiagnostics();
       this.decoding = false;
       this.scheduleNextFrame(generation);
     }
+  }
+
+  private emitDiagnostics(): void {
+    const now = Date.now();
+    if (now - this.diagnosticStartedAt < 5_000) return;
+    console.info('[RetailOS Scanner] Runtime diagnostics', {
+      decoder: this.decoder?.id ?? 'disposed',
+      frames: this.diagnosticFrames,
+      framesWithSymbols: this.diagnosticFramesWithSymbols,
+      accepted: this.diagnosticAccepted,
+      rejectedByValidation: this.diagnosticRejected,
+      decoderErrors: this.diagnosticErrors,
+    });
+    this.diagnosticStartedAt = now;
+    this.diagnosticFrames = 0;
+    this.diagnosticFramesWithSymbols = 0;
+    this.diagnosticAccepted = 0;
+    this.diagnosticRejected = 0;
+    this.diagnosticErrors = 0;
   }
 
   async suspend(): Promise<void> {
