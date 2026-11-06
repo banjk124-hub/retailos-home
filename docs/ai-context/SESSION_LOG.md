@@ -52,3 +52,4 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Files changed: src/shared/services/cameraSession.ts, src/features/scanner/hooks/useScannerEngine.ts.
 - Validation: source review only. No post-patch local preflight, automated test, or physical-device QA has been run.
 - Next: synchronize latest branch head to Local, inspect diff, rerun npm run preflight, then perform Android Chrome/iOS Safari lifecycle QA. No PR, merge, or deployment yet.
+- Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
