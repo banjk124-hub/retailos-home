@@ -7,8 +7,7 @@ import type {
 } from './contracts';
 import { acquireCameraStream, releaseCameraStream, subscribeCameraTrackEnded } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
-import { NativeBarcodeDetectorAdapter } from './decoders/nativeBarcodeDetector';
-import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
+import { ZBarWasmDecoderAdapter } from './decoders/zbarWasmDecoder';
 
 const FORMATS: ScannerSymbology[] = ['EAN_8', 'EAN_13', 'CODE_128'];
 
@@ -112,16 +111,9 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async createDecoder(): Promise<ScannerDecoderAdapter> {
-    const native = new NativeBarcodeDetectorAdapter();
-    try {
-      await native.initialize({ formats: this.options.formats });
-      return native;
-    } catch {
-      native.dispose();
-      const fallback = new ZXingDecoderAdapter();
-      await fallback.initialize({ formats: this.options.formats });
-      return fallback;
-    }
+    const decoder = new ZBarWasmDecoderAdapter();
+    await decoder.initialize({ formats: this.options.formats });
+    return decoder;
   }
 
   private scheduleNextFrame(generation: number): void {
