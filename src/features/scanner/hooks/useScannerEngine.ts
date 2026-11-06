@@ -12,6 +12,7 @@ import { unlockScannerAudio } from '../services/scannerAudio';
 import {
   beginScannerDiagnostics,
   finishScannerDiagnostics,
+  getSafeCameraTrackSettings,
   markScannerDiagnostics,
   recordFirstScannerResult,
   type ScannerDiagnosticsSession,
@@ -127,7 +128,7 @@ export function useScannerEngine({
       const stream = await acquireCameraStream();
       const videoTrack = stream.getVideoTracks()[0];
       markScannerDiagnostics(diagnostics, 'camera-acquired', {
-        trackSettings: videoTrack?.getSettings() ?? null,
+        trackSettings: getSafeCameraTrackSettings(videoTrack),
       });
       if (
         disposedRef.current ||
