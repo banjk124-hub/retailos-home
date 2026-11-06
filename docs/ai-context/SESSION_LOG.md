@@ -46,3 +46,9 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - No post-patch Local build, automated test, browser simulation, or physical-device QA has been run. The user's earlier Local preflight passed before these changes and must be rerun after synchronization.
 - Preserve the Local untracked paths `artifacts/` and `tatus --short`; inspect before staging or cleanup.
 - Next: synchronize branch to Local, review the full diff, run `npm run preflight`, then perform real Android/iOS camera lifecycle checks. No merge or deployment.
+### 2026-11-06 — Phase 1.2F stale camera ownership hardening
+- During code review, identified that stale async startup cleanup could globally release the shared camera stream after a newer scanner instance acquired it.
+- Added optional expected-stream identity to releaseCameraStream() and changed scanner startup cleanup to release only its own stream. Stale startup errors are no longer surfaced as current-session errors.
+- Files changed: src/shared/services/cameraSession.ts, src/features/scanner/hooks/useScannerEngine.ts.
+- Validation: source review only. No post-patch local preflight, automated test, or physical-device QA has been run.
+- Next: synchronize latest branch head to Local, inspect diff, rerun npm run preflight, then perform Android Chrome/iOS Safari lifecycle QA. No PR, merge, or deployment yet.
