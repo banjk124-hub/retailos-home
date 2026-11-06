@@ -78,6 +78,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private formats: ScannerSymbology[] = [];
   private decoding = false;
   private disposed = false;
+  private lastUnexpectedErrorLogAt = 0;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -144,9 +145,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           timestamp,
           decoder: { id: this.id },
         }];
-      } catch {
-        // NotFound / checksum / format exceptions are expected for ordinary
-        // video frames that do not contain a readable supported barcode.
+      } catch (error) {
+        // Normal misses are expected for video frames without a readable code.
+        // Unexpected failures are rate-limited so a broken decoder is observable.
+        const name = error instanceof Error ? error.name : '';
+        const expectedMiss = ['NotFoundException', 'ChecksumException', 'FormatException'].includes(name);
+        const now = Date.now();
+        if (!expectedMiss && now - this.lastUnexpectedErrorLogAt >= 5_000) {
+          this.lastUnexpectedErrorLogAt = now;
+          console.warn('[RetailOS Scanner] Unexpected ZXing decode failure:', error);
+        }
         return [];
       } finally {
         this.reader.reset();
