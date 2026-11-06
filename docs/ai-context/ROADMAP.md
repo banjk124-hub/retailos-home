@@ -145,3 +145,5 @@ Acceptance criteria:
 - Intentional pause/close/unmount does not trigger automatic recovery.
 - Local `npm run preflight` passes; Home and Stocktake scanner workflows and physical Android/iOS camera recovery are checked separately.
 - Phase remains in progress until Local verification and device QA evidence are recorded.
+### 1.2F review hardening — stream ownership race
+- Additional acceptance criterion: a stale scanner startup or error path must never release a different stream acquired by a newer scanner instance. Identity-guarded release is used for stream-specific cleanup; no-argument release remains reserved for intentional global pause/close/logout invalidation.
