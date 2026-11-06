@@ -85,3 +85,8 @@ A change is not complete merely because code was written. It is complete only wh
 - The user created a matching Local branch and ran `npm run preflight` successfully before this GitHub patch. That baseline is not a post-patch verification.
 - Preserve the Local untracked paths `artifacts/` and `tatus --short`; their contents have not yet been reviewed. Do not clean, overwrite, or stage them as part of this task.
 - Next: fetch/synchronize this branch in Local, review diff, rerun preflight, and perform Android Chrome/iOS Safari scanner lifecycle QA. No PR, merge, or deployment until the user approves.
+### Review follow-up — stale stream ownership guard (2026-11-06)
+- Full source review found that a stale startup path could invoke the shared global camera release after a newer scanner instance acquired its stream. This was a real ownership race in the singleton service.
+- releaseCameraStream(expectedStream?) now supports identity-guarded release; no-argument calls preserve intentional global release semantics. Scanner startup cleanup passes the exact stream and ignores stale errors when its generation is no longer current.
+- Source patch is on phase-1-2f-camera-lifecycle; no post-patch local build or device QA has been run yet.
+- Next: fetch the latest branch, inspect the local diff, run npm run preflight, then perform scanner QA on Android Chrome (and iOS Safari if available). Preserve local untracked paths artifacts/ and tatus --short. Do not PR/merge/deploy until accepted.
