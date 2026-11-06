@@ -69,8 +69,14 @@ export function subscribeCameraTrackEnded(
   };
 }
 
-/** Invalidate pending getUserMedia work and release any active stream. */
-export function releaseCameraStream(): void {
+/**
+ * Invalidate pending camera work and release the active stream.
+ * When an expected stream is supplied, release only that exact stream. This
+ * prevents a stale scanner startup from stopping a newer scanner's camera.
+ */
+export function releaseCameraStream(expectedStream?: MediaStream): void {
+  if (expectedStream && activeStream !== expectedStream) return;
+
   requestGeneration += 1;
   // Detach an unresolved request so a newly opened scanner can start a fresh one.
   // The old request still self-cancels when getUserMedia eventually resolves.
