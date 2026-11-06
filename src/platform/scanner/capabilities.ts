@@ -4,7 +4,11 @@ type NativeBarcodeDetectorConstructor = {
   getSupportedFormats?: () => Promise<string[]>;
 };
 
-const REQUIRED_FORMATS: ScannerSymbology[] = ['EAN_8', 'EAN_13', 'CODE_128'];
+const NATIVE_FORMAT_NAMES: Record<ScannerSymbology, string> = {
+  EAN_8: 'ean_8',
+  EAN_13: 'ean_13',
+  CODE_128: 'code_128',
+};
 
 /**
  * Read runtime capabilities without requesting camera permission.
@@ -24,7 +28,9 @@ export async function detectScannerCapabilities(): Promise<ScannerCapabilities> 
   if (detectorConstructor?.getSupportedFormats) {
     try {
       const formats = await detectorConstructor.getSupportedFormats();
-      nativeFormats = REQUIRED_FORMATS.filter((format) => formats.includes(format));
+      nativeFormats = (Object.entries(NATIVE_FORMAT_NAMES) as [ScannerSymbology, string][])
+        .filter(([, nativeName]) => formats.includes(nativeName))
+        .map(([symbology]) => symbology);
     } catch {
       // A failed capability query must not prevent fallback decoders.
       nativeFormats = [];
@@ -34,7 +40,8 @@ export async function detectScannerCapabilities(): Promise<ScannerCapabilities> 
   return {
     secureContext: typeof isSecureContext !== 'undefined' && isSecureContext,
     mediaDevices,
-    getUserMedia: mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function',
+    getUserMedia: typeof navigator !== 'undefined'
+      && typeof navigator.mediaDevices?.getUserMedia === 'function',
     nativeBarcodeDetector: nativeFormats.length > 0,
     nativeFormats,
     requestVideoFrameCallback: typeof HTMLVideoElement !== 'undefined'
