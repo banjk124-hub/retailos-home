@@ -147,3 +147,42 @@ Acceptance criteria:
 - Phase remains in progress until Local verification and device QA evidence are recorded.
 ### 1.2F review hardening — stream ownership race
 - Additional acceptance criterion: a stale scanner startup or error path must never release a different stream acquired by a newer scanner instance. Identity-guarded release is used for stream-specific cleanup; no-argument release remains reserved for intentional global pause/close/logout invalidation.
+
+
+## Universal Scanner Engine — Phase 2 (approved direction, 2026-11-06)
+
+**Goal:** replace the current scanner architecture through a parallel, measured implementation. Keep feature presentations independent from camera, lifecycle, decoder, and feedback services.
+
+### Phase 2.0 — Contracts and capability baseline (current)
+- Add platform-neutral scanner result, geometry, profile, capability, lifecycle, error, and session contracts.
+- Detect secure context, camera API, native BarcodeDetector supported symbologies, frame callback, Worker, WASM, and vibration without requesting permission.
+- Establish benchmark plan for Native BarcodeDetector, existing ZXing, and a ZBar/WASM candidate after package/license/maintenance verification.
+- No change to current production scanner, Home, Stocktake, dependencies, main, or deployment.
+
+### Phase 2.1 — Decoder benchmark
+- Use the same labelled fixture set for EAN-8, EAN-13, and CODE-128, including negative/poor-quality cases.
+- Measure decoder init, first decode, P50/P95 decode latency, successful decode rate, false positives, geometry quality, bundle size, and resource use.
+- Physical test matrix: iPhone Safari + installed PWA; Android Chrome + installed PWA.
+- Native BarcodeDetector is an optional path only when the exact required formats are supported.
+- Verify ZBar/WASM package provenance, maintenance, license, API, geometry, browser support, and bundle impact before adding it.
+- Do not select a default decoder based on desktop-only results.
+
+### Phase 2.2 — Camera ownership and lifecycle core
+- One engine-owned camera lease; no feature module calls getUserMedia.
+- Serialized, idempotent state machine; generation-safe startup/cleanup; stale stream cannot release a newer owner.
+- Controlled suspend/resume/recovery for visibility, pageshow, focus, lock/unlock and track-ended events.
+- Bounded recovery; no background polling or infinite retry.
+
+### Phase 2.3 — Frame pipeline and feedback
+- Frame scheduler with requestVideoFrameCallback and fallback.
+- Bounded queue/drop stale frames; worker/WASM only where benchmark proves beneficial.
+- Source-frame geometry contract and correct preview transform for crop/object-fit/orientation/mirroring.
+- Gesture-unlocked Web Audio beep and best-effort platform haptics; neither blocks result delivery.
+
+### Phase 2.4 — Feature adapters and migration
+- Home chooses HIGH profile and retains cached lookup.
+- Stocktake chooses COMPACT profile and retains form-fill/explicit-save and duplicate-row semantics.
+- Other modules can consume only the value or build custom overlays/presentation.
+- Migrate only after device QA and regression tests. Keep legacy scanner available until acceptance.
+
+**Release gate:** branch-local build/tests, fixture benchmark evidence, iOS and Android physical-device QA, Home/Stocktake regression, diff review, and explicit user approval. No merge/deploy without approval.
