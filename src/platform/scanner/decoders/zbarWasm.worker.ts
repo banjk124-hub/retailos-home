@@ -9,7 +9,7 @@ type WorkerResponse =
   | { type: 'result'; id: number; symbols: Array<{ typeName: string; value: string }> }
   | { type: 'error'; id: number; message: string };
 
-const workerScope = self as DedicatedWorkerGlobalScope;
+const workerScope = self as unknown as {\n  onmessage: ((event: MessageEvent<WorkerRequest>) => void) | null;\n  postMessage(message: WorkerResponse): void;\n};
 
 workerScope.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const request = event.data;
