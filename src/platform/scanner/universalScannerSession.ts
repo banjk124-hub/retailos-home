@@ -5,7 +5,7 @@ import type {
   ScannerError,
   ScannerSymbology,
 } from './contracts';
-import { acquireCameraStream, releaseCameraStream } from '../../shared/services/cameraSession';
+import { acquireCameraStream, releaseCameraStream, subscribeCameraTrackEnded } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { NativeBarcodeDetectorAdapter } from './decoders/nativeBarcodeDetector';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
@@ -46,6 +46,7 @@ export class UniversalScannerSession implements ScannerSession {
   private lastAcceptedAt = 0;
   private acceptedSingle = false;
   private disposed = false;
+  private unsubscribeTrackEnded: (() => void) | null = null;
 
   constructor(
     private readonly video: HTMLVideoElement,
@@ -76,6 +77,14 @@ export class UniversalScannerSession implements ScannerSession {
         throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
       }
       this.stream = stream;
+      this.unsubscribeTrackEnded?.();
+      this.unsubscribeTrackEnded = subscribeCameraTrackEnded((endedStream) => {
+        if (this.stream !== endedStream || this.disposed) return;
+        ++this.generation;
+        void this.teardown(false);
+        this.setState('error');
+        this.options.onError?.({ code: 'STREAM_INTERRUPTED', message: 'Kết nối camera bị gián đoạn. Hãy nhấn thử lại để kết nối.', recoverable: true });
+      });
       this.video.srcObject = stream;
       this.video.muted = true;
       this.video.playsInline = true;
@@ -197,6 +206,8 @@ export class UniversalScannerSession implements ScannerSession {
     }
     this.frameHandle = null;
     this.frameKind = null;
+    this.unsubscribeTrackEnded?.();
+    this.unsubscribeTrackEnded = null;
     const decoder = this.decoder;
     this.decoder = null;
     if (decoder) await decoder.dispose();
