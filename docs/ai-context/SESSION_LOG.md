@@ -53,3 +53,11 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Validation: source review only. No post-patch local preflight, automated test, or physical-device QA has been run.
 - Next: synchronize latest branch head to Local, inspect diff, rerun npm run preflight, then perform Android Chrome/iOS Safari lifecycle QA. No PR, merge, or deployment yet.
 - Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
+
+
+### 2026-11-06 — Phase 1.2B-A scanner diagnostics
+- Created branch `phase-1-2b-scanner-diagnostics` from `main` at `69397cf7be1aed5e9d6b57efc2f72b7a974856cc`.
+- Added privacy-safe structured scanner timing events for session start/end, camera acquisition and track settings, video playback/readiness, decoder start/attachment, and first valid result. No barcode contents or business/user payloads are recorded.
+- Preserved current camera resolution, 70 ms ZXing delay, format validation, feedback, and consumer contracts. No decoder optimization was attempted.
+- Validation is pending: no local build, browser run, automated test, or physical-device test has been run on this branch.
+- Next: fetch branch locally, inspect diff, run `npm run preflight`, and collect iOS/Android timing evidence before tuning.
