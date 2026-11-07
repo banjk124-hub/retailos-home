@@ -27,8 +27,10 @@ import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { releaseCameraStream } from '../../shared/services/cameraSession';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 
-const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
-const BarcodeScanner = lazy(loadBarcodeScanner);
+// Start loading the scanner runtime with the Home module, not on the first tap.
+// This also lets the active Service Worker cache the hashed chunks before use.
+const barcodeScannerModule = import('../scanner/components/BarcodeScanner');
+const BarcodeScanner = lazy(() => barcodeScannerModule);
 
 type Props = {
   employee: EmployeeSession;
@@ -149,11 +151,6 @@ export default function HomeScreen({
       setPushSetupStatus('error');
     }
   };
-  useEffect(() => {
-    void loadBarcodeScanner().catch((error: unknown) => {
-      console.error('Không thể tải trước máy quét barcode:', error);
-    });
-  }, []);
   useEffect(() => {
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
