@@ -6,7 +6,7 @@ const source = await readFile(new URL("../src/platform/scanner/barcodeValidation
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
-const moduleUrl = `data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`;
+const moduleUrl = \`data:text/javascript;base64,\${Buffer.from(compiled).toString("base64")}\`;
 const { validateBarcodePayload, hasValidGs1CheckDigit } = await import(moduleUrl);
 
 assert.equal(hasValidGs1CheckDigit("4006381333931"), true, "valid EAN-13 check digit");
@@ -17,7 +17,7 @@ assert.deepEqual(validateBarcodePayload("4006381333932", "EAN_13"), {
   reason: "invalid-check-digit",
 });
 assert.equal(validateBarcodePayload("ABC 123", "CODE_128").valid, true, "CODE-128 remains opaque text");
-assert.deepEqual(validateBarcodePayload("ABC\\u0000 123", "CODE_128"), {
+assert.deepEqual(validateBarcodePayload("ABC\u0000 123", "CODE_128"), {
   valid: false,
   reason: "control-character",
 });
