@@ -162,11 +162,24 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       } catch (error) {
         // Normal misses are expected for video frames without a readable code.
         // Unexpected failures are rate-limited so a broken decoder is observable.
-        const name = error instanceof Error ? error.name : '';
-        const expectedMiss = ['NotFoundException', 'ChecksumException', 'FormatException'].includes(name);
-        if (name === 'NotFoundException') this.diagnosticNotFound += 1;
-        else if (name === 'ChecksumException') this.diagnosticChecksum += 1;
-        else if (name === 'FormatException') this.diagnosticFormat += 1;
+        // ZXing's exception name is not stable across package builds. In some
+        // builds a normal NotFoundException is surfaced as a generic Error with
+        // this message. Classify by both identity and message so an ordinary
+        // frame without a barcode never escapes into the camera error UI.
+        const detail = error instanceof Error
+          ? `${error.name} ${error.constructor.name} ${error.message}`.toLowerCase()
+          : String(error).toLowerCase();
+        const missKind = detail.includes('notfoundexception')
+          || detail.includes('no multiformat readers were able to detect the code')
+          ? 'notFound'
+          : detail.includes('checksum')
+            ? 'checksum'
+            : detail.includes('formatexception')
+              ? 'format'
+              : null;
+        if (missKind === 'notFound') this.diagnosticNotFound += 1;
+        else if (missKind === 'checksum') this.diagnosticChecksum += 1;
+        else if (missKind === 'format') this.diagnosticFormat += 1;
         else {
           this.diagnosticUnexpected += 1;
           const now = Date.now();
@@ -176,7 +189,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           }
         }
         this.emitDiagnostics();
-        if (!expectedMiss) throw error;
+        if (!missKind) throw error;
         return [];
       } finally {
         this.reader.reset();
