@@ -277,3 +277,6 @@ The shared camera acquisition promise previously awaited `requestContinuousAutof
 - TypeScript, production build, GitHub Pages build and preflight pass in CI and locally.
 - Verify first open, resume, focus behavior and camera-track interruption on iOS Safari/PWA and Android Chrome/PWA.
 - Record physical-device evidence separately. Do not mark release-ready from CI alone; merge/deploy requires explicit user approval.
+
+
+**Patch 2 CI result update (2026-11-07):** GitHub Actions run #84 (`42393062148`) passed the complete `npm run preflight`: scanner regression suite (including delayed autofocus), TypeScript/production build, GitHub Pages build and both diff checks. npm reported an EBADENGINE warning because `@zxing/library@0.23.0` declares Node >=24 while CI currently uses Node 22; build also reported the existing >500 kB chunk warning. Neither failed the run. Local Windows execution and real iOS/Android QA remain outstanding.
