@@ -48,7 +48,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
   const filtered = useMemo(() => events.filter((event) => {
     if (filter === 'warn') return event.level === 'warn';
-    if (filter === 'performance') return /Performance stage|Decoder processing cost|Runtime diagnostics|Multi-format diagnostics|UI commit/.test(event.category);
+    if (filter === 'performance') return /Performance stage|Decoder processing cost|Runtime diagnostics|Multi-format diagnostics|UI commit|Camera focus|Camera settings|Video readiness|Camera track|Page lifecycle/.test(event.category);
     return true;
   }).slice().reverse(), [events]);
 
@@ -62,7 +62,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
   const exportJson = () => downloadReport(exportScannerDiagnostics(), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, 'application/json');
   const exportCsv = () => {
-    const columns = ['timestamp', 'level', 'category', 'stage', 'durationMs', 'phase', 'decodeAttempts', 'accepted', 'rejectedByValidation', 'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore'];
+    const columns = ['timestamp', 'level', 'category', 'stage', 'durationMs', 'phase', 'decodeAttempts', 'accepted', 'rejectedByValidation', 'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore','focusStatus','focusModes','focusRequestMs','videoReadyMs','videoReadyState','videoWidth','videoHeight','pageLifecycle','trackEvent','trackMuted','trackReadyState'];
     const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
     const rows = [columns.join(','), ...events.map((event) => columns.map((column) => quote(column === 'timestamp' ? event.timestamp : column === 'level' ? event.level : column === 'category' ? event.category : event.metrics[column])).join(','))];
     downloadReport(rows.join('\n'), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`, 'text/csv;charset=utf-8');
@@ -110,7 +110,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
             <div className="scanner-qa-event-copy">
               <strong>{event.category}</strong>
               <time>{new Date(event.timestamp).toLocaleTimeString('vi-VN')}</time>
-              <div className="scanner-qa-metrics">{Object.entries(event.metrics).filter(([key, value]) => value !== undefined && ['stage','durationMs','phase','phaseCommitIntervalMs','decodeAttempts','framesWithSymbols','accepted','rejectedByValidation','decoderErrors','decodeDurationAverageMs','decodeDurationMaxMs','maxFrameCallbackGapMs','longTasks','layoutShiftScore','averageDecodeMs','maxDecodeMs','samples'].includes(key)).slice(0, 7).map(([key, value]) => <span key={key}>{key}: <b>{typeof value === 'number' ? Number(value.toFixed(2)) : String(value)}</b></span>)}</div>
+              <div className="scanner-qa-metrics">{Object.entries(event.metrics).filter(([key, value]) => value !== undefined && ['stage','durationMs','phase','phaseCommitIntervalMs','pageLifecycle','focusStatus','focusModes','focusRequestMs','width','height','frameRate','facingMode','focusMode','videoReadyMs','videoReadyState','videoWidth','videoHeight','trackEvent','trackMuted','trackReadyState','frameCallbackObserved','decodeAttempts','framesWithSymbols','accepted','rejectedByValidation','decoderErrors','decodeDurationAverageMs','decodeDurationMaxMs','maxFrameCallbackGapMs','longTasks','layoutShiftScore','averageDecodeMs','maxDecodeMs','samples'].includes(key)).slice(0, 7).map(([key, value]) => <span key={key}>{key}: <b>{typeof value === 'number' ? Number(value.toFixed(2)) : String(value)}</b></span>)}</div>
             </div>
           </article>)}
       </div>

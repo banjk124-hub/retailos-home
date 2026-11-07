@@ -1,3 +1,5 @@
+import { getSafeCameraSettings, requestContinuousAutofocus } from './cameraDiagnostics';
+
 let activeStream: MediaStream | null = null;
 let pendingRequest: Promise<MediaStream> | null = null;
 let requestGeneration = 0;
@@ -9,24 +11,6 @@ export type CameraStreamLease = {
   release(): void;
 };
 
-/**
- * Best-effort continuous autofocus. Unsupported constraints must never block
- * camera startup on iOS Safari or Android camera providers.
- */
-async function optimizeVideoTrack(track: MediaStreamTrack): Promise<void> {
-  try {
-    const capabilities = track.getCapabilities() as MediaTrackCapabilities & {
-      focusMode?: string[];
-    };
-    if (capabilities.focusMode?.includes('continuous')) {
-      await track.applyConstraints({
-        advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
-      });
-    }
-  } catch (error) {
-    console.debug('[RetailOS Camera] Optional autofocus constraint unavailable:', error);
-  }
-}
 
 async function acquireSharedStream(): Promise<{ stream: MediaStream; generation: number }> {
   if (activeStream?.getTracks().some((track) => track.readyState === 'live')) {
@@ -60,14 +44,31 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
       activeStream = stream;
       const videoTracks = stream.getVideoTracks();
       const autofocusStartedAt = performance.now();
-      await Promise.all(videoTracks.map(optimizeVideoTrack));
+      const focusResults = await Promise.all(videoTracks.map(requestContinuousAutofocus));
+      const focusResult = focusResults[0] ?? {
+        status: 'unavailable' as const,
+        supportedModes: [],
+        durationMs: 0,
+      };
       console.info('[RetailOS Scanner] Performance stage', {
         stage: 'optional_autofocus_ms',
         durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
       });
+      console.info('[RetailOS Scanner] Camera focus', {
+        focusStatus: focusResult.status,
+        focusModes: focusResult.supportedModes.join(','),
+        focusRequestMs: focusResult.durationMs,
+        focusErrorName: focusResult.errorName,
+      });
+      console.info('[RetailOS Scanner] Camera settings', getSafeCameraSettings(videoTracks[0]));
       if (generation !== requestGeneration || activeStream !== stream) {
         stream.getTracks().forEach((track) => track.stop());
         throw new DOMException('Camera request was superseded.', 'AbortError');
+      }
+      if (!videoTracks.some((track) => track.readyState === 'live')) {
+        activeStream = null;
+        stream.getTracks().forEach((track) => track.stop());
+        throw new DOMException('Camera track ended before startup completed.', 'NotReadableError');
       }
 
       videoTracks.forEach((track) => {

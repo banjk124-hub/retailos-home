@@ -9,6 +9,101 @@ import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
 
+type VideoReadiness = {
+  readyState: number;
+  width: number;
+  height: number;
+  frameCallbackObserved: boolean;
+};
+
+function isVideoFrameAvailable(video: HTMLVideoElement): boolean {
+  return video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+    && video.videoWidth > 0
+    && video.videoHeight > 0;
+}
+
+/**
+ * Wait until the video element has real decoded frame dimensions. Safari may
+ * resolve play() before the first usable frame is available.
+ */
+function waitForVideoFrameReady(video: HTMLVideoElement, timeoutMs = 3000): Promise<VideoReadiness> {
+  const videoWithFrameCallback = video as HTMLVideoElement & {
+    requestVideoFrameCallback?: (callback: (now: number) => void) => number;
+    cancelVideoFrameCallback?: (handle: number) => void;
+  };
+
+  if (typeof videoWithFrameCallback.requestVideoFrameCallback !== 'function') {
+    if (isVideoFrameAvailable(video)) {
+      return Promise.resolve({
+        readyState: video.readyState,
+        width: video.videoWidth,
+        height: video.videoHeight,
+        frameCallbackObserved: false,
+      });
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let frameHandle: number | null = null;
+    const cleanup = () => {
+      window.clearTimeout(timeoutHandle);
+      video.removeEventListener('loadeddata', checkReady);
+      video.removeEventListener('canplay', checkReady);
+      if (frameHandle !== null) videoWithFrameCallback.cancelVideoFrameCallback?.(frameHandle);
+    };
+
+    const finish = (frameCallbackObserved: boolean) => {
+      if (settled || !isVideoFrameAvailable(video)) return;
+      settled = true;
+      cleanup();
+      resolve({
+        readyState: video.readyState,
+        width: video.videoWidth,
+        height: video.videoHeight,
+        frameCallbackObserved,
+      });
+    };
+
+    const checkReady = () => {
+      if (isVideoFrameAvailable(video) && typeof videoWithFrameCallback.requestVideoFrameCallback !== 'function') {
+        finish(false);
+      }
+    };
+
+    const timeoutHandle = window.setTimeout(() => {
+      if (isVideoFrameAvailable(video)) {
+        finish(false);
+        return;
+      }
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error('Camera đã mở nhưng chưa cung cấp được frame hình ảnh. Hãy giữ ứng dụng ở foreground và thử lại.'));
+    }, timeoutMs);
+
+    video.addEventListener('loadeddata', checkReady);
+    video.addEventListener('canplay', checkReady);
+
+    const scheduleFrameCheck = () => {
+      frameHandle = videoWithFrameCallback.requestVideoFrameCallback?.(() => {
+        frameHandle = null;
+        if (isVideoFrameAvailable(video)) {
+          finish(true);
+        } else {
+          scheduleFrameCheck();
+        }
+      }) ?? null;
+    };
+
+    if (typeof videoWithFrameCallback.requestVideoFrameCallback === 'function') {
+      scheduleFrameCheck();
+    } else {
+      checkReady();
+    }
+  });
+}
+
 function scannerError(cause: unknown): ScannerError {
   const name = cause instanceof DOMException ? cause.name : '';
   const message = cause instanceof Error ? cause.message : 'Không thể khởi động máy quét.';
@@ -57,7 +152,9 @@ export class UniversalScannerSession implements ScannerSession {
   private acceptedSingle = false;
   private disposed = false;
   private closePromise: Promise<void> | null = null;
+  private suspendPromise: Promise<void> | null = null;
   private unsubscribeTrackEnded: (() => void) | null = null;
+  private trackEventCleanups: Array<() => void> = [];
 
   constructor(private readonly video: HTMLVideoElement, private readonly options: ScannerOpenOptions) {}
   get state(): ScannerLifecycleState { return this.currentState; }
@@ -69,8 +166,16 @@ export class UniversalScannerSession implements ScannerSession {
 
   start(): Promise<void> {
     if (this.closePromise) return this.closePromise;
+    if (this.suspendPromise) return this.suspendPromise.then(() => this.start());
     if (this.disposed || this.currentState === 'scanning') return Promise.resolve();
-    if (this.startPromise) return this.startPromise;
+    if (this.startPromise) {
+      const pendingStart = this.startPromise;
+      return pendingStart.then(() => {
+        // If suspend invalidated an in-flight permission/camera request, retry
+        // once that stale attempt settles and the session is still suspended.
+        if (!this.disposed && this.currentState === 'suspended') return this.start();
+      });
+    }
     const pending = this.startInternal();
     this.startPromise = pending;
     void pending.then(
@@ -103,6 +208,24 @@ export class UniversalScannerSession implements ScannerSession {
         throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
       }
       this.stream = stream;
+      this.trackEventCleanups.splice(0).forEach((cleanup) => cleanup());
+      stream.getVideoTracks().forEach((track) => {
+        const logTrackEvent = (trackEvent: 'mute' | 'unmute') => {
+          console.info('[RetailOS Scanner] Camera track', {
+            trackEvent,
+            trackMuted: track.muted,
+            trackReadyState: track.readyState,
+          });
+        };
+        const onMute = () => logTrackEvent('mute');
+        const onUnmute = () => logTrackEvent('unmute');
+        track.addEventListener('mute', onMute);
+        track.addEventListener('unmute', onUnmute);
+        this.trackEventCleanups.push(() => {
+          track.removeEventListener('mute', onMute);
+          track.removeEventListener('unmute', onUnmute);
+        });
+      });
       this.unsubscribeTrackEnded?.();
       this.unsubscribeTrackEnded = subscribeCameraTrackEnded((endedStream) => {
         if (this.stream !== endedStream || this.disposed) return;
@@ -118,6 +241,17 @@ export class UniversalScannerSession implements ScannerSession {
       const videoPlayStartedAt = performance.now();
       await this.video.play();
       this.logStage('video_play_ms', performance.now() - videoPlayStartedAt);
+      if (this.disposed || generation !== this.generation) return;
+
+      const videoReadyStartedAt = performance.now();
+      const videoReadiness = await waitForVideoFrameReady(this.video);
+      this.logStage('video_ready_ms', performance.now() - videoReadyStartedAt);
+      console.info('[RetailOS Scanner] Video readiness', {
+        videoReadyState: videoReadiness.readyState,
+        videoWidth: videoReadiness.width,
+        videoHeight: videoReadiness.height,
+        frameCallbackObserved: videoReadiness.frameCallbackObserved,
+      });
       if (this.disposed || generation !== this.generation) return;
 
       this.setState('initializing');
@@ -294,11 +428,19 @@ export class UniversalScannerSession implements ScannerSession {
     this.diagnosticValidationReasons = {};
   }
 
-  async suspend(): Promise<void> {
-    if (this.disposed) return;
+  suspend(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    if (this.disposed) return Promise.resolve();
+    if (this.suspendPromise) return this.suspendPromise;
     ++this.generation;
     this.setState('suspended');
-    await this.teardown(true);
+    const pending = this.teardown(true);
+    this.suspendPromise = pending;
+    const clearPending = () => {
+      if (this.suspendPromise === pending) this.suspendPromise = null;
+    };
+    void pending.then(clearPending, clearPending);
+    return pending;
   }
 
   async resume(): Promise<void> {
@@ -315,6 +457,7 @@ export class UniversalScannerSession implements ScannerSession {
     // decoder disposal and camera release happen exactly once.
     ++this.generation;
     this.closePromise = (async () => {
+      await this.suspendPromise;
       await this.teardown(true);
       this.disposed = true;
       this.setState('disposed');
@@ -333,22 +476,39 @@ export class UniversalScannerSession implements ScannerSession {
     this.frameKind = null;
     this.unsubscribeTrackEnded?.();
     this.unsubscribeTrackEnded = null;
+    this.trackEventCleanups.splice(0).forEach((cleanup) => cleanup());
     const decoder = this.decoder;
     this.decoder = null;
     if (decoder) {
       const decoderDisposeStartedAt = performance.now();
-      await decoder.dispose();
+      try {
+        await decoder.dispose();
+      } catch (cause) {
+        console.warn('[RetailOS Scanner] Decoder disposal failed', {
+          errorName: cause instanceof Error ? cause.name : 'UnknownError',
+        });
+      }
       this.logStage('decoder_dispose_ms', performance.now() - decoderDisposeStartedAt);
     }
     const stream = this.stream;
     this.stream = null;
-    if (this.video.srcObject === stream) this.video.srcObject = null;
+    if (this.video.srcObject === stream) {
+      try {
+        this.video.pause();
+      } catch {
+        // Detaching the stream below remains the authoritative cleanup.
+      }
+      this.video.srcObject = null;
+    }
     const lease = this.cameraLease;
     this.cameraLease = null;
     if (release) {
       const cameraReleaseStartedAt = performance.now();
-      lease?.release();
-      this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
+      try {
+        lease?.release();
+      } finally {
+        this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
+      }
     }
     this.longTaskObserver?.disconnect();
     this.longTaskObserver = null;
