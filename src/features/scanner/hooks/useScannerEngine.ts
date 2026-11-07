@@ -32,6 +32,7 @@ export function useScannerEngine({
   const recoveryAttemptsRef = useRef(0);
   const startPromiseRef = useRef<Promise<void> | null>(null);
   const [isStarting, setIsStarting] = useState(true);
+  const [isPreviewReady, setIsPreviewReady] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
   const lastUiStateChangeAtRef = useRef(performance.now());
@@ -74,6 +75,7 @@ export function useScannerEngine({
     const video = videoRef.current;
     if (!video) return;
     setError('');
+    setIsPreviewReady(false);
     setIsStarting(true);
 
     const start = (async () => {
@@ -105,10 +107,16 @@ export function useScannerEngine({
           },
           onStateChange: (state: ScannerLifecycleState) => {
             if (!mountedRef.current) return;
+            if (state === 'requesting' || state === 'suspended' || state === 'stopped' || state === 'error') {
+              setIsPreviewReady(false);
+            }
             setIsStarting(state === 'requesting' || state === 'initializing');
             setIsScanning(state === 'scanning');
             if (state === 'scanning') recoveryAttemptsRef.current = 0;
             if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
+          },
+          onPreviewReady: () => {
+            if (mountedRef.current) setIsPreviewReady(true);
           },
           onError: (scannerError) => {
             if (!mountedRef.current) return;
@@ -137,6 +145,7 @@ export function useScannerEngine({
     await sessionRef.current?.suspend('hidden');
     if (!mountedRef.current) return;
     setIsStarting(false);
+    setIsPreviewReady(false);
     setIsScanning(false);
   }, []);
 
@@ -147,6 +156,7 @@ export function useScannerEngine({
     await session?.close();
     if (mountedRef.current) {
       setIsStarting(false);
+      setIsPreviewReady(false);
       setIsScanning(false);
     }
   }, []);
@@ -194,7 +204,7 @@ export function useScannerEngine({
   }, [pauseScanner, startScanner]);
 
   return {
-    videoRef, isStarting, isScanning, error, startScanner, pauseScanner, closeScanner,
+    videoRef, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
     prepareAudio: unlockScannerAudio,
   };
 }
