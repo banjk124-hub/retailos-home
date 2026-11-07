@@ -39,7 +39,18 @@ export function useScannerEngine({
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || isDocumentHidden()) return;
-    if (startPromiseRef.current) return startPromiseRef.current;
+    if (startPromiseRef.current) {
+      const pendingStart = startPromiseRef.current;
+      await pendingStart;
+      // A hide/suspend can invalidate an in-flight getUserMedia request. If the
+      // page becomes visible again before that request settles, retry instead
+      // of treating the stale promise as a successful camera start.
+      if (!desiredActiveRef.current || isDocumentHidden()) return;
+      if (sessionRef.current?.state === 'scanning') return;
+      if (startPromiseRef.current && startPromiseRef.current !== pendingStart) {
+        return startPromiseRef.current;
+      }
+    }
     const video = videoRef.current;
     if (!video) return;
     setError('');

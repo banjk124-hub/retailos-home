@@ -22,14 +22,17 @@ import './shared/navigation/LiquidDock.css';
 import './styles/login-experience.css';
 import './features/stocktake/components/stocktake.css';
 import { MotionBoundary, MotionProvider } from './shared/motion';
+import { AppErrorBoundary } from './shared/components/AppErrorBoundary';
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <AppErrorBoundary>
     <MotionProvider>
       <MotionBoundary>
         <App />
       </MotionBoundary>
     </MotionProvider>
+    </AppErrorBoundary>
   </React.StrictMode>,
 );
 
