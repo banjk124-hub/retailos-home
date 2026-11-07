@@ -152,7 +152,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height = height;
       const fullFrameDrawStartedAt = performance.now();
       this.context.drawImage(source, 0, 0, width, height);
-      const fullFrameDrawMs = performance.now() - fullFrameDrawStartedAt;
+      this.recordStageCost('full_frame_draw', performance.now() - fullFrameDrawStartedAt);
 
       let output = this.decodeCurrentCanvas(timestamp, false);
       if (output) {
@@ -187,7 +187,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         roiWidth,
         roiHeight,
       );
-      const roiDrawMs = performance.now() - roiDrawStartedAt;
+      this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
       output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
       if (output) {
         this.diagnosticDecoded += 1;
@@ -209,6 +209,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private decodeCostCount = 0;
   private decodeCostTotalMs = 0;
   private decodeCostMaxMs = 0;
+  private stageCosts: Record<string, { count: number; totalMs: number; maxMs: number }> = {};
 
   private recordDecodeCost(durationMs: number): void {
     this.decodeCostCount += 1;
@@ -216,23 +217,38 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.decodeCostMaxMs = Math.max(this.decodeCostMaxMs, durationMs);
     if (!this.decodeCostStartedAt) this.decodeCostStartedAt = Date.now();
     if (Date.now() - this.decodeCostStartedAt < 5_000) return;
+    const stageCosts = Object.fromEntries(Object.entries(this.stageCosts).map(([stage, value]) => [stage, {
+      samples: value.count,
+      averageMs: Number((value.totalMs / value.count).toFixed(2)),
+      maxMs: Number(value.maxMs.toFixed(2)),
+    }]));
     console.info('[RetailOS Scanner] Decoder processing cost', {
       decoder: this.id,
       averageDecodeMs: Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)),
       maxDecodeMs: Number(this.decodeCostMaxMs.toFixed(1)),
       samples: this.decodeCostCount,
+      stages: stageCosts,
     });
     this.decodeCostStartedAt = Date.now();
     this.decodeCostCount = 0;
     this.decodeCostTotalMs = 0;
     this.decodeCostMaxMs = 0;
+    this.stageCosts = {};
+  }
+
+  private recordStageCost(stage: string, durationMs: number): void {
+    const current = this.stageCosts[stage] ?? { count: 0, totalMs: 0, maxMs: 0 };
+    current.count += 1;
+    current.totalMs += durationMs;
+    current.maxMs = Math.max(current.maxMs, durationMs);
+    this.stageCosts[stage] = current;
   }
 
   private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
-    const imageReadMs = performance.now() - imageReadStartedAt;
+    this.recordStageCost('image_data_read', performance.now() - imageReadStartedAt);
     const grayscaleStartedAt = performance.now();
 const grayscale = rgbaToLuminance(
   image.data,
@@ -255,7 +271,7 @@ const luminance = new RGBLuminanceSource(
         // Reuse the initialized retail-format whitelist across camera frames.
         const zxingStartedAt = performance.now();
         const result = this.reader.decodeWithState(bitmap);
-        const zxingMs = performance.now() - zxingStartedAt;
+        this.recordStageCost('zxing_decode', performance.now() - zxingStartedAt);
         const symbology = REVERSE_FORMAT_MAP.get(result.getBarcodeFormat());
         const value = result.getText();
         if (!symbology || !this.formats.includes(symbology) || value.length === 0) return null;
