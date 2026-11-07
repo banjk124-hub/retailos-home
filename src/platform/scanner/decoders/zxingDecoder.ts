@@ -37,6 +37,7 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
 const MAX_FRAME_WIDTH = 1280;
 const ROI_WIDTH_RATIO = 0.82;
 const ROI_HEIGHT_RATIO = 0.66;
+const ROI_UPSCALE = 1.5;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
     format,
@@ -88,7 +89,7 @@ function classifyDecodeError(error: unknown): DecodeMiss | null {
  * UniversalScannerSession.
  */
 export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
-  readonly id = 'zxing-multiformat';
+  readonly id = 'zxing-retail-ean-code128';
   private reader: MultiFormatReader | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private context: CanvasRenderingContext2D | null = null;
@@ -160,9 +161,24 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const cropHeight = Math.max(1, Math.round(height * ROI_HEIGHT_RATIO));
       const sx = Math.round((width - cropWidth) / 2);
       const sy = Math.round((height - cropHeight) / 2);
-      this.canvas.width = width;
-      this.canvas.height = height;
-      this.context.drawImage(source, sx / scale, sy / scale, cropWidth / scale, cropHeight / scale, 0, 0, width, height);
+      // Upscale the centered crop without changing its aspect ratio. Stretching
+      // a wide barcode to the full frame distorts bar/space geometry and can
+      // make ZXing fail on otherwise readable labels.
+      const roiWidth = Math.max(1, Math.round(cropWidth * ROI_UPSCALE));
+      const roiHeight = Math.max(1, Math.round(cropHeight * ROI_UPSCALE));
+      this.canvas.width = roiWidth;
+      this.canvas.height = roiHeight;
+      this.context.drawImage(
+        source,
+        sx / scale,
+        sy / scale,
+        cropWidth / scale,
+        cropHeight / scale,
+        0,
+        0,
+        roiWidth,
+        roiHeight,
+      );
       output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
       if (output) {
         this.diagnosticDecoded += 1;
