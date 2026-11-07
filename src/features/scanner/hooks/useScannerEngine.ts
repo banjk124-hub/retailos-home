@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ScannerLifecycleState, ScannerSession } from '../../../platform/scanner/contracts';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleState, type ScannerSession } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -61,12 +61,7 @@ export function useScannerEngine({
       if (!session || session.state === 'disposed') {
         session = new UniversalScannerSession(video, {
           profile: 'HIGH',
-          formats: [
-            'EAN_8', 'EAN_13', 'UPC_A', 'UPC_E',
-            'CODE_128', 'CODE_39', 'CODE_93', 'ITF', 'CODABAR',
-            'QR_CODE', 'DATA_MATRIX', 'PDF_417', 'AZTEC',
-            'RSS_14', 'RSS_EXPANDED', 'MAXICODE', 'MICRO_QR_CODE',
-          ],
+          formats: [...SUPPORTED_BARCODE_FORMATS],
           mode,
           sameCodeCooldownMs: scanCooldownMs,
           audioFeedback,
@@ -75,6 +70,12 @@ export function useScannerEngine({
             // Deliver the decoded value to the owning module first. Feedback is
             // deliberately isolated so a sound/haptic failure cannot block the
             // business callback or leave single-scan mode running forever.
+            console.info('[RetailOS Scanner] Result delivered to feature callback', {
+              session: session?.id,
+              symbology: result.symbology,
+              valueLength: result.value.length,
+              mode,
+            });
             onDetectedRef.current(result.value);
             try {
               playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
