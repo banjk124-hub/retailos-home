@@ -27,10 +27,13 @@ import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { releaseCameraStream } from '../../shared/services/cameraSession';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 
-// Start loading the scanner runtime with the Home module, not on the first tap.
-// This also lets the active Service Worker cache the hashed chunks before use.
-const barcodeScannerModule = import('../scanner/components/BarcodeScanner');
-const BarcodeScanner = lazy(() => barcodeScannerModule);
+// Warm the scanner chunk during Home startup, while keeping lazy() retryable
+// if the prefetch fails because of a transient network/deployment condition.
+const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
+const BarcodeScanner = lazy(loadBarcodeScanner);
+void loadBarcodeScanner().catch((error: unknown) => {
+  console.error('[RetailOS] Scanner preload failed; it will retry when opened:', error);
+});
 
 type Props = {
   employee: EmployeeSession;
