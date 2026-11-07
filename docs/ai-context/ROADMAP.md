@@ -147,3 +147,10 @@ Acceptance criteria:
 - Phase remains in progress until Local verification and device QA evidence are recorded.
 ### 1.2F review hardening — stream ownership race
 - Additional acceptance criterion: a stale scanner startup or error path must never release a different stream acquired by a newer scanner instance. Identity-guarded release is used for stream-specific cleanup; no-argument release remains reserved for intentional global pause/close/logout invalidation.
+
+
+### Phase 1.2F follow-up — serialized stream ownership (2026-11-07)
+- Added reference-counted `CameraStreamLease` ownership to the shared camera service. Scanner sessions release their own lease; app-level logout retains a separate global invalidation path.
+- Fixed the React bridge's stale-start promise path so a settled attempt that did not reach `scanning` can fall through to a fresh start instead of returning the same completed promise.
+- This is a source implementation update only. It is not release-complete until TypeScript/build/preflight, lifecycle regression tests, and real iOS Safari/Android Chrome checks pass.
+- Required tests: concurrent lease acquisition/release, pending acquisition invalidated by logout, stale session close while another session acquires, suspend/resume, rapid open-close-open, track-ended event, Home and Stocktake workflows.
