@@ -38,6 +38,7 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
 
   const generation = requestGeneration;
   if (!pendingRequest) {
+    const getUserMediaStartedAt = performance.now();
     const request = navigator.mediaDevices.getUserMedia({
       audio: false,
       video: {
@@ -47,6 +48,10 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
         frameRate: { ideal: 30, max: 30 },
       },
     }).then(async (stream) => {
+      console.info('[RetailOS Scanner] Performance stage', {
+        stage: 'get_user_media_ms',
+        durationMs: Number((performance.now() - getUserMediaStartedAt).toFixed(1)),
+      });
       if (generation !== requestGeneration) {
         stream.getTracks().forEach((track) => track.stop());
         throw new DOMException('Camera request was superseded.', 'AbortError');
@@ -54,7 +59,12 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
 
       activeStream = stream;
       const videoTracks = stream.getVideoTracks();
+      const autofocusStartedAt = performance.now();
       await Promise.all(videoTracks.map(optimizeVideoTrack));
+      console.info('[RetailOS Scanner] Performance stage', {
+        stage: 'optional_autofocus_ms',
+        durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
+      });
       if (generation !== requestGeneration || activeStream !== stream) {
         stream.getTracks().forEach((track) => track.stop());
         throw new DOMException('Camera request was superseded.', 'AbortError');
