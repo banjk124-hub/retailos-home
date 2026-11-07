@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
-// Preload scanner code when the Home-owned Stocktake module is imported.
-// The scanner remains visually lazy, but its runtime chunk is fetched early.
-const stocktakeScannerModule = import('./StocktakeScanner');
-const StocktakeScanner = lazy(() => stocktakeScannerModule);
+// Warm scanner code early, but keep the lazy loader independent so a failed
+// prefetch does not permanently poison React.lazy's cached promise.
+const loadStocktakeScanner = () => import('./StocktakeScanner');
+const StocktakeScanner = lazy(loadStocktakeScanner);
+void loadStocktakeScanner().catch((error: unknown) => {
+  console.error('[RetailOS] Stocktake scanner preload failed; it will retry when opened:', error);
+});
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
