@@ -4,7 +4,7 @@ import type {
   ScannerSession,
   ScannerError,
 } from './contracts';
-import { acquireCameraStream, releaseCameraStream, subscribeCameraTrackEnded } from '../../shared/services/cameraSession';
+import { acquireCameraLease, subscribeCameraTrackEnded, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
@@ -27,6 +27,7 @@ export class UniversalScannerSession implements ScannerSession {
   readonly id = `scanner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   private currentState: ScannerLifecycleState = 'idle';
   private stream: MediaStream | null = null;
+  private cameraLease: CameraStreamLease | null = null;
   private decoder: ScannerDecoderAdapter | null = null;
   private frameHandle: number | null = null;
   private frameKind: 'video' | 'raf' | null = null;
@@ -76,11 +77,13 @@ export class UniversalScannerSession implements ScannerSession {
       if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
         throw new Error('Camera cần HTTPS hoặc localhost và quyền truy cập mediaDevices.');
       }
-      const stream = await acquireCameraStream();
+      const lease = await acquireCameraLease();
+      const stream = lease.stream;
       if (this.disposed || generation !== this.generation) {
-        releaseCameraStream(stream);
+        lease.release();
         return;
       }
+      this.cameraLease = lease;
       if (!stream.getVideoTracks().some((track) => track.readyState === 'live')) {
         throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
       }
@@ -293,6 +296,8 @@ export class UniversalScannerSession implements ScannerSession {
     const stream = this.stream;
     this.stream = null;
     if (this.video.srcObject === stream) this.video.srcObject = null;
-    if (release && stream) releaseCameraStream(stream);
+    const lease = this.cameraLease;
+    this.cameraLease = null;
+    if (release) lease?.release();
   }
 }

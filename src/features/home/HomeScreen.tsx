@@ -25,7 +25,6 @@ import type { MotionOrigin } from '../../shared/motion';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import StocktakeModule from '../stocktake/components/StocktakeModule';
-import { releaseCameraStream } from '../../shared/services/cameraSession';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 
 type Props = {
@@ -508,7 +507,6 @@ export default function HomeScreen({
     });
   };
   const closeBarcodeScanner = () => {
-    releaseCameraStream();
     setIsBarcodeScannerOpen(false);
   };
   const openBarcodeScanner = () => {
