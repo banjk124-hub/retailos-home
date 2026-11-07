@@ -234,3 +234,15 @@ Last updated: 2026-11-04
 - Verification status: GitHub source changes only. No local TypeScript/build/preflight, automated barcode fixture tests, image corpus decode test, or physical Android/iOS QA has been run yet. Do not treat this slice as release-ready.
 - Known remaining work: establish automated tests for payload policy and decoder image fixtures; verify exact ZXing behavior for EAN-13/EAN-8/CODE-128; inspect callback lifecycle and camera race tests; run local preflight; perform real-device scan and result-flow QA.
 - Branch remains isolated. No PR, merge, or deployment performed.
+
+
+## 2026-11-07 — P0 scanner lifecycle serialization patch
+- Branch: `fix/scanner-p0-lifecycle-serialization`; base: `main` commit `7f35fc095dd89741919005af067ca3f4285c6ea6`.
+- Updated `src/shared/services/cameraSession.ts`: introduced `CameraStreamLease` and `acquireCameraLease()`; shared camera stream ownership is reference-counted. Lease release is idempotent and guarded by stream identity plus request generation. No-argument `releaseCameraStream()` remains the global invalidation path for app-level logout/forced shutdown.
+- Updated `src/platform/scanner/universalScannerSession.ts`: each scanner session acquires and releases its own camera lease, including stale startup cleanup.
+- Updated `src/features/scanner/hooks/useScannerEngine.ts`: after awaiting a stale/completed start promise, the hook can create a new attempt if the session remains desired-active but is not scanning.
+- Protected contracts: supported barcode formats, decoder cadence/algorithm, feedback behavior, Home cached lookup, Stocktake form-fill/explicit-save, auth/session, Apps Script, IndexedDB, service worker, PWA base path and deployment workflow.
+- Documentation synchronized in this branch: Architecture ADR-007, Roadmap Phase 1.2F follow-up, this status record, AI Handoff and Session Log.
+- Validation: GitHub source edits only. No npm command, TypeScript build, automated lifecycle test, browser simulation, or physical-device test was executed in this remote editing session. Do not mark the patch verified or release-ready.
+- Known limitations: no automated test currently exercises shared camera lease races; iOS Safari and Android Chrome behavior remains unverified. The existing `scripts/test-scanner-validation.mjs` validates barcode payload policy, not camera lifecycle.
+- Next: inspect the complete branch diff; run `npm run preflight`; add/run focused lifecycle tests; test rapid open-close-open, suspend/resume, two consumers, close while permission is pending, track-ended and logout; then perform Home/Stocktake QA on iOS and Android. Keep branch unmerged and undeployed.
