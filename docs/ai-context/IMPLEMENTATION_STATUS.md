@@ -348,3 +348,10 @@ First synchronize and review this documentation-only branch, run repository CI/p
   - Unstaged and staged `git diff --check`.
 - Build emitted the existing Vite chunk-size warning (>500 kB); it did not fail the build and is outside Patch 2 scope.
 - Still unverified: local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA behavior. CI is not device QA.
+
+
+### Latest PR-head CI confirmation — run #85 (2026-11-07)
+- Final documentation-synchronized PR head: `a31d40315eaeb9f90ce209da4fef6341e8836025`.
+- GitHub Actions run #85 (`42393150965`) completed successfully. The “TypeScript and production builds” job passed locked dependency installation and the full `npm run preflight`.
+- This supersedes the earlier run #84 source-only evidence: the latest PR head, including all synchronized documentation, has now passed CI.
+- Local Windows/PowerShell and real-device iOS/Android QA remain outstanding.
