@@ -246,3 +246,36 @@ Last updated: 2026-11-04
 - Validation: GitHub source edits only. No npm command, TypeScript build, automated lifecycle test, browser simulation, or physical-device test was executed in this remote editing session. Do not mark the patch verified or release-ready.
 - Known limitations: no automated test currently exercises shared camera lease races; iOS Safari and Android Chrome behavior remains unverified. The existing `scripts/test-scanner-validation.mjs` validates barcode payload policy, not camera lifecycle.
 - Next: inspect the complete branch diff; run `npm run preflight`; add/run focused lifecycle tests; test rapid open-close-open, suspend/resume, two consumers, close while permission is pending, track-ended and logout; then perform Home/Stocktake QA on iOS and Android. Keep branch unmerged and undeployed.
+
+
+
+## 2026-11-07 — Authoritative status after P0 merge and Phase 1.2G planning
+
+This addendum is the latest status snapshot and supersedes older entries that describe P0 as unmerged. Historical records are retained for traceability.
+
+### Verified completed
+- PR #24, `fix(scanner): serialize camera lifecycle with session leases`, was merged to `main`.
+- Merge commit: `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`.
+- GitHub CI for PR #24 passed TypeScript and production preflight checks (workflow run #53).
+- Source changes include reference-counted `CameraStreamLease` / `acquireCameraLease()`, session-owned lease release, identity/generation guards, stale-start retry handling, and removal of Home's global camera invalidation on scanner close.
+- Current scanner decode cadence observed in source is 110 ms. Older 70 ms documentation is stale.
+
+### Not yet verified / not to be claimed
+- No physical-device QA evidence is recorded here for iOS Safari or Android Chrome after the P0 merge.
+- CI PASS does not prove camera lifecycle behavior on real devices.
+- Deployment status is not asserted by this document; verify the deploy workflow/run separately.
+- No Phase 1.2G motion/rendering/interaction code has been implemented by this documentation change.
+- No measured performance baseline has yet established whether the reported stutter originates from camera lifecycle, decoder/image processing, React rendering, CSS motion, or interaction overlap.
+
+### Newly planned work
+- Phase 1.2G: Rendering, Motion & Interaction Performance — instrumentation, motion/rendering audit, lifecycle/interaction audit, explicit UI state alignment, targeted optimization and stress validation.
+- Phase 1.2H: decoder performance optimization, conditional on profiling evidence.
+- Phase 1.2I: angled/rotated barcode capability enhancement, with a measured angle/lighting/distance matrix.
+- Phase 1.2J: cross-platform real-device release validation.
+- The complete scope, dependencies and acceptance criteria are in `ROADMAP.md`.
+
+### Protected contracts
+No changes are made by this documentation-only update to source code, package dependencies, camera constraints, decoder algorithm, data contracts, auth/session, Apps Script, IndexedDB, service worker, PWA base path or deployment workflow. Preserve Home cached lookup and Stocktake form-fill/explicit-save semantics.
+
+### Next action
+First synchronize and review this documentation-only branch, run repository CI/preflight if available, and merge only with user approval. After docs integration, perform P0 real-device QA, then establish a performance baseline before any Phase 1.2G implementation. Keep code changes in separate scoped branches/PRs.
