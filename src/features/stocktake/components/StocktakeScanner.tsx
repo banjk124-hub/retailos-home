@@ -24,7 +24,7 @@ export default function StocktakeScanner({ onDetected, onClose }: Props) {
       <div className={`stocktake-scanner-preview ${scanner.isScanning ? 'is-active' : ''}`}>
         <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Camera quét barcode" />
         {scanner.isStarting && <div className="stocktake-scanner-message"><Camera size={25} /><span>Đang kết nối camera…</span></div>}
-        {!scanner.isStarting && scanner.error && <div className="stocktake-scanner-message"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
+        {!scanner.isStarting && !scanner.isScanning && scanner.error && <div className="stocktake-scanner-message"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
         {scanner.isScanning && <div className="stocktake-scanner-reticle" aria-hidden="true"><i /></div>}
       </div>
       <p className="stocktake-scanner-instruction">Giữ mã vạch rõ nét, đủ sáng. Mỗi lần quét sẽ điền một dòng vào biểu mẫu; dữ liệu chỉ được lưu khi bạn xác nhận.</p>

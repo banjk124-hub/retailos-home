@@ -86,7 +86,9 @@ export function useScannerEngine({
           onError: (scannerError) => {
             setError(scannerError.message);
             setIsStarting(false);
-            setIsScanning(false);
+            // A decoder fault does not imply that getUserMedia or the video
+            // track stopped. Keep the live preview/scanning state truthful.
+            setIsScanning(sessionRef.current?.state === 'scanning');
           },
         });
         sessionRef.current = session;
