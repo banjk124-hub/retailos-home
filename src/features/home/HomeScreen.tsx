@@ -27,8 +27,13 @@ import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { releaseCameraStream } from '../../shared/services/cameraSession';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 
+// Warm the scanner chunk during Home startup, while keeping lazy() retryable
+// if the prefetch fails because of a transient network/deployment condition.
 const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
 const BarcodeScanner = lazy(loadBarcodeScanner);
+void loadBarcodeScanner().catch((error: unknown) => {
+  console.error('[RetailOS] Scanner preload failed; it will retry when opened:', error);
+});
 
 type Props = {
   employee: EmployeeSession;
@@ -149,11 +154,6 @@ export default function HomeScreen({
       setPushSetupStatus('error');
     }
   };
-  useEffect(() => {
-    void loadBarcodeScanner().catch((error: unknown) => {
-      console.error('Không thể tải trước máy quét barcode:', error);
-    });
-  }, []);
   useEffect(() => {
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
