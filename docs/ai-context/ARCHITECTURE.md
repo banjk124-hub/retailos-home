@@ -151,3 +151,26 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 - Never record barcode payloads, camera device IDs, employee identity, or persistent device identifiers.
 - PerformanceObserver entry types are feature-detected; absence on a browser is a supported no-op. Observed callback gaps are not equivalent to hardware/GPU frame-drop measurements.
 - Instrumentation is diagnostic only: it must not alter decode cadence, camera constraints, decoder strategy, business callbacks or persistence contracts.
+
+## Scanner camera startup — early preview readiness (2026-11-07)
+
+### ADR-008 — Reveal the live preview before decoder initialization
+**Status:** Implemented on `fix/scanner-phase-1-early-preview`; pending real-device QA and merge approval.
+
+**Context**
+- The shared scanner startup path waits for a usable video frame and then initializes the decoder.
+- Previously, the Home and Stocktake UI kept showing the camera-start placeholder until the entire `session.start()` promise completed. That promise also included decoder initialization, so a usable live camera image could remain hidden while the decoder was still starting.
+- Preview availability and barcode-decoding availability are separate milestones and must not be represented by one loading boolean.
+
+**Decision**
+- Add the optional session callback `onPreviewReady`, fired after the attached video element has its first usable frame and after stale/disposed-generation guards pass, but before decoder creation.
+- Expose `isPreviewReady` separately from `isScanning` in `useScannerEngine`.
+- Home and Stocktake reveal the actual video element when `isPreviewReady` is true and hide the startup placeholder at that point.
+- Keep decoder readiness and scanning state governed by the existing session lifecycle. A visible preview must not be represented as a ready decoder or as permission to accept scans.
+
+**Invariants / exclusions**
+- Reset preview readiness on a new startup attempt, pause/close, suspension, stop, disposal and error according to the hook lifecycle.
+- Do not change camera constraints, autofocus behavior, decoder algorithm, ROI, decode cadence, barcode validation, Home lookup, Stocktake form-fill/save, or persistence.
+- Do not add polling, a second camera request, a second decoder loop, or a new dependency.
+- Validate both iOS Safari/PWA and Android Chrome/PWA; GitHub CI alone does not establish physical-camera behavior.
+
