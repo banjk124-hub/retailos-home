@@ -107,7 +107,7 @@ export function useScannerEngine({
           },
           onStateChange: (state: ScannerLifecycleState) => {
             if (!mountedRef.current) return;
-            if (state === 'requesting' || state === 'suspended' || state === 'stopped' || state === 'error') {
+            if (state === 'requesting' || state === 'suspended' || state === 'stopped' || state === 'error' || state === 'disposed') {
               setIsPreviewReady(false);
             }
             setIsStarting(state === 'requesting' || state === 'initializing');
