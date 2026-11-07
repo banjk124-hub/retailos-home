@@ -91,3 +91,13 @@ A change is not complete merely because code was written. It is complete only wh
 - Source patch is on phase-1-2f-camera-lifecycle; no post-patch local build or device QA has been run yet.
 - Next: fetch the latest branch, inspect the local diff, run npm run preflight, then perform scanner QA on Android Chrome (and iOS Safari if available). Preserve local untracked paths artifacts/ and tatus --short. Do not PR/merge/deploy until accepted.
 - Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
+
+
+## Current task handoff — P0 scanner lifecycle serialization (2026-11-07)
+- Active branch: `fix/scanner-p0-lifecycle-serialization`, based on `main` at `7f35fc095dd89741919005af067ca3f4285c6ea6`.
+- Source files changed: `src/shared/services/cameraSession.ts`, `src/platform/scanner/universalScannerSession.ts`, `src/features/scanner/hooks/useScannerEngine.ts`.
+- Current source now uses reference-counted camera leases. Scanner sessions release their own lease; global release is reserved for logout/forced shutdown. The hook also retries startup after an awaited stale attempt settles without reaching scanning.
+- Technical documents updated in the same branch: `ARCHITECTURE.md`, `ROADMAP.md`, `IMPLEMENTATION_STATUS.md`, `SESSION_LOG.md`.
+- Verification status: not run in this remote editing session. No claim of build, tests, browser QA or device QA passing.
+- Immediate next action: inspect the branch diff and run `npm run preflight`; add lifecycle tests for lease concurrency and pending-start races; then verify rapid open/close, background/foreground, Home and Stocktake on iOS Safari and Android Chrome.
+- Do not merge or deploy. User approval is required after verification.
