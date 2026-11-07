@@ -279,3 +279,16 @@ No changes are made by this documentation-only update to source code, package de
 
 ### Next action
 First synchronize and review this documentation-only branch, run repository CI/preflight if available, and merge only with user approval. After docs integration, perform P0 real-device QA, then establish a performance baseline before any Phase 1.2G implementation. Keep code changes in separate scoped branches/PRs.
+
+
+## 2026-11-07 — Phase 1.2G-A instrumentation started
+
+- Branch: `feat/scanner-phase-1-2g-instrumentation`, created from `main` at `d17115046922d157405694f86afcf5951445a179`.
+- Source files changed: `src/shared/services/cameraSession.ts`, `src/platform/scanner/universalScannerSession.ts`, `src/platform/scanner/decoders/zxingDecoder.ts`, `src/features/scanner/hooks/useScannerEngine.ts`.
+- Added runtime timings for getUserMedia, optional autofocus, camera lease acquisition, video playback, decoder initialization, camera-to-scanning readiness, first accepted result, decoder disposal, camera release and total teardown.
+- Added rolling processing-stage measurements for full-frame/ROI draw, ImageData read, RGBA-to-luminance conversion, ZXing attempts, average/max decode duration, max video-frame callback gap, long tasks and layout-shift score where browser APIs support them. Added lightweight UI phase-commit interval telemetry.
+- Added mounted guards to scanner hook state callbacks and async completion paths so stale callbacks do not set React state after unmount/close.
+- Privacy: telemetry does not log barcode payloads, camera device IDs, employee identity or persistent device identifiers. No new dependency, backend request, polling timer or persistent telemetry storage.
+- Source audit observations: shared motion CSS uses 420 ms sheet entrance, 200 ms sheet/backdrop exit/entry and multiple 280–360 ms card transitions; layered glass/backdrop blur and shadows are present on Home. These are profiling candidates, not established root causes.
+- Verification: no local Node/npm runtime execution, TypeScript/build, GitHub CI, browser trace or physical-device QA has yet been completed for this branch. Do not mark G-A verified or Phase 1.2G complete.
+- Next: inspect complete diff; run `npm run build`, `npm run build:pages`, `npm run preflight`, `npm run test:scanner`; use Chrome/Safari Performance tools and collect separate Android Chrome/iOS Safari sessions; only then select one measured bottleneck for a G-E fix. Keep branch unmerged and undeployed.
