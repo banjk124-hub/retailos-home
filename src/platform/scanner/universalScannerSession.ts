@@ -23,7 +23,7 @@ function scannerError(cause: unknown): ScannerError {
 }
 
 function hasValidEanChecksum(value: string): boolean {
-  if (!/^\d+$/.test(value) || (value.length !== 8 && value.length !== 13)) return false;
+  if (!/^\d+$/.test(value) || ![8, 12, 13].includes(value.length)) return false;
   const body = value.slice(0, -1);
   const expected = Number(value.slice(-1));
   const sum = [...body].reduce((total, digit, index) => {
