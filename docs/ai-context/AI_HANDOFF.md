@@ -126,5 +126,5 @@ This section is the latest handoff snapshot and supersedes older task sections a
 - A targeted mounted guard prevents scanner hook callbacks and async completion from updating React state after unmount/close.
 - G-B source audit found motion candidates: 420 ms sheet entrance, 200 ms sheet/backdrop transitions, several 280–360 ms library-card transitions, and layered Home glass/backdrop blur/shadows. These are not yet proven bottlenecks.
 - No motion timing, camera resolution, 110 ms decode cadence or decoder algorithm has been tuned. No Home/Stocktake business contract changed intentionally.
-- Verification remains pending: no local npm/build/preflight/test, GitHub CI, browser Performance trace or physical iOS/Android QA has been run for this branch.
+- GitHub CI run #60 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks on corrected head `e503ecfffefee7684240f623867e08d8f65ead3f`. Local npm execution, browser Performance trace and physical iOS/Android QA remain outstanding.
 - Next: inspect diff, run all available scanner/build checks, then collect comparable Android Chrome and iOS Safari traces before selecting one targeted G-E optimization. Do not merge/deploy without explicit user approval.
