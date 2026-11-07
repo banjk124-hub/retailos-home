@@ -63,6 +63,7 @@ export class UniversalScannerSession implements ScannerSession {
   private lastAcceptedAt = 0;
   private acceptedSingle = false;
   private disposed = false;
+  private closePromise: Promise<void> | null = null;
   private unsubscribeTrackEnded: (() => void) | null = null;
 
   constructor(private readonly video: HTMLVideoElement, private readonly options: ScannerOpenOptions) {}
@@ -74,6 +75,7 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   start(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
     if (this.disposed || this.currentState === 'scanning') return Promise.resolve();
     if (this.startPromise) return this.startPromise;
     const pending = this.startInternal();
@@ -261,12 +263,20 @@ export class UniversalScannerSession implements ScannerSession {
     await this.start();
   }
 
-  async close(): Promise<void> {
-    if (this.disposed) return;
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    if (this.disposed) return Promise.resolve();
+
+    // Multiple owners may close the same session (single-result delivery,
+    // React unmount, and an explicit close tap). Share one teardown promise so
+    // decoder disposal and camera release happen exactly once.
     ++this.generation;
-    await this.teardown(true);
-    this.disposed = true;
-    this.setState('disposed');
+    this.closePromise = (async () => {
+      await this.teardown(true);
+      this.disposed = true;
+      this.setState('disposed');
+    })();
+    return this.closePromise;
   }
 
   private async teardown(release: boolean): Promise<void> {
