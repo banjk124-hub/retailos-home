@@ -101,3 +101,19 @@ A change is not complete merely because code was written. It is complete only wh
 - Verification status: not run in this remote editing session. No claim of build, tests, browser QA or device QA passing.
 - Immediate next action: inspect the branch diff and run `npm run preflight`; add lifecycle tests for lease concurrency and pending-start races; then verify rapid open/close, background/foreground, Home and Stocktake on iOS Safari and Android Chrome.
 - Do not merge or deploy. User approval is required after verification.
+
+
+
+## Current handoff snapshot — 2026-11-07 (after P0 merge)
+
+This section is the latest handoff snapshot and supersedes older task sections above where they describe P0 as active/unmerged. Older entries remain as history.
+
+- Repository: `banjk124-hub/retailos-home`; default branch: `main`.
+- P0 scanner lifecycle serialization PR #24 is merged to main at `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`; its GitHub CI passed TypeScript and production preflight. Do not infer physical-device QA or deployment from that CI result.
+- Current source decode cadence is 110 ms; historical 70 ms references are stale and corrected in the roadmap/architecture addenda.
+- Camera sessions own reference-counted leases. Global camera invalidation is reserved for app-level forced shutdown/logout.
+- Latest agreed plan: P0 device QA → performance diagnostics/baseline → Phase 1.2G motion/rendering/interaction audit and fixes → 1.2H decoder optimization if profiling justifies it → 1.2I angled barcode capability → 1.2J cross-platform validation.
+- Phase 1.2G–1.2J are planned only. This documentation update does not implement scanner source changes.
+- Preserve Home cached lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, barcode formats, auth/session, Apps Script, IndexedDB, service worker and PWA deployment contracts.
+- Before source edits: inspect current source and branch/diff; gather baseline measurements; isolate one bottleneck and one coherent patch at a time. Do not tune decoder cadence/resolution or rewrite motion globally without evidence.
+- No merge/deploy without explicit user approval.

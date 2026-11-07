@@ -62,3 +62,14 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Updated Architecture ADR-007, Roadmap, Implementation Status and AI Handoff to describe the current source state and explicitly supersede the previous no-lease decision.
 - Verification not run: no local Node/npm runtime was available in this editing session; no build, tests, browser or physical-device QA is claimed.
 - Next: inspect full diff, run `npm run preflight`, add lifecycle regression tests, and test on iOS Safari and Android Chrome. Branch remains unmerged and undeployed.
+
+
+
+### 2026-11-07 — Scanner roadmap expansion (documentation-only plan)
+- Scope: record the consolidated scanner roadmap and the newly agreed Phase 1.2G rendering/motion/interaction work, plus dependent decoder and cross-platform phases.
+- Planned phases: 1.2G Rendering, Motion & Interaction Performance; 1.2H Decoder Performance Optimization; 1.2I Decoder Capability Enhancement; 1.2J Cross-platform Validation.
+- Execution order: P0 real-device QA; diagnostics/performance baseline; 1.2G audit and targeted fixes; 1.2H only if profiling identifies decoder cost; 1.2I angle/perspective capability; final 1.2J validation.
+- Current verified baseline: P0 PR #24 merged to main at `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`; GitHub CI passed TypeScript and production preflight. Physical iOS/Android QA and deployment status are not asserted.
+- Source-aligned correction: current decode cadence is 110 ms; historical 70 ms notes are stale.
+- This change is documentation-only. No application source, dependency, configuration, deployment or production behavior changed.
+- Next: review this documentation branch and its CI; merge only with explicit user approval. Then run P0 device QA and collect performance baseline before implementation.
