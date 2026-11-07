@@ -67,8 +67,15 @@ export function useScannerEngine({
           audioFeedback,
           hapticFeedback,
           onResult: (result) => {
-            playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
+            // Deliver the decoded value to the owning module first. Feedback is
+            // deliberately isolated so a sound/haptic failure cannot block the
+            // business callback or leave single-scan mode running forever.
             onDetectedRef.current(result.value);
+            try {
+              playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
+            } catch (feedbackError) {
+              console.warn('[RetailOS Scanner] Feedback failed after barcode delivery:', feedbackError);
+            }
           },
           onStateChange: (state: ScannerLifecycleState) => {
             setIsStarting(state === 'requesting' || state === 'initializing');
