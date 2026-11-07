@@ -117,3 +117,14 @@ This section is the latest handoff snapshot and supersedes older task sections a
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, barcode formats, auth/session, Apps Script, IndexedDB, service worker and PWA deployment contracts.
 - Before source edits: inspect current source and branch/diff; gather baseline measurements; isolate one bottleneck and one coherent patch at a time. Do not tune decoder cadence/resolution or rewrite motion globally without evidence.
 - No merge/deploy without explicit user approval.
+
+
+## Current handoff snapshot — Phase 1.2G-A (2026-11-07)
+
+- `main` is at `d17115046922d157405694f86afcf5951445a179`; current work is isolated on `feat/scanner-phase-1-2g-instrumentation`.
+- G-A source instrumentation has been added to camera acquisition, autofocus, video/decoder readiness, first accepted result, decoder processing stages, teardown, callback gaps, long tasks, layout shifts (when supported) and React UI phase commits.
+- A targeted mounted guard prevents scanner hook callbacks and async completion from updating React state after unmount/close.
+- G-B source audit found motion candidates: 420 ms sheet entrance, 200 ms sheet/backdrop transitions, several 280–360 ms library-card transitions, and layered Home glass/backdrop blur/shadows. These are not yet proven bottlenecks.
+- No motion timing, camera resolution, 110 ms decode cadence or decoder algorithm has been tuned. No Home/Stocktake business contract changed intentionally.
+- GitHub CI run #63 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks on latest source commit `e46c19542ca1eef12b1ce03b21a7e3d404f6f500`. Local npm execution, browser Performance trace and physical iOS/Android QA remain outstanding.
+- Next: inspect diff, run all available scanner/build checks, then collect comparable Android Chrome and iOS Safari traces before selecting one targeted G-E optimization. Do not merge/deploy without explicit user approval.

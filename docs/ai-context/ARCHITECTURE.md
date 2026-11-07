@@ -142,3 +142,12 @@ Status: engineering constraints for the planned Phase 1.2G–1.2J work; not a cl
 - Any future rotation/perspective/deskew work must be conditional and measured; do not penalize the normal scan path without evidence.
 
 See `ROADMAP.md` for phase dependencies and acceptance gates.
+
+
+### ADR-008 — Privacy-safe scanner performance telemetry (2026-11-07)
+Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentation`; verification pending.
+- Scanner performance telemetry is local runtime console output only. It must not send data to a backend or persist performance records by default.
+- Permitted measurements: camera acquisition/autofocus/play/decoder readiness, first accepted result, decode processing stages, teardown, observed callback gaps, supported long-task/layout-shift entries, and UI phase commit intervals.
+- Never record barcode payloads, camera device IDs, employee identity, or persistent device identifiers.
+- PerformanceObserver entry types are feature-detected; absence on a browser is a supported no-op. Observed callback gaps are not equivalent to hardware/GPU frame-drop measurements.
+- Instrumentation is diagnostic only: it must not alter decode cadence, camera constraints, decoder strategy, business callbacks or persistence contracts.

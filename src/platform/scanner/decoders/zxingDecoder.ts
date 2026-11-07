@@ -139,6 +139,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     }
     if (this.decoding) return [];
     this.decoding = true;
+    const decodeStartedAt = performance.now();
     try {
       const dimensions = getFrameDimensions(source);
       this.lastFrameWidth = dimensions.width;
@@ -149,7 +150,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const height = Math.max(1, Math.round(dimensions.height * scale));
       this.canvas.width = width;
       this.canvas.height = height;
+      const fullFrameDrawStartedAt = performance.now();
       this.context.drawImage(source, 0, 0, width, height);
+      this.recordStageCost('full_frame_draw', performance.now() - fullFrameDrawStartedAt);
 
       let output = this.decodeCurrentCanvas(timestamp, false);
       if (output) {
@@ -172,6 +175,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const roiHeight = Math.max(1, Math.round(cropHeight * ROI_UPSCALE));
       this.canvas.width = roiWidth;
       this.canvas.height = roiHeight;
+      const roiDrawStartedAt = performance.now();
       this.context.drawImage(
         source,
         sx / scale,
@@ -183,6 +187,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         roiWidth,
         roiHeight,
       );
+      this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
       output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
       if (output) {
         this.diagnosticDecoded += 1;
@@ -193,14 +198,58 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.emitDiagnostics();
       return [];
     } finally {
+      const durationMs = performance.now() - decodeStartedAt;
+      this.recordDecodeCost(durationMs);
       this.reader?.reset();
       this.decoding = false;
     }
   }
 
+  private decodeCostStartedAt = 0;
+  private decodeCostCount = 0;
+  private decodeCostTotalMs = 0;
+  private decodeCostMaxMs = 0;
+  private stageCosts: Record<string, { count: number; totalMs: number; maxMs: number }> = {};
+
+  private recordDecodeCost(durationMs: number): void {
+    this.decodeCostCount += 1;
+    this.decodeCostTotalMs += durationMs;
+    this.decodeCostMaxMs = Math.max(this.decodeCostMaxMs, durationMs);
+    if (!this.decodeCostStartedAt) this.decodeCostStartedAt = Date.now();
+    if (Date.now() - this.decodeCostStartedAt < 5_000) return;
+    const stageCosts = Object.fromEntries(Object.entries(this.stageCosts).map(([stage, value]) => [stage, {
+      samples: value.count,
+      averageMs: Number((value.totalMs / value.count).toFixed(2)),
+      maxMs: Number(value.maxMs.toFixed(2)),
+    }]));
+    console.info('[RetailOS Scanner] Decoder processing cost', {
+      decoder: this.id,
+      averageDecodeMs: Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)),
+      maxDecodeMs: Number(this.decodeCostMaxMs.toFixed(1)),
+      samples: this.decodeCostCount,
+      stages: stageCosts,
+    });
+    this.decodeCostStartedAt = Date.now();
+    this.decodeCostCount = 0;
+    this.decodeCostTotalMs = 0;
+    this.decodeCostMaxMs = 0;
+    this.stageCosts = {};
+  }
+
+  private recordStageCost(stage: string, durationMs: number): void {
+    const current = this.stageCosts[stage] ?? { count: 0, totalMs: 0, maxMs: 0 };
+    current.count += 1;
+    current.totalMs += durationMs;
+    current.maxMs = Math.max(current.maxMs, durationMs);
+    this.stageCosts[stage] = current;
+  }
+
   private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
+    const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    this.recordStageCost('image_data_read', performance.now() - imageReadStartedAt);
+    const grayscaleStartedAt = performance.now();
 const grayscale = rgbaToLuminance(
   image.data,
   this.canvas.width,
@@ -216,6 +265,7 @@ const luminance = new RGBLuminanceSource(
       : [HybridBinarizer];
 
     for (const Binarizer of binarizers) {
+      const zxingStartedAt = performance.now();
       try {
         const bitmap = new BinaryBitmap(new Binarizer(luminance));
         // decode() resets the configured hints when no hints argument is passed.
@@ -240,6 +290,7 @@ const luminance = new RGBLuminanceSource(
         else if (miss === 'checksum') this.diagnosticChecksum += 1;
         else this.diagnosticFormat += 1;
       } finally {
+        this.recordStageCost('zxing_decode', performance.now() - zxingStartedAt);
         this.reader.reset();
       }
     }
@@ -260,6 +311,7 @@ const luminance = new RGBLuminanceSource(
       unexpectedErrors: this.diagnosticUnexpected,
       sourceWidth: this.lastFrameWidth,
       sourceHeight: this.lastFrameHeight,
+      averageDecodeMs: this.decodeCostCount ? Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)) : 0,
     });
     this.diagnosticStartedAt = now;
     this.diagnosticFrames = 0;
