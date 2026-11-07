@@ -34,8 +34,24 @@ export function useScannerEngine({
   const [isStarting, setIsStarting] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
+  const lastUiStateChangeAtRef = useRef(performance.now());
+  const mountedRef = useRef(false);
 
   useEffect(() => { onDetectedRef.current = onDetected; }, [onDetected]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const now = performance.now();
+    console.info('[RetailOS Scanner] UI commit', {
+      phase: isScanning ? 'scanning' : isStarting ? 'starting' : error ? 'error' : 'idle',
+      commitAfterPreviousStateMs: Number((now - lastUiStateChangeAtRef.current).toFixed(1)),
+    });
+    lastUiStateChangeAtRef.current = now;
+  }, [isStarting, isScanning, error]);
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || isDocumentHidden()) return;
@@ -111,7 +127,7 @@ export function useScannerEngine({
       await start;
     } finally {
       if (startPromiseRef.current === start) startPromiseRef.current = null;
-      setIsStarting(false);
+      if (mountedRef.current && desiredActiveRef.current) setIsStarting(false);
     }
   }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
@@ -126,8 +142,10 @@ export function useScannerEngine({
     const session = sessionRef.current;
     sessionRef.current = null;
     await session?.close();
-    setIsStarting(false);
-    setIsScanning(false);
+    if (mountedRef.current) {
+      setIsStarting(false);
+      setIsScanning(false);
+    }
   }, []);
 
   useEffect(() => {
