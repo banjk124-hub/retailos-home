@@ -20,7 +20,9 @@ export type ScannerSymbology =
   | 'PDF_417'
   | 'AZTEC'
   | 'RSS_14'
-  | 'RSS_EXPANDED';
+  | 'RSS_EXPANDED'
+  | 'MAXICODE'
+  | 'MICRO_QR_CODE';
 
 export type ScannerProfileName = 'COMPACT' | 'STANDARD' | 'HIGH';
 
