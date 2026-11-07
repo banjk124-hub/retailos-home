@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
@@ -26,6 +26,8 @@ import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/d
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
+import ScannerQaMonitor from './components/ScannerQaMonitor';
+import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 
 type Props = {
   employee: EmployeeSession;
@@ -58,6 +60,8 @@ export default function HomeScreen({
       : 'home',
   );
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [showScannerQa, setShowScannerQa] = useState(false);
+  const closeScannerQa = useCallback(() => setShowScannerQa(false), []);
   const [barcodeLookup, setBarcodeLookup] = useState<{
     barcode: string;
     records: BarcodeProductRecord[] | null;
@@ -146,6 +150,8 @@ export default function HomeScreen({
       setPushSetupStatus('error');
     }
   };
+  useEffect(() => installScannerDiagnosticCollector(), []);
+
   useEffect(() => {
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
@@ -517,7 +523,7 @@ export default function HomeScreen({
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    else if (id === 'settings') announce('Thiết lập và phân quyền sẽ được cấu hình ở bước tiếp theo.');
+    else if (id === 'settings') { setActiveNav('settings'); setShowScannerQa(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
   };
   return <>
@@ -713,6 +719,7 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
+    {showScannerQa && <ScannerQaMonitor onClose={closeScannerQa} />}
     {isBarcodeScannerOpen && <AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" />
     </AppErrorBoundary>}
