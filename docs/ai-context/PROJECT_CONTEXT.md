@@ -100,3 +100,9 @@ Repository source and current tests/config are authoritative for actual behavior
 - Preserve iOS Safari and Android Chrome compatibility, camera constraints, decoder cadence and all feature/data contracts.
 - The new delayed-autofocus regression test is authored but requires local and CI execution. Physical-device QA remains outstanding.
 - Keep the branch isolated; no merge/deployment without explicit user approval.
+
+
+### Patch 2 verification update — 2026-11-07
+- GitHub Actions run #84 passed the full repository preflight, including a regression test that holds autofocus pending while verifying camera lease acquisition remains non-blocking.
+- Local Windows/PowerShell and physical iOS/Android QA remain outstanding. CI does not prove camera hardware focus behavior.
+- Existing CI warnings (ZXing package engine declares Node >=24 while workflow uses Node 22; Vite chunk-size warning) were non-fatal and are recorded in Implementation Status.
