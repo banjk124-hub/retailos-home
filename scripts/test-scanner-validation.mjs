@@ -6,7 +6,7 @@ const source = await readFile(new URL("../src/platform/scanner/barcodeValidation
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
-const moduleUrl = \`data:text/javascript;base64,\${Buffer.from(compiled).toString("base64")}\`;
+const moduleUrl = "data:text/javascript;base64," + Buffer.from(compiled).toString("base64");
 const { validateBarcodePayload, hasValidGs1CheckDigit } = await import(moduleUrl);
 
 assert.equal(hasValidGs1CheckDigit("4006381333931"), true, "valid EAN-13 check digit");
