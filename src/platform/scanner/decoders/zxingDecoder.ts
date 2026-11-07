@@ -145,7 +145,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height = height;
       this.context.drawImage(source, 0, 0, width, height);
 
-      let output = this.decodeCurrentCanvas(timestamp);
+      let output = this.decodeCurrentCanvas(timestamp, false);
       if (output) {
         this.diagnosticDecoded += 1;
         this.emitDiagnostics();
@@ -162,7 +162,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.width = width;
       this.canvas.height = height;
       this.context.drawImage(source, sx / scale, sy / scale, cropWidth / scale, cropHeight / scale, 0, 0, width, height);
-      output = this.decodeCurrentCanvas(timestamp);
+      output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
       if (output) {
         this.diagnosticDecoded += 1;
         this.diagnosticRoiHits += 1;
@@ -177,11 +177,13 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     }
   }
 
-  private decodeCurrentCanvas(timestamp: number): DecoderOutput | null {
+  private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
     const luminance = new RGBLuminanceSource(image.data, this.canvas.width, this.canvas.height);
-    const binarizers = [HybridBinarizer, GlobalHistogramBinarizer];
+    const binarizers = includeGlobalHistogram
+      ? [HybridBinarizer, GlobalHistogramBinarizer]
+      : [HybridBinarizer];
     let lastMiss: DecodeMiss = 'notFound';
 
     for (const Binarizer of binarizers) {
