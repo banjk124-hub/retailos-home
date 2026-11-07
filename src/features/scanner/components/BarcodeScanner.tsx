@@ -47,7 +47,7 @@ export default function BarcodeScanner({
         <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để quét mã vạch" />
         {scanner.isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
         {scanner.isStarting && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Đang kết nối camera…</span></div>}
-        {!scanner.isStarting && scanner.error && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Camera chưa sẵn sàng</span></div>}
+        {!scanner.isStarting && !scanner.isScanning && scanner.error && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Camera chưa sẵn sàng</span></div>}
       </div>
       <p className="barcode-scanner-hint">Giữ mã vạch rõ nét, đủ sáng và nằm trong khung.</p>
       {scanner.error && <p className="barcode-scanner-error" role="alert"><AlertTriangle size={16} />{scanner.error}</p>}
