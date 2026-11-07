@@ -82,9 +82,10 @@ function classifyDecodeError(error: unknown): DecodeMiss | null {
  * Multi-format ZXing adapter.
  *
  * It tries the complete frame first (so codes near the edge are not lost),
- * then a centered region matching the visual scan reticle. For each image it
- * tries HybridBinarizer and GlobalHistogramBinarizer. Camera ownership and
- * frame scheduling remain in UniversalScannerSession.
+ * then an upscaled centered region matching the visual scan reticle. The
+ * more expensive global-histogram fallback runs only on every third ROI pass
+ * to limit mobile CPU use. Camera ownership and frame scheduling remain in
+ * UniversalScannerSession.
  */
 export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   readonly id = 'zxing-multiformat';
@@ -184,7 +185,6 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     const binarizers = includeGlobalHistogram
       ? [HybridBinarizer, GlobalHistogramBinarizer]
       : [HybridBinarizer];
-    let lastMiss: DecodeMiss = 'notFound';
 
     for (const Binarizer of binarizers) {
       try {
