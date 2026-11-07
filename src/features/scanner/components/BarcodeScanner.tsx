@@ -1,4 +1,7 @@
+import type { CSSProperties } from 'react';
 import { AlertTriangle, Camera, X } from 'lucide-react';
+import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
+import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
 
 type Props = {
@@ -9,6 +12,8 @@ type Props = {
   scanCooldownMs?: number;
   audioFeedback?: boolean;
   hapticFeedback?: boolean;
+  cameraLeaseRequest?: CameraLeaseRequest | null;
+  motionOrigin?: MotionOrigin | null;
 };
 
 /**
@@ -22,8 +27,14 @@ export default function BarcodeScanner({
   scanCooldownMs = 700,
   audioFeedback = true,
   hapticFeedback = true,
+  cameraLeaseRequest = null,
+  motionOrigin = null,
 }: Props) {
-  const scanner = useScannerEngine({ onDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback });
+  const scanner = useScannerEngine({ onDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
+  const transitionStyle = {
+    '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
+    '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
+  } as CSSProperties;
 
   const handleClose = () => {
     scanner.closeScanner();
@@ -46,13 +57,12 @@ export default function BarcodeScanner({
       <div className={`barcode-scanner-view ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-scanning' : ''}`}>
         <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để quét mã vạch" />
         {scanner.isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
-        {!scanner.isPreviewReady && scanner.isStarting && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Đang kết nối camera…</span></div>}
-        {!scanner.isPreviewReady && !scanner.isStarting && scanner.error && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Camera chưa sẵn sàng</span></div>}
+        {!scanner.isPreviewReady && scanner.error && <div className="barcode-scanner-placeholder"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
       </div>
       <p className="barcode-scanner-hint">Giữ mã vạch rõ nét, đủ sáng và nằm trong khung.</p>
       {scanner.error && <p className="barcode-scanner-error" role="alert"><AlertTriangle size={16} />{scanner.error}</p>}
       {scanner.error && <button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button>}
-      <span className="barcode-scanner-status" aria-live="polite">{scanner.isScanning ? 'Đang quét…' : scanner.isStarting ? 'Đang mở camera…' : 'Camera tắt'}</span>
+      <span className="barcode-scanner-status" aria-live="polite">{scanner.isScanning ? 'Đang quét…' : scanner.isPreviewReady ? 'Đang chuẩn bị quét…' : scanner.isStarting ? 'Đang mở camera…' : 'Camera tắt'}</span>
     </div>
   </section>;
 }
