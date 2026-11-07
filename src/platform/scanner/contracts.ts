@@ -107,6 +107,8 @@ export type ScannerOpenOptions = {
   hapticFeedback?: boolean;
   onResult: (result: ScannerResult) => void;
   onStateChange?: (state: ScannerLifecycleState) => void;
+  /** Fires once the attached video element has its first usable camera frame. */
+  onPreviewReady?: () => void;
   onError?: (error: ScannerError) => void;
 };
 

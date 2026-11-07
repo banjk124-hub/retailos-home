@@ -82,3 +82,12 @@ Repository source and current tests/config are authoritative for actual behavior
 - Work begins with measurement, not speculative animation or decoder tuning. Instrumentation is local-only and privacy-safe; no barcode payloads or device identifiers.
 - Preserve iOS Safari and Android Chrome compatibility. Browser performance APIs are feature-detected and optional.
 - No merge or deployment without explicit approval.
+
+## Active engineering focus — scanner early-preview startup (2026-11-07)
+
+- Current branch: `fix/scanner-phase-1-early-preview`; Draft PR #29, based on main commit `3a6e9afc76d7e49c69b27c05371087ba6c29f706`.
+- Current patch separates camera preview readiness from decoder readiness so the live image can be shown as soon as the first usable frame exists.
+- GitHub CI run #79 passed TypeScript and production preflight. This is not a substitute for physical-device validation.
+- Next verification targets: first open and resume on iOS Safari/PWA and Android Chrome/PWA, plus confirmation that preview visibility never falsely signals decoder readiness.
+- Keep Patch 2 autofocus work and Phase 2 barcode-recognition improvements separate. No merge/deployment without explicit approval.
+

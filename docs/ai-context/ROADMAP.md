@@ -227,3 +227,28 @@ Release gate: required builds/tests pass, device evidence is recorded, diff is a
 7. Complete 1.2C/1.2E feedback checks and 1.2D regression within final 1.2J cross-platform validation.
 
 Do not combine unrelated motion, lifecycle and decoder changes in one patch. Each slice needs its own evidence and rollback boundary.
+
+## Camera startup follow-up — Patch 1: early preview (2026-11-07)
+
+**Status:** Implemented on branch `fix/scanner-phase-1-early-preview`; GitHub CI passed. Real-device QA and merge approval remain pending.
+
+**Problem addressed**
+The Home and Stocktake scanner placeholders were tied to the full startup state. Because the session start promise also waits for decoder initialization, the UI could continue hiding a camera preview even after the video element already had a usable frame.
+
+**Implementation boundary**
+- The scanner session signals preview readiness immediately after the first usable video frame is confirmed and before decoder initialization.
+- `useScannerEngine` exposes `isPreviewReady` independently of `isScanning`.
+- Home and Stocktake reveal the video and dismiss the startup placeholder on preview readiness.
+- Decoder readiness remains a separate lifecycle milestone; preview visibility does not mean scanning is ready.
+
+**Protected / explicitly out of scope**
+- No autofocus change (tracked separately as Patch 2).
+- No camera resolution/constraints, decoder algorithm, ROI, decode interval, barcode validation or result callback changes.
+- No Home cached lookup, Stocktake form-fill/explicit-save, duplicate-row, persistence, auth/session, Apps Script, IndexedDB, service-worker or deployment changes.
+- No Phase 1.2G motion tuning or Phase 2 low-light / distant-small-barcode work.
+
+**Acceptance gate**
+- GitHub Actions run #79 on source commit `807ec386043a1cbfe5fccc9ef187b0c7b1fd5e5b`: TypeScript and production builds job passed, including the local-equivalent preflight.
+- Verify first camera open and resume on iOS Safari/PWA and Android Chrome/PWA. Confirm preview appears before decoder readiness without a false scanning-ready state, blank/flickering frame, duplicate stream, duplicate decoder or regression in Home/Stocktake flows.
+- Record device results separately. Do not mark the patch release-ready from CI alone; keep PR #29 unmerged and undeployed until user approval.
+

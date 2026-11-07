@@ -58,6 +58,7 @@
 .stocktake-scanner-preview{position:relative;display:grid;place-items:center;min-height:260px;aspect-ratio:4/5;overflow:hidden;border-radius:18px;background:#151114}
 .stocktake-scanner-preview video{width:100%;height:100%;position:absolute;inset:0;object-fit:cover}
 .stocktake-scanner-message{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;color:#fff;font-size:12px}
+.stocktake-scanner-preview.has-preview .stocktake-scanner-message{display:none}
 .stocktake-scanner-reticle{position:absolute;inset:28% 10%;border:2px solid rgba(255,255,255,.9);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.12);pointer-events:none}
 .stocktake-scanner-reticle i{position:absolute;left:0;right:0;top:50%;height:2px;background:#f04455;box-shadow:0 0 12px #f04455;animation:stocktake-scan-line 2s ease-in-out infinite alternate}
 .stocktake-scanner-instruction{margin:0;color:#766970;font-size:12px;line-height:1.55}

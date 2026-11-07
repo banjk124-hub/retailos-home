@@ -304,3 +304,22 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Preserved the scanner result callback and stocktake business contract. No decoder algorithm, barcode validation policy, camera resolution target, decode cadence, or business persistence flow was changed.
 - Automated validation: GitHub Actions run #71 passed scanner barcode/luminance/camera regression tests, TypeScript, production build, Pages build and diff checks. The first run exposed a test expectation issue for omitted optional camera settings; the implementation was corrected and the rerun passed. The successful run preceded the final lifecycle-cleanup hardening and module import-order cleanup; CI is being refreshed against the final head.
 - Physical-device QA remains required on iOS Safari/PWA and Android Chrome/PWA. A continuous-focus constraint being accepted does not prove that a physical lens has stabilized; verify focus behavior with the QA Monitor on actual devices. A continuous-focus constraint being accepted does not prove that a physical lens has stabilized; verify focus behavior with the QA Monitor on actual devices.
+
+## 2026-11-07 — Scanner camera startup Patch 1: early preview
+
+- Repository: `banjk124-hub/retailos-home`.
+- Branch: `fix/scanner-phase-1-early-preview`; PR #29 is Draft and targets `main`.
+- Base `main`: `3a6e9afc76d7e49c69b27c05371087ba6c29f706`.
+- Source implementation commit before this documentation sync: `807ec386043a1cbfe5fccc9ef187b0c7b1fd5e5b`.
+- Problem: Home and Stocktake kept the startup placeholder visible until the complete scanner start promise resolved; that promise included decoder initialization even when the video element already had a usable camera frame.
+- Changes:
+  - `src/platform/scanner/contracts.ts`: optional `onPreviewReady` callback added.
+  - `src/platform/scanner/universalScannerSession.ts`: callback fires after first usable video frame and generation/disposal guards, before decoder creation.
+  - `src/features/scanner/hooks/useScannerEngine.ts`: independent `isPreviewReady` state exposed and reset through lifecycle transitions.
+  - `src/features/scanner/components/BarcodeScanner.tsx` and `src/features/stocktake/components/StocktakeScanner.tsx`: reveal video and dismiss startup placeholder when preview is ready.
+  - `src/styles/home-ux.css` and `src/features/stocktake/components/stocktake.css`: visibility styles now follow preview readiness rather than decoder/scanning readiness.
+- GitHub Actions run #79 (`42388939459`): job “TypeScript and production builds” completed with conclusion `success`; steps included locked dependency install and “Run local-equivalent preflight”. This is CI evidence only.
+- Not verified: physical iOS Safari/PWA or Android Chrome/PWA camera startup/resume, perceived latency, blank/flicker behavior, and live Home/Stocktake interaction. No claim of device QA.
+- Scope exclusions preserved: autofocus, camera constraints/resolution, decoder/ROI/cadence, barcode validation, Phase 2 recognition conditions, business callbacks and persistence were not changed.
+- Next: synchronize this branch locally without disturbing existing untracked files; inspect the complete source+documentation diff; run local `npm run preflight`; then test first open and resume on iOS and Android. Keep PR #29 unmerged/undeployed until device evidence is reviewed and the user approves.
+

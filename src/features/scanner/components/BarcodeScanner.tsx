@@ -43,11 +43,11 @@ export default function BarcodeScanner({
         <div><h2 id="barcode-scanner-title">Quét mã vạch</h2><p>Đưa mã vạch vào khung hình</p></div>
         <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng máy quét"><X size={19} /></button>
       </header>
-      <div className={`barcode-scanner-view ${scanner.isScanning ? 'is-scanning' : ''}`}>
+      <div className={`barcode-scanner-view ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-scanning' : ''}`}>
         <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để quét mã vạch" />
         {scanner.isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
-        {scanner.isStarting && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Đang kết nối camera…</span></div>}
-        {!scanner.isStarting && !scanner.isScanning && scanner.error && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Camera chưa sẵn sàng</span></div>}
+        {!scanner.isPreviewReady && scanner.isStarting && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Đang kết nối camera…</span></div>}
+        {!scanner.isPreviewReady && !scanner.isStarting && scanner.error && <div className="barcode-scanner-placeholder"><Camera size={27} /><span>Camera chưa sẵn sàng</span></div>}
       </div>
       <p className="barcode-scanner-hint">Giữ mã vạch rõ nét, đủ sáng và nằm trong khung.</p>
       {scanner.error && <p className="barcode-scanner-error" role="alert"><AlertTriangle size={16} />{scanner.error}</p>}

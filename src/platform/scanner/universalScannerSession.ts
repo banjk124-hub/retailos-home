@@ -254,6 +254,9 @@ export class UniversalScannerSession implements ScannerSession {
       });
       if (this.disposed || generation !== this.generation) return;
 
+      // Publish preview readiness before decoder initialization so the UI can
+      // reveal the live camera as soon as the first real frame is available.
+      this.options.onPreviewReady?.();
       this.setState('initializing');
       const decoderInitStartedAt = performance.now();
       const decoder = await this.createDecoder();
