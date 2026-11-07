@@ -36,6 +36,14 @@ export class UniversalScannerSession implements ScannerSession {
   private lastDecodeAt = 0;
   private startPromise: Promise<void> | null = null;
   private diagnosticStartedAt = Date.now();
+  private readonly performanceStartedAt = performance.now();
+  private lastFrameCallbackAt = 0;
+  private firstAcceptedAt = 0;
+  private longTaskObserver: PerformanceObserver | null = null;
+  private diagnosticLongTasks = 0;
+  private diagnosticMaxFrameGapMs = 0;
+  private diagnosticDecodeDurationTotalMs = 0;
+  private diagnosticDecodeDurationMaxMs = 0;
   private diagnosticFrames = 0;
   private diagnosticFramesWithSymbols = 0;
   private diagnosticAccepted = 0;
@@ -73,11 +81,14 @@ export class UniversalScannerSession implements ScannerSession {
   private async startInternal(): Promise<void> {
     const generation = ++this.generation;
     this.setState('requesting');
+    this.observeLongTasks();
+    const cameraRequestStartedAt = performance.now();
     try {
       if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
         throw new Error('Camera cần HTTPS hoặc localhost và quyền truy cập mediaDevices.');
       }
       const lease = await acquireCameraLease();
+      this.logStage('camera_acquire_ms', performance.now() - cameraRequestStartedAt);
       const stream = lease.stream;
       if (this.disposed || generation !== this.generation) {
         lease.release();
@@ -100,17 +111,22 @@ export class UniversalScannerSession implements ScannerSession {
       this.video.srcObject = stream;
       this.video.muted = true;
       this.video.playsInline = true;
+      const videoPlayStartedAt = performance.now();
       await this.video.play();
+      this.logStage('video_play_ms', performance.now() - videoPlayStartedAt);
       if (this.disposed || generation !== this.generation) return;
 
       this.setState('initializing');
+      const decoderInitStartedAt = performance.now();
       const decoder = await this.createDecoder();
+      this.logStage('decoder_init_ms', performance.now() - decoderInitStartedAt);
       if (this.disposed || generation !== this.generation) {
         await decoder.dispose();
         return;
       }
       this.decoder = decoder;
       this.acceptedSingle = false;
+      this.logStage('camera_to_scanning_ms', performance.now() - this.performanceStartedAt);
       this.setState('scanning');
       this.scheduleNextFrame(generation);
     } catch (cause) {
@@ -162,10 +178,18 @@ export class UniversalScannerSession implements ScannerSession {
       return;
     }
     this.decoding = true;
+    if (this.lastFrameCallbackAt > 0) {
+      this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, timestamp - this.lastFrameCallbackAt);
+    }
+    this.lastFrameCallbackAt = timestamp;
     this.lastDecodeAt = timestamp;
+    const decodeStartedAt = performance.now();
     this.diagnosticFrames += 1;
     try {
       const results = await this.decoder.decode(this.video, timestamp);
+      const decodeDurationMs = performance.now() - decodeStartedAt;
+      this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
+      this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
       if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
       if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
       const now = Date.now();
@@ -183,6 +207,10 @@ export class UniversalScannerSession implements ScannerSession {
         this.acceptedSingle = true;
         this.lastAcceptedAt = now;
         this.diagnosticAccepted += 1;
+        if (!this.firstAcceptedAt) {
+          this.firstAcceptedAt = now;
+          this.logStage('first_accepted_result_ms', performance.now() - this.performanceStartedAt);
+        }
         if (this.options.mode === 'single') {
           // Claim the single result before calling feature code. Always close the
           // camera even if a module callback throws.
@@ -240,6 +268,10 @@ export class UniversalScannerSession implements ScannerSession {
       rejectedByValidation: this.diagnosticRejected,
       decoderErrors: this.diagnosticErrors,
       callbackErrors: this.diagnosticCallbackErrors,
+      decodeDurationAverageMs: this.diagnosticFrames ? Number((this.diagnosticDecodeDurationTotalMs / this.diagnosticFrames).toFixed(1)) : 0,
+      decodeDurationMaxMs: Number(this.diagnosticDecodeDurationMaxMs.toFixed(1)),
+      maxFrameCallbackGapMs: Number(this.diagnosticMaxFrameGapMs.toFixed(1)),
+      longTasks: this.diagnosticLongTasks,
       validationRejectReasons: { ...this.diagnosticValidationReasons },
     });
     this.diagnosticStartedAt = now;
@@ -249,6 +281,10 @@ export class UniversalScannerSession implements ScannerSession {
     this.diagnosticRejected = 0;
     this.diagnosticErrors = 0;
     this.diagnosticCallbackErrors = 0;
+    this.diagnosticDecodeDurationTotalMs = 0;
+    this.diagnosticDecodeDurationMaxMs = 0;
+    this.diagnosticMaxFrameGapMs = 0;
+    this.diagnosticLongTasks = 0;
     this.diagnosticValidationReasons = {};
   }
 
@@ -281,6 +317,7 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async teardown(release: boolean): Promise<void> {
+    const teardownStartedAt = performance.now();
     const video = this.video as HTMLVideoElement & { cancelVideoFrameCallback?: (handle: number) => void };
     if (this.frameHandle !== null) {
       if (this.frameKind === 'video' && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(this.frameHandle);
@@ -292,12 +329,44 @@ export class UniversalScannerSession implements ScannerSession {
     this.unsubscribeTrackEnded = null;
     const decoder = this.decoder;
     this.decoder = null;
-    if (decoder) await decoder.dispose();
+    if (decoder) {
+      const decoderDisposeStartedAt = performance.now();
+      await decoder.dispose();
+      this.logStage('decoder_dispose_ms', performance.now() - decoderDisposeStartedAt);
+    }
     const stream = this.stream;
     this.stream = null;
     if (this.video.srcObject === stream) this.video.srcObject = null;
     const lease = this.cameraLease;
     this.cameraLease = null;
-    if (release) lease?.release();
+    if (release) {
+      const cameraReleaseStartedAt = performance.now();
+      lease?.release();
+      this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
+    }
+    this.longTaskObserver?.disconnect();
+    this.longTaskObserver = null;
+    this.logStage('teardown_total_ms', performance.now() - teardownStartedAt);
+  }
+
+  private logStage(stage: string, durationMs: number): void {
+    console.info('[RetailOS Scanner] Performance stage', {
+      session: this.id,
+      stage,
+      durationMs: Number(durationMs.toFixed(1)),
+    });
+  }
+
+  private observeLongTasks(): void {
+    if (typeof PerformanceObserver === 'undefined') return;
+    try {
+      if (!PerformanceObserver.supportedEntryTypes?.includes('longtask')) return;
+      this.longTaskObserver = new PerformanceObserver((list) => {
+        this.diagnosticLongTasks += list.getEntries().length;
+      });
+      this.longTaskObserver.observe({ type: 'longtask', buffered: false });
+    } catch {
+      this.longTaskObserver = null;
+    }
   }
 }
