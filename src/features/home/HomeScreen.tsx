@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
@@ -14,6 +14,7 @@ import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVEN
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
+import BarcodeScanner from '../scanner/components/BarcodeScanner';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
 import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
@@ -26,14 +27,6 @@ import { isPushConfigured, subscribeForPushNotifications } from '../notification
 import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { releaseCameraStream } from '../../shared/services/cameraSession';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
-
-// Warm the scanner chunk during Home startup, while keeping lazy() retryable
-// if the prefetch fails because of a transient network/deployment condition.
-const loadBarcodeScanner = () => import('../scanner/components/BarcodeScanner');
-const BarcodeScanner = lazy(loadBarcodeScanner);
-void loadBarcodeScanner().catch((error: unknown) => {
-  console.error('[RetailOS] Scanner preload failed; it will retry when opened:', error);
-});
 
 type Props = {
   employee: EmployeeSession;
@@ -722,10 +715,8 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
-    {isBarcodeScannerOpen && <AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Không thể mở máy quét. Hãy đóng và thử lại.</p></div></section>}>
-      <Suspense fallback={<section className="barcode-scanner" role="status"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Đang tải máy quét barcode…</p></div></section>}>
-        <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" />
-      </Suspense>
+    {isBarcodeScannerOpen && <AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
+      <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" />
     </AppErrorBoundary>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
