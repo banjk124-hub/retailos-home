@@ -4,7 +4,6 @@
 .barcode-scanner.scanner-home-transition {
   transform-origin: var(--scanner-origin-x, 50vw) var(--scanner-origin-y, 50vh);
   animation: scanner-home-open 260ms cubic-bezier(.2, .78, .22, 1) both;
-  will-change: transform, opacity;
   padding: 0;
 }
 
@@ -23,6 +22,55 @@
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  color: rgba(255,255,255,.94);
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 14px;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-header h2 {
+  margin: 0 0 4px;
+  color: #fff;
+  font-size: 18px;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-header p {
+  margin: 0;
+  color: rgba(255,255,255,.68);
+  font-size: 12px;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-title-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 13px;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-close {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 14px;
+  background: rgba(255,255,255,.1);
+  color: #fff;
 }
 
 .barcode-scanner.scanner-home-transition .barcode-scanner-header {
@@ -44,11 +92,34 @@
 .barcode-scanner.scanner-home-transition .barcode-scanner-hint,
 .barcode-scanner.scanner-home-transition .barcode-scanner-status {
   flex: 0 0 auto;
+  color: rgba(255,255,255,.76);
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-hint {
+  margin: 12px 0 8px;
+  font-size: 12px;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-status {
+  padding-bottom: 2px;
+  font-size: 10px;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-error {
+  color: #ffd9de;
+}
+
+.barcode-scanner.scanner-home-transition .barcode-scanner-retry {
+  min-height: 44px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  background: rgba(255,255,255,.12);
+  color: #fff;
 }
 
 @keyframes scanner-home-open {
   from { opacity: 0; transform: scale(.94); }
-  to { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: none; }
 }
 
 /* Stocktake keeps its existing frame and geometry; only its entrance and wait cue change. */
@@ -59,7 +130,6 @@
 .stocktake-scanner-surface.scanner-stocktake-surface-enter {
   transform-origin: var(--scanner-origin-x, 50vw) var(--scanner-origin-y, 50vh);
   animation: scanner-stocktake-surface-in 260ms cubic-bezier(.2, .78, .22, 1) both;
-  will-change: transform, opacity;
 }
 
 .stocktake-scanner-preview {
@@ -128,8 +198,7 @@
   .stocktake-scanner-surface.scanner-stocktake-surface-enter {
     animation: none !important;
     transform: none !important;
-    will-change: auto;
-  }
+    }
 
   .barcode-scanner.scanner-home-transition .barcode-scanner-view video,
   .stocktake-scanner-preview video {
