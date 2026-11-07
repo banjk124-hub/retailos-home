@@ -95,3 +95,14 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - No autofocus, camera constraint, decoder, ROI, cadence, barcode validation, Home/Stocktake business flow or persistence changes.
 - Real-device QA has not been performed. Next: local preflight and iOS Safari/PWA + Android Chrome/PWA first-open/resume validation. Keep PR #29 unmerged and undeployed pending review and explicit user approval.
 
+
+### 2026-11-07 — Scanner Phase 1 Patch 2: non-blocking autofocus
+
+- Created branch `fix/scanner-phase-1-2-autofocus-nonblocking` from `main` at `93eff4fa10154ea3d3499e12d946309850ab1164` (after Patch 1 / PR #29 merge).
+- Root cause: `cameraSession.ts` awaited `requestContinuousAutofocus()` inside the shared `getUserMedia()` resolution path, so a slow `applyConstraints()` delayed camera lease delivery and video preview startup.
+- Changed acquisition order: validate the live video track, register its `ended` listener, log safe camera settings, launch optional autofocus asynchronously, then return the stream without waiting for autofocus.
+- Retained capability detection, focus status classification and safe diagnostics. Late focus results are ignored for stale generations/streams; unexpected diagnostic rejections are caught.
+- Added delayed-`applyConstraints()` regression coverage in `scripts/test-scanner-validation.mjs`; it asserts lease acquisition completes while autofocus remains unresolved and track-ended monitoring is already registered.
+- Updated Architecture ADR-009, Roadmap Patch 2, Implementation Status, AI Handoff and Project Context.
+- Verification status: code and tests authored remotely; local preflight, CI and physical iOS/Android QA have not yet been run. No test/build pass is claimed.
+- Next: local branch synchronization and full diff review, `npm run preflight`, then first-open/resume/focus and track-ended QA on iOS Safari/PWA and Android Chrome/PWA. Do not merge or deploy without explicit approval.
