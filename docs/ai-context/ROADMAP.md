@@ -280,3 +280,6 @@ The shared camera acquisition promise previously awaited `requestContinuousAutof
 
 
 **Patch 2 CI result update (2026-11-07):** GitHub Actions run #84 (`42393062148`) passed the complete `npm run preflight`: scanner regression suite (including delayed autofocus), TypeScript/production build, GitHub Pages build and both diff checks. npm reported an EBADENGINE warning because `@zxing/library@0.23.0` declares Node >=24 while CI currently uses Node 22; build also reported the existing >500 kB chunk warning. Neither failed the run. Local Windows execution and real iOS/Android QA remain outstanding.
+
+
+**Final PR-head CI confirmation (2026-11-07):** run #85 (`42393150965`) passed on documentation-synchronized head `a31d40315eaeb9f90ce209da4fef6341e8836025`. The latest PR head passed locked dependency installation and the full preflight. Local Windows/PowerShell and physical-device QA remain open.
