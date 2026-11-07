@@ -83,3 +83,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - No camera constraints, decoder cadence/strategy, CSS motion durations, feature data contracts, or persistence behavior were changed.
 - GitHub CI run #57 initially caught stale first-result timing references; corrected on branch. GitHub CI run #60 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks; the frame-callback-gap measurement was then corrected to observe each scheduled callback, and GitHub CI run #63 passed on that latest source. Local build/preflight, browser profiling and real-device measurements remain outstanding. Telemetry does not include barcode payloads or device identifiers.
 - Next: inspect full diff, run available build/preflight/scanner validation, then collect Android Chrome and iOS Safari traces before implementing any measured optimization. Branch remains unmerged and undeployed.
+
+### 2026-11-07 — Scanner camera startup Patch 1: early preview
+
+- Branch: `fix/scanner-phase-1-early-preview`, based on main `3a6e9afc76d7e49c69b27c05371087ba6c29f706`.
+- Source commit: `807ec386043a1cbfe5fccc9ef187b0c7b1fd5e5b`; Draft PR #29 remains open, unmerged and undeployed.
+- Root cause: the scanner UI placeholder was bound to the full startup process, which waits for decoder initialization; the camera video could already have a usable frame while the placeholder remained visible.
+- Implemented `onPreviewReady` between first usable video-frame readiness and decoder creation; added separate `isPreviewReady` hook state; Home and Stocktake now reveal the video/clear the placeholder at preview readiness.
+- Files changed: `src/platform/scanner/contracts.ts`, `src/platform/scanner/universalScannerSession.ts`, `src/features/scanner/hooks/useScannerEngine.ts`, `src/features/scanner/components/BarcodeScanner.tsx`, `src/features/stocktake/components/StocktakeScanner.tsx`, `src/styles/home-ux.css`, `src/features/stocktake/components/stocktake.css`.
+- CI run #79 (`42388939459`) passed the TypeScript and production builds job, including locked dependency install and local-equivalent preflight.
+- No autofocus, camera constraint, decoder, ROI, cadence, barcode validation, Home/Stocktake business flow or persistence changes.
+- Real-device QA has not been performed. Next: local preflight and iOS Safari/PWA + Android Chrome/PWA first-open/resume validation. Keep PR #29 unmerged and undeployed pending review and explicit user approval.
+
