@@ -67,3 +67,11 @@ Repository source and current tests/config are authoritative for actual behavior
 - Current task branch: `phase-1-2f-camera-lifecycle` (GitHub branch created from `main`; not merged or deployed).
 - Current scanner slice: unexpected video-track termination notification and bounded lifecycle recovery. See `ROADMAP.md` Phase 1.2F, `ARCHITECTURE.md` ADR-006 and `IMPLEMENTATION_STATUS.md`.
 - The user's Local preflight passed before the current remote patch; post-sync verification and Android/iOS device QA remain required.
+
+
+
+## Scanner roadmap focus update (2026-11-07)
+- P0 camera lifecycle serialization is merged to `main` at `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`; GitHub CI passed TypeScript and production preflight. Real-device QA and deployment status remain separate verification items.
+- The next scanner focus is measurement-led: establish a performance baseline, then Phase 1.2G (rendering, motion, interaction and lifecycle smoothness), followed by conditional decoder optimization (1.2H), angled barcode capability (1.2I), and cross-platform validation (1.2J).
+- Current source decode cadence is 110 ms; older 70 ms notes are historical and stale.
+- Keep roadmap/status/handoff synchronized. Do not claim planned phases are implemented; do not change source code in documentation-only work.
