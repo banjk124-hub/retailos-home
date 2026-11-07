@@ -1,12 +1,17 @@
 let activeStream: MediaStream | null = null;
 let pendingRequest: Promise<MediaStream> | null = null;
 let requestGeneration = 0;
+let activeLeaseCount = 0;
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
 
+export type CameraStreamLease = {
+  readonly stream: MediaStream;
+  release(): void;
+};
+
 /**
- * Best-effort continuous autofocus. Camera capabilities differ across iOS,
- * Android and browser versions, so unsupported constraints must never block
- * camera startup.
+ * Best-effort continuous autofocus. Unsupported constraints must never block
+ * camera startup on iOS Safari or Android camera providers.
  */
 async function optimizeVideoTrack(track: MediaStreamTrack): Promise<void> {
   try {
@@ -19,57 +24,92 @@ async function optimizeVideoTrack(track: MediaStreamTrack): Promise<void> {
       });
     }
   } catch (error) {
-    // iOS Safari and some Android camera providers reject optional focus modes.
     console.debug('[RetailOS Camera] Optional autofocus constraint unavailable:', error);
   }
 }
 
-/**
- * Shared camera stream lifecycle. A single stream is shared by scanner
- * consumers; stale getUserMedia resolutions are stopped using a generation.
- */
-export async function acquireCameraStream(): Promise<MediaStream> {
-  if (activeStream?.getTracks().some((track) => track.readyState === 'live')) return activeStream;
-  if (pendingRequest) return pendingRequest;
+async function acquireSharedStream(): Promise<{ stream: MediaStream; generation: number }> {
+  if (activeStream?.getTracks().some((track) => track.readyState === 'live')) {
+    return { stream: activeStream, generation: requestGeneration };
+  }
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
     throw new Error('Camera chỉ hoạt động trên HTTPS hoặc localhost. Hãy mở ứng dụng bằng địa chỉ bảo mật rồi thử lại.');
   }
 
   const generation = requestGeneration;
-  const request = navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: {
-      facingMode: { ideal: 'environment' },
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      frameRate: { ideal: 30, max: 30 },
-    },
-  }).then(async (stream) => {
-    if (generation !== requestGeneration) {
-      stream.getTracks().forEach((track) => track.stop());
-      throw new DOMException('Camera request was superseded.', 'AbortError');
-    }
+  if (!pendingRequest) {
+    const request = navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 30, max: 30 },
+      },
+    }).then(async (stream) => {
+      if (generation !== requestGeneration) {
+        stream.getTracks().forEach((track) => track.stop());
+        throw new DOMException('Camera request was superseded.', 'AbortError');
+      }
 
-    activeStream = stream;
-    const videoTracks = stream.getVideoTracks();
-    await Promise.all(videoTracks.map(optimizeVideoTrack));
-    videoTracks.forEach((track) => {
-      track.addEventListener('ended', () => {
-        if (activeStream !== stream) return;
-        const hasLiveVideoTrack = stream.getVideoTracks()
-          .some((videoTrack) => videoTrack.readyState === 'live');
-        if (hasLiveVideoTrack) return;
-        activeStream = null;
-        trackEndedListeners.forEach((listener) => listener(stream));
-      }, { once: true });
+      activeStream = stream;
+      const videoTracks = stream.getVideoTracks();
+      await Promise.all(videoTracks.map(optimizeVideoTrack));
+      if (generation !== requestGeneration || activeStream !== stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        throw new DOMException('Camera request was superseded.', 'AbortError');
+      }
+
+      videoTracks.forEach((track) => {
+        track.addEventListener('ended', () => {
+          if (activeStream !== stream) return;
+          const hasLiveVideoTrack = stream.getVideoTracks()
+            .some((videoTrack) => videoTrack.readyState === 'live');
+          if (hasLiveVideoTrack) return;
+          activeStream = null;
+          activeLeaseCount = 0;
+          trackEndedListeners.forEach((listener) => listener(stream));
+        }, { once: true });
+      });
+      return stream;
+    }).finally(() => {
+      if (pendingRequest === request) pendingRequest = null;
     });
-    return stream;
-  }).finally(() => {
-    if (pendingRequest === request) pendingRequest = null;
-  });
+    pendingRequest = request;
+  }
 
-  pendingRequest = request;
-  return request;
+  const stream = await pendingRequest;
+  if (generation !== requestGeneration || activeStream !== stream) {
+    throw new DOMException('Camera request was superseded.', 'AbortError');
+  }
+  return { stream, generation };
+}
+
+/**
+ * Each scanner session receives a lease on the shared stream. Releasing an
+ * obsolete session decrements only its own lease and cannot stop a stream
+ * still leased by a newer session.
+ */
+export async function acquireCameraLease(): Promise<CameraStreamLease> {
+  const { stream, generation } = await acquireSharedStream();
+  if (generation !== requestGeneration || activeStream !== stream) {
+    throw new DOMException('Camera request was superseded.', 'AbortError');
+  }
+
+  activeLeaseCount += 1;
+  let released = false;
+  return {
+    stream,
+    release: () => {
+      if (released) return;
+      released = true;
+      if (generation !== requestGeneration || activeStream !== stream) return;
+      activeLeaseCount = Math.max(0, activeLeaseCount - 1);
+      if (activeLeaseCount > 0) return;
+      activeStream = null;
+      stream.getTracks().forEach((track) => track.stop());
+    },
+  };
 }
 
 export function subscribeCameraTrackEnded(listener: (stream: MediaStream) => void): () => void {
@@ -78,19 +118,13 @@ export function subscribeCameraTrackEnded(listener: (stream: MediaStream) => voi
 }
 
 /**
- * Invalidate pending camera work and release the active stream. Supplying an
- * expected stream prevents an old session from stopping a newer camera lease.
+ * Global invalidation is reserved for app-level logout/forced shutdown.
+ * Scanner sessions must release their own CameraStreamLease instead.
  */
-export function releaseCameraStream(expectedStream?: MediaStream): void {
-  if (expectedStream) {
-    if (activeStream !== expectedStream) return;
-    activeStream = null;
-    expectedStream.getTracks().forEach((track) => track.stop());
-    return;
-  }
-
+export function releaseCameraStream(): void {
   requestGeneration += 1;
   pendingRequest = null;
+  activeLeaseCount = 0;
   const stream = activeStream;
   activeStream = null;
   stream?.getTracks().forEach((track) => track.stop());
