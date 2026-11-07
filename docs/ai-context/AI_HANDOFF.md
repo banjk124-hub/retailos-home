@@ -128,3 +128,20 @@ This section is the latest handoff snapshot and supersedes older task sections a
 - No motion timing, camera resolution, 110 ms decode cadence or decoder algorithm has been tuned. No Home/Stocktake business contract changed intentionally.
 - GitHub CI run #63 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks on latest source commit `e46c19542ca1eef12b1ce03b21a7e3d404f6f500`. Local npm execution, browser Performance trace and physical iOS/Android QA remain outstanding.
 - Next: inspect diff, run all available scanner/build checks, then collect comparable Android Chrome and iOS Safari traces before selecting one targeted G-E optimization. Do not merge/deploy without explicit user approval.
+
+## Current handoff snapshot — Scanner Patch 1 early preview (2026-11-07)
+
+This is the latest task snapshot and supersedes older “active task” labels above where they conflict. Earlier entries remain historical records.
+
+- Repository: `banjk124-hub/retailos-home`; default branch: `main`.
+- Active branch: `fix/scanner-phase-1-early-preview`, based on `main` at `3a6e9afc76d7e49c69b27c05371087ba6c29f706`.
+- Source patch commit before documentation synchronization: `807ec386043a1cbfe5fccc9ef187b0c7b1fd5e5b`.
+- Draft PR #29: https://github.com/banjk124-hub/retailos-home/pull/29 — not merged, not deployed.
+- Patch 1 separates camera preview readiness from decoder/scanning readiness. The session calls `onPreviewReady` after the first usable video frame and before decoder creation; the hook exposes `isPreviewReady`; Home and Stocktake reveal the live video and hide the startup placeholder at that milestone.
+- CI run #79 (`42388939459`) passed: TypeScript and production builds, including the local-equivalent preflight. This does not prove real-device camera behavior.
+- No autofocus, resolution, decoder, ROI, cadence, barcode-validation, business-flow or persistence behavior was changed.
+- Required next work: local branch synchronization and full diff review; local `npm run preflight`; first-open and resume QA on iOS Safari/PWA and Android Chrome/PWA; verify preview appears before decoder readiness without implying scanning is ready.
+- Preserve existing untracked local files (including previously reported `artifacts/` and any other unreviewed paths). Do not clean or overwrite them.
+- Patch 2 (autofocus acquisition behavior) remains separate and is not authorized by Patch 1. Phase 2 recognition improvements remain out of scope.
+- Do not merge, publish or deploy without explicit user approval.
+
