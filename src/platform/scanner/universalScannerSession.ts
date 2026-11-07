@@ -37,6 +37,7 @@ export class UniversalScannerSession implements ScannerSession {
   private startPromise: Promise<void> | null = null;
   private diagnosticStartedAt = Date.now();
   private startAttemptStartedAt = 0;
+  private hasLoggedFirstAcceptedForAttempt = false;
   private lastFrameCallbackAt = 0;
   private longTaskObserver: PerformanceObserver | null = null;
   private layoutShiftObserver: PerformanceObserver | null = null;
@@ -83,6 +84,7 @@ export class UniversalScannerSession implements ScannerSession {
     const generation = ++this.generation;
     this.setState('requesting');
     this.startAttemptStartedAt = performance.now();
+    this.hasLoggedFirstAcceptedForAttempt = false;
     this.observeLongTasks();
     const cameraRequestStartedAt = performance.now();
     try {
@@ -209,7 +211,8 @@ export class UniversalScannerSession implements ScannerSession {
         this.acceptedSingle = true;
         this.lastAcceptedAt = now;
         this.diagnosticAccepted += 1;
-        if (this.diagnosticAccepted === 1) {
+        if (!this.hasLoggedFirstAcceptedForAttempt) {
+          this.hasLoggedFirstAcceptedForAttempt = true;
           this.logStage('first_accepted_result_ms', performance.now() - this.startAttemptStartedAt);
         }
         if (this.options.mode === 'single') {
