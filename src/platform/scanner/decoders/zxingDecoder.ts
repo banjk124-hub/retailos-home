@@ -139,6 +139,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     }
     if (this.decoding) return [];
     this.decoding = true;
+    const decodeStartedAt = performance.now();
     try {
       const dimensions = getFrameDimensions(source);
       this.lastFrameWidth = dimensions.width;
@@ -149,7 +150,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const height = Math.max(1, Math.round(dimensions.height * scale));
       this.canvas.width = width;
       this.canvas.height = height;
+      const fullFrameDrawStartedAt = performance.now();
       this.context.drawImage(source, 0, 0, width, height);
+      const fullFrameDrawMs = performance.now() - fullFrameDrawStartedAt;
 
       let output = this.decodeCurrentCanvas(timestamp, false);
       if (output) {
@@ -172,6 +175,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const roiHeight = Math.max(1, Math.round(cropHeight * ROI_UPSCALE));
       this.canvas.width = roiWidth;
       this.canvas.height = roiHeight;
+      const roiDrawStartedAt = performance.now();
       this.context.drawImage(
         source,
         sx / scale,
@@ -183,6 +187,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         roiWidth,
         roiHeight,
       );
+      const roiDrawMs = performance.now() - roiDrawStartedAt;
       output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
       if (output) {
         this.diagnosticDecoded += 1;
@@ -193,14 +198,42 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.emitDiagnostics();
       return [];
     } finally {
+      const durationMs = performance.now() - decodeStartedAt;
+      this.recordDecodeCost(durationMs);
       this.reader?.reset();
       this.decoding = false;
     }
   }
 
+  private decodeCostStartedAt = 0;
+  private decodeCostCount = 0;
+  private decodeCostTotalMs = 0;
+  private decodeCostMaxMs = 0;
+
+  private recordDecodeCost(durationMs: number): void {
+    this.decodeCostCount += 1;
+    this.decodeCostTotalMs += durationMs;
+    this.decodeCostMaxMs = Math.max(this.decodeCostMaxMs, durationMs);
+    if (!this.decodeCostStartedAt) this.decodeCostStartedAt = Date.now();
+    if (Date.now() - this.decodeCostStartedAt < 5_000) return;
+    console.info('[RetailOS Scanner] Decoder processing cost', {
+      decoder: this.id,
+      averageDecodeMs: Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)),
+      maxDecodeMs: Number(this.decodeCostMaxMs.toFixed(1)),
+      samples: this.decodeCostCount,
+    });
+    this.decodeCostStartedAt = Date.now();
+    this.decodeCostCount = 0;
+    this.decodeCostTotalMs = 0;
+    this.decodeCostMaxMs = 0;
+  }
+
   private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
+    const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    const imageReadMs = performance.now() - imageReadStartedAt;
+    const grayscaleStartedAt = performance.now();
 const grayscale = rgbaToLuminance(
   image.data,
   this.canvas.width,
@@ -220,7 +253,9 @@ const luminance = new RGBLuminanceSource(
         const bitmap = new BinaryBitmap(new Binarizer(luminance));
         // decode() resets the configured hints when no hints argument is passed.
         // Reuse the initialized retail-format whitelist across camera frames.
+        const zxingStartedAt = performance.now();
         const result = this.reader.decodeWithState(bitmap);
+        const zxingMs = performance.now() - zxingStartedAt;
         const symbology = REVERSE_FORMAT_MAP.get(result.getBarcodeFormat());
         const value = result.getText();
         if (!symbology || !this.formats.includes(symbology) || value.length === 0) return null;
@@ -260,6 +295,7 @@ const luminance = new RGBLuminanceSource(
       unexpectedErrors: this.diagnosticUnexpected,
       sourceWidth: this.lastFrameWidth,
       sourceHeight: this.lastFrameHeight,
+      averageDecodeMs: this.decodeCostCount ? Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)) : 0,
     });
     this.diagnosticStartedAt = now;
     this.diagnosticFrames = 0;
