@@ -163,10 +163,21 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         // Normal misses are expected for video frames without a readable code.
         // Unexpected failures are rate-limited so a broken decoder is observable.
         const name = error instanceof Error ? error.name : '';
-        const expectedMiss = ['NotFoundException', 'ChecksumException', 'FormatException'].includes(name);
-        if (name === 'NotFoundException') this.diagnosticNotFound += 1;
-        else if (name === 'ChecksumException') this.diagnosticChecksum += 1;
-        else if (name === 'FormatException') this.diagnosticFormat += 1;
+        const message = error instanceof Error
+          ? error.message
+          : typeof error === 'string' ? error : '';
+        // ZXing builds/wrappers do not always preserve the exception subclass
+        // name. Classify its stable message as a normal frame miss as well.
+        const isNotFound = name === 'NotFoundException'
+          || /No MultiFormat Readers were able to detect the code/i.test(message);
+        const isChecksum = name === 'ChecksumException'
+          || /checksum/i.test(message);
+        const isFormat = name === 'FormatException'
+          || /format exception/i.test(message);
+        const expectedMiss = isNotFound || isChecksum || isFormat;
+        if (isNotFound) this.diagnosticNotFound += 1;
+        else if (isChecksum) this.diagnosticChecksum += 1;
+        else if (isFormat) this.diagnosticFormat += 1;
         else {
           this.diagnosticUnexpected += 1;
           const now = Date.now();
