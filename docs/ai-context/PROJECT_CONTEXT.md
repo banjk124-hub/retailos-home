@@ -106,3 +106,12 @@ Repository source and current tests/config are authoritative for actual behavior
 - GitHub Actions run #84 passed the full repository preflight, including a regression test that holds autofocus pending while verifying camera lease acquisition remains non-blocking.
 - Local Windows/PowerShell and physical iOS/Android QA remain outstanding. CI does not prove camera hardware focus behavior.
 - Existing CI warnings (ZXing package engine declares Node >=24 while workflow uses Node 22; Vite chunk-size warning) were non-fatal and are recorded in Implementation Status.
+
+## Active engineering focus — Supplemental Scanner UX Transition (2026-11-08)
+
+- Current branch: feat/scanner-ux-transition, based on main at 36b8ca7457c9df7bb3f26105660605c66070b9ea; Draft PR #31 is open and unmerged.
+- The opening tap now initiates camera acquisition; a single-claim/cancellable lease request is handed to the mounted scanner.
+- Home scanner is full-screen with no camera card/frame. Stocktake retains its current scanner frame/layout. Do not unify their visual components.
+- GitHub Actions run #89 passed full preflight. Local Windows/PowerShell and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
+- Preserve all existing scanner and business-flow contracts. No merge/deploy without explicit approval.
+- After this supplemental UX patch is accepted, resume the existing Phase 1.2G–1.2J roadmap; this patch does not complete Phase 1.2G.
