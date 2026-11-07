@@ -97,7 +97,7 @@ Status: Proposed implementation on `phase-1-2f-camera-lifecycle`; pending Local 
 - Scanner consumers must ignore termination events for streams they do not currently own, invalidate stale asynchronous decoder work, stop decoder controls, and detach only the matching video stream.
 - The scanner may make at most one automatic recovery attempt per open scanner session. Repeated interruption becomes a visible recoverable error; a direct user retry resets that one-attempt budget.
 - Intentional pause, close, unmount, and `releaseCameraStream()` remain non-recovery paths. Stale `getUserMedia` results remain generation-invalidated and must never attach after cancellation.
-- Preserve camera constraints (1280×720), ZXing decode interval (70 ms), supported barcode formats, feedback, Home lookup, Stocktake form-fill/explicit-save, and all data/auth/session contracts.
+- Preserve camera constraints (1280×720), ZXing decode interval (110 ms), supported barcode formats, feedback, Home lookup, Stocktake form-fill/explicit-save, and all data/auth/session contracts.
 - This decision does not add camera ownership leases, background polling, dependencies, or performance tuning. Device-specific behavior remains subject to Android Chrome and iOS Safari QA.
 - Stream-specific cleanup must be identity-guarded: a stale scanner attempt may release only the exact stream it acquired and must not invalidate a different active stream or a newer pending getUserMedia request. No-argument release remains the intentional global invalidation path for pause/close/logout.
 
@@ -113,3 +113,32 @@ Status: Implemented on `fix/scanner-p0-lifecycle-serialization`; build and devic
 - This supersedes the Phase 1.2F note that explicitly excluded a camera lease system. The change is intentional: identity-only release did not represent multiple consumers of the same shared stream.
 - Do not add background camera retention. A session must release its lease on close/suspend/unmount; global logout invalidates all leases.
 - Required regression coverage: two consumers share one stream; closing either consumer leaves the other live; closing the final consumer stops tracks; close-while-pending followed by a new consumer does not stop the new consumer's stream; global logout invalidates all leases.
+
+
+
+## Scanner experience performance architecture (2026-11-07)
+
+Status: engineering constraints for the planned Phase 1.2G–1.2J work; not a claim that these optimizations have been implemented.
+
+### Responsibility boundaries
+- **Scanner Core:** camera lease/session, frame scheduling, decoder lifecycle, barcode validation and accepted-result event.
+- **Feature workflow:** Home cached lookup; Stocktake form-fill and explicit user save.
+- **Presentation/UI:** scanner overlay, controls, visual transitions and feedback rendering. Presentation must observe runtime state; it must not own camera stream release semantics.
+- **Platform adapters:** capability detection and graceful differences between iOS Safari and Android Chrome.
+
+### Lifecycle and presentation invariants
+- Camera/session lifecycle is independent from CSS/React animation completion. A slow or cancelled animation must never keep the camera active or release another session's stream.
+- UI state must reflect actual runtime readiness. Do not show SCANNING before video and decoder readiness are established.
+- Stale asynchronous work must not update UI after close, unmount, module switch or generation change.
+- Transitions must not create duplicate camera requests, decoder loops, event listeners, timers or animation-frame callbacks.
+- Avoid broad use of expensive blur/backdrop-filter/shadow effects on camera preview surfaces; profile before changing visual design.
+- Respect `prefers-reduced-motion`; motion must remain an enhancement, not a dependency for correctness.
+- Measure before optimizing. Keep instrumentation privacy-safe: no barcode payloads and no unnecessary persistent device identifiers.
+
+### Current source facts to preserve
+- `UniversalScannerSession` currently uses a 110 ms minimum decode interval. Older 70 ms statements in historical Phase 1.2F text are superseded.
+- Camera stream ownership uses reference-counted leases after P0 merge. Session-level release and app-level global invalidation are distinct operations.
+- Preserve Home cached lookup, Stocktake form-fill/explicit-save, duplicate Stocktake rows, manual entry and EAN-8/EAN-13/CODE-128 validation.
+- Any future rotation/perspective/deskew work must be conditional and measured; do not penalize the normal scan path without evidence.
+
+See `ROADMAP.md` for phase dependencies and acceptance gates.
