@@ -13,6 +13,7 @@ import { createStocktakeFile, downloadStocktakeText } from '../services/stocktak
 import { unlockScannerAudio } from '../../scanner/services/scannerAudio';
 import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
 import './stocktake.css';
+import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type Screen = 'home' | 'scan' | 'review' | 'history' | 'exports';
@@ -401,12 +402,11 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
       {scannerOpen && screen === 'scan' && (
   <div className="stocktake-scanner-layer">
-    <Suspense fallback={<div>Đang tải máy quét...</div>}>
-      <StocktakeScanner
-        onDetected={acceptBarcode}
-        onClose={() => setScannerOpen(false)}
-      />
+    <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={() => setScannerOpen(false)}>Đóng</button></div>}>
+    <Suspense fallback={<div role="status">Đang tải máy quét...</div>}>
+      <StocktakeScanner onDetected={acceptBarcode} onClose={() => setScannerOpen(false)} />
     </Suspense>
+    </AppErrorBoundary>
   </div>
 )}
 
