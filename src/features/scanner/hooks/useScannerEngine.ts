@@ -48,7 +48,7 @@ export function useScannerEngine({
     const now = performance.now();
     console.info('[RetailOS Scanner] UI commit', {
       phase: isScanning ? 'scanning' : isStarting ? 'starting' : error ? 'error' : 'idle',
-      commitAfterPreviousStateMs: Number((now - lastUiStateChangeAtRef.current).toFixed(1)),
+      timeSincePreviousPhaseCommitMs: Number((now - lastUiStateChangeAtRef.current).toFixed(1)),
     });
     lastUiStateChangeAtRef.current = now;
   }, [isStarting, isScanning, error]);
@@ -104,12 +104,14 @@ export function useScannerEngine({
             }
           },
           onStateChange: (state: ScannerLifecycleState) => {
+            if (!mountedRef.current) return;
             setIsStarting(state === 'requesting' || state === 'initializing');
             setIsScanning(state === 'scanning');
             if (state === 'scanning') recoveryAttemptsRef.current = 0;
             if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
           },
           onError: (scannerError) => {
+            if (!mountedRef.current) return;
             setError(scannerError.message);
             setIsStarting(false);
             // A decoder fault does not imply that getUserMedia or the video
@@ -133,6 +135,7 @@ export function useScannerEngine({
 
   const pauseScanner = useCallback(async () => {
     await sessionRef.current?.suspend('hidden');
+    if (!mountedRef.current) return;
     setIsStarting(false);
     setIsScanning(false);
   }, []);
