@@ -182,29 +182,17 @@ export class UniversalScannerSession implements ScannerSession {
         this.diagnosticAccepted += 1;
         if (this.options.mode === 'single') {
           // Claim the single result before calling feature code. Always close the
-          // camera even if a module callback throws, otherwise the UI can remain
-          // in an endless scanning state after a successful decode.
+          // camera even if a module callback throws.
           try {
-            try {
-          this.options.onResult({ ...result, value });
-        } catch (cause) {
-          this.diagnosticCallbackErrors += 1;
-          this.options.onError?.({ code: 'RESULT_HANDLER_FAILED', message: cause instanceof Error ? cause.message : 'Module không tiếp nhận được barcode đã quét.', recoverable: true, cause });
-        }
-          } catch (cause) {
-            this.diagnosticCallbackErrors += 1;
-            this.options.onError?.({
-              code: 'RESULT_HANDLER_FAILED',
-              message: cause instanceof Error ? cause.message : 'Module không tiếp nhận được barcode đã quét.',
-              recoverable: true,
-              cause,
-            });
+            this.deliverResult(result, value);
           } finally {
             await this.close();
           }
           return;
         }
-        this.options.onResult({ ...result, value });
+        // A feature callback failure is not a decoder failure. Keep continuous
+        // scanning alive and report the correct boundary error.
+        this.deliverResult(result, value);
       }
     } catch (cause) {
       this.diagnosticErrors += 1;
@@ -220,6 +208,20 @@ export class UniversalScannerSession implements ScannerSession {
       this.emitDiagnostics();
       this.decoding = false;
       this.scheduleNextFrame(generation);
+    }
+  }
+
+  private deliverResult(result: import('./decoders/decoderAdapter').DecoderOutput, value: string): void {
+    try {
+      this.options.onResult({ ...result, value });
+    } catch (cause) {
+      this.diagnosticCallbackErrors += 1;
+      this.options.onError?.({
+        code: 'RESULT_HANDLER_FAILED',
+        message: cause instanceof Error ? cause.message : 'Module không tiếp nhận được barcode đã quét.',
+        recoverable: true,
+        cause,
+      });
     }
   }
 
