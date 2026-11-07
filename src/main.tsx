@@ -13,6 +13,7 @@ import './styles/adaptive-appearance.css';
 import './styles/home-engine.css';
 import './styles/home-redesign.css';
 import './styles/home-architecture.css';
+import './styles/scanner-qa-monitor.css';
 import './styles/native-experience.css';
 import './shared/brand/brand.css';
 import './shared/motion/motion.css';
