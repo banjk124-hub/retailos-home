@@ -48,7 +48,7 @@ export function useScannerEngine({
     const now = performance.now();
     console.info('[RetailOS Scanner] UI commit', {
       phase: isScanning ? 'scanning' : isStarting ? 'starting' : error ? 'error' : 'idle',
-      timeSincePreviousPhaseCommitMs: Number((now - lastUiStateChangeAtRef.current).toFixed(1)),
+      phaseCommitIntervalMs: Number((now - lastUiStateChangeAtRef.current).toFixed(1)),
     });
     lastUiStateChangeAtRef.current = now;
   }, [isStarting, isScanning, error]);
