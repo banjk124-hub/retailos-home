@@ -1,4 +1,5 @@
-const CACHE_NAME = 'retailos-shell-v9';
+const CACHE_NAME = 'retailos-shell-v10';
+const CACHE_PREFIX = 'retailos-shell-';
 const APP_BASE_URL = new URL('./', self.registration.scope).pathname;
 const APP_SHELL = [
   APP_BASE_URL,
@@ -7,16 +8,20 @@ const APP_SHELL = [
   `${APP_BASE_URL}icon.svg`,
 ];
 
+// Do not force-activate a new worker over open RetailOS tabs. The previous
+// worker remains in control until its clients close, preventing mixed app
+// versions while a user is working in a module.
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(
-    keys.filter((key) => key.startsWith('retailos-shell-') && key !== CACHE_NAME).map((key) => caches.delete(key)),
-  )));
-  self.clients.claim();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys
+      .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+      .map((key) => caches.delete(key)));
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
@@ -25,21 +30,24 @@ self.addEventListener('fetch', (event) => {
   const isStaticAsset = ['script', 'style', 'image', 'font', 'manifest'].includes(event.request.destination);
   if (!isNavigation && !isStaticAsset) return;
 
-  event.respondWith(fetch(event.request).then((response) => {
-    if (response && response.ok) {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(event.request);
+      if (response?.ok) {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(event.request, response.clone());
+      }
+      return response;
+    } catch {
+      const cachedResponse = await caches.match(event.request);
+      if (cachedResponse) return cachedResponse;
+      if (isNavigation) {
+        const appShell = await caches.match(`${APP_BASE_URL}index.html`);
+        if (appShell) return appShell;
+      }
+      return Response.error();
     }
-    return response;
-  }).catch(async () => {
-    const cachedResponse = await caches.match(event.request);
-    if (cachedResponse) return cachedResponse;
-    if (isNavigation) {
-      const appShell = await caches.match(`${APP_BASE_URL}index.html`);
-      if (appShell) return appShell;
-    }
-    return Response.error();
-  }));
+  })());
 });
 
 self.addEventListener('push', (event) => {
