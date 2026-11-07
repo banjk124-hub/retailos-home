@@ -166,7 +166,7 @@ Acceptance criteria:
 - P0 camera lease serialization is merged to `main` in commit `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`. CI passed for PR #24. Physical-device QA remains outstanding; deployment state must be checked independently.
 
 ### 1.2G — Rendering, motion and interaction performance
-**Status:** In progress. G-A instrumentation has been added on `feat/scanner-phase-1-2g-instrumentation`; build/CI, browser profiling and physical-device measurements are pending. G-B/C audit findings are recorded below; no motion durations or decoder cadence have been tuned.
+**Status:** In progress. G-A instrumentation has been added on `feat/scanner-phase-1-2g-instrumentation`; GitHub CI run #60 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks; browser profiling and physical-device measurements remain pending. G-B/C audit findings are recorded below; no motion durations or decoder cadence have been tuned.
 
 **Goal:** remove perceived stutter, flicker and jank during rapid scanner open/close and Home/Stocktake transitions by identifying the actual bottleneck across rendering, motion, UI state and lifecycle.
 
