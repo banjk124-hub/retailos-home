@@ -336,3 +336,15 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Documentation synchronized: Architecture ADR-009, Roadmap Patch 2 acceptance gate, this status entry, AI Handoff, Project Context and Session Log.
 - Verification: implementation and regression test authored on GitHub branch. Local PowerShell preflight, GitHub Actions CI, iOS Safari/PWA and Android Chrome/PWA physical-device QA have not yet been run in this task. Do not report them as passed.
 - Next: fetch/switch the branch locally without disturbing untracked files; inspect full diff; run `npm run preflight`; fix any failures; then verify first-open/resume and focus behavior on both mobile platforms. Keep branch unmerged and undeployed pending evidence and user approval.
+
+
+### Patch 2 verification update — GitHub Actions run #84 (2026-11-07)
+- Workflow run: `42393062148`; job “TypeScript and production builds” completed with conclusion `success`.
+- `npm ci`: passed. npm emitted an existing EBADENGINE warning because `@zxing/library@0.23.0` declares Node >=24 while the repository CI workflow currently selects Node 22. Installation continued and this run's checks passed; runtime-version policy is not changed in this patch.
+- `npm run preflight`: passed, including:
+  - Scanner barcode/luminance/camera regression suite, including the deliberately pending autofocus integration case.
+  - TypeScript + Vite production build.
+  - GitHub Pages build using `/retailos-home/`.
+  - Unstaged and staged `git diff --check`.
+- Build emitted the existing Vite chunk-size warning (>500 kB); it did not fail the build and is outside Patch 2 scope.
+- Still unverified: local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA behavior. CI is not device QA.
