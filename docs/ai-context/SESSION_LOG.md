@@ -73,3 +73,13 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Source-aligned correction: current decode cadence is 110 ms; historical 70 ms notes are stale.
 - This change is documentation-only. No application source, dependency, configuration, deployment or production behavior changed.
 - Next: review this documentation branch and its CI; merge only with explicit user approval. Then run P0 device QA and collect performance baseline before implementation.
+
+
+### 2026-11-07 — Phase 1.2G-A instrumentation and G-B source audit
+- Created branch `feat/scanner-phase-1-2g-instrumentation` from `main` (`d17115046922d157405694f86afcf5951445a179`).
+- Added camera startup/readiness/result/teardown timing, decoder stage cost aggregation, callback-gap, long-task and layout-shift telemetry where supported, plus UI phase-commit interval logging.
+- Added mounted guards for asynchronous scanner hook state callbacks and post-await state updates.
+- Audited motion source: sheet entrance 420 ms; sheet/backdrop enter/exit 200 ms; several Home library card transitions 280–360 ms; layered blur/shadow effects remain candidates only.
+- No camera constraints, decoder cadence/strategy, CSS motion durations, feature data contracts, or persistence behavior were changed.
+- Verification not run yet: no local build/preflight/tests, CI, browser profiling or real-device measurements. Telemetry does not include barcode payloads or device identifiers.
+- Next: inspect full diff, run available build/preflight/scanner validation, then collect Android Chrome and iOS Safari traces before implementing any measured optimization. Branch remains unmerged and undeployed.
