@@ -131,7 +131,7 @@ Scope:
 - Preserve generation invalidation for pending `getUserMedia` calls and prevent recovery after close, unmount, or while the document is hidden.
 
 Protected behavior:
-- Keep camera constraints at 1280×720 and ZXing decode cadence at 70 ms.
+- Keep camera constraints at 1280×720 and ZXing decode cadence at 110 ms.
 - Keep EAN-13, EAN-8 and CODE-128 validation, accepted-result feedback, and single/continuous mode semantics unchanged.
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, and all auth/session, data, PWA and deployment contracts.
 - No new dependency, diagnostics UI, polling, camera lease system, or performance tuning.
@@ -154,3 +154,64 @@ Acceptance criteria:
 - Fixed the React bridge's stale-start promise path so a settled attempt that did not reach `scanning` can fall through to a fresh start instead of returning the same completed promise.
 - This is a source implementation update only. It is not release-complete until TypeScript/build/preflight, lifecycle regression tests, and real iOS Safari/Android Chrome checks pass.
 - Required tests: concurrent lease acquisition/release, pending acquisition invalidated by logout, stale session close while another session acquires, suspend/resume, rapid open-close-open, track-ended event, Home and Stocktake workflows.
+
+
+
+## Scanner experience and performance follow-through (2026-11-07)
+
+> Status: planned. This section records the agreed next phases; it does not claim implementation or device verification.
+
+### Source-aligned corrections
+- Current `UniversalScannerSession` source uses a 110 ms minimum decode interval. Older Phase 1.2F notes below that say 70 ms are historical and must not be used as the current runtime specification.
+- P0 camera lease serialization is merged to `main` in commit `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`. CI passed for PR #24. Physical-device QA remains outstanding; deployment state must be checked independently.
+
+### 1.2G — Rendering, motion and interaction performance
+**Goal:** remove perceived stutter, flicker and jank during rapid scanner open/close and Home/Stocktake transitions by identifying the actual bottleneck across rendering, motion, UI state and lifecycle.
+
+Slices:
+- **1.2G-A — Performance instrumentation:** measure camera request/acquisition, video readiness, decoder readiness, first accepted result, release/resume, decode latency, Canvas/ImageData work, React commits, long tasks and frame drops. Do not log barcode payloads or unnecessary device identifiers.
+- **1.2G-B — Motion/rendering audit:** inspect scanner open/close, overlays/modals, Home/Stocktake transitions, layout shifts, expensive blur/shadow/backdrop effects and animation overlap.
+- **1.2G-C — Lifecycle/interaction audit:** exercise rapid open-close-open, scan-close-reopen, module switching, background/foreground, repeated taps and pending startup cancellation; identify stale tasks that outlive UI state.
+- **1.2G-D — State transition alignment:** define and enforce explicit UI states (IDLE, OPENING, READY, SCANNING, CLOSING, ERROR/SUSPENDED). UI must not claim SCANNING until the preview and decoder are actually ready. Keep camera release independent from animation completion.
+- **1.2G-E — Motion and rendering optimization:** only after measurement, prevent overlapping transitions, reduce unnecessary rerenders/layout work, selectively simplify expensive effects, synchronize visual transitions with real state, and respect `prefers-reduced-motion`.
+- **1.2G-F — Interaction stress validation:** repeated cycles and rapid input; inspect listener/timer/RAF/decoder cleanup and verify no old animation or session updates after close.
+
+Acceptance criteria:
+- No visible flicker, unintended layout shift or overlapping transition during rapid open/close and Home/Stocktake switching.
+- No stale UI update or animation after close/unmount.
+- No orphan camera stream, decoder loop, listener, timer or animation frame after repeated cycles.
+- UI state reflects actual camera/decoder readiness.
+- Performance baseline and before/after evidence are recorded separately for iOS Safari and Android Chrome.
+- No change to Home cached lookup, Stocktake form-fill/explicit-save, barcode validation, auth/session, Apps Script, IndexedDB or PWA deployment contracts.
+
+### 1.2H — Decoder performance optimization
+**Goal:** reduce CPU/memory pressure only after Phase 1.2G and device measurements identify decoder/image processing as a material bottleneck.
+
+Scope: profile RGBA-to-grayscale conversion, Canvas/ImageData allocation and copies; optimize full-frame/ROI strategy and cadence based on measured scan success, latency, CPU/thermal impact. Do not tune resolution or cadence by guesswork.
+
+Acceptance: measurable improvement without material regression in scan success, first-result latency, preview smoothness, battery/thermal behavior or supported symbologies.
+
+### 1.2I — Decoder capability enhancement
+**Goal:** improve difficult-angle barcode acquisition without slowing the normal path unnecessarily.
+
+Scope: evaluate rotation detection, perspective/deskew and conditional recovery decode tiers. Test physical labels at 0°, 15°, 30°, 45°, 60° and 90°, with varied distance, lighting and glare. Avoid promising all-angle recognition.
+
+Acceptance: publish a device/condition test matrix and measured success/latency; advanced processing must be conditional and bounded.
+
+### 1.2J — Cross-platform release validation
+**Goal:** establish release evidence on real iOS and Android devices.
+
+Required: iOS Safari and Android Chrome; camera permission/revocation, open/close/reopen, rapid module switching, background/foreground, track-ended recovery, motion smoothness, audio/haptic fallback, angled barcode matrix, Home lookup, Stocktake form-fill/explicit-save and regression checks.
+
+Release gate: required builds/tests pass, device evidence is recorded, diff is audited, and explicit user approval is obtained before merge/deploy.
+
+### Dependency and execution order
+1. Complete P0 post-merge device QA and confirm deployment status independently.
+2. Complete 1.2B diagnostics/performance baseline (extend existing diagnostics; avoid duplicate instrumentation).
+3. Execute 1.2G audit and state/lifecycle analysis before changing visual effects.
+4. Apply narrowly scoped 1.2G fixes and stress-test.
+5. Execute 1.2H only if profiling shows decoder cost is significant.
+6. Execute 1.2I capability work after normal-path performance is stable.
+7. Complete 1.2C/1.2E feedback checks and 1.2D regression within final 1.2J cross-platform validation.
+
+Do not combine unrelated motion, lifecycle and decoder changes in one patch. Each slice needs its own evidence and rollback boundary.
