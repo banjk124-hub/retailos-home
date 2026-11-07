@@ -87,4 +87,67 @@ assert.throws(
   "zero-sized images are rejected",
 );
 
-console.log("Scanner barcode validation and luminance regression tests passed.");
+
+const cameraDiagnosticsSource = await readFile(
+  new URL("../src/shared/services/cameraDiagnostics.ts", import.meta.url),
+  "utf8",
+);
+const cameraDiagnosticsCompiled = ts.transpileModule(cameraDiagnosticsSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText;
+const cameraDiagnosticsUrl =
+  "data:text/javascript;base64," +
+  Buffer.from(cameraDiagnosticsCompiled).toString("base64");
+const {
+  requestContinuousAutofocus,
+  getSafeCameraSettings,
+} = await import(cameraDiagnosticsUrl);
+
+let appliedFocusConstraints = null;
+const continuousTrack = {
+  getCapabilities: () => ({ focusMode: ["manual", "continuous"] }),
+  applyConstraints: async (constraints) => { appliedFocusConstraints = constraints; },
+  getSettings: () => ({
+    width: 1280,
+    height: 720,
+    frameRate: 30,
+    facingMode: "environment",
+    focusMode: "continuous",
+    deviceId: "must-not-be-exported",
+  }),
+};
+const continuousFocus = await requestContinuousAutofocus(continuousTrack);
+assert.equal(continuousFocus.status, "continuous-requested");
+assert.deepEqual(appliedFocusConstraints.advanced[0], { focusMode: "continuous" });
+
+const unsupportedTrack = {
+  getCapabilities: () => ({ focusMode: ["manual"] }),
+  applyConstraints: async () => { throw new Error("must not be called"); },
+};
+assert.equal((await requestContinuousAutofocus(unsupportedTrack)).status, "unsupported");
+
+const unavailableTrack = {};
+assert.equal((await requestContinuousAutofocus(unavailableTrack)).status, "unavailable");
+
+const failedTrack = {
+  getCapabilities: () => ({ focusMode: ["continuous"] }),
+  applyConstraints: async () => { throw new DOMException("not supported", "OverconstrainedError"); },
+};
+const failedFocus = await requestContinuousAutofocus(failedTrack);
+assert.equal(failedFocus.status, "failed");
+assert.equal(failedFocus.errorName, "OverconstrainedError");
+
+const safeSettings = getSafeCameraSettings(continuousTrack);
+assert.deepEqual(safeSettings, {
+  width: 1280,
+  height: 720,
+  frameRate: 30,
+  facingMode: "environment",
+  focusMode: "continuous",
+});
+assert.equal("deviceId" in safeSettings, false, "camera device identifiers are never exposed");
+
+console.log("Scanner barcode validation, luminance, and camera stability regression tests passed.");

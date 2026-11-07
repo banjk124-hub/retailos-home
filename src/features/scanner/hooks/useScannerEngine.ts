@@ -168,17 +168,24 @@ export function useScannerEngine({
       recoveryAttemptsRef.current += 1;
       void startScanner();
     };
+    const handlePageHide = () => {
+      console.info('[RetailOS Scanner] Page lifecycle', { pageLifecycle: 'pagehide' });
+      void pauseScanner();
+    };
     const handlePageShow = () => {
+      console.info('[RetailOS Scanner] Page lifecycle', { pageLifecycle: 'pageshow' });
       if (!isDocumentHidden() && desiredActiveRef.current && sessionRef.current?.state !== 'scanning') {
         void startScanner();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pagehide', handlePageHide);
     window.addEventListener('pageshow', handlePageShow);
     return () => {
       desiredActiveRef.current = false;
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('pageshow', handlePageShow);
       const session = sessionRef.current;
       sessionRef.current = null;

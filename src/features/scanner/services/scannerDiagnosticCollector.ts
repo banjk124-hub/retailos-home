@@ -16,7 +16,9 @@ const ALLOWED_KEYS = new Set([
   'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore', 'validationRejectReasons',
   'averageDecodeMs', 'maxDecodeMs', 'samples', 'stages', 'sourceWidth', 'sourceHeight',
   'frames', 'decoded', 'roiHits', 'notFound', 'checksumErrors', 'formatErrors',
-  'unexpectedErrors', 'valueLength', 'symbology', 'mode',
+  'unexpectedErrors', 'valueLength', 'symbology', 'mode', 'focusStatus', 'focusModes', 'focusRequestMs', 'focusErrorName',
+  'width', 'height', 'frameRate', 'facingMode', 'focusMode', 'exposureMode', 'whiteBalanceMode', 'pageLifecycle', 'frameCallbackObserved',
+  'videoReadyMs', 'videoReadyState', 'videoWidth', 'videoHeight', 'trackEvent', 'trackMuted', 'trackReadyState',
 ]);
 let events: ScannerDiagnosticEvent[] = [];
 let sequence = 0;
