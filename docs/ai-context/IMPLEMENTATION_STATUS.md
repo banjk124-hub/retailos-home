@@ -323,3 +323,35 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Scope exclusions preserved: autofocus, camera constraints/resolution, decoder/ROI/cadence, barcode validation, Phase 2 recognition conditions, business callbacks and persistence were not changed.
 - Next: synchronize this branch locally without disturbing existing untracked files; inspect the complete source+documentation diff; run local `npm run preflight`; then test first open and resume on iOS and Android. Keep PR #29 unmerged/undeployed until device evidence is reviewed and the user approves.
 
+
+## Scanner Phase 1 — Patch 2: non-blocking autofocus (2026-11-07)
+
+- Repository: `banjk124-hub/retailos-home`.
+- Base `main`: `93eff4fa10154ea3d3499e12d946309850ab1164` (includes merged Patch 1 / PR #29).
+- Branch: `fix/scanner-phase-1-2-autofocus-nonblocking`.
+- Source change: `src/shared/services/cameraSession.ts` now validates the live video track and registers `ended` listeners before starting continuous autofocus asynchronously. The shared camera acquisition promise no longer waits for `applyConstraints()`.
+- Autofocus remains capability-gated and best-effort. Existing status classification and safe camera settings are retained. Late results are ignored when the stream identity or request generation is stale; unexpected diagnostic rejections are caught.
+- Regression coverage: `scripts/test-scanner-validation.mjs` now creates a deliberately unresolved `applyConstraints()` promise and asserts that `acquireCameraLease()` resolves before autofocus settles and that the track-ended listener is already registered.
+- Protected: camera constraints, 30 FPS target, decoder/ROI, 110 ms decode interval, barcode formats/validation, UI, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, persistence, auth/session and deployment configuration.
+- Documentation synchronized: Architecture ADR-009, Roadmap Patch 2 acceptance gate, this status entry, AI Handoff, Project Context and Session Log.
+- Verification: implementation and regression test authored on GitHub branch. Local PowerShell preflight, GitHub Actions CI, iOS Safari/PWA and Android Chrome/PWA physical-device QA have not yet been run in this task. Do not report them as passed.
+- Next: fetch/switch the branch locally without disturbing untracked files; inspect full diff; run `npm run preflight`; fix any failures; then verify first-open/resume and focus behavior on both mobile platforms. Keep branch unmerged and undeployed pending evidence and user approval.
+
+
+### Patch 2 verification update — GitHub Actions run #84 (2026-11-07)
+- Workflow run: `42393062148`; job “TypeScript and production builds” completed with conclusion `success`.
+- `npm ci`: passed. npm emitted an existing EBADENGINE warning because `@zxing/library@0.23.0` declares Node >=24 while the repository CI workflow currently selects Node 22. Installation continued and this run's checks passed; runtime-version policy is not changed in this patch.
+- `npm run preflight`: passed, including:
+  - Scanner barcode/luminance/camera regression suite, including the deliberately pending autofocus integration case.
+  - TypeScript + Vite production build.
+  - GitHub Pages build using `/retailos-home/`.
+  - Unstaged and staged `git diff --check`.
+- Build emitted the existing Vite chunk-size warning (>500 kB); it did not fail the build and is outside Patch 2 scope.
+- Still unverified: local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA behavior. CI is not device QA.
+
+
+### Latest PR-head CI confirmation — run #85 (2026-11-07)
+- Final documentation-synchronized PR head: `a31d40315eaeb9f90ce209da4fef6341e8836025`.
+- GitHub Actions run #85 (`42393150965`) completed successfully. The “TypeScript and production builds” job passed locked dependency installation and the full `npm run preflight`.
+- This supersedes the earlier run #84 source-only evidence: the latest PR head, including all synchronized documentation, has now passed CI.
+- Local Windows/PowerShell and real-device iOS/Android QA remain outstanding.

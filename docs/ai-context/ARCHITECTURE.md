@@ -174,3 +174,25 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 - Do not add polling, a second camera request, a second decoder loop, or a new dependency.
 - Validate both iOS Safari/PWA and Android Chrome/PWA; GitHub CI alone does not establish physical-camera behavior.
 
+
+## ADR-009 — Autofocus must not block camera acquisition (2026-11-07)
+
+**Status:** Implemented on `fix/scanner-phase-1-2-autofocus-nonblocking`; automated regression and physical-device verification pending.
+
+**Context**
+- `cameraSession.ts` previously awaited `requestContinuousAutofocus()` after `getUserMedia()` returned a stream.
+- Because `acquireCameraLease()` awaited the shared acquisition promise, a delayed `MediaStreamTrack.applyConstraints()` delayed lease delivery, video attachment, and the first usable preview frame.
+- Autofocus is a best-effort camera enhancement. It is not a prerequisite for displaying the stream or initializing the barcode decoder.
+
+**Decision**
+- Validate the acquired video track and register its `ended` listener before starting optional focus work.
+- Return the live stream from the shared acquisition promise without awaiting autofocus.
+- Start continuous autofocus asynchronously and retain the existing capability detection, status classification, and safe diagnostic fields.
+- Ignore late focus diagnostics when the acquisition generation is stale or the stream is no longer active. Unexpected diagnostic rejection is caught and logged without rejecting camera acquisition.
+- Keep camera lease reference counting and generation/stream identity guards unchanged.
+
+**Invariants / exclusions**
+- Preserve the 1280×720 ideal resolution, 30 FPS target, ZXing decoder, 110 ms decode interval, supported barcode formats, ROI, barcode validation, Home lookup, Stocktake form-fill/explicit-save, and persistence contracts.
+- Do not claim that a successful `applyConstraints()` call proves optical focus lock.
+- Do not add a second stream request, polling, dependencies, UI states, or decoder loops.
+- Verify delayed autofocus, unsupported focus capability, rejected focus constraints, track-ended behavior, first open and resume on iOS Safari/PWA and Android Chrome/PWA.

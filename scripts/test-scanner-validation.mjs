@@ -150,4 +150,87 @@ assert.deepEqual(safeSettings, {
 });
 assert.equal("deviceId" in safeSettings, false, "camera device identifiers are never exposed");
 
+
+const cameraSessionSource = await readFile(
+  new URL("../src/shared/services/cameraSession.ts", import.meta.url),
+  "utf8",
+);
+const cameraSessionCompiled = ts.transpileModule(cameraSessionSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText.replace(
+  "from './cameraDiagnostics';",
+  `from '${cameraDiagnosticsUrl}';`,
+);
+const cameraSessionUrl =
+  "data:text/javascript;base64," +
+  Buffer.from(cameraSessionCompiled).toString("base64");
+
+let resolvePendingFocus;
+let appliedCameraFocusConstraints = null;
+const trackListeners = new Map();
+const delayedFocusTrack = {
+  readyState: "live",
+  getCapabilities: () => ({ focusMode: ["continuous"] }),
+  applyConstraints: (constraints) => {
+    appliedCameraFocusConstraints = constraints;
+    return new Promise((resolve) => { resolvePendingFocus = resolve; });
+  },
+  getSettings: () => ({ width: 1280, height: 720, frameRate: 30, facingMode: "environment" }),
+  addEventListener: (type, listener) => {
+    const listeners = trackListeners.get(type) ?? new Set();
+    listeners.add(listener);
+    trackListeners.set(type, listeners);
+  },
+  removeEventListener: (type, listener) => trackListeners.get(type)?.delete(listener),
+  stop: () => {
+    delayedFocusTrack.readyState = "ended";
+    for (const listener of trackListeners.get("ended") ?? []) listener();
+  },
+};
+const delayedFocusStream = {
+  getTracks: () => [delayedFocusTrack],
+  getVideoTracks: () => [delayedFocusTrack],
+};
+
+Object.defineProperty(globalThis, "window", {
+  configurable: true,
+  value: { isSecureContext: true },
+});
+Object.defineProperty(globalThis, "navigator", {
+  configurable: true,
+  value: { mediaDevices: { getUserMedia: async () => delayedFocusStream } },
+});
+
+const { acquireCameraLease } = await import(cameraSessionUrl);
+let acquisitionTimeout;
+const cameraLease = await Promise.race([
+  acquireCameraLease(),
+  new Promise((_, reject) => {
+    acquisitionTimeout = setTimeout(
+      () => reject(new Error("Camera lease waited for the deliberately pending autofocus request.")),
+      250,
+    );
+  }),
+]).finally(() => clearTimeout(acquisitionTimeout));
+
+assert.equal(cameraLease.stream, delayedFocusStream, "camera lease resolves while autofocus is still pending");
+assert.equal(typeof resolvePendingFocus, "function", "optional autofocus was started");
+assert.deepEqual(
+  appliedCameraFocusConstraints.advanced[0],
+  { focusMode: "continuous" },
+  "continuous autofocus remains requested when supported",
+);
+assert.equal(
+  trackListeners.get("ended")?.size,
+  1,
+  "track-ended monitoring is registered before optional autofocus settles",
+);
+
+resolvePendingFocus();
+await new Promise((resolve) => setImmediate(resolve));
+cameraLease.release();
+
 console.log("Scanner barcode validation, luminance, and camera stability regression tests passed.");

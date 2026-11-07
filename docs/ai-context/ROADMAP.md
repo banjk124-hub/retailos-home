@@ -252,3 +252,34 @@ The Home and Stocktake scanner placeholders were tied to the full startup state.
 - Verify first camera open and resume on iOS Safari/PWA and Android Chrome/PWA. Confirm preview appears before decoder readiness without a false scanning-ready state, blank/flickering frame, duplicate stream, duplicate decoder or regression in Home/Stocktake flows.
 - Record device results separately. Do not mark the patch release-ready from CI alone; keep PR #29 unmerged and undeployed until user approval.
 
+
+## Camera startup follow-up — Patch 2: non-blocking autofocus (2026-11-07)
+
+**Status:** Implemented on branch `fix/scanner-phase-1-2-autofocus-nonblocking`; automated CI and real-device QA are pending.
+
+**Problem addressed**
+The shared camera acquisition promise previously awaited `requestContinuousAutofocus()`. A slow `MediaStreamTrack.applyConstraints()` therefore delayed `acquireCameraLease()`, even after `getUserMedia()` had already returned a usable stream. This delayed attaching the stream to the video element and obtaining the first preview frame.
+
+**Implementation boundary**
+- Validate the live video track and register its `ended` listener immediately after stream acquisition.
+- Start optional continuous autofocus in the background; do not await it in the shared acquisition promise.
+- Keep existing focus capability detection and status diagnostics. A late focus result is ignored if its generation or stream identity is stale.
+- Add a regression test that holds `applyConstraints()` pending and proves that `acquireCameraLease()` still resolves and track-ended monitoring is already installed.
+
+**Protected / explicitly out of scope**
+- No changes to camera constraints (1280×720 ideal, 30 FPS target), decoder/ROI, 110 ms decode cadence, barcode validation, scanner UI, Home/Stocktake business flows, or persistence.
+- No new dependencies, polling, duplicate camera request, or second decoder loop.
+- Autofocus remains best-effort. Successful constraint application is not proof of physical lens focus lock.
+
+**Acceptance gate**
+- The delayed-autofocus regression test passes.
+- Existing barcode, luminance and camera diagnostics tests pass.
+- TypeScript, production build, GitHub Pages build and preflight pass in CI and locally.
+- Verify first open, resume, focus behavior and camera-track interruption on iOS Safari/PWA and Android Chrome/PWA.
+- Record physical-device evidence separately. Do not mark release-ready from CI alone; merge/deploy requires explicit user approval.
+
+
+**Patch 2 CI result update (2026-11-07):** GitHub Actions run #84 (`42393062148`) passed the complete `npm run preflight`: scanner regression suite (including delayed autofocus), TypeScript/production build, GitHub Pages build and both diff checks. npm reported an EBADENGINE warning because `@zxing/library@0.23.0` declares Node >=24 while CI currently uses Node 22; build also reported the existing >500 kB chunk warning. Neither failed the run. Local Windows execution and real iOS/Android QA remain outstanding.
+
+
+**Final PR-head CI confirmation (2026-11-07):** run #85 (`42393150965`) passed on documentation-synchronized head `a31d40315eaeb9f90ce209da4fef6341e8836025`. The latest PR head passed locked dependency installation and the full preflight. Local Windows/PowerShell and physical-device QA remain open.

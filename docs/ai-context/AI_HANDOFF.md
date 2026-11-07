@@ -145,3 +145,29 @@ This is the latest task snapshot and supersedes older “active task” labels a
 - Patch 2 (autofocus acquisition behavior) remains separate and is not authorized by Patch 1. Phase 2 recognition improvements remain out of scope.
 - Do not merge, publish or deploy without explicit user approval.
 
+
+## Current handoff snapshot — Scanner Patch 2 non-blocking autofocus (2026-11-07)
+
+- Repository: `banjk124-hub/retailos-home`; default branch: `main`.
+- Base commit: `93eff4fa10154ea3d3499e12d946309850ab1164`, after Patch 1 / PR #29 was merged.
+- Active branch: `fix/scanner-phase-1-2-autofocus-nonblocking`.
+- Patch 2 changes only the camera acquisition boundary and its regression coverage: `cameraSession.ts` returns a live stream without awaiting optional autofocus; track-ended monitoring is installed before focus work begins.
+- `requestContinuousAutofocus()` remains capability-gated and best-effort. Its existing result categories and privacy-safe diagnostics are retained. Late results for stale streams/generations are ignored.
+- Added a regression test with a deliberately pending `applyConstraints()` Promise. It checks that the camera lease resolves before autofocus settles and that the ended listener is registered.
+- Technical documents synchronized: Architecture ADR-009, Roadmap Patch 2, Implementation Status, Project Context and Session Log.
+- Not yet verified in this task: local npm preflight, GitHub Actions CI, real iOS Safari/PWA and Android Chrome/PWA first-open/resume/focus behavior.
+- Preserve camera constraints, 110 ms decode cadence, decoder/ROI, barcode validation, Home and Stocktake business behavior, persistence, auth/session and deployment configuration.
+- Next: synchronize locally without disturbing untracked files; inspect full diff; run `npm run preflight`; collect device QA evidence. Do not merge or deploy without explicit user approval.
+
+
+### Patch 2 verification update — 2026-11-07
+- GitHub Actions run #84 (`42393062148`) passed the full `npm run preflight`, including the new delayed-`applyConstraints()` regression, TypeScript/production build, Pages build and diff checks.
+- Non-blocking regression behavior is now verified in CI: camera lease acquisition resolves while the mocked autofocus Promise remains pending, and the ended listener is already installed.
+- CI emitted a non-fatal EBADENGINE warning: `@zxing/library@0.23.0` declares Node >=24 while the current workflow uses Node 22. Vite also emitted its existing large-chunk warning. Neither caused failure.
+- Local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA QA are still required. Do not treat CI as device verification.
+
+
+### Latest Patch 2 PR-head CI — 2026-11-07
+- Final PR head `a31d40315eaeb9f90ce209da4fef6341e8836025` passed GitHub Actions run #85 (`42393150965`), including locked dependency install and full `npm run preflight`.
+- This verifies the latest documentation-synchronized branch head, not only the earlier source/test commit.
+- Local Windows/PowerShell preflight and physical iOS/Android camera QA remain outstanding.

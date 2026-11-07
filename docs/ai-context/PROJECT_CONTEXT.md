@@ -91,3 +91,18 @@ Repository source and current tests/config are authoritative for actual behavior
 - Next verification targets: first open and resume on iOS Safari/PWA and Android Chrome/PWA, plus confirmation that preview visibility never falsely signals decoder readiness.
 - Keep Patch 2 autofocus work and Phase 2 barcode-recognition improvements separate. No merge/deployment without explicit approval.
 
+
+## Active engineering focus — Scanner Patch 2 non-blocking autofocus (2026-11-07)
+
+- Base `main`: `93eff4fa10154ea3d3499e12d946309850ab1164`, including merged early-preview Patch 1.
+- Active branch: `fix/scanner-phase-1-2-autofocus-nonblocking`.
+- Current objective: ensure optional `applyConstraints()` autofocus cannot delay camera lease delivery or preview startup. Register track-ended monitoring before launching autofocus asynchronously.
+- Preserve iOS Safari and Android Chrome compatibility, camera constraints, decoder cadence and all feature/data contracts.
+- The new delayed-autofocus regression test is authored but requires local and CI execution. Physical-device QA remains outstanding.
+- Keep the branch isolated; no merge/deployment without explicit user approval.
+
+
+### Patch 2 verification update — 2026-11-07
+- GitHub Actions run #84 passed the full repository preflight, including a regression test that holds autofocus pending while verifying camera lease acquisition remains non-blocking.
+- Local Windows/PowerShell and physical iOS/Android QA remain outstanding. CI does not prove camera hardware focus behavior.
+- Existing CI warnings (ZXing package engine declares Node >=24 while workflow uses Node 22; Vite chunk-size warning) were non-fatal and are recorded in Implementation Status.
