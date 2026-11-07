@@ -75,3 +75,10 @@ Repository source and current tests/config are authoritative for actual behavior
 - The next scanner focus is measurement-led: establish a performance baseline, then Phase 1.2G (rendering, motion, interaction and lifecycle smoothness), followed by conditional decoder optimization (1.2H), angled barcode capability (1.2I), and cross-platform validation (1.2J).
 - Current source decode cadence is 110 ms; older 70 ms notes are historical and stale.
 - Keep roadmap/status/handoff synchronized. Do not claim planned phases are implemented; do not change source code in documentation-only work.
+
+
+## Active engineering focus — Phase 1.2G (2026-11-07)
+- Current branch: `feat/scanner-phase-1-2g-instrumentation`, based on `main` at `d17115046922d157405694f86afcf5951445a179`.
+- Work begins with measurement, not speculative animation or decoder tuning. Instrumentation is local-only and privacy-safe; no barcode payloads or device identifiers.
+- Preserve iOS Safari and Android Chrome compatibility. Browser performance APIs are feature-detected and optional.
+- No merge or deployment without explicit approval.
