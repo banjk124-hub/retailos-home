@@ -160,10 +160,10 @@ export class UniversalScannerSession implements ScannerSession {
     }
     this.decoding = true;
     this.lastDecodeAt = timestamp;
+    this.diagnosticFrames += 1;
     try {
       const results = await this.decoder.decode(this.video, timestamp);
       if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
-      this.diagnosticFrames += 1;
       if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
       const now = Date.now();
       for (const result of results) {
@@ -228,7 +228,7 @@ export class UniversalScannerSession implements ScannerSession {
     console.info('[RetailOS Scanner] Runtime diagnostics', {
       session: this.id,
       decoder: this.decoder?.id ?? 'disposed',
-      frames: this.diagnosticFrames,
+      decodeAttempts: this.diagnosticFrames,
       framesWithSymbols: this.diagnosticFramesWithSymbols,
       accepted: this.diagnosticAccepted,
       rejectedByValidation: this.diagnosticRejected,
