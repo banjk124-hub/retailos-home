@@ -4,6 +4,11 @@ import type { CameraLeaseRequest } from '../../../shared/services/cameraSession'
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
 
+type ScannerTransitionStyle = CSSProperties & {
+  '--scanner-origin-x': string;
+  '--scanner-origin-y': string;
+};
+
 type Props = {
   onDetected: (value: string) => void;
   onClose: () => void;
@@ -14,10 +19,10 @@ type Props = {
 /** Stocktake-owned scanner presentation; camera/decoder runtime stays shared. */
 export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
   const scanner = useScannerEngine({ onDetected, mode: 'single', cameraLeaseRequest });
-  const transitionStyle = {
+  const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
-  } as CSSProperties;
+  };
   const close = () => {
     void scanner.closeScanner();
     onClose();
