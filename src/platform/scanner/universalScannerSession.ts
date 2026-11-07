@@ -40,6 +40,8 @@ export class UniversalScannerSession implements ScannerSession {
   private lastFrameCallbackAt = 0;
   private firstAcceptedAt = 0;
   private longTaskObserver: PerformanceObserver | null = null;
+  private layoutShiftObserver: PerformanceObserver | null = null;
+  private diagnosticLayoutShiftScore = 0;
   private diagnosticLongTasks = 0;
   private diagnosticMaxFrameGapMs = 0;
   private diagnosticDecodeDurationTotalMs = 0;
@@ -272,6 +274,7 @@ export class UniversalScannerSession implements ScannerSession {
       decodeDurationMaxMs: Number(this.diagnosticDecodeDurationMaxMs.toFixed(1)),
       maxFrameCallbackGapMs: Number(this.diagnosticMaxFrameGapMs.toFixed(1)),
       longTasks: this.diagnosticLongTasks,
+      layoutShiftScore: Number(this.diagnosticLayoutShiftScore.toFixed(4)),
       validationRejectReasons: { ...this.diagnosticValidationReasons },
     });
     this.diagnosticStartedAt = now;
@@ -285,6 +288,7 @@ export class UniversalScannerSession implements ScannerSession {
     this.diagnosticDecodeDurationMaxMs = 0;
     this.diagnosticMaxFrameGapMs = 0;
     this.diagnosticLongTasks = 0;
+    this.diagnosticLayoutShiftScore = 0;
     this.diagnosticValidationReasons = {};
   }
 
@@ -346,6 +350,8 @@ export class UniversalScannerSession implements ScannerSession {
     }
     this.longTaskObserver?.disconnect();
     this.longTaskObserver = null;
+    this.layoutShiftObserver?.disconnect();
+    this.layoutShiftObserver = null;
     this.logStage('teardown_total_ms', performance.now() - teardownStartedAt);
   }
 
@@ -367,6 +373,20 @@ export class UniversalScannerSession implements ScannerSession {
       this.longTaskObserver.observe({ type: 'longtask', buffered: false });
     } catch {
       this.longTaskObserver = null;
+    }
+    try {
+      if (!PerformanceObserver.supportedEntryTypes?.includes('layout-shift')) return;
+      this.layoutShiftObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          const shift = entry as PerformanceEntry & { value?: number; hadRecentInput?: boolean };
+          if (!shift.hadRecentInput && typeof shift.value === 'number') {
+            this.diagnosticLayoutShiftScore += shift.value;
+          }
+        }
+      });
+      this.layoutShiftObserver.observe({ type: 'layout-shift', buffered: false });
+    } catch {
+      this.layoutShiftObserver = null;
     }
   }
 }
