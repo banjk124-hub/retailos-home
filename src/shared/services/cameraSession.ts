@@ -43,34 +43,14 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
 
       activeStream = stream;
       const videoTracks = stream.getVideoTracks();
-      const autofocusStartedAt = performance.now();
-      const focusResults = await Promise.all(videoTracks.map(requestContinuousAutofocus));
-      const focusResult = focusResults[0] ?? {
-        status: 'unavailable' as const,
-        supportedModes: [],
-        durationMs: 0,
-      };
-      console.info('[RetailOS Scanner] Performance stage', {
-        stage: 'optional_autofocus_ms',
-        durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
-      });
-      console.info('[RetailOS Scanner] Camera focus', {
-        focusStatus: focusResult.status,
-        focusModes: focusResult.supportedModes.join(','),
-        focusRequestMs: focusResult.durationMs,
-        focusErrorName: focusResult.errorName,
-      });
-      console.info('[RetailOS Scanner] Camera settings', getSafeCameraSettings(videoTracks[0]));
-      if (generation !== requestGeneration || activeStream !== stream) {
-        stream.getTracks().forEach((track) => track.stop());
-        throw new DOMException('Camera request was superseded.', 'AbortError');
-      }
       if (!videoTracks.some((track) => track.readyState === 'live')) {
         activeStream = null;
         stream.getTracks().forEach((track) => track.stop());
         throw new DOMException('Camera track ended before startup completed.', 'NotReadableError');
       }
 
+      // Register lifecycle monitoring before optional camera tuning. A track
+      // ending must be observable even while an autofocus request is pending.
       videoTracks.forEach((track) => {
         track.addEventListener('ended', () => {
           if (activeStream !== stream) return;
@@ -82,6 +62,38 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
           trackEndedListeners.forEach((listener) => listener(stream));
         }, { once: true });
       });
+
+      console.info('[RetailOS Scanner] Camera settings', getSafeCameraSettings(videoTracks[0]));
+
+      // Autofocus is an optional enhancement, not part of camera acquisition.
+      // Start it in the background so a slow applyConstraints() cannot delay
+      // delivery of the live stream to the scanner preview.
+      const autofocusStartedAt = performance.now();
+      void Promise.all(videoTracks.map(requestContinuousAutofocus))
+        .then((focusResults) => {
+          if (generation !== requestGeneration || activeStream !== stream) return;
+          const focusResult = focusResults[0] ?? {
+            status: 'unavailable' as const,
+            supportedModes: [],
+            durationMs: 0,
+          };
+          console.info('[RetailOS Scanner] Performance stage', {
+            stage: 'optional_autofocus_ms',
+            durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
+          });
+          console.info('[RetailOS Scanner] Camera focus', {
+            focusStatus: focusResult.status,
+            focusModes: focusResult.supportedModes.join(','),
+            focusRequestMs: focusResult.durationMs,
+            focusErrorName: focusResult.errorName,
+          });
+        })
+        .catch((error: unknown) => {
+          // requestContinuousAutofocus already normalizes expected failures;
+          // this guard protects acquisition from any unexpected diagnostic fault.
+          console.warn('[RetailOS Scanner] Optional autofocus diagnostic failed:', error);
+        });
+
       return stream;
     }).finally(() => {
       if (pendingRequest === request) pendingRequest = null;
