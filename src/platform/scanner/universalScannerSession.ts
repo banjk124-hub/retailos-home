@@ -3,11 +3,11 @@ import type {
   ScannerOpenOptions,
   ScannerSession,
   ScannerError,
-  ScannerSymbology,
 } from './contracts';
 import { acquireCameraStream, releaseCameraStream, subscribeCameraTrackEnded } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
+import { validateBarcodePayload } from './barcodeValidation';
 
 function scannerError(cause: unknown): ScannerError {
   const name = cause instanceof DOMException ? cause.name : '';
@@ -20,26 +20,6 @@ function scannerError(cause: unknown): ScannerError {
   if (name === 'AbortError') return { code: 'LIFECYCLE_CONFLICT', message: 'Yêu cầu camera cũ đã bị hủy. Hãy thử mở lại máy quét.', recoverable: true, cause };
   if (!window.isSecureContext) return { code: 'INSECURE_CONTEXT', message: 'Camera cần HTTPS hoặc localhost.', recoverable: false, cause };
   return { code: 'UNKNOWN', message, recoverable: true, cause };
-}
-
-function hasValidEanChecksum(value: string): boolean {
-  if (!/^\d+$/.test(value) || ![8, 12, 13].includes(value.length)) return false;
-  const body = value.slice(0, -1);
-  const expected = Number(value.slice(-1));
-  const sum = [...body].reduce((total, digit, index) => {
-    const weight = (body.length - index) % 2 === 1 ? 3 : 1;
-    return total + Number(digit) * weight;
-  }, 0);
-  return (10 - (sum % 10)) % 10 === expected;
-}
-
-function isValidValue(value: string, symbology: ScannerSymbology): boolean {
-  const normalized = value.trim();
-  if (symbology === 'EAN_8' || symbology === 'EAN_13' || symbology === 'UPC_A') {
-    const expectedLength = symbology === 'EAN_8' ? 8 : symbology === 'EAN_13' ? 13 : 12;
-    return normalized.length === expectedLength && hasValidEanChecksum(normalized);
-  }
-  return normalized.length > 0 && !/[\u0000-\u001f\u007f]/.test(normalized);
 }
 
 /** Owns one camera lease, one decoder and one bounded frame loop. */
@@ -60,6 +40,8 @@ export class UniversalScannerSession implements ScannerSession {
   private diagnosticAccepted = 0;
   private diagnosticRejected = 0;
   private diagnosticErrors = 0;
+  private diagnosticCallbackErrors = 0;
+  private diagnosticValidationReasons: Record<string, number> = {};
   private lastAcceptedAt = 0;
   private acceptedSingle = false;
   private disposed = false;
@@ -186,8 +168,10 @@ export class UniversalScannerSession implements ScannerSession {
       const now = Date.now();
       for (const result of results) {
         const value = result.value.trim();
-        if (!isValidValue(value, result.symbology)) {
+        const validation = validateBarcodePayload(value, result.symbology);
+        if (!validation.valid) {
           this.diagnosticRejected += 1;
+          this.diagnosticValidationReasons[validation.reason] = (this.diagnosticValidationReasons[validation.reason] ?? 0) + 1;
           continue;
         }
         if (this.options.mode === 'single' && this.acceptedSingle) break;
@@ -200,8 +184,14 @@ export class UniversalScannerSession implements ScannerSession {
           // camera even if a module callback throws, otherwise the UI can remain
           // in an endless scanning state after a successful decode.
           try {
-            this.options.onResult({ ...result, value });
+            try {
+          this.options.onResult({ ...result, value });
+        } catch (cause) {
+          this.diagnosticCallbackErrors += 1;
+          this.options.onError?.({ code: 'RESULT_HANDLER_FAILED', message: cause instanceof Error ? cause.message : 'Module không tiếp nhận được barcode đã quét.', recoverable: true, cause });
+        }
           } catch (cause) {
+            this.diagnosticCallbackErrors += 1;
             this.options.onError?.({
               code: 'RESULT_HANDLER_FAILED',
               message: cause instanceof Error ? cause.message : 'Module không tiếp nhận được barcode đã quét.',
@@ -236,12 +226,15 @@ export class UniversalScannerSession implements ScannerSession {
     const now = Date.now();
     if (now - this.diagnosticStartedAt < 5_000) return;
     console.info('[RetailOS Scanner] Runtime diagnostics', {
+      session: this.id,
       decoder: this.decoder?.id ?? 'disposed',
       frames: this.diagnosticFrames,
       framesWithSymbols: this.diagnosticFramesWithSymbols,
       accepted: this.diagnosticAccepted,
       rejectedByValidation: this.diagnosticRejected,
       decoderErrors: this.diagnosticErrors,
+      callbackErrors: this.diagnosticCallbackErrors,
+      validationRejectReasons: { ...this.diagnosticValidationReasons },
     });
     this.diagnosticStartedAt = now;
     this.diagnosticFrames = 0;
@@ -249,6 +242,8 @@ export class UniversalScannerSession implements ScannerSession {
     this.diagnosticAccepted = 0;
     this.diagnosticRejected = 0;
     this.diagnosticErrors = 0;
+    this.diagnosticCallbackErrors = 0;
+    this.diagnosticValidationReasons = {};
   }
 
   async suspend(): Promise<void> {
