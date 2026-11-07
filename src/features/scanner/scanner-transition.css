@@ -73,10 +73,6 @@
   color: #fff;
 }
 
-.barcode-scanner.scanner-home-transition .barcode-scanner-header {
-  flex: 0 0 auto;
-}
-
 .barcode-scanner.scanner-home-transition .barcode-scanner-view {
   flex: 1 1 auto;
   min-height: 0;
@@ -128,7 +124,7 @@
 }
 
 .stocktake-scanner-surface.scanner-stocktake-surface-enter {
-  transform-origin: var(--scanner-origin-x, 50vw) var(--scanner-origin-y, 50vh);
+  transform-origin: calc(50% + var(--scanner-origin-x, 50vw) - 50vw) calc(50% + var(--scanner-origin-y, 50vh) - 50vh);
   animation: scanner-stocktake-surface-in 260ms cubic-bezier(.2, .78, .22, 1) both;
 }
 
@@ -180,7 +176,7 @@
 
 @keyframes scanner-stocktake-surface-in {
   from { opacity: 0; transform: scale(.96); }
-  to { opacity: 1; transform: scale(1); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (max-width: 700px) {
@@ -198,7 +194,7 @@
   .stocktake-scanner-surface.scanner-stocktake-surface-enter {
     animation: none !important;
     transform: none !important;
-    }
+  }
 
   .barcode-scanner.scanner-home-transition .barcode-scanner-view video,
   .stocktake-scanner-preview video {
