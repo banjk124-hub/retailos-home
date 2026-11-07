@@ -100,3 +100,16 @@ Status: Proposed implementation on `phase-1-2f-camera-lifecycle`; pending Local 
 - Preserve camera constraints (1280×720), ZXing decode interval (70 ms), supported barcode formats, feedback, Home lookup, Stocktake form-fill/explicit-save, and all data/auth/session contracts.
 - This decision does not add camera ownership leases, background polling, dependencies, or performance tuning. Device-specific behavior remains subject to Android Chrome and iOS Safari QA.
 - Stream-specific cleanup must be identity-guarded: a stale scanner attempt may release only the exact stream it acquired and must not invalidate a different active stream or a newer pending getUserMedia request. No-argument release remains the intentional global invalidation path for pause/close/logout.
+
+
+
+### ADR-007 — Reference-counted camera stream leases (2026-11-07)
+Status: Implemented on `fix/scanner-p0-lifecycle-serialization`; build and device verification pending.
+
+- `cameraSession.ts` exposes `acquireCameraLease()`. Each scanner session receives a lease for the shared `MediaStream`; releasing one lease cannot stop the stream while another lease remains active.
+- The final lease release stops the active stream. Lease release is idempotent and checks both stream identity and acquisition generation so a stale lease cannot affect a replacement stream.
+- App-level `releaseCameraStream()` is now a no-argument global invalidation operation, reserved for logout/forced shutdown. Scanner sessions release their own lease.
+- A stale acquisition that resolves after session close releases only its own lease. Concurrent consumers awaiting one pending `getUserMedia` request receive independent leases after the shared request resolves.
+- This supersedes the Phase 1.2F note that explicitly excluded a camera lease system. The change is intentional: identity-only release did not represent multiple consumers of the same shared stream.
+- Do not add background camera retention. A session must release its lease on close/suspend/unmount; global logout invalidates all leases.
+- Required regression coverage: two consumers share one stream; closing either consumer leaves the other live; closing the final consumer stops tracks; close-while-pending followed by a new consumer does not stop the new consumer's stream; global logout invalidates all leases.
