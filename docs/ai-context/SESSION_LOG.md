@@ -118,3 +118,16 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 ### 2026-11-07 — Patch 2 final PR-head CI
 - Latest branch head `a31d40315eaeb9f90ce209da4fef6341e8836025` passed GitHub Actions run #85 (`42393150965`).
 - Full preflight passed on the documentation-synchronized PR head. Local Windows/PowerShell and iOS Safari/PWA + Android Chrome/PWA physical-device QA remain required.
+
+### 2026-11-08 — Supplemental Scanner UX Transition
+- Audited main at 36b8ca7457c9df7bb3f26105660605c66070b9ea before implementation.
+- Created feat/scanner-ux-transition from that exact main commit; Draft PR #31 remains unmerged and undeployed.
+- Home and Stocktake opening handlers now initiate camera acquisition directly from the tap and pass a cancellable, single-claim lease request to the mounted scanner session.
+- Added independent entrance/wait treatments: Home is full-screen without a camera card/frame; Stocktake retains its existing framed surface and layout.
+- Kept first-frame preview readiness separate from decoder/scanning readiness. Removed obsolete Stocktake legacy scanner selectors and superseded Home card/layout CSS.
+- Added automated regression coverage for cancelled unclaimed requests, lease transfer and duplicate-claim rejection.
+- Updated Architecture (ADR-010), Roadmap, Implementation Status, AI Handoff and Project Context in the same branch.
+- GitHub Actions run #89 (42400411255) passed the full repository preflight on source head 9e2e1bbe568d0d7be41d253fde4dfd2218634955.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA, local Windows/PowerShell preflight, weak-device motion review and full user acceptance remain outstanding.
+- Next: inspect/sync branch locally only after preserving existing working-tree changes; run npm run preflight; complete device QA. Do not merge or deploy without explicit approval.
+- After this supplemental patch is accepted, resume the existing Phase 1.2G–1.2J roadmap.
