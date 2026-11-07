@@ -113,3 +113,8 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Passed: `npm ci`, scanner barcode/luminance/camera regression suite including delayed-autofocus non-blocking test, TypeScript + production build, GitHub Pages build, unstaged and staged diff checks.
 - Non-fatal warnings: `@zxing/library@0.23.0` declares Node >=24 while CI currently uses Node 22; Vite reports a >500 kB minified chunk. Neither failed preflight; no dependency/runtime/chunking changes were made.
 - Remaining: synchronize branch locally, inspect diff and run Windows/PowerShell `npm run preflight`; then test real camera first-open, resume, autofocus and track-ended behavior on iOS Safari/PWA and Android Chrome/PWA.
+
+
+### 2026-11-07 — Patch 2 final PR-head CI
+- Latest branch head `a31d40315eaeb9f90ce209da4fef6341e8836025` passed GitHub Actions run #85 (`42393150965`).
+- Full preflight passed on the documentation-synchronized PR head. Local Windows/PowerShell and iOS Safari/PWA + Android Chrome/PWA physical-device QA remain required.
