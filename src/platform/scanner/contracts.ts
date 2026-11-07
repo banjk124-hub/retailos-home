@@ -5,6 +5,10 @@
  * implementation, or feature presentation dependencies.
  */
 
+export const SUPPORTED_BARCODE_FORMATS = ['EAN_8', 'EAN_13', 'CODE_128'] as const;
+
+export type SupportedBarcodeSymbology = (typeof SUPPORTED_BARCODE_FORMATS)[number];
+
 export type ScannerSymbology =
   | 'EAN_8'
   | 'EAN_13'

@@ -220,3 +220,17 @@ Last updated: 2026-11-04
 - No build/test/device verification has yet been run after this follow-up patch. The previously reported Local preflight PASS predates these two latest source commits and must be rerun after synchronization.
 - Keep branch unmerged and undeployed.
 - Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
+
+## Scanner reliability audit — implementation slice 1 (2026-11-07)
+- Base: `main` at `38240255014cb114de63a799c531473dd33a01c7`; isolated branch: `fix/scanner-reliability-audit`.
+- Findings confirmed from source: scanner runtime requested 17 symbologies despite the architecture's three-format retail contract; centered ROI was stretched to the full frame and therefore changed barcode aspect ratio; session diagnostics counted only successful decoder returns as frames; callback and validation rejection reasons were not visible as separate stages.
+- Changes on this branch:
+  - Added canonical `SUPPORTED_BARCODE_FORMATS` = EAN-8, EAN-13, CODE-128.
+  - Added pure `validateBarcodePayload` policy with explicit rejection reasons and GS1 check-digit validation for EAN-8/EAN-13. CODE-128 remains opaque text.
+  - Restricted the hook to the canonical formats and reject unsupported symbologies at the ZXing adapter boundary.
+  - Fixed centered ROI upscaling to preserve source aspect ratio rather than stretching the crop to the full frame.
+  - Added session-scoped diagnostics for validation rejection reasons, callback errors, result delivery, and accurate decoder-attempt counts.
+- Protected: Home cached lookup, Stocktake form-fill/explicit-save, camera constraints, IndexedDB, auth/session, Apps Script contracts, PWA cache, Vite base path, and deployment settings.
+- Verification status: GitHub source changes only. No local TypeScript/build/preflight, automated barcode fixture tests, image corpus decode test, or physical Android/iOS QA has been run yet. Do not treat this slice as release-ready.
+- Known remaining work: establish automated tests for payload policy and decoder image fixtures; verify exact ZXing behavior for EAN-13/EAN-8/CODE-128; inspect callback lifecycle and camera race tests; run local preflight; perform real-device scan and result-flow QA.
+- Branch remains isolated. No PR, merge, or deployment performed.
