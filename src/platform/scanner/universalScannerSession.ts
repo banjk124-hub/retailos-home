@@ -175,6 +175,10 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async processFrame(timestamp: number, generation: number): Promise<void> {
+    if (this.lastFrameCallbackAt > 0) {
+      this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, timestamp - this.lastFrameCallbackAt);
+    }
+    this.lastFrameCallbackAt = timestamp;
     const minDecodeIntervalMs = 110;
     if (this.decoding || !this.decoder || this.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA
       || timestamp - this.lastDecodeAt < minDecodeIntervalMs) {
@@ -182,10 +186,6 @@ export class UniversalScannerSession implements ScannerSession {
       return;
     }
     this.decoding = true;
-    if (this.lastFrameCallbackAt > 0) {
-      this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, timestamp - this.lastFrameCallbackAt);
-    }
-    this.lastFrameCallbackAt = timestamp;
     this.lastDecodeAt = timestamp;
     const decodeStartedAt = performance.now();
     this.diagnosticFrames += 1;
