@@ -171,3 +171,18 @@ This is the latest task snapshot and supersedes older “active task” labels a
 - Final PR head `a31d40315eaeb9f90ce209da4fef6341e8836025` passed GitHub Actions run #85 (`42393150965`), including locked dependency install and full `npm run preflight`.
 - This verifies the latest documentation-synchronized branch head, not only the earlier source/test commit.
 - Local Windows/PowerShell preflight and physical iOS/Android camera QA remain outstanding.
+
+## Current handoff snapshot — Supplemental Scanner UX Transition (2026-11-08)
+
+This is the latest active task snapshot and supersedes older active-task labels above where they conflict. Earlier entries remain historical.
+
+- Repository: banjk124-hub/retailos-home; base branch: main at 36b8ca7457c9df7bb3f26105660605c66070b9ea.
+- Active branch: feat/scanner-ux-transition; Draft PR #31: https://github.com/banjk124-hub/retailos-home/pull/31.
+- Latest recorded head: 9e2e1bbe568d0d7be41d253fde4dfd2218634955.
+- Camera acquisition begins in the Home/Stocktake tap handler and is handed to the mounted scanner through a single-claim, cancellable lease request.
+- Home scanner opens as a full-screen camera surface without a card/frame. Stocktake retains its existing framed scanner UI. Their presentation code remains independent.
+- The animation does not gate camera acquisition or first-frame readiness. Browser/OS permission prompt timing remains browser-controlled.
+- GitHub Actions run #89 (42400411255) passed full preflight. No local PowerShell or physical iOS/Android QA is claimed.
+- Required next steps: preserve and inspect the local working tree before syncing; review the full branch diff including documentation; run local npm run preflight; perform first-open permission, denial/retry, close-while-pending, rapid open/close, background/foreground and scan regression checks on iOS Safari/PWA and Android Chrome/PWA.
+- Do not merge, deploy or close the PR without explicit user approval.
+- Once this supplemental patch is accepted, return to the existing Phase 1.2G–1.2J roadmap. The patch does not complete Phase 1.2G.
