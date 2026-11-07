@@ -1,14 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
-import { lazy, Suspense } from 'react';
+import StocktakeScanner from './StocktakeScanner';
 
-// Warm scanner code early, but keep the lazy loader independent so a failed
-// prefetch does not permanently poison React.lazy's cached promise.
-const loadStocktakeScanner = () => import('./StocktakeScanner');
-const StocktakeScanner = lazy(loadStocktakeScanner);
-void loadStocktakeScanner().catch((error: unknown) => {
-  console.error('[RetailOS] Stocktake scanner preload failed; it will retry when opened:', error);
-});
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
@@ -407,9 +400,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       {scannerOpen && screen === 'scan' && (
   <div className="stocktake-scanner-layer">
     <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={() => setScannerOpen(false)}>Đóng</button></div>}>
-    <Suspense fallback={<div role="status">Đang tải máy quét...</div>}>
-      <StocktakeScanner onDetected={acceptBarcode} onClose={() => setScannerOpen(false)} />
-    </Suspense>
+    <StocktakeScanner onDetected={acceptBarcode} onClose={() => setScannerOpen(false)} />
     </AppErrorBoundary>
   </div>
 )}
