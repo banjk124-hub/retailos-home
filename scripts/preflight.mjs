@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Scanner barcode validation regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-validation.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],

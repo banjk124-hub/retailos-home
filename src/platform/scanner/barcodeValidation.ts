@@ -2,7 +2,7 @@ import type { ScannerSymbology } from './contracts';
 
 /** Retail barcode payload policy shared by the scanner session and tests. */
 export function hasValidGs1CheckDigit(value: string): boolean {
-  if (!/^\\d+$/.test(value) || ![8, 12, 13].includes(value.length)) return false;
+  if (!/^\d+$/.test(value) || ![8, 12, 13].includes(value.length)) return false;
   const body = value.slice(0, -1);
   const expected = Number(value.slice(-1));
   const sum = [...body].reduce((total, digit, index) => {
@@ -23,11 +23,11 @@ export function validateBarcodePayload(
   // CODE-128 is an opaque text payload: do not trim or numerically coerce it.
   const normalized = symbology === 'CODE_128' ? value : value.trim();
   if (normalized.length === 0) return { valid: false, reason: 'empty' };
-  if (/[\\u0000-\\u001f\\u007f]/.test(normalized)) return { valid: false, reason: 'control-character' };
+  if (/[\u0000-\u001f\u007f]/.test(normalized)) return { valid: false, reason: 'control-character' };
   if (symbology === 'CODE_128') return { valid: true, reason: 'accepted' };
 
   const expectedLength = symbology === 'EAN_8' ? 8 : 13;
-  if (normalized.length !== expectedLength || !/^\\d+$/.test(normalized)) {
+  if (normalized.length !== expectedLength || !/^\d+$/.test(normalized)) {
     return { valid: false, reason: 'invalid-length' };
   }
   if (!hasValidGs1CheckDigit(normalized)) return { valid: false, reason: 'invalid-check-digit' };
