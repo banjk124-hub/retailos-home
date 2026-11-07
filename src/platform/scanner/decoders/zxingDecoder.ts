@@ -13,7 +13,7 @@ import type {
   DecoderOutput,
   ScannerDecoderAdapter,
 } from './decoderAdapter';
-
+import { rgbaToLuminance } from './rgbaToLuminance';
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
   EAN_13: BarcodeFormat.EAN_13,
@@ -201,7 +201,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
-    const luminance = new RGBLuminanceSource(image.data, this.canvas.width, this.canvas.height);
+const grayscale = rgbaToLuminance(
+  image.data,
+  this.canvas.width,
+  this.canvas.height,
+);
+const luminance = new RGBLuminanceSource(
+  grayscale,
+  this.canvas.width,
+  this.canvas.height,
+);
     const binarizers = includeGlobalHistogram
       ? [HybridBinarizer, GlobalHistogramBinarizer]
       : [HybridBinarizer];
