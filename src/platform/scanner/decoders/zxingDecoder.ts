@@ -30,6 +30,8 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   AZTEC: BarcodeFormat.AZTEC,
   RSS_14: BarcodeFormat.RSS_14,
   RSS_EXPANDED: BarcodeFormat.RSS_EXPANDED,
+  MAXICODE: BarcodeFormat.MAXICODE,
+  MICRO_QR_CODE: BarcodeFormat.MICRO_QR_CODE,
 };
 
 const MAX_FRAME_WIDTH = 1280;
@@ -143,7 +145,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height = height;
       this.context.drawImage(source, 0, 0, width, height);
 
-      let output = this.decodeCurrentCanvas(timestamp, 'full');
+      let output = this.decodeCurrentCanvas(timestamp);
       if (output) {
         this.diagnosticDecoded += 1;
         this.emitDiagnostics();
@@ -157,10 +159,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const cropHeight = Math.max(1, Math.round(height * ROI_HEIGHT_RATIO));
       const sx = Math.round((width - cropWidth) / 2);
       const sy = Math.round((height - cropHeight) / 2);
-      this.canvas.width = cropWidth;
-      this.canvas.height = cropHeight;
-      this.context.drawImage(source, sx / scale, sy / scale, cropWidth / scale, cropHeight / scale, 0, 0, cropWidth, cropHeight);
-      output = this.decodeCurrentCanvas(timestamp, 'roi');
+      this.canvas.width = width;
+      this.canvas.height = height;
+      this.context.drawImage(source, sx / scale, sy / scale, cropWidth / scale, cropHeight / scale, 0, 0, width, height);
+      output = this.decodeCurrentCanvas(timestamp);
       if (output) {
         this.diagnosticDecoded += 1;
         this.diagnosticRoiHits += 1;
@@ -175,10 +177,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     }
   }
 
-  private decodeCurrentCanvas(
-    timestamp: number,
-    _pass: 'full' | 'roi',
-  ): DecoderOutput | null {
+  private decodeCurrentCanvas(timestamp: number): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
     const luminance = new RGBLuminanceSource(image.data, this.canvas.width, this.canvas.height);
@@ -204,7 +203,6 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           }
           throw error;
         }
-        lastMiss = miss;
         if (miss === 'notFound') this.diagnosticNotFound += 1;
         else if (miss === 'checksum') this.diagnosticChecksum += 1;
         else this.diagnosticFormat += 1;
