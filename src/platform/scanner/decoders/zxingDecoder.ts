@@ -79,6 +79,15 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private decoding = false;
   private disposed = false;
   private lastUnexpectedErrorLogAt = 0;
+  private diagnosticStartedAt = Date.now();
+  private diagnosticFrames = 0;
+  private diagnosticDecoded = 0;
+  private diagnosticNotFound = 0;
+  private diagnosticChecksum = 0;
+  private diagnosticFormat = 0;
+  private diagnosticUnexpected = 0;
+  private lastFrameWidth = 0;
+  private lastFrameHeight = 0;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -119,6 +128,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.decoding = true;
     try {
       const dimensions = getFrameDimensions(source);
+      this.lastFrameWidth = dimensions.width;
+      this.lastFrameHeight = dimensions.height;
+      this.diagnosticFrames += 1;
       const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
       const width = Math.max(1, Math.round(dimensions.width * scale));
       const height = Math.max(1, Math.round(dimensions.height * scale));
@@ -139,6 +151,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           return [];
         }
 
+        this.diagnosticDecoded += 1;
+        this.emitDiagnostics();
         return [{
           value,
           symbology,
@@ -150,11 +164,19 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         // Unexpected failures are rate-limited so a broken decoder is observable.
         const name = error instanceof Error ? error.name : '';
         const expectedMiss = ['NotFoundException', 'ChecksumException', 'FormatException'].includes(name);
-        const now = Date.now();
-        if (!expectedMiss && now - this.lastUnexpectedErrorLogAt >= 5_000) {
-          this.lastUnexpectedErrorLogAt = now;
-          console.warn('[RetailOS Scanner] Unexpected ZXing decode failure:', error);
+        if (name === 'NotFoundException') this.diagnosticNotFound += 1;
+        else if (name === 'ChecksumException') this.diagnosticChecksum += 1;
+        else if (name === 'FormatException') this.diagnosticFormat += 1;
+        else {
+          this.diagnosticUnexpected += 1;
+          const now = Date.now();
+          if (now - this.lastUnexpectedErrorLogAt >= 5_000) {
+            this.lastUnexpectedErrorLogAt = now;
+            console.warn('[RetailOS Scanner] Unexpected ZXing decode failure:', error);
+          }
         }
+        this.emitDiagnostics();
+        if (!expectedMiss) throw error;
         return [];
       } finally {
         this.reader.reset();
@@ -162,6 +184,29 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     } finally {
       this.decoding = false;
     }
+  }
+
+  private emitDiagnostics(): void {
+    const now = Date.now();
+    if (now - this.diagnosticStartedAt < 5_000) return;
+    console.info('[RetailOS Scanner] ZXing decoder diagnostics', {
+      decoder: this.id,
+      frames: this.diagnosticFrames,
+      decoded: this.diagnosticDecoded,
+      notFound: this.diagnosticNotFound,
+      checksumErrors: this.diagnosticChecksum,
+      formatErrors: this.diagnosticFormat,
+      unexpectedErrors: this.diagnosticUnexpected,
+      sourceWidth: this.lastFrameWidth,
+      sourceHeight: this.lastFrameHeight,
+    });
+    this.diagnosticStartedAt = now;
+    this.diagnosticFrames = 0;
+    this.diagnosticDecoded = 0;
+    this.diagnosticNotFound = 0;
+    this.diagnosticChecksum = 0;
+    this.diagnosticFormat = 0;
+    this.diagnosticUnexpected = 0;
   }
 
   dispose(): void {
