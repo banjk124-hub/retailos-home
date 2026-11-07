@@ -53,3 +53,12 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Validation: source review only. No post-patch local preflight, automated test, or physical-device QA has been run.
 - Next: synchronize latest branch head to Local, inspect diff, rerun npm run preflight, then perform Android Chrome/iOS Safari lifecycle QA. No PR, merge, or deployment yet.
 - Stream-scoped release deliberately does not invalidate or clear a separately pending getUserMedia request; only the no-argument global release changes the request generation and clears the pending request.
+
+
+### 2026-11-07 — P0 scanner lifecycle serialization patch
+- Branch: `fix/scanner-p0-lifecycle-serialization`, based on main `7f35fc095dd89741919005af067ca3f4285c6ea6`.
+- Added reference-counted `CameraStreamLease` ownership; scanner sessions no longer release a shared stream globally. Global invalidation remains for app-level logout/forced shutdown.
+- Updated session teardown to release its own lease and corrected the hook path that could return a settled stale startup promise instead of starting again.
+- Updated Architecture ADR-007, Roadmap, Implementation Status and AI Handoff to describe the current source state and explicitly supersede the previous no-lease decision.
+- Verification not run: no local Node/npm runtime was available in this editing session; no build, tests, browser or physical-device QA is claimed.
+- Next: inspect full diff, run `npm run preflight`, add lifecycle regression tests, and test on iOS Safari and Android Chrome. Branch remains unmerged and undeployed.
