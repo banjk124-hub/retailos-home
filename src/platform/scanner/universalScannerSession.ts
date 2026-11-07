@@ -35,8 +35,8 @@ function hasValidEanChecksum(value: string): boolean {
 
 function isValidValue(value: string, symbology: ScannerSymbology): boolean {
   const normalized = value.trim();
-  if (symbology === 'EAN_8' || symbology === 'EAN_13') {
-    const expectedLength = symbology === 'EAN_8' ? 8 : 13;
+  if (symbology === 'EAN_8' || symbology === 'EAN_13' || symbology === 'UPC_A') {
+    const expectedLength = symbology === 'EAN_8' ? 8 : symbology === 'EAN_13' ? 13 : 12;
     return normalized.length === expectedLength && hasValidEanChecksum(normalized);
   }
   return normalized.length > 0 && !/[\u0000-\u001f\u007f]/.test(normalized);
