@@ -166,6 +166,8 @@ Acceptance criteria:
 - P0 camera lease serialization is merged to `main` in commit `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`. CI passed for PR #24. Physical-device QA remains outstanding; deployment state must be checked independently.
 
 ### 1.2G — Rendering, motion and interaction performance
+**Status:** In progress. G-A instrumentation has been added on `feat/scanner-phase-1-2g-instrumentation`; build/CI, browser profiling and physical-device measurements are pending. G-B/C audit findings are recorded below; no motion durations or decoder cadence have been tuned.
+
 **Goal:** remove perceived stutter, flicker and jank during rapid scanner open/close and Home/Stocktake transitions by identifying the actual bottleneck across rendering, motion, UI state and lifecycle.
 
 Slices:
@@ -175,6 +177,16 @@ Slices:
 - **1.2G-D — State transition alignment:** define and enforce explicit UI states (IDLE, OPENING, READY, SCANNING, CLOSING, ERROR/SUSPENDED). UI must not claim SCANNING until the preview and decoder are actually ready. Keep camera release independent from animation completion.
 - **1.2G-E — Motion and rendering optimization:** only after measurement, prevent overlapping transitions, reduce unnecessary rerenders/layout work, selectively simplify expensive effects, synchronize visual transitions with real state, and respect `prefers-reduced-motion`.
 - **1.2G-F — Interaction stress validation:** repeated cycles and rapid input; inspect listener/timer/RAF/decoder cleanup and verify no old animation or session updates after close.
+
+#### G-A/G-B source audit snapshot (2026-11-07)
+- Added privacy-safe timing for `getUserMedia`, optional autofocus, camera lease acquisition, `video.play()`, decoder initialization, camera-to-scanning readiness, first accepted result, decoder disposal, camera lease release and total teardown.
+- Added rolling decoder processing metrics for full-frame/ROI canvas draw, `getImageData`, RGBA-to-luminance conversion and ZXing decode attempts; failed ZXing attempts are included in the timing sample.
+- Added per-session long-task counts, cumulative layout-shift score where supported, maximum observed video-frame callback gap, decode average/max, and lightweight React phase-commit interval logging.
+- No barcode payload, camera device ID, employee identity or persistent device identifier is recorded. Instrumentation is runtime console telemetry only; it adds no dependency, network request, polling timer or persistent storage.
+- Source audit: `motion.css` defines sheet enter at 420 ms, sheet/backdrop exit/entry at 200 ms, and several library-card transitions in the 280–360 ms range. Home also uses layered glass/backdrop blur and shadows; these are profiling candidates, not proven causes.
+- Lifecycle audit: scanner UI currently derives display from `isStarting`/`isScanning` booleans while the core exposes richer lifecycle states. The hook also had asynchronous state updates after unmount/close; instrumentation patch now guards state callbacks and post-await updates with a mounted check. This is a targeted stale-update guard, not a full state-machine redesign.
+- Important measurement limitation: browser `layout-shift` and `longtask` observers are feature-detected and may not be exposed on every Safari version. Frame-gap telemetry is an observed callback gap, not a direct GPU frame-drop counter.
+- Verification status: source edits only at this point. No local npm build, CI, browser performance trace or iOS/Android device measurement has been run.
 
 Acceptance criteria:
 - No visible flicker, unintended layout shift or overlapping transition during rapid open/close and Home/Stocktake switching.
