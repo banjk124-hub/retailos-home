@@ -106,3 +106,10 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Updated Architecture ADR-009, Roadmap Patch 2, Implementation Status, AI Handoff and Project Context.
 - Verification status: code and tests authored remotely; local preflight, CI and physical iOS/Android QA have not yet been run. No test/build pass is claimed.
 - Next: local branch synchronization and full diff review, `npm run preflight`, then first-open/resume/focus and track-ended QA on iOS Safari/PWA and Android Chrome/PWA. Do not merge or deploy without explicit approval.
+
+
+### 2026-11-07 — Patch 2 automated verification
+- GitHub Actions run #84 (`42393062148`) completed successfully.
+- Passed: `npm ci`, scanner barcode/luminance/camera regression suite including delayed-autofocus non-blocking test, TypeScript + production build, GitHub Pages build, unstaged and staged diff checks.
+- Non-fatal warnings: `@zxing/library@0.23.0` declares Node >=24 while CI currently uses Node 22; Vite reports a >500 kB minified chunk. Neither failed preflight; no dependency/runtime/chunking changes were made.
+- Remaining: synchronize branch locally, inspect diff and run Windows/PowerShell `npm run preflight`; then test real camera first-open, resume, autofocus and track-ended behavior on iOS Safari/PWA and Android Chrome/PWA.
