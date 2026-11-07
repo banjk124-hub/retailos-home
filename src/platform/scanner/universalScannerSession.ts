@@ -193,11 +193,25 @@ export class UniversalScannerSession implements ScannerSession {
         this.acceptedSingle = true;
         this.lastAcceptedAt = now;
         this.diagnosticAccepted += 1;
-        this.options.onResult({ ...result, value });
         if (this.options.mode === 'single') {
-          await this.close();
+          // Claim the single result before calling feature code. Always close the
+          // camera even if a module callback throws, otherwise the UI can remain
+          // in an endless scanning state after a successful decode.
+          try {
+            this.options.onResult({ ...result, value });
+          } catch (cause) {
+            this.options.onError?.({
+              code: 'RESULT_HANDLER_FAILED',
+              message: cause instanceof Error ? cause.message : 'Module không tiếp nhận được barcode đã quét.',
+              recoverable: true,
+              cause,
+            });
+          } finally {
+            await this.close();
+          }
           return;
         }
+        this.options.onResult({ ...result, value });
       }
     } catch (cause) {
       this.diagnosticErrors += 1;
