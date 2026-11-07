@@ -50,6 +50,10 @@ export function useScannerEngine({
       if (startPromiseRef.current && startPromiseRef.current !== pendingStart) {
         return startPromiseRef.current;
       }
+      // The awaited attempt has settled but did not reach SCANNING (for
+      // example, visibility suspension invalidated its generation). Do not
+      // return the same completed promise: fall through and create a fresh
+      // start attempt for the still-active session.
     }
     const video = videoRef.current;
     if (!video) return;
