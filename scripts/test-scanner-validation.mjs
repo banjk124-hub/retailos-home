@@ -21,4 +21,70 @@ assert.deepEqual(validateBarcodePayload("ABC\u0000 123", "CODE_128"), {
   valid: false,
   reason: "control-character",
 });
-console.log("Scanner barcode validation regression tests passed.");
+const luminanceSource = await readFile(
+  new URL("../src/platform/scanner/decoders/rgbaToLuminance.ts", import.meta.url),
+  "utf8",
+);
+
+const luminanceCompiled = ts.transpileModule(luminanceSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText;
+
+const luminanceModuleUrl =
+  "data:text/javascript;base64," +
+  Buffer.from(luminanceCompiled).toString("base64");
+
+const { rgbaToLuminance } = await import(luminanceModuleUrl);
+
+// Black, white, red, green, blue and middle gray.
+const rgbaFixture = new Uint8ClampedArray([
+  0, 0, 0, 255,
+  255, 255, 255, 255,
+  255, 0, 0, 255,
+  0, 255, 0, 255,
+  0, 0, 255, 255,
+  128, 128, 128, 255,
+]);
+
+const grayscale = rgbaToLuminance(rgbaFixture, 3, 2);
+
+assert.deepEqual(
+  Array.from(grayscale),
+  [0, 255, 76, 150, 29, 128],
+  "RGBA pixels convert to one grayscale byte per pixel",
+);
+
+assert.equal(
+  grayscale.length,
+  6,
+  "grayscale output contains exactly one byte per pixel",
+);
+
+// Alpha must not affect the luminance value.
+const alphaFixture = new Uint8ClampedArray([
+  100, 100, 100, 0,
+  100, 100, 100, 255,
+]);
+
+assert.deepEqual(
+  Array.from(rgbaToLuminance(alphaFixture, 2, 1)),
+  [100, 100],
+  "alpha channel is ignored",
+);
+
+assert.throws(
+  () => rgbaToLuminance(new Uint8ClampedArray([0, 0, 0, 255]), 2, 1),
+  /RGBA buffer length/,
+  "invalid RGBA buffer dimensions are rejected",
+);
+
+assert.throws(
+  () => rgbaToLuminance(new Uint8ClampedArray(0), 0, 1),
+  /Invalid image dimensions/,
+  "zero-sized images are rejected",
+);
+
+console.log("Scanner barcode validation and luminance regression tests passed.");
