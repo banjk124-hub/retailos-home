@@ -165,3 +165,9 @@ This is the latest task snapshot and supersedes older “active task” labels a
 - Non-blocking regression behavior is now verified in CI: camera lease acquisition resolves while the mocked autofocus Promise remains pending, and the ended listener is already installed.
 - CI emitted a non-fatal EBADENGINE warning: `@zxing/library@0.23.0` declares Node >=24 while the current workflow uses Node 22. Vite also emitted its existing large-chunk warning. Neither caused failure.
 - Local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA QA are still required. Do not treat CI as device verification.
+
+
+### Latest Patch 2 PR-head CI — 2026-11-07
+- Final PR head `a31d40315eaeb9f90ce209da4fef6341e8836025` passed GitHub Actions run #85 (`42393150965`), including locked dependency install and full `npm run preflight`.
+- This verifies the latest documentation-synchronized branch head, not only the earlier source/test commit.
+- Local Windows/PowerShell preflight and physical iOS/Android camera QA remain outstanding.
