@@ -158,3 +158,10 @@ This is the latest task snapshot and supersedes older “active task” labels a
 - Not yet verified in this task: local npm preflight, GitHub Actions CI, real iOS Safari/PWA and Android Chrome/PWA first-open/resume/focus behavior.
 - Preserve camera constraints, 110 ms decode cadence, decoder/ROI, barcode validation, Home and Stocktake business behavior, persistence, auth/session and deployment configuration.
 - Next: synchronize locally without disturbing untracked files; inspect full diff; run `npm run preflight`; collect device QA evidence. Do not merge or deploy without explicit user approval.
+
+
+### Patch 2 verification update — 2026-11-07
+- GitHub Actions run #84 (`42393062148`) passed the full `npm run preflight`, including the new delayed-`applyConstraints()` regression, TypeScript/production build, Pages build and diff checks.
+- Non-blocking regression behavior is now verified in CI: camera lease acquisition resolves while the mocked autofocus Promise remains pending, and the ended listener is already installed.
+- CI emitted a non-fatal EBADENGINE warning: `@zxing/library@0.23.0` declares Node >=24 while the current workflow uses Node 22. Vite also emitted its existing large-chunk warning. Neither caused failure.
+- Local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA QA are still required. Do not treat CI as device verification.
