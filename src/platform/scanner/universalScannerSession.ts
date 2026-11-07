@@ -167,7 +167,8 @@ export class UniversalScannerSession implements ScannerSession {
       if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
       const now = Date.now();
       for (const result of results) {
-        const value = result.value.trim();
+        // Preserve CODE-128 as an opaque payload; only EAN normalization occurs in validation.
+        const value = result.value;
         const validation = validateBarcodePayload(value, result.symbology);
         if (!validation.valid) {
           this.diagnosticRejected += 1;
