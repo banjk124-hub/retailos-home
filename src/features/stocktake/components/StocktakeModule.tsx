@@ -2,9 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
-const StocktakeScanner = lazy(
-  () => import('./StocktakeScanner')
-);
+// Preload scanner code when the Home-owned Stocktake module is imported.
+// The scanner remains visually lazy, but its runtime chunk is fetched early.
+const stocktakeScannerModule = import('./StocktakeScanner');
+const StocktakeScanner = lazy(() => stocktakeScannerModule);
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
