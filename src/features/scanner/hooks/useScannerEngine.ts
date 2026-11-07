@@ -3,6 +3,7 @@ import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleState, type ScannerSess
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
+import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 
 export type ScannerMode = 'single' | 'continuous';
 type Options = {
@@ -11,6 +12,7 @@ type Options = {
   scanCooldownMs?: number;
   audioFeedback?: boolean;
   hapticFeedback?: boolean;
+  cameraLeaseRequest?: CameraLeaseRequest | null;
 };
 
 function isDocumentHidden(): boolean {
@@ -24,9 +26,11 @@ export function useScannerEngine({
   scanCooldownMs = 700,
   audioFeedback = true,
   hapticFeedback = true,
+  cameraLeaseRequest = null,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
+  const cameraLeaseRequestRef = useRef(cameraLeaseRequest);
   const onDetectedRef = useRef(onDetected);
   const desiredActiveRef = useRef(true);
   const recoveryAttemptsRef = useRef(0);
@@ -126,7 +130,8 @@ export function useScannerEngine({
             // track stopped. Keep the live preview/scanning state truthful.
             setIsScanning(sessionRef.current?.state === 'scanning');
           },
-        });
+        }, cameraLeaseRequestRef.current ?? undefined);
+        cameraLeaseRequestRef.current = null;
         sessionRef.current = session;
       }
       await session.start();
