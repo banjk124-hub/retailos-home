@@ -36,9 +36,8 @@ export class UniversalScannerSession implements ScannerSession {
   private lastDecodeAt = 0;
   private startPromise: Promise<void> | null = null;
   private diagnosticStartedAt = Date.now();
-  private readonly performanceStartedAt = performance.now();
+  private startAttemptStartedAt = 0;
   private lastFrameCallbackAt = 0;
-  private firstAcceptedAt = 0;
   private longTaskObserver: PerformanceObserver | null = null;
   private layoutShiftObserver: PerformanceObserver | null = null;
   private diagnosticLayoutShiftScore = 0;
@@ -83,6 +82,7 @@ export class UniversalScannerSession implements ScannerSession {
   private async startInternal(): Promise<void> {
     const generation = ++this.generation;
     this.setState('requesting');
+    this.startAttemptStartedAt = performance.now();
     this.observeLongTasks();
     const cameraRequestStartedAt = performance.now();
     try {
@@ -128,7 +128,7 @@ export class UniversalScannerSession implements ScannerSession {
       }
       this.decoder = decoder;
       this.acceptedSingle = false;
-      this.logStage('camera_to_scanning_ms', performance.now() - this.performanceStartedAt);
+      this.logStage('camera_to_scanning_ms', performance.now() - this.startAttemptStartedAt);
       this.setState('scanning');
       this.scheduleNextFrame(generation);
     } catch (cause) {
@@ -210,7 +210,6 @@ export class UniversalScannerSession implements ScannerSession {
         this.lastAcceptedAt = now;
         this.diagnosticAccepted += 1;
         if (!this.firstAcceptedAt) {
-          this.firstAcceptedAt = now;
           this.logStage('first_accepted_result_ms', performance.now() - this.performanceStartedAt);
         }
         if (this.options.mode === 'single') {
