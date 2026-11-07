@@ -1,21 +1,30 @@
+import type { CSSProperties } from 'react';
 import { AlertTriangle, Camera, X } from 'lucide-react';
+import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
+import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
 
 type Props = {
   onDetected: (value: string) => void;
   onClose: () => void;
+  cameraLeaseRequest?: CameraLeaseRequest | null;
+  motionOrigin?: MotionOrigin | null;
 };
 
 /** Stocktake-owned scanner presentation; camera/decoder runtime stays shared. */
-export default function StocktakeScanner({ onDetected, onClose }: Props) {
-  const scanner = useScannerEngine({ onDetected, mode: 'single' });
+export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
+  const scanner = useScannerEngine({ onDetected, mode: 'single', cameraLeaseRequest });
+  const transitionStyle = {
+    '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
+    '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
+  } as CSSProperties;
   const close = () => {
     void scanner.closeScanner();
     onClose();
   };
 
   return (
-    <section className="stocktake-scanner-surface" role="dialog" aria-modal="true" aria-labelledby="stocktake-scanner-title"
+    <section className="stocktake-scanner-surface scanner-stocktake-surface-enter" style={transitionStyle} role="dialog" aria-modal="true" aria-labelledby="stocktake-scanner-title"
       onPointerDown={() => { void scanner.prepareAudio(); }}>
       <header className="stocktake-scanner-heading">
         <div><span className="stocktake-eyebrow">RETAILOS · KIỂM KÊ</span><h2 id="stocktake-scanner-title">Quét hàng hóa</h2><p>Đưa mã sản phẩm vào giữa khung hình</p></div>
@@ -23,8 +32,8 @@ export default function StocktakeScanner({ onDetected, onClose }: Props) {
       </header>
       <div className={`stocktake-scanner-preview ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-active' : ''}`}>
         <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Camera quét barcode" />
-        {!scanner.isPreviewReady && scanner.isStarting && <div className="stocktake-scanner-message"><Camera size={25} /><span>Đang kết nối camera…</span></div>}
-        {!scanner.isPreviewReady && !scanner.isStarting && scanner.error && <div className="stocktake-scanner-message"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
+        {!scanner.isPreviewReady && scanner.isStarting && <div className="stocktake-scanner-message" role="status" aria-live="polite"><Camera size={17} /><span>Đang mở camera…</span></div>}
+        {!scanner.isPreviewReady && scanner.error && <div className="stocktake-scanner-message is-error"><AlertTriangle size={18} /><span>Camera chưa sẵn sàng</span></div>}
         {scanner.isScanning && <div className="stocktake-scanner-reticle" aria-hidden="true"><i /></div>}
       </div>
       <p className="stocktake-scanner-instruction">Giữ mã vạch rõ nét, đủ sáng. Mỗi lần quét sẽ điền một dòng vào biểu mẫu; dữ liệu chỉ được lưu khi bạn xác nhận.</p>
