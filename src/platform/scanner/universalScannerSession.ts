@@ -209,8 +209,8 @@ export class UniversalScannerSession implements ScannerSession {
         this.acceptedSingle = true;
         this.lastAcceptedAt = now;
         this.diagnosticAccepted += 1;
-        if (!this.firstAcceptedAt) {
-          this.logStage('first_accepted_result_ms', performance.now() - this.performanceStartedAt);
+        if (this.diagnosticAccepted === 1) {
+          this.logStage('first_accepted_result_ms', performance.now() - this.startAttemptStartedAt);
         }
         if (this.options.mode === 'single') {
           // Claim the single result before calling feature code. Always close the
