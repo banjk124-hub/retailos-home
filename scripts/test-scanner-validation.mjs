@@ -204,7 +204,7 @@ Object.defineProperty(globalThis, "navigator", {
   value: { mediaDevices: { getUserMedia: async () => delayedFocusStream } },
 });
 
-const { acquireCameraLease } = await import(cameraSessionUrl);
+const { acquireCameraLease, requestCameraLease } = await import(cameraSessionUrl);
 let acquisitionTimeout;
 const cameraLease = await Promise.race([
   acquireCameraLease(),
@@ -228,6 +228,30 @@ assert.equal(
   1,
   "track-ended monitoring is registered before optional autofocus settles",
 );
+
+const cancelledRequest = requestCameraLease();
+cancelledRequest.cancel();
+await assert.rejects(
+  cancelledRequest.claim(),
+  (error) => error?.name === "AbortError",
+  "a cancelled, unclaimed camera request cannot be handed to a scanner",
+);
+await new Promise((resolve) => setImmediate(resolve));
+assert.equal(
+  delayedFocusTrack.readyState,
+  "live",
+  "cancelling one unclaimed lease does not stop a stream still owned by another lease",
+);
+
+const claimedRequest = requestCameraLease();
+const claimedLease = await claimedRequest.claim();
+assert.equal(claimedLease.stream, delayedFocusStream, "a tap-started request transfers its camera lease");
+await assert.rejects(
+  claimedRequest.claim(),
+  /already been claimed/,
+  "a camera lease request cannot be transferred to two scanner sessions",
+);
+claimedLease.release();
 
 resolvePendingFocus();
 await new Promise((resolve) => setImmediate(resolve));
