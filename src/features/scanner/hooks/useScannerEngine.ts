@@ -61,7 +61,12 @@ export function useScannerEngine({
       if (!session || session.state === 'disposed') {
         session = new UniversalScannerSession(video, {
           profile: 'HIGH',
-          formats: ['EAN_8', 'EAN_13', 'CODE_128'],
+          formats: [
+            'EAN_8', 'EAN_13', 'UPC_A', 'UPC_E',
+            'CODE_128', 'CODE_39', 'CODE_93', 'ITF', 'CODABAR',
+            'QR_CODE', 'DATA_MATRIX', 'PDF_417', 'AZTEC',
+            'RSS_14', 'RSS_EXPANDED',
+          ],
           mode,
           sameCodeCooldownMs: scanCooldownMs,
           audioFeedback,
