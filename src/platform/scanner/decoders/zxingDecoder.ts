@@ -209,7 +209,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     for (const Binarizer of binarizers) {
       try {
         const bitmap = new BinaryBitmap(new Binarizer(luminance));
-        const result = this.reader.decode(bitmap);
+        // decode() resets the configured hints when no hints argument is passed.
+        // Reuse the initialized retail-format whitelist across camera frames.
+        const result = this.reader.decodeWithState(bitmap);
         const symbology = REVERSE_FORMAT_MAP.get(result.getBarcodeFormat());
         const value = result.getText();
         if (!symbology || !this.formats.includes(symbology) || value.length === 0) return null;
