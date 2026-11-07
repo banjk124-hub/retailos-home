@@ -323,3 +323,16 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Scope exclusions preserved: autofocus, camera constraints/resolution, decoder/ROI/cadence, barcode validation, Phase 2 recognition conditions, business callbacks and persistence were not changed.
 - Next: synchronize this branch locally without disturbing existing untracked files; inspect the complete source+documentation diff; run local `npm run preflight`; then test first open and resume on iOS and Android. Keep PR #29 unmerged/undeployed until device evidence is reviewed and the user approves.
 
+
+## Scanner Phase 1 — Patch 2: non-blocking autofocus (2026-11-07)
+
+- Repository: `banjk124-hub/retailos-home`.
+- Base `main`: `93eff4fa10154ea3d3499e12d946309850ab1164` (includes merged Patch 1 / PR #29).
+- Branch: `fix/scanner-phase-1-2-autofocus-nonblocking`.
+- Source change: `src/shared/services/cameraSession.ts` now validates the live video track and registers `ended` listeners before starting continuous autofocus asynchronously. The shared camera acquisition promise no longer waits for `applyConstraints()`.
+- Autofocus remains capability-gated and best-effort. Existing status classification and safe camera settings are retained. Late results are ignored when the stream identity or request generation is stale; unexpected diagnostic rejections are caught.
+- Regression coverage: `scripts/test-scanner-validation.mjs` now creates a deliberately unresolved `applyConstraints()` promise and asserts that `acquireCameraLease()` resolves before autofocus settles and that the track-ended listener is already registered.
+- Protected: camera constraints, 30 FPS target, decoder/ROI, 110 ms decode interval, barcode formats/validation, UI, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, persistence, auth/session and deployment configuration.
+- Documentation synchronized: Architecture ADR-009, Roadmap Patch 2 acceptance gate, this status entry, AI Handoff, Project Context and Session Log.
+- Verification: implementation and regression test authored on GitHub branch. Local PowerShell preflight, GitHub Actions CI, iOS Safari/PWA and Android Chrome/PWA physical-device QA have not yet been run in this task. Do not report them as passed.
+- Next: fetch/switch the branch locally without disturbing untracked files; inspect full diff; run `npm run preflight`; fix any failures; then verify first-open/resume and focus behavior on both mobile platforms. Keep branch unmerged and undeployed pending evidence and user approval.
