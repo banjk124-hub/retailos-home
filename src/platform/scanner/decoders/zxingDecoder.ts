@@ -7,7 +7,7 @@ import {
   MultiFormatReader,
   RGBLuminanceSource,
 } from '@zxing/library';
-import type { ScannerSymbology } from '../contracts';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerSymbology } from '../contracts';
 import type {
   DecoderInitOptions,
   DecoderOutput,
@@ -112,6 +112,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
     const requested = [...new Set(formats)];
     if (requested.length === 0) throw new Error('At least one barcode format must be requested.');
+    const unsupported = requested.filter((format) => !(SUPPORTED_BARCODE_FORMATS as readonly string[]).includes(format));
+    if (unsupported.length > 0) {
+      throw new Error(`Unsupported retail barcode format(s): ${unsupported.join(', ')}.`);
+    }
     const hints = new Map<DecodeHintType, unknown>();
     hints.set(DecodeHintType.POSSIBLE_FORMATS, requested.map((format) => FORMAT_MAP[format]));
     hints.set(DecodeHintType.TRY_HARDER, true);
