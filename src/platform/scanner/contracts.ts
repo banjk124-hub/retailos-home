@@ -5,7 +5,24 @@
  * implementation, or feature presentation dependencies.
  */
 
-export type ScannerSymbology = 'EAN_8' | 'EAN_13' | 'CODE_128';
+export type ScannerSymbology =
+  | 'EAN_8'
+  | 'EAN_13'
+  | 'UPC_A'
+  | 'UPC_E'
+  | 'CODE_128'
+  | 'CODE_39'
+  | 'CODE_93'
+  | 'ITF'
+  | 'CODABAR'
+  | 'QR_CODE'
+  | 'DATA_MATRIX'
+  | 'PDF_417'
+  | 'AZTEC'
+  | 'RSS_14'
+  | 'RSS_EXPANDED'
+  | 'MAXICODE'
+  | 'MICRO_QR_CODE';
 
 export type ScannerProfileName = 'COMPACT' | 'STANDARD' | 'HIGH';
 

@@ -23,7 +23,7 @@ function scannerError(cause: unknown): ScannerError {
 }
 
 function hasValidEanChecksum(value: string): boolean {
-  if (!/^\d+$/.test(value) || (value.length !== 8 && value.length !== 13)) return false;
+  if (!/^\d+$/.test(value) || ![8, 12, 13].includes(value.length)) return false;
   const body = value.slice(0, -1);
   const expected = Number(value.slice(-1));
   const sum = [...body].reduce((total, digit, index) => {
@@ -35,8 +35,8 @@ function hasValidEanChecksum(value: string): boolean {
 
 function isValidValue(value: string, symbology: ScannerSymbology): boolean {
   const normalized = value.trim();
-  if (symbology === 'EAN_8' || symbology === 'EAN_13') {
-    const expectedLength = symbology === 'EAN_8' ? 8 : 13;
+  if (symbology === 'EAN_8' || symbology === 'EAN_13' || symbology === 'UPC_A') {
+    const expectedLength = symbology === 'EAN_8' ? 8 : symbology === 'EAN_13' ? 13 : 12;
     return normalized.length === expectedLength && hasValidEanChecksum(normalized);
   }
   return normalized.length > 0 && !/[\u0000-\u001f\u007f]/.test(normalized);
