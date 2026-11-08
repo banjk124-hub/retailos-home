@@ -1,3 +1,15 @@
+# Active implementation — PR #38 cross-platform scanner background recovery (2026-11-08)
+
+- PR #37 / C1 is merged to `main` at `ee98a4c35cc6742db20e46165f55216305485205`. User has completed device QA for common scanner operations; a remaining iOS-prioritized background/foreground defect is now under investigation. Android has not shown the same failure but remains part of acceptance.
+- Active branch: `fix/scanner-cross-platform-lifecycle-recovery`; Draft PR #38. No merge or deployment has occurred.
+- Shared hook now routes initial start, `visibilitychange`, `pagehide`, and `pageshow` through a serialized lifecycle coordinator. It cancels unclaimed tap-started leases on background, removes the fixed two-resume cap, and prevents stale page callbacks from overriding newer visibility signals.
+- Platform session now requires evidence of a fresh video frame before publishing preview readiness: a new `requestVideoFrameCallback` when supported, otherwise advancing live media time. Stale dimensions alone are insufficient.
+- Tests added for lifecycle ordering, duplicate signals, BFCache reconciliation, disposal, and hook integration. Latest PR-head CI and local Windows preflight are pending; real-device regression QA is pending.
+- Protected: camera constraints, autofocus, decoder, barcode validation, 110 ms cadence, Home lookup, Stocktake business/persistence behavior, UI presentation and deployment configuration.
+- C2 and Opening Transition A are blocked until this shared lifecycle recovery slice passes automated checks and iOS + Android device acceptance.
+
+---
+
 # Active implementation — PR C1 Home lifecycle migration (2026-11-08)
 
 - Branch: `feat/scanner-c1-home-lifecycle-migration`, based on `main` merge commit `191f44e9101cd75a3bf961f8475134efddbf4267`.
