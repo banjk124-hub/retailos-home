@@ -88,15 +88,34 @@ const teardownBody = sessionSource.slice(teardownStart, teardownEnd);
 
 const exitRequestAt = closeBody.indexOf('this.lifecycle.exitRequested()');
 const closeTeardownAt = closeBody.indexOf('await this.teardown(true)');
-const disposedAt = closeBody.indexOf('this.lifecycle.disposed()');
+const disposedAt = closeBody.indexOf('this.lifecycle.disposed()', closeTeardownAt);
 assert.ok(exitRequestAt >= 0 && closeTeardownAt > exitRequestAt, 'EXIT_REQUESTED precedes close teardown');
 assert.ok(disposedAt > closeTeardownAt, 'DISPOSED is emitted only after close awaits teardown');
+const recoveryCloseAt = closeBody.indexOf('if (this.recoveryDisposePromise)');
+const recoveryAwaitAt = closeBody.indexOf('await this.recoveryDisposePromise', recoveryCloseAt);
+const recoveryCameraReleasedAt = closeBody.indexOf('this.lifecycle.cameraReleased()', recoveryAwaitAt);
+const recoveryDisposedAt = closeBody.indexOf('this.lifecycle.disposed()', recoveryCameraReleasedAt);
+assert.ok(recoveryCloseAt >= 0 && recoveryAwaitAt > recoveryCloseAt, 'closing during recovery waits for recovery teardown');
+assert.ok(recoveryCameraReleasedAt > recoveryAwaitAt && recoveryDisposedAt > recoveryCameraReleasedAt, 'recovery-time close publishes terminal milestones only after teardown');
+
 
 const releaseAt = teardownBody.indexOf('lease?.release()');
 const cameraEventAt = teardownBody.indexOf('this.lifecycle.cameraReleased()', releaseAt);
 const decoderDisposeAt = teardownBody.indexOf('await decoder.dispose()', cameraEventAt);
 assert.ok(releaseAt >= 0 && cameraEventAt > releaseAt, 'CAMERA_RELEASED follows lease release');
+
 assert.ok(decoderDisposeAt > cameraEventAt, 'decoder disposal may continue after CAMERA_RELEASED');
+
+// Foreground recovery retires the old platform session without signaling a
+// feature exit; teardown completes before the session becomes unavailable.
+const recoveryDisposeStart = sessionSource.indexOf('  disposeForRecovery(): Promise<void> {');
+const recoveryDisposeEnd = sessionSource.indexOf('  close(): Promise<void> {', recoveryDisposeStart);
+assert.ok(recoveryDisposeStart >= 0 && recoveryDisposeEnd > recoveryDisposeStart, 'recovery-only disposal exists');
+const recoveryDisposeBody = sessionSource.slice(recoveryDisposeStart, recoveryDisposeEnd);
+assert.ok(recoveryDisposeBody.includes('await this.suspendPromise;') && recoveryDisposeBody.includes('await this.teardown(true);'), 'recovery disposal waits for suspension and resource teardown');
+assert.ok(recoveryDisposeBody.indexOf('await this.teardown(true);') < recoveryDisposeBody.indexOf('this.disposed = true;'), 'session is retired only after resources are released');
+assert.doesNotMatch(recoveryDisposeBody, /exitRequested|cameraReleased|exitPresentation/, 'recovery disposal must not trigger feature exit milestones');
+
 assert.ok(sessionSource.includes('  notifyExitPresentation(): void {') && sessionSource.includes('this.lifecycle.exitPresentation();'), 'feature can publish EXIT_PRESENTATION on the real session adapter');
 
 const contractSource = await readFile(
@@ -105,6 +124,7 @@ const contractSource = await readFile(
 );
 assert.ok(contractSource.includes('lifecycleObserver?: ScannerLifecycleObserver;'), 'platform contract accepts observer, not a feature-created adapter');
 assert.ok(contractSource.includes('notifyExitPresentation(): void;'), 'session contract exposes presentation milestone');
+assert.ok(contractSource.includes('disposeForRecovery(): Promise<void>;'), 'session contract exposes recovery-only retirement');
 
 const homeScannerSource = await readFile(
   new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),
@@ -120,6 +140,26 @@ assert.ok(hookSource.includes('new ScannerPageLifecycleCoordinator('), 'shared s
 assert.ok(hookSource.includes('pendingLeaseRequest?.cancel();'), 'background and unmount must cancel an unclaimed tap-started camera lease');
 assert.ok(hookSource.includes('coordinator.transition(false)') && hookSource.includes('coordinator.transition(visible)'), 'visibility and pagehide signals must use the serialized coordinator');
 assert.ok(!hookSource.includes('recoveryAttemptsRef'), 'foreground recovery must not be blocked by a fixed lifetime attempt counter');
+assert.ok(hookSource.includes('disposeForRecovery()'), 'foreground recovery must retire the old platform session');
+assert.ok(hookSource.includes('replaceVideoSurface()'), 'foreground recovery must request a fresh video surface');
+assert.ok(hookSource.includes('pending.resolve(videoRef.current)'), 'recovery waits for the replacement video node to commit');
+assert.ok(hookSource.includes('sessionRef.current !== session'), 'callbacks from retired sessions must not update the active feature');
+assert.ok(hookSource.includes('sessionRef.current ?? lifecycleSessionRef.current'), 'a feature can still close cleanly while its previous session is being replaced');
+assert.ok(hookSource.includes('Keep the lifecycle reference until the feature animation reports'), 'Home retains its lifecycle owner until EXIT_PRESENTATION');
+assert.ok(hookSource.includes('if (recoveryRequiredRef.current) await recoverScanner();'), 'foreground lifecycle uses recovery only after a background transition');
+assert.ok(hookSource.includes('Keep the old start promise registered until its in-flight camera lease') && hookSource.includes('Recovery waits for it before acquiring a new lease.'), 'recovery serializes an in-flight lease handoff before opening the next session');
+
+const homeSurfaceSource = await readFile(
+  new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),
+  'utf8',
+);
+const stocktakeSurfaceSource = await readFile(
+  new URL('../src/features/stocktake/components/StocktakeScanner.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(homeSurfaceSource.includes('<video key={scanner.videoSurfaceKey} ref={scanner.videoRef}'), 'Home binds the shared engine surface key to its video element');
+assert.ok(stocktakeSurfaceSource.includes('<video key={scanner.videoSurfaceKey} ref={scanner.videoRef}'), 'Stocktake binds the shared engine surface key to its video element');
+
 
 // Browser page lifecycle signals (visibilitychange/pagehide/pageshow) must be
 // coalesced and serialized so resume never races an unfinished suspension.

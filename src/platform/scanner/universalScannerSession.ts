@@ -168,6 +168,7 @@ export class UniversalScannerSession implements ScannerSession {
   private disposed = false;
   private closePromise: Promise<void> | null = null;
   private suspendPromise: Promise<void> | null = null;
+  private recoveryDisposePromise: Promise<void> | null = null;
   private unsubscribeTrackEnded: (() => void) | null = null;
   private trackEventCleanups: Array<() => void> = [];
   private readonly lifecycle: ScannerLifecycleAdapter;
@@ -188,6 +189,7 @@ export class UniversalScannerSession implements ScannerSession {
 
   start(): Promise<void> {
     if (this.closePromise) return this.closePromise;
+    if (this.recoveryDisposePromise) return this.recoveryDisposePromise;
     if (this.suspendPromise) return this.suspendPromise.then(() => this.start());
     if (this.disposed || this.currentState === 'scanning') return Promise.resolve();
     if (this.startPromise) {
@@ -493,8 +495,44 @@ export class UniversalScannerSession implements ScannerSession {
     this.lifecycle.exitPresentation();
   }
 
+  /**
+   * Retire a suspended session before binding a fresh video surface.
+   * Unlike close(), recovery disposal must not publish feature exit milestones:
+   * the scanner overlay remains open and the feature continues the same task.
+   */
+  disposeForRecovery(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    if (this.recoveryDisposePromise) return this.recoveryDisposePromise;
+    if (this.disposed) return Promise.resolve();
+
+    ++this.generation;
+    this.setState('suspended');
+    this.recoveryDisposePromise = (async () => {
+      await this.suspendPromise;
+      await this.teardown(true);
+      this.disposed = true;
+      this.setState('disposed');
+    })();
+    return this.recoveryDisposePromise;
+  }
+
   close(): Promise<void> {
     if (this.closePromise) return this.closePromise;
+
+    // A user may close the feature while foreground recovery is retiring the
+    // previous session. Wait for that teardown, then publish the normal exit
+    // milestones; recovery itself must never masquerade as a feature close.
+    if (this.recoveryDisposePromise) {
+      this.lifecycle.exitRequested();
+      this.closePromise = (async () => {
+        await this.recoveryDisposePromise;
+        this.lifecycle.cameraReleased();
+        this.setState('disposed');
+        this.lifecycle.disposed();
+      })();
+      return this.closePromise;
+    }
+
     if (this.disposed) return Promise.resolve();
 
     // Multiple owners may close the same session (single-result delivery,
@@ -543,7 +581,7 @@ export class UniversalScannerSession implements ScannerSession {
       const cameraReleaseStartedAt = performance.now();
       try {
         lease?.release();
-        if (this.closePromise) this.lifecycle.cameraReleased();
+        if (this.closePromise && !this.recoveryDisposePromise) this.lifecycle.cameraReleased();
       } finally {
         this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
       }

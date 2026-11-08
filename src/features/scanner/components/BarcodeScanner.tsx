@@ -91,7 +91,7 @@ export default function BarcodeScanner({
   >
     <div className="barcode-scanner-card">
       <div className={`barcode-scanner-view ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-scanning' : ''}`}>
-        <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để tra cứu sản phẩm" />
+        <video key={scanner.videoSurfaceKey} ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để tra cứu sản phẩm" />
         {exitFrame && <img className="barcode-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
         <header className="barcode-scanner-header">
           <div className="barcode-scanner-header-copy">

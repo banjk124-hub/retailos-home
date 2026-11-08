@@ -49,7 +49,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
         <button type="button" className="stocktake-icon-button" onClick={close} aria-label="Đóng máy quét"><X size={19} /></button>
       </header>
       <div className={`stocktake-scanner-preview ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-active' : ''}`}>
-        <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Camera quét barcode" />
+        <video key={scanner.videoSurfaceKey} ref={scanner.videoRef} muted playsInline autoPlay aria-label="Camera quét barcode" />
         {exitFrame && <img className="stocktake-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
         {!scanner.isPreviewReady && scanner.isStarting && <div className="stocktake-scanner-message" role="status" aria-live="polite"><Camera size={17} /><span>Đang mở camera…</span></div>}
         {!scanner.isPreviewReady && scanner.error && <div className="stocktake-scanner-message is-error"><AlertTriangle size={18} /><span>Camera chưa sẵn sàng</span></div>}
