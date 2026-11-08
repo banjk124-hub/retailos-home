@@ -1,3 +1,14 @@
+## Current execution order — 2026-11-08
+
+1. **P0 — Shared Scanner Background/Foreground Recovery:** Draft PR #38. Resolve serialized lifecycle transitions, stale video readiness and lease handoff across iOS and Android. This is the current blocking slice.
+2. **C2 — Stocktake Lifecycle Contract migration:** proceed only after P0 is merged and device-accepted. Keep Stocktake presentation and explicit-save business behavior unchanged.
+3. **A — Opening Transition:** proceed only after C1, C2 and P0 are accepted; transition to the scanner only on truthful fresh-frame READY.
+4. **Cross-platform release validation:** repeat the full scanner lifecycle and business-flow matrix on real iOS Safari/PWA and Android Chrome/PWA.
+
+Do not let the iOS remediation reduce Android behavior or fork shared scanner business logic. Platform differences must remain isolated behind capability-aware browser/media handling.
+
+---
+
 ## Current execution slice — C1 / C2 / A (2026-11-08)
 
 1. **PR C1 — Home migration:** active branch `feat/scanner-c1-home-lifecycle-migration`. Home consumes engine lifecycle events and gates unmount on exit presentation + camera release + disposal. Snapshot and cached lookup behavior are protected.

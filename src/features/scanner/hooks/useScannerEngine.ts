@@ -4,6 +4,7 @@ import { UniversalScannerSession } from '../../../platform/scanner/universalScan
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
+import { ScannerPageLifecycleCoordinator } from '../../../platform/scanner/scannerPageLifecycleCoordinator';
 
 export type ScannerMode = 'single' | 'continuous';
 type Options = {
@@ -40,7 +41,7 @@ export function useScannerEngine({
   const lifecycleObserverRef = useRef(lifecycleObserver);
   lifecycleObserverRef.current = lifecycleObserver;
   const desiredActiveRef = useRef(true);
-  const recoveryAttemptsRef = useRef(0);
+  const pageVisibleRef = useRef(!isDocumentHidden());
   const startPromiseRef = useRef<Promise<void> | null>(null);
   const [isStarting, setIsStarting] = useState(true);
   const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -66,14 +67,14 @@ export function useScannerEngine({
   }, [isStarting, isScanning, error]);
 
   const startScanner = useCallback(async () => {
-    if (!desiredActiveRef.current || isDocumentHidden()) return;
+    if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
     if (startPromiseRef.current) {
       const pendingStart = startPromiseRef.current;
       await pendingStart;
       // A hide/suspend can invalidate an in-flight getUserMedia request. If the
       // page becomes visible again before that request settles, retry instead
       // of treating the stale promise as a successful camera start.
-      if (!desiredActiveRef.current || isDocumentHidden()) return;
+      if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
       if (sessionRef.current?.state === 'scanning') return;
       if (startPromiseRef.current && startPromiseRef.current !== pendingStart) {
         return startPromiseRef.current;
@@ -128,7 +129,6 @@ export function useScannerEngine({
             }
             setIsStarting(state === 'requesting' || state === 'initializing');
             setIsScanning(state === 'scanning');
-            if (state === 'scanning') recoveryAttemptsRef.current = 0;
             if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
           },
           onPreviewReady: () => {
@@ -158,16 +158,21 @@ export function useScannerEngine({
       // attempt that began after a visibility suspend/resume transition.
       if (startPromiseRef.current === start) {
         startPromiseRef.current = null;
-        if (mountedRef.current && desiredActiveRef.current) setIsStarting(false);
+        if (mountedRef.current && desiredActiveRef.current && pageVisibleRef.current && !isDocumentHidden()) setIsStarting(false);
       }
     }
   }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const pauseScanner = useCallback(async () => {
-    // UniversalScannerSession publishes the suspended state synchronously
-    // before teardown. Do not write UI state after awaiting teardown: a
-    // foreground resume may already have published a newer ready/scanning
-    // state by then.
+    // A tap-started lease may still be waiting for the scanner component/session
+    // handoff. Cancel that unclaimed request while backgrounded; otherwise iOS
+    // can return with a pre-background stream that is no longer producing frames.
+    const pendingLeaseRequest = cameraLeaseRequestRef.current;
+    cameraLeaseRequestRef.current = null;
+    pendingLeaseRequest?.cancel();
+
+    // The page lifecycle coordinator serializes this suspension before any
+    // foreground resume. Do not write UI state after awaiting teardown.
     await sessionRef.current?.suspend('hidden');
   }, []);
 
@@ -191,30 +196,44 @@ export function useScannerEngine({
 
   useEffect(() => {
     desiredActiveRef.current = true;
-    void startScanner();
+    pageVisibleRef.current = !isDocumentHidden();
+
+    const coordinator = new ScannerPageLifecycleCoordinator(
+      pageVisibleRef.current,
+      async () => {
+        await pauseScanner();
+      },
+      async () => {
+        // Event handlers update pageVisibleRef synchronously. Do not let an
+        // older queued transition overwrite a newer browser visibility signal.
+        if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
+        await startScanner();
+      },
+    );
+
+    // Initial startup uses the same serialized path as every later resume.
+    if (pageVisibleRef.current) void coordinator.transition(true, true);
 
     const handleVisibility = () => {
-      if (isDocumentHidden()) {
-        void pauseScanner();
-        return;
-      }
-      if (!desiredActiveRef.current) return;
-      if (recoveryAttemptsRef.current >= 2) {
-        setError('Camera đã bị gián đoạn nhiều lần. Hãy nhấn thử lại để kết nối.');
-        return;
-      }
-      recoveryAttemptsRef.current += 1;
-      void startScanner();
+      const visible = !isDocumentHidden();
+      pageVisibleRef.current = visible;
+      void coordinator.transition(visible);
     };
     const handlePageHide = () => {
       console.info('[RetailOS Scanner] Page lifecycle', { pageLifecycle: 'pagehide' });
-      void pauseScanner();
+      pageVisibleRef.current = false;
+      void coordinator.transition(false);
     };
     const handlePageShow = () => {
       console.info('[RetailOS Scanner] Page lifecycle', { pageLifecycle: 'pageshow' });
-      if (!isDocumentHidden() && desiredActiveRef.current && sessionRef.current?.state !== 'scanning') {
-        void startScanner();
-      }
+      const visible = !isDocumentHidden();
+      pageVisibleRef.current = visible;
+      if (!visible) return;
+
+      // pageshow may restore a BFCache page without a fresh visibility edge.
+      // Force reconciliation only when the session is not already scanning;
+      // duplicate pageshow/visibility signals are coalesced by the start guard.
+      void coordinator.transition(true, Boolean(sessionRef.current && sessionRef.current.state !== 'scanning' && !startPromiseRef.current));
     };
 
     document.addEventListener('visibilitychange', handleVisibility);
@@ -222,9 +241,14 @@ export function useScannerEngine({
     window.addEventListener('pageshow', handlePageShow);
     return () => {
       desiredActiveRef.current = false;
+      pageVisibleRef.current = false;
+      coordinator.dispose();
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('pageshow', handlePageShow);
+      const pendingLeaseRequest = cameraLeaseRequestRef.current;
+      cameraLeaseRequestRef.current = null;
+      pendingLeaseRequest?.cancel();
       const session = sessionRef.current;
       sessionRef.current = null;
       void session?.close();
