@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type AnimationEvent, type CSSProperties } from 'react';
 import { AlertTriangle, Camera, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
@@ -18,18 +18,30 @@ type Props = {
 
 /** Stocktake-owned scanner presentation; camera/decoder runtime stays shared. */
 export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
-  const scanner = useScannerEngine({ onDetected, mode: 'single', cameraLeaseRequest });
+  const [isClosing, setIsClosing] = useState(false);
+  const finishClose = (event: AnimationEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget || event.animationName !== 'scanner-stocktake-close') return;
+    onClose();
+  };
+  const handleDetected = (value: string) => {
+    setIsClosing(true);
+    onDetected(value);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
+  };
+  const scanner = useScannerEngine({ onDetected: handleDetected, mode: 'single', cameraLeaseRequest });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
   };
   const close = () => {
+    if (isClosing) return;
+    setIsClosing(true);
     void scanner.closeScanner();
-    onClose();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
   };
 
   return (
-    <section className="stocktake-scanner-surface scanner-stocktake-surface-enter" style={transitionStyle} role="dialog" aria-modal="true" aria-labelledby="stocktake-scanner-title"
+    <section className={`stocktake-scanner-surface scanner-stocktake-surface-enter ${isClosing ? 'is-closing' : ''}`} style={transitionStyle} onAnimationEnd={finishClose} role="dialog" aria-modal="true" aria-labelledby="stocktake-scanner-title"
       onPointerDown={() => { void scanner.prepareAudio(); }}>
       <header className="stocktake-scanner-heading">
         <div><span className="stocktake-eyebrow">RETAILOS · KIỂM KÊ</span><h2 id="stocktake-scanner-title">Quét hàng hóa</h2><p>Đưa mã sản phẩm vào giữa khung hình</p></div>
