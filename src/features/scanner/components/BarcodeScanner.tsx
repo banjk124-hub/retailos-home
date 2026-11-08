@@ -43,7 +43,7 @@ export default function BarcodeScanner({
   };
   const scanner = useScannerEngine({ onDetected: (value) => {
     if (mode === 'single') {
-      setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
+      setExitFrame(scanner.videoRef.current ? captureScannerPreviewFrame(scanner.videoRef.current) : null);
       setIsClosing(true);
     }
     onDetected(value);
