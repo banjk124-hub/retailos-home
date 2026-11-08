@@ -25,7 +25,7 @@ Create a separate C2 branch/PR from current main. Change only StocktakeScanner l
 ---
 
 
-# Active implementation — PR C1 Home lifecycle migration (2026-11-08)
+# Historical implementation record — PR C1 Home lifecycle migration (2026-11-08)
 
 - Branch: `feat/scanner-c1-home-lifecycle-migration`, based on `main` merge commit `191f44e9101cd75a3bf961f8475134efddbf4267`.
 - Changed source: `contracts.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`, `BarcodeScanner.tsx`; regression coverage updated in `scripts/test-scanner-lifecycle.mjs`.
