@@ -1,6 +1,6 @@
 # Current scanner acceptance gates — 2026-11-08
 
-These gates supersede any stale PR #31/#32 Draft status in historical checklist sections. Current main baseline: `c7146b55f0c2210cd7b8474c6a72b1c915985793`.
+Current main baseline: 43f16379869b703e218e264040b859ab533c3193. Historical PR #31/#32 references below are retained as history, not current status.
 
 ## Source-audit facts (not device acceptance)
 - [x] Home tap starts `requestCameraLease()` before scanner UI mounts.
@@ -12,6 +12,27 @@ These gates supersede any stale PR #31/#32 Draft status in historical checklist 
 - [ ] iOS opening geometry root cause measured and fixed.
 - [ ] Exit fade visually synchronized while camera teardown remains prompt.
 
+## Lifecycle migration status
+
+- [x] PR B — shared event contract and adapter merged.
+- [x] PR C1 — Home consumes lifecycle observer and exit handoff.
+- [x] PR #43 — fresh video surface foreground recovery merged; user confirmed previous preview-shrink defect is gone.
+- [ ] PR C2 — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal.
+- [ ] PR A — Connecting overlay and transition on READY, after C2.
+
+## PR C2 — Stocktake migration acceptance
+
+- [ ] Stocktake passes lifecycleObserver to the shared useScannerEngine.
+- [ ] Session identity comes only from the engine event; no feature-created adapter/session ID.
+- [ ] Manual close captures the frozen preview before closeScanner().
+- [ ] Successful single-result callback captures the frozen preview before the session's automatic close.
+- [ ] EXIT_PRESENTATION is emitted by Stocktake when its own scanner-stocktake-close animation completes.
+- [ ] Parent onClose() is called only after EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and presentation completion; event order is not assumed.
+- [ ] Completion is idempotent; duplicate animation/lifecycle events cannot close twice.
+- [ ] Camera release is never delayed by animation; reduced-motion path still completes.
+- [ ] StocktakeModule camera lease cancellation, scanner visibility and parent close ownership remain unchanged.
+- [ ] Barcode-to-form fill, manual entry, duplicate rows, edit/review and explicit save remain unchanged.
+- [ ] Lifecycle regression tests cover manual close and successful single-result close; full npm run preflight passes.
 ## Device QA — iOS Safari/PWA
 - [ ] First permission grant, deny, dismiss, retry and permission revocation.
 - [ ] Tap-to-request timing and camera permission prompt behavior.

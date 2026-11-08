@@ -1,6 +1,6 @@
 ## ADR-009 — Serialized cross-platform page lifecycle recovery (2026-11-08)
 
-Status: Implemented on Draft PR #38; CI and device acceptance pending.
+Status: Merged in PR #38 and subsequently extended by PR #43; user has verified the former preview-shrink defect is gone.
 
 - One mounted scanner has one page-lifecycle coordinator. `visibilitychange` is the primary signal; `pagehide/pageshow` are supplementary browser/BFCache signals.
 - Duplicate signals for the same visibility edge are coalesced. Real hidden/visible transitions are serialized so foreground resume waits for background suspension and lease release.
@@ -17,14 +17,14 @@ Status: Implemented on Draft PR #38; CI and device acceptance pending.
 
 ## ADR-008 — Feature-observed scanner lifecycle and Home exit handoff (2026-11-08)
 
-Status: Implemented on the C1 branch; merge pending verification.
+Status: Merged. PR C1 is implemented in BarcodeScanner; PR C2 remains the next feature migration.
 
 - `UniversalScannerSession` owns the session ID and constructs its `ScannerLifecycleAdapter` with an optional `ScannerLifecycleObserver`. Feature modules never create an adapter or supply a session ID.
 - `useScannerEngine` forwards the observer through a ref-backed callback. Updating a React callback does not restart the scanner effect or reacquire the camera.
 - `EXIT_PRESENTATION` is emitted by the owning feature through the active/closing `ScannerSession`; the platform session routes it through the same adapter and session ID as engine milestones.
 - Home unmounts its scanner only after `EXIT_REQUESTED`, `EXIT_PRESENTATION`, `CAMERA_RELEASED`, and `DISPOSED` have all been observed. Event arrival order is not assumed; completion is idempotent.
 - Home snapshot capture stays before `closeScanner()`. `CAMERA_RELEASED` remains a resource boundary and is not treated as animation completion. `DISPOSED` remains after teardown.
-- Stocktake behavior is not migrated by this ADR; C2 must adopt the same observer contract separately.
+- Stocktake is not yet migrated. C2 must adopt the same observer contract and exit gate in StocktakeScanner, while preserving Stocktake-owned presentation and business behavior.
 # Architecture notes and invariants
 
 This file is a working contract, not a substitute for inspecting current source. Verify every path and interface before changing it.
@@ -320,7 +320,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 
 ## ADR-013 — Scanner lifecycle event contract and presentation ownership (2026-11-08)
 
-**Status:** Implemented on `feat/scanner-lifecycle-contract`; automated/local verification pending.
+**Status:** Merged. The shared contract is consumed by Home (C1); Stocktake migration is tracked separately as C2.
 
 - Define the public milestones `OPENING → READY → SCANNING → EXIT_REQUESTED → CAMERA_RELEASED → EXIT_PRESENTATION → DISPOSED` as an event vocabulary, not a mandatory linear state machine for every feature.
 - `OPENING`, `READY` and `SCANNING` may be absent or recur around restart/recovery. A session may close before preview or decoder readiness. `EXIT_PRESENTATION` is optional and is owned/emitted by the feature module through the shared adapter.
@@ -329,4 +329,16 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 - Lifecycle observer callbacks are optional and isolated: observer exceptions must not interrupt scanning, release or disposal. Terminal milestones are deduplicated per adapter instance.
 - Existing `ScannerLifecycleState` remains the engine's internal operational state; the event contract does not replace it or alter scanner business behavior.
 - Suspend/resume is not a terminal exit. A feature must not interpret a visibility suspension as `EXIT_REQUESTED` or `DISPOSED`.
-- No Home/Stocktake migration is included in this foundation slice. Their current behavior remains unchanged until separate presentation/handoff work.
+- The foundation PR did not migrate either feature. C1 subsequently migrated Home; C2 remains responsible for Stocktake. The contract remains optional for consumers that do not need feature-owned exit presentation.
+
+## ADR-014 — Fresh video surface on foreground recovery (2026-11-08)
+
+**Status:** Merged in PR #43; user verified the previously reported iOS preview-shrink defect no longer reproduces.
+
+- The existing shared scanner engine and session remain the single camera/decoder implementation.
+- After a real background suspension, foreground recovery retires the old session, waits for its resource teardown and any in-flight camera lease handoff, then replaces only the disposable video DOM surface.
+- Recovery waits for React to commit the replacement node and reuses the normal startup pipeline: layout barrier, stream attachment, playback, fresh-frame readiness, decoder initialization and scanning.
+- Home and Stocktake share this behavior through useScannerEngine; feature-specific presentation and business logic remain independent.
+- Do not create a second engine, retain camera in the background, add polling/retry timers, or move recovery into feature components.
+
+---

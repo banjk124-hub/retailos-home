@@ -1,9 +1,9 @@
-# Scanner background/foreground recovery audit — 2026-11-08
+# Historical scanner background/foreground recovery audit — 2026-11-08 (pre PR #43)
 
 ## Baseline
 - Main: `ee98a4c35cc6742db20e46165f55216305485205` (PR #37 / C1 merge).
-- Work branch: `fix/scanner-cross-platform-lifecycle-recovery`.
-- PR: #38 — draft, not merged or deployed.
+- Historical work branch: `fix/scanner-cross-platform-lifecycle-recovery`.
+- Historical PR state at audit time: #38 was Draft. The shared recovery work was subsequently merged to main and extended by PR #43; see ADR-014 and current Implementation Status.
 - Scope: shared scanner lifecycle only. iOS is the primary reported failure; Android behavior must remain equivalent and regression-free.
 
 ## User-observed failure
