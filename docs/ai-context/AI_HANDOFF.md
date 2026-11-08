@@ -1,26 +1,26 @@
-# Current AI handoff — main baseline 43f16379869b703e218e264040b859ab533c3193
+# Current AI handoff — PR #44 merged; C2 PR #45 in review (2026-11-08)
 
 ## Completed and verified
 - PR B lifecycle event contract is merged.
 - PR C1 Home lifecycle migration is merged. Home is the reference consumer for the exit-handoff pattern.
 - PR #43 foreground Recovery is merged. User tested the merged result and confirmed the previous iOS preview-shrink issue is gone.
 
-## Current task — prepare PR C2 Stocktake migration
-- StocktakeScanner.tsx still does not pass lifecycleObserver to useScannerEngine.
-- It captures the last preview frame before manual close and before forwarding a decoded result. Preserve this ordering.
-- It calls onClose() directly when scanner-stocktake-close animation ends. This must become a milestone gate equivalent to Home: EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and feature-owned EXIT_PRESENTATION, with order-independent/idempotent completion.
-- For successful single-result scans, UniversalScannerSession delivers the result and then calls close() in a finally block. Do not add a second close or move camera teardown into the animation.
-- StocktakeModule owns scannerOpen, pending lease cancellation, and the parent close callback. Keep those boundaries unchanged.
-- Protect Stocktake's form-fill, manual entry, duplicate rows, explicit save, edit and review flows.
+## Current task — review and complete PR C2 (#45)
+- Branch: `feat/scanner-c2-stocktake-lifecycle`; base: main after PR #44 merge `c2c9f42610d6cf45dfc422d2cbc6d7bcab795603`.
+- StocktakeScanner now passes lifecycleObserver to the shared engine and uses StocktakeScannerExitGate to join EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED and matching exit-animation completion.
+- The gate is order-independent and idempotent; onClose is read through a current callback ref and invoked once.
+- Snapshot-before-teardown remains unchanged for manual close and successful scan. Do not add a second close to single-result flow.
+- The helper tests all 24 milestone permutations, missing milestone, duplicate events, source integration, Stocktake form/save invariants and reduced-motion animation contract.
+- GitHub Actions run #178 passed the complete local-equivalent npm run preflight. PR #45 is still Draft/open; no merge/deploy.
+- Remaining acceptance: review PR #45, then physical iOS Safari/PWA and Android Chrome/PWA QA (manual close, scan-result close, rapid reopen, background/foreground, close during recovery, reduced motion, unchanged form/save).
 
-## C2 implementation guardrails
-1. Keep one shared useScannerEngine and UniversalScannerSession; no Stocktake-specific engine or adapter.
-2. Feature must observe the engine-generated sessionId; never construct ScannerLifecycleAdapter in the feature.
-3. Do not gate camera release on animation. Animation completion only reports EXIT_PRESENTATION.
-4. Handle either event arrival order and repeated callbacks safely.
-5. Preserve the reduced-motion animation-end path.
-6. Add focused lifecycle regression assertions for manual close and successful scan; run the full preflight.
-7. Keep C2 separate from PR A Opening Transition.
+## C2 guardrails retained
+1. One shared useScannerEngine and UniversalScannerSession; no Stocktake-specific engine or adapter.
+2. Engine owns session identity and resource teardown; Stocktake owns presentation only.
+3. Camera release is not gated on animation. Animation completion only reports EXIT_PRESENTATION.
+4. Event arrival order and duplicate callbacks are handled safely.
+5. Reduced-motion animation-end path remains supported.
+6. PR A Opening Transition remains a separate follow-up after C2.
 
 Read docs/ai-context/SCANNER_C2_AUDIT_2026-11-08.md first. The historical handoff below is retained for context only and is superseded by this current block.
 

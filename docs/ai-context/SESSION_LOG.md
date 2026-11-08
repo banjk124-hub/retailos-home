@@ -1,3 +1,15 @@
+### 2026-11-08 — PR C2 Stocktake lifecycle implementation
+
+- Base: main after PR #44 merge, `c2c9f42610d6cf45dfc422d2cbc6d7bcab795603`.
+- Branch: `feat/scanner-c2-stocktake-lifecycle`; Draft PR #45.
+- Added StocktakeScanner lifecycle observer wiring and a feature-owned four-milestone exit gate. Parent close is order-independent and idempotent.
+- Preserved snapshot-before-teardown for manual and successful-result paths; no duplicate close was added to the single-result path.
+- Added regression coverage for all 24 milestone orders, missing/duplicate milestones, observer wiring, animation ownership, snapshot order, form-fill, explicit save, manual entry, duplicate rows and reduced motion.
+- GitHub Actions run #178 passed the full local-equivalent `npm run preflight` (barcode validation, lifecycle and Stocktake gate tests, presentation readiness, TypeScript/Vite production build, Pages build and diff checks).
+- PR #45 remains Draft/open and unmerged. Physical iOS Safari/PWA and Android Chrome/PWA validation remains outstanding.
+
+---
+
 ### 2026-11-08 — Post-merge Recovery verification and C2 audit
 
 - Main baseline: 43f16379869b703e218e264040b859ab533c3193, merge commit for PR #43.

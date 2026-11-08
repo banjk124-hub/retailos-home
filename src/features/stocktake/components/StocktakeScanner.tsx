@@ -1,9 +1,11 @@
-import { useState, type AnimationEvent, type CSSProperties } from 'react';
+import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
+import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
 import { AlertTriangle, Camera, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
 import { captureScannerPreviewFrame } from '../../scanner/services/captureScannerPreviewFrame';
+import { StocktakeScannerExitGate } from '../services/stocktakeScannerExitGate';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -21,15 +23,25 @@ type Props = {
 export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
   const [isClosing, setIsClosing] = useState(false);
   const [exitFrame, setExitFrame] = useState<string | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const exitGateRef = useRef<StocktakeScannerExitGate | null>(null);
+  if (!exitGateRef.current) {
+    exitGateRef.current = new StocktakeScannerExitGate(() => onCloseRef.current());
+  }
+  const handleLifecycleEvent = (event: ScannerLifecycleEvent) => {
+    exitGateRef.current?.observe(event.type);
+  };
   const finishClose = (event: AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== 'scanner-stocktake-close') return;
-    onClose();
+    scanner.notifyExitPresentation();
+    exitGateRef.current?.completePresentation();
   };
   const scanner = useScannerEngine({ onDetected: (value) => {
     setExitFrame(scanner.videoRef.current ? captureScannerPreviewFrame(scanner.videoRef.current) : null);
     setIsClosing(true);
     onDetected(value);
-  }, mode: 'single', cameraLeaseRequest });
+  }, mode: 'single', cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
