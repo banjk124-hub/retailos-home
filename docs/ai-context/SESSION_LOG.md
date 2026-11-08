@@ -1,3 +1,14 @@
+### 2026-11-08 — PR 47A restore module-owned scanner presentation
+
+- PR #46 was merged at `f668b4ea188e37f11659c74c1663821cc9f75ddb`, then physical-device testing exposed a regression: iOS displayed black → undersized video → sudden resize; Android curtain transition visibly flickered/chopped.
+- Created `revert/scanner-pr46-restore-module-presentation` from the merged PR #46 main head.
+- Restored seven source/test files exactly from pre-PR #46 baseline `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`: Home scanner component/CSS, Stocktake scanner component/CSS, Home UX CSS, scanner lifecycle test and scanner validation test.
+- Removed `ScannerPreviewSurface.tsx` introduced by PR #46. The shared curtain/video class is removed.
+- `isPreviewReady` remains engine-owned technical state; Home and Stocktake own their separate UI presentation and reveal behavior.
+- No camera session, frame-readiness algorithm, decoder, lease, Recovery, lifecycle exit gate or business persistence code was changed.
+- CI and physical-device retest remain pending. PR 47A must not be merged until CI is green and the restored behavior is verified on iOS and Android.
+
+---
 ### 2026-11-08 — PR A Engine-owned Opening Transition implementation
 
 - Audited main after PR #45 merge: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.

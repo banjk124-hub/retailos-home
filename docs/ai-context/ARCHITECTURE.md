@@ -1,21 +1,20 @@
 ## ADR-014 — Engine-owned first-frame preview reveal (2026-11-08)
 
-Status: Implemented in PR A branch `feat/scanner-a-engine-preview-transition`; GitHub Actions run #185 passed. Physical-device acceptance remains pending.
+Status: **Reverted by PR 47A** after physical-device testing exposed iOS native-video sizing regression and visibly poor Android curtain motion. PR #46 is retained as historical implementation evidence, not the current presentation architecture.
 
 **Decision**
 - The shared scanner engine owns the preview readiness handoff. `UniversalScannerSession` confirms a fresh usable frame, invokes the internal `onPreviewReady` bridge and publishes `READY` before decoder initialization.
-- `useScannerEngine` exposes `isPreviewReady`; the shared `ScannerPreviewSurface` consumes that state and renders the same opening curtain for every feature.
-- The curtain is the only animated layer. The native `<video>` remains fully opaque with no opacity/transform transition; this preserves the existing iOS/WebKit camera-layer guard.
+- `useScannerEngine` continues to expose `isPreviewReady` as a technical readiness signal. Each feature module consumes that signal through its own UI presentation.
+- Home and Stocktake retain their own video presentation CSS and reveal mechanisms. Their layout, containing blocks, stacking contexts and motion requirements are not assumed to be interchangeable.
 - The curtain fades away only after a fresh frame is confirmed. During initial acquisition and foreground recovery it remains in place; decoder initialization is not part of preview readiness.
-- Home and Stocktake provide the video ref, keyed video-surface identity and accessible label. They do not decide reveal timing, CSS readiness classes or transition duration.
-- `prefers-reduced-motion` disables the curtain transition. No camera, decoder, lease, barcode or feature business behavior changes.
+- The engine owns camera/frame readiness, not module-specific visual composition. Module UI owns its own video element presentation, CSS selectors and transition policy.
+- PR #46's shared curtain and `ScannerPreviewSurface` were removed in PR 47A. The pre-PR #46 module-owned presentation implementation was restored without changing camera, decoder, lease, barcode or lifecycle behavior.
 
-**Acceptance**
-- One shared preview component is used by Home and Stocktake.
-- The native video is never opacity-transitioned.
-- The reveal is triggered by engine first-frame readiness, not `SCANNING`.
-- Recovery returns the curtain while the replacement surface awaits its first fresh frame.
-- Reduced-motion users receive the preview immediately when READY is reached.
+**Current architecture after PR 47A**
+- Home renders and styles its own video element; Stocktake renders and styles its own video element.
+- Each module owns its own reveal presentation and adapts it to its actual layout and UX.
+- `isPreviewReady` remains the shared technical signal. It does not dictate one shared animation or CSS implementation.
+- No shared curtain or shared preview-surface component is used.
 
 ---
 

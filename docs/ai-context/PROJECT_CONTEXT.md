@@ -1,12 +1,12 @@
-## Current project focus — main after PR #45; PR A in review (2026-11-08)
+## Current project focus — PR #46 rolled back; PR 47A in progress (2026-11-08)
 
 - PR B lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 C2 Stocktake migration are merged.
 - User confirms C2 runs correctly without issues.
-- Current task: PR A engine-owned preview Opening Transition on branch `feat/scanner-a-engine-preview-transition`, Draft PR #46. GitHub Actions run #185 passed full preflight.
-- Engine already determines first usable frame readiness before decoder initialization. A shared `ScannerPreviewSurface` now owns the default curtain/reveal; Home and Stocktake inherit it instead of deciding preview animation independently.
-- Native video must remain fully opaque and unanimated; only the sibling curtain fades to avoid iOS/WebKit camera-layer compositing regressions.
-- No camera/decoder/lease/business-flow changes in PR A. Validate iOS Safari/PWA and Android Chrome/PWA, including reduced motion and recovery.
-- Main audit baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- PR #46 shared preview presentation was merged, then rolled back after physical-device regressions: iOS black → undersized video → sudden resize; Android curtain transition flicker/choppiness.
+- Current task: PR 47A on branch `revert/scanner-pr46-restore-module-presentation`, restoring the exact pre-PR #46 Home/Stocktake presentation implementation.
+- `isPreviewReady` remains the engine's technical signal. Home and Stocktake independently own their video DOM, CSS layout and reveal behavior.
+- No camera/decoder/lease/business-flow/lifecycle changes are intended in PR 47A. CI and device retest are pending.
+- Restoration baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
 
 
 ---

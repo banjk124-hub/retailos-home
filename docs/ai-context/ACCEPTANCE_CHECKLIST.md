@@ -1,6 +1,6 @@
 # Current scanner acceptance gates — 2026-11-08
 
-Source baseline: main after PR #45 merge (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). C2 is merged and user-verified. PR A is in implementation/review on `feat/scanner-a-engine-preview-transition`. Historical PR #31/#32 references below are retained as history.
+Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). PR #46 was merged, then its shared preview presentation was rolled back in PR 47A after iOS/Android device regressions. PR #31/#32 references below are historical.
 
 ## Source-audit facts (not device acceptance)
 - [x] Home tap starts `requestCameraLease()` before scanner UI mounts.
@@ -18,19 +18,19 @@ Source baseline: main after PR #45 merge (`af694b6e7fc6bbcb0d4869ab33ab8f084bffe
 - [x] PR C1 — Home consumes lifecycle observer and exit handoff.
 - [x] PR #43 — fresh video surface foreground recovery merged; user confirmed previous preview-shrink defect is gone.
 - [x] PR C2 — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal; PR #45 merged and user reports no issues.
-- [x] PR A implementation — shared ScannerPreviewSurface owns the opening curtain and reveals on first-frame READY; native video remains opaque and is not opacity-transitioned.
-- [ ] PR A — review, CI and physical iOS Safari/PWA + Android Chrome/PWA acceptance.
+- [x] PR 47A restores the pre-PR #46 module-owned preview implementation and removes the shared curtain/component.
+- [ ] PR 47A CI and physical iOS Safari/PWA + Android Chrome/PWA retest.
 
-## PR A — Engine-owned preview opening acceptance
+## PR 47A — Restore module-owned preview presentation
 
-- [x] Shared `ScannerPreviewSurface` owns the video element presentation and opening curtain.
-- [x] Home and Stocktake consume the same component; no module-owned `has-preview` reveal class remains.
-- [x] Reveal is driven by engine first-frame readiness, before decoder initialization.
-- [x] Native video remains opaque and has no opacity transition; only the sibling curtain animates.
-- [x] Foreground recovery resets engine preview readiness so the curtain returns until a fresh frame is confirmed.
-- [x] Reduced-motion disables the curtain animation.
-- [x] GitHub Actions run #185 passed full `npm run preflight` on the updated PR A head.
-- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA confirms smooth reveal, retry, recovery, and no black flash.
+- [x] Home and Stocktake restore their pre-PR #46 video markup and feature-specific CSS.
+- [x] Shared `ScannerPreviewSurface` and curtain CSS are removed.
+- [x] `isPreviewReady` remains the engine's technical readiness signal.
+- [x] Home and Stocktake again own their own reveal classes and presentation behavior.
+- [ ] CI passes on PR 47A head.
+- [ ] iOS test confirms no black → undersized video → resize sequence.
+- [ ] Android test confirms no abrupt/choppy opening transition.
+- [ ] Retry, foreground recovery and reduced-motion behavior are rechecked.
 
 ## PR C2 — Stocktake migration acceptance
 

@@ -6,7 +6,6 @@ import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
 import { captureScannerPreviewFrame } from '../../scanner/services/captureScannerPreviewFrame';
 import { StocktakeScannerExitGate } from '../services/stocktakeScannerExitGate';
-import ScannerPreviewSurface from '../../scanner/components/ScannerPreviewSurface';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -61,8 +60,8 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
         <div><span className="stocktake-eyebrow">RETAILOS · KIỂM KÊ</span><h2 id="stocktake-scanner-title">Quét hàng hóa</h2><p>Đưa mã sản phẩm vào giữa khung hình</p></div>
         <button type="button" className="stocktake-icon-button" onClick={close} aria-label="Đóng máy quét"><X size={19} /></button>
       </header>
-      <div className={`stocktake-scanner-preview ${scanner.isScanning ? 'is-active' : ''}`}>
-        <ScannerPreviewSurface videoRef={scanner.videoRef} videoSurfaceKey={scanner.videoSurfaceKey} isPreviewReady={scanner.isPreviewReady} ariaLabel="Camera quét barcode" />
+      <div className={`stocktake-scanner-preview ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-active' : ''}`}>
+        <video key={scanner.videoSurfaceKey} ref={scanner.videoRef} muted playsInline autoPlay aria-label="Camera quét barcode" />
         {exitFrame && <img className="stocktake-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
         {!scanner.isPreviewReady && scanner.isStarting && <div className="stocktake-scanner-message" role="status" aria-live="polite"><Camera size={17} /><span>Đang mở camera…</span></div>}
         {!scanner.isPreviewReady && scanner.error && <div className="stocktake-scanner-message is-error"><AlertTriangle size={18} /><span>Camera chưa sẵn sàng</span></div>}

@@ -1,4 +1,4 @@
-# Current implementation status — main after PR #45; PR A in review (2026-11-08)
+# Current implementation status — PR #46 reverted; PR 47A restores module presentation (2026-11-08)
 
 Last reconciled: 2026-11-08.
 
@@ -8,18 +8,16 @@ Last reconciled: 2026-11-08.
 - **PR #43 — Foreground Recovery:** merged; user confirms the former preview-shrink issue no longer reproduces.
 - **PR #45 / PR C2 — Stocktake lifecycle migration:** merged. Stocktake uses the shared lifecycle observer and four-milestone exit gate. User reports the merged implementation runs correctly without issues.
 
-## Current source state — PR A
-- Branch: `feat/scanner-a-engine-preview-transition`.
-- Audit baseline: main merge commit `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73` (PR #45).
-- The session already confirms a fresh video frame and publishes `READY` before decoder initialization. The hook already exposes `isPreviewReady`.
-- Previous implementation left preview reveal policy in Home/Stocktake markup and feature-scoped CSS. Home and Stocktake used separate `has-preview` visibility rules; the native video was deliberately not opacity-transitioned due to the iOS/WebKit camera-layer guard.
-- PR A adds a shared `ScannerPreviewSurface` component. Engine readiness controls a common sibling curtain that fades away after the first fresh frame. The native video remains opaque and unanimated.
-- Both feature modules now consume the same component. They provide only video ref/key/accessibility label; they do not own reveal timing or readiness CSS.
-- Camera acquisition, frame readiness detection, decoder initialization, Recovery, lease ownership, barcode validation, Stocktake business and exit handoff remain unchanged.
+## Current source state — PR 47A restore
+- PR #46 was merged, then physical-device testing exposed an iOS opening regression (black screen, undersized video, abrupt resize) and visibly choppy curtain transition on Android.
+- PR 47A restores Home and Stocktake video markup/CSS and their independent `has-preview` presentation behavior from the exact pre-PR #46 baseline `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- The shared `ScannerPreviewSurface` and curtain CSS are removed. The two modules once again own their respective video presentation, layout selectors and reveal mechanics.
+- `isPreviewReady` remains a shared engine signal; it is not a shared UI implementation contract.
+- Camera acquisition, frame readiness detection, decoder initialization, Recovery, lease ownership, barcode validation, Stocktake business and exit handoff are unchanged.
 
 ## Verification boundary
 - GitHub Actions run #185 passed the complete local-equivalent `npm run preflight`: barcode validation, lifecycle/Stocktake exit-gate tests, presentation layout readiness, TypeScript/Vite production build, GitHub Pages build and diff checks. Run #184 exposed one stale lifecycle assertion expecting feature-owned `<video>` elements; the test was updated to assert the shared preview component contract, and run #185 passed.
-- Physical iOS Safari/PWA and Android Chrome/PWA QA remain outstanding. Validate first open, retry, background/foreground recovery, no-frame/error path, reduced motion, and weak-device behavior.
+- PR 47A must pass CI and then be retested on the same iOS and Android devices. Verify first open, retry, foreground recovery and reduced-motion behavior. Do not reintroduce a shared visual layer without separate evidence for each module.
 - No merge or deployment has been performed for PR A.
 
 

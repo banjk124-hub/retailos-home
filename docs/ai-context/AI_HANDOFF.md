@@ -1,28 +1,24 @@
-# Current AI handoff — PR #45 merged; PR A in review (2026-11-08)
+# Current AI handoff — PR #46 reverted; PR 47A restores module presentation (2026-11-08)
 
 ## Completed
 - PR B shared lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 / C2 Stocktake migration are merged.
 - User confirms C2 runs correctly with no issues.
-- Main audit baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- PR #46 merged at `f668b4ea188e37f11659c74c1663821cc9f75ddb`, then physical-device testing exposed iOS black → undersized video → sudden resize and choppy Android curtain motion.
 
-## Current task — PR A Engine-owned Opening Transition
-- Branch: `feat/scanner-a-engine-preview-transition`.
-- `UniversalScannerSession` already confirms a fresh usable frame, then calls `onPreviewReady` and publishes `READY` before decoder initialization.
-- `useScannerEngine` exposes `isPreviewReady` and resets it during new startup/recovery.
-- Previous Home and Stocktake components each controlled their own `has-preview` class and CSS visibility. That duplicated presentation policy.
-- New shared `ScannerPreviewSurface` renders the video and engine-owned sibling curtain. The curtain is revealed only when engine first-frame readiness becomes true.
-- Keep the native video opaque with `transition:none`; only the sibling curtain fades. This preserves the existing iOS/WebKit camera-layer guard.
-- Both modules now inherit the same transition. Module responsibilities remain layout, controls, overlays and business flow—not preview timing.
-- Camera session, lease, decoder, Recovery and lifecycle exit contracts are outside PR A scope.
-- GitHub Actions run #185 passed full `npm run preflight` after correcting a stale test that expected feature-owned video elements. Physical iOS Safari/PWA and Android Chrome/PWA QA remain required.
+## Current task — PR 47A Restore module-owned preview presentation
+- Branch: `revert/scanner-pr46-restore-module-presentation`.
+- Restore Home and Stocktake video markup/CSS exactly from pre-PR #46 baseline `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- Remove `ScannerPreviewSurface` and the shared curtain CSS. Do not add another shared visual wrapper.
+- Keep `isPreviewReady` as an engine signal. Module UI decides how that signal changes its own presentation.
+- Camera session, lease, decoder, Recovery and lifecycle exit contracts remain unchanged.
+- CI and physical iOS Safari/PWA + Android Chrome/PWA retesting are pending.
 
-## PR A invariants
-1. READY means a fresh usable frame, not decoder SCANNING.
-2. No opacity or transform animation on the native video element or its ancestors.
-3. The curtain covers the initial empty/black video surface and fades away after READY.
-4. Recovery re-shows the curtain until the replacement video surface has a fresh frame.
-5. Reduced-motion users receive an immediate reveal on READY.
-6. Home and Stocktake use one shared preview component and one transition policy.
+## PR 47A invariants
+1. Engine owns camera/frame readiness, not module-specific visual composition.
+2. Home and Stocktake keep separate video DOM/CSS/reveal behavior.
+3. Do not animate or reparent native video layers without platform evidence.
+4. Preserve `isPreviewReady` and Recovery reset behavior.
+5. Do not change camera acquisition, decoder, lease, validation or lifecycle exit contracts.
 
 
 ---
