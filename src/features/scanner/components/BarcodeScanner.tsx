@@ -39,12 +39,13 @@ export default function BarcodeScanner({
   const [exitFrame, setExitFrame] = useState<string | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-  const exitMilestonesRef = useRef({ presentation: false, cameraReleased: false, disposed: false, completed: false });
+  const exitMilestonesRef = useRef({ exitRequested: false, presentation: false, cameraReleased: false, disposed: false, completed: false });
   const handleLifecycleEvent = (event: ScannerLifecycleEvent) => {
+    if (event.type === 'EXIT_REQUESTED') exitMilestonesRef.current.exitRequested = true;
     if (event.type === 'CAMERA_RELEASED') exitMilestonesRef.current.cameraReleased = true;
     if (event.type === 'DISPOSED') exitMilestonesRef.current.disposed = true;
     const milestones = exitMilestonesRef.current;
-    if (milestones.presentation && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
+    if (milestones.exitRequested && milestones.presentation && milestones.exitRequested && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
       milestones.completed = true;
       onCloseRef.current();
     }
