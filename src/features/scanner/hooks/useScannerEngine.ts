@@ -207,8 +207,16 @@ export function useScannerEngine({
 
     // The page lifecycle coordinator serializes this suspension before any
     // foreground recovery. The old session is retired only after suspension.
-    await sessionRef.current?.suspend('hidden');
-    recoveryRequiredRef.current = true;
+    try {
+      await sessionRef.current?.suspend('hidden');
+    } catch (suspendError) {
+      console.warn('[RetailOS Scanner] Background suspension failed; foreground will retire the old session:', suspendError);
+    } finally {
+      // The old start promise belongs to the suspended generation. Its late
+      // completion is guarded by session identity and must not block a new one.
+      startPromiseRef.current = null;
+      recoveryRequiredRef.current = true;
+    }
   }, []);
 
   const recoverScanner = useCallback(async () => {
