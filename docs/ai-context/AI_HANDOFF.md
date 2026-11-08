@@ -198,3 +198,9 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Latest head must pass CI before local sync. Then inspect the complete PR diff and run local `npm run preflight`.
 - Physical QA still required on iOS Safari/PWA and Android Chrome/PWA: permission grant/deny/retry, open/close while pending, rapid reopen, background/foreground, first usable frame, result exit, scan accuracy, Stocktake explicit save, and reduced-motion behavior.
 - Preserve all existing local changes and untracked files during sync. Do not use destructive Git cleanup. Do not merge/deploy without explicit user approval.
+
+### PR #32 CI verification — 2026-11-08
+- GitHub Actions run #107 (`42451111883`) passed on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`.
+- Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
+- This confirms the recorded code/test head. Subsequent documentation-only commits, if any, require the latest branch head to be checked separately.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
