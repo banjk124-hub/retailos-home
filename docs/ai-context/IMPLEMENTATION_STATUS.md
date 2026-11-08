@@ -355,3 +355,21 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - GitHub Actions run #85 (`42393150965`) completed successfully. The “TypeScript and production builds” job passed locked dependency installation and the full `npm run preflight`.
 - This supersedes the earlier run #84 source-only evidence: the latest PR head, including all synchronized documentation, has now passed CI.
 - Local Windows/PowerShell and real-device iOS/Android QA remain outstanding.
+
+## 2026-11-08 — Supplemental Scanner UX Transition
+
+- Repository: banjk124-hub/retailos-home.
+- Base: main at 36b8ca7457c9df7bb3f26105660605c66070b9ea.
+- Branch: feat/scanner-ux-transition.
+- Draft PR: #31 — https://github.com/banjk124-hub/retailos-home/pull/31.
+- Latest recorded branch head: 9e2e1bbe568d0d7be41d253fde4dfd2218634955.
+- Scope: begin camera acquisition from the actual Home/Stocktake opening tap; transfer one pending camera lease to the mounted scanner session; cancel and safely release a late unclaimed lease; add independent Home and Stocktake entrance/wait treatments.
+- Home presentation is full-screen and removes the camera card/frame. Stocktake retains its existing scanner surface/frame/layout. No shared UI template was introduced.
+- Camera preview remains governed by the first usable video frame. Decoder readiness and scanning state remain separate.
+- Removed obsolete Stocktake selectors targeting legacy barcode-scanner / barcode-scanner-card markup and removed Home card styling/layout rules superseded by the full-screen presentation.
+- Added regression assertions for unclaimed cancellation, lease handoff and one-time claim semantics.
+- GitHub Actions run #89 (42400411255) passed the complete repository preflight on the recorded PR head: locked dependency install, scanner regression suite, TypeScript + production build, GitHub Pages build and diff checks.
+- Not verified: local Windows/PowerShell run, iOS Safari/PWA camera permission and stream behavior, Android Chrome/PWA camera behavior, rapid interaction, background/foreground recovery, visual smoothness on weak devices, or real scan performance.
+- Protected: camera constraints, autofocus strategy, decoder/ROI/110 ms cadence, barcode validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, persistence and platform/deployment contracts.
+- Next: synchronize this branch locally only after preserving/reviewing the existing working tree; inspect the complete source+documentation diff; run local npm run preflight; then complete physical-device QA on iOS and Android. Keep PR #31 Draft/unmerged/undeployed until user review and explicit approval.
+- After this supplemental UX patch is accepted, return to the pre-existing Phase 1.2G–1.2J roadmap. This patch does not complete Phase 1.2G or authorize decoder optimization.

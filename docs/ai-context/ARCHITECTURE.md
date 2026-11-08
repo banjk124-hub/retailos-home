@@ -196,3 +196,38 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 - Do not claim that a successful `applyConstraints()` call proves optical focus lock.
 - Do not add a second stream request, polling, dependencies, UI states, or decoder loops.
 - Verify delayed autofocus, unsupported focus capability, rejected focus constraints, track-ended behavior, first open and resume on iOS Safari/PWA and Android Chrome/PWA.
+
+## ADR-010 — Tap-origin camera acquisition and module-owned scanner transitions (2026-11-08)
+
+**Status:** Implemented on branch feat/scanner-ux-transition; PR #31 is Draft and unmerged. GitHub CI passed; physical-device QA remains outstanding.
+
+### Context
+- Home and Stocktake previously mounted their scanner component after a state update; useScannerEngine then initiated camera acquisition from its mount effect.
+- This left a gap between the user's tap and the getUserMedia() request.
+- Both features displayed a centered startup message over a dark preview region. Home also inherited card-style scanner presentation, while the agreed target is a full-screen camera surface.
+- Home and Stocktake have different presentation requirements and must not be forced into one scanner UI template.
+
+### Decision
+- Initiate requestCameraLease() synchronously in the scanner-opening click handler. The request begins camera permission/acquisition as close as possible to the user's gesture.
+- Transfer the request to the mounted scanner session through CameraLeaseRequest.claim(); the session claims the same in-flight lease rather than issuing a second camera request.
+- An unclaimed request supports cancel(). If the UI closes before handoff, a late successful acquisition releases its own lease. A request can be claimed only once.
+- Preserve the existing shared camera lease/refcount model. A claimed request is released by its owning scanner session; cancellation of an unclaimed request must not stop a stream still owned by another lease.
+- Home owns a full-screen camera presentation with no camera card/frame. Its entrance is anchored to the originating dock action.
+- Stocktake owns a separate entrance treatment while retaining its existing scanner surface, frame and layout.
+- Both transitions are lightweight CSS opacity/transform effects, honor prefers-reduced-motion, and do not wait for animation completion before camera startup or live preview.
+- Browser/OS controls the exact timing and appearance of camera permission prompts; application code can initiate the request from the tap but cannot dictate the native prompt's presentation.
+
+### Invariants
+- No background camera retention. Close, unmount and suspension must still release the owning lease through the existing lifecycle.
+- No duplicate getUserMedia request, session, decoder loop or stream lease during the handoff.
+- First usable video frame remains the preview-readiness boundary; decoder/scanning readiness remains distinct.
+- Animation is presentation-only. It must not own camera lifecycle, lease release or business callbacks.
+- Preserve Home cached lookup and Stocktake form-fill/explicit-save, duplicate-row and manual-entry semantics.
+- Preserve camera constraints, autofocus behavior, decoder/ROI/cadence, barcode validation and platform capability detection.
+- Keep Home and Stocktake presentation implementations independent; only camera acquisition/lease handoff and motion-origin primitives may be shared.
+
+### Acceptance / verification
+- Automated regression covers one-time lease claim, cancellation before claim, and lease isolation when another consumer still owns the shared stream.
+- GitHub Actions run #89 on PR #31 head 9e2e1bbe568d0d7be41d253fde4dfd2218634955 passed the repository preflight.
+- Required physical-device QA: iOS Safari/PWA and Android Chrome/PWA, including first permission prompt, denied/retry, close while permission is pending, rapid open/close/reopen, background/foreground and preview reveal.
+- CI is not evidence of physical camera behavior. Do not merge or deploy until device QA and explicit user approval.

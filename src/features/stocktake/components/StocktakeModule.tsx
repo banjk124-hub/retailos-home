@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import StocktakeScanner from './StocktakeScanner';
 
@@ -8,6 +9,8 @@ import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone }
 import { createStocktakeId, logStocktakeAction, stocktakeStore } from '../services/stocktakeLocalStore';
 import { createStocktakeFile, downloadStocktakeText } from '../services/stocktakeExport';
 import { unlockScannerAudio } from '../../scanner/services/scannerAudio';
+import { requestCameraLease, type CameraLeaseRequest } from '../../../shared/services/cameraSession';
+import { getMotionOrigin, type MotionOrigin } from '../../../shared/motion';
 import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
 import './stocktake.css';
 import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
@@ -45,6 +48,15 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [exports, setExports] = useState<StocktakeExport[]>([]);
   const [screen, setScreen] = useState<Screen>('home');
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
+  const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
+  const closeScanner = () => {
+    cameraLeaseRequestRef.current?.cancel();
+    cameraLeaseRequestRef.current = null;
+    setScannerMotionOrigin(null);
+    setScannerOpen(false);
+  };
+  useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
   const [zoneInput, setZoneInput] = useState('');
   const [pendingZone, setPendingZone] = useState<{ code: string; prefix: string; number: string; previous?: StocktakeZone } | null>(null);
   const [currentZone, setCurrentZone] = useState<StocktakeZone | null>(null);
@@ -172,6 +184,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const acceptBarcode = (value: string) => {
+    cameraLeaseRequestRef.current = null;
+    setScannerMotionOrigin(null);
     setScannerOpen(false);
     setBarcode(value.trim());
     setQuantity('1');
@@ -288,7 +302,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     }
     try {
       await stocktakeStore.clearAll();
-      setScannerOpen(false);
+      closeScanner();
       setSession(null);
       setCurrentZone(null);
       setEntries([]);
@@ -351,7 +365,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'scan' && currentZone && <>
           <div className="stocktake-zone-banner"><div><small>VÙNG ĐANG KIỂM KÊ</small><strong>{currentZone.zoneCode}</strong></div><span>REV {currentZone.revision}</span></div>
           <div className="stocktake-count"><strong>{currentEntries.length}</strong><span>dòng đã ghi nhận</span></div>
-          {isScannerSupportedDevice() && <button className="stocktake-primary stocktake-scan-button" type="button" onClick={() => { void unlockScannerAudio(); setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>}
+          {isScannerSupportedDevice() && <button className="stocktake-primary stocktake-scan-button" type="button" onClick={(event) => { if (scannerOpen) return; cameraLeaseRequestRef.current = requestCameraLease(); setScannerMotionOrigin(getMotionOrigin(event.currentTarget)); void unlockScannerAudio(); setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>}
           <div className="stocktake-entry-form">
             <label htmlFor="stocktake-barcode">Barcode vừa quét / nhập thủ công</label>
             <input id="stocktake-barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Quét mã hoặc nhập barcode" />
@@ -398,9 +412,9 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       </section>
 
       {scannerOpen && screen === 'scan' && (
-  <div className="stocktake-scanner-layer">
-    <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={() => setScannerOpen(false)}>Đóng</button></div>}>
-    <StocktakeScanner onDetected={acceptBarcode} onClose={() => setScannerOpen(false)} />
+  <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string }}>
+    <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={closeScanner}>Đóng</button></div>}>
+    <StocktakeScanner onDetected={acceptBarcode} onClose={closeScanner} cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary>
   </div>
 )}

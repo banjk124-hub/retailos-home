@@ -283,3 +283,32 @@ The shared camera acquisition promise previously awaited `requestContinuousAutof
 
 
 **Final PR-head CI confirmation (2026-11-07):** run #85 (`42393150965`) passed on documentation-synchronized head `a31d40315eaeb9f90ce209da4fef6341e8836025`. The latest PR head passed locked dependency installation and the full preflight. Local Windows/PowerShell and physical-device QA remain open.
+
+## Supplemental Scanner UX Transition — after Patch 2 (2026-11-08)
+
+**Status:** Implemented on feat/scanner-ux-transition; Draft PR #31. GitHub Actions run #89 passed. Real-device QA remains open.
+
+This is a scoped UX follow-up to the camera-startup work, not a replacement for or completion of Phase 1.2G.
+
+### Scope delivered on the branch
+- Home and Stocktake initiate camera acquisition from the opening tap and hand the same pending lease to the mounted scanner session.
+- Added single-claim/cancellable camera lease handoff to avoid duplicate acquisition and release late, unclaimed streams safely.
+- Home scanner presentation is full-screen without a camera card/frame; its entrance originates from the Home dock action.
+- Stocktake retains its existing scanner frame and layout and receives its own independent entrance/wait treatment.
+- Startup messaging is no longer a centered standalone loading presentation. Actual video visibility remains tied to first usable preview readiness.
+- Removed obsolete Stocktake CSS selectors that targeted the former shared Home scanner classes.
+- Added automated tests for lease handoff, duplicate claim rejection and cancellation while another consumer retains the stream.
+
+### Protected behavior
+- No change to camera constraints, autofocus, ZXing/decoder algorithm, ROI, 110 ms decode cadence, barcode validation or accepted-result feedback.
+- No change to Home cached barcode lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry or persistence.
+- No change to auth/session, Apps Script, IndexedDB, service worker, PWA base path or deployment workflow.
+- Home and Stocktake must remain separate presentation surfaces; do not consolidate their scanner UIs.
+
+### Verification gate
+- PR #31 GitHub Actions run #89 (42400411255) passed the full npm run preflight, including scanner regression tests, TypeScript/production build, GitHub Pages build and diff checks.
+- Still required: physical iOS Safari/PWA and Android Chrome/PWA QA for permission prompt, denial/retry, close while pending, rapid open/close/reopen, background/foreground, first-frame reveal and scan regression.
+- Do not merge/deploy based on CI alone. Explicit user approval remains required.
+
+### Return to the existing roadmap
+After this supplemental patch is accepted and device-verified, resume the existing Phase 1.2G–1.2J roadmap at the next incomplete task. This UX patch does not establish a performance baseline, complete G-A/G-B/G-E, or authorize speculative decoder tuning.

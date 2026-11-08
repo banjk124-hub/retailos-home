@@ -44,3 +44,21 @@
 - [ ] Confirm rollback point.
 - [ ] Explicit user approval to push/deploy.
 - [ ] Record release commit and verified URL.
+
+## Scanner transition — supplemental UX patch
+
+- [ ] Home opens as a full-screen camera surface; no camera card/frame remains.
+- [ ] Stocktake retains its existing scanner frame, dimensions and layout.
+- [ ] Home and Stocktake use independent presentation treatments; no shared UI template is introduced.
+- [ ] Camera acquisition begins from the opening tap; the mounted scanner claims the same pending lease.
+- [ ] Closing before lease handoff cancels safely; a late stream is released without stopping another active lease.
+- [ ] A lease request cannot be claimed twice.
+- [ ] Camera permission denial and explicit retry remain recoverable.
+- [ ] Animation does not gate camera startup, first-frame reveal, decoder readiness or scanner teardown.
+- [ ] First usable video frame is revealed without a standalone loading screen or visible flicker.
+- [ ] prefers-reduced-motion is respected.
+- [ ] iOS Safari/PWA: first permission, denial/retry, rapid open/close, background/foreground and scan result.
+- [ ] Android Chrome/PWA: first permission, denial/retry, rapid open/close, background/foreground and scan result.
+- [ ] Weak-device review: no heavy blur, large promoted layers, continuous animation or material scan regression.
+- [ ] Home cached lookup and Stocktake form-fill/explicit-save, duplicate rows and manual entry still work.
+- [ ] CI and local preflight pass; physical-device evidence is recorded separately.

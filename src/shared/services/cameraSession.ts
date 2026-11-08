@@ -11,6 +11,44 @@ export type CameraStreamLease = {
   release(): void;
 };
 
+/**
+ * Starts camera permission/acquisition from a user interaction and transfers
+ * the resulting lease to one scanner session after its video element mounts.
+ * An unclaimed request can be cancelled without leaking a late camera lease.
+ */
+export type CameraLeaseRequest = {
+  claim(): Promise<CameraStreamLease>;
+  cancel(): void;
+};
+
+export function requestCameraLease(): CameraLeaseRequest {
+  const promise = acquireCameraLease();
+  let claimed = false;
+  let cancelled = false;
+
+  // The owning UI may close before the scanner component mounts. Mark the
+  // rejection as observed while preserving it for the eventual session claim.
+  void promise.catch(() => undefined);
+
+  return {
+    claim: () => {
+      if (cancelled) {
+        return Promise.reject(new DOMException('Camera request was cancelled before handoff.', 'AbortError'));
+      }
+      if (claimed) {
+        return Promise.reject(new Error('Camera lease request has already been claimed.'));
+      }
+      claimed = true;
+      return promise;
+    },
+    cancel: () => {
+      if (claimed || cancelled) return;
+      cancelled = true;
+      void promise.then((lease) => lease.release()).catch(() => undefined);
+    },
+  };
+}
+
 
 async function acquireSharedStream(): Promise<{ stream: MediaStream; generation: number }> {
   if (activeStream?.getTracks().some((track) => track.readyState === 'live')) {

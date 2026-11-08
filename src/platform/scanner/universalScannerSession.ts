@@ -4,7 +4,7 @@ import type {
   ScannerSession,
   ScannerError,
 } from './contracts';
-import { acquireCameraLease, subscribeCameraTrackEnded, type CameraStreamLease } from '../../shared/services/cameraSession';
+import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
@@ -156,7 +156,11 @@ export class UniversalScannerSession implements ScannerSession {
   private unsubscribeTrackEnded: (() => void) | null = null;
   private trackEventCleanups: Array<() => void> = [];
 
-  constructor(private readonly video: HTMLVideoElement, private readonly options: ScannerOpenOptions) {}
+  constructor(
+    private readonly video: HTMLVideoElement,
+    private readonly options: ScannerOpenOptions,
+    private initialCameraLeaseRequest?: CameraLeaseRequest,
+  ) {}
   get state(): ScannerLifecycleState { return this.currentState; }
 
   private setState(state: ScannerLifecycleState): void {
@@ -196,7 +200,11 @@ export class UniversalScannerSession implements ScannerSession {
       if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
         throw new Error('Camera cần HTTPS hoặc localhost và quyền truy cập mediaDevices.');
       }
-      const lease = await acquireCameraLease();
+      const initialRequest = this.initialCameraLeaseRequest;
+      this.initialCameraLeaseRequest = undefined;
+      const lease = initialRequest
+        ? await initialRequest.claim()
+        : await acquireCameraLease();
       this.logStage('camera_acquire_ms', performance.now() - cameraRequestStartedAt);
       const stream = lease.stream;
       if (this.disposed || generation !== this.generation) {

@@ -56,7 +56,7 @@ button { font: inherit; }
   opacity: .3;
   background: radial-gradient(ellipse at 85% 12%,rgba(255,255,255,.95),transparent 28%);
 }
-.sidebar, .topbar, .topbar-dock, .mobile-nav, .panel-card, .metric-card, .module-card, .app-library-card, .calendar-modal, .notice-detail-modal, .barcode-scanner-card, .barcode-result-card, .toast-message {
+.sidebar, .topbar, .topbar-dock, .mobile-nav, .panel-card, .metric-card, .module-card, .app-library-card, .calendar-modal, .notice-detail-modal, .barcode-result-card, .toast-message {
   -webkit-backdrop-filter: blur(var(--glass-elevated-blur)) saturate(var(--glass-elevated-saturation));
   backdrop-filter: blur(var(--glass-elevated-blur)) saturate(var(--glass-elevated-saturation));
 }
@@ -162,7 +162,7 @@ button { font: inherit; }
   transition: transform .2s var(--ro-ease), box-shadow .2s ease;
 }
 .app-library-module-arrow:hover, .barcode-result-action:hover { transform: translateY(-1px); }
-.calendar-modal, .notice-detail-modal, .barcode-result-card, .barcode-scanner-card {
+.calendar-modal, .notice-detail-modal, .barcode-result-card {
   border: 1px solid rgba(255,255,255,.88);
   border-radius: 28px;
   box-shadow: 0 30px 90px rgba(37,12,18,.24), inset 0 1px 0 rgba(255,255,255,.9);

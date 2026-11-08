@@ -26,6 +26,7 @@ import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/d
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
+import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import ScannerQaMonitor from './components/ScannerQaMonitor';
 import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 
@@ -60,8 +61,11 @@ export default function HomeScreen({
       : 'home',
   );
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
+  const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showScannerQa, setShowScannerQa] = useState(false);
   const closeScannerQa = useCallback(() => setShowScannerQa(false), []);
+  useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
   const [barcodeLookup, setBarcodeLookup] = useState<{
     barcode: string;
     records: BarcodeProductRecord[] | null;
@@ -493,6 +497,8 @@ export default function HomeScreen({
     window.setTimeout(() => setToast(''), 2600);
   };
   const handleBarcodeDetected = (barcode: string) => {
+    cameraLeaseRequestRef.current = null;
+    setScannerMotionOrigin(null);
     setIsBarcodeScannerOpen(false);
     setBarcodeLookup({ barcode, records: null });
     void lookupCachedBarcode(barcode).then(({ records, failedSources }) => {
@@ -513,9 +519,17 @@ export default function HomeScreen({
     });
   };
   const closeBarcodeScanner = () => {
+    cameraLeaseRequestRef.current?.cancel();
+    cameraLeaseRequestRef.current = null;
+    setScannerMotionOrigin(null);
     setIsBarcodeScannerOpen(false);
   };
-  const openBarcodeScanner = () => {
+  const openBarcodeScanner = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isBarcodeScannerOpen) return;
+    // Begin getUserMedia in the actual dock-button interaction; the mounted
+    // scanner will claim this lease as soon as its video element is available.
+    cameraLeaseRequestRef.current = requestCameraLease();
+    setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
   };
@@ -721,7 +735,7 @@ export default function HomeScreen({
     />
     {showScannerQa && <ScannerQaMonitor onClose={closeScannerQa} />}
     {isBarcodeScannerOpen && <AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
-      <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" />
+      <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);

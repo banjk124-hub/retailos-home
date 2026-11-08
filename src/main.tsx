@@ -22,6 +22,7 @@ import './shared/components/glass/glass.materials.css';
 import './shared/navigation/LiquidDock.css';
 import './styles/login-experience.css';
 import './features/stocktake/components/stocktake.css';
+import './features/scanner/scanner-transition.css';
 import { MotionBoundary, MotionProvider } from './shared/motion';
 import { AppErrorBoundary } from './shared/components/AppErrorBoundary';
 

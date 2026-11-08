@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 import type { RetailIcon } from '../icons/icon.types';
 
 export type LiquidDockItemDefinition = {
@@ -10,7 +11,7 @@ export type LiquidDockItemDefinition = {
 export type LiquidDockActionDefinition = {
   label: string;
   icon: RetailIcon;
-  onSelect: () => void;
+  onSelect: (event: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
 };
 
