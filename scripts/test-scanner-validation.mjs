@@ -350,14 +350,22 @@ assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-trans
   "Home must not transform/fade an ancestor of the live camera video during startup");
 assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*transition:\s*none/,
   "Home live video must not be opacity-transitioned during first-frame presentation");
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*opacity:\s*0;/,
-  "Home must visually mask the pending preview without removing the video from rendering");
-assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
-  "Home must not set the pending live video to visibility:hidden");
-assert.match(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*opacity:\s*0;/,
-  "Stocktake must visually mask the pending preview without removing the video from rendering");
-assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
-  "Stocktake must not set the pending live video to visibility:hidden");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*opacity:\s*1;[^}]*transition:\s*none;/,
+  "Home live video must remain fully opaque with no opacity transition");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
+  "Home pending preview must use visibility:hidden to avoid iOS opacity compositing");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video\s*\{\s*visibility:\s*visible;/,
+  "Home preview must become visible only after the first usable frame");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-preview video\s*\{\s*opacity:\s*1;\s*transition:\s*none;/,
+  "Stocktake live video must remain fully opaque with no opacity transition");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
+  "Stocktake pending preview must use visibility:hidden to avoid iOS opacity compositing");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-preview\.has-preview video\s*\{\s*visibility:\s*visible;/,
+  "Stocktake preview must become visible only after the first usable frame");
+assert.match(scannerUiSource, /<video\b/,
+  "Home scanner video element must remain mounted while CSS visibility masks the pending preview");
+assert.match(stocktakeUiSource, /<video\b/,
+  "Stocktake scanner video element must remain mounted while CSS visibility masks the pending preview");
 assert.ok(scannerTransitionCss.includes("@keyframes scanner-home-close") && scannerTransitionCss.includes("to { opacity: 1; transform: scale(.94); }"),
   "Home exit must shrink the frozen preview without fading the entire screen to black");
 assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-surface\.scanner-stocktake-surface-enter\s*\{[^}]*animation:\s*scanner-stocktake-surface-in/,
