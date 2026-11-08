@@ -62,3 +62,19 @@
 - [ ] Weak-device review: no heavy blur, large promoted layers, continuous animation or material scan regression.
 - [ ] Home cached lookup and Stocktake form-fill/explicit-save, duplicate rows and manual entry still work.
 - [ ] CI and local preflight pass; physical-device evidence is recorded separately.
+
+
+## Scanner lifecycle and exit-transition stabilization — PR #32
+
+- [ ] Home scanner root has the dedicated full-screen class and tap-origin styles.
+- [ ] Home video remains hidden until first usable frame, then reveals without layout jump.
+- [ ] Stocktake preview retains its frame and stable geometry at small and large viewport sizes.
+- [ ] A delayed pause teardown cannot overwrite a newer foreground preview/scanning state.
+- [ ] A stale start completion cannot clear a newer start's loading state.
+- [ ] Manual close and successful single-scan result use the correct module-owned exit treatment.
+- [ ] Camera teardown starts immediately on close/result; exit motion never holds the camera lease.
+- [ ] Reduced-motion mode closes without waiting for animation events.
+- [ ] Rapid close/reopen does not reuse a disposed session or release a newer lease.
+- [ ] iOS Safari/PWA and Android Chrome/PWA pass first-open, permission denial/retry, foreground recovery and result flows.
+- [ ] Low-end Android and small iPhone viewport pass preview geometry and motion checks.
+- [ ] Home lookup and Stocktake explicit-save/manual-entry/duplicate-row behavior remain unchanged.
