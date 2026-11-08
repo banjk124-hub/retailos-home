@@ -91,6 +91,13 @@ const closeTeardownAt = closeBody.indexOf('await this.teardown(true)');
 const disposedAt = closeBody.indexOf('this.lifecycle.disposed()');
 assert.ok(exitRequestAt >= 0 && closeTeardownAt > exitRequestAt, 'EXIT_REQUESTED precedes close teardown');
 assert.ok(disposedAt > closeTeardownAt, 'DISPOSED is emitted only after close awaits teardown');
+const recoveryCloseAt = closeBody.indexOf('if (this.recoveryDisposePromise)');
+const recoveryAwaitAt = closeBody.indexOf('await this.recoveryDisposePromise', recoveryCloseAt);
+const recoveryCameraReleasedAt = closeBody.indexOf('this.lifecycle.cameraReleased()', recoveryAwaitAt);
+const recoveryDisposedAt = closeBody.indexOf('this.lifecycle.disposed()', recoveryCameraReleasedAt);
+assert.ok(recoveryCloseAt >= 0 && recoveryAwaitAt > recoveryCloseAt, 'closing during recovery waits for recovery teardown');
+assert.ok(recoveryCameraReleasedAt > recoveryAwaitAt && recoveryDisposedAt > recoveryCameraReleasedAt, 'recovery-time close publishes terminal milestones only after teardown');
+
 
 const releaseAt = teardownBody.indexOf('lease?.release()');
 const cameraEventAt = teardownBody.indexOf('this.lifecycle.cameraReleased()', releaseAt);
@@ -137,6 +144,7 @@ assert.ok(hookSource.includes('disposeForRecovery()'), 'foreground recovery must
 assert.ok(hookSource.includes('replaceVideoSurface()'), 'foreground recovery must request a fresh video surface');
 assert.ok(hookSource.includes('pending.resolve(videoRef.current)'), 'recovery waits for the replacement video node to commit');
 assert.ok(hookSource.includes('sessionRef.current !== session'), 'callbacks from retired sessions must not update the active feature');
+assert.ok(hookSource.includes('sessionRef.current ?? lifecycleSessionRef.current'), 'a feature can still close cleanly while its previous session is being replaced');
 assert.ok(hookSource.includes('if (recoveryRequiredRef.current) await recoverScanner();'), 'foreground lifecycle uses recovery only after a background transition');
 assert.ok(hookSource.includes('Keep the old start promise registered until its in-flight camera lease') && hookSource.includes('Recovery waits for it before acquiring a new lease.'), 'recovery serializes an in-flight lease handoff before opening the next session');
 
