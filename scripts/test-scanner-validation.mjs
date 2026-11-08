@@ -266,7 +266,7 @@ assert.match(scannerUiSource, /barcode-scanner scanner-home-transition/,
   "Home scanner must activate its dedicated full-screen transition styles");
 assert.match(scannerUiSource, /if \(mode === 'single'\)/,
   "Home scanner exit motion must not close continuous scan mode");
-assert.match(scannerUiSource, /style=\{transitionStyle\}/,
+assert.match(scannerUiSource, /style=\{\{ \.\.\.transitionStyle, \.\.\.viewportStyle \}\}/,
   "Home scanner must pass the tap-origin motion coordinates to its presentation root");
 
 const scannerEngineSource = await readFile(
