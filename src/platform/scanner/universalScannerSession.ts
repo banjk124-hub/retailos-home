@@ -168,6 +168,7 @@ export class UniversalScannerSession implements ScannerSession {
   private disposed = false;
   private closePromise: Promise<void> | null = null;
   private suspendPromise: Promise<void> | null = null;
+  private recoveryDisposePromise: Promise<void> | null = null;
   private unsubscribeTrackEnded: (() => void) | null = null;
   private trackEventCleanups: Array<() => void> = [];
   private readonly lifecycle: ScannerLifecycleAdapter;
@@ -188,6 +189,7 @@ export class UniversalScannerSession implements ScannerSession {
 
   start(): Promise<void> {
     if (this.closePromise) return this.closePromise;
+    if (this.recoveryDisposePromise) return this.recoveryDisposePromise;
     if (this.suspendPromise) return this.suspendPromise.then(() => this.start());
     if (this.disposed || this.currentState === 'scanning') return Promise.resolve();
     if (this.startPromise) {
@@ -491,6 +493,27 @@ export class UniversalScannerSession implements ScannerSession {
 
   notifyExitPresentation(): void {
     this.lifecycle.exitPresentation();
+  }
+
+  /**
+   * Retire a suspended session before binding a fresh video surface.
+   * Unlike close(), recovery disposal must not publish feature exit milestones:
+   * the scanner overlay remains open and the feature continues the same task.
+   */
+  disposeForRecovery(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    if (this.recoveryDisposePromise) return this.recoveryDisposePromise;
+    if (this.disposed) return Promise.resolve();
+
+    ++this.generation;
+    this.setState('suspended');
+    this.recoveryDisposePromise = (async () => {
+      await this.suspendPromise;
+      await this.teardown(true);
+      this.disposed = true;
+      this.setState('disposed');
+    })();
+    return this.recoveryDisposePromise;
   }
 
   close(): Promise<void> {
