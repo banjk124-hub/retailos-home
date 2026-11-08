@@ -27,7 +27,7 @@ Read docs/ai-context/SCANNER_C2_AUDIT_2026-11-08.md first. The historical handof
 ---
 
 
-# Current handoff update — 2026-11-08
+# Historical handoff snapshot — 2026-11-08 (pre C1/Recovery merge)
 
 Read this update before using older session notes below. Current source baseline is main merge `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32). PR #31 and #32 are merged; old Draft/unmerged statements are historical.
 
