@@ -212,9 +212,9 @@ export function useScannerEngine({
     } catch (suspendError) {
       console.warn('[RetailOS Scanner] Background suspension failed; foreground will retire the old session:', suspendError);
     } finally {
-      // The old start promise belongs to the suspended generation. Its late
-      // completion is guarded by session identity and must not block a new one.
-      startPromiseRef.current = null;
+      // Keep the old start promise registered until its in-flight camera lease
+      // handoff settles. Recovery waits for it before acquiring a new lease.
+      // This prevents two generations from racing the shared stream ref-count.
       recoveryRequiredRef.current = true;
     }
   }, []);
