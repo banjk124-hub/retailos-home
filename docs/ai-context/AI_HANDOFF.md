@@ -14,7 +14,7 @@
 - Keep the native video opaque with `transition:none`; only the sibling curtain fades. This preserves the existing iOS/WebKit camera-layer guard.
 - Both modules now inherit the same transition. Module responsibilities remain layout, controls, overlays and business flow—not preview timing.
 - Camera session, lease, decoder, Recovery and lifecycle exit contracts are outside PR A scope.
-- Run full `npm run preflight` through CI; physical iOS Safari/PWA and Android Chrome/PWA QA remain required.
+- GitHub Actions run #185 passed full `npm run preflight` after correcting a stale test that expected feature-owned video elements. Physical iOS Safari/PWA and Android Chrome/PWA QA remain required.
 
 ## PR A invariants
 1. READY means a fresh usable frame, not decoder SCANNING.
