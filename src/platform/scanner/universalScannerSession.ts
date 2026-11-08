@@ -488,19 +488,9 @@ export class UniversalScannerSession implements ScannerSession {
     this.unsubscribeTrackEnded?.();
     this.unsubscribeTrackEnded = null;
     this.trackEventCleanups.splice(0).forEach((cleanup) => cleanup());
-    const decoder = this.decoder;
-    this.decoder = null;
-    if (decoder) {
-      const decoderDisposeStartedAt = performance.now();
-      try {
-        await decoder.dispose();
-      } catch (cause) {
-        console.warn('[RetailOS Scanner] Decoder disposal failed', {
-          errorName: cause instanceof Error ? cause.name : 'UnknownError',
-        });
-      }
-      this.logStage('decoder_dispose_ms', performance.now() - decoderDisposeStartedAt);
-    }
+    // Stop camera ownership before awaiting decoder disposal. The decoder is
+    // no longer scheduled; its cleanup must never keep the physical camera
+    // leased while a closing transition is running or a worker is slow.
     const stream = this.stream;
     this.stream = null;
     if (this.video.srcObject === stream) {
@@ -520,6 +510,19 @@ export class UniversalScannerSession implements ScannerSession {
       } finally {
         this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
       }
+    }
+    const decoder = this.decoder;
+    this.decoder = null;
+    if (decoder) {
+      const decoderDisposeStartedAt = performance.now();
+      try {
+        await decoder.dispose();
+      } catch (cause) {
+        console.warn('[RetailOS Scanner] Decoder disposal failed', {
+          errorName: cause instanceof Error ? cause.name : 'UnknownError',
+        });
+      }
+      this.logStage('decoder_dispose_ms', performance.now() - decoderDisposeStartedAt);
     }
     this.longTaskObserver?.disconnect();
     this.longTaskObserver = null;
