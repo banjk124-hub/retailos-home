@@ -108,7 +108,6 @@ const recoveryDisposeBody = sessionSource.slice(recoveryDisposeStart, recoveryDi
 assert.ok(recoveryDisposeBody.includes('await this.suspendPromise;') && recoveryDisposeBody.includes('await this.teardown(true);'), 'recovery disposal waits for suspension and resource teardown');
 assert.ok(recoveryDisposeBody.indexOf('await this.teardown(true);') < recoveryDisposeBody.indexOf('this.disposed = true;'), 'session is retired only after resources are released');
 assert.doesNotMatch(recoveryDisposeBody, /exitRequested|cameraReleased|exitPresentation/, 'recovery disposal must not trigger feature exit milestones');
-assert.ok(contractSource.includes('disposeForRecovery(): Promise<void>;'), 'session contract exposes recovery-only retirement');
 
 assert.ok(sessionSource.includes('  notifyExitPresentation(): void {') && sessionSource.includes('this.lifecycle.exitPresentation();'), 'feature can publish EXIT_PRESENTATION on the real session adapter');
 
@@ -118,6 +117,7 @@ const contractSource = await readFile(
 );
 assert.ok(contractSource.includes('lifecycleObserver?: ScannerLifecycleObserver;'), 'platform contract accepts observer, not a feature-created adapter');
 assert.ok(contractSource.includes('notifyExitPresentation(): void;'), 'session contract exposes presentation milestone');
+assert.ok(contractSource.includes('disposeForRecovery(): Promise<void>;'), 'session contract exposes recovery-only retirement');
 
 const homeScannerSource = await readFile(
   new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),
