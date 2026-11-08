@@ -1,4 +1,5 @@
-import { useState, type AnimationEvent, type CSSProperties } from 'react';
+import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
+import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
 import { AlertTriangle, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
@@ -36,10 +37,28 @@ export default function BarcodeScanner({
 }: Props) {
   const [isClosing, setIsClosing] = useState(false);
   const [exitFrame, setExitFrame] = useState<string | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const exitMilestonesRef = useRef({ presentation: false, cameraReleased: false, disposed: false, completed: false });
+  const handleLifecycleEvent = (event: ScannerLifecycleEvent) => {
+    if (event.type === 'CAMERA_RELEASED') exitMilestonesRef.current.cameraReleased = true;
+    if (event.type === 'DISPOSED') exitMilestonesRef.current.disposed = true;
+    const milestones = exitMilestonesRef.current;
+    if (milestones.presentation && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
+      milestones.completed = true;
+      onCloseRef.current();
+    }
+  };
   const viewportStyle = useScannerViewportStyle();
   const finishClose = (event: AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== 'scanner-home-close') return;
-    onClose();
+    exitMilestonesRef.current.presentation = true;
+    scanner.notifyExitPresentation();
+    const milestones = exitMilestonesRef.current;
+    if (milestones.cameraReleased && milestones.disposed && !milestones.completed) {
+      milestones.completed = true;
+      onCloseRef.current();
+    }
   };
   const scanner = useScannerEngine({ onDetected: (value) => {
     if (mode === 'single') {
@@ -47,7 +66,7 @@ export default function BarcodeScanner({
       setIsClosing(true);
     }
     onDetected(value);
-  }, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
+  }, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
