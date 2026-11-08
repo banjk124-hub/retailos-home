@@ -30,6 +30,7 @@ export function useScannerEngine({
   audioFeedback = true,
   hapticFeedback = true,
   cameraLeaseRequest = null,
+  lifecycle,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
@@ -95,6 +96,7 @@ export function useScannerEngine({
           sameCodeCooldownMs: scanCooldownMs,
           audioFeedback,
           hapticFeedback,
+          lifecycle,
           onResult: (result) => {
             // Deliver the decoded value to the owning module first. Feedback is
             // deliberately isolated so a sound/haptic failure cannot block the
