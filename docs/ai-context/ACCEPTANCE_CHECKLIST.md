@@ -72,6 +72,8 @@
 - [ ] A delayed pause teardown cannot overwrite a newer foreground preview/scanning state.
 - [ ] A stale start completion cannot clear a newer start's loading state.
 - [ ] Manual close and successful single-scan result use the correct module-owned exit treatment.
+- [ ] Home continuous scan mode remains open after an accepted result; close-on-result applies only to single-result mode.
+- [ ] A successful single-result event prevents visibility/foreground recovery from reacquiring the camera during exit.
 - [ ] Camera teardown starts immediately on close/result; exit motion never holds the camera lease.
 - [ ] Reduced-motion mode closes without waiting for animation events.
 - [ ] Rapid close/reopen does not reuse a disposed session or release a newer lease.
