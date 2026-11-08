@@ -19,6 +19,11 @@ const checks = [
     args: ["scripts/test-scanner-lifecycle.mjs"],
   },
   {
+    name: "Scanner presentation layout readiness tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-presentation.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],
