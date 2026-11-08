@@ -232,7 +232,9 @@ export function useScannerEngine({
       // Detach the old session first so late callbacks cannot mutate the new UI.
       const previousSession = sessionRef.current;
       sessionRef.current = null;
-      lifecycleSessionRef.current = null;
+      // Keep the lifecycle owner until a replacement session exists. If the
+      // user closes during recovery, this retired session still emits the
+      // feature's terminal exit milestones after its teardown is complete.
       await previousSession?.disposeForRecovery();
 
       if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
@@ -276,8 +278,9 @@ export function useScannerEngine({
     // If close races a foreground recovery, let that serialized operation
     // finish its retirement boundary before closing whichever session remains.
     await recoveryPromiseRef.current?.catch(() => undefined);
-    const session = sessionRef.current;
+    const session = sessionRef.current ?? lifecycleSessionRef.current;
     sessionRef.current = null;
+    lifecycleSessionRef.current = null;
     await session?.close();
     if (mountedRef.current) {
       setIsStarting(false);
