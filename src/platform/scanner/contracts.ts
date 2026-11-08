@@ -163,6 +163,8 @@ export interface ScannerSession {
   start(): Promise<void>;
   suspend(reason?: 'hidden' | 'manual'): Promise<void>;
   resume(): Promise<void>;
+  /** Retire this session for foreground recovery without emitting feature exit milestones. */
+  disposeForRecovery(): Promise<void>;
   close(): Promise<void>;
   /** Publish completion of the feature-owned exit presentation. */
   notifyExitPresentation(): void;
