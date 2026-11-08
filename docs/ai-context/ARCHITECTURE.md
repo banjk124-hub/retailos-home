@@ -1,3 +1,24 @@
+## ADR-014 — Engine-owned first-frame preview reveal (2026-11-08)
+
+Status: Implemented in PR A branch `feat/scanner-a-engine-preview-transition`; review pending.
+
+**Decision**
+- The shared scanner engine owns the preview readiness handoff. `UniversalScannerSession` confirms a fresh usable frame, invokes the internal `onPreviewReady` bridge and publishes `READY` before decoder initialization.
+- `useScannerEngine` exposes `isPreviewReady`; the shared `ScannerPreviewSurface` consumes that state and renders the same opening curtain for every feature.
+- The curtain is the only animated layer. The native `<video>` remains fully opaque with no opacity/transform transition; this preserves the existing iOS/WebKit camera-layer guard.
+- The curtain fades away only after a fresh frame is confirmed. During initial acquisition and foreground recovery it remains in place; decoder initialization is not part of preview readiness.
+- Home and Stocktake provide the video ref, keyed video-surface identity and accessible label. They do not decide reveal timing, CSS readiness classes or transition duration.
+- `prefers-reduced-motion` disables the curtain transition. No camera, decoder, lease, barcode or feature business behavior changes.
+
+**Acceptance**
+- One shared preview component is used by Home and Stocktake.
+- The native video is never opacity-transitioned.
+- The reveal is triggered by engine first-frame readiness, not `SCANNING`.
+- Recovery returns the curtain while the replacement surface awaits its first fresh frame.
+- Reduced-motion users receive the preview immediately when READY is reached.
+
+---
+
 ## ADR-009 — Serialized cross-platform page lifecycle recovery (2026-11-08)
 
 Status: Merged in PR #38 and subsequently extended by PR #43; user has verified the former preview-shrink defect is gone.
@@ -17,14 +38,14 @@ Status: Merged in PR #38 and subsequently extended by PR #43; user has verified 
 
 ## ADR-008 — Feature-observed scanner lifecycle and Home exit handoff (2026-11-08)
 
-Status: Merged. PR C1 is implemented in BarcodeScanner; PR C2 remains the next feature migration.
+Status: Merged. PR C1 is implemented in BarcodeScanner; PR C2 is implemented in StocktakeScanner.
 
 - `UniversalScannerSession` owns the session ID and constructs its `ScannerLifecycleAdapter` with an optional `ScannerLifecycleObserver`. Feature modules never create an adapter or supply a session ID.
 - `useScannerEngine` forwards the observer through a ref-backed callback. Updating a React callback does not restart the scanner effect or reacquire the camera.
 - `EXIT_PRESENTATION` is emitted by the owning feature through the active/closing `ScannerSession`; the platform session routes it through the same adapter and session ID as engine milestones.
 - Home unmounts its scanner only after `EXIT_REQUESTED`, `EXIT_PRESENTATION`, `CAMERA_RELEASED`, and `DISPOSED` have all been observed. Event arrival order is not assumed; completion is idempotent.
 - Home snapshot capture stays before `closeScanner()`. `CAMERA_RELEASED` remains a resource boundary and is not treated as animation completion. `DISPOSED` remains after teardown.
-- Stocktake is not yet migrated. C2 must adopt the same observer contract and exit gate in StocktakeScanner, while preserving Stocktake-owned presentation and business behavior.
+- Stocktake now consumes the same observer contract and four-milestone exit gate through `StocktakeScannerExitGate`, preserving Stocktake business and persistence behavior.
 # Architecture notes and invariants
 
 This file is a working contract, not a substitute for inspecting current source. Verify every path and interface before changing it.
