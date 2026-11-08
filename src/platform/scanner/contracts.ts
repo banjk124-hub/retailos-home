@@ -42,6 +42,28 @@ export type ScannerLifecycleState =
   | 'error'
   | 'disposed';
 
+
+/**
+ * Feature-consumable lifecycle milestones. These describe resource and
+ * presentation boundaries; they are not a mandatory linear UI state machine.
+ */
+export type ScannerLifecycleEventName =
+  | 'OPENING'
+  | 'READY'
+  | 'SCANNING'
+  | 'EXIT_REQUESTED'
+  | 'CAMERA_RELEASED'
+  | 'EXIT_PRESENTATION'
+  | 'DISPOSED';
+
+export type ScannerLifecycleEvent = {
+  type: ScannerLifecycleEventName;
+  sessionId: string;
+  timestamp: number;
+};
+
+export type ScannerLifecycleObserver = (event: ScannerLifecycleEvent) => void;
+
 export type ScannerPoint = {
   x: number;
   y: number;
@@ -107,6 +129,8 @@ export type ScannerOpenOptions = {
   hapticFeedback?: boolean;
   onResult: (result: ScannerResult) => void;
   onStateChange?: (state: ScannerLifecycleState) => void;
+  /** Optional lifecycle event adapter shared with the owning feature module. */
+  lifecycle?: import('./scannerLifecycleAdapter').ScannerLifecycleAdapter;
   /** Fires once the attached video element has its first usable camera frame. */
   onPreviewReady?: () => void;
   onError?: (error: ScannerError) => void;

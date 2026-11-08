@@ -238,3 +238,15 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
 - Run #109 (`42451179152`) passed on the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
+
+
+## Active task — PR B Scanner Lifecycle Contract (2026-11-08)
+
+- Branch: `feat/scanner-lifecycle-contract`, based on main `fa0d007d42bf480799e29b6003aeea2b2cd52112`.
+- Scope: shared lifecycle event vocabulary/adapter, truthful camera-release and disposal milestones, deterministic regression tests, synchronized technical documentation.
+- The event vocabulary is not a compulsory linear workflow. READY/SCANNING may be skipped on early close; EXIT_PRESENTATION is optional and feature-owned. Suspend/resume is not terminal exit.
+- Engine emits CAMERA_RELEASED after releasing its lease and before awaiting decoder disposal. DISPOSED follows completed engine teardown.
+- Home and Stocktake are not migrated in PR B. PR A opening presentation and PR C snapshot/exit handoff remain separate.
+- Run `npm run preflight` after syncing the branch. Current remote editing has not run tests/build or physical device QA.
+- Preserve local changes/untracked files. Keep PR unmerged/undeployed until explicit approval.
+\n\n### PR B corrective audit — CI run #130\n- Run #130 failed at the new lifecycle test, not dependency installation or the existing scanner test.\n- The source-order assertion incorrectly compared method declaration offsets. It was rewritten to inspect execution ordering inside each method boundary.\n- A second real defect was found: the hook declared `lifecycle` in its options type but failed to destructure and forward it. This is fixed and guarded by the test.\n- Await a new CI run on the latest branch head before treating the PR as passing. Local Windows and physical iOS/Android QA remain outstanding.\n\n- Follow-up CI run #137 failed on a brittle string assertion in the test guard (newline escaping); corrected the guard to be whitespace-independent. Recheck latest CI before claiming pass.\n\n\n### PR B CI verification — run #142\n- Latest synchronized branch head `3e67397260993778a69eb1a5d2eb7a8216bd3044` passed GitHub Actions run #142 (`42465469769`). Full preflight passed, including both scanner regression suites and both production builds.\n- Local Windows preflight and physical iOS/Android QA remain outstanding. Keep PR #36 Draft and do not merge/deploy without explicit user approval.\n

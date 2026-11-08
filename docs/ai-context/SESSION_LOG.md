@@ -177,3 +177,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Added `SCANNER_SOURCE_AUDIT_2026-11-08.md` and synchronized Roadmap, Implementation Status, Architecture, AI Handoff, Acceptance Checklist and Project Context.
 - No runtime code, tests, dependency, configuration, data contract, PWA or deployment file changed. No local preflight, CI, browser trace or physical-device QA was run in this documentation audit.
 - Branch: `docs/scanner-source-audit-device-profiles`; unmerged and undeployed. Next: review documentation diff; then handle iOS geometry and exit visuals as separate scoped code changes after evidence.
+
+
+### 2026-11-08 — PR B scanner lifecycle contract foundation
+
+- Based on main `fa0d007d42bf480799e29b6003aeea2b2cd52112`; branch `feat/scanner-lifecycle-contract`.
+- Added public lifecycle event vocabulary and optional `ScannerLifecycleAdapter`; engine state enum remains separate.
+- Engine milestones are wired at resource boundaries. Camera release notification occurs after lease release and before decoder disposal; DISPOSED follows teardown.
+- EXIT_PRESENTATION is exposed as an optional adapter milestone for feature-owned presentation. It does not make animation part of engine teardown.
+- Added focused lifecycle regression test and wired it into preflight.
+- Synchronized Architecture ADR-013, Roadmap Phase 1.2I slice, Implementation Status, AI Handoff and Project Context.
+- Verification not run in this remote editing step; CI and local Windows/device QA are pending. Branch remains unmerged and undeployed.
+\n\n### 2026-11-08 — PR B CI failure investigation and fixes\n- Inspected GitHub Actions run #130 and its job log. Existing scanner validation passed; the lifecycle test failed on the assertion `DISPOSED follows decoder disposal`.\n- Determined that assertion compared source-file declaration order across methods rather than runtime order. Replaced with method-scoped ordering checks.\n- Found and fixed a separate hook integration defect: optional lifecycle adapter was typed but not destructured/forwarded to the session. Added explicit regression guards.\n- Added coverage for repeated readiness/scanning milestones on resume. Latest corrected CI result pending.\n\n- CI run #137 caught an over-escaped newline assertion in the hook-wiring regression test. Replaced it with whitespace-independent checks for destructuring and forwarding. Latest CI pending.\n\n\n### 2026-11-08 — PR B CI green\n- Latest branch head `3e67397260993778a69eb1a5d2eb7a8216bd3044` passed GitHub Actions run #142 (`42465469769`), including scanner barcode tests, lifecycle contract tests, TypeScript/production build, Pages build and diff checks.\n- Earlier test-only failures were traced and corrected; no CI failure is being hidden or bypassed.\n- Local Windows/PowerShell and real-device iOS Safari/PWA + Android Chrome/PWA QA remain pending. PR #36 stays Draft and unmerged.\n

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleState, type ScannerSession } from '../../../platform/scanner/contracts';
+import type { ScannerLifecycleAdapter } from '../../../platform/scanner/scannerLifecycleAdapter';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -13,6 +14,8 @@ type Options = {
   audioFeedback?: boolean;
   hapticFeedback?: boolean;
   cameraLeaseRequest?: CameraLeaseRequest | null;
+  /** Optional feature-owned lifecycle observer/adapter; presentation remains module-owned. */
+  lifecycle?: ScannerLifecycleAdapter;
 };
 
 function isDocumentHidden(): boolean {
@@ -27,6 +30,7 @@ export function useScannerEngine({
   audioFeedback = true,
   hapticFeedback = true,
   cameraLeaseRequest = null,
+  lifecycle,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
@@ -92,6 +96,7 @@ export function useScannerEngine({
           sameCodeCooldownMs: scanCooldownMs,
           audioFeedback,
           hapticFeedback,
+          lifecycle,
           onResult: (result) => {
             // Deliver the decoded value to the owning module first. Feedback is
             // deliberately isolated so a sound/haptic failure cannot block the
@@ -152,7 +157,7 @@ export function useScannerEngine({
         if (mountedRef.current && desiredActiveRef.current) setIsStarting(false);
       }
     }
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, hapticFeedback, lifecycle, mode, scanCooldownMs]);
 
   const pauseScanner = useCallback(async () => {
     // UniversalScannerSession publishes the suspended state synchronously

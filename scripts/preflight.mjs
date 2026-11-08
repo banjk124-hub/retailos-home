@@ -14,6 +14,11 @@ const checks = [
     args: ["scripts/test-scanner-validation.mjs"],
   },
   {
+    name: "Scanner lifecycle contract regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-lifecycle.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],

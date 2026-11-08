@@ -367,3 +367,29 @@ After PR #31 was merged, the remaining device QA and Phase 1.2G–1.2J work rema
 - Protected: camera lease/refcount, 1280×720 ideal / 30 FPS target, autofocus, first-frame readiness contract, ZXing, ROI, 110 ms decode interval, validation, Home lookup, Stocktake save/manual/duplicate-row flows and persistence.
 - CI evidence: run #107 (`42451111883`) passed full preflight on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`; run #109 (`42451179152`) passed on the prior docs-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`. The latest documentation-only synchronization commits have not yet been rerun through CI.
 - Acceptance still open: local Windows/PowerShell preflight; iOS Safari/PWA and Android Chrome/PWA permission, deny/retry, rapid open/close, background/foreground, first-frame, result-close and business-flow checks. Test a low-end Android device and a smaller iPhone viewport. Do not merge/deploy until all gates pass and user approves.
+
+
+## Phase 1.2I — Shared Scanner Engine Completion: lifecycle contract foundation
+
+**Current slice:** PR B — shared lifecycle event contract and adapter.
+
+Scope:
+- Define lifecycle event names and payload independently from internal session states.
+- Add an optional adapter/observer boundary; preserve existing session API and keep feature presentation outside the engine.
+- Emit engine milestones at truthful resource boundaries: `OPENING`, `READY`, `SCANNING`, `EXIT_REQUESTED`, `CAMERA_RELEASED`, `DISPOSED`.
+- Allow feature-owned `EXIT_PRESENTATION`; do not force every consumer to use it.
+- Ensure camera-release notification occurs immediately after lease release and before awaiting decoder disposal.
+- Add deterministic tests for normal close, early close, optional presentation, duplicate terminal notifications and observer failure isolation.
+- Update architecture, status and handoff documents in the same PR.
+
+Protected / out of scope:
+- No migration of Home or Stocktake presentation flows in PR B.
+- No snapshot capture, Blob/object URL handoff, VFX, Connecting overlay or CSS transition changes; those remain PR A/PR C.
+- No changes to camera constraints, autofocus, decoder, ROI, decode cadence, supported formats, validation, feedback, business callbacks, data/auth/persistence or deployment behavior.
+
+Acceptance:
+- Lifecycle events are optional and do not become a rigid required sequence.
+- `CAMERA_RELEASED` is observably ordered after lease release and before decoder disposal completes.
+- `DISPOSED` follows completed engine teardown.
+- Existing barcode/camera regression suite and new lifecycle contract tests pass, followed by TypeScript/production/Pages builds.
+- PR remains unmerged and undeployed pending user approval and device validation.
