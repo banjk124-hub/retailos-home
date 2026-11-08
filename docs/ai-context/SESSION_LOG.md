@@ -4,7 +4,9 @@
 - Changed the platform contract to accept a lifecycle observer rather than a feature-created adapter. `UniversalScannerSession` binds observer to its generated ID; `useScannerEngine` keeps observer current without restarting camera effects.
 - Home now publishes `EXIT_PRESENTATION` through the closing session and waits for `EXIT_REQUESTED`, presentation completion, `CAMERA_RELEASED`, and `DISPOSED` before unmounting. Snapshot remains before teardown. Stocktake remains untouched.
 - Updated scanner lifecycle regression assertions. GitHub Actions/local preflight/device QA not yet verified at log creation. Branch unmerged/undeployed.
-- Next: inspect complete branch diff, run lifecycle regression + `npm run preflight` in Windows local checkout, then evaluate CI and physical iOS/Android camera behavior. No merge/deploy without explicit approval.
+- GitHub Actions run #147 passed the complete `npm run preflight` sequence: scanner regression tests, TypeScript/Vite production build, Pages build and diff checks.
+- User-local Windows preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding. No merge/deploy without explicit approval.
+- Next: synchronize the branch locally, preserve existing untracked files, run `npm run preflight`, then execute the Home manual-close and single-result flows on iOS and Android.
 
 ---
 
