@@ -9,6 +9,7 @@ import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone }
 import { createStocktakeId, logStocktakeAction, stocktakeStore } from '../services/stocktakeLocalStore';
 import { createStocktakeFile, downloadStocktakeText } from '../services/stocktakeExport';
 import { unlockScannerAudio } from '../../scanner/services/scannerAudio';
+import { useScannerViewportStyle } from '../../scanner/hooks/useScannerViewportStyle';
 import { requestCameraLease, type CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import { getMotionOrigin, type MotionOrigin } from '../../../shared/motion';
 import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
@@ -41,6 +42,7 @@ function actionLabel(action: string): string {
 }
 
 export default function StocktakeModule({ employee, onClose }: Props) {
+  const scannerViewportStyle = useScannerViewportStyle();
   const [session, setSession] = useState<StocktakeSession | null>(null);
   const [zones, setZones] = useState<StocktakeZone[]>([]);
   const [entries, setEntries] = useState<StocktakeEntry[]>([]);
@@ -411,7 +413,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       </section>
 
       {scannerOpen && screen === 'scan' && (
-  <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string }}>
+  <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ ...scannerViewportStyle, '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string; '--scanner-visual-viewport-height': string; '--scanner-visual-viewport-top': string }}>
     <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={closeScanner}>Đóng</button></div>}>
     <StocktakeScanner onDetected={acceptBarcode} onClose={closeScanner} cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary>
