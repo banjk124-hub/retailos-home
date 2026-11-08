@@ -1,8 +1,10 @@
 import { useState, type AnimationEvent, type CSSProperties } from 'react';
-import { AlertTriangle, Camera, X } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
+import { useScannerViewportStyle } from '../hooks/useScannerViewportStyle';
+import { captureScannerPreviewFrame } from '../services/captureScannerPreviewFrame';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -21,10 +23,7 @@ type Props = {
   motionOrigin?: MotionOrigin | null;
 };
 
-/**
- * Default scanner presentation used by Home today.
- * Other features may build a different UI while reusing useScannerEngine.
- */
+/** Home's full-screen quick product lookup presentation; camera/decoder runtime is shared. */
 export default function BarcodeScanner({
   onDetected,
   onClose,
@@ -36,20 +35,19 @@ export default function BarcodeScanner({
   motionOrigin = null,
 }: Props) {
   const [isClosing, setIsClosing] = useState(false);
+  const [exitFrame, setExitFrame] = useState<string | null>(null);
+  const viewportStyle = useScannerViewportStyle();
   const finishClose = (event: AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== 'scanner-home-close') return;
     onClose();
   };
-  const handleDetected = (value: string) => {
+  const scanner = useScannerEngine({ onDetected: (value) => {
     if (mode === 'single') {
+      setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
       setIsClosing(true);
-      onDetected(value);
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
-      return;
     }
     onDetected(value);
-  };
-  const scanner = useScannerEngine({ onDetected: handleDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
+  }, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
@@ -57,14 +55,14 @@ export default function BarcodeScanner({
 
   const handleClose = () => {
     if (isClosing) return;
+    setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
     setIsClosing(true);
     void scanner.closeScanner();
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
   };
 
   return <section
     className={`barcode-scanner scanner-home-transition ${isClosing ? 'is-closing' : ''}`}
-    style={transitionStyle}
+    style={{ ...transitionStyle, ...viewportStyle }}
     onAnimationEnd={finishClose}
     role="dialog"
     aria-modal="true"
@@ -72,20 +70,20 @@ export default function BarcodeScanner({
     onPointerDown={() => { if (audioFeedback) void scanner.prepareAudio(); }}
   >
     <div className="barcode-scanner-card">
-      <header className="barcode-scanner-header">
-        <span className="barcode-scanner-title-icon"><Camera size={19} /></span>
-        <div><h2 id="barcode-scanner-title">Quét mã vạch</h2><p>Đưa mã vạch vào khung hình</p></div>
-        <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng máy quét"><X size={19} /></button>
-      </header>
       <div className={`barcode-scanner-view ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-scanning' : ''}`}>
-        <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để quét mã vạch" />
+        <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để tra cứu sản phẩm" />
+        {exitFrame && <img className="barcode-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
+        <header className="barcode-scanner-header">
+          <div className="barcode-scanner-header-copy">
+            <span>RETAILOS · TRA CỨU NHANH</span>
+            <h2 id="barcode-scanner-title">Tra cứu sản phẩm</h2>
+          </div>
+          <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng tra cứu"><X size={20} /></button>
+        </header>
         {scanner.isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
         {!scanner.isPreviewReady && scanner.error && <div className="barcode-scanner-placeholder"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
+        {scanner.error && <div className="barcode-scanner-error-panel" role="alert"><span>{scanner.error}</span><button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button></div>}
       </div>
-      <p className="barcode-scanner-hint">Giữ mã vạch rõ nét, đủ sáng và nằm trong khung.</p>
-      {scanner.error && <p className="barcode-scanner-error" role="alert"><AlertTriangle size={16} />{scanner.error}</p>}
-      {scanner.error && <button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button>}
-      <span className="barcode-scanner-status" aria-live="polite">{scanner.isScanning ? 'Đang quét…' : scanner.isPreviewReady ? 'Đang chuẩn bị quét…' : scanner.isStarting ? 'Đang mở camera…' : 'Camera tắt'}</span>
     </div>
   </section>;
 }
