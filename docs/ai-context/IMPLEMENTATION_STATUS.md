@@ -385,3 +385,9 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - No changes to camera constraints, autofocus, camera lease/refcount implementation, decoder/ROI/cadence, barcode validation, business contracts or persistence.
 - GitHub Actions status has not yet been confirmed for the latest head. Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA are not yet complete.
 - Required next: verify latest PR CI; synchronize locally without disturbing untracked/user changes; run `npm run preflight`; test first-open, deny/retry, rapid close/reopen, background/foreground, exit after scan and Stocktake explicit-save behavior on both platforms. Keep PR #32 Draft/unmerged/undeployed until evidence is reviewed.
+
+### PR #32 CI verification — 2026-11-08
+- GitHub Actions run #107 (`42451111883`) passed on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`.
+- Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
+- This confirms the recorded code/test head. Subsequent documentation-only commits, if any, require the latest branch head to be checked separately.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
