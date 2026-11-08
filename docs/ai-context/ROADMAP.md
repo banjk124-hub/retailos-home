@@ -1,13 +1,14 @@
-## Current execution order — PR #45 merged; PR A implementation in review (2026-11-08)
+## Current execution order — PR #46 merged then reverted; PR 47A restore in progress (2026-11-08)
 
 1. **PR B — Lifecycle Contract foundation:** merged.
 2. **PR C1 — Home lifecycle migration:** merged.
 3. **PR #43 — Foreground Recovery:** merged and user-verified; the former iOS preview-shrink defect no longer reproduces.
 4. **PR C2 — Stocktake lifecycle migration:** merged in PR #45; user reports it runs correctly with no issues.
-5. **PR A — Engine-owned Opening Transition:** implemented on branch `feat/scanner-a-engine-preview-transition`. A shared engine preview surface owns the pre-READY curtain and its reveal on the first fresh frame. Home and Stocktake inherit the same behavior; neither module controls transition timing. GitHub Actions run #185 passed full preflight.
-6. **Cross-platform acceptance:** physical iOS Safari/PWA and Android Chrome/PWA validation remains required, including reduced-motion and weak-device checks.
+5. **PR #46 — Engine-owned Opening Transition:** merged, then reverted after real-device regressions. The shared `ScannerPreviewSurface` and curtain were removed.
+6. **PR 47A — Restore module-owned preview presentation:** in progress on `revert/scanner-pr46-restore-module-presentation`. Restores exact pre-PR #46 Home/Stocktake markup and CSS, plus regression tests and documentation alignment.
+7. **Cross-platform validation:** retest iOS native video sizing and Android transition smoothness after PR 47A. Keep module presentation independent unless a future design proves the layouts and native-video behavior are compatible.
 
-**Architecture boundary:** the platform session owns camera/decoder readiness; `useScannerEngine` bridges first-frame readiness; `ScannerPreviewSurface` owns the shared visual handoff. Feature modules own layout, controls and business presentation only. The native video layer is not opacity-transitioned; only its sibling curtain animates.
+**Architecture boundary:** the platform session owns camera/decoder readiness; `useScannerEngine` exposes the technical `isPreviewReady` signal; each feature module owns its video DOM, layout, CSS, reveal timing and motion.
 
 
 ---
