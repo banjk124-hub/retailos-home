@@ -47,7 +47,8 @@ export default function BarcodeScanner({
   };
 
   return <section
-    className="barcode-scanner"
+    className="barcode-scanner scanner-home-transition"
+    style={transitionStyle}
     role="dialog"
     aria-modal="true"
     aria-labelledby="barcode-scanner-title"
