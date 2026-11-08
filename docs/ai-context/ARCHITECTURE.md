@@ -289,3 +289,17 @@ The shared engine must own camera request/claim/cancel/release, session lifecycl
 - Phase 1.2G is bounded at instrumentation/source audit; further work requires an observed defect or measured bottleneck.
 
 See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase sequence.
+
+
+## ADR-013 — Scanner lifecycle event contract and presentation ownership (2026-11-08)
+
+**Status:** Implemented on `feat/scanner-lifecycle-contract`; automated/local verification pending.
+
+- Define the public milestones `OPENING → READY → SCANNING → EXIT_REQUESTED → CAMERA_RELEASED → EXIT_PRESENTATION → DISPOSED` as an event vocabulary, not a mandatory linear state machine for every feature.
+- `OPENING`, `READY` and `SCANNING` may be absent or recur around restart/recovery. A session may close before preview or decoder readiness. `EXIT_PRESENTATION` is optional and is owned/emitted by the feature module through the shared adapter.
+- The engine owns camera lease, stream attachment/detachment, decode scheduling, decoder disposal and engine-resource cleanup. It emits `CAMERA_RELEASED` immediately after releasing its lease; decoder disposal may continue afterward. `DISPOSED` means engine teardown has completed.
+- Feature modules own Connecting UI, snapshot/capture, VFX, result routing, navigation and their own UI disposal. Animation completion must never gate camera release.
+- Lifecycle observer callbacks are optional and isolated: observer exceptions must not interrupt scanning, release or disposal. Terminal milestones are deduplicated per adapter instance.
+- Existing `ScannerLifecycleState` remains the engine's internal operational state; the event contract does not replace it or alter scanner business behavior.
+- Suspend/resume is not a terminal exit. A feature must not interpret a visibility suspension as `EXIT_REQUESTED` or `DISPOSED`.
+- No Home/Stocktake migration is included in this foundation slice. Their current behavior remains unchanged until separate presentation/handoff work.
