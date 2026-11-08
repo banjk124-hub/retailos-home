@@ -116,4 +116,63 @@ assert.ok(homeScannerSource.includes('milestones.presentation && milestones.came
 assert.ok(homeScannerSource.includes('milestones.cameraReleased && milestones.disposed'), 'animation-first completion waits for resource teardown');
 assert.ok(homeScannerSource.includes('captureScannerPreviewFrame(scanner.videoRef.current)'), 'Home preserves the pre-teardown visual snapshot');
 
+// Browser page lifecycle signals (visibilitychange/pagehide/pageshow) must be
+// coalesced and serialized so resume never races an unfinished suspension.
+const pageLifecycleSource = await readFile(
+  new URL('../src/platform/scanner/scannerPageLifecycleCoordinator.ts', import.meta.url),
+  'utf8',
+);
+const pageLifecycleCompiled = ts.transpileModule(pageLifecycleSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const pageLifecycleUrl = 'data:text/javascript;base64,' + Buffer.from(pageLifecycleCompiled).toString('base64');
+const { ScannerPageLifecycleCoordinator } = await import(pageLifecycleUrl);
+
+const pageLifecycleEvents = [];
+let releaseBackgroundTransition;
+const backgroundGate = new Promise((resolve) => { releaseBackgroundTransition = resolve; });
+const pageLifecycleCoordinator = new ScannerPageLifecycleCoordinator(
+  true,
+  async () => {
+    pageLifecycleEvents.push('background:start');
+    await backgroundGate;
+    pageLifecycleEvents.push('background:end');
+  },
+  async () => { pageLifecycleEvents.push('foreground'); },
+);
+
+const backgroundTransition = pageLifecycleCoordinator.transition(false);
+const foregroundTransition = pageLifecycleCoordinator.transition(true);
+await new Promise((resolve) => setImmediate(resolve));
+assert.deepEqual(
+  pageLifecycleEvents,
+  ['background:start'],
+  'foreground resume must wait until background suspension completes',
+);
+releaseBackgroundTransition();
+await Promise.all([backgroundTransition, foregroundTransition]);
+assert.deepEqual(
+  pageLifecycleEvents,
+  ['background:start', 'background:end', 'foreground'],
+  'background and foreground transitions must execute in deterministic order',
+);
+
+// Duplicate signals from visibilitychange + pagehide/pageshow are coalesced.
+await pageLifecycleCoordinator.transition(true);
+assert.equal(pageLifecycleEvents.length, 3, 'duplicate foreground signals must not start a second resume');
+await pageLifecycleCoordinator.transition(false);
+await pageLifecycleCoordinator.transition(false);
+assert.deepEqual(
+  pageLifecycleEvents.slice(3),
+  ['background:start', 'background:end'],
+  'duplicate background signals must not suspend twice',
+);
+
+// BFCache pageshow may force a foreground reconciliation without a visibility edge.
+await pageLifecycleCoordinator.transition(true, true);
+assert.equal(pageLifecycleEvents.at(-1), 'foreground', 'forced pageshow reconciliation must resume a non-scanning session');
+pageLifecycleCoordinator.dispose();
+await pageLifecycleCoordinator.transition(false, true);
+assert.equal(pageLifecycleEvents.at(-1), 'foreground', 'disposed coordinators must ignore late browser events');
+
 console.log('Scanner lifecycle contract and teardown-order tests passed.');
