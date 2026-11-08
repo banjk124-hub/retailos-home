@@ -25,8 +25,10 @@ export class ScannerLifecycleAdapter {
   disposed(): void { this.publish('DISPOSED'); }
 
   private publish(type: ScannerLifecycleEventName): void {
-    if (this.emitted.has(type)) return;
-    this.emitted.add(type);
+    const terminal = type === 'EXIT_REQUESTED' || type === 'CAMERA_RELEASED'
+      || type === 'EXIT_PRESENTATION' || type === 'DISPOSED';
+    if (terminal && this.emitted.has(type)) return;
+    if (terminal) this.emitted.add(type);
     if (!this.observer) return;
 
     try {
