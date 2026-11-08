@@ -1,26 +1,27 @@
-# Current implementation status — PR #44 merged; C2 PR #45 in review (2026-11-08)
+# Current implementation status — main after PR #45; PR A in review (2026-11-08)
 
 Last reconciled: 2026-11-08.
 
-## Completed
-- **PR B — shared Lifecycle Contract:** merged. ScannerLifecycleObserver, engine-generated sessionId, ScannerLifecycleAdapter and resource/presentation milestones are implemented.
-- **PR C1 — Home migration:** merged. BarcodeScanner subscribes to lifecycle events, captures its exit snapshot before teardown, emits EXIT_PRESENTATION and waits for EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED and presentation completion before unmount.
-- **PR #43 — foreground Recovery:** merged. The shared hook serializes background/foreground recovery, retires the old session, commits a fresh keyed video surface and runs the normal startup pipeline. User confirms the former preview-shrink defect no longer reproduces.
+## Merged and verified
+- **PR B — Lifecycle Contract:** merged. Engine-owned session identity and lifecycle milestones are established.
+- **PR C1 — Home lifecycle migration:** merged. Home waits for feature presentation, camera release and disposal before unmount.
+- **PR #43 — Foreground Recovery:** merged; user confirms the former preview-shrink issue no longer reproduces.
+- **PR #45 / PR C2 — Stocktake lifecycle migration:** merged. Stocktake uses the shared lifecycle observer and four-milestone exit gate. User reports the merged implementation runs correctly without issues.
 
-## Current source state
-- **PR C2 — Stocktake lifecycle migration:** implemented on branch `feat/scanner-c2-stocktake-lifecycle`, Draft PR #45. StocktakeScanner subscribes to the shared lifecycle observer and joins EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED and its own presentation completion through an order-independent, idempotent gate.
-- Session identity and resource teardown remain engine-owned. Stocktake emits EXIT_PRESENTATION only after its matching close animation. Parent onClose is invoked once after all four milestones.
-- Manual-close and successful-result preview snapshots remain before teardown; single-result auto-close is not duplicated. StocktakeModule and form/persistence logic are unchanged.
-- **PR A — Opening Transition:** next after C2 review/merge and device acceptance. Use READY for first usable camera preview; SCANNING remains a later decoder-ready milestone.
-- Recovery continues to replace only the video surface after real background/foreground recovery; initial tap-started lease handoff is unchanged.
-
-## Next implementation
-Review PR #45. After merge and device validation, proceed to PR A as a separate change. Do not modify the shared scanner engine, platform session, camera lease, decoder or Stocktake business/persistence paths as part of C2.
+## Current source state — PR A
+- Branch: `feat/scanner-a-engine-preview-transition`.
+- Audit baseline: main merge commit `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73` (PR #45).
+- The session already confirms a fresh video frame and publishes `READY` before decoder initialization. The hook already exposes `isPreviewReady`.
+- Previous implementation left preview reveal policy in Home/Stocktake markup and feature-scoped CSS. Home and Stocktake used separate `has-preview` visibility rules; the native video was deliberately not opacity-transitioned due to the iOS/WebKit camera-layer guard.
+- PR A adds a shared `ScannerPreviewSurface` component. Engine readiness controls a common sibling curtain that fades away after the first fresh frame. The native video remains opaque and unanimated.
+- Both feature modules now consume the same component. They provide only video ref/key/accessibility label; they do not own reveal timing or readiness CSS.
+- Camera acquisition, frame readiness detection, decoder initialization, Recovery, lease ownership, barcode validation, Stocktake business and exit handoff remain unchanged.
 
 ## Verification boundary
-- GitHub Actions run #178 on PR #45 passed the complete local-equivalent `npm run preflight`: scanner barcode validation, lifecycle/Stocktake exit-gate tests, presentation readiness, TypeScript/Vite production build, Pages build and diff checks.
-- PR #45 documentation synchronization is included; follow-up CI is running.
-- PR #45 remains Draft/open and unmerged. Local Windows preflight was not run in this environment; physical iOS Safari/PWA and Android Chrome/PWA acceptance remain outstanding.
+- GitHub Actions run #185 passed the complete local-equivalent `npm run preflight`: barcode validation, lifecycle/Stocktake exit-gate tests, presentation layout readiness, TypeScript/Vite production build, GitHub Pages build and diff checks. Run #184 exposed one stale lifecycle assertion expecting feature-owned `<video>` elements; the test was updated to assert the shared preview component contract, and run #185 passed.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remain outstanding. Validate first open, retry, background/foreground recovery, no-frame/error path, reduced motion, and weak-device behavior.
+- No merge or deployment has been performed for PR A.
+
 
 ---
 

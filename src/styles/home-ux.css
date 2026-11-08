@@ -656,8 +656,6 @@
   object-fit: cover;
   background: #171519;
 }
-.barcode-scanner-view:not(.has-preview) video { opacity: 0; }
-.barcode-scanner-view.has-preview video { opacity: 1; }
 .barcode-scanner-placeholder {
   position: absolute;
   z-index: 2;
@@ -672,7 +670,6 @@
   text-align: center;
   pointer-events: none;
 }
-.barcode-scanner-view.has-preview .barcode-scanner-placeholder { display: none; }
 .barcode-scan-frame {
   position: absolute;
   z-index: 3;

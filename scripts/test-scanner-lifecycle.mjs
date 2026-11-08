@@ -157,8 +157,16 @@ const stocktakeSurfaceSource = await readFile(
   new URL('../src/features/stocktake/components/StocktakeScanner.tsx', import.meta.url),
   'utf8',
 );
-assert.ok(homeSurfaceSource.includes('<video key={scanner.videoSurfaceKey} ref={scanner.videoRef}'), 'Home binds the shared engine surface key to its video element');
-assert.ok(stocktakeSurfaceSource.includes('<video key={scanner.videoSurfaceKey} ref={scanner.videoRef}'), 'Stocktake binds the shared engine surface key to its video element');
+const sharedPreviewSurfaceSource = await readFile(
+  new URL('../src/features/scanner/components/ScannerPreviewSurface.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(homeSurfaceSource.includes('<ScannerPreviewSurface') && stocktakeSurfaceSource.includes('<ScannerPreviewSurface'),
+  'Home and Stocktake must consume the same engine-owned preview surface');
+assert.ok(sharedPreviewSurfaceSource.includes('key={videoSurfaceKey}') && sharedPreviewSurfaceSource.includes('ref={videoRef}'),
+  'shared preview surface owns the keyed video element and ref binding');
+assert.ok(sharedPreviewSurfaceSource.includes('scanner-engine-preview-curtain') && sharedPreviewSurfaceSource.includes('isPreviewReady'),
+  'shared preview surface owns the first-frame curtain reveal');
 
 
 // Browser page lifecycle signals (visibilitychange/pagehide/pageshow) must be
