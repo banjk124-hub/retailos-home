@@ -1,6 +1,6 @@
 # Current scanner acceptance gates — 2026-11-08
 
-Source baseline: main after PR #44 merge (c2c9f42610d6cf45dfc422d2cbc6d7bcab795603); C2 implementation is on Draft PR #45. Historical PR #31/#32 references below are retained as history, not current status.
+Source baseline: main after PR #45 merge (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). C2 is merged and user-verified. PR A is in implementation/review on `feat/scanner-a-engine-preview-transition`. Historical PR #31/#32 references below are retained as history.
 
 ## Source-audit facts (not device acceptance)
 - [x] Home tap starts `requestCameraLease()` before scanner UI mounts.
@@ -17,8 +17,20 @@ Source baseline: main after PR #44 merge (c2c9f42610d6cf45dfc422d2cbc6d7bcab7956
 - [x] PR B — shared event contract and adapter merged.
 - [x] PR C1 — Home consumes lifecycle observer and exit handoff.
 - [x] PR #43 — fresh video surface foreground recovery merged; user confirmed previous preview-shrink defect is gone.
-- [x] PR C2 implementation — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal; PR #45 is open for review, not merged.
-- [ ] PR A — Connecting overlay and transition on READY, after C2.
+- [x] PR C2 — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal; PR #45 merged and user reports no issues.
+- [x] PR A implementation — shared ScannerPreviewSurface owns the opening curtain and reveals on first-frame READY; native video remains opaque and is not opacity-transitioned.
+- [ ] PR A — review, CI and physical iOS Safari/PWA + Android Chrome/PWA acceptance.
+
+## PR A — Engine-owned preview opening acceptance
+
+- [x] Shared `ScannerPreviewSurface` owns the video element presentation and opening curtain.
+- [x] Home and Stocktake consume the same component; no module-owned `has-preview` reveal class remains.
+- [x] Reveal is driven by engine first-frame readiness, before decoder initialization.
+- [x] Native video remains opaque and has no opacity transition; only the sibling curtain animates.
+- [x] Foreground recovery resets engine preview readiness so the curtain returns until a fresh frame is confirmed.
+- [x] Reduced-motion disables the curtain animation.
+- [ ] GitHub Actions full preflight passes on final PR A head.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA confirms smooth reveal, retry, recovery, and no black flash.
 
 ## PR C2 — Stocktake migration acceptance
 
@@ -33,7 +45,7 @@ Source baseline: main after PR #44 merge (c2c9f42610d6cf45dfc422d2cbc6d7bcab7956
 - [x] StocktakeModule camera lease cancellation, scanner visibility and parent close ownership remain unchanged.
 - [x] Barcode-to-form fill, manual entry, duplicate rows, edit/review and explicit save remain unchanged.
 - [x] Lifecycle regression tests cover manual close and successful single-result close; GitHub Actions run #178 passed full npm run preflight.
-- [ ] PR #45 review/merge and physical iOS Safari/PWA + Android Chrome/PWA QA.
+- [x] PR #45 merged; user reports the implementation runs correctly without issues.
 ## Device QA — iOS Safari/PWA
 - [ ] First permission grant, deny, dismiss, retry and permission revocation.
 - [ ] Tap-to-request timing and camera permission prompt behavior.
