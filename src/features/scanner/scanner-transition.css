@@ -119,6 +119,16 @@
   to { opacity: 1; transform: none; }
 }
 
+.barcode-scanner.scanner-home-transition.is-closing {
+  pointer-events: none;
+  animation: scanner-home-close 180ms ease-in both;
+}
+
+@keyframes scanner-home-close {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: scale(.985); }
+}
+
 /* Stocktake keeps its existing frame and geometry; only its entrance and wait cue change. */
 .stocktake-scanner-layer.scanner-stocktake-layer-enter {
   animation: scanner-stocktake-backdrop-in 180ms ease-out both;
@@ -178,6 +188,16 @@
 @keyframes scanner-stocktake-surface-in {
   from { opacity: 0; transform: scale(.96); }
   to { opacity: 1; transform: none; }
+}
+
+.stocktake-scanner-surface.scanner-stocktake-surface-enter.is-closing {
+  pointer-events: none;
+  animation: scanner-stocktake-close 180ms ease-in both;
+}
+
+@keyframes scanner-stocktake-close {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: scale(.985); }
 }
 
 @media (max-width: 700px) {
