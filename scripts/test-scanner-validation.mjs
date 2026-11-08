@@ -319,6 +319,12 @@ assert.match(viewportHookSource, /window\.visualViewport/,
   "scanner overlays must track the iOS visual viewport rather than only layout viewport dimensions");
 assert.match(viewportHookSource, /addEventListener\('resize'/,
   "visual viewport changes must refresh scanner geometry");
+assert.match(viewportHookSource, /addEventListener\('pageshow'/,
+  "scanner geometry must be reconciled after BFCache/page restoration");
+assert.match(viewportHookSource, /document\.addEventListener\('visibilitychange'/,
+  "scanner geometry must be reconciled when the page returns to foreground");
+assert.match(viewportHookSource, /current\.height === nextViewport\.height && current\.top === nextViewport\.top/,
+  "unchanged viewport metrics must not trigger redundant React renders");
 
 const frameCaptureSource = await readFile(
   new URL("../src/features/scanner/services/captureScannerPreviewFrame.ts", import.meta.url),
@@ -344,6 +350,14 @@ assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-trans
   "Home must not transform/fade an ancestor of the live camera video during startup");
 assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*transition:\s*none/,
   "Home live video must not be opacity-transitioned during first-frame presentation");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*opacity:\s*0;/,
+  "Home must visually mask the pending preview without removing the video from rendering");
+assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
+  "Home must not set the pending live video to visibility:hidden");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*opacity:\s*0;/,
+  "Stocktake must visually mask the pending preview without removing the video from rendering");
+assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
+  "Stocktake must not set the pending live video to visibility:hidden");
 assert.ok(scannerTransitionCss.includes("@keyframes scanner-home-close") && scannerTransitionCss.includes("to { opacity: 1; transform: scale(.94); }"),
   "Home exit must shrink the frozen preview without fading the entire screen to black");
 assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-surface\.scanner-stocktake-surface-enter\s*\{[^}]*animation:\s*scanner-stocktake-surface-in/,
