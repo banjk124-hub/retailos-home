@@ -1,3 +1,13 @@
+## Current execution slice — C1 / C2 / A (2026-11-08)
+
+1. **PR C1 — Home migration:** active branch `feat/scanner-c1-home-lifecycle-migration`. Home consumes engine lifecycle events and gates unmount on exit presentation + camera release + disposal. Snapshot and cached lookup behavior are protected.
+2. **PR C2 — Stocktake migration:** next, separately audit and migrate `StocktakeScanner`; preserve form-fill, manual entry and explicit-save behavior.
+3. **PR A — Opening Transition:** only after both module migrations; preview `READY` remains distinct from decoder `SCANNING`.
+
+C1 acceptance: lifecycle observer uses engine-generated session ID; no camera reacquisition on React rerender; snapshot precedes teardown; close is idempotent under manual/single-result/unmount paths; tests and both production builds pass; iOS/Android device QA remains a separate gate. No merge/deploy without explicit user approval.
+
+---
+
 
 
 ## Authoritative source re-baseline — 2026-11-08 (main `c7146b55`)
