@@ -131,3 +131,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Physical iOS Safari/PWA and Android Chrome/PWA QA, local Windows/PowerShell preflight, weak-device motion review and full user acceptance remain outstanding.
 - Next: inspect/sync branch locally only after preserving existing working-tree changes; run npm run preflight; complete device QA. Do not merge or deploy without explicit approval.
 - After this supplemental patch is accepted, resume the existing Phase 1.2G–1.2J roadmap.
+
+
+### 2026-11-08 — Post-merge Scanner stabilization (PR #32)
+
+- Re-audited merged main at `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4` before changing source.
+- Confirmed Home's transition class/style was not attached to the root component, so its full-screen CSS could not take effect.
+- Removed post-await UI writes from `pauseScanner()`; the session's synchronous suspended state callback remains the source of truth. Guarded start-state cleanup by ownership of the active promise.
+- Stabilized only Home/Stocktake preview flex geometry.
+- Added independent Home and Stocktake exit transitions. The camera session begins closing immediately; animation does not own camera teardown. Reduced-motion mode bypasses animation.
+- Added source-level regression assertions while preserving existing camera/decoder/business tests.
+- Branch `fix/scanner-lifecycle-preview-stability`, Draft PR #32. Main unchanged, no deployment.
+- Pending: CI, local Windows preflight, iOS Safari/PWA + Android Chrome/PWA real-device QA, and review of the complete diff before merge.
