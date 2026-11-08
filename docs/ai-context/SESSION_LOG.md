@@ -149,3 +149,11 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
 - This confirms the recorded code/test head. Subsequent documentation-only commits, if any, require the latest branch head to be checked separately.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
+
+
+### PR #32 documentation synchronization — 2026-11-08
+- Reconciled stale PR #31 status references: PR #31 was merged to main before PR #32 was created; its device QA remains outstanding.
+- Updated ADR-010/ADR-011, roadmap, implementation status, handoff and acceptance checklist to match the current branch and verification evidence.
+- Clarified that Home continuous scan mode must not close on each result; only single-result mode uses the result exit transition. Single-result sessions become undesired-active before feature callback handling to prevent foreground recovery from reopening the camera during exit.
+- GitHub Actions run #109 (`42451179152`) passed the latest docs-synchronized PR #32 head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`, including locked dependency install, scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
+- Still outstanding: local Windows/PowerShell `npm run preflight`; physical iOS Safari/PWA and Android Chrome/PWA QA; weak-device visual/performance review. PR #32 remains Draft, unmerged and undeployed. Do not merge/deploy without explicit user approval.
