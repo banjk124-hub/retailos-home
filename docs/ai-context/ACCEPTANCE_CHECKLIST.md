@@ -1,6 +1,6 @@
 # Current scanner acceptance gates — 2026-11-08
 
-Current main baseline: 43f16379869b703e218e264040b859ab533c3193. Historical PR #31/#32 references below are retained as history, not current status.
+Source baseline: main after PR #44 merge (c2c9f42610d6cf45dfc422d2cbc6d7bcab795603); C2 implementation is on Draft PR #45. Historical PR #31/#32 references below are retained as history, not current status.
 
 ## Source-audit facts (not device acceptance)
 - [x] Home tap starts `requestCameraLease()` before scanner UI mounts.
@@ -17,22 +17,23 @@ Current main baseline: 43f16379869b703e218e264040b859ab533c3193. Historical PR #
 - [x] PR B — shared event contract and adapter merged.
 - [x] PR C1 — Home consumes lifecycle observer and exit handoff.
 - [x] PR #43 — fresh video surface foreground recovery merged; user confirmed previous preview-shrink defect is gone.
-- [ ] PR C2 — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal.
+- [x] PR C2 implementation — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal; PR #45 is open for review, not merged.
 - [ ] PR A — Connecting overlay and transition on READY, after C2.
 
 ## PR C2 — Stocktake migration acceptance
 
-- [ ] Stocktake passes lifecycleObserver to the shared useScannerEngine.
-- [ ] Session identity comes only from the engine event; no feature-created adapter/session ID.
-- [ ] Manual close captures the frozen preview before closeScanner().
-- [ ] Successful single-result callback captures the frozen preview before the session's automatic close.
-- [ ] EXIT_PRESENTATION is emitted by Stocktake when its own scanner-stocktake-close animation completes.
-- [ ] Parent onClose() is called only after EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and presentation completion; event order is not assumed.
-- [ ] Completion is idempotent; duplicate animation/lifecycle events cannot close twice.
-- [ ] Camera release is never delayed by animation; reduced-motion path still completes.
-- [ ] StocktakeModule camera lease cancellation, scanner visibility and parent close ownership remain unchanged.
-- [ ] Barcode-to-form fill, manual entry, duplicate rows, edit/review and explicit save remain unchanged.
-- [ ] Lifecycle regression tests cover manual close and successful single-result close; full npm run preflight passes.
+- [x] Stocktake passes lifecycleObserver to the shared useScannerEngine.
+- [x] Session identity comes only from the engine event; no feature-created adapter/session ID.
+- [x] Manual close captures the frozen preview before closeScanner().
+- [x] Successful single-result callback captures the frozen preview before the session's automatic close.
+- [x] EXIT_PRESENTATION is emitted by Stocktake when its own matching scanner-stocktake-close animation completes.
+- [x] Parent onClose() is called only after EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and presentation completion; event order is not assumed.
+- [x] Completion is idempotent; duplicate animation/lifecycle events cannot close twice.
+- [x] Camera release is never delayed by animation; reduced-motion 1ms animation path remains.
+- [x] StocktakeModule camera lease cancellation, scanner visibility and parent close ownership remain unchanged.
+- [x] Barcode-to-form fill, manual entry, duplicate rows, edit/review and explicit save remain unchanged.
+- [x] Lifecycle regression tests cover manual close and successful single-result close; GitHub Actions run #178 passed full npm run preflight.
+- [ ] PR #45 review/merge and physical iOS Safari/PWA + Android Chrome/PWA QA.
 ## Device QA — iOS Safari/PWA
 - [ ] First permission grant, deny, dismiss, retry and permission revocation.
 - [ ] Tap-to-request timing and camera permission prompt behavior.
