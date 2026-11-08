@@ -55,7 +55,7 @@ export default function BarcodeScanner({
 
   const handleClose = () => {
     if (isClosing) return;
-    setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
+    setExitFrame(scanner.videoRef.current ? captureScannerPreviewFrame(scanner.videoRef.current) : null);
     setIsClosing(true);
     void scanner.closeScanner();
   };
