@@ -263,3 +263,29 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 - Regression assertions cover Home root transition wiring, continuous-mode persistence, single-result exit gating, stale pause ownership, single-start promise ownership, Stocktake exit wiring and preview geometry.
 - GitHub Actions run #107 (`42451111883`) passed the full preflight on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`; run #109 (`42451179152`) passed on the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain required. No physical-device behavior is claimed from CI.
+
+
+## ADR-012 — Scanner-first adaptive resource profiles and shared engine completion (2026-11-08)
+Status: Proposed; documentation/architecture decision only. No adaptive runtime code exists.
+
+### Context
+The scanner is already separated into feature-owned UI, `useScannerEngine`, `UniversalScannerSession`, `cameraSession` lease ownership and a ZXing decoder adapter. However, the hook currently passes `profile: 'HIGH'` unconditionally. A Low/Mid/High type is not an adaptive policy. The user wants eventual app-wide adaptation, but authorizes scanner-first scope.
+
+### Decision
+- Re-scope Phase 1.2I as Shared Scanner Engine Completion.
+- Introduce scanner-first Low/Mid/High resource policy in Phase 1.2J; defer applying it across all app modules until scanner policy is measured and proven.
+- Resource adaptation may change optional visual/processing intensity only. Barcode correctness, accepted format/payload validation, session ownership, callback delivery, persistence and feature workflows are non-negotiable invariants.
+- Keep Home and Stocktake presentation independently owned while sharing the engine.
+- Treat direct battery/temperature data as unavailable unless a specific target browser exposes a reliable supported API. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
+- Never lower camera quality or decoder work merely because a device is classified Low. Any change to resolution, decode cadence, ROI or recovery tiers requires measured scan-accuracy and latency evidence.
+
+### Required engine boundary
+The shared engine must own camera request/claim/cancel/release, session lifecycle, decoder lifecycle/scheduling, typed events/errors and diagnostics. Feature consumers own presentation and business policy. Explicit state transitions must distinguish camera request, preview readiness, decoder readiness/scanning, suspension, closing and disposal; a visible preview must not be represented as a ready decoder.
+
+### Consequences
+- Device profile selection is advisory and must be safe when device/browser capability data is missing.
+- Profile changes must not create a second camera request, decoder, frame loop or concurrent session.
+- A profile transition must be bounded and must not interrupt an active accepted-result delivery.
+- Phase 1.2G is bounded at instrumentation/source audit; further work requires an observed defect or measured bottleneck.
+
+See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase sequence.
