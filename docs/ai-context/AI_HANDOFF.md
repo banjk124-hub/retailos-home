@@ -5,7 +5,7 @@
 - Home's exit handoff waits for `EXIT_REQUESTED`, `EXIT_PRESENTATION`, `CAMERA_RELEASED`, and `DISPOSED` before unmounting the scanner. Snapshot capture remains before teardown. The camera is released before awaiting decoder disposal.
 - The hook retains a reference to the closing session only until `EXIT_PRESENTATION` is reported, so a manual close can still publish the event after the active-session ref is cleared.
 - Stocktake is intentionally unchanged. PR C2 remains the next module migration; Opening Transition PR A remains after C1/C2.
-- Validation is pending GitHub Actions and user-local `npm run preflight`; no physical iOS/Android QA is claimed. Do not merge or deploy without explicit approval.
+- GitHub Actions run #147 passed the repository `npm run preflight` (scanner regression tests, TypeScript, production build, Pages build and diff checks). User-local Windows preflight and physical iOS/Android QA remain outstanding. Do not merge or deploy without explicit approval.
 
 ---
 
