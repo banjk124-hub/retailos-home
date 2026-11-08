@@ -195,7 +195,7 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Main remains unchanged. No merge or deployment has been performed for PR #32.
 - Implemented: Home transition class/style wiring; stale lifecycle UI write prevention; active-start promise ownership guard; Home/Stocktake preview flex sizing; independent module exit transitions; regression guards.
 - Protected: camera lease/refcount, camera constraints, autofocus, decoder, ROI, 110 ms cadence, validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry and persistence.
-- Latest branch head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4` passed GitHub Actions run #109 (`42451179152`), including full preflight. Next inspect the complete PR diff locally and run local `npm run preflight`.
+- GitHub Actions run #109 (`42451179152`) passed full preflight on the previous docs-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`. Additional documentation-only synchronization commits followed; CI has not yet rerun on the current documentation head. Next inspect the complete PR diff locally and run local `npm run preflight`.
 - Physical QA still required on iOS Safari/PWA and Android Chrome/PWA: permission grant/deny/retry, open/close while pending, rapid reopen, background/foreground, first usable frame, result exit, scan accuracy, Stocktake explicit save, and reduced-motion behavior.
 - Preserve all existing local changes and untracked files during sync. Do not use destructive Git cleanup. Do not merge/deploy without explicit user approval.
 
