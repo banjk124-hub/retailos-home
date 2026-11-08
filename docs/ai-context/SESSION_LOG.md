@@ -6,7 +6,8 @@
 - PR A adds shared `ScannerPreviewSurface`: the video remains opaque; a sibling curtain inherits the preview container background and fades out only after engine READY.
 - Both Home and Stocktake now consume the shared component. Their module UI no longer owns preview-ready CSS classes or reveal timing.
 - Removed obsolete feature-owned video opacity/visibility rules and updated regression assertions to protect the engine-owned transition and native video guard.
-- CI and physical iOS/Android QA are pending. No merge/deploy.
+- Run #184 initially failed because the lifecycle regression still asserted that Home/Stocktake directly rendered the `<video>` node. Updated that assertion to verify both features consume `ScannerPreviewSurface` and that the shared component owns the keyed video/ref and curtain. Run #185 passed the full local-equivalent `npm run preflight`: barcode validation, lifecycle tests, presentation readiness, TypeScript/Vite build, Pages build and diff checks.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remain pending. No merge/deploy.
 
 ---
 
