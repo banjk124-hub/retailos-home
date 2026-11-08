@@ -262,7 +262,7 @@ const scannerUiSource = await readFile(
   new URL("../src/features/scanner/components/BarcodeScanner.tsx", import.meta.url),
   "utf8",
 );
-assert.match(scannerUiSource, /className="barcode-scanner scanner-home-transition"/,
+assert.match(scannerUiSource, /barcode-scanner scanner-home-transition \\$\{isClosing \? 'is-closing' : ''\}/,
   "Home scanner must activate its dedicated full-screen transition styles");
 assert.match(scannerUiSource, /style=\{transitionStyle\}/,
   "Home scanner must pass the tap-origin motion coordinates to its presentation root");
@@ -278,6 +278,15 @@ assert.match(pauseImplementation, /await sessionRef\.current\?\.suspend\('hidden
   "visibility pause must suspend the active scanner session");
 assert.doesNotMatch(pauseImplementation, /setIs(?:Starting|PreviewReady|Scanning)\(/,
   "a completed stale pause must not overwrite a newer foreground UI state");
+
+const stocktakeUiSource = await readFile(
+  new URL("../src/features/stocktake/components/StocktakeScanner.tsx", import.meta.url),
+  "utf8",
+);
+assert.match(stocktakeUiSource, /scanner-stocktake-surface-enter \\$\{isClosing \? 'is-closing' : ''\}/,
+  "Stocktake scanner must retain its own exit transition");
+assert.match(stocktakeUiSource, /event\.animationName !== 'scanner-stocktake-close'/,
+  "Stocktake must unmount only after its own exit animation completes");
 
 const scannerTransitionCss = await readFile(
   new URL("../src/features/scanner/scanner-transition.css", import.meta.url),
