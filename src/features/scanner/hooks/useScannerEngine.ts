@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
@@ -33,6 +33,12 @@ export function useScannerEngine({
   lifecycleObserver,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoSurfaceKey, setVideoSurfaceKey] = useState(0);
+  const videoSurfaceKeyRef = useRef(0);
+  const pendingVideoSurfaceRef = useRef<{
+    key: number;
+    resolve: (video: HTMLVideoElement | null) => void;
+  } | null>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
   // Retain the just-closed session until the feature reports presentation completion.
   const lifecycleSessionRef = useRef<ScannerSession | null>(null);
@@ -42,6 +48,8 @@ export function useScannerEngine({
   lifecycleObserverRef.current = lifecycleObserver;
   const desiredActiveRef = useRef(true);
   const pageVisibleRef = useRef(!isDocumentHidden());
+  const recoveryRequiredRef = useRef(false);
+  const recoveryPromiseRef = useRef<Promise<void> | null>(null);
   const startPromiseRef = useRef<Promise<void> | null>(null);
   const [isStarting, setIsStarting] = useState(true);
   const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -57,6 +65,20 @@ export function useScannerEngine({
     return () => { mountedRef.current = false; };
   }, []);
 
+  // Resolve only after React has committed the replacement <video> node.
+  useLayoutEffect(() => {
+    const pending = pendingVideoSurfaceRef.current;
+    if (!pending || pending.key !== videoSurfaceKey || !videoRef.current) return;
+    pendingVideoSurfaceRef.current = null;
+    pending.resolve(videoRef.current);
+  }, [videoSurfaceKey]);
+
+  useEffect(() => () => {
+    const pending = pendingVideoSurfaceRef.current;
+    pendingVideoSurfaceRef.current = null;
+    pending?.resolve(null);
+  }, []);
+
   useEffect(() => {
     const now = performance.now();
     console.info('[RetailOS Scanner] UI commit', {
@@ -65,6 +87,72 @@ export function useScannerEngine({
     });
     lastUiStateChangeAtRef.current = now;
   }, [isStarting, isScanning, error]);
+
+  const replaceVideoSurface = useCallback((): Promise<HTMLVideoElement | null> => {
+    const nextKey = videoSurfaceKeyRef.current + 1;
+    videoSurfaceKeyRef.current = nextKey;
+    return new Promise((resolve) => {
+      pendingVideoSurfaceRef.current = { key: nextKey, resolve };
+      setVideoSurfaceKey(nextKey);
+    });
+  }, []);
+
+  const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
+    let session: ScannerSession;
+    session = new UniversalScannerSession(video, {
+      profile: 'HIGH',
+      formats: [...SUPPORTED_BARCODE_FORMATS],
+      mode,
+      sameCodeCooldownMs: scanCooldownMs,
+      audioFeedback,
+      hapticFeedback,
+      lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
+      onResult: (result) => {
+        // Ignore callbacks from a retired session after recovery has detached it.
+        if (sessionRef.current !== session) return;
+        console.info('[RetailOS Scanner] Result delivered to feature callback', {
+          session: session.id,
+          symbology: result.symbology,
+          valueLength: result.value.length,
+          mode,
+        });
+        // A single-result session is terminal for this mounted scanner.
+        // Prevent visibility/page lifecycle recovery from reopening the
+        // camera while its owning feature plays the exit transition.
+        if (mode === 'single') desiredActiveRef.current = false;
+        onDetectedRef.current(result.value);
+        try {
+          playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
+        } catch (feedbackError) {
+          console.warn('[RetailOS Scanner] Feedback failed after barcode delivery:', feedbackError);
+        }
+      },
+      onStateChange: (state: ScannerLifecycleState) => {
+        if (!mountedRef.current || sessionRef.current !== session) return;
+        if (state === 'requesting' || state === 'suspended' || state === 'stopped' || state === 'error' || state === 'disposed') {
+          setIsPreviewReady(false);
+        }
+        setIsStarting(state === 'requesting' || state === 'initializing');
+        setIsScanning(state === 'scanning');
+        if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
+      },
+      onPreviewReady: () => {
+        if (mountedRef.current && sessionRef.current === session) setIsPreviewReady(true);
+      },
+      onError: (scannerError) => {
+        if (!mountedRef.current || sessionRef.current !== session) return;
+        setError(scannerError.message);
+        setIsStarting(false);
+        // A decoder fault does not imply that getUserMedia or the video
+        // track stopped. Keep the live preview/scanning state truthful.
+        setIsScanning(sessionRef.current?.state === 'scanning');
+      },
+    }, cameraLeaseRequestRef.current ?? undefined);
+    cameraLeaseRequestRef.current = null;
+    sessionRef.current = session;
+    lifecycleSessionRef.current = session;
+    return session;
+  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
@@ -79,10 +167,8 @@ export function useScannerEngine({
       if (startPromiseRef.current && startPromiseRef.current !== pendingStart) {
         return startPromiseRef.current;
       }
-      // The awaited attempt has settled but did not reach SCANNING (for
-      // example, visibility suspension invalidated its generation). Do not
-      // return the same completed promise: fall through and create a fresh
-      // start attempt for the still-active session.
+      // The previous attempt has settled. Continue with the current video
+      // surface and create a new session if recovery retired the previous one.
     }
     const video = videoRef.current;
     if (!video) return;
@@ -93,59 +179,7 @@ export function useScannerEngine({
     const start = (async () => {
       let session = sessionRef.current;
       if (!session || session.state === 'disposed') {
-        session = new UniversalScannerSession(video, {
-          profile: 'HIGH',
-          formats: [...SUPPORTED_BARCODE_FORMATS],
-          mode,
-          sameCodeCooldownMs: scanCooldownMs,
-          audioFeedback,
-          hapticFeedback,
-          lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
-          onResult: (result) => {
-            // Deliver the decoded value to the owning module first. Feedback is
-            // deliberately isolated so a sound/haptic failure cannot block the
-            // business callback or leave single-scan mode running forever.
-            console.info('[RetailOS Scanner] Result delivered to feature callback', {
-              session: session?.id,
-              symbology: result.symbology,
-              valueLength: result.value.length,
-              mode,
-            });
-            // A single-result session is terminal for this mounted scanner.
-            // Prevent visibility/page lifecycle recovery from reopening the
-            // camera while its owning feature plays the exit transition.
-            if (mode === 'single') desiredActiveRef.current = false;
-            onDetectedRef.current(result.value);
-            try {
-              playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
-            } catch (feedbackError) {
-              console.warn('[RetailOS Scanner] Feedback failed after barcode delivery:', feedbackError);
-            }
-          },
-          onStateChange: (state: ScannerLifecycleState) => {
-            if (!mountedRef.current) return;
-            if (state === 'requesting' || state === 'suspended' || state === 'stopped' || state === 'error' || state === 'disposed') {
-              setIsPreviewReady(false);
-            }
-            setIsStarting(state === 'requesting' || state === 'initializing');
-            setIsScanning(state === 'scanning');
-            if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
-          },
-          onPreviewReady: () => {
-            if (mountedRef.current) setIsPreviewReady(true);
-          },
-          onError: (scannerError) => {
-            if (!mountedRef.current) return;
-            setError(scannerError.message);
-            setIsStarting(false);
-            // A decoder fault does not imply that getUserMedia or the video
-            // track stopped. Keep the live preview/scanning state truthful.
-            setIsScanning(sessionRef.current?.state === 'scanning');
-          },
-        }, cameraLeaseRequestRef.current ?? undefined);
-        cameraLeaseRequestRef.current = null;
-        sessionRef.current = session;
-        lifecycleSessionRef.current = session;
+        session = createSession(video);
       }
       await session.start();
     })();
@@ -161,7 +195,7 @@ export function useScannerEngine({
         if (mountedRef.current && desiredActiveRef.current && pageVisibleRef.current && !isDocumentHidden()) setIsStarting(false);
       }
     }
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [createSession]);
 
   const pauseScanner = useCallback(async () => {
     // A tap-started lease may still be waiting for the scanner component/session
@@ -172,9 +206,46 @@ export function useScannerEngine({
     pendingLeaseRequest?.cancel();
 
     // The page lifecycle coordinator serializes this suspension before any
-    // foreground resume. Do not write UI state after awaiting teardown.
+    // foreground recovery. The old session is retired only after suspension.
     await sessionRef.current?.suspend('hidden');
+    recoveryRequiredRef.current = true;
   }, []);
+
+  const recoverScanner = useCallback(async () => {
+    if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
+    if (recoveryPromiseRef.current) return recoveryPromiseRef.current;
+
+    const recovery = (async () => {
+      setError('');
+      setIsPreviewReady(false);
+      setIsScanning(false);
+      setIsStarting(true);
+
+      // Detach the old session first so late callbacks cannot mutate the new UI.
+      const previousSession = sessionRef.current;
+      sessionRef.current = null;
+      lifecycleSessionRef.current = null;
+      await previousSession?.disposeForRecovery();
+
+      if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
+
+      // WebKit may retain a stale native presentation layer on a reused video
+      // node. Replace only that disposable surface, then use the normal startup
+      // pipeline (layout barrier -> stream attach -> play -> fresh frame -> decoder).
+      const video = await replaceVideoSurface();
+      if (!video || !desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
+
+      recoveryRequiredRef.current = false;
+      await startScanner();
+    })();
+
+    recoveryPromiseRef.current = recovery;
+    try {
+      await recovery;
+    } finally {
+      if (recoveryPromiseRef.current === recovery) recoveryPromiseRef.current = null;
+    }
+  }, [replaceVideoSurface, startScanner]);
 
   const notifyExitPresentation = useCallback(() => {
     const session = lifecycleSessionRef.current ?? sessionRef.current;
@@ -184,6 +255,13 @@ export function useScannerEngine({
 
   const closeScanner = useCallback(async () => {
     desiredActiveRef.current = false;
+    const pendingLeaseRequest = cameraLeaseRequestRef.current;
+    cameraLeaseRequestRef.current = null;
+    pendingLeaseRequest?.cancel();
+
+    // If close races a foreground recovery, let that serialized operation
+    // finish its retirement boundary before closing whichever session remains.
+    await recoveryPromiseRef.current;
     const session = sessionRef.current;
     sessionRef.current = null;
     await session?.close();
@@ -207,7 +285,8 @@ export function useScannerEngine({
         // Event handlers update pageVisibleRef synchronously. Do not let an
         // older queued transition overwrite a newer browser visibility signal.
         if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
-        await startScanner();
+        if (recoveryRequiredRef.current) await recoverScanner();
+        else await startScanner();
       },
     );
 
@@ -232,7 +311,7 @@ export function useScannerEngine({
 
       // pageshow may restore a BFCache page without a fresh visibility edge.
       // Force reconciliation only when the session is not already scanning;
-      // duplicate pageshow/visibility signals are coalesced by the start guard.
+      // duplicate lifecycle signals are coalesced by the start guard.
       void coordinator.transition(true, Boolean(sessionRef.current && sessionRef.current.state !== 'scanning' && !startPromiseRef.current));
     };
 
@@ -249,14 +328,17 @@ export function useScannerEngine({
       const pendingLeaseRequest = cameraLeaseRequestRef.current;
       cameraLeaseRequestRef.current = null;
       pendingLeaseRequest?.cancel();
+      const pendingSurface = pendingVideoSurfaceRef.current;
+      pendingVideoSurfaceRef.current = null;
+      pendingSurface?.resolve(null);
       const session = sessionRef.current;
       sessionRef.current = null;
       void session?.close();
     };
-  }, [pauseScanner, startScanner]);
+  }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
     prepareAudio: unlockScannerAudio, notifyExitPresentation,
   };
 }
