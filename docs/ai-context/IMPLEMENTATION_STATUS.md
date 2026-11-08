@@ -1,26 +1,28 @@
-# Current implementation status — main baseline 43f16379869b703e218e264040b859ab533c3193
+# Current implementation status — PR #44 merged; C2 PR #45 in review (2026-11-08)
 
 Last reconciled: 2026-11-08.
 
 ## Completed
 - **PR B — shared Lifecycle Contract:** merged. ScannerLifecycleObserver, engine-generated sessionId, ScannerLifecycleAdapter, and resource/presentation milestones are implemented.
 - **PR C1 — Home migration:** merged. BarcodeScanner subscribes to lifecycle events, captures its exit snapshot before teardown, emits EXIT_PRESENTATION, and waits for EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and presentation completion before unmount.
-- **PR #43 — foreground Recovery:** merged at this baseline. The shared hook serializes background/foreground recovery, retires the old session, commits a fresh keyed video surface, and runs the normal startup pipeline. User confirms the previously reported preview-shrink defect no longer reproduces after merge and device check.
+- **PR #43 — foreground Recovery:** merged.  The shared hook serializes background/foreground recovery, retires the old session, commits a fresh keyed video surface, and runs the normal startup pipeline. User confirms the previously reported preview-shrink defect no longer reproduces after merge and device check.
 
 ## Current source state
-- **C2 — Stocktake migration:** not yet implemented. StocktakeScanner uses the shared engine and recovery but does not pass lifecycleObserver, does not publish EXIT_PRESENTATION, and still calls its parent onClose() directly from its own animation-end handler.
-- Stocktake already captures a frozen preview before manual close and before forwarding a single scan result. Its scanner remains mounted during the exit animation. UniversalScannerSession automatically closes a single-result session after delivering the result.
-- Stocktake's parent StocktakeModule owns scanner visibility and the pending camera lease. The migration must preserve its current close callback boundary and must not change scan-to-form behavior or persistence.
-- **PR A — Opening Transition:** pending until C2. Use READY for first usable camera preview; SCANNING remains a later decoder-ready milestone.
-- Recovery uses a fresh video DOM surface only on a real background/foreground recovery. Initial tap-started lease handoff and normal startup remain unchanged.
+- **PR #43 — foreground Recovery:** merged. The shared hook serializes background/foreground recovery, retires the old session, commits a fresh keyed video surface and runs the normal startup pipeline. User confirms the former preview-shrink defect no longer reproduces.
+
+## Current source state
+- **PR C2 — Stocktake lifecycle migration:** implemented on branch `feat/scanner-c2-stocktake-lifecycle`, Draft PR #45. StocktakeScanner now subscribes to the shared lifecycle observer and joins EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED and its own presentation completion through an order-independent, idempotent gate.
+- Session identity and resource teardown remain engine-owned. Stocktake emits EXIT_PRESENTATION only after its matching close animation. Parent onClose is invoked once after all four milestones.
+- Manual-close and successful-result preview snapshots remain before teardown; single-result auto-close is not duplicated. StocktakeModule and form/persistence logic are unchanged.
+- **PR A — Opening Transition:** next after C2 review/merge and device acceptance. Use READY for first usable camera preview; SCANNING remains a later decoder-ready milestone.
+- Recovery continues to replace only the video surface after real background/foreground recovery; initial tap-started lease handoff is unchanged.
 
 ## Next implementation
-Create a separate C2 branch/PR from current main. Change only StocktakeScanner lifecycle observation and its exit completion gate, with focused regression coverage. Do not modify useScannerEngine, UniversalScannerSession, camera lease, decoder, CSS transition timing, or StocktakeModule business/persistence paths unless the C2 audit reveals a specific required defect.
+Review PR #45. After merge and device validation, proceed to PR A as a separate change. Do not modify the shared scanner engine, platform session, camera lease, decoder or Stocktake business/persistence paths as part of C2.
 
 ## Verification boundary
-- PR #43 CI passed the repository preflight before merge; the user subsequently merged and confirmed the former preview-shrink issue is gone.
-- No new C2 code has been authored or tested in this documentation synchronization.
-- C2 still requires automated preflight and user/device validation of manual close, successful scan close, rapid close/reopen, reduced motion, and unchanged Stocktake form/save behavior.
+- GitHub Actions run #178 on PR #45 passed the complete local-equivalent `npm run preflight`: scanner barcode validation, lifecycle/Stocktake exit-gate tests, presentation readiness, TypeScript/Vite production build, Pages build and diff checks.
+- PR #45 remains Draft/open and unmerged. Local Windows preflight was not run in this environment; physical iOS Safari/PWA and Android Chrome/PWA acceptance remain outstanding.
 
 ---
 
