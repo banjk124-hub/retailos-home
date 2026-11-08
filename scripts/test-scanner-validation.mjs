@@ -280,6 +280,8 @@ assert.match(pauseImplementation, /await sessionRef\.current\?\.suspend\('hidden
   "visibility pause must suspend the active scanner session");
 assert.doesNotMatch(pauseImplementation, /setIs(?:Starting|PreviewReady|Scanning)\(/,
   "a completed stale pause must not overwrite a newer foreground UI state");
+assert.match(scannerEngineSource, /if \(mode === 'single'\) desiredActiveRef\.current = false/,
+  "single-result scanners must not reacquire camera during their exit transition");
 
 const stocktakeUiSource = await readFile(
   new URL("../src/features/stocktake/components/StocktakeScanner.tsx", import.meta.url),
