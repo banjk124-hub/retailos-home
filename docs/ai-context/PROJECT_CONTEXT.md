@@ -1,12 +1,13 @@
-## Current project focus — main baseline 43f16379869b703e218e264040b859ab533c3193
+## Current project focus — main after PR #45; PR A in review (2026-11-08)
 
-- PR B shared lifecycle contract: merged.
-- PR C1 Home lifecycle migration: merged and is the reference integration.
-- PR #43 fresh-surface foreground recovery: merged; user confirms the former preview-shrink defect is gone after testing.
-- Next: audit and implement PR C2 for Stocktake's feature-owned exit handoff. Preserve Stocktake UI, barcode-to-form behavior, manual entry, duplicate rows and explicit save.
-- PR A Opening Transition follows C2 and must transition on READY, not SCANNING.
-- Shared camera acquisition, recovery, decoder and lifecycle session ownership stay in the single shared engine. Feature modules own snapshots, exit presentation and module close completion.
-- Current baseline commit: 43f16379869b703e218e264040b859ab533c3193. No active implementation branch is assumed; inspect Git state before starting C2.
+- PR B lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 C2 Stocktake migration are merged.
+- User confirms C2 runs correctly without issues.
+- Current task: PR A engine-owned preview Opening Transition on branch `feat/scanner-a-engine-preview-transition`.
+- Engine already determines first usable frame readiness before decoder initialization. A shared `ScannerPreviewSurface` now owns the default curtain/reveal; Home and Stocktake inherit it instead of deciding preview animation independently.
+- Native video must remain fully opaque and unanimated; only the sibling curtain fades to avoid iOS/WebKit camera-layer compositing regressions.
+- No camera/decoder/lease/business-flow changes in PR A. Validate iOS Safari/PWA and Android Chrome/PWA, including reduced motion and recovery.
+- Main audit baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+
 
 ---
 
