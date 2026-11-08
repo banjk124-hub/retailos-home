@@ -18,7 +18,7 @@ Last reconciled: 2026-11-08.
 - Camera acquisition, frame readiness detection, decoder initialization, Recovery, lease ownership, barcode validation, Stocktake business and exit handoff remain unchanged.
 
 ## Verification boundary
-- Automated PR preflight is pending for the current PR A head.
+- GitHub Actions run #185 passed the complete local-equivalent `npm run preflight`: barcode validation, lifecycle/Stocktake exit-gate tests, presentation layout readiness, TypeScript/Vite production build, GitHub Pages build and diff checks. Run #184 exposed one stale lifecycle assertion expecting feature-owned `<video>` elements; the test was updated to assert the shared preview component contract, and run #185 passed.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA remain outstanding. Validate first open, retry, background/foreground recovery, no-frame/error path, reduced motion, and weak-device behavior.
 - No merge or deployment has been performed for PR A.
 
