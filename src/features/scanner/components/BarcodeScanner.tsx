@@ -6,6 +6,7 @@ import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
 import { useScannerViewportStyle } from '../hooks/useScannerViewportStyle';
 import { captureScannerPreviewFrame } from '../services/captureScannerPreviewFrame';
+import ScannerPreviewSurface from './ScannerPreviewSurface';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -90,8 +91,8 @@ export default function BarcodeScanner({
     onPointerDown={() => { if (audioFeedback) void scanner.prepareAudio(); }}
   >
     <div className="barcode-scanner-card">
-      <div className={`barcode-scanner-view ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-scanning' : ''}`}>
-        <video key={scanner.videoSurfaceKey} ref={scanner.videoRef} muted playsInline autoPlay aria-label="Hình ảnh camera để tra cứu sản phẩm" />
+      <div className={`barcode-scanner-view ${scanner.isScanning ? 'is-scanning' : ''}`}>
+        <ScannerPreviewSurface videoRef={scanner.videoRef} videoSurfaceKey={scanner.videoSurfaceKey} isPreviewReady={scanner.isPreviewReady} ariaLabel="Hình ảnh camera để tra cứu sản phẩm" />
         {exitFrame && <img className="barcode-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
         <header className="barcode-scanner-header">
           <div className="barcode-scanner-header-copy">
