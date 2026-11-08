@@ -373,3 +373,15 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Protected: camera constraints, autofocus strategy, decoder/ROI/110 ms cadence, barcode validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, persistence and platform/deployment contracts.
 - Next: synchronize this branch locally only after preserving/reviewing the existing working tree; inspect the complete source+documentation diff; run local npm run preflight; then complete physical-device QA on iOS and Android. Keep PR #31 Draft/unmerged/undeployed until user review and explicit approval.
 - After this supplemental UX patch is accepted, return to the pre-existing Phase 1.2G–1.2J roadmap. This patch does not complete Phase 1.2G or authorize decoder optimization.
+
+
+## 2026-11-08 — Post-merge Scanner stabilization (PR #32)
+
+- Base main: `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4` (merged PR #31).
+- Branch: `fix/scanner-lifecycle-preview-stability`.
+- Draft PR #32: https://github.com/banjk124-hub/retailos-home/pull/32.
+- Fixes: Home root now activates `scanner-home-transition` and receives the tap-origin style; lifecycle pause no longer writes stale UI state after teardown; start cleanup is guarded by promise ownership; Home/Stocktake preview flex geometry is constrained; both modules retain their own short exit transition and release camera resources immediately.
+- Tests: added regression guards for Home transition wiring, Stocktake exit wiring, pause-state ownership and preview geometry. Existing lease, autofocus, barcode and luminance tests remain in place.
+- No changes to camera constraints, autofocus, camera lease/refcount implementation, decoder/ROI/cadence, barcode validation, business contracts or persistence.
+- GitHub Actions status has not yet been confirmed for the latest head. Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA are not yet complete.
+- Required next: verify latest PR CI; synchronize locally without disturbing untracked/user changes; run `npm run preflight`; test first-open, deny/retry, rapid close/reopen, background/foreground, exit after scan and Stocktake explicit-save behavior on both platforms. Keep PR #32 Draft/unmerged/undeployed until evidence is reviewed.
