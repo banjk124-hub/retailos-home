@@ -102,6 +102,10 @@ export function useScannerEngine({
               valueLength: result.value.length,
               mode,
             });
+            // A single-result session is terminal for this mounted scanner.
+            // Prevent visibility/page lifecycle recovery from reopening the
+            // camera while its owning feature plays the exit transition.
+            if (mode === 'single') desiredActiveRef.current = false;
             onDetectedRef.current(result.value);
             try {
               playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
