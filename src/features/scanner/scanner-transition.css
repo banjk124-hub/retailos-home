@@ -39,20 +39,6 @@
   background: radial-gradient(ellipse at 50% 42%, #403039 0%, #292027 52%, #191419 100%);
   isolation: isolate;
 }
-.barcode-scanner.scanner-home-transition .barcode-scanner-view video {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  opacity: 1;
-  transition: none;
-}
-.barcode-scanner.scanner-home-transition .barcode-scanner-view:not(.has-preview) video { visibility: hidden; }
-.barcode-scanner.scanner-home-transition .barcode-scanner-view.has-preview video { visibility: visible; }
 .barcode-scanner.scanner-home-transition.is-closing .barcode-scanner-view video { visibility: hidden; }
 .barcode-scanner-exit-frame {
   position: absolute;
@@ -183,9 +169,6 @@
   transform-origin: calc(50% + var(--scanner-origin-x, 50vw) - 50vw) calc(50% + var(--scanner-origin-y, 50vh) - 50vh);
 }
 .stocktake-scanner-preview { background: radial-gradient(ellipse at 50% 42%, #3a2c33 0%, #241c21 64%, #171114 100%); }
-.stocktake-scanner-preview video { opacity: 1; transition: none; }
-.stocktake-scanner-preview:not(.has-preview) video { visibility: hidden; }
-.stocktake-scanner-preview.has-preview video { visibility: visible; }
 .stocktake-scanner-surface.is-closing .stocktake-scanner-preview video { visibility: hidden; }
 .stocktake-scanner-exit-frame {
   position: absolute;
@@ -227,7 +210,45 @@
 }
 @keyframes scanner-stocktake-close { from { opacity: 1; transform: none; } to { opacity: 1; transform: scale(.96); } }
 
+/* Shared engine-owned preview handoff.
+   Keep the native video layer fully opaque; animate only this sibling curtain.
+   This avoids opacity compositing on iOS/WebKit's native camera video layer. */
+.scanner-engine-preview-video {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 1;
+  transition: none;
+}
+.scanner-engine-preview-curtain {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  visibility: visible;
+  opacity: 1;
+  background: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+  pointer-events: none;
+  transition:
+    opacity 240ms cubic-bezier(.22,.61,.36,1),
+    visibility 0s linear 0s;
+}
+.scanner-engine-preview-curtain.is-revealed {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 240ms cubic-bezier(.22,.61,.36,1),
+    visibility 0s linear 240ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .scanner-engine-preview-curtain,
+  .scanner-engine-preview-curtain.is-revealed { transition: none !important; }
   .barcode-scanner.scanner-home-transition,
   .stocktake-scanner-layer.scanner-stocktake-layer-enter,
   .stocktake-scanner-surface.scanner-stocktake-surface-enter,
