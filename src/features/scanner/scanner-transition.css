@@ -74,7 +74,8 @@
 }
 
 .barcode-scanner.scanner-home-transition .barcode-scanner-view {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-width: 0;
   min-height: 0;
   width: 100%;
   border-radius: 0;
