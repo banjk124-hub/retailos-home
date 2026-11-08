@@ -201,12 +201,12 @@ export function useScannerEngine({
     const coordinator = new ScannerPageLifecycleCoordinator(
       pageVisibleRef.current,
       async () => {
-        pageVisibleRef.current = false;
         await pauseScanner();
       },
       async () => {
-        pageVisibleRef.current = true;
-        if (!desiredActiveRef.current || isDocumentHidden()) return;
+        // Event handlers update pageVisibleRef synchronously. Do not let an
+        // older queued transition overwrite a newer browser visibility signal.
+        if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
         await startScanner();
       },
     );
@@ -233,7 +233,7 @@ export function useScannerEngine({
       // pageshow may restore a BFCache page without a fresh visibility edge.
       // Force reconciliation only when the session is not already scanning;
       // duplicate pageshow/visibility signals are coalesced by the start guard.
-      void coordinator.transition(true, sessionRef.current?.state !== 'scanning');
+      void coordinator.transition(true, Boolean(sessionRef.current && sessionRef.current.state !== 'scanning' && !startPromiseRef.current));
     };
 
     document.addEventListener('visibilitychange', handleVisibility);
