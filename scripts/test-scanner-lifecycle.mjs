@@ -88,7 +88,7 @@ const teardownBody = sessionSource.slice(teardownStart, teardownEnd);
 
 const exitRequestAt = closeBody.indexOf('this.lifecycle.exitRequested()');
 const closeTeardownAt = closeBody.indexOf('await this.teardown(true)');
-const disposedAt = closeBody.indexOf('this.lifecycle.disposed()');
+const disposedAt = closeBody.indexOf('this.lifecycle.disposed()', closeTeardownAt);
 assert.ok(exitRequestAt >= 0 && closeTeardownAt > exitRequestAt, 'EXIT_REQUESTED precedes close teardown');
 assert.ok(disposedAt > closeTeardownAt, 'DISPOSED is emitted only after close awaits teardown');
 const recoveryCloseAt = closeBody.indexOf('if (this.recoveryDisposePromise)');
