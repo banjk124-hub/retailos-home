@@ -280,7 +280,8 @@ export function useScannerEngine({
     await recoveryPromiseRef.current?.catch(() => undefined);
     const session = sessionRef.current ?? lifecycleSessionRef.current;
     sessionRef.current = null;
-    lifecycleSessionRef.current = null;
+    // Keep the lifecycle reference until the feature animation reports
+    // EXIT_PRESENTATION; Home's close contract depends on that final signal.
     await session?.close();
     if (mountedRef.current) {
       setIsStarting(false);
