@@ -257,3 +257,12 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Home and Stocktake still wait for their own local animation/presentation completion plus technical close, lease-release and disposal signals before parent unmount. Their CSS, animation names/timing, snapshots and result/business callbacks are unchanged.
 - Updated lifecycle regression tests and current architecture/status/handoff documentation. Historical PR B/C2 records remain as historical evidence and are explicitly superseded by the current contract.
 - Verification pending on PR branch: scanner lifecycle tests, full `npm run preflight`, GitHub Actions, and user iOS/Android smoke test. No merge or deployment performed.
+
+
+### PR #48 CI verification — 2026-11-08
+
+- Corrected the first CI-discovered regression-test guard: Home's local close gate was expressed as an early-return condition, while the source assertion expected the positive milestone conjunction. The production behavior was already equivalent; the guard and expression were aligned for explicit readability.
+- GitHub Actions run # for workflow run `42500947176` passed on head `88d898735105d5bfc628503637cc85d9707bf85e`.
+- Full `npm run preflight` passed: barcode validation regression, lifecycle contract regression, TypeScript/production build, GitHub Pages build and diff checks.
+- The initial run on the preceding head failed only at the new Home source assertion; the failure was investigated from the job log and corrected rather than bypassed.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA smoke tests remain pending. PR #48 stays open, unmerged and undeployed.
