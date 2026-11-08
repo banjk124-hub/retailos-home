@@ -33,6 +33,8 @@ export function useScannerEngine({
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
+  // Retain the just-closed session until the feature reports presentation completion.
+  const lifecycleSessionRef = useRef<ScannerSession | null>(null);
   const cameraLeaseRequestRef = useRef(cameraLeaseRequest);
   const onDetectedRef = useRef(onDetected);
   const lifecycleObserverRef = useRef(lifecycleObserver);
@@ -143,6 +145,7 @@ export function useScannerEngine({
         }, cameraLeaseRequestRef.current ?? undefined);
         cameraLeaseRequestRef.current = null;
         sessionRef.current = session;
+        lifecycleSessionRef.current = session;
       }
       await session.start();
     })();
@@ -169,7 +172,9 @@ export function useScannerEngine({
   }, []);
 
   const notifyExitPresentation = useCallback(() => {
-    sessionRef.current?.notifyExitPresentation();
+    const session = lifecycleSessionRef.current ?? sessionRef.current;
+    lifecycleSessionRef.current = null;
+    session?.notifyExitPresentation();
   }, []);
 
   const closeScanner = useCallback(async () => {
