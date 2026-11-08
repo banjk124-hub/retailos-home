@@ -48,15 +48,21 @@ function waitForVideoFrameReady(video: HTMLVideoElement, timeoutMs = 3000): Prom
   return new Promise((resolve, reject) => {
     let settled = false;
     let frameHandle: number | null = null;
+    let fallbackRafHandle: number | null = null;
+    const hasVideoFrameCallback = typeof videoWithFrameCallback.requestVideoFrameCallback === 'function';
+    const initialCurrentTime = video.currentTime;
+
     const cleanup = () => {
       window.clearTimeout(timeoutHandle);
       video.removeEventListener('loadeddata', checkReady);
       video.removeEventListener('canplay', checkReady);
+      video.removeEventListener('timeupdate', checkReady);
       if (frameHandle !== null) videoWithFrameCallback.cancelVideoFrameCallback?.(frameHandle);
+      if (fallbackRafHandle !== null) window.cancelAnimationFrame(fallbackRafHandle);
     };
 
     const finish = (frameCallbackObserved: boolean) => {
-      if (settled || !isVideoFrameAvailable(video)) return;
+      if (settled || !isVideoFrameAvailable(video) || video.paused) return;
       settled = true;
       cleanup();
       resolve({
@@ -67,30 +73,31 @@ function waitForVideoFrameReady(video: HTMLVideoElement, timeoutMs = 3000): Prom
       });
     };
 
+    // On browsers without requestVideoFrameCallback, dimensions/readyState alone
+    // can describe a stale frame left over from before background suspension.
+    // Require the live MediaStream timeline to advance before declaring READY.
     const checkReady = () => {
-      if (isVideoFrameAvailable(video) && typeof videoWithFrameCallback.requestVideoFrameCallback !== 'function') {
+      if (!hasVideoFrameCallback && isVideoFrameAvailable(video)
+        && !video.paused && video.currentTime > initialCurrentTime + 0.01) {
         finish(false);
       }
     };
 
     const timeoutHandle = window.setTimeout(() => {
-      if (isVideoFrameAvailable(video)) {
-        finish(false);
-        return;
-      }
       if (settled) return;
       settled = true;
       cleanup();
-      reject(new Error('Camera đã mở nhưng chưa cung cấp được frame hình ảnh. Hãy giữ ứng dụng ở foreground và thử lại.'));
+      reject(new Error('Camera đã mở nhưng chưa cung cấp được frame hình ảnh mới. Hãy giữ ứng dụng ở foreground và thử kết nối lại.'));
     }, timeoutMs);
 
     video.addEventListener('loadeddata', checkReady);
     video.addEventListener('canplay', checkReady);
+    video.addEventListener('timeupdate', checkReady);
 
     const scheduleFrameCheck = () => {
       frameHandle = videoWithFrameCallback.requestVideoFrameCallback?.(() => {
         frameHandle = null;
-        if (isVideoFrameAvailable(video)) {
+        if (isVideoFrameAvailable(video) && !video.paused) {
           finish(true);
         } else {
           scheduleFrameCheck();
@@ -98,10 +105,15 @@ function waitForVideoFrameReady(video: HTMLVideoElement, timeoutMs = 3000): Prom
       }) ?? null;
     };
 
-    if (typeof videoWithFrameCallback.requestVideoFrameCallback === 'function') {
+    const pollFallbackFrame = () => {
+      checkReady();
+      if (!settled) fallbackRafHandle = window.requestAnimationFrame(pollFallbackFrame);
+    };
+
+    if (hasVideoFrameCallback) {
       scheduleFrameCheck();
     } else {
-      checkReady();
+      pollFallbackFrame();
     }
   });
 }
