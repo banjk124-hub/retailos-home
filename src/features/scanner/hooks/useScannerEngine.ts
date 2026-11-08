@@ -45,6 +45,7 @@ export function useScannerEngine({
   const startPromiseRef = useRef<Promise<void> | null>(null);
   const [isStarting, setIsStarting] = useState(true);
   const [isPreviewReady, setIsPreviewReady] = useState(false);
+  const [isRecovering, setIsRecovering] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
   const lastUiStateChangeAtRef = useRef(performance.now());
@@ -132,7 +133,10 @@ export function useScannerEngine({
             if (state === 'disposed' || state === 'stopped' || state === 'suspended') setIsScanning(false);
           },
           onPreviewReady: () => {
-            if (mountedRef.current) setIsPreviewReady(true);
+            if (mountedRef.current) {
+              setIsPreviewReady(true);
+              setIsRecovering(false);
+            }
           },
           onError: (scannerError) => {
             if (!mountedRef.current) return;
@@ -164,6 +168,11 @@ export function useScannerEngine({
   }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const pauseScanner = useCallback(async () => {
+    // A foreground recovery uses a different preview mask from first startup:
+    // keep the existing video presentation layer visible to WebKit while the
+    // replacement stream is attached, then reveal it after a fresh frame.
+    if (sessionRef.current && mountedRef.current) setIsRecovering(true);
+
     // A tap-started lease may still be waiting for the scanner component/session
     // handoff. Cancel that unclaimed request while backgrounded; otherwise iOS
     // can return with a pre-background stream that is no longer producing frames.
@@ -256,7 +265,7 @@ export function useScannerEngine({
   }, [pauseScanner, startScanner]);
 
   return {
-    videoRef, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
+    videoRef, isStarting, isPreviewReady, isRecovering, isScanning, error, startScanner, pauseScanner, closeScanner,
     prepareAudio: unlockScannerAudio, notifyExitPresentation,
   };
 }

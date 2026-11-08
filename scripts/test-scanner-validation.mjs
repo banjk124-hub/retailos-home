@@ -278,6 +278,12 @@ const pauseImplementation = scannerEngineSource.match(
 )?.[1] ?? "";
 assert.match(pauseImplementation, /await sessionRef\.current\?\.suspend\('hidden'\)/,
   "visibility pause must suspend the active scanner session");
+assert.match(pauseImplementation, /setIsRecovering\(true\)/,
+  "foreground recovery must be marked before the active session is suspended");
+assert.match(scannerEngineSource, /setIsRecovering\(false\)/,
+  "recovery presentation mode must end only after a fresh preview is ready");
+assert.match(scannerUiSource, /scanner\.isRecovering \? 'is-recovering'/,
+  "Home preview must distinguish foreground recovery from first startup");
 assert.doesNotMatch(pauseImplementation, /setIs(?:Starting|PreviewReady|Scanning)\(/,
   "a completed stale pause must not overwrite a newer foreground UI state");
 assert.match(scannerEngineSource, /if \(mode === 'single'\) desiredActiveRef\.current = false/,
@@ -291,6 +297,8 @@ assert.match(stocktakeUiSource, /scanner-stocktake-surface-enter/,
   "Stocktake scanner must retain its own exit transition");
 assert.match(stocktakeUiSource, /event\.animationName !== 'scanner-stocktake-close'/,
   "Stocktake must unmount only after its own exit animation completes");
+assert.match(stocktakeUiSource, /scanner\.isRecovering \? 'is-recovering'/,
+  "Stocktake preview must distinguish foreground recovery from first startup");
 
 const scannerTransitionCss = await readFile(
   new URL("../src/features/scanner/scanner-transition.css", import.meta.url),
@@ -352,14 +360,18 @@ assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \
   "Home live video must not be opacity-transitioned during first-frame presentation");
 assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*opacity:\s*1;[^}]*transition:\s*none;/,
   "Home live video must remain fully opaque with no opacity transition");
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
-  "Home pending preview must use visibility:hidden to avoid iOS opacity compositing");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\):not\(\.is-recovering\) video\s*\{\s*visibility:\s*hidden;/,
+  "Home first startup must use visibility:hidden to avoid initial iOS opacity compositing");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.is-recovering:not\(\.has-preview\) video\s*\{\s*visibility:\s*visible;\s*opacity:\s*0;/,
+  "Home foreground recovery must preserve a visible native video presentation layer while masking stale frames");
 assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video\s*\{\s*visibility:\s*visible;/,
   "Home preview must become visible only after the first usable frame");
 assert.match(scannerTransitionCss, /\.stocktake-scanner-preview video\s*\{\s*opacity:\s*1;\s*transition:\s*none;/,
   "Stocktake live video must remain fully opaque with no opacity transition");
-assert.match(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
-  "Stocktake pending preview must use visibility:hidden to avoid iOS opacity compositing");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\):not\(\.is-recovering\) video\s*\{\s*visibility:\s*hidden;/,
+  "Stocktake first startup must use visibility:hidden to avoid initial iOS opacity compositing");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-preview\.is-recovering:not\(\.has-preview\) video\s*\{\s*visibility:\s*visible;\s*opacity:\s*0;/,
+  "Stocktake foreground recovery must preserve a visible native video presentation layer while masking stale frames");
 assert.match(scannerTransitionCss, /\.stocktake-scanner-preview\.has-preview video\s*\{\s*visibility:\s*visible;/,
   "Stocktake preview must become visible only after the first usable frame");
 assert.match(scannerUiSource, /<video\b/,
