@@ -312,3 +312,16 @@ This is a scoped UX follow-up to the camera-startup work, not a replacement for 
 
 ### Return to the existing roadmap
 After this supplemental patch is accepted and device-verified, resume the existing Phase 1.2G–1.2J roadmap at the next incomplete task. This UX patch does not establish a performance baseline, complete G-A/G-B/G-E, or authorize speculative decoder tuning.
+
+
+## Scanner post-merge stabilization — PR #32 (2026-11-08)
+
+**Status:** Implemented on `fix/scanner-lifecycle-preview-stability`; Draft PR #32. CI and physical-device QA are pending.
+
+- Patch A: activate Home's full-screen transition class and pass the tap-origin style to the root element.
+- Patch B: prevent stale pause continuations from overwriting a foreground resume; guard start-state cleanup by the active start promise.
+- Patch C: stabilize Home and Stocktake preview flex sizing without changing stream resolution, frame rate, focus or decoder behavior.
+- Patch D: add independent Home and Stocktake exit treatments. Camera teardown starts immediately; the presentation remains mounted only for its short exit motion. Reduced-motion mode bypasses the animation dependency.
+- Regression guards cover transition wiring, lifecycle pause ownership and preview geometry.
+- Protected: camera lease/refcount, 1280×720 ideal / 30 FPS target, autofocus, first-frame readiness contract, ZXing, ROI, 110 ms decode interval, validation, Home lookup, Stocktake save/manual/duplicate-row flows and persistence.
+- Acceptance: full CI preflight; local Windows/PowerShell preflight; iOS Safari/PWA and Android Chrome/PWA permission, deny/retry, rapid open/close, background/foreground, first-frame, result-close and business-flow checks. Test a low-end Android device and a smaller iPhone viewport. Do not merge/deploy until all gates pass and user approves.
