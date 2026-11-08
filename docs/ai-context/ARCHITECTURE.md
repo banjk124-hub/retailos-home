@@ -1,6 +1,6 @@
 ## ADR-014 — Engine-owned first-frame preview reveal (2026-11-08)
 
-Status: Implemented in PR A branch `feat/scanner-a-engine-preview-transition`; review pending.
+Status: Implemented in PR A branch `feat/scanner-a-engine-preview-transition`; GitHub Actions run #185 passed. Physical-device acceptance remains pending.
 
 **Decision**
 - The shared scanner engine owns the preview readiness handoff. `UniversalScannerSession` confirms a fresh usable frame, invokes the internal `onPreviewReady` bridge and publishes `READY` before decoder initialization.
