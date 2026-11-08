@@ -497,9 +497,9 @@ export default function HomeScreen({
     window.setTimeout(() => setToast(''), 2600);
   };
   const handleBarcodeDetected = (barcode: string) => {
+    // Keep the scanner mounted for its short exit transition. The scanner
+    // component closes the session immediately and notifies us after motion.
     cameraLeaseRequestRef.current = null;
-    setScannerMotionOrigin(null);
-    setIsBarcodeScannerOpen(false);
     setBarcodeLookup({ barcode, records: null });
     void lookupCachedBarcode(barcode).then(({ records, failedSources }) => {
       setBarcodeLookup((current) => current?.barcode === barcode

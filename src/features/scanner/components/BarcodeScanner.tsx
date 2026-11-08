@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type AnimationEvent, type CSSProperties } from 'react';
 import { AlertTriangle, Camera, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
@@ -35,19 +35,37 @@ export default function BarcodeScanner({
   cameraLeaseRequest = null,
   motionOrigin = null,
 }: Props) {
-  const scanner = useScannerEngine({ onDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
+  const [isClosing, setIsClosing] = useState(false);
+  const finishClose = (event: AnimationEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget || event.animationName !== 'scanner-home-close') return;
+    onClose();
+  };
+  const handleDetected = (value: string) => {
+    if (mode === 'single') {
+      setIsClosing(true);
+      onDetected(value);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
+      return;
+    }
+    onDetected(value);
+  };
+  const scanner = useScannerEngine({ onDetected: handleDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
   };
 
   const handleClose = () => {
-    scanner.closeScanner();
-    onClose();
+    if (isClosing) return;
+    setIsClosing(true);
+    void scanner.closeScanner();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
   };
 
   return <section
-    className="barcode-scanner"
+    className={`barcode-scanner scanner-home-transition ${isClosing ? 'is-closing' : ''}`}
+    style={transitionStyle}
+    onAnimationEnd={finishClose}
     role="dialog"
     aria-modal="true"
     aria-labelledby="barcode-scanner-title"

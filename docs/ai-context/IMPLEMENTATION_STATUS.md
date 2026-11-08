@@ -371,5 +371,24 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - GitHub Actions run #89 (42400411255) passed the complete repository preflight on the recorded PR head: locked dependency install, scanner regression suite, TypeScript + production build, GitHub Pages build and diff checks.
 - Not verified: local Windows/PowerShell run, iOS Safari/PWA camera permission and stream behavior, Android Chrome/PWA camera behavior, rapid interaction, background/foreground recovery, visual smoothness on weak devices, or real scan performance.
 - Protected: camera constraints, autofocus strategy, decoder/ROI/110 ms cadence, barcode validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry, persistence and platform/deployment contracts.
-- Next: synchronize this branch locally only after preserving/reviewing the existing working tree; inspect the complete source+documentation diff; run local npm run preflight; then complete physical-device QA on iOS and Android. Keep PR #31 Draft/unmerged/undeployed until user review and explicit approval.
+- Next: synchronize this branch locally only after preserving/reviewing the existing working tree; inspect the complete source+documentation diff; run local npm run preflight; then complete physical-device QA on iOS and Android. PR #31 was subsequently merged to `main` on 2026-11-08. Its physical-device QA remains outstanding; do not treat merge or CI as device verification.
 - After this supplemental UX patch is accepted, return to the pre-existing Phase 1.2G–1.2J roadmap. This patch does not complete Phase 1.2G or authorize decoder optimization.
+
+
+## 2026-11-08 — Post-merge Scanner stabilization (PR #32)
+
+- Base main: `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4` (merged PR #31).
+- Branch: `fix/scanner-lifecycle-preview-stability`.
+- Draft PR #32: https://github.com/banjk124-hub/retailos-home/pull/32.
+- Fixes: Home root now activates `scanner-home-transition` and receives the tap-origin style; lifecycle pause no longer writes stale UI state after teardown; start cleanup is guarded by promise ownership; Home/Stocktake preview flex geometry is constrained; both modules retain their own short exit transition and release camera resources immediately.
+- Tests: added regression guards for Home transition wiring, Stocktake exit wiring, pause-state ownership and preview geometry. Existing lease, autofocus, barcode and luminance tests remain in place.
+- No changes to camera constraints, autofocus, camera lease/refcount implementation, decoder/ROI/cadence, barcode validation, business contracts or persistence.
+- GitHub Actions run #107 passed on source/test head; run #109 passed on the latest documentation-synchronized PR #32 head. Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA are not yet complete.
+- Required next: verify latest PR CI; synchronize locally without disturbing untracked/user changes; run `npm run preflight`; test first-open, deny/retry, rapid close/reopen, background/foreground, exit after scan and Stocktake explicit-save behavior on both platforms. Keep PR #32 Draft/unmerged/undeployed until evidence is reviewed.
+
+### PR #32 CI verification — 2026-11-08
+- GitHub Actions run #107 (`42451111883`) passed on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`.
+- Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
+- This confirms the recorded code/test head. Run #109 subsequently verified the previous documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`. Further documentation-only synchronization commits followed and have not yet been rerun through CI.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
+- The PR remains Draft, unmerged and undeployed; `main` remains unchanged.

@@ -186,3 +186,21 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Required next steps: preserve and inspect the local working tree before syncing; review the full branch diff including documentation; run local npm run preflight; perform first-open permission, denial/retry, close-while-pending, rapid open/close, background/foreground and scan regression checks on iOS Safari/PWA and Android Chrome/PWA.
 - Do not merge, deploy or close the PR without explicit user approval.
 - Once this supplemental patch is accepted, return to the existing Phase 1.2G–1.2J roadmap. The patch does not complete Phase 1.2G.
+
+
+## Current handoff — Post-merge Scanner stabilization (2026-11-08)
+
+- Main base: `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4`.
+- Active branch: `fix/scanner-lifecycle-preview-stability`; Draft PR #32.
+- Main remains unchanged. No merge or deployment has been performed for PR #32.
+- Implemented: Home transition class/style wiring; stale lifecycle UI write prevention; active-start promise ownership guard; Home/Stocktake preview flex sizing; independent module exit transitions; regression guards.
+- Protected: camera lease/refcount, camera constraints, autofocus, decoder, ROI, 110 ms cadence, validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry and persistence.
+- GitHub Actions run #109 (`42451179152`) passed full preflight on the previous docs-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`. Additional documentation-only synchronization commits followed; CI has not yet rerun on the current documentation head. Next inspect the complete PR diff locally and run local `npm run preflight`.
+- Physical QA still required on iOS Safari/PWA and Android Chrome/PWA: permission grant/deny/retry, open/close while pending, rapid reopen, background/foreground, first usable frame, result exit, scan accuracy, Stocktake explicit save, and reduced-motion behavior.
+- Preserve all existing local changes and untracked files during sync. Do not use destructive Git cleanup. Do not merge/deploy without explicit user approval.
+
+### PR #32 CI verification — 2026-11-08
+- GitHub Actions run #107 (`42451111883`) passed on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`.
+- Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
+- Run #109 (`42451179152`) passed on the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.

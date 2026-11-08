@@ -184,9 +184,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const acceptBarcode = (value: string) => {
+    // Keep the scanner surface mounted until its exit transition completes.
     cameraLeaseRequestRef.current = null;
-    setScannerMotionOrigin(null);
-    setScannerOpen(false);
     setBarcode(value.trim());
     setQuantity('1');
     setManualEntry(false);
