@@ -71,8 +71,9 @@ const hookSource = await readFile(
   new URL('../src/features/scanner/hooks/useScannerEngine.ts', import.meta.url),
   'utf8',
 );
-assert.ok(hookSource.includes('  cameraLeaseRequest = null,') && hookSource.includes('  lifecycle,') && hookSource.includes('}: Options)'), 'hook destructures lifecycle adapter');
-assert.ok(hookSource.includes('          lifecycle,') && hookSource.includes('          onResult:'), 'hook forwards lifecycle adapter into session options');
+assert.ok(hookSource.includes('  cameraLeaseRequest = null,') && hookSource.includes('  lifecycleObserver,') && hookSource.includes('}: Options)'), 'hook accepts feature lifecycle observer');
+assert.ok(hookSource.includes('lifecycleObserverRef.current = lifecycleObserver;') && hookSource.includes('lifecycleObserver: (event) => lifecycleObserverRef.current?.(event)'), 'hook forwards latest observer without restarting the session effect');
+assert.ok(hookSource.includes('lifecycleSessionRef.current = session;') && hookSource.includes('session?.notifyExitPresentation();'), 'hook retains the closed session until presentation completion');
 
 const sessionSource = await readFile(
   new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url),
@@ -96,5 +97,23 @@ const cameraEventAt = teardownBody.indexOf('this.lifecycle.cameraReleased()', re
 const decoderDisposeAt = teardownBody.indexOf('await decoder.dispose()', cameraEventAt);
 assert.ok(releaseAt >= 0 && cameraEventAt > releaseAt, 'CAMERA_RELEASED follows lease release');
 assert.ok(decoderDisposeAt > cameraEventAt, 'decoder disposal may continue after CAMERA_RELEASED');
+assert.ok(sessionSource.includes('  notifyExitPresentation(): void {') && sessionSource.includes('this.lifecycle.exitPresentation();'), 'feature can publish EXIT_PRESENTATION on the real session adapter');
+
+const contractSource = await readFile(
+  new URL('../src/platform/scanner/contracts.ts', import.meta.url),
+  'utf8',
+);
+assert.ok(contractSource.includes('lifecycleObserver?: ScannerLifecycleObserver;'), 'platform contract accepts observer, not a feature-created adapter');
+assert.ok(contractSource.includes('notifyExitPresentation(): void;'), 'session contract exposes presentation milestone');
+
+const homeScannerSource = await readFile(
+  new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(homeScannerSource.includes('lifecycleObserver: handleLifecycleEvent'), 'Home subscribes to engine lifecycle');
+assert.ok(homeScannerSource.includes('scanner.notifyExitPresentation();'), 'Home reports presentation completion');
+assert.ok(homeScannerSource.includes('milestones.presentation && milestones.cameraReleased && milestones.disposed'), 'Home waits for presentation, camera release and disposal');
+assert.ok(homeScannerSource.includes('milestones.cameraReleased && milestones.disposed'), 'animation-first completion waits for resource teardown');
+assert.ok(homeScannerSource.includes('captureScannerPreviewFrame(scanner.videoRef.current)'), 'Home preserves the pre-teardown visual snapshot');
 
 console.log('Scanner lifecycle contract and teardown-order tests passed.');
