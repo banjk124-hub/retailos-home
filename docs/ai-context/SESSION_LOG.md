@@ -177,3 +177,14 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Added `SCANNER_SOURCE_AUDIT_2026-11-08.md` and synchronized Roadmap, Implementation Status, Architecture, AI Handoff, Acceptance Checklist and Project Context.
 - No runtime code, tests, dependency, configuration, data contract, PWA or deployment file changed. No local preflight, CI, browser trace or physical-device QA was run in this documentation audit.
 - Branch: `docs/scanner-source-audit-device-profiles`; unmerged and undeployed. Next: review documentation diff; then handle iOS geometry and exit visuals as separate scoped code changes after evidence.
+
+
+### 2026-11-08 — PR B scanner lifecycle contract foundation
+
+- Based on main `fa0d007d42bf480799e29b6003aeea2b2cd52112`; branch `feat/scanner-lifecycle-contract`.
+- Added public lifecycle event vocabulary and optional `ScannerLifecycleAdapter`; engine state enum remains separate.
+- Engine milestones are wired at resource boundaries. Camera release notification occurs after lease release and before decoder disposal; DISPOSED follows teardown.
+- EXIT_PRESENTATION is exposed as an optional adapter milestone for feature-owned presentation. It does not make animation part of engine teardown.
+- Added focused lifecycle regression test and wired it into preflight.
+- Synchronized Architecture ADR-013, Roadmap Phase 1.2I slice, Implementation Status, AI Handoff and Project Context.
+- Verification not run in this remote editing step; CI and local Windows/device QA are pending. Branch remains unmerged and undeployed.
