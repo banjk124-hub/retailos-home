@@ -269,10 +269,7 @@ export class UniversalScannerSession implements ScannerSession {
       // the stream; this is bounded to a few animation frames and does not
       // delay camera acquisition or run during decoding.
       await waitForVideoPresentationLayout(this.video);
-      if (this.disposed || generation !== this.generation) {
-        lease.release();
-        return;
-      }
+      if (this.disposed || generation !== this.generation) return;
 
       this.video.srcObject = stream;
       this.video.muted = true;
