@@ -1,3 +1,12 @@
+## Active implementation focus — PR C1 Home lifecycle migration (2026-11-08)
+
+- Work branch: `feat/scanner-c1-home-lifecycle-migration`, based on main `191f44e9101cd75a3bf961f8475134efddbf4267`.
+- Home scanner lifecycle is being migrated independently from Stocktake. Engine owns session ID, camera lease and teardown; Home owns snapshot and presentation. Home closes only after presentation, camera release and disposal are confirmed.
+- Preserve Home cached lookup and single-result flow. Stocktake remains unchanged until PR C2. Opening Transition PR A follows both migrations.
+- Verification status must be read from `IMPLEMENTATION_STATUS.md`; no local/device QA is claimed until recorded. Never merge/deploy without explicit user approval.
+
+---
+
 # Current engineering focus — 2026-11-08
 
 Main source baseline: `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32 merged). PR #31 and #32 are no longer open Draft tasks; any such references below are historical records.
