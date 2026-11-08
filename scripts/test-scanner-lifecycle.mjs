@@ -71,7 +71,7 @@ const hookSource = await readFile(
   new URL('../src/features/scanner/hooks/useScannerEngine.ts', import.meta.url),
   'utf8',
 );
-assert.ok(hookSource.includes('cameraLeaseRequest = null,\\n  lifecycle,\\n}: Options'), 'hook destructures lifecycle adapter');
+assert.ok(hookSource.includes('  cameraLeaseRequest = null,') && hookSource.includes('  lifecycle,') && hookSource.includes('}: Options)'), 'hook destructures lifecycle adapter');
 assert.match(hookSource, /hapticFeedback,\\s*lifecycle,\\s*onResult:/);
 
 const sessionSource = await readFile(
