@@ -4,7 +4,7 @@
 2. **PR C1 — Home lifecycle migration:** merged.
 3. **PR #43 — Foreground Recovery:** merged and user-verified; the former iOS preview-shrink defect no longer reproduces.
 4. **PR C2 — Stocktake lifecycle migration:** merged in PR #45; user reports it runs correctly with no issues.
-5. **PR A — Engine-owned Opening Transition:** implemented on branch `feat/scanner-a-engine-preview-transition`. A shared engine preview surface owns the pre-READY curtain and its reveal on the first fresh frame. Home and Stocktake inherit the same behavior; neither module controls transition timing.
+5. **PR A — Engine-owned Opening Transition:** implemented on branch `feat/scanner-a-engine-preview-transition`. A shared engine preview surface owns the pre-READY curtain and its reveal on the first fresh frame. Home and Stocktake inherit the same behavior; neither module controls transition timing. GitHub Actions run #185 passed full preflight.
 6. **Cross-platform acceptance:** physical iOS Safari/PWA and Android Chrome/PWA validation remains required, including reduced-motion and weak-device checks.
 
 **Architecture boundary:** the platform session owns camera/decoder readiness; `useScannerEngine` bridges first-frame readiness; `ScannerPreviewSurface` owns the shared visual handoff. Feature modules own layout, controls and business presentation only. The native video layer is not opacity-transitioned; only its sibling curtain animates.
