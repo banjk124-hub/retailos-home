@@ -1,3 +1,14 @@
+### 2026-11-08 — Post-merge Recovery verification and C2 audit
+
+- Main baseline: 43f16379869b703e218e264040b859ab533c3193, merge commit for PR #43.
+- User confirmed PR #43 is merged and tested; the former foreground preview-shrink defect no longer reproduces.
+- Re-audited the current source: PR B contract is present; Home C1 consumes the observer and waits for EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and EXIT_PRESENTATION.
+- Stocktake already uses the shared engine and fresh-surface Recovery, but its feature component does not yet pass a lifecycle observer or emit EXIT_PRESENTATION. It currently calls parent onClose() directly from the animation-end handler.
+- C2 scope: add the same order-independent/idempotent exit milestone gate to StocktakeScanner; preserve pre-teardown snapshot and single-result auto-close; do not alter StocktakeModule, lease handoff, decoder, CSS timing or business persistence.
+- Found stale active documentation: Roadmap and Implementation Status still describe PR #38 as a Draft blocker; ADR-008/013 and handoff/context still describe C1 or the lifecycle foundation as unmerged and Stocktake as entirely on legacy lifecycle. These active summaries are being reconciled; historical log entries remain preserved.
+- Documentation-only sync branch: docs/scanner-c2-audit-sync. No runtime code has been changed for C2 in this audit.
+
+---
 ### 2026-11-08 — PR C1 Home lifecycle migration
 - Branch: `feat/scanner-c1-home-lifecycle-migration`, based on main merge `191f44e9101cd75a3bf961f8475134efddbf4267`.
 - Audited PR #36 integration and traced Home tap → lease request → session construction → result/manual close → snapshot → camera release → decoder disposal → animation completion.
