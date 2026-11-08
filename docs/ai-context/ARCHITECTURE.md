@@ -199,7 +199,7 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 
 ## ADR-010 — Tap-origin camera acquisition and module-owned scanner transitions (2026-11-08)
 
-**Status:** Implemented on branch feat/scanner-ux-transition; PR #31 is Draft and unmerged. GitHub CI passed; physical-device QA remains outstanding.
+**Status:** Merged to `main` through PR #31 on 2026-11-08. The follow-up stabilization is tracked separately in ADR-011 / PR #32. Physical-device QA remains outstanding.
 
 ### Context
 - Home and Stocktake previously mounted their scanner component after a state update; useScannerEngine then initiated camera acquisition from its mount effect.
@@ -225,6 +225,8 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 - Preserve Home cached lookup and Stocktake form-fill/explicit-save, duplicate-row and manual-entry semantics.
 - Preserve camera constraints, autofocus behavior, decoder/ROI/cadence, barcode validation and platform capability detection.
 - Keep Home and Stocktake presentation implementations independent; only camera acquisition/lease handoff and motion-origin primitives may be shared.
+- Home's continuous scan mode must remain open after each accepted result; the exit transition applies only to single-result mode.
+- On a successful single-result event, mark the session as no longer desired-active before feature callback handling so visibility/foreground recovery cannot reacquire the camera during the exit window.
 
 ### Acceptance / verification
 - Automated regression covers one-time lease claim, cancellation before claim, and lease isolation when another consumer still owns the shared stream.
@@ -235,7 +237,7 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 
 ## ADR-011 — Scanner preview/lifecycle synchronization and module-owned exit transitions (2026-11-08)
 
-**Status:** Implemented on `fix/scanner-lifecycle-preview-stability`; automated CI and physical-device QA are pending.
+**Status:** Implemented on `fix/scanner-lifecycle-preview-stability` / Draft PR #32. GitHub Actions run #107 passed on the source/test head and run #109 passed on the latest documentation-synchronized head. Local Windows/PowerShell preflight and physical-device QA remain outstanding.
 
 ### Context
 - After PR #31 merged, source review found the Home presentation class and tap-origin style were not attached to the Home scanner root, so its dedicated full-screen transition CSS could not activate.
@@ -258,4 +260,6 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 
 ### Verification
 - Added source regression assertions for Home transition wiring, independent Stocktake transition, lifecycle pause state ownership and preview geometry.
-- PR #32 CI, local Windows preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain required. No physical-device behavior is claimed from source review alone.
+- Regression assertions cover Home root transition wiring, continuous-mode persistence, single-result exit gating, stale pause ownership, single-start promise ownership, Stocktake exit wiring and preview geometry.
+- GitHub Actions run #107 (`42451111883`) passed the full preflight on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`; run #109 (`42451179152`) passed on the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain required. No physical-device behavior is claimed from CI.
