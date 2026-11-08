@@ -2,7 +2,7 @@
 
 - PR B lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 C2 Stocktake migration are merged.
 - User confirms C2 runs correctly without issues.
-- Current task: PR A engine-owned preview Opening Transition on branch `feat/scanner-a-engine-preview-transition`.
+- Current task: PR A engine-owned preview Opening Transition on branch `feat/scanner-a-engine-preview-transition`, Draft PR #46. GitHub Actions run #185 passed full preflight.
 - Engine already determines first usable frame readiness before decoder initialization. A shared `ScannerPreviewSurface` now owns the default curtain/reveal; Home and Stocktake inherit it instead of deciding preview animation independently.
 - Native video must remain fully opaque and unanimated; only the sibling curtain fades to avoid iOS/WebKit camera-layer compositing regressions.
 - No camera/decoder/lease/business-flow changes in PR A. Validate iOS Safari/PWA and Android Chrome/PWA, including reduced motion and recovery.
