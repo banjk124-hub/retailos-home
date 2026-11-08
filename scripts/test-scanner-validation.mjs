@@ -340,10 +340,20 @@ assert.match(stocktakeUiSource, /captureScannerPreviewFrame/,
   "Stocktake must preserve the last camera frame before teardown");
 assert.match(stocktakeUiSource, /stocktake-scanner-exit-frame/,
   "Stocktake must keep its feature-owned exit preview snapshot");
-assert.match(scannerTransitionCss, /scanner-home-open 260ms[\s\S]*scanner-home-close 260ms/,
-  "Home open and exit transitions must use matched duration");
-assert.match(scannerTransitionCss, /scanner-stocktake-surface-in 260ms[\s\S]*scanner-stocktake-close 260ms/,
-  "Stocktake open and exit transitions must use matched duration");
+assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition\s*\{[^}]*animation:\s*scanner-home-open/,
+  "Home must not transform/fade an ancestor of the live camera video during startup");
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*transition:\s*none/,
+  "Home live video must not be opacity-transitioned during first-frame presentation");
+assert.ok(scannerTransitionCss.includes("@keyframes scanner-home-close") && scannerTransitionCss.includes("to { opacity: 1; transform: scale(.94); }"),
+  "Home exit must shrink the frozen preview without fading the entire screen to black");
+assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-surface\.scanner-stocktake-surface-enter\s*\{[^}]*animation:\s*scanner-stocktake-surface-in/,
+  "Stocktake must not transform an ancestor of its live camera video during startup");
+assert.match(scannerTransitionCss, /\.stocktake-scanner-surface\.is-closing \.stocktake-scanner-preview video\s*\{\s*visibility:\s*hidden;/,
+  "Stocktake must hide the live stream before animating its frozen exit frame");
+assert.match(scannerTransitionCss, /scanner-home-close 1ms linear both/,
+  "reduced-motion Home exit must still dispatch animationend and unmount cleanly");
+assert.match(scannerTransitionCss, /scanner-stocktake-close 1ms linear both/,
+  "reduced-motion Stocktake exit must still dispatch animationend and unmount cleanly");
 
 
 const universalSessionSource = await readFile(
