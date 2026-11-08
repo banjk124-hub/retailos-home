@@ -116,6 +116,11 @@ assert.ok(homeScannerSource.includes('milestones.presentation && milestones.came
 assert.ok(homeScannerSource.includes('milestones.cameraReleased && milestones.disposed'), 'animation-first completion waits for resource teardown');
 assert.ok(homeScannerSource.includes('captureScannerPreviewFrame(scanner.videoRef.current)'), 'Home preserves the pre-teardown visual snapshot');
 
+assert.ok(hookSource.includes('new ScannerPageLifecycleCoordinator('), 'shared scanner hook must route page lifecycle through one coordinator');
+assert.ok(hookSource.includes('pendingLeaseRequest?.cancel();'), 'background and unmount must cancel an unclaimed tap-started camera lease');
+assert.ok(hookSource.includes('coordinator.transition(false)') && hookSource.includes('coordinator.transition(visible)'), 'visibility and pagehide signals must use the serialized coordinator');
+assert.ok(!hookSource.includes('recoveryAttemptsRef'), 'foreground recovery must not be blocked by a fixed lifetime attempt counter');
+
 // Browser page lifecycle signals (visibilitychange/pagehide/pageshow) must be
 // coalesced and serialized so resume never races an unfinished suspension.
 const pageLifecycleSource = await readFile(
