@@ -29,7 +29,7 @@ Source baseline: main after PR #45 merge (`af694b6e7fc6bbcb0d4869ab33ab8f084bffe
 - [x] Native video remains opaque and has no opacity transition; only the sibling curtain animates.
 - [x] Foreground recovery resets engine preview readiness so the curtain returns until a fresh frame is confirmed.
 - [x] Reduced-motion disables the curtain animation.
-- [ ] GitHub Actions full preflight passes on final PR A head.
+- [x] GitHub Actions run #185 passed full `npm run preflight` on the updated PR A head.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA confirms smooth reveal, retry, recovery, and no black flash.
 
 ## PR C2 — Stocktake migration acceptance
