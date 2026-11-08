@@ -8,6 +8,7 @@ import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest,
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
+import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
 
 type VideoReadiness = {
   readyState: number;
@@ -155,12 +156,15 @@ export class UniversalScannerSession implements ScannerSession {
   private suspendPromise: Promise<void> | null = null;
   private unsubscribeTrackEnded: (() => void) | null = null;
   private trackEventCleanups: Array<() => void> = [];
+  private readonly lifecycle: ScannerLifecycleAdapter;
 
   constructor(
     private readonly video: HTMLVideoElement,
     private readonly options: ScannerOpenOptions,
     private initialCameraLeaseRequest?: CameraLeaseRequest,
-  ) {}
+  ) {
+    this.lifecycle = options.lifecycle ?? new ScannerLifecycleAdapter(this.id);
+  }
   get state(): ScannerLifecycleState { return this.currentState; }
 
   private setState(state: ScannerLifecycleState): void {
@@ -191,6 +195,7 @@ export class UniversalScannerSession implements ScannerSession {
 
   private async startInternal(): Promise<void> {
     const generation = ++this.generation;
+    this.lifecycle.opening();
     this.setState('requesting');
     this.startAttemptStartedAt = performance.now();
     this.hasLoggedFirstAcceptedForAttempt = false;
@@ -265,6 +270,7 @@ export class UniversalScannerSession implements ScannerSession {
       // Publish preview readiness before decoder initialization so the UI can
       // reveal the live camera as soon as the first real frame is available.
       this.options.onPreviewReady?.();
+      this.lifecycle.ready();
       this.setState('initializing');
       const decoderInitStartedAt = performance.now();
       const decoder = await this.createDecoder();
@@ -277,6 +283,7 @@ export class UniversalScannerSession implements ScannerSession {
       this.acceptedSingle = false;
       this.logStage('camera_to_scanning_ms', performance.now() - this.startAttemptStartedAt);
       this.setState('scanning');
+      this.lifecycle.scanning();
       this.scheduleNextFrame(generation);
     } catch (cause) {
       if (generation !== this.generation || this.disposed) return;
@@ -467,11 +474,13 @@ export class UniversalScannerSession implements ScannerSession {
     // React unmount, and an explicit close tap). Share one teardown promise so
     // decoder disposal and camera release happen exactly once.
     ++this.generation;
+    this.lifecycle.exitRequested();
     this.closePromise = (async () => {
       await this.suspendPromise;
       await this.teardown(true);
       this.disposed = true;
       this.setState('disposed');
+      this.lifecycle.disposed();
     })();
     return this.closePromise;
   }
@@ -507,6 +516,7 @@ export class UniversalScannerSession implements ScannerSession {
       const cameraReleaseStartedAt = performance.now();
       try {
         lease?.release();
+        if (this.closePromise) this.lifecycle.cameraReleased();
       } finally {
         this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
       }
