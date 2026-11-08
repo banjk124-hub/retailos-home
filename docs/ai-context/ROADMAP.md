@@ -1,11 +1,11 @@
-## Current execution order — main baseline 43f1637 (2026-11-08)
+## Current execution order — PR #44 merged; C2 PR #45 in review (2026-11-08)
 
 1. **PR B — Lifecycle Contract foundation:** merged. Shared event vocabulary, engine-owned session identity and truthful resource milestones are established.
 2. **PR C1 — Home migration:** merged. Home consumes the shared lifecycle observer and gates unmount on exit presentation, camera release and disposal.
 3. **PR #43 — Foreground Recovery:** merged and verified by the user. Recovery retires the old session, replaces only the video surface, then uses the existing startup pipeline. The previous iOS preview-shrink defect is no longer reproducible in the user's test.
-4. **PR C2 — Stocktake migration:** next. Adopt the same exit-handoff contract without changing Stocktake UI, form-fill, manual entry, duplicate-row or explicit-save behavior.
-5. **PR A — Opening Transition:** after C2. Add Connecting presentation and transition on the truthful READY milestone; do not equate READY with decoder SCANNING.
-6. **Cross-platform release validation:** retain separate iOS Safari/PWA and Android Chrome/PWA checks, including weak-device regression.
+4. **PR C2 — Stocktake migration:** implemented in Draft PR #45; CI preflight passed. Review and merge after code review and device acceptance. The gate joins EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED and feature-owned presentation completion without changing Stocktake business behavior.
+5. **PR A — Opening Transition:** follows C2 merge/acceptance. Add Connecting presentation and transition on the truthful READY milestone; do not equate READY with decoder SCANNING.
+6. **Cross-platform release validation:** physical iOS Safari/PWA and Android Chrome/PWA checks remain outstanding, including weak-device regression.
 
 The shared engine and camera recovery remain single-source. Do not duplicate camera/session ownership in either feature. Keep C2 scoped to Stocktake's feature-owned exit handoff.
 
