@@ -1,3 +1,18 @@
+## ADR-009 — Serialized cross-platform page lifecycle recovery (2026-11-08)
+
+Status: Implemented on Draft PR #38; CI and device acceptance pending.
+
+- One mounted scanner has one page-lifecycle coordinator. `visibilitychange` is the primary signal; `pagehide/pageshow` are supplementary browser/BFCache signals.
+- Duplicate signals for the same visibility edge are coalesced. Real hidden/visible transitions are serialized so foreground resume waits for background suspension and lease release.
+- The coordinator is platform-neutral. Platform-specific behavior belongs only in media/browser capability handling, not separate Home/Stocktake or iOS/Android business logic.
+- Backgrounding cancels an unclaimed tap-started camera lease. Once claimed, the session owns and releases its lease.
+- Preview READY requires a fresh frame: `requestVideoFrameCallback` where supported, otherwise advancing live media playback time. A non-zero video dimension or readyState by itself is not proof of a resumed preview.
+- A failed resume does not permanently consume a fixed lifetime retry budget. Each actual foreground transition can attempt one serialized recovery; explicit retry remains available after a visible error.
+- SCANNING remains downstream of successful decoder initialization. Camera constraints, autofocus, decoder cadence/validation and feature business flows remain unchanged.
+- C2 must consume this shared recovery behavior without duplicating it; A may rely on truthful READY only after this contract is accepted.
+
+---
+
 
 
 ## ADR-008 — Feature-observed scanner lifecycle and Home exit handoff (2026-11-08)
