@@ -157,3 +157,9 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Clarified that Home continuous scan mode must not close on each result; only single-result mode uses the result exit transition. Single-result sessions become undesired-active before feature callback handling to prevent foreground recovery from reopening the camera during exit.
 - GitHub Actions run #109 (`42451179152`) passed the latest docs-synchronized PR #32 head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`, including locked dependency install, scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
 - Still outstanding: local Windows/PowerShell `npm run preflight`; physical iOS Safari/PWA and Android Chrome/PWA QA; weak-device visual/performance review. PR #32 remains Draft, unmerged and undeployed. Do not merge/deploy without explicit user approval.
+
+
+### Documentation CI boundary clarification — 2026-11-08
+- Run #109 passed on head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4` before the latest documentation reconciliation commits.
+- The documentation-only commits that reconcile PR #31 merged status, PR #32 lifecycle details, continuous-scan behavior and acceptance gates have not yet been rerun through CI. Do not describe run #109 as validating the current documentation head.
+- Current last documentation commit in this synchronization batch: `bc3e78e31742d8430cab7754f5328a55ebbed569`. Local preflight and device QA remain outstanding.
