@@ -195,12 +195,12 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Main remains unchanged. No merge or deployment has been performed for PR #32.
 - Implemented: Home transition class/style wiring; stale lifecycle UI write prevention; active-start promise ownership guard; Home/Stocktake preview flex sizing; independent module exit transitions; regression guards.
 - Protected: camera lease/refcount, camera constraints, autofocus, decoder, ROI, 110 ms cadence, validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry and persistence.
-- Latest head must pass CI before local sync. Then inspect the complete PR diff and run local `npm run preflight`.
+- Latest branch head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4` passed GitHub Actions run #109 (`42451179152`), including full preflight. Next inspect the complete PR diff locally and run local `npm run preflight`.
 - Physical QA still required on iOS Safari/PWA and Android Chrome/PWA: permission grant/deny/retry, open/close while pending, rapid reopen, background/foreground, first usable frame, result exit, scan accuracy, Stocktake explicit save, and reduced-motion behavior.
 - Preserve all existing local changes and untracked files during sync. Do not use destructive Git cleanup. Do not merge/deploy without explicit user approval.
 
 ### PR #32 CI verification — 2026-11-08
 - GitHub Actions run #107 (`42451111883`) passed on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`.
 - Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
-- This confirms the recorded code/test head. Subsequent documentation-only commits, if any, require the latest branch head to be checked separately.
+- Run #109 (`42451179152`) passed on the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
