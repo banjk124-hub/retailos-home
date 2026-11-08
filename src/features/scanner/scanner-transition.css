@@ -9,7 +9,7 @@
   height: var(--scanner-visual-viewport-height, 100dvh);
   min-height: 0;
   transform-origin: var(--scanner-origin-x, 50vw) var(--scanner-origin-y, 50vh);
-  animation: scanner-home-open 260ms cubic-bezier(.2, .78, .22, 1) both;
+  background: transparent;
   padding: 0;
 }
 .barcode-scanner.scanner-home-transition .barcode-scanner-card {
@@ -48,10 +48,12 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: opacity 100ms linear;
+  opacity: 1;
+  transition: none;
 }
-.barcode-scanner.scanner-home-transition .barcode-scanner-view:not(.has-preview) video { opacity: 0; }
-.barcode-scanner.scanner-home-transition .barcode-scanner-view.has-preview video { opacity: 1; }
+.barcode-scanner.scanner-home-transition .barcode-scanner-view:not(.has-preview) video { visibility: hidden; }
+.barcode-scanner.scanner-home-transition .barcode-scanner-view.has-preview video { visibility: visible; }
+.barcode-scanner.scanner-home-transition.is-closing .barcode-scanner-view video { visibility: hidden; }
 .barcode-scanner-exit-frame {
   position: absolute;
   z-index: 1;
@@ -159,7 +161,7 @@
 }
 @keyframes scanner-home-close {
   from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: scale(.94); }
+  to { opacity: 1; transform: scale(.94); }
 }
 
 /* Stocktake keeps its feature-owned layout but shares visual viewport sizing and transition timing. */
@@ -170,15 +172,16 @@
   bottom: auto;
   left: 0;
   height: var(--scanner-visual-viewport-height, 100dvh);
-  animation: scanner-stocktake-backdrop-in 260ms cubic-bezier(.2, .78, .22, 1) both;
+  background: transparent;
 }
 .stocktake-scanner-surface.scanner-stocktake-surface-enter {
   transform-origin: calc(50% + var(--scanner-origin-x, 50vw) - 50vw) calc(50% + var(--scanner-origin-y, 50vh) - 50vh);
-  animation: scanner-stocktake-surface-in 260ms cubic-bezier(.2, .78, .22, 1) both;
 }
 .stocktake-scanner-preview { background: radial-gradient(ellipse at 50% 42%, #3a2c33 0%, #241c21 64%, #171114 100%); }
-.stocktake-scanner-preview video { opacity: 0; transition: opacity 100ms linear; }
-.stocktake-scanner-preview.has-preview video { opacity: 1; }
+.stocktake-scanner-preview video { opacity: 1; transition: none; }
+.stocktake-scanner-preview:not(.has-preview) video { visibility: hidden; }
+.stocktake-scanner-preview.has-preview video { visibility: visible; }
+.stocktake-scanner-surface.is-closing .stocktake-scanner-preview video { visibility: hidden; }
 .stocktake-scanner-exit-frame {
   position: absolute;
   z-index: 1;
@@ -217,7 +220,7 @@
   pointer-events: none;
   animation: scanner-stocktake-close 260ms cubic-bezier(.2, .78, .22, 1) both;
 }
-@keyframes scanner-stocktake-close { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(.96); } }
+@keyframes scanner-stocktake-close { from { opacity: 1; transform: none; } to { opacity: 1; transform: scale(.96); } }
 
 @media (prefers-reduced-motion: reduce) {
   .barcode-scanner.scanner-home-transition,
@@ -228,4 +231,6 @@
   }
   .barcode-scanner.scanner-home-transition .barcode-scanner-view video,
   .stocktake-scanner-preview video { transition: none; }
+  .barcode-scanner.scanner-home-transition.is-closing { animation: scanner-home-close 1ms linear both !important; }
+  .stocktake-scanner-surface.scanner-stocktake-surface-enter.is-closing { animation: scanner-stocktake-close 1ms linear both !important; }
 }
