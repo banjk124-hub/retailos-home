@@ -96,7 +96,20 @@ const releaseAt = teardownBody.indexOf('lease?.release()');
 const cameraEventAt = teardownBody.indexOf('this.lifecycle.cameraReleased()', releaseAt);
 const decoderDisposeAt = teardownBody.indexOf('await decoder.dispose()', cameraEventAt);
 assert.ok(releaseAt >= 0 && cameraEventAt > releaseAt, 'CAMERA_RELEASED follows lease release');
+
 assert.ok(decoderDisposeAt > cameraEventAt, 'decoder disposal may continue after CAMERA_RELEASED');
+
+// Foreground recovery retires the old platform session without signaling a
+// feature exit; teardown completes before the session becomes unavailable.
+const recoveryDisposeStart = sessionSource.indexOf('  disposeForRecovery(): Promise<void> {');
+const recoveryDisposeEnd = sessionSource.indexOf('  close(): Promise<void> {', recoveryDisposeStart);
+assert.ok(recoveryDisposeStart >= 0 && recoveryDisposeEnd > recoveryDisposeStart, 'recovery-only disposal exists');
+const recoveryDisposeBody = sessionSource.slice(recoveryDisposeStart, recoveryDisposeEnd);
+assert.ok(recoveryDisposeBody.includes('await this.suspendPromise;') && recoveryDisposeBody.includes('await this.teardown(true);'), 'recovery disposal waits for suspension and resource teardown');
+assert.ok(recoveryDisposeBody.indexOf('await this.teardown(true);') < recoveryDisposeBody.indexOf('this.disposed = true;'), 'session is retired only after resources are released');
+assert.doesNotMatch(recoveryDisposeBody, /exitRequested|cameraReleased|exitPresentation/, 'recovery disposal must not trigger feature exit milestones');
+assert.ok(contractSource.includes('disposeForRecovery(): Promise<void>;'), 'session contract exposes recovery-only retirement');
+
 assert.ok(sessionSource.includes('  notifyExitPresentation(): void {') && sessionSource.includes('this.lifecycle.exitPresentation();'), 'feature can publish EXIT_PRESENTATION on the real session adapter');
 
 const contractSource = await readFile(
