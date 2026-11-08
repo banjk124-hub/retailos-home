@@ -17,6 +17,10 @@ const lifecycle = new ScannerLifecycleAdapter('test-session', (event) => events.
 lifecycle.opening();
 lifecycle.ready();
 lifecycle.scanning();
+// A suspend/resume cycle may publish readiness/scanning again.
+lifecycle.opening();
+lifecycle.ready();
+lifecycle.scanning();
 lifecycle.exitRequested();
 lifecycle.cameraReleased();
 lifecycle.exitPresentation();
@@ -29,7 +33,7 @@ lifecycle.exitPresentation();
 lifecycle.disposed();
 
 assert.deepEqual(events.map((event) => event.type), [
-  'OPENING', 'READY', 'SCANNING', 'EXIT_REQUESTED',
+  'OPENING', 'READY', 'SCANNING', 'OPENING', 'READY', 'SCANNING', 'EXIT_REQUESTED',
   'CAMERA_RELEASED', 'EXIT_PRESENTATION', 'DISPOSED',
 ]);
 assert.ok(events.every((event) => event.sessionId === 'test-session'));
