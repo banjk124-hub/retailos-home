@@ -231,3 +231,31 @@ Status: Instrumentation implementation on `feat/scanner-phase-1-2g-instrumentati
 - GitHub Actions run #89 on PR #31 head 9e2e1bbe568d0d7be41d253fde4dfd2218634955 passed the repository preflight.
 - Required physical-device QA: iOS Safari/PWA and Android Chrome/PWA, including first permission prompt, denied/retry, close while permission is pending, rapid open/close/reopen, background/foreground and preview reveal.
 - CI is not evidence of physical camera behavior. Do not merge or deploy until device QA and explicit user approval.
+
+
+## ADR-011 — Scanner preview/lifecycle synchronization and module-owned exit transitions (2026-11-08)
+
+**Status:** Implemented on `fix/scanner-lifecycle-preview-stability`; automated CI and physical-device QA are pending.
+
+### Context
+- After PR #31 merged, source review found the Home presentation class and tap-origin style were not attached to the Home scanner root, so its dedicated full-screen transition CSS could not activate.
+- `pauseScanner()` wrote UI state after awaiting session teardown. A foreground resume could publish a newer preview/scanning state before the older pause continuation completed.
+- The start promise's final UI cleanup also needed ownership checking so a stale attempt could not clear the starting state of a newer attempt.
+- Both module surfaces unmounted immediately on close/result, cutting off their intended exit treatment.
+
+### Decision
+- Attach Home's dedicated transition class and tap-origin custom properties to the actual scanner root.
+- Treat the session's synchronous `suspended` state callback as the authoritative UI reset. Do not write preview/scanning state after the asynchronous suspend teardown completes.
+- Only let the currently registered start promise clear the starting state.
+- Keep Home and Stocktake exit animations in their own presentation components. Camera session close begins immediately; unmount occurs after the matching exit animation, or immediately when reduced motion is requested.
+- Stabilize only the preview flex sizing needed by Home and Stocktake. Do not alter the camera acquisition contract or decoder pipeline.
+
+### Invariants
+- Preserve camera lease/refcount, 1280×720 ideal resolution, 30 FPS target, optional autofocus, first-frame readiness semantics, ZXing, ROI, 110 ms decode interval, supported formats and barcode validation.
+- Preserve Home cached lookup and Stocktake form-fill, explicit save, duplicate rows, manual entry and persistence.
+- No shared Home/Stocktake visual template, new dependency, camera prewarming, polling or background camera retention.
+- Reduced-motion users must not depend on an animation event to release the scanner surface.
+
+### Verification
+- Added source regression assertions for Home transition wiring, independent Stocktake transition, lifecycle pause state ownership and preview geometry.
+- PR #32 CI, local Windows preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain required. No physical-device behavior is claimed from source review alone.
