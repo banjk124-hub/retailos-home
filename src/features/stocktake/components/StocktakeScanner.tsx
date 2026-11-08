@@ -3,6 +3,7 @@ import { AlertTriangle, Camera, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
+import { captureScannerPreviewFrame } from '../../scanner/services/captureScannerPreviewFrame';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -19,25 +20,25 @@ type Props = {
 /** Stocktake-owned scanner presentation; camera/decoder runtime stays shared. */
 export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
   const [isClosing, setIsClosing] = useState(false);
+  const [exitFrame, setExitFrame] = useState<string | null>(null);
   const finishClose = (event: AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== 'scanner-stocktake-close') return;
     onClose();
   };
-  const handleDetected = (value: string) => {
+  const scanner = useScannerEngine({ onDetected: (value) => {
+    setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
     setIsClosing(true);
     onDetected(value);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
-  };
-  const scanner = useScannerEngine({ onDetected: handleDetected, mode: 'single', cameraLeaseRequest });
+  }, mode: 'single', cameraLeaseRequest });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
   };
   const close = () => {
     if (isClosing) return;
+    setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
     setIsClosing(true);
     void scanner.closeScanner();
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
   };
 
   return (
@@ -49,6 +50,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
       </header>
       <div className={`stocktake-scanner-preview ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-active' : ''}`}>
         <video ref={scanner.videoRef} muted playsInline autoPlay aria-label="Camera quét barcode" />
+        {exitFrame && <img className="stocktake-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
         {!scanner.isPreviewReady && scanner.isStarting && <div className="stocktake-scanner-message" role="status" aria-live="polite"><Camera size={17} /><span>Đang mở camera…</span></div>}
         {!scanner.isPreviewReady && scanner.error && <div className="stocktake-scanner-message is-error"><AlertTriangle size={18} /><span>Camera chưa sẵn sàng</span></div>}
         {scanner.isScanning && <div className="stocktake-scanner-reticle" aria-hidden="true"><i /></div>}
