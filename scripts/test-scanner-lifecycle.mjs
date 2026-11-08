@@ -133,6 +133,23 @@ assert.ok(hookSource.includes('new ScannerPageLifecycleCoordinator('), 'shared s
 assert.ok(hookSource.includes('pendingLeaseRequest?.cancel();'), 'background and unmount must cancel an unclaimed tap-started camera lease');
 assert.ok(hookSource.includes('coordinator.transition(false)') && hookSource.includes('coordinator.transition(visible)'), 'visibility and pagehide signals must use the serialized coordinator');
 assert.ok(!hookSource.includes('recoveryAttemptsRef'), 'foreground recovery must not be blocked by a fixed lifetime attempt counter');
+assert.ok(hookSource.includes('disposeForRecovery()'), 'foreground recovery must retire the old platform session');
+assert.ok(hookSource.includes('replaceVideoSurface()'), 'foreground recovery must request a fresh video surface');
+assert.ok(hookSource.includes('pending.resolve(videoRef.current)'), 'recovery waits for the replacement video node to commit');
+assert.ok(hookSource.includes('sessionRef.current !== session'), 'callbacks from retired sessions must not update the active feature');
+assert.ok(hookSource.includes('if (recoveryRequiredRef.current) await recoverScanner();'), 'foreground lifecycle uses recovery only after a background transition');
+
+const homeSurfaceSource = await readFile(
+  new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),
+  'utf8',
+);
+const stocktakeSurfaceSource = await readFile(
+  new URL('../src/features/stocktake/components/StocktakeScanner.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(homeSurfaceSource.includes('<video key={scanner.videoSurfaceKey} ref={scanner.videoRef}'), 'Home binds the shared engine surface key to its video element');
+assert.ok(stocktakeSurfaceSource.includes('<video key={scanner.videoSurfaceKey} ref={scanner.videoRef}'), 'Stocktake binds the shared engine surface key to its video element');
+
 
 // Browser page lifecycle signals (visibilitychange/pagehide/pageshow) must be
 // coalesced and serialized so resume never races an unfinished suspension.
