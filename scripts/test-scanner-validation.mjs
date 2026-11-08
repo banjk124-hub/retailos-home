@@ -309,3 +309,38 @@ assert.match(stocktakeCss, /\.stocktake-scanner-preview\{[^}]*flex:1 1 auto;[^}]
   "Stocktake preview must participate in stable flex sizing");
 
 console.log("Scanner barcode validation, luminance, camera stability, UI wiring, and lifecycle regression tests passed.");
+
+
+const viewportHookSource = await readFile(
+  new URL("../src/features/scanner/hooks/useScannerViewportStyle.ts", import.meta.url),
+  "utf8",
+);
+assert.match(viewportHookSource, /window\.visualViewport/,
+  "scanner overlays must track the iOS visual viewport rather than only layout viewport dimensions");
+assert.match(viewportHookSource, /addEventListener\('resize'/,
+  "visual viewport changes must refresh scanner geometry");
+
+const frameCaptureSource = await readFile(
+  new URL("../src/features/scanner/services/captureScannerPreviewFrame.ts", import.meta.url),
+  "utf8",
+);
+assert.match(frameCaptureSource, /video\.videoWidth[\s\S]*?video\.videoHeight/,
+  "exit-frame capture must require a real decoded camera frame");
+assert.match(frameCaptureSource, /maxWidth = 960/,
+  "exit-frame capture must remain bounded in memory and resolution");
+
+assert.match(scannerUiSource, /captureScannerPreviewFrame/,
+  "Home must preserve the last camera frame before teardown");
+assert.match(scannerUiSource, /RETAILOS · TRA CỨU NHANH/,
+  "Home scanner must identify its quick product lookup purpose");
+assert.doesNotMatch(scannerUiSource, /Đưa mã vạch vào khung hình|Đang quét|barcode-scanner-hint/,
+  "Home full-screen scanner must not retain redundant instructional/status copy");
+
+assert.match(stocktakeUiSource, /captureScannerPreviewFrame/,
+  "Stocktake must preserve the last camera frame before teardown");
+assert.match(stocktakeUiSource, /stocktake-scanner-exit-frame/,
+  "Stocktake must keep its feature-owned exit preview snapshot");
+assert.match(scannerTransitionCss, /scanner-home-open 260ms[\s\S]*scanner-home-close 260ms/,
+  "Home open and exit transitions must use matched duration");
+assert.match(scannerTransitionCss, /scanner-stocktake-surface-in 260ms[\s\S]*scanner-stocktake-close 260ms/,
+  "Stocktake open and exit transitions must use matched duration");
