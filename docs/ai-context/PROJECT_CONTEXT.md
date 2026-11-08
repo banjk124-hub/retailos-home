@@ -130,3 +130,12 @@ Repository source and current tests/config are authoritative for actual behavior
 - GitHub Actions run #89 passed full preflight. Local Windows/PowerShell and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
 - Preserve all existing scanner and business-flow contracts. No merge/deploy without explicit approval.
 - After this supplemental UX patch is accepted, resume the existing Phase 1.2G–1.2J roadmap; this patch does not complete Phase 1.2G.
+
+
+## Scanner lifecycle contract update — 2026-11-08
+
+- Shared lifecycle milestones are an event contract, not a required linear UI state machine.
+- The platform engine owns camera/decoder resources and truthful release/disposal notifications. Feature modules own presentation, capture, VFX, result routing and UI completion.
+- `CAMERA_RELEASED` must be emitted after lease release and before decoder disposal finishes; `DISPOSED` follows completed engine teardown.
+- `EXIT_PRESENTATION` is optional and module-owned. Home and Stocktake remain on their existing integration until separate PRs.
+- Active implementation branch: `feat/scanner-lifecycle-contract`; see Implementation Status and ADR-013.
