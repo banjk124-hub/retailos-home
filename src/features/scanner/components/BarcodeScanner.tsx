@@ -42,9 +42,10 @@ export default function BarcodeScanner({
   const exitMilestonesRef = useRef({ closeStarted: false, presentation: false, cameraLeaseReleased: false, disposed: false, completed: false });
   const tryCompleteClose = () => {
     const milestones = exitMilestonesRef.current;
-    if (!milestones.closeStarted || !milestones.presentation || !milestones.cameraLeaseReleased || !milestones.disposed || milestones.completed) return;
-    milestones.completed = true;
-    onCloseRef.current();
+    if (milestones.closeStarted && milestones.presentation && milestones.cameraLeaseReleased && milestones.disposed && !milestones.completed) {
+      milestones.completed = true;
+      onCloseRef.current();
+    }
   };
   const handleLifecycleEvent = (event: ScannerLifecycleEvent) => {
     if (event.type === 'SESSION_CLOSE_STARTED') exitMilestonesRef.current.closeStarted = true;
