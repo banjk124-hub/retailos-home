@@ -1,17 +1,21 @@
-## Active implementation focus — PR C1 Home lifecycle migration (2026-11-08)
+## Current project focus — main baseline 43f16379869b703e218e264040b859ab533c3193
 
-- Work branch: `feat/scanner-c1-home-lifecycle-migration`, based on main `191f44e9101cd75a3bf961f8475134efddbf4267`.
-- Home scanner lifecycle is being migrated independently from Stocktake. Engine owns session ID, camera lease and teardown; Home owns snapshot and presentation. Home closes only after presentation, camera release and disposal are confirmed.
-- Preserve Home cached lookup and single-result flow. Stocktake remains unchanged until PR C2. Opening Transition PR A follows both migrations.
-- Verification status must be read from `IMPLEMENTATION_STATUS.md`; no local/device QA is claimed until recorded. Never merge/deploy without explicit user approval.
+- PR B shared lifecycle contract: merged.
+- PR C1 Home lifecycle migration: merged and is the reference integration.
+- PR #43 fresh-surface foreground recovery: merged; user confirms the former preview-shrink defect is gone after testing.
+- Next: audit and implement PR C2 for Stocktake's feature-owned exit handoff. Preserve Stocktake UI, barcode-to-form behavior, manual entry, duplicate rows and explicit save.
+- PR A Opening Transition follows C2 and must transition on READY, not SCANNING.
+- Shared camera acquisition, recovery, decoder and lifecycle session ownership stay in the single shared engine. Feature modules own snapshots, exit presentation and module close completion.
+- Current baseline commit: 43f16379869b703e218e264040b859ab533c3193. No active implementation branch is assumed; inspect Git state before starting C2.
 
 ---
 
+
 # Current engineering focus — 2026-11-08
 
-Main source baseline: `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32 merged). PR #31 and #32 are no longer open Draft tasks; any such references below are historical records.
+Historical source baseline: c7146b55f0c2210cd7b8474c6a72b1c915985793 (pre lifecycle contract and Recovery). PR #31/#32 history below is not the current implementation state.
 
-- Current branch: `docs/scanner-source-audit-device-profiles` (documentation-only; unmerged/undeployed).
+- No active branch is assumed. The source audit branch mentioned in older notes is historical; verify the actual Git branch before work.
 - Home and Stocktake both initiate camera acquisition from the user's tap before scanner UI mount; remaining startup delay is hardware/browser acquisition, first usable frame and decoder initialization.
 - Android opening geometry is reported stable; iOS still jumps. Root cause remains unproven; measure iOS visualViewport/safe-area/element geometry before code changes.
 - Exit fade mismatch likely occurs because video is detached at teardown start while dark overlay remains through its fade. Keep camera release prompt; solve visual state separately.
@@ -141,10 +145,10 @@ Repository source and current tests/config are authoritative for actual behavior
 - After this supplemental UX patch is accepted, resume the existing Phase 1.2G–1.2J roadmap; this patch does not complete Phase 1.2G.
 
 
-## Scanner lifecycle contract update — 2026-11-08
+## Historical scanner lifecycle contract foundation — 2026-11-08
 
 - Shared lifecycle milestones are an event contract, not a required linear UI state machine.
 - The platform engine owns camera/decoder resources and truthful release/disposal notifications. Feature modules own presentation, capture, VFX, result routing and UI completion.
 - `CAMERA_RELEASED` must be emitted after lease release and before decoder disposal finishes; `DISPOSED` follows completed engine teardown.
-- `EXIT_PRESENTATION` is optional and module-owned. Home and Stocktake remain on their existing integration until separate PRs.
-- Active implementation branch: `feat/scanner-lifecycle-contract`; see Implementation Status and ADR-013.
+- `EXIT_PRESENTATION` is optional and module-owned. Home has since adopted the contract in C1; Stocktake remains to be migrated in C2.
+- The foundation is merged. See current status and ADR-013/ADR-014.
