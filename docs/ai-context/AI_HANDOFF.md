@@ -186,3 +186,15 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Required next steps: preserve and inspect the local working tree before syncing; review the full branch diff including documentation; run local npm run preflight; perform first-open permission, denial/retry, close-while-pending, rapid open/close, background/foreground and scan regression checks on iOS Safari/PWA and Android Chrome/PWA.
 - Do not merge, deploy or close the PR without explicit user approval.
 - Once this supplemental patch is accepted, return to the existing Phase 1.2G–1.2J roadmap. The patch does not complete Phase 1.2G.
+
+
+## Current handoff — Post-merge Scanner stabilization (2026-11-08)
+
+- Main base: `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4`.
+- Active branch: `fix/scanner-lifecycle-preview-stability`; Draft PR #32.
+- Main remains unchanged. No merge or deployment has been performed for PR #32.
+- Implemented: Home transition class/style wiring; stale lifecycle UI write prevention; active-start promise ownership guard; Home/Stocktake preview flex sizing; independent module exit transitions; regression guards.
+- Protected: camera lease/refcount, camera constraints, autofocus, decoder, ROI, 110 ms cadence, validation, Home lookup, Stocktake form-fill/explicit-save, duplicate rows, manual entry and persistence.
+- Latest head must pass CI before local sync. Then inspect the complete PR diff and run local `npm run preflight`.
+- Physical QA still required on iOS Safari/PWA and Android Chrome/PWA: permission grant/deny/retry, open/close while pending, rapid reopen, background/foreground, first usable frame, result exit, scan accuracy, Stocktake explicit save, and reduced-motion behavior.
+- Preserve all existing local changes and untracked files during sync. Do not use destructive Git cleanup. Do not merge/deploy without explicit user approval.
