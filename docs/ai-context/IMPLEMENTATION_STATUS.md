@@ -417,3 +417,20 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - This confirms the recorded code/test head. Run #109 subsequently verified the previous documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`. Further documentation-only synchronization commits followed and have not yet been rerun through CI.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
 - The PR remains Draft, unmerged and undeployed; `main` remains unchanged.
+
+
+# PR B — Scanner lifecycle contract foundation (2026-11-08)
+
+**Branch:** `feat/scanner-lifecycle-contract`  
+**Base:** `fa0d007d42bf480799e29b6003aeea2b2cd52112` (main at task start).  
+**Status:** Implementation authored; verification pending; unmerged and undeployed.
+
+- Added lifecycle event types and optional adapter injection to the platform scanner contract.
+- Added `ScannerLifecycleAdapter` with optional observer, per-instance deduplication of milestones and exception isolation.
+- Wired engine-owned events for opening, preview readiness, scanning, close request, camera release and completed disposal.
+- Camera release is emitted immediately after lease release; decoder disposal remains awaited afterward. Presentation event remains feature-owned.
+- Added `scripts/test-scanner-lifecycle.mjs` covering normal/early close event vocabularies, optional presentation, deduplication, observer exception isolation and teardown source ordering.
+- Added `npm run test:scanner:lifecycle` and included the lifecycle test in `npm run preflight`.
+- No Home/Stocktake migration, snapshot/VFX, UI transition, camera constraint, decoder, barcode policy, business workflow, data, auth or deployment changes.
+- Verification: not run in this remote editing step. Do not claim tests/build/CI pass until run against the latest branch head.
+- Next: inspect full diff, run `npm run preflight`, resolve any TypeScript/test failures, then physical-device QA as appropriate. Do not merge/deploy without explicit user approval.
