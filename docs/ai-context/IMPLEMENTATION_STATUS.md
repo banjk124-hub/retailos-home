@@ -71,7 +71,8 @@ Last updated: 2026-11-08
 - Platform milestones are scoped to technical execution/resources: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, and `DISPOSED`.
 - Home and Stocktake retain local presentation completion and locally join it with technical milestones. Engine no longer receives animation-completion callbacks or retains sessions for presentation.
 - Recovery-retired session retention remains only for close/recovery race handling; it is not a presentation lifecycle owner.
-- Source and regression-test changes are prepared on the task branch. CI, Windows local preflight, and physical iOS/Android camera QA are pending; do not describe them as passed.
+- GitHub Actions run #42500947176 passed on head `88d898735105d5bfc628503637cc85d9707bf85e`: scanner barcode validation, scanner lifecycle regression suite, TypeScript/production build, Pages build, and diff checks all passed through `npm run preflight`.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA camera QA remain pending; CI does not substitute for those checks.
 - No changes are intended to camera acquisition, decoder cadence/validation, single/continuous result semantics, snapshot capture order, Stocktake persistence, PWA, authentication, or deployment.
 
 ## Historical implementation record
