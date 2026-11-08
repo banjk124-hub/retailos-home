@@ -1,29 +1,22 @@
-## Current execution order — 2026-11-08
+## Current execution order — main baseline 43f1637 (2026-11-08)
 
-1. **P0 — Shared Scanner Background/Foreground Recovery:** Draft PR #38. Resolve serialized lifecycle transitions, stale video readiness and lease handoff across iOS and Android. This is the current blocking slice.
-2. **C2 — Stocktake Lifecycle Contract migration:** proceed only after P0 is merged and device-accepted. Keep Stocktake presentation and explicit-save business behavior unchanged.
-3. **A — Opening Transition:** proceed only after C1, C2 and P0 are accepted; transition to the scanner only on truthful fresh-frame READY.
-4. **Cross-platform release validation:** repeat the full scanner lifecycle and business-flow matrix on real iOS Safari/PWA and Android Chrome/PWA.
+1. **PR B — Lifecycle Contract foundation:** merged. Shared event vocabulary, engine-owned session identity and truthful resource milestones are established.
+2. **PR C1 — Home migration:** merged. Home consumes the shared lifecycle observer and gates unmount on exit presentation, camera release and disposal.
+3. **PR #43 — Foreground Recovery:** merged and verified by the user. Recovery retires the old session, replaces only the video surface, then uses the existing startup pipeline. The previous iOS preview-shrink defect is no longer reproducible in the user's test.
+4. **PR C2 — Stocktake migration:** next. Adopt the same exit-handoff contract without changing Stocktake UI, form-fill, manual entry, duplicate-row or explicit-save behavior.
+5. **PR A — Opening Transition:** after C2. Add Connecting presentation and transition on the truthful READY milestone; do not equate READY with decoder SCANNING.
+6. **Cross-platform release validation:** retain separate iOS Safari/PWA and Android Chrome/PWA checks, including weak-device regression.
 
-Do not let the iOS remediation reduce Android behavior or fork shared scanner business logic. Platform differences must remain isolated behind capability-aware browser/media handling.
-
----
-
-## Current execution slice — C1 / C2 / A (2026-11-08)
-
-1. **PR C1 — Home migration:** active branch `feat/scanner-c1-home-lifecycle-migration`. Home consumes engine lifecycle events and gates unmount on exit presentation + camera release + disposal. Snapshot and cached lookup behavior are protected.
-2. **PR C2 — Stocktake migration:** next, separately audit and migrate `StocktakeScanner`; preserve form-fill, manual entry and explicit-save behavior.
-3. **PR A — Opening Transition:** only after both module migrations; preview `READY` remains distinct from decoder `SCANNING`.
-
-C1 acceptance: lifecycle observer uses engine-generated session ID; no camera reacquisition on React rerender; snapshot precedes teardown; close is idempotent under manual/single-result/unmount paths; tests and both production builds pass; iOS/Android device QA remains a separate gate. No merge/deploy without explicit user approval.
+The shared engine and camera recovery remain single-source. Do not duplicate camera/session ownership in either feature. Keep C2 scoped to Stocktake's feature-owned exit handoff.
 
 ---
 
 
 
-## Authoritative source re-baseline — 2026-11-08 (main `c7146b55`)
 
-This section supersedes stale branch/PR status and any older phase statement that conflicts with the current source audit. Detailed evidence: `SCANNER_SOURCE_AUDIT_2026-11-08.md`.
+## Historical source re-baseline — main c7146b55 (pre lifecycle contract)
+
+Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md.
 
 - PR #31 and PR #32 are merged. PR #32 merge commit: `c7146b55f0c2210cd7b8474c6a72b1c915985793`. Do not describe either PR as Draft/open.
 - Camera acquisition is initiated inside the Home dock action and Stocktake scan-button click via `requestCameraLease()`, before scanner presentation mounts. The request is handed once to the shared session. Remaining wait belongs to browser permission/hardware acquisition, first usable video frame and decoder initialization; do not issue a second camera request.
