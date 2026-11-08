@@ -242,6 +242,12 @@ export function useScannerEngine({
     recoveryPromiseRef.current = recovery;
     try {
       await recovery;
+    } catch (recoveryError) {
+      console.error('[RetailOS Scanner] Foreground recovery failed:', recoveryError);
+      if (mountedRef.current) {
+        setError(recoveryError instanceof Error ? recoveryError.message : 'Không thể khôi phục camera. Hãy thử kết nối lại.');
+        setIsStarting(false);
+      }
     } finally {
       if (recoveryPromiseRef.current === recovery) recoveryPromiseRef.current = null;
     }
@@ -261,7 +267,7 @@ export function useScannerEngine({
 
     // If close races a foreground recovery, let that serialized operation
     // finish its retirement boundary before closing whichever session remains.
-    await recoveryPromiseRef.current;
+    await recoveryPromiseRef.current?.catch(() => undefined);
     const session = sessionRef.current;
     sessionRef.current = null;
     await session?.close();
