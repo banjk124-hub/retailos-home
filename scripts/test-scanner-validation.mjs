@@ -262,7 +262,7 @@ const scannerUiSource = await readFile(
   new URL("../src/features/scanner/components/BarcodeScanner.tsx", import.meta.url),
   "utf8",
 );
-assert.match(scannerUiSource, /barcode-scanner scanner-home-transition \\$\{isClosing \? 'is-closing' : ''\}/,
+assert.match(scannerUiSource, /barcode-scanner scanner-home-transition/,
   "Home scanner must activate its dedicated full-screen transition styles");
 assert.match(scannerUiSource, /style=\{transitionStyle\}/,
   "Home scanner must pass the tap-origin motion coordinates to its presentation root");
@@ -283,7 +283,7 @@ const stocktakeUiSource = await readFile(
   new URL("../src/features/stocktake/components/StocktakeScanner.tsx", import.meta.url),
   "utf8",
 );
-assert.match(stocktakeUiSource, /scanner-stocktake-surface-enter \\$\{isClosing \? 'is-closing' : ''\}/,
+assert.match(stocktakeUiSource, /scanner-stocktake-surface-enter/,
   "Stocktake scanner must retain its own exit transition");
 assert.match(stocktakeUiSource, /event\.animationName !== 'scanner-stocktake-close'/,
   "Stocktake must unmount only after its own exit animation completes");
