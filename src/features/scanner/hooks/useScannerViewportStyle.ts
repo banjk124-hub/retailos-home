@@ -11,21 +11,33 @@ export function useScannerViewportStyle(): ScannerViewportStyle {
   useLayoutEffect(() => {
     const visualViewport = window.visualViewport;
     const sync = () => {
-      setViewport({
+      const nextViewport = {
         height: Math.max(1, Math.round(visualViewport?.height ?? window.innerHeight)),
         top: Math.max(0, Math.round(visualViewport?.offsetTop ?? 0)),
-      });
+      };
+      setViewport((current) => (
+        current.height === nextViewport.height && current.top === nextViewport.top
+          ? current
+          : nextViewport
+      ));
+    };
+    const syncWhenVisible = () => {
+      if (document.visibilityState !== 'hidden') sync();
     };
     sync();
     visualViewport?.addEventListener('resize', sync);
     visualViewport?.addEventListener('scroll', sync);
     window.addEventListener('resize', sync);
     window.addEventListener('orientationchange', sync);
+    window.addEventListener('pageshow', syncWhenVisible);
+    document.addEventListener('visibilitychange', syncWhenVisible);
     return () => {
       visualViewport?.removeEventListener('resize', sync);
       visualViewport?.removeEventListener('scroll', sync);
       window.removeEventListener('resize', sync);
       window.removeEventListener('orientationchange', sync);
+      window.removeEventListener('pageshow', syncWhenVisible);
+      document.removeEventListener('visibilitychange', syncWhenVisible);
     };
   }, []);
   return {
