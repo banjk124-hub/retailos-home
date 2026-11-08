@@ -344,3 +344,13 @@ assert.match(scannerTransitionCss, /scanner-home-open 260ms[\s\S]*scanner-home-c
   "Home open and exit transitions must use matched duration");
 assert.match(scannerTransitionCss, /scanner-stocktake-surface-in 260ms[\s\S]*scanner-stocktake-close 260ms/,
   "Stocktake open and exit transitions must use matched duration");
+
+
+const universalSessionSource = await readFile(
+  new URL("../src/platform/scanner/universalScannerSession.ts", import.meta.url),
+  "utf8",
+);
+const cameraReleasePosition = universalSessionSource.indexOf("lease?.release()");
+const decoderDisposePosition = universalSessionSource.indexOf("await decoder.dispose()", cameraReleasePosition);
+assert.ok(cameraReleasePosition >= 0 && decoderDisposePosition > cameraReleasePosition,
+  "camera lease must be released before awaiting decoder disposal");
