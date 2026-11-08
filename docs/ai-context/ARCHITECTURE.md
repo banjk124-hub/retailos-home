@@ -1,14 +1,3 @@
-## ADR-014 — Fresh video surface on foreground recovery (2026-11-08)
-
-**Status:** Merged in PR #43; user verified the previously reported iOS preview-shrink defect no longer reproduces.
-
-- The existing shared scanner engine and session remain the single camera/decoder implementation.
-- After a real background suspension, foreground recovery retires the old session, waits for its resource teardown and any in-flight camera lease handoff, then replaces only the disposable video DOM surface.
-- Recovery waits for React to commit the replacement node and reuses the normal startup pipeline: layout barrier, stream attachment, playback, fresh-frame readiness, decoder initialization and scanning.
-- Home and Stocktake share this behavior through useScannerEngine; feature-specific presentation and business logic remain independent.
-- Do not create a second engine, retain camera in the background, add polling/retry timers, or move recovery into feature components.
-
----
 ## ADR-009 — Serialized cross-platform page lifecycle recovery (2026-11-08)
 
 Status: Merged in PR #38 and subsequently extended by PR #43; user has verified the former preview-shrink defect is gone.
@@ -341,3 +330,15 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 - Existing `ScannerLifecycleState` remains the engine's internal operational state; the event contract does not replace it or alter scanner business behavior.
 - Suspend/resume is not a terminal exit. A feature must not interpret a visibility suspension as `EXIT_REQUESTED` or `DISPOSED`.
 - The foundation PR did not migrate either feature. C1 subsequently migrated Home; C2 remains responsible for Stocktake. The contract remains optional for consumers that do not need feature-owned exit presentation.
+
+## ADR-014 — Fresh video surface on foreground recovery (2026-11-08)
+
+**Status:** Merged in PR #43; user verified the previously reported iOS preview-shrink defect no longer reproduces.
+
+- The existing shared scanner engine and session remain the single camera/decoder implementation.
+- After a real background suspension, foreground recovery retires the old session, waits for its resource teardown and any in-flight camera lease handoff, then replaces only the disposable video DOM surface.
+- Recovery waits for React to commit the replacement node and reuses the normal startup pipeline: layout barrier, stream attachment, playback, fresh-frame readiness, decoder initialization and scanning.
+- Home and Stocktake share this behavior through useScannerEngine; feature-specific presentation and business logic remain independent.
+- Do not create a second engine, retain camera in the background, add polling/retry timers, or move recovery into feature components.
+
+---
