@@ -26,7 +26,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
     onClose();
   };
   const scanner = useScannerEngine({ onDetected: (value) => {
-    setExitFrame(captureScannerPreviewFrame(scanner.videoRef.current!));
+    setExitFrame(scanner.videoRef.current ? captureScannerPreviewFrame(scanner.videoRef.current) : null);
     setIsClosing(true);
     onDetected(value);
   }, mode: 'single', cameraLeaseRequest });
