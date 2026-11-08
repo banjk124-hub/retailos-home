@@ -1,28 +1,29 @@
-# Current AI handoff — PR #44 merged; C2 PR #45 in review (2026-11-08)
+# Current AI handoff — PR #45 merged; PR A in review (2026-11-08)
 
-## Completed and verified
-- PR B lifecycle event contract is merged.
-- PR C1 Home lifecycle migration is merged. Home is the reference consumer for the exit-handoff pattern.
-- PR #43 foreground Recovery is merged. User tested the merged result and confirmed the previous iOS preview-shrink issue is gone.
+## Completed
+- PR B shared lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 / C2 Stocktake migration are merged.
+- User confirms C2 runs correctly with no issues.
+- Main audit baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
 
-## Current task — review and complete PR C2 (#45)
-- Branch: `feat/scanner-c2-stocktake-lifecycle`; base: main after PR #44 merge `c2c9f42610d6cf45dfc422d2cbc6d7bcab795603`.
-- StocktakeScanner now passes lifecycleObserver to the shared engine and uses StocktakeScannerExitGate to join EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED and matching exit-animation completion.
-- The gate is order-independent and idempotent; onClose is read through a current callback ref and invoked once.
-- Snapshot-before-teardown remains unchanged for manual close and successful scan. Do not add a second close to single-result flow.
-- The helper tests all 24 milestone permutations, missing milestone, duplicate events, source integration, Stocktake form/save invariants and reduced-motion animation contract.
-- GitHub Actions run #178 passed the complete local-equivalent npm run preflight. PR #45 is still Draft/open; no merge/deploy.
-- Remaining acceptance: review PR #45, then physical iOS Safari/PWA and Android Chrome/PWA QA (manual close, scan-result close, rapid reopen, background/foreground, close during recovery, reduced motion, unchanged form/save).
+## Current task — PR A Engine-owned Opening Transition
+- Branch: `feat/scanner-a-engine-preview-transition`.
+- `UniversalScannerSession` already confirms a fresh usable frame, then calls `onPreviewReady` and publishes `READY` before decoder initialization.
+- `useScannerEngine` exposes `isPreviewReady` and resets it during new startup/recovery.
+- Previous Home and Stocktake components each controlled their own `has-preview` class and CSS visibility. That duplicated presentation policy.
+- New shared `ScannerPreviewSurface` renders the video and engine-owned sibling curtain. The curtain is revealed only when engine first-frame readiness becomes true.
+- Keep the native video opaque with `transition:none`; only the sibling curtain fades. This preserves the existing iOS/WebKit camera-layer guard.
+- Both modules now inherit the same transition. Module responsibilities remain layout, controls, overlays and business flow—not preview timing.
+- Camera session, lease, decoder, Recovery and lifecycle exit contracts are outside PR A scope.
+- Run full `npm run preflight` through CI; physical iOS Safari/PWA and Android Chrome/PWA QA remain required.
 
-## C2 guardrails retained
-1. One shared useScannerEngine and UniversalScannerSession; no Stocktake-specific engine or adapter.
-2. Engine owns session identity and resource teardown; Stocktake owns presentation only.
-3. Camera release is not gated on animation. Animation completion only reports EXIT_PRESENTATION.
-4. Event arrival order and duplicate callbacks are handled safely.
-5. Reduced-motion animation-end path remains supported.
-6. PR A Opening Transition remains a separate follow-up after C2.
+## PR A invariants
+1. READY means a fresh usable frame, not decoder SCANNING.
+2. No opacity or transform animation on the native video element or its ancestors.
+3. The curtain covers the initial empty/black video surface and fades away after READY.
+4. Recovery re-shows the curtain until the replacement video surface has a fresh frame.
+5. Reduced-motion users receive an immediate reveal on READY.
+6. Home and Stocktake use one shared preview component and one transition policy.
 
-Read docs/ai-context/SCANNER_C2_AUDIT_2026-11-08.md first. The historical handoff below is retained for context only and is superseded by this current block.
 
 ---
 
