@@ -1,3 +1,15 @@
+### 2026-11-08 — PR A Engine-owned Opening Transition implementation
+
+- Audited main after PR #45 merge: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- Confirmed engine session already validates a fresh video frame, calls `onPreviewReady` and publishes `READY` before decoder initialization. `useScannerEngine` exposes and resets `isPreviewReady`.
+- Audit found presentation duplication: Home and Stocktake each applied their own `has-preview` class/visibility rules. Existing source explicitly avoids opacity transitions on the native video layer due to the iOS/WebKit camera-layer guard.
+- PR A adds shared `ScannerPreviewSurface`: the video remains opaque; a sibling curtain inherits the preview container background and fades out only after engine READY.
+- Both Home and Stocktake now consume the shared component. Their module UI no longer owns preview-ready CSS classes or reveal timing.
+- Removed obsolete feature-owned video opacity/visibility rules and updated regression assertions to protect the engine-owned transition and native video guard.
+- CI and physical iOS/Android QA are pending. No merge/deploy.
+
+---
+
 ### 2026-11-08 — PR C2 Stocktake lifecycle implementation
 
 - Base: main after PR #44 merge, `c2c9f42610d6cf45dfc422d2cbc6d7bcab795603`.
