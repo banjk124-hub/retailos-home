@@ -257,4 +257,42 @@ resolvePendingFocus();
 await new Promise((resolve) => setImmediate(resolve));
 cameraLease.release();
 
-console.log("Scanner barcode validation, luminance, and camera stability regression tests passed.");
+// Scanner UI/lifecycle regression guards for the cross-platform transition patch.
+const scannerUiSource = await readFile(
+  new URL("../src/features/scanner/components/BarcodeScanner.tsx", import.meta.url),
+  "utf8",
+);
+assert.match(scannerUiSource, /className="barcode-scanner scanner-home-transition"/,
+  "Home scanner must activate its dedicated full-screen transition styles");
+assert.match(scannerUiSource, /style=\{transitionStyle\}/,
+  "Home scanner must pass the tap-origin motion coordinates to its presentation root");
+
+const scannerEngineSource = await readFile(
+  new URL("../src/features/scanner/hooks/useScannerEngine.ts", import.meta.url),
+  "utf8",
+);
+const pauseImplementation = scannerEngineSource.match(
+  /const pauseScanner = useCallback\(async \(\) => \{([\s\S]*?)\n  \}, \[\]\);/,
+)?.[1] ?? "";
+assert.match(pauseImplementation, /await sessionRef\.current\?\.suspend\('hidden'\)/,
+  "visibility pause must suspend the active scanner session");
+assert.doesNotMatch(pauseImplementation, /setIs(?:Starting|PreviewReady|Scanning)\(/,
+  "a completed stale pause must not overwrite a newer foreground UI state");
+
+const scannerTransitionCss = await readFile(
+  new URL("../src/features/scanner/scanner-transition.css", import.meta.url),
+  "utf8",
+);
+assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view/,
+  "Home preview sizing must be scoped to the activated Home transition");
+assert.match(scannerTransitionCss, /min-width: 0;[\s\S]*?min-height: 0;/,
+  "Home preview flex geometry must be allowed to shrink without overflow");
+
+const stocktakeCss = await readFile(
+  new URL("../src/features/stocktake/components/stocktake.css", import.meta.url),
+  "utf8",
+);
+assert.match(stocktakeCss, /\.stocktake-scanner-preview\{[^}]*flex:1 1 auto;[^}]*min-width:0;/,
+  "Stocktake preview must participate in stable flex sizing");
+
+console.log("Scanner barcode validation, luminance, camera stability, UI wiring, and lifecycle regression tests passed.");
