@@ -286,7 +286,7 @@ The shared camera acquisition promise previously awaited `requestContinuousAutof
 
 ## Supplemental Scanner UX Transition — after Patch 2 (2026-11-08)
 
-**Status:** Implemented on feat/scanner-ux-transition; Draft PR #31. GitHub Actions run #89 passed. Real-device QA remains open.
+**Status:** Merged to `main` through PR #31 on 2026-11-08. GitHub Actions run #89 passed. Real-device QA remains open.
 
 This is a scoped UX follow-up to the camera-startup work, not a replacement for or completion of Phase 1.2G.
 
@@ -311,17 +311,19 @@ This is a scoped UX follow-up to the camera-startup work, not a replacement for 
 - Do not merge/deploy based on CI alone. Explicit user approval remains required.
 
 ### Return to the existing roadmap
-After this supplemental patch is accepted and device-verified, resume the existing Phase 1.2G–1.2J roadmap at the next incomplete task. This UX patch does not establish a performance baseline, complete G-A/G-B/G-E, or authorize speculative decoder tuning.
+After PR #31 was merged, the remaining device QA and Phase 1.2G–1.2J work remain tracked separately. PR #32 addresses integration defects found after the merge; it does not complete Phase 1.2G. This UX patch does not establish a performance baseline, complete G-A/G-B/G-E, or authorize speculative decoder tuning.
 
 
 ## Scanner post-merge stabilization — PR #32 (2026-11-08)
 
-**Status:** Implemented on `fix/scanner-lifecycle-preview-stability`; Draft PR #32. CI and physical-device QA are pending.
+**Status:** Implemented on `fix/scanner-lifecycle-preview-stability`; Draft PR #32. GitHub Actions run #107 passed on the source/test head and run #109 passed on the latest documentation-synchronized head. Local Windows and physical-device QA remain pending.
 
 - Patch A: activate Home's full-screen transition class and pass the tap-origin style to the root element.
 - Patch B: prevent stale pause continuations from overwriting a foreground resume; guard start-state cleanup by the active start promise.
 - Patch C: stabilize Home and Stocktake preview flex sizing without changing stream resolution, frame rate, focus or decoder behavior.
 - Patch D: add independent Home and Stocktake exit treatments. Camera teardown starts immediately; the presentation remains mounted only for its short exit motion. Reduced-motion mode bypasses the animation dependency.
-- Regression guards cover transition wiring, lifecycle pause ownership and preview geometry.
+- Regression guards cover Home transition wiring, continuous-mode persistence, single-result exit gating, lifecycle pause ownership, start-promise ownership, Stocktake exit wiring and preview geometry.
+- The single-result session is marked inactive before feature callback handling, preventing foreground/visibility recovery from reacquiring the camera during the exit transition. Continuous mode is explicitly excluded from this close-on-result behavior.
 - Protected: camera lease/refcount, 1280×720 ideal / 30 FPS target, autofocus, first-frame readiness contract, ZXing, ROI, 110 ms decode interval, validation, Home lookup, Stocktake save/manual/duplicate-row flows and persistence.
-- Acceptance: full CI preflight; local Windows/PowerShell preflight; iOS Safari/PWA and Android Chrome/PWA permission, deny/retry, rapid open/close, background/foreground, first-frame, result-close and business-flow checks. Test a low-end Android device and a smaller iPhone viewport. Do not merge/deploy until all gates pass and user approves.
+- CI evidence: run #107 (`42451111883`) passed full preflight on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`; run #109 (`42451179152`) passed on latest docs-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
+- Acceptance still open: local Windows/PowerShell preflight; iOS Safari/PWA and Android Chrome/PWA permission, deny/retry, rapid open/close, background/foreground, first-frame, result-close and business-flow checks. Test a low-end Android device and a smaller iPhone viewport. Do not merge/deploy until all gates pass and user approves.
