@@ -51,8 +51,8 @@
   opacity: 1;
   transition: none;
 }
-.barcode-scanner.scanner-home-transition .barcode-scanner-view:not(.has-preview) video { opacity: 0; }
-.barcode-scanner.scanner-home-transition .barcode-scanner-view.has-preview video { opacity: 1; }
+.barcode-scanner.scanner-home-transition .barcode-scanner-view:not(.has-preview) video { visibility: hidden; }
+.barcode-scanner.scanner-home-transition .barcode-scanner-view.has-preview video { visibility: visible; }
 .barcode-scanner.scanner-home-transition.is-closing .barcode-scanner-view video { visibility: hidden; }
 .barcode-scanner-exit-frame {
   position: absolute;
@@ -184,8 +184,8 @@
 }
 .stocktake-scanner-preview { background: radial-gradient(ellipse at 50% 42%, #3a2c33 0%, #241c21 64%, #171114 100%); }
 .stocktake-scanner-preview video { opacity: 1; transition: none; }
-.stocktake-scanner-preview:not(.has-preview) video { opacity: 0; }
-.stocktake-scanner-preview.has-preview video { opacity: 1; }
+.stocktake-scanner-preview:not(.has-preview) video { visibility: hidden; }
+.stocktake-scanner-preview.has-preview video { visibility: visible; }
 .stocktake-scanner-surface.is-closing .stocktake-scanner-preview video { visibility: hidden; }
 .stocktake-scanner-exit-frame {
   position: absolute;
