@@ -1,3 +1,28 @@
+# Current source audit — 2026-11-08
+
+**Authoritative main baseline:** `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32 merge). The historical implementation entries below are retained as an audit trail; this block is the current status and supersedes stale branch/PR statements.
+
+## Current scanner findings
+- PR #31 and PR #32 are merged. The PR #32 Draft/unmerged wording in historical entries is obsolete.
+- Home and Stocktake both start `requestCameraLease()` in the initiating tap handler before scanner presentation mounts. The single-claim request is handed to `UniversalScannerSession`; no duplicate request is needed.
+- The remaining startup path includes browser permission/hardware acquisition, attaching stream, video playback/first usable frame and ZXing initialization. Preview readiness is distinct from scanning readiness.
+- Home exit likely fades to dark because `closeScanner()` tears down/detaches video immediately while the fixed dark overlay continues its 180 ms fade. No runtime fix has been made.
+- Android opening layout is reported stable; iOS remains unstable. Source shows Home percentage-height card inside fixed inset root while Stocktake uses dynamic viewport units. This is a hypothesis to validate with iOS visualViewport and element measurements, not a proven root cause.
+- Phase 1.2G source instrumentation is present and should be treated as bounded. Device performance baselines, GPU frame-drop proof, thermal and battery measurements are not established.
+- Current `useScannerEngine` passes `profile: 'HIGH'` unconditionally. Low/Mid/High adaptive selection is not implemented.
+- Phase 1.2I is re-scoped to Shared Scanner Engine Completion. Device profiles become scanner-first Phase 1.2J; cross-platform release validation becomes Phase 1.2K.
+
+## Scope of this documentation-only audit
+- Added `SCANNER_SOURCE_AUDIT_2026-11-08.md` with source map, actual tap-to-camera sequence, iOS geometry hypothesis, exit fade diagnosis, telemetry limitations, profile architecture and revised phase acceptance.
+- No runtime code, dependencies, package scripts, camera constraints, decoder cadence, data contracts, PWA settings or deployment configuration changed.
+- No local preflight, CI run, browser trace or physical-device test was performed as part of this audit.
+- Branch: `docs/scanner-source-audit-device-profiles`; unmerged and undeployed.
+
+## Immediate next action
+Review the documentation PR and confirm the revised phase model. Then create separate, narrowly scoped implementation work for (a) iOS viewport geometry evidence/fix and (b) visual exit synchronization. Do not combine these with device-tier engine architecture or decoder changes.
+
+---
+
 # Implementation status
 
 Last updated: 2026-11-06

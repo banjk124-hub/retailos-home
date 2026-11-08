@@ -1,6 +1,32 @@
+
+
+## Authoritative source re-baseline — 2026-11-08 (main `c7146b55`)
+
+This section supersedes stale branch/PR status and any older phase statement that conflicts with the current source audit. Detailed evidence: `SCANNER_SOURCE_AUDIT_2026-11-08.md`.
+
+- PR #31 and PR #32 are merged. PR #32 merge commit: `c7146b55f0c2210cd7b8474c6a72b1c915985793`. Do not describe either PR as Draft/open.
+- Camera acquisition is initiated inside the Home dock action and Stocktake scan-button click via `requestCameraLease()`, before scanner presentation mounts. The request is handed once to the shared session. Remaining wait belongs to browser permission/hardware acquisition, first usable video frame and decoder initialization; do not issue a second camera request.
+- Home uses a fixed `inset:0` root and percentage-height full-screen card; Stocktake uses dynamic viewport units. Android is reported stable by the user; iOS remains visually unstable. Root cause is not proven; collect visualViewport/safe-area/element geometry evidence before changing layout.
+- Exit mismatch is source-supported: camera teardown detaches video immediately while the dark fixed overlay remains for a 180 ms opacity exit. Design visual exit independently from camera release.
+- Phase 1.2G is bounded at source instrumentation/audit. Do not keep tuning motion/cadence without a reproducible issue or measured bottleneck. Device traces and specific defects remain open; this is not a claim that all hardware performance is solved.
+- Existing telemetry does not directly measure GPU frame drops, battery percentage or device temperature. Safari may not expose all Long Task/Layout Shift observers. Use only supported, privacy-safe proxies and record their limitations.
+
+### Revised phase sequence
+1. **1.2G — Instrumentation/source audit (bounded):** implemented in source; no device performance baseline. Only issue-driven follow-up remains.
+2. **1.2H — Conditional decoder performance:** only if representative device profiling shows decoder/image processing is a material bottleneck. Accuracy and correctness are hard invariants.
+3. **1.2I — Shared Scanner Engine Completion:** finish explicit lifecycle/state contract, camera ownership, decoder adapter, feature-policy boundary, device-profile integration, observability and deterministic tests. Angled/perspective decode is an optional sub-capability, not the whole phase.
+4. **1.2J — Device-adaptive performance profiles (scanner-first):** introduce Low/Mid/High policy initially only in scanner. Adapt optional resource intensity, not barcode correctness, supported symbologies, persistence, callback semantics or workflows. No unverified resolution/cadence reduction.
+5. **1.2K — Cross-platform release validation:** validate engine, profiles and Home/Stocktake contracts on real iOS Safari/PWA and Android Chrome/PWA across representative Low/Mid/High hardware.
+
+### Device-profile guardrails
+- The current hook passes `profile: 'HIGH'` unconditionally. The profile type exists, but adaptive selection is not wired in the reviewed source.
+- Classify conservatively from available capabilities and observed runtime behavior; user-agent alone is insufficient. Unknown devices fall back conservatively.
+- Browser support for direct battery/thermal telemetry is not universal. Do not promise temperature/battery-aware APIs that Safari/Chrome do not expose. Use sustained decode cost, long tasks, frame callback gaps, visibility and actual track settings as imperfect proxies, with hysteresis to prevent profile oscillation.
+- Low/Mid/High may govern decorative motion, optional work and bounded processing tiers only after measurement. Never compromise barcode accuracy or operational correctness to meet a performance tier.
+- No adaptive profile implementation is claimed by this documentation update.
 # RetailOS — Engineering Roadmap
 
-Last reviewed: 2026-11-05
+Last reviewed: 2026-11-08
 Status: active working plan; verify source and status before starting a phase.
 
 ## Roadmap governance
@@ -166,7 +192,7 @@ Acceptance criteria:
 - P0 camera lease serialization is merged to `main` in commit `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`. CI passed for PR #24. Physical-device QA remains outstanding; deployment state must be checked independently.
 
 ### 1.2G — Rendering, motion and interaction performance
-**Status:** In progress. G-A instrumentation has been added on `feat/scanner-phase-1-2g-instrumentation`; GitHub CI run #63 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks on latest source; browser profiling and physical-device measurements remain pending. G-B/C audit findings are recorded below; no motion durations or decoder cadence have been tuned.
+**Status:** Source instrumentation and audit bounded; device evidence and issue-specific fixes remain open. G-A instrumentation has been added on `feat/scanner-phase-1-2g-instrumentation`; GitHub CI run #63 passed scanner validation, TypeScript/production build, GitHub Pages build and whitespace checks on latest source; browser profiling and physical-device measurements remain pending. G-B/C audit findings are recorded below; no motion durations or decoder cadence have been tuned.
 
 **Goal:** remove perceived stutter, flicker and jank during rapid scanner open/close and Home/Stocktake transitions by identifying the actual bottleneck across rendering, motion, UI state and lifecycle.
 
@@ -203,14 +229,28 @@ Scope: profile RGBA-to-grayscale conversion, Canvas/ImageData allocation and cop
 
 Acceptance: measurable improvement without material regression in scan success, first-result latency, preview smoothness, battery/thermal behavior or supported symbologies.
 
-### 1.2I — Decoder capability enhancement
-**Goal:** improve difficult-angle barcode acquisition without slowing the normal path unnecessarily.
+### 1.2I — Shared Scanner Engine Completion (supersedes the earlier decoder-capability-only definition)
+**Goal:** complete the reusable scanner runtime contract shared by Home, Stocktake and future features.
 
-Scope: evaluate rotation detection, perspective/deskew and conditional recovery decode tiers. Test physical labels at 0°, 15°, 30°, 45°, 60° and 90°, with varied distance, lighting and glare. Avoid promising all-angle recognition.
+Workstreams:
+- Explicit lifecycle/state contract across request, preview readiness, decoder initialization, scanning, suspension, recovery, closing, error and disposal. Preview readiness must never be mistaken for decoder readiness.
+- Camera ownership: request/claim/cancel, reference-counted leases, stream identity, stale generation protection, track-ended recovery and deterministic release.
+- Decoder adapter: initialization/disposal, format allowlist, typed decode misses/errors, bounded scheduling and capability declaration.
+- Feature-policy boundary: Home single-result cached lookup; Stocktake single-result form fill with explicit save; continuous mode only when explicitly configured by a consumer.
+- Presentation independence: Home and Stocktake retain distinct UI surfaces; the engine exposes states/events, not layout.
+- Integrate the scanner-first device profile as a policy input without allowing it to weaken correctness or accuracy invariants.
+- Privacy-safe observability and deterministic tests for pending permission, cancel-before-claim, duplicate claim, rapid open-close-open, stale completions, concurrent leases, track-ended recovery, decoder/callback failures and feature contracts.
+- Optional rotation/perspective/deskew recovery may be evaluated as a bounded sub-capability only after normal-path accuracy/latency baselines exist; it is not the whole phase.
 
-Acceptance: publish a device/condition test matrix and measured success/latency; advanced processing must be conditional and bounded.
+Acceptance:
+- Home and Stocktake use the same camera/decoder lifecycle engine without duplicating ownership logic.
+- State transitions and camera/decoder ownership invariants have deterministic regression coverage.
+- No duplicate stream, decoder loop or callback after cancellation/close.
+- Existing barcode allowlist and validation, Home lookup, Stocktake explicit-save/duplicates/manual-entry semantics remain unchanged.
+- Profile switching cannot interrupt accepted-result delivery or change correctness semantics.
+- Real iOS Safari and Android Chrome validation is recorded before phase release.
 
-### 1.2J — Cross-platform release validation
+### 1.2K — Cross-platform release validation (renumbered by the device-adaptation phase)
 **Goal:** establish release evidence on real iOS and Android devices.
 
 Required: iOS Safari and Android Chrome; camera permission/revocation, open/close/reopen, rapid module switching, background/foreground, track-ended recovery, motion smoothness, audio/haptic fallback, angled barcode matrix, Home lookup, Stocktake form-fill/explicit-save and regression checks.

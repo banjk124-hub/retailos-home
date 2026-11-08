@@ -163,3 +163,17 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Run #109 passed on head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4` before the latest documentation reconciliation commits.
 - The documentation-only commits that reconcile PR #31 merged status, PR #32 lifecycle details, continuous-scan behavior and acceptance gates have not yet been rerun through CI. Do not describe run #109 as validating the current documentation head.
 - Current last documentation commit in this synchronization batch: `bc3e78e31742d8430cab7754f5328a55ebbed569`. Local preflight and device QA remain outstanding.
+
+
+### 2026-11-08 — Scanner source audit and phase realignment (documentation-only)
+
+- Baseline inspected: main `c7146b55f0c2210cd7b8474c6a72b1c915985793` after PR #32 merge.
+- Confirmed Home and Stocktake both initiate `requestCameraLease()` directly in the initiating tap handler before mounting scanner presentation; single-claim handoff passes the request into the shared session. Remaining wait is browser/hardware acquisition, first usable frame and decoder initialization.
+- Identified likely exit fade mismatch: camera teardown detaches video immediately while dark fixed overlay continues a 180 ms fade. Visual fix must not delay camera release.
+- iOS layout jump remains unproven; Home percentage-height card in fixed inset root differs from Stocktake dynamic viewport sizing. Next diagnostic is visualViewport/safe-area/root-card geometry during animation.
+- Reclassified Phase 1.2G as bounded source instrumentation/audit, with device evidence and issue-specific remediation still open.
+- Re-scoped Phase 1.2I as Shared Scanner Engine Completion; introduced scanner-first Low/Mid/High adaptation as Phase 1.2J and cross-platform release validation as 1.2K.
+- Current source passes `profile: 'HIGH'` unconditionally; adaptive profile selection is not implemented. Thermal/battery APIs are not universal; use conservative proxies and never trade scan accuracy/correctness.
+- Added `SCANNER_SOURCE_AUDIT_2026-11-08.md` and synchronized Roadmap, Implementation Status, Architecture, AI Handoff, Acceptance Checklist and Project Context.
+- No runtime code, tests, dependency, configuration, data contract, PWA or deployment file changed. No local preflight, CI, browser trace or physical-device QA was run in this documentation audit.
+- Branch: `docs/scanner-source-audit-device-profiles`; unmerged and undeployed. Next: review documentation diff; then handle iOS geometry and exit visuals as separate scoped code changes after evidence.

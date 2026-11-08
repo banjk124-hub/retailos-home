@@ -1,3 +1,18 @@
+# Current engineering focus — 2026-11-08
+
+Main source baseline: `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32 merged). PR #31 and #32 are no longer open Draft tasks; any such references below are historical records.
+
+- Current branch: `docs/scanner-source-audit-device-profiles` (documentation-only; unmerged/undeployed).
+- Home and Stocktake both initiate camera acquisition from the user's tap before scanner UI mount; remaining startup delay is hardware/browser acquisition, first usable frame and decoder initialization.
+- Android opening geometry is reported stable; iOS still jumps. Root cause remains unproven; measure iOS visualViewport/safe-area/element geometry before code changes.
+- Exit fade mismatch likely occurs because video is detached at teardown start while dark overlay remains through its fade. Keep camera release prompt; solve visual state separately.
+- Phase 1.2G is bounded at source instrumentation/audit; further work must be issue- or measurement-driven.
+- Phase 1.2I now means Shared Scanner Engine Completion. Phase 1.2J is scanner-first Low/Mid/High adaptive resource profiles; Phase 1.2K is cross-platform release validation.
+- Current scanner hook hardcodes profile `HIGH`; no adaptive profile selection exists. Never trade scan accuracy or business correctness for a tier target.
+- Read `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source facts, limitations and acceptance gates.
+
+---
+
 # Project context — RetailOS
 
 ## Product intent

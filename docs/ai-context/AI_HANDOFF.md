@@ -1,3 +1,37 @@
+# Current handoff update — 2026-11-08
+
+Read this update before using older session notes below. Current source baseline is main merge `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32). PR #31 and #32 are merged; old Draft/unmerged statements are historical.
+
+## User's current priorities
+1. Android opening layout is now stable; iOS still jumps/reflows.
+2. Verify startup is truly initiated from the module tap; source confirms it is.
+3. Exit fades to dark because video teardown precedes completion of the dark overlay fade; visual fix still needed.
+4. Reassess Phase 1.2G realistically; source instrumentation exists, but telemetry is not proof of GPU drops, battery or temperature.
+5. Define Low/Mid/High adaptive resource profiles for the app eventually, but implement scanner-first and never trade scan accuracy/operational correctness.
+6. Re-scope Phase 1.2I to shared scanner engine completion.
+
+## Current source facts
+- Home and Stocktake tap handlers call `requestCameraLease()` before setting scanner-open state. A cancellable, one-claim lease is handed to the mounted shared session.
+- Remaining startup wait is browser permission/hardware acquisition, first usable frame and decoder initialization; no duplicate camera request should be added.
+- Hook currently passes `profile: 'HIGH'` unconditionally; adaptive profile selection is not implemented.
+- iOS geometry issue is not conclusively diagnosed. Home fixed inset root + percentage-height card differs from Stocktake dynamic viewport sizing. Measure visualViewport/safe-area/element bounds before patching.
+- Home close currently initiates camera teardown while the dark fixed overlay remains for 180 ms; this likely explains black fade.
+
+## Current task branch
+`docs/scanner-source-audit-device-profiles` — documentation-only source audit and phase realignment. No runtime code or deployment changes. Review `SCANNER_SOURCE_AUDIT_2026-11-08.md` first.
+
+## Recommended next work order
+1. Review/merge documentation only after user approval.
+2. Capture iOS Safari/PWA viewport geometry and reproduce opening layout jump; patch only after root cause evidence.
+3. Design a visual exit state that preserves prompt camera teardown while avoiding dark-only fade; test iOS and Android.
+4. Define shared engine completion contracts and tests (Phase 1.2I).
+5. Implement scanner-first Low/Mid/High profiles with conservative fallback and no accuracy trade-off (Phase 1.2J).
+6. Cross-platform release validation (Phase 1.2K).
+
+Do not implement decoder tuning, adaptive camera constraints, or broad app-wide profile wiring as part of the documentation task. Do not merge/deploy without explicit user approval.
+
+---
+
 # RetailOS — AI Handoff (Canonical Entry Point)
 
 > Read this file first when an AI agent, a new chat, or a new contributor starts work. Then follow the mandatory reading order below. This file is an index and current-state handoff, not a replacement for source code or detailed architecture.
