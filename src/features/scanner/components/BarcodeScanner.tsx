@@ -45,7 +45,7 @@ export default function BarcodeScanner({
     if (event.type === 'CAMERA_RELEASED') exitMilestonesRef.current.cameraReleased = true;
     if (event.type === 'DISPOSED') exitMilestonesRef.current.disposed = true;
     const milestones = exitMilestonesRef.current;
-    if (milestones.exitRequested && milestones.presentation && milestones.exitRequested && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
+    if (milestones.exitRequested && milestones.presentation && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
       milestones.completed = true;
       onCloseRef.current();
     }
@@ -56,7 +56,7 @@ export default function BarcodeScanner({
     exitMilestonesRef.current.presentation = true;
     scanner.notifyExitPresentation();
     const milestones = exitMilestonesRef.current;
-    if (milestones.cameraReleased && milestones.disposed && !milestones.completed) {
+    if (milestones.exitRequested && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
       milestones.completed = true;
       onCloseRef.current();
     }
