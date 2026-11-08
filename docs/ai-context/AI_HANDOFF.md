@@ -268,7 +268,7 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
 
 
-## Active task — PR B Scanner Lifecycle Contract (2026-11-08)
+## Historical task — PR B Scanner Lifecycle Contract (2026-11-08)
 
 - Branch: `feat/scanner-lifecycle-contract`, based on main `fa0d007d42bf480799e29b6003aeea2b2cd52112`.
 - Scope: shared lifecycle event vocabulary/adapter, truthful camera-release and disposal milestones, deterministic regression tests, synchronized technical documentation.

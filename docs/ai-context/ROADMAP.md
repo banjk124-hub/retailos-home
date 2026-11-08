@@ -384,15 +384,15 @@ After PR #31 was merged, the remaining device QA and Phase 1.2G–1.2J work rema
 
 ## Phase 1.2I — Shared Scanner Engine Completion: lifecycle contract foundation
 
-**Current slice:** PR B — shared lifecycle event contract and adapter.
+**Historical slice:** PR B — shared lifecycle event contract and adapter. Its original event vocabulary was superseded by the technical-only lifecycle separation at the top of this roadmap.
 
 Scope:
 - Define lifecycle event names and payload independently from internal session states.
 - Add an optional adapter/observer boundary; preserve existing session API and keep feature presentation outside the engine.
-- Emit engine milestones at truthful resource boundaries: `OPENING`, `READY`, `SCANNING`, `EXIT_REQUESTED`, `CAMERA_RELEASED`, `DISPOSED`.
-- Allow feature-owned `EXIT_PRESENTATION`; do not force every consumer to use it.
-- Ensure camera-release notification occurs immediately after lease release and before awaiting decoder disposal.
-- Add deterministic tests for normal close, early close, optional presentation, duplicate terminal notifications and observer failure isolation.
+- The original merged contract used `EXIT_REQUESTED` and `CAMERA_RELEASED`; the current contract replaces these with `SESSION_CLOSE_STARTED` and `CAMERA_LEASE_RELEASED`.
+- The original optional `EXIT_PRESENTATION` event and callback were removed. Presentation completion is local to each feature and is never sent to the engine.
+- `CAMERA_LEASE_RELEASED` is emitted after this session releases its lease; it does not imply the shared physical stream stopped if another lease remains.
+- Current deterministic tests cover normal/early close, terminal event deduplication, observer isolation, recovery-close races, and module-local presentation gates.
 - Update architecture, status and handoff documents in the same PR.
 
 Protected / out of scope:
@@ -402,7 +402,7 @@ Protected / out of scope:
 
 Acceptance:
 - Lifecycle events are optional and do not become a rigid required sequence.
-- `CAMERA_RELEASED` is observably ordered after lease release and before decoder disposal completes.
+- `CAMERA_LEASE_RELEASED` is observably ordered after this session releases its lease and before decoder disposal completes.
 - `DISPOSED` follows completed engine teardown.
 - Existing barcode/camera regression suite and new lifecycle contract tests pass, followed by TypeScript/production/Pages builds.
 - PR remains unmerged and undeployed pending user approval and device validation.

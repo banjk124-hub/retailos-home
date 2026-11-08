@@ -50,7 +50,7 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [ ] Android test confirms no abrupt/choppy opening transition.
 - [ ] Retry, foreground recovery and reduced-motion behavior are rechecked.
 
-## PR C2 — Stocktake migration acceptance
+## Historical PR C2 — Stocktake migration acceptance (original lifecycle gate)
 
 - [x] Stocktake passes lifecycleObserver to the shared useScannerEngine.
 - [x] Session identity comes only from the engine event; no feature-created adapter/session ID.

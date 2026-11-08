@@ -144,10 +144,10 @@ Repository source and current tests/config are authoritative for actual behavior
 - After this supplemental UX patch is accepted, resume the existing Phase 1.2G–1.2J roadmap; this patch does not complete Phase 1.2G.
 
 
-## Historical scanner lifecycle contract foundation — 2026-11-08
+## Historical scanner lifecycle contract foundation — superseded 2026-11-08
 
 - Shared lifecycle milestones are an event contract, not a required linear UI state machine.
 - The platform engine owns camera/decoder resources and truthful release/disposal notifications. Feature modules own presentation, capture, VFX, result routing and UI completion.
-- `CAMERA_RELEASED` must be emitted after lease release and before decoder disposal finishes; `DISPOSED` follows completed engine teardown.
-- `EXIT_PRESENTATION` is optional and module-owned. Home has since adopted the contract in C1; Stocktake remains to be migrated in C2.
-- The foundation is merged. See current status and ADR-013/ADR-014.
+- The original `CAMERA_RELEASED` milestone was renamed to `CAMERA_LEASE_RELEASED`: it confirms release of the session's lease, not necessarily shutdown of a shared physical stream. `DISPOSED` follows completed engine teardown.
+- The original `EXIT_PRESENTATION` event and `notifyExitPresentation()` API were removed. Home and Stocktake own presentation completion locally and never send it to the engine.
+- The original foundation remains historical; the current technical-only contract is documented in ADR-008/ADR-013 and the current implementation status.
