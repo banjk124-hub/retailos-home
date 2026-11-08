@@ -8,8 +8,8 @@
 - [x] Stocktake owns presentation completion locally and joins it with technical close/lease/disposal signals.
 - [x] Recovery-retired session reference exists only to preserve terminal close signals across a recovery race.
 - [x] Camera lease release is not delayed by feature animation.
-- [ ] Targeted lifecycle regression suite passes on this branch.
-- [ ] TypeScript and production/Pages preflight pass on this branch.
+- [x] Targeted lifecycle regression suite passes on this branch.
+- [x] TypeScript and production/Pages preflight pass on this branch.
 - [ ] iOS Safari/PWA and Android Chrome/PWA smoke tests confirm unchanged behavior.
 
 The checklist sections below preserve the previous PR/device acceptance history. Their checked items describe the earlier merged PRs; they are not evidence that this new branch has passed CI or device QA.
