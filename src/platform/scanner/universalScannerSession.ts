@@ -518,6 +518,21 @@ export class UniversalScannerSession implements ScannerSession {
 
   close(): Promise<void> {
     if (this.closePromise) return this.closePromise;
+
+    // A user may close the feature while foreground recovery is retiring the
+    // previous session. Wait for that teardown, then publish the normal exit
+    // milestones; recovery itself must never masquerade as a feature close.
+    if (this.recoveryDisposePromise) {
+      this.lifecycle.exitRequested();
+      this.closePromise = (async () => {
+        await this.recoveryDisposePromise;
+        this.lifecycle.cameraReleased();
+        this.setState('disposed');
+        this.lifecycle.disposed();
+      })();
+      return this.closePromise;
+    }
+
     if (this.disposed) return Promise.resolve();
 
     // Multiple owners may close the same session (single-result delivery,
@@ -566,7 +581,7 @@ export class UniversalScannerSession implements ScannerSession {
       const cameraReleaseStartedAt = performance.now();
       try {
         lease?.release();
-        if (this.closePromise) this.lifecycle.cameraReleased();
+        if (this.closePromise && !this.recoveryDisposePromise) this.lifecycle.cameraReleased();
       } finally {
         this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
       }
