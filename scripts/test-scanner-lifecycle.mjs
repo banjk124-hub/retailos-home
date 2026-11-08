@@ -220,4 +220,88 @@ pageLifecycleCoordinator.dispose();
 await pageLifecycleCoordinator.transition(false, true);
 assert.equal(pageLifecycleEvents.at(-1), 'foreground', 'disposed coordinators must ignore late browser events');
 
-console.log('Scanner lifecycle contract and teardown-order tests passed.');
+
+// Stocktake C2: the feature owns presentation completion while the shared
+// session owns EXIT_REQUESTED, camera release and disposal.
+const stocktakeGateSource = await readFile(
+  new URL('../src/features/stocktake/services/stocktakeScannerExitGate.ts', import.meta.url),
+  'utf8',
+);
+const stocktakeGateCompiled = ts.transpileModule(stocktakeGateSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const stocktakeGateUrl = 'data:text/javascript;base64,' + Buffer.from(stocktakeGateCompiled).toString('base64');
+const { StocktakeScannerExitGate } = await import(stocktakeGateUrl);
+
+const permutations = (items) => items.length === 0
+  ? [[]]
+  : items.flatMap((item, index) => permutations(items.filter((_, i) => i !== index)).map((tail) => [item, ...tail]));
+for (const order of permutations(['EXIT_REQUESTED', 'CAMERA_RELEASED', 'DISPOSED', 'PRESENTATION'])) {
+  let closeCount = 0;
+  const gate = new StocktakeScannerExitGate(() => { closeCount += 1; });
+  for (const milestone of order) {
+    if (milestone === 'PRESENTATION') gate.completePresentation();
+    else gate.observe(milestone);
+    assert.ok(closeCount <= 1, 'Stocktake close gate must never complete more than once');
+  }
+  assert.equal(closeCount, 1, `all four milestones must complete in any order: ${order.join(' → ')}`);
+  gate.completePresentation();
+  gate.observe('EXIT_REQUESTED');
+  gate.observe('CAMERA_RELEASED');
+  gate.observe('DISPOSED');
+  assert.equal(closeCount, 1, 'duplicate milestones and animation completion must not close twice');
+}
+let incompleteCloseCount = 0;
+const incompleteGate = new StocktakeScannerExitGate(() => { incompleteCloseCount += 1; });
+incompleteGate.completePresentation();
+incompleteGate.observe('EXIT_REQUESTED');
+incompleteGate.observe('CAMERA_RELEASED');
+assert.equal(incompleteCloseCount, 0, 'presentation and animation alone cannot close before DISPOSED');
+incompleteGate.observe('DISPOSED');
+assert.equal(incompleteCloseCount, 1, 'last missing lifecycle milestone completes the close gate');
+
+const stocktakeScannerSource = await readFile(
+  new URL('../src/features/stocktake/components/StocktakeScanner.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(stocktakeScannerSource.includes('lifecycleObserver: handleLifecycleEvent'), 'Stocktake subscribes to the shared engine lifecycle');
+assert.ok(stocktakeScannerSource.includes('new StocktakeScannerExitGate(() => onCloseRef.current())'), 'Stocktake keeps the latest parent callback behind an idempotent gate');
+assert.ok(!stocktakeScannerSource.includes('ScannerLifecycleAdapter'), 'Stocktake must not construct its own lifecycle adapter');
+const matchingAnimationCheck = stocktakeScannerSource.indexOf("event.animationName !== 'scanner-stocktake-close'");
+const presentationNotifyAt = stocktakeScannerSource.indexOf('scanner.notifyExitPresentation();', matchingAnimationCheck);
+const gatePresentationAt = stocktakeScannerSource.indexOf('exitGateRef.current?.completePresentation();', presentationNotifyAt);
+assert.ok(matchingAnimationCheck >= 0 && presentationNotifyAt > matchingAnimationCheck && gatePresentationAt > presentationNotifyAt,
+  'Stocktake publishes presentation completion only after its matching close animation');
+const manualCloseStart = stocktakeScannerSource.indexOf('  const close = () => {');
+const manualSnapshotAt = stocktakeScannerSource.indexOf('captureScannerPreviewFrame(scanner.videoRef.current)', manualCloseStart);
+const manualCloseCallAt = stocktakeScannerSource.indexOf('void scanner.closeScanner();', manualCloseStart);
+assert.ok(manualSnapshotAt >= 0 && manualCloseCallAt > manualSnapshotAt, 'manual close snapshots the preview before teardown');
+const resultHandlerStart = stocktakeScannerSource.indexOf('  const scanner = useScannerEngine(');
+const resultHandlerEnd = stocktakeScannerSource.indexOf("}, mode: 'single'", resultHandlerStart);
+const resultHandler = stocktakeScannerSource.slice(resultHandlerStart, resultHandlerEnd);
+assert.ok(resultHandler.indexOf('captureScannerPreviewFrame(scanner.videoRef.current)') < resultHandler.indexOf('onDetected(value)'),
+  'successful scan snapshots the preview before forwarding the result');
+assert.ok(!resultHandler.includes('closeScanner()'), 'single-result auto-close must not be duplicated by the feature');
+assert.ok(stocktakeScannerSource.includes('if (event.target !== event.currentTarget'), 'nested animation events are ignored');
+
+const stocktakeModuleSource = await readFile(
+  new URL('../src/features/stocktake/components/StocktakeModule.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(stocktakeModuleSource.includes('setBarcode(value.trim())') && stocktakeModuleSource.includes("setQuantity('1')") && stocktakeModuleSource.includes('setManualEntry(false)'),
+  'barcode-to-form fill and quantity defaults remain unchanged');
+assert.ok(stocktakeModuleSource.includes('const saveEntry = async () =>') && stocktakeModuleSource.includes('stocktakeStore.putEntry(entry)'),
+  'Stocktake persistence remains behind the explicit save action');
+assert.ok(stocktakeModuleSource.includes("source: manualEntry ? 'manual' : 'scan'") && stocktakeModuleSource.includes('sequence: zoneEntries.reduce'),
+  'manual entry and duplicate-row sequence behavior remain intact');
+assert.ok(stocktakeModuleSource.includes('Barcode trùng nhau được giữ nguyên thành các dòng riêng'),
+  'review continues to preserve duplicate barcode rows');
+
+const stocktakeTransitionCss = await readFile(
+  new URL('../src/features/scanner/scanner-transition.css', import.meta.url),
+  'utf8',
+);
+assert.match(stocktakeTransitionCss, /scanner-stocktake-close 1ms linear both/,
+  'reduced-motion Stocktake exit must still dispatch animationend');
+
+console.log('Scanner lifecycle contract, teardown-order and Stocktake C2 exit-gate tests passed.');
