@@ -71,14 +71,23 @@ const sessionSource = await readFile(
   new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url),
   'utf8',
 );
-const releaseAt = sessionSource.indexOf('lease?.release()');
-const cameraEventAt = sessionSource.indexOf('this.lifecycle.cameraReleased()', releaseAt);
-const decoderDisposeAt = sessionSource.indexOf('await decoder.dispose()', releaseAt);
-const disposedEventAt = sessionSource.indexOf('this.lifecycle.disposed()');
+const closeStart = sessionSource.indexOf('  close(): Promise<void> {');
+const teardownStart = sessionSource.indexOf('  private async teardown(release: boolean): Promise<void> {', closeStart);
+assert.ok(closeStart >= 0 && teardownStart > closeStart, 'close and teardown methods exist');
+const closeBody = sessionSource.slice(closeStart, teardownStart);
+const teardownEnd = sessionSource.indexOf('  private logStage(', teardownStart);
+const teardownBody = sessionSource.slice(teardownStart, teardownEnd);
+
+const exitRequestAt = closeBody.indexOf('this.lifecycle.exitRequested()');
+const closeTeardownAt = closeBody.indexOf('await this.teardown(true)');
+const disposedAt = closeBody.indexOf('this.lifecycle.disposed()');
+assert.ok(exitRequestAt >= 0 && closeTeardownAt > exitRequestAt, 'EXIT_REQUESTED precedes close teardown');
+assert.ok(disposedAt > closeTeardownAt, 'DISPOSED is emitted only after close awaits teardown');
+
+const releaseAt = teardownBody.indexOf('lease?.release()');
+const cameraEventAt = teardownBody.indexOf('this.lifecycle.cameraReleased()', releaseAt);
+const decoderDisposeAt = teardownBody.indexOf('await decoder.dispose()', cameraEventAt);
 assert.ok(releaseAt >= 0 && cameraEventAt > releaseAt, 'CAMERA_RELEASED follows lease release');
 assert.ok(decoderDisposeAt > cameraEventAt, 'decoder disposal may continue after CAMERA_RELEASED');
-assert.ok(disposedEventAt > decoderDisposeAt, 'DISPOSED follows decoder disposal');
-assert.ok(sessionSource.indexOf('this.lifecycle.exitRequested()') < sessionSource.indexOf('this.teardown(true)', sessionSource.indexOf('close(): Promise<void>')),
-  'EXIT_REQUESTED precedes close teardown');
 
 console.log('Scanner lifecycle contract and teardown-order tests passed.');
