@@ -41,9 +41,13 @@ export default function BarcodeScanner({
     onClose();
   };
   const handleDetected = (value: string) => {
-    setIsClosing(true);
+    if (mode === 'single') {
+      setIsClosing(true);
+      onDetected(value);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
+      return;
+    }
     onDetected(value);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) onClose();
   };
   const scanner = useScannerEngine({ onDetected: handleDetected, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest });
   const transitionStyle: ScannerTransitionStyle = {
