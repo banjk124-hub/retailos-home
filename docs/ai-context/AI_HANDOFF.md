@@ -238,3 +238,14 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
 - Run #109 (`42451179152`) passed on the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
+
+
+## Active task — PR B Scanner Lifecycle Contract (2026-11-08)
+
+- Branch: `feat/scanner-lifecycle-contract`, based on main `fa0d007d42bf480799e29b6003aeea2b2cd52112`.
+- Scope: shared lifecycle event vocabulary/adapter, truthful camera-release and disposal milestones, deterministic regression tests, synchronized technical documentation.
+- The event vocabulary is not a compulsory linear workflow. READY/SCANNING may be skipped on early close; EXIT_PRESENTATION is optional and feature-owned. Suspend/resume is not terminal exit.
+- Engine emits CAMERA_RELEASED after releasing its lease and before awaiting decoder disposal. DISPOSED follows completed engine teardown.
+- Home and Stocktake are not migrated in PR B. PR A opening presentation and PR C snapshot/exit handoff remain separate.
+- Run `npm run preflight` after syncing the branch. Current remote editing has not run tests/build or physical device QA.
+- Preserve local changes/untracked files. Keep PR unmerged/undeployed until explicit approval.
