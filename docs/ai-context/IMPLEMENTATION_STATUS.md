@@ -389,6 +389,6 @@ First synchronize and review this documentation-only branch, run repository CI/p
 ### PR #32 CI verification — 2026-11-08
 - GitHub Actions run #107 (`42451111883`) passed on source/test head `b3df0a683ab76237c1908e4adb01f36109fc95c6`.
 - Passed: locked dependency installation and full `npm run preflight`, including scanner regression suite, TypeScript/production build, GitHub Pages build and diff checks.
-- This confirms the recorded code/test head. Run #109 subsequently verified the latest documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`.
+- This confirms the recorded code/test head. Run #109 subsequently verified the previous documentation-synchronized head `e2ce5f6b2c70c3e6e2cd3660cde5e46ff9f698d4`. Further documentation-only synchronization commits followed and have not yet been rerun through CI.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding.
 - The PR remains Draft, unmerged and undeployed; `main` remains unchanged.
