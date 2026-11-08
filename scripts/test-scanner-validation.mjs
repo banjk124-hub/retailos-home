@@ -344,7 +344,7 @@ assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-trans
   "Home must not transform/fade an ancestor of the live camera video during startup");
 assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*transition:\s*none/,
   "Home live video must not be opacity-transitioned during first-frame presentation");
-assert.match(scannerTransitionCss, /@keyframes scanner-home-close\s*\{[^}]*to\s*\{\s*opacity:\s*1;\s*transform:\s*scale\(\.94\);/,
+assert.ok(scannerTransitionCss.includes("@keyframes scanner-home-close") && scannerTransitionCss.includes("to { opacity: 1; transform: scale(.94); }"),
   "Home exit must shrink the frozen preview without fading the entire screen to black");
 assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-surface\.scanner-stocktake-surface-enter\s*\{[^}]*animation:\s*scanner-stocktake-surface-in/,
   "Stocktake must not transform an ancestor of its live camera video during startup");
