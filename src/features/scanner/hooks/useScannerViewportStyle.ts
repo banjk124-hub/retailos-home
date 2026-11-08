@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useState, type CSSProperties } from 'react';
 
 type ScannerViewportStyle = CSSProperties & {
   '--scanner-visual-viewport-height': string;
@@ -8,7 +8,7 @@ type ScannerViewportStyle = CSSProperties & {
 /** Track iOS Safari's visual viewport instead of assuming the layout viewport equals the visible screen. */
 export function useScannerViewportStyle(): ScannerViewportStyle {
   const [viewport, setViewport] = useState({ height: 0, top: 0 });
-  useEffect(() => {
+  useLayoutEffect(() => {
     const visualViewport = window.visualViewport;
     const sync = () => {
       setViewport({
