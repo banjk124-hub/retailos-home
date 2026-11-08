@@ -35,16 +35,17 @@ Status: Merged in PR #38 and subsequently extended by PR #43; user has verified 
 
 
 
-## ADR-008 — Feature-observed scanner lifecycle and Home exit handoff (2026-11-08)
+## ADR-008 — Technical scanner lifecycle and feature-owned exit presentation (2026-11-08)
 
-Status: Merged. PR C1 is implemented in BarcodeScanner; PR C2 is implemented in StocktakeScanner.
+**Status:** Revised by the technical-only lifecycle separation PR. Home and Stocktake retain their existing module-owned close behavior.
 
-- `UniversalScannerSession` owns the session ID and constructs its `ScannerLifecycleAdapter` with an optional `ScannerLifecycleObserver`. Feature modules never create an adapter or supply a session ID.
-- `useScannerEngine` forwards the observer through a ref-backed callback. Updating a React callback does not restart the scanner effect or reacquire the camera.
-- `EXIT_PRESENTATION` is emitted by the owning feature through the active/closing `ScannerSession`; the platform session routes it through the same adapter and session ID as engine milestones.
-- Home unmounts its scanner only after `EXIT_REQUESTED`, `EXIT_PRESENTATION`, `CAMERA_RELEASED`, and `DISPOSED` have all been observed. Event arrival order is not assumed; completion is idempotent.
-- Home snapshot capture stays before `closeScanner()`. `CAMERA_RELEASED` remains a resource boundary and is not treated as animation completion. `DISPOSED` remains after teardown.
-- Stocktake now consumes the same observer contract and four-milestone exit gate through `StocktakeScannerExitGate`, preserving Stocktake business and persistence behavior.
+- `UniversalScannerSession` owns the session ID and constructs its `ScannerLifecycleAdapter` with an optional `ScannerLifecycleObserver`. Features never construct the adapter or supply a session ID.
+- The platform event contract contains only scanner execution/resource milestones: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, and `DISPOSED`.
+- The platform contract has no presentation event or presentation-completion method. The engine does not wait for, retain sessions for, or receive callbacks about UI animation.
+- Home and Stocktake keep presentation completion in their own feature components. Each module locally joins its own animation completion with technical close/lease/disposal signals before unmounting.
+- Snapshot capture remains before camera teardown. Camera lease release remains prompt and is never delayed by animation; `DISPOSED` follows completed engine teardown.
+- Recovery may temporarily retain a retired session only so a close racing recovery can still publish its terminal technical milestones. This is resource-lifecycle coordination, not presentation ownership.
+
 # Architecture notes and invariants
 
 This file is a working contract, not a substitute for inspecting current source. Verify every path and interface before changing it.
@@ -338,18 +339,17 @@ The shared engine must own camera request/claim/cancel/release, session lifecycl
 See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase sequence.
 
 
-## ADR-013 — Scanner lifecycle event contract and presentation ownership (2026-11-08)
+## ADR-013 — Scanner technical lifecycle contract (2026-11-08)
 
-**Status:** Merged. The shared contract is consumed by Home (C1); Stocktake migration is tracked separately as C2.
+**Status:** Revised by the technical-only lifecycle separation PR.
 
-- Define the public milestones `OPENING → READY → SCANNING → EXIT_REQUESTED → CAMERA_RELEASED → EXIT_PRESENTATION → DISPOSED` as an event vocabulary, not a mandatory linear state machine for every feature.
-- `OPENING`, `READY` and `SCANNING` may be absent or recur around restart/recovery. A session may close before preview or decoder readiness. `EXIT_PRESENTATION` is optional and is owned/emitted by the feature module through the shared adapter.
-- The engine owns camera lease, stream attachment/detachment, decode scheduling, decoder disposal and engine-resource cleanup. It emits `CAMERA_RELEASED` immediately after releasing its lease; decoder disposal may continue afterward. `DISPOSED` means engine teardown has completed.
-- Feature modules own Connecting UI, snapshot/capture, VFX, result routing, navigation and their own UI disposal. Animation completion must never gate camera release.
-- Lifecycle observer callbacks are optional and isolated: observer exceptions must not interrupt scanning, release or disposal. Terminal milestones are deduplicated per adapter instance.
-- Existing `ScannerLifecycleState` remains the engine's internal operational state; the event contract does not replace it or alter scanner business behavior.
-- Suspend/resume is not a terminal exit. A feature must not interpret a visibility suspension as `EXIT_REQUESTED` or `DISPOSED`.
-- The foundation PR did not migrate either feature. C1 subsequently migrated Home; C2 remains responsible for Stocktake. The contract remains optional for consumers that do not need feature-owned exit presentation.
+- The platform publishes optional technical milestones: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, and `DISPOSED`. This is an event vocabulary, not a mandatory linear state machine.
+- `OPENING`, `READY`, and `SCANNING` may recur around suspend/resume. A session may close before preview or decoder readiness.
+- The engine owns camera lease, stream attachment/detachment, decode scheduling, decoder disposal, recovery, and engine-resource cleanup. `CAMERA_LEASE_RELEASED` means this session's lease has been released; it does not claim that a shared physical stream has stopped when another lease remains. `DISPOSED` means engine teardown has completed.
+- Feature modules own all presentation: opening/closing UI, animation, snapshot capture, VFX, result routing, navigation, and UI disposal. They may locally coordinate their own presentation completion with technical lifecycle signals, but must never send presentation state into the platform engine.
+- Observer callbacks are optional and isolated: observer exceptions must not interrupt scanning, release, or disposal. Terminal technical milestones are deduplicated per adapter instance.
+- `ScannerLifecycleState` remains the engine's internal operational state. Suspend/resume is not a terminal close.
+- Existing Home and Stocktake business behavior, snapshot timing, and module-specific motion remain unchanged by this contract separation.
 
 ## ADR-014 — Fresh video surface on foreground recovery (2026-11-08)
 

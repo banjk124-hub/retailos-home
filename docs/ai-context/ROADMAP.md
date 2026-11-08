@@ -1,14 +1,11 @@
-## Current execution order — PR #46 merged then reverted; PR 47A restore in progress (2026-11-08)
+## Current execution order — technical-only scanner lifecycle separation (2026-11-08)
 
-1. **PR B — Lifecycle Contract foundation:** merged.
-2. **PR C1 — Home lifecycle migration:** merged.
-3. **PR #43 — Foreground Recovery:** merged and user-verified; the former iOS preview-shrink defect no longer reproduces.
-4. **PR C2 — Stocktake lifecycle migration:** merged in PR #45; user reports it runs correctly with no issues.
-5. **PR #46 — Engine-owned Opening Transition:** merged, then reverted after real-device regressions. The shared `ScannerPreviewSurface` and curtain were removed.
-6. **PR 47A — Restore module-owned preview presentation:** in progress on `revert/scanner-pr46-restore-module-presentation`. Restores exact pre-PR #46 Home/Stocktake markup and CSS, plus regression tests and documentation alignment.
-7. **Cross-platform validation:** retest iOS native video sizing and Android transition smoothness after PR 47A. Keep module presentation independent unless a future design proves the layouts and native-video behavior are compatible.
+1. PR B lifecycle foundation, PR C1 Home migration, PR #43 foreground Recovery, and PR #45/C2 Stocktake migration are merged; the user has verified the Stocktake flow.
+2. PR #46 shared preview presentation was merged and then rolled back in PR 47A after iOS/Android presentation regressions. Home and Stocktake again own their preview DOM/CSS.
+3. **Current task:** remove presentation-completion coupling from the shared scanner lifecycle contract while preserving each module's local presentation gate and all technical scanner behavior.
+4. After CI and source review, the user performs the iOS Safari/PWA and Android Chrome/PWA smoke test. Do not merge or deploy without explicit user approval.
 
-**Architecture boundary:** the platform session owns camera/decoder readiness; `useScannerEngine` exposes the technical `isPreviewReady` signal; each feature module owns its video DOM, layout, CSS, reveal timing and motion.
+**Architecture boundary:** the engine owns camera/decoder/session/resource lifecycle and emits technical signals only. Home and Stocktake own all UI presentation and decide when their own scanner surfaces unmount.
 
 
 ---

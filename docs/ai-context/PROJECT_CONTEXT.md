@@ -1,12 +1,10 @@
-## Current project focus — PR #46 rolled back; PR 47A in progress (2026-11-08)
+## Current project focus — technical-only scanner lifecycle separation (2026-11-08)
 
-- PR B lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 C2 Stocktake migration are merged.
-- User confirms C2 runs correctly without issues.
-- PR #46 shared preview presentation was merged, then rolled back after physical-device regressions: iOS black → undersized video → sudden resize; Android curtain transition flicker/choppiness.
-- Current task: PR 47A on branch `revert/scanner-pr46-restore-module-presentation`, restoring the exact pre-PR #46 Home/Stocktake presentation implementation.
-- `isPreviewReady` remains the engine's technical signal. Home and Stocktake independently own their video DOM, CSS layout and reveal behavior.
-- No camera/decoder/lease/business-flow/lifecycle changes are intended in PR 47A. CI and device retest are pending.
-- Restoration baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- PR #47 restore has been merged and physically tested by the user; the restored Home/Stocktake scanner presentation works correctly.
+- Current main baseline: `7f35943b33fc8ce990be0ebe172e0712ee98572d`; active task branch: `refactor/scanner-lifecycle-technical-only`.
+- Current objective: remove presentation completion from the platform scanner lifecycle contract. Engine reports only technical session/resource events; each feature controls its own animation and UI unmount.
+- Preserve current scanner behavior: camera acquisition/release, decoder, barcode validation/delivery, single/continuous semantics, Recovery, Home lookup, Stocktake form fill and explicit persistence.
+- Do not unify module transitions or add shared presentation logic. No merge/deploy without explicit user approval.
 
 
 ---

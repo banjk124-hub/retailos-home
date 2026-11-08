@@ -1,6 +1,18 @@
 # Current scanner acceptance gates — 2026-11-08
 
-Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). PR #46 was merged, then its shared preview presentation was rolled back in PR 47A after iOS/Android device regressions. PR #31/#32 references below are historical.
+Source baseline: PR #47 has been merged and physically tested by the user; restored module-owned Home/Stocktake preview presentation works correctly.
+
+## Technical-only lifecycle separation — branch `refactor/scanner-lifecycle-technical-only`
+
+- [x] Platform lifecycle vocabulary contains only scanner execution/resource milestones.
+- [x] No presentation event or `notifyExitPresentation()` API exists in platform contract/session/hook.
+- [x] Home owns presentation completion locally and joins it with technical close/lease/disposal signals.
+- [x] Stocktake owns presentation completion locally and joins it with technical close/lease/disposal signals.
+- [x] Recovery-retired session reference exists only to preserve terminal close signals across a recovery race.
+- [x] Camera lease release is not delayed by feature animation.
+- [ ] Targeted lifecycle regression suite passes on this branch.
+- [ ] TypeScript and production/Pages preflight pass on this branch.
+- [ ] iOS Safari/PWA and Android Chrome/PWA smoke tests confirm unchanged behavior.
 
 ## Source-audit facts (not device acceptance)
 - [x] Home tap starts `requestCameraLease()` before scanner UI mounts.
@@ -12,40 +24,10 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [ ] iOS opening geometry root cause measured and fixed.
 - [ ] Exit fade visually synchronized while camera teardown remains prompt.
 
-## Lifecycle migration status
+## Historical migration gates
+- PR B lifecycle adapter foundation, PR C1 Home migration, PR #43 foreground Recovery, PR #45/C2 Stocktake migration and PR 47A module-owned preview restoration are merged.
+- C2 originally joined a feature-owned presentation milestone with engine resource milestones. The current task removes that presentation milestone from the platform contract; Home and Stocktake retain the same local join behavior.
 
-- [x] PR B — shared event contract and adapter merged.
-- [x] PR C1 — Home consumes lifecycle observer and exit handoff.
-- [x] PR #43 — fresh video surface foreground recovery merged; user confirmed previous preview-shrink defect is gone.
-- [x] PR C2 — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal; PR #45 merged and user reports no issues.
-- [x] PR 47A restores the pre-PR #46 module-owned preview implementation and removes the shared curtain/component.
-- [ ] PR 47A CI and physical iOS Safari/PWA + Android Chrome/PWA retest.
-
-## PR 47A — Restore module-owned preview presentation
-
-- [x] Home and Stocktake restore their pre-PR #46 video markup and feature-specific CSS.
-- [x] Shared `ScannerPreviewSurface` and curtain CSS are removed.
-- [x] `isPreviewReady` remains the engine's technical readiness signal.
-- [x] Home and Stocktake again own their own reveal classes and presentation behavior.
-- [ ] CI passes on PR 47A head.
-- [ ] iOS test confirms no black → undersized video → resize sequence.
-- [ ] Android test confirms no abrupt/choppy opening transition.
-- [ ] Retry, foreground recovery and reduced-motion behavior are rechecked.
-
-## PR C2 — Stocktake migration acceptance
-
-- [x] Stocktake passes lifecycleObserver to the shared useScannerEngine.
-- [x] Session identity comes only from the engine event; no feature-created adapter/session ID.
-- [x] Manual close captures the frozen preview before closeScanner().
-- [x] Successful single-result callback captures the frozen preview before the session's automatic close.
-- [x] EXIT_PRESENTATION is emitted by Stocktake when its own matching scanner-stocktake-close animation completes.
-- [x] Parent onClose() is called only after EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and presentation completion; event order is not assumed.
-- [x] Completion is idempotent; duplicate animation/lifecycle events cannot close twice.
-- [x] Camera release is never delayed by animation; reduced-motion 1ms animation path remains.
-- [x] StocktakeModule camera lease cancellation, scanner visibility and parent close ownership remain unchanged.
-- [x] Barcode-to-form fill, manual entry, duplicate rows, edit/review and explicit save remain unchanged.
-- [x] Lifecycle regression tests cover manual close and successful single-result close; GitHub Actions run #178 passed full npm run preflight.
-- [x] PR #45 merged; user reports the implementation runs correctly without issues.
 ## Device QA — iOS Safari/PWA
 - [ ] First permission grant, deny, dismiss, retry and permission revocation.
 - [ ] Tap-to-request timing and camera permission prompt behavior.
@@ -87,88 +69,3 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [ ] Home/Stocktake business contracts pass.
 - [ ] Regression tests, TypeScript/build/Pages preflight pass.
 - [ ] Full diff reviewed; explicit user approval before merge/deploy.
-
----
-
-# RetailOS acceptance checklist
-
-## Before implementation
-- [ ] Inspect current branch, status and diff.
-- [ ] Confirm user story and success criteria.
-- [ ] Identify stable IDs, APIs, schema, and affected services.
-- [ ] Record baseline build/test failures.
-- [ ] Plan rollback.
-
-## Module library
-- [ ] One canonical registry; no duplicate divergent module lists.
-- [ ] IDs match existing data services/navigation.
-- [ ] Search supports title, description and useful synonyms where appropriate.
-- [ ] Groups are derived consistently and empty groups are handled.
-- [ ] Module UI readiness is distinct from data availability and permissions.
-- [ ] Every action routes correctly or reports an honest disabled/integration state.
-- [ ] Loading, empty, stale, error and offline states are explicit where relevant.
-
-## Responsive UX
-- [ ] Narrow phone (~320–360px)
-- [ ] Typical phone (~390–430px)
-- [ ] Tablet
-- [ ] Desktop / wide viewport
-- [ ] No horizontal overflow or inexplicable blank column.
-- [ ] Bottom navigation does not cover content.
-- [ ] Safe-area insets respected.
-- [ ] Touch targets and text remain usable.
-- [ ] Keyboard focus and reduced motion work.
-- [ ] Translucency does not harm contrast or performance.
-
-## Regression
-- [ ] Login/session
-- [ ] Module navigation
-- [ ] API request/response contract
-- [ ] IndexedDB/snapshot refresh and stale-state behavior
-- [ ] Barcode camera permission, success and failure
-- [ ] Notifications
-- [ ] PWA/service worker/offline
-- [ ] Vite base path/GitHub Pages
-- [ ] Build and tests pass
-
-## Release
-- [ ] Review diff for accidental removals/secrets.
-- [ ] Confirm rollback point.
-- [ ] Explicit user approval to push/deploy.
-- [ ] Record release commit and verified URL.
-
-## Scanner transition — supplemental UX patch
-
-- [ ] Home opens as a full-screen camera surface; no camera card/frame remains.
-- [ ] Stocktake retains its existing scanner frame, dimensions and layout.
-- [ ] Home and Stocktake use independent presentation treatments; no shared UI template is introduced.
-- [ ] Camera acquisition begins from the opening tap; the mounted scanner claims the same pending lease.
-- [ ] Closing before lease handoff cancels safely; a late stream is released without stopping another active lease.
-- [ ] A lease request cannot be claimed twice.
-- [ ] Camera permission denial and explicit retry remain recoverable.
-- [ ] Animation does not gate camera startup, first-frame reveal, decoder readiness or scanner teardown.
-- [ ] First usable video frame is revealed without a standalone loading screen or visible flicker.
-- [ ] prefers-reduced-motion is respected.
-- [ ] iOS Safari/PWA: first permission, denial/retry, rapid open/close, background/foreground and scan result.
-- [ ] Android Chrome/PWA: first permission, denial/retry, rapid open/close, background/foreground and scan result.
-- [ ] Weak-device review: no heavy blur, large promoted layers, continuous animation or material scan regression.
-- [ ] Home cached lookup and Stocktake form-fill/explicit-save, duplicate rows and manual entry still work.
-- [ ] CI and local preflight pass; physical-device evidence is recorded separately.
-
-
-## Scanner lifecycle and exit-transition stabilization — PR #32
-
-- [ ] Home scanner root has the dedicated full-screen class and tap-origin styles.
-- [ ] Home video remains hidden until first usable frame, then reveals without layout jump.
-- [ ] Stocktake preview retains its frame and stable geometry at small and large viewport sizes.
-- [ ] A delayed pause teardown cannot overwrite a newer foreground preview/scanning state.
-- [ ] A stale start completion cannot clear a newer start's loading state.
-- [ ] Manual close and successful single-scan result use the correct module-owned exit treatment.
-- [ ] Home continuous scan mode remains open after an accepted result; close-on-result applies only to single-result mode.
-- [ ] A successful single-result event prevents visibility/foreground recovery from reacquiring the camera during exit.
-- [ ] Camera teardown starts immediately on close/result; exit motion never holds the camera lease.
-- [ ] Reduced-motion mode closes without waiting for animation events.
-- [ ] Rapid close/reopen does not reuse a disposed session or release a newer lease.
-- [ ] iOS Safari/PWA and Android Chrome/PWA pass first-open, permission denial/retry, foreground recovery and result flows.
-- [ ] Low-end Android and small iPhone viewport pass preview geometry and motion checks.
-- [ ] Home lookup and Stocktake explicit-save/manual-entry/duplicate-row behavior remain unchanged.

@@ -1,24 +1,26 @@
-# Current AI handoff — PR #46 reverted; PR 47A restores module presentation (2026-11-08)
+# Current AI handoff — technical-only scanner lifecycle separation (2026-11-08)
 
-## Completed
-- PR B shared lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 / C2 Stocktake migration are merged.
-- User confirms C2 runs correctly with no issues.
-- PR #46 merged at `f668b4ea188e37f11659c74c1663821cc9f75ddb`, then physical-device testing exposed iOS black → undersized video → sudden resize and choppy Android curtain motion.
+## Verified baseline
+- PR #47 has been merged and the user has physically tested the restored Home/Stocktake preview presentation; the user reports the result works correctly.
+- Main baseline: `7f35943b33fc8ce990be0ebe172e0712ee98572d`.
+- Current task branch: `refactor/scanner-lifecycle-technical-only`.
 
-## Current task — PR 47A Restore module-owned preview presentation
-- Branch: `revert/scanner-pr46-restore-module-presentation`.
-- Restore Home and Stocktake video markup/CSS exactly from pre-PR #46 baseline `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
-- Remove `ScannerPreviewSurface` and the shared curtain CSS. Do not add another shared visual wrapper.
-- Keep `isPreviewReady` as an engine signal. Module UI decides how that signal changes its own presentation.
-- Camera session, lease, decoder, Recovery and lifecycle exit contracts remain unchanged.
-- CI and physical iOS Safari/PWA + Android Chrome/PWA retesting are pending.
+## Current task
+Remove presentation-completion coupling from the platform scanner contract. Preserve the existing user-visible close flow while moving presentation completion entirely into each feature module.
 
-## PR 47A invariants
-1. Engine owns camera/frame readiness, not module-specific visual composition.
-2. Home and Stocktake keep separate video DOM/CSS/reveal behavior.
-3. Do not animate or reparent native video layers without platform evidence.
-4. Preserve `isPreviewReady` and Recovery reset behavior.
-5. Do not change camera acquisition, decoder, lease, validation or lifecycle exit contracts.
+## Protected invariants
+1. Platform contract exposes only technical milestones: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, `DISPOSED`.
+2. Engine never receives an animation/presentation-completed callback and never retains a session for UI presentation.
+3. Home and Stocktake own their presentation completion and locally join it with technical close/resource milestones.
+4. Camera teardown/release remains prompt and independent of motion duration.
+5. Preserve barcode delivery, single/continuous behavior, preview snapshots, Recovery, Stocktake form fill, duplicate rows and explicit persistence.
+6. Do not change CSS timings, preview layout, camera constraints, decoder cadence, validation, auth, PWA or deployment.
+
+## Verification state
+- Source and regression-test changes are prepared on the task branch.
+- CI and Windows local preflight have not yet run on this head.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remain a separate user verification gate.
+- Do not merge or deploy without explicit user approval.
 
 
 ---
