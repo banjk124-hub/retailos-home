@@ -1,5 +1,23 @@
 # Current scanner acceptance gates — 2026-11-08
 
+## Technical-only lifecycle separation — branch `refactor/scanner-lifecycle-technical-only`
+
+- [x] Platform lifecycle vocabulary contains only scanner execution/resource milestones.
+- [x] No presentation event or `notifyExitPresentation()` API exists in platform contract/session/hook.
+- [x] Home owns presentation completion locally and joins it with technical close/lease/disposal signals.
+- [x] Stocktake owns presentation completion locally and joins it with technical close/lease/disposal signals.
+- [x] Recovery-retired session reference exists only to preserve terminal close signals across a recovery race.
+- [x] Camera lease release is not delayed by feature animation.
+- [x] Targeted lifecycle regression suite passes on this branch.
+- [x] TypeScript and production/Pages preflight pass on this branch.
+- [ ] iOS Safari/PWA and Android Chrome/PWA smoke tests confirm unchanged behavior.
+
+The checklist sections below preserve the previous PR/device acceptance history. Their checked items describe the earlier merged PRs; they are not evidence that this new branch has passed CI or device QA.
+
+---
+
+## Historical scanner acceptance gates — PR 47A restoration baseline
+
 Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). PR #46 was merged, then its shared preview presentation was rolled back in PR 47A after iOS/Android device regressions. PR #31/#32 references below are historical.
 
 ## Source-audit facts (not device acceptance)
@@ -32,7 +50,7 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [ ] Android test confirms no abrupt/choppy opening transition.
 - [ ] Retry, foreground recovery and reduced-motion behavior are rechecked.
 
-## PR C2 — Stocktake migration acceptance
+## Historical PR C2 — Stocktake migration acceptance (original lifecycle gate)
 
 - [x] Stocktake passes lifecycleObserver to the shared useScannerEngine.
 - [x] Session identity comes only from the engine event; no feature-created adapter/session ID.

@@ -491,10 +491,6 @@ export class UniversalScannerSession implements ScannerSession {
     await this.start();
   }
 
-  notifyExitPresentation(): void {
-    this.lifecycle.exitPresentation();
-  }
-
   /**
    * Retire a suspended session before binding a fresh video surface.
    * Unlike close(), recovery disposal must not publish feature exit milestones:
@@ -523,10 +519,10 @@ export class UniversalScannerSession implements ScannerSession {
     // previous session. Wait for that teardown, then publish the normal exit
     // milestones; recovery itself must never masquerade as a feature close.
     if (this.recoveryDisposePromise) {
-      this.lifecycle.exitRequested();
+      this.lifecycle.sessionCloseStarted();
       this.closePromise = (async () => {
         await this.recoveryDisposePromise;
-        this.lifecycle.cameraReleased();
+        this.lifecycle.cameraLeaseReleased();
         this.setState('disposed');
         this.lifecycle.disposed();
       })();
@@ -539,7 +535,7 @@ export class UniversalScannerSession implements ScannerSession {
     // React unmount, and an explicit close tap). Share one teardown promise so
     // decoder disposal and camera release happen exactly once.
     ++this.generation;
-    this.lifecycle.exitRequested();
+    this.lifecycle.sessionCloseStarted();
     this.closePromise = (async () => {
       await this.suspendPromise;
       await this.teardown(true);
@@ -581,7 +577,7 @@ export class UniversalScannerSession implements ScannerSession {
       const cameraReleaseStartedAt = performance.now();
       try {
         lease?.release();
-        if (this.closePromise && !this.recoveryDisposePromise) this.lifecycle.cameraReleased();
+        if (this.closePromise && !this.recoveryDisposePromise) this.lifecycle.cameraLeaseReleased();
       } finally {
         this.logStage('camera_release_ms', performance.now() - cameraReleaseStartedAt);
       }

@@ -1,14 +1,11 @@
-## Current execution order — PR #46 merged then reverted; PR 47A restore in progress (2026-11-08)
+## Current execution order — technical-only scanner lifecycle separation (2026-11-08)
 
-1. **PR B — Lifecycle Contract foundation:** merged.
-2. **PR C1 — Home lifecycle migration:** merged.
-3. **PR #43 — Foreground Recovery:** merged and user-verified; the former iOS preview-shrink defect no longer reproduces.
-4. **PR C2 — Stocktake lifecycle migration:** merged in PR #45; user reports it runs correctly with no issues.
-5. **PR #46 — Engine-owned Opening Transition:** merged, then reverted after real-device regressions. The shared `ScannerPreviewSurface` and curtain were removed.
-6. **PR 47A — Restore module-owned preview presentation:** in progress on `revert/scanner-pr46-restore-module-presentation`. Restores exact pre-PR #46 Home/Stocktake markup and CSS, plus regression tests and documentation alignment.
-7. **Cross-platform validation:** retest iOS native video sizing and Android transition smoothness after PR 47A. Keep module presentation independent unless a future design proves the layouts and native-video behavior are compatible.
+1. PR B lifecycle foundation, PR C1 Home migration, PR #43 foreground Recovery, and PR #45/C2 Stocktake migration are merged; the user has verified the Stocktake flow.
+2. PR #46 shared preview presentation was merged and then rolled back in PR 47A after iOS/Android presentation regressions. Home and Stocktake again own their preview DOM/CSS.
+3. **Current task:** remove presentation-completion coupling from the shared scanner lifecycle contract while preserving each module's local presentation gate and all technical scanner behavior.
+4. After CI and source review, the user performs the iOS Safari/PWA and Android Chrome/PWA smoke test. Do not merge or deploy without explicit user approval.
 
-**Architecture boundary:** the platform session owns camera/decoder readiness; `useScannerEngine` exposes the technical `isPreviewReady` signal; each feature module owns its video DOM, layout, CSS, reveal timing and motion.
+**Architecture boundary:** the engine owns camera/decoder/session/resource lifecycle and emits technical signals only. Home and Stocktake own all UI presentation and decide when their own scanner surfaces unmount.
 
 
 ---
@@ -387,15 +384,15 @@ After PR #31 was merged, the remaining device QA and Phase 1.2G–1.2J work rema
 
 ## Phase 1.2I — Shared Scanner Engine Completion: lifecycle contract foundation
 
-**Current slice:** PR B — shared lifecycle event contract and adapter.
+**Historical slice:** PR B — shared lifecycle event contract and adapter. Its original event vocabulary was superseded by the technical-only lifecycle separation at the top of this roadmap.
 
 Scope:
 - Define lifecycle event names and payload independently from internal session states.
 - Add an optional adapter/observer boundary; preserve existing session API and keep feature presentation outside the engine.
-- Emit engine milestones at truthful resource boundaries: `OPENING`, `READY`, `SCANNING`, `EXIT_REQUESTED`, `CAMERA_RELEASED`, `DISPOSED`.
-- Allow feature-owned `EXIT_PRESENTATION`; do not force every consumer to use it.
-- Ensure camera-release notification occurs immediately after lease release and before awaiting decoder disposal.
-- Add deterministic tests for normal close, early close, optional presentation, duplicate terminal notifications and observer failure isolation.
+- The original merged contract used `EXIT_REQUESTED` and `CAMERA_RELEASED`; the current contract replaces these with `SESSION_CLOSE_STARTED` and `CAMERA_LEASE_RELEASED`.
+- The original optional `EXIT_PRESENTATION` event and callback were removed. Presentation completion is local to each feature and is never sent to the engine.
+- `CAMERA_LEASE_RELEASED` is emitted after this session releases its lease; it does not imply the shared physical stream stopped if another lease remains.
+- Current deterministic tests cover normal/early close, terminal event deduplication, observer isolation, recovery-close races, and module-local presentation gates.
 - Update architecture, status and handoff documents in the same PR.
 
 Protected / out of scope:
@@ -405,7 +402,7 @@ Protected / out of scope:
 
 Acceptance:
 - Lifecycle events are optional and do not become a rigid required sequence.
-- `CAMERA_RELEASED` is observably ordered after lease release and before decoder disposal completes.
+- `CAMERA_LEASE_RELEASED` is observably ordered after this session releases its lease and before decoder disposal completes.
 - `DISPOSED` follows completed engine teardown.
 - Existing barcode/camera regression suite and new lifecycle contract tests pass, followed by TypeScript/production/Pages builds.
 - PR remains unmerged and undeployed pending user approval and device validation.

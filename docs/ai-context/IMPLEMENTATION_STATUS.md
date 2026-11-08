@@ -62,7 +62,20 @@ Review the documentation PR and confirm the revised phase model. Then create sep
 
 # Implementation status
 
-Last updated: 2026-11-06
+Last updated: 2026-11-08
+
+## Current task — technical-only scanner lifecycle separation
+
+- Baseline: `main` at `7f35943b33fc8ce990be0ebe172e0712ee98572d`; task branch: `refactor/scanner-lifecycle-technical-only`.
+- Objective: remove presentation-completion coupling from the platform lifecycle contract while preserving Home and Stocktake's existing local close gates, animation behavior, camera release timing, barcode delivery, and business flows.
+- Platform milestones are scoped to technical execution/resources: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, and `DISPOSED`.
+- Home and Stocktake retain local presentation completion and locally join it with technical milestones. Engine no longer receives animation-completion callbacks or retains sessions for presentation.
+- Recovery-retired session retention remains only for close/recovery race handling; it is not a presentation lifecycle owner.
+- GitHub Actions run #42500947176 passed on head `88d898735105d5bfc628503637cc85d9707bf85e`: scanner barcode validation, scanner lifecycle regression suite, TypeScript/production build, Pages build, and diff checks all passed through `npm run preflight`.
+- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA camera QA remain pending; CI does not substitute for those checks.
+- No changes are intended to camera acquisition, decoder cadence/validation, single/continuous result semantics, snapshot capture order, Stocktake persistence, PWA, authentication, or deployment.
+
+## Historical implementation record
 
 ## Local preflight tooling — implementation branch `tooling/local-preflight`
 - Added `npm run preflight` backed by `scripts/preflight.mjs`.

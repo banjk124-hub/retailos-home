@@ -1,12 +1,12 @@
 import type { ScannerLifecycleEventName, ScannerLifecycleObserver } from './contracts';
 
 /**
- * Adapts engine-owned milestones to an optional, feature-consumable lifecycle
- * event stream. It does not own camera, decoder, React, or presentation work.
+ * Adapts engine-owned technical milestones to an optional feature observer.
+ * It does not own feature presentation, animation, React UI, or navigation.
  *
- * OPENING/READY/SCANNING may recur after suspend/resume. Terminal milestones
- * are emitted at most once per adapter/session. READY and SCANNING are optional
- * when a session is closed before reaching those milestones.
+ * OPENING/READY/SCANNING may recur after suspend/resume. Terminal technical
+ * milestones are emitted at most once per adapter/session. READY and SCANNING
+ * are optional when a session closes before reaching those milestones.
  */
 export class ScannerLifecycleAdapter {
   private readonly emitted = new Set<ScannerLifecycleEventName>();
@@ -19,14 +19,13 @@ export class ScannerLifecycleAdapter {
   opening(): void { this.publish('OPENING'); }
   ready(): void { this.publish('READY'); }
   scanning(): void { this.publish('SCANNING'); }
-  exitRequested(): void { this.publish('EXIT_REQUESTED'); }
-  cameraReleased(): void { this.publish('CAMERA_RELEASED'); }
-  exitPresentation(): void { this.publish('EXIT_PRESENTATION'); }
+  sessionCloseStarted(): void { this.publish('SESSION_CLOSE_STARTED'); }
+  cameraLeaseReleased(): void { this.publish('CAMERA_LEASE_RELEASED'); }
   disposed(): void { this.publish('DISPOSED'); }
 
   private publish(type: ScannerLifecycleEventName): void {
-    const terminal = type === 'EXIT_REQUESTED' || type === 'CAMERA_RELEASED'
-      || type === 'EXIT_PRESENTATION' || type === 'DISPOSED';
+    const terminal = type === 'SESSION_CLOSE_STARTED'
+      || type === 'CAMERA_LEASE_RELEASED' || type === 'DISPOSED';
     if (terminal && this.emitted.has(type)) return;
     if (terminal) this.emitted.add(type);
     if (!this.observer) return;

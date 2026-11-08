@@ -34,7 +34,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
   };
   const finishClose = (event: AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== 'scanner-stocktake-close') return;
-    scanner.notifyExitPresentation();
+    // Stocktake owns this UI milestone; it is not sent into the scanner engine.
     exitGateRef.current?.completePresentation();
   };
   const scanner = useScannerEngine({ onDetected: (value) => {

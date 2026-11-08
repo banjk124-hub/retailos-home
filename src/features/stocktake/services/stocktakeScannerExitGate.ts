@@ -1,8 +1,8 @@
 import type { ScannerLifecycleEventName } from '../../../platform/scanner/contracts';
 
 type ExitMilestones = {
-  exitRequested: boolean;
-  cameraReleased: boolean;
+  closeStarted: boolean;
+  cameraLeaseReleased: boolean;
   disposed: boolean;
   presentation: boolean;
   completed: boolean;
@@ -14,8 +14,8 @@ type ExitMilestones = {
  */
 export class StocktakeScannerExitGate {
   private readonly milestones: ExitMilestones = {
-    exitRequested: false,
-    cameraReleased: false,
+    closeStarted: false,
+    cameraLeaseReleased: false,
     disposed: false,
     presentation: false,
     completed: false,
@@ -24,8 +24,8 @@ export class StocktakeScannerExitGate {
   constructor(private readonly onComplete: () => void) {}
 
   observe(type: ScannerLifecycleEventName): void {
-    if (type === 'EXIT_REQUESTED') this.milestones.exitRequested = true;
-    if (type === 'CAMERA_RELEASED') this.milestones.cameraReleased = true;
+    if (type === 'SESSION_CLOSE_STARTED') this.milestones.closeStarted = true;
+    if (type === 'CAMERA_LEASE_RELEASED') this.milestones.cameraLeaseReleased = true;
     if (type === 'DISPOSED') this.milestones.disposed = true;
     this.tryComplete();
   }
@@ -36,8 +36,8 @@ export class StocktakeScannerExitGate {
   }
 
   private tryComplete(): void {
-    const { exitRequested, cameraReleased, disposed, presentation, completed } = this.milestones;
-    if (!exitRequested || !cameraReleased || !disposed || !presentation || completed) return;
+    const { closeStarted, cameraLeaseReleased, disposed, presentation, completed } = this.milestones;
+    if (!closeStarted || !cameraLeaseReleased || !disposed || !presentation || completed) return;
     this.milestones.completed = true;
     this.onComplete();
   }

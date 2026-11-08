@@ -44,16 +44,16 @@ export type ScannerLifecycleState =
 
 
 /**
- * Feature-consumable lifecycle milestones. These describe resource and
- * presentation boundaries; they are not a mandatory linear UI state machine.
+ * Optional technical milestones emitted by the platform session.
+ * They describe scanner resources and execution only; feature presentation
+ * and UI completion are deliberately outside this contract.
  */
 export type ScannerLifecycleEventName =
   | 'OPENING'
   | 'READY'
   | 'SCANNING'
-  | 'EXIT_REQUESTED'
-  | 'CAMERA_RELEASED'
-  | 'EXIT_PRESENTATION'
+  | 'SESSION_CLOSE_STARTED'
+  | 'CAMERA_LEASE_RELEASED'
   | 'DISPOSED';
 
 export type ScannerLifecycleEvent = {
@@ -166,6 +166,4 @@ export interface ScannerSession {
   /** Retire this session for foreground recovery without emitting feature exit milestones. */
   disposeForRecovery(): Promise<void>;
   close(): Promise<void>;
-  /** Publish completion of the feature-owned exit presentation. */
-  notifyExitPresentation(): void;
 }

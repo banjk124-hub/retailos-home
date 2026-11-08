@@ -1,12 +1,10 @@
-## Current project focus — PR #46 rolled back; PR 47A in progress (2026-11-08)
+## Current project focus — technical-only scanner lifecycle separation (2026-11-08)
 
-- PR B lifecycle contract, PR C1 Home migration, PR #43 foreground Recovery and PR #45 C2 Stocktake migration are merged.
-- User confirms C2 runs correctly without issues.
-- PR #46 shared preview presentation was merged, then rolled back after physical-device regressions: iOS black → undersized video → sudden resize; Android curtain transition flicker/choppiness.
-- Current task: PR 47A on branch `revert/scanner-pr46-restore-module-presentation`, restoring the exact pre-PR #46 Home/Stocktake presentation implementation.
-- `isPreviewReady` remains the engine's technical signal. Home and Stocktake independently own their video DOM, CSS layout and reveal behavior.
-- No camera/decoder/lease/business-flow/lifecycle changes are intended in PR 47A. CI and device retest are pending.
-- Restoration baseline: `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
+- PR #47 restore has been merged and physically tested by the user; the restored Home/Stocktake scanner presentation works correctly.
+- Current main baseline: `7f35943b33fc8ce990be0ebe172e0712ee98572d`; active task branch: `refactor/scanner-lifecycle-technical-only`.
+- Current objective: remove presentation completion from the platform scanner lifecycle contract. Engine reports only technical session/resource events; each feature controls its own animation and UI unmount.
+- Preserve current scanner behavior: camera acquisition/release, decoder, barcode validation/delivery, single/continuous semantics, Recovery, Home lookup, Stocktake form fill and explicit persistence.
+- Do not unify module transitions or add shared presentation logic. No merge/deploy without explicit user approval.
 
 
 ---
@@ -146,10 +144,10 @@ Repository source and current tests/config are authoritative for actual behavior
 - After this supplemental UX patch is accepted, resume the existing Phase 1.2G–1.2J roadmap; this patch does not complete Phase 1.2G.
 
 
-## Historical scanner lifecycle contract foundation — 2026-11-08
+## Historical scanner lifecycle contract foundation — superseded 2026-11-08
 
 - Shared lifecycle milestones are an event contract, not a required linear UI state machine.
 - The platform engine owns camera/decoder resources and truthful release/disposal notifications. Feature modules own presentation, capture, VFX, result routing and UI completion.
-- `CAMERA_RELEASED` must be emitted after lease release and before decoder disposal finishes; `DISPOSED` follows completed engine teardown.
-- `EXIT_PRESENTATION` is optional and module-owned. Home has since adopted the contract in C1; Stocktake remains to be migrated in C2.
-- The foundation is merged. See current status and ADR-013/ADR-014.
+- The original `CAMERA_RELEASED` milestone was renamed to `CAMERA_LEASE_RELEASED`: it confirms release of the session's lease, not necessarily shutdown of a shared physical stream. `DISPOSED` follows completed engine teardown.
+- The original `EXIT_PRESENTATION` event and `notifyExitPresentation()` API were removed. Home and Stocktake own presentation completion locally and never send it to the engine.
+- The original foundation remains historical; the current technical-only contract is documented in ADR-008/ADR-013 and the current implementation status.

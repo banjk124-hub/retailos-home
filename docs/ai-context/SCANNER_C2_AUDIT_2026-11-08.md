@@ -1,5 +1,7 @@
 # Scanner C2 audit — Stocktake lifecycle migration
 
+> Historical audit snapshot. The lifecycle ownership described below was superseded by the technical-only lifecycle separation task on 2026-11-08. Current contract: platform emits technical milestones only; module presentation completion remains local and is never sent back into the engine.
+
 **Audit baseline:** `main` at `43f16379869b703e218e264040b859ab533c3193` (merge commit for PR #43).
 **Audit branch:** `docs/scanner-c2-audit-sync`.
 **Scope:** source audit and documentation synchronization to prepare PR C2. No runtime source or behavior is changed in this audit.
