@@ -65,3 +65,25 @@
 @keyframes stocktake-scan-line{from{transform:translateY(-55px)}to{transform:translateY(55px)}}
 @media(max-width:600px){.stocktake-scanner-layer{padding:0}.stocktake-scanner-surface{width:100%;height:100dvh;max-height:100dvh;box-sizing:border-box;padding:calc(16px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0}.stocktake-scanner-preview{flex:1;min-height:220px;max-height:62dvh;aspect-ratio:auto}}
 @media(prefers-reduced-motion:reduce){.stocktake-scanner-reticle i{animation:none}}
+
+
+/* Visual viewport geometry: iOS Safari's visible viewport can differ from the layout viewport. */
+.stocktake-scanner-layer {
+  top: var(--scanner-visual-viewport-top, 0px);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  height: var(--scanner-visual-viewport-height, 100dvh);
+}
+@media (max-width: 600px) {
+  .stocktake-scanner-surface {
+    height: var(--scanner-visual-viewport-height, 100dvh);
+    max-height: var(--scanner-visual-viewport-height, 100dvh);
+    min-height: 0;
+  }
+  .stocktake-scanner-preview {
+    min-height: 0;
+    max-height: none;
+    flex: 1 1 0;
+  }
+}
