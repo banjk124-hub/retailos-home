@@ -1,3 +1,15 @@
+
+
+## ADR-008 — Feature-observed scanner lifecycle and Home exit handoff (2026-11-08)
+
+Status: Implemented on the C1 branch; merge pending verification.
+
+- `UniversalScannerSession` owns the session ID and constructs its `ScannerLifecycleAdapter` with an optional `ScannerLifecycleObserver`. Feature modules never create an adapter or supply a session ID.
+- `useScannerEngine` forwards the observer through a ref-backed callback. Updating a React callback does not restart the scanner effect or reacquire the camera.
+- `EXIT_PRESENTATION` is emitted by the owning feature through the active/closing `ScannerSession`; the platform session routes it through the same adapter and session ID as engine milestones.
+- Home unmounts its scanner only after `EXIT_REQUESTED`, `EXIT_PRESENTATION`, `CAMERA_RELEASED`, and `DISPOSED` have all been observed. Event arrival order is not assumed; completion is idempotent.
+- Home snapshot capture stays before `closeScanner()`. `CAMERA_RELEASED` remains a resource boundary and is not treated as animation completion. `DISPOSED` remains after teardown.
+- Stocktake behavior is not migrated by this ADR; C2 must adopt the same observer contract separately.
 # Architecture notes and invariants
 
 This file is a working contract, not a substitute for inspecting current source. Verify every path and interface before changing it.

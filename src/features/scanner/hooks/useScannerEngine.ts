@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleState, type ScannerSession } from '../../../platform/scanner/contracts';
-import type { ScannerLifecycleAdapter } from '../../../platform/scanner/scannerLifecycleAdapter';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -14,8 +13,8 @@ type Options = {
   audioFeedback?: boolean;
   hapticFeedback?: boolean;
   cameraLeaseRequest?: CameraLeaseRequest | null;
-  /** Optional feature-owned lifecycle observer/adapter; presentation remains module-owned. */
-  lifecycle?: ScannerLifecycleAdapter;
+  /** Optional observer; the engine binds events to the real platform session ID. */
+  lifecycleObserver?: ScannerLifecycleObserver;
 };
 
 function isDocumentHidden(): boolean {
@@ -30,12 +29,16 @@ export function useScannerEngine({
   audioFeedback = true,
   hapticFeedback = true,
   cameraLeaseRequest = null,
-  lifecycle,
+  lifecycleObserver,
 }: Options) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
+  // Retain the just-closed session until the feature reports presentation completion.
+  const lifecycleSessionRef = useRef<ScannerSession | null>(null);
   const cameraLeaseRequestRef = useRef(cameraLeaseRequest);
   const onDetectedRef = useRef(onDetected);
+  const lifecycleObserverRef = useRef(lifecycleObserver);
+  lifecycleObserverRef.current = lifecycleObserver;
   const desiredActiveRef = useRef(true);
   const recoveryAttemptsRef = useRef(0);
   const startPromiseRef = useRef<Promise<void> | null>(null);
@@ -96,7 +99,7 @@ export function useScannerEngine({
           sameCodeCooldownMs: scanCooldownMs,
           audioFeedback,
           hapticFeedback,
-          lifecycle,
+          lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
           onResult: (result) => {
             // Deliver the decoded value to the owning module first. Feedback is
             // deliberately isolated so a sound/haptic failure cannot block the
@@ -142,6 +145,7 @@ export function useScannerEngine({
         }, cameraLeaseRequestRef.current ?? undefined);
         cameraLeaseRequestRef.current = null;
         sessionRef.current = session;
+        lifecycleSessionRef.current = session;
       }
       await session.start();
     })();
@@ -157,7 +161,7 @@ export function useScannerEngine({
         if (mountedRef.current && desiredActiveRef.current) setIsStarting(false);
       }
     }
-  }, [audioFeedback, hapticFeedback, lifecycle, mode, scanCooldownMs]);
+  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const pauseScanner = useCallback(async () => {
     // UniversalScannerSession publishes the suspended state synchronously
@@ -165,6 +169,12 @@ export function useScannerEngine({
     // foreground resume may already have published a newer ready/scanning
     // state by then.
     await sessionRef.current?.suspend('hidden');
+  }, []);
+
+  const notifyExitPresentation = useCallback(() => {
+    const session = lifecycleSessionRef.current ?? sessionRef.current;
+    lifecycleSessionRef.current = null;
+    session?.notifyExitPresentation();
   }, []);
 
   const closeScanner = useCallback(async () => {
@@ -223,6 +233,6 @@ export function useScannerEngine({
 
   return {
     videoRef, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
-    prepareAudio: unlockScannerAudio,
+    prepareAudio: unlockScannerAudio, notifyExitPresentation,
   };
 }

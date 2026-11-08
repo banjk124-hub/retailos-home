@@ -129,8 +129,8 @@ export type ScannerOpenOptions = {
   hapticFeedback?: boolean;
   onResult: (result: ScannerResult) => void;
   onStateChange?: (state: ScannerLifecycleState) => void;
-  /** Optional lifecycle event adapter shared with the owning feature module. */
-  lifecycle?: import('./scannerLifecycleAdapter').ScannerLifecycleAdapter;
+  /** Optional feature observer. The platform session binds it to its own session ID. */
+  lifecycleObserver?: ScannerLifecycleObserver;
   /** Fires once the attached video element has its first usable camera frame. */
   onPreviewReady?: () => void;
   onError?: (error: ScannerError) => void;
@@ -164,4 +164,6 @@ export interface ScannerSession {
   suspend(reason?: 'hidden' | 'manual'): Promise<void>;
   resume(): Promise<void>;
   close(): Promise<void>;
+  /** Publish completion of the feature-owned exit presentation. */
+  notifyExitPresentation(): void;
 }

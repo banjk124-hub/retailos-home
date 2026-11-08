@@ -3,6 +3,7 @@ import type {
   ScannerOpenOptions,
   ScannerSession,
   ScannerError,
+  ScannerLifecycleObserver,
 } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
@@ -163,7 +164,7 @@ export class UniversalScannerSession implements ScannerSession {
     private readonly options: ScannerOpenOptions,
     private initialCameraLeaseRequest?: CameraLeaseRequest,
   ) {
-    this.lifecycle = options.lifecycle ?? new ScannerLifecycleAdapter(this.id);
+    this.lifecycle = new ScannerLifecycleAdapter(this.id, options.lifecycleObserver);
   }
   get state(): ScannerLifecycleState { return this.currentState; }
 
@@ -464,6 +465,10 @@ export class UniversalScannerSession implements ScannerSession {
   async resume(): Promise<void> {
     if (this.disposed) return;
     await this.start();
+  }
+
+  notifyExitPresentation(): void {
+    this.lifecycle.exitPresentation();
   }
 
   close(): Promise<void> {

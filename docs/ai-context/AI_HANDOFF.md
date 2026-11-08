@@ -1,3 +1,14 @@
+## Current implementation — PR C1 Home lifecycle migration (2026-11-08)
+
+- Active branch: `feat/scanner-c1-home-lifecycle-migration`, based on main merge `191f44e9101cd75a3bf961f8475134efddbf4267` (PR #36 lifecycle contract).
+- Home now supplies a lifecycle observer; `UniversalScannerSession` binds it to its own generated session ID. The feature must not construct an adapter or invent a parallel ID.
+- Home's exit handoff waits for `EXIT_REQUESTED`, `EXIT_PRESENTATION`, `CAMERA_RELEASED`, and `DISPOSED` before unmounting the scanner. Snapshot capture remains before teardown. The camera is released before awaiting decoder disposal.
+- The hook retains a reference to the closing session only until `EXIT_PRESENTATION` is reported, so a manual close can still publish the event after the active-session ref is cleared.
+- Stocktake is intentionally unchanged. PR C2 remains the next module migration; Opening Transition PR A remains after C1/C2.
+- GitHub Actions run #147 passed the repository `npm run preflight` (scanner regression tests, TypeScript, production build, Pages build and diff checks). User-local Windows preflight and physical iOS/Android QA remain outstanding. Do not merge or deploy without explicit approval.
+
+---
+
 # Current handoff update — 2026-11-08
 
 Read this update before using older session notes below. Current source baseline is main merge `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32). PR #31 and #32 are merged; old Draft/unmerged statements are historical.

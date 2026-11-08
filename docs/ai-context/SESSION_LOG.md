@@ -1,3 +1,15 @@
+### 2026-11-08 — PR C1 Home lifecycle migration
+- Branch: `feat/scanner-c1-home-lifecycle-migration`, based on main merge `191f44e9101cd75a3bf961f8475134efddbf4267`.
+- Audited PR #36 integration and traced Home tap → lease request → session construction → result/manual close → snapshot → camera release → decoder disposal → animation completion.
+- Changed the platform contract to accept a lifecycle observer rather than a feature-created adapter. `UniversalScannerSession` binds observer to its generated ID; `useScannerEngine` keeps observer current without restarting camera effects.
+- Home now publishes `EXIT_PRESENTATION` through the closing session and waits for `EXIT_REQUESTED`, presentation completion, `CAMERA_RELEASED`, and `DISPOSED` before unmounting. Snapshot remains before teardown. Stocktake remains untouched.
+- Updated scanner lifecycle regression assertions. GitHub Actions/local preflight/device QA not yet verified at log creation. Branch unmerged/undeployed.
+- GitHub Actions run #147 passed the complete `npm run preflight` sequence: scanner regression tests, TypeScript/Vite production build, Pages build and diff checks.
+- User-local Windows preflight and physical iOS Safari/PWA + Android Chrome/PWA QA remain outstanding. No merge/deploy without explicit approval.
+- Next: synchronize the branch locally, preserve existing untracked files, run `npm run preflight`, then execute the Home manual-close and single-result flows on iOS and Android.
+
+---
+
 # RetailOS — Session Log
 
 Use this log for concise, chronological handoffs across AI agents and chat sessions. Do not paste secrets, personal data, full logs, or entire code files here. Detailed phase history belongs in `IMPLEMENTATION_STATUS.md`.

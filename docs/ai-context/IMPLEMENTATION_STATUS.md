@@ -1,3 +1,14 @@
+# Active implementation — PR C1 Home lifecycle migration (2026-11-08)
+
+- Branch: `feat/scanner-c1-home-lifecycle-migration`, based on `main` merge commit `191f44e9101cd75a3bf961f8475134efddbf4267`.
+- Changed source: `contracts.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`, `BarcodeScanner.tsx`; regression coverage updated in `scripts/test-scanner-lifecycle.mjs`.
+- Engine-generated session identity is authoritative. The platform session constructs the adapter with the feature observer; the hook uses a ref-backed observer to avoid camera effect restarts when callbacks change.
+- Home preserves pre-teardown frame snapshot and cached lookup. It waits for exit request, presentation completion, camera release and session disposal before notifying Home to unmount the scanner. The close gate tolerates event ordering and deduplicates completion.
+- Stocktake, camera constraints, decoder cadence/format validation, Home lookup and PWA/deployment configuration are not changed.
+- GitHub Actions run #147: passed `npm run preflight`, including scanner barcode validation, scanner lifecycle regression, TypeScript/Vite production build, GitHub Pages build and diff checks. User-local Windows preflight, browser simulation and real iOS/Android QA remain outstanding. Branch remains unmerged and undeployed.
+
+---
+
 # Current source audit — 2026-11-08
 
 **Authoritative main baseline:** `c7146b55f0c2210cd7b8474c6a72b1c915985793` (PR #32 merge). The historical implementation entries below are retained as an audit trail; this block is the current status and supersedes stale branch/PR statements.
