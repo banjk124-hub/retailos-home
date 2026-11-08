@@ -129,7 +129,7 @@ const homeScannerSource = await readFile(
 assert.ok(homeScannerSource.includes('lifecycleObserver: handleLifecycleEvent'), 'Home subscribes to engine lifecycle');
 assert.ok(!homeScannerSource.includes('notifyExitPresentation'), 'Home does not report presentation to the engine');
 assert.ok(homeScannerSource.includes('milestones.presentation && milestones.cameraLeaseReleased && milestones.disposed'), 'Home locally joins presentation with camera lease release and disposal');
-assert.ok(homeScannerSource.includes('milestones.cameraReleased && milestones.disposed'), 'animation-first completion waits for resource teardown');
+assert.ok(homeScannerSource.includes('milestones.cameraLeaseReleased && milestones.disposed'), 'animation-first completion waits for resource teardown');
 assert.ok(homeScannerSource.includes('captureScannerPreviewFrame(scanner.videoRef.current)'), 'Home preserves the pre-teardown visual snapshot');
 
 assert.ok(hookSource.includes('new ScannerPageLifecycleCoordinator('), 'shared scanner hook must route page lifecycle through one coordinator');
@@ -140,8 +140,8 @@ assert.ok(hookSource.includes('disposeForRecovery()'), 'foreground recovery must
 assert.ok(hookSource.includes('replaceVideoSurface()'), 'foreground recovery must request a fresh video surface');
 assert.ok(hookSource.includes('pending.resolve(videoRef.current)'), 'recovery waits for the replacement video node to commit');
 assert.ok(hookSource.includes('sessionRef.current !== session'), 'callbacks from retired sessions must not update the active feature');
-assert.ok(hookSource.includes('sessionRef.current ?? lifecycleSessionRef.current'), 'a feature can still close cleanly while its previous session is being replaced');
-assert.ok(hookSource.includes('Keep the lifecycle reference until the feature animation reports'), 'Home retains its lifecycle owner until EXIT_PRESENTATION');
+assert.ok(hookSource.includes('sessionRef.current ?? recoveryRetiredSessionRef.current'), 'a feature can still close cleanly while recovery has detached the previous session');
+assert.doesNotMatch(hookSource, /lifecycleSessionRef|notifyExitPresentation|EXIT_PRESENTATION/, 'the hook has no presentation-owned session retention');
 assert.ok(hookSource.includes('if (recoveryRequiredRef.current) await recoverScanner();'), 'foreground lifecycle uses recovery only after a background transition');
 assert.ok(hookSource.includes('Keep the old start promise registered until its in-flight camera lease') && hookSource.includes('Recovery waits for it before acquiring a new lease.'), 'recovery serializes an in-flight lease handoff before opening the next session');
 
