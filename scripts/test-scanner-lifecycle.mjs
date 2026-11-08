@@ -21,20 +21,20 @@ lifecycle.scanning();
 lifecycle.opening();
 lifecycle.ready();
 lifecycle.scanning();
-lifecycle.exitRequested();
-lifecycle.cameraReleased();
-lifecycle.exitPresentation();
+lifecycle.sessionCloseStarted();
+lifecycle.cameraLeaseReleased();
+
 lifecycle.disposed();
 
 // Duplicate notifications must not create duplicate terminal milestones.
-lifecycle.exitRequested();
-lifecycle.cameraReleased();
-lifecycle.exitPresentation();
+lifecycle.sessionCloseStarted();
+lifecycle.cameraLeaseReleased();
+
 lifecycle.disposed();
 
 assert.deepEqual(events.map((event) => event.type), [
-  'OPENING', 'READY', 'SCANNING', 'OPENING', 'READY', 'SCANNING', 'EXIT_REQUESTED',
-  'CAMERA_RELEASED', 'EXIT_PRESENTATION', 'DISPOSED',
+  'OPENING', 'READY', 'SCANNING', 'OPENING', 'READY', 'SCANNING', 'SESSION_CLOSE_STARTED',
+  'CAMERA_LEASE_RELEASED', 'DISPOSED',
 ]);
 assert.ok(events.every((event) => event.sessionId === 'test-session'));
 assert.ok(events.every((event) => Number.isFinite(event.timestamp)));
@@ -43,27 +43,22 @@ assert.ok(events.every((event) => Number.isFinite(event.timestamp)));
 const earlyClose = [];
 const earlyLifecycle = new ScannerLifecycleAdapter('early-session', (event) => earlyClose.push(event.type));
 earlyLifecycle.opening();
-earlyLifecycle.exitRequested();
-earlyLifecycle.cameraReleased();
+earlyLifecycle.sessionCloseStarted();
+earlyLifecycle.cameraLeaseReleased();
 earlyLifecycle.disposed();
-assert.deepEqual(earlyClose, ['OPENING', 'EXIT_REQUESTED', 'CAMERA_RELEASED', 'DISPOSED']);
+assert.deepEqual(earlyClose, ['OPENING', 'SESSION_CLOSE_STARTED', 'CAMERA_LEASE_RELEASED', 'DISPOSED']);
 
-// Feature presentation is optional and may finish after camera release.
-const noPresentation = [];
-const noPresentationLifecycle = new ScannerLifecycleAdapter('no-ui-session', (event) => noPresentation.push(event.type));
-noPresentationLifecycle.opening();
-noPresentationLifecycle.exitRequested();
-noPresentationLifecycle.cameraReleased();
-noPresentationLifecycle.disposed();
-assert.equal(noPresentation.includes('EXIT_PRESENTATION'), false);
+// The platform lifecycle vocabulary contains technical milestones only.
+// Feature presentation completion is deliberately not representable here.
+assert.doesNotMatch(adapterSource, /exitPresentation|EXIT_PRESENTATION|notifyExitPresentation/);
 
 // Observer failures must never escape into engine cleanup.
 const safeLifecycle = new ScannerLifecycleAdapter('safe-session', () => {
   throw new Error('feature observer failure');
 });
 assert.doesNotThrow(() => {
-  safeLifecycle.exitRequested();
-  safeLifecycle.cameraReleased();
+  safeLifecycle.sessionCloseStarted();
+  safeLifecycle.cameraLeaseReleased();
   safeLifecycle.disposed();
 });
 
@@ -73,7 +68,8 @@ const hookSource = await readFile(
 );
 assert.ok(hookSource.includes('  cameraLeaseRequest = null,') && hookSource.includes('  lifecycleObserver,') && hookSource.includes('}: Options)'), 'hook accepts feature lifecycle observer');
 assert.ok(hookSource.includes('lifecycleObserverRef.current = lifecycleObserver;') && hookSource.includes('lifecycleObserver: (event) => lifecycleObserverRef.current?.(event)'), 'hook forwards latest observer without restarting the session effect');
-assert.ok(hookSource.includes('lifecycleSessionRef.current = session;') && hookSource.includes('session?.notifyExitPresentation();'), 'hook retains the closed session until presentation completion');
+assert.ok(hookSource.includes('if (previousSession) recoveryRetiredSessionRef.current = previousSession;') && hookSource.includes('sessionRef.current ?? recoveryRetiredSessionRef.current'), 'hook retains only a recovery-retired session for terminal technical close');
+assert.doesNotMatch(hookSource, /lifecycleSessionRef|notifyExitPresentation|EXIT_PRESENTATION/, 'hook must not retain sessions for or expose presentation completion');
 
 const sessionSource = await readFile(
   new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url),
@@ -86,25 +82,25 @@ const closeBody = sessionSource.slice(closeStart, teardownStart);
 const teardownEnd = sessionSource.indexOf('  private logStage(', teardownStart);
 const teardownBody = sessionSource.slice(teardownStart, teardownEnd);
 
-const exitRequestAt = closeBody.indexOf('this.lifecycle.exitRequested()');
+const closeStartedAt = closeBody.indexOf('this.lifecycle.sessionCloseStarted()');
 const closeTeardownAt = closeBody.indexOf('await this.teardown(true)');
 const disposedAt = closeBody.indexOf('this.lifecycle.disposed()', closeTeardownAt);
-assert.ok(exitRequestAt >= 0 && closeTeardownAt > exitRequestAt, 'EXIT_REQUESTED precedes close teardown');
+assert.ok(closeStartedAt >= 0 && closeTeardownAt > closeStartedAt, 'SESSION_CLOSE_STARTED precedes close teardown');
 assert.ok(disposedAt > closeTeardownAt, 'DISPOSED is emitted only after close awaits teardown');
 const recoveryCloseAt = closeBody.indexOf('if (this.recoveryDisposePromise)');
 const recoveryAwaitAt = closeBody.indexOf('await this.recoveryDisposePromise', recoveryCloseAt);
-const recoveryCameraReleasedAt = closeBody.indexOf('this.lifecycle.cameraReleased()', recoveryAwaitAt);
+const recoveryCameraReleasedAt = closeBody.indexOf('this.lifecycle.cameraLeaseReleased()', recoveryAwaitAt);
 const recoveryDisposedAt = closeBody.indexOf('this.lifecycle.disposed()', recoveryCameraReleasedAt);
 assert.ok(recoveryCloseAt >= 0 && recoveryAwaitAt > recoveryCloseAt, 'closing during recovery waits for recovery teardown');
 assert.ok(recoveryCameraReleasedAt > recoveryAwaitAt && recoveryDisposedAt > recoveryCameraReleasedAt, 'recovery-time close publishes terminal milestones only after teardown');
 
 
 const releaseAt = teardownBody.indexOf('lease?.release()');
-const cameraEventAt = teardownBody.indexOf('this.lifecycle.cameraReleased()', releaseAt);
-const decoderDisposeAt = teardownBody.indexOf('await decoder.dispose()', cameraEventAt);
-assert.ok(releaseAt >= 0 && cameraEventAt > releaseAt, 'CAMERA_RELEASED follows lease release');
+const cameraLeaseEventAt = teardownBody.indexOf('this.lifecycle.cameraLeaseReleased()', releaseAt);
+const decoderDisposeAt = teardownBody.indexOf('await decoder.dispose()', cameraLeaseEventAt);
+assert.ok(releaseAt >= 0 && cameraLeaseEventAt > releaseAt, 'CAMERA_LEASE_RELEASED follows lease release');
 
-assert.ok(decoderDisposeAt > cameraEventAt, 'decoder disposal may continue after CAMERA_RELEASED');
+assert.ok(decoderDisposeAt > cameraLeaseEventAt, 'decoder disposal may continue after CAMERA_RELEASED');
 
 // Foreground recovery retires the old platform session without signaling a
 // feature exit; teardown completes before the session becomes unavailable.
@@ -114,16 +110,16 @@ assert.ok(recoveryDisposeStart >= 0 && recoveryDisposeEnd > recoveryDisposeStart
 const recoveryDisposeBody = sessionSource.slice(recoveryDisposeStart, recoveryDisposeEnd);
 assert.ok(recoveryDisposeBody.includes('await this.suspendPromise;') && recoveryDisposeBody.includes('await this.teardown(true);'), 'recovery disposal waits for suspension and resource teardown');
 assert.ok(recoveryDisposeBody.indexOf('await this.teardown(true);') < recoveryDisposeBody.indexOf('this.disposed = true;'), 'session is retired only after resources are released');
-assert.doesNotMatch(recoveryDisposeBody, /exitRequested|cameraReleased|exitPresentation/, 'recovery disposal must not trigger feature exit milestones');
+assert.doesNotMatch(recoveryDisposeBody, /sessionCloseStarted|cameraLeaseReleased|exitPresentation/, 'recovery disposal must not trigger feature exit milestones');
 
-assert.ok(sessionSource.includes('  notifyExitPresentation(): void {') && sessionSource.includes('this.lifecycle.exitPresentation();'), 'feature can publish EXIT_PRESENTATION on the real session adapter');
+assert.doesNotMatch(sessionSource, /notifyExitPresentation|exitPresentation|EXIT_PRESENTATION/, 'session cannot receive or publish presentation completion');
 
 const contractSource = await readFile(
   new URL('../src/platform/scanner/contracts.ts', import.meta.url),
   'utf8',
 );
 assert.ok(contractSource.includes('lifecycleObserver?: ScannerLifecycleObserver;'), 'platform contract accepts observer, not a feature-created adapter');
-assert.ok(contractSource.includes('notifyExitPresentation(): void;'), 'session contract exposes presentation milestone');
+assert.doesNotMatch(contractSource, /notifyExitPresentation|EXIT_PRESENTATION/, 'platform contract excludes presentation milestones');
 assert.ok(contractSource.includes('disposeForRecovery(): Promise<void>;'), 'session contract exposes recovery-only retirement');
 
 const homeScannerSource = await readFile(
@@ -131,8 +127,8 @@ const homeScannerSource = await readFile(
   'utf8',
 );
 assert.ok(homeScannerSource.includes('lifecycleObserver: handleLifecycleEvent'), 'Home subscribes to engine lifecycle');
-assert.ok(homeScannerSource.includes('scanner.notifyExitPresentation();'), 'Home reports presentation completion');
-assert.ok(homeScannerSource.includes('milestones.presentation && milestones.cameraReleased && milestones.disposed'), 'Home waits for presentation, camera release and disposal');
+assert.ok(!homeScannerSource.includes('notifyExitPresentation'), 'Home does not report presentation to the engine');
+assert.ok(homeScannerSource.includes('milestones.presentation && milestones.cameraLeaseReleased && milestones.disposed'), 'Home locally joins presentation with camera lease release and disposal');
 assert.ok(homeScannerSource.includes('milestones.cameraReleased && milestones.disposed'), 'animation-first completion waits for resource teardown');
 assert.ok(homeScannerSource.includes('captureScannerPreviewFrame(scanner.videoRef.current)'), 'Home preserves the pre-teardown visual snapshot');
 
@@ -221,8 +217,8 @@ await pageLifecycleCoordinator.transition(false, true);
 assert.equal(pageLifecycleEvents.at(-1), 'foreground', 'disposed coordinators must ignore late browser events');
 
 
-// Stocktake C2: the feature owns presentation completion while the shared
-// session owns EXIT_REQUESTED, camera release and disposal.
+// Stocktake C2: the feature owns presentation completion locally while the
+// shared session emits only technical close, lease-release and disposal events.
 const stocktakeGateSource = await readFile(
   new URL('../src/features/stocktake/services/stocktakeScannerExitGate.ts', import.meta.url),
   'utf8',
@@ -236,7 +232,7 @@ const { StocktakeScannerExitGate } = await import(stocktakeGateUrl);
 const permutations = (items) => items.length === 0
   ? [[]]
   : items.flatMap((item, index) => permutations(items.filter((_, i) => i !== index)).map((tail) => [item, ...tail]));
-for (const order of permutations(['EXIT_REQUESTED', 'CAMERA_RELEASED', 'DISPOSED', 'PRESENTATION'])) {
+for (const order of permutations(['SESSION_CLOSE_STARTED', 'CAMERA_LEASE_RELEASED', 'DISPOSED', 'PRESENTATION'])) {
   let closeCount = 0;
   const gate = new StocktakeScannerExitGate(() => { closeCount += 1; });
   for (const milestone of order) {
@@ -246,16 +242,16 @@ for (const order of permutations(['EXIT_REQUESTED', 'CAMERA_RELEASED', 'DISPOSED
   }
   assert.equal(closeCount, 1, `all four milestones must complete in any order: ${order.join(' → ')}`);
   gate.completePresentation();
-  gate.observe('EXIT_REQUESTED');
-  gate.observe('CAMERA_RELEASED');
+  gate.observe('SESSION_CLOSE_STARTED');
+  gate.observe('CAMERA_LEASE_RELEASED');
   gate.observe('DISPOSED');
   assert.equal(closeCount, 1, 'duplicate milestones and animation completion must not close twice');
 }
 let incompleteCloseCount = 0;
 const incompleteGate = new StocktakeScannerExitGate(() => { incompleteCloseCount += 1; });
 incompleteGate.completePresentation();
-incompleteGate.observe('EXIT_REQUESTED');
-incompleteGate.observe('CAMERA_RELEASED');
+incompleteGate.observe('SESSION_CLOSE_STARTED');
+incompleteGate.observe('CAMERA_LEASE_RELEASED');
 assert.equal(incompleteCloseCount, 0, 'presentation and animation alone cannot close before DISPOSED');
 incompleteGate.observe('DISPOSED');
 assert.equal(incompleteCloseCount, 1, 'last missing lifecycle milestone completes the close gate');
@@ -268,10 +264,10 @@ assert.ok(stocktakeScannerSource.includes('lifecycleObserver: handleLifecycleEve
 assert.ok(stocktakeScannerSource.includes('new StocktakeScannerExitGate(() => onCloseRef.current())'), 'Stocktake keeps the latest parent callback behind an idempotent gate');
 assert.ok(!stocktakeScannerSource.includes('ScannerLifecycleAdapter'), 'Stocktake must not construct its own lifecycle adapter');
 const matchingAnimationCheck = stocktakeScannerSource.indexOf("event.animationName !== 'scanner-stocktake-close'");
-const presentationNotifyAt = stocktakeScannerSource.indexOf('scanner.notifyExitPresentation();', matchingAnimationCheck);
-const gatePresentationAt = stocktakeScannerSource.indexOf('exitGateRef.current?.completePresentation();', presentationNotifyAt);
-assert.ok(matchingAnimationCheck >= 0 && presentationNotifyAt > matchingAnimationCheck && gatePresentationAt > presentationNotifyAt,
-  'Stocktake publishes presentation completion only after its matching close animation');
+const gatePresentationAt = stocktakeScannerSource.indexOf('exitGateRef.current?.completePresentation();', matchingAnimationCheck);
+assert.ok(matchingAnimationCheck >= 0 && gatePresentationAt > matchingAnimationCheck,
+  'Stocktake completes its local presentation gate only after its matching close animation');
+assert.doesNotMatch(stocktakeScannerSource, /notifyExitPresentation|EXIT_PRESENTATION/, 'Stocktake never sends presentation completion to the engine');
 const manualCloseStart = stocktakeScannerSource.indexOf('  const close = () => {');
 const manualSnapshotAt = stocktakeScannerSource.indexOf('captureScannerPreviewFrame(scanner.videoRef.current)', manualCloseStart);
 const manualCloseCallAt = stocktakeScannerSource.indexOf('void scanner.closeScanner();', manualCloseStart);

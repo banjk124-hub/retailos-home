@@ -40,8 +40,9 @@ export function useScannerEngine({
     resolve: (video: HTMLVideoElement | null) => void;
   } | null>(null);
   const sessionRef = useRef<ScannerSession | null>(null);
-  // Retain the just-closed session until the feature reports presentation completion.
-  const lifecycleSessionRef = useRef<ScannerSession | null>(null);
+  // A session detached during foreground recovery may still need to publish
+  // its terminal close milestones if the feature closes before replacement.
+  const recoveryRetiredSessionRef = useRef<ScannerSession | null>(null);
   const cameraLeaseRequestRef = useRef(cameraLeaseRequest);
   const onDetectedRef = useRef(onDetected);
   const lifecycleObserverRef = useRef(lifecycleObserver);
@@ -150,7 +151,7 @@ export function useScannerEngine({
     }, cameraLeaseRequestRef.current ?? undefined);
     cameraLeaseRequestRef.current = null;
     sessionRef.current = session;
-    lifecycleSessionRef.current = session;
+    recoveryRetiredSessionRef.current = null;
     return session;
   }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
@@ -232,9 +233,10 @@ export function useScannerEngine({
       // Detach the old session first so late callbacks cannot mutate the new UI.
       const previousSession = sessionRef.current;
       sessionRef.current = null;
-      // Keep the lifecycle owner until a replacement session exists. If the
-      // user closes during recovery, this retired session still emits the
-      // feature's terminal exit milestones after its teardown is complete.
+      // Keep only the recovery-retired session, not a presentation owner.
+      // If the feature closes before replacement, close() can still publish
+      // the old session's terminal technical milestones after recovery ends.
+      if (previousSession) recoveryRetiredSessionRef.current = previousSession;
       await previousSession?.disposeForRecovery();
 
       if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
@@ -263,12 +265,6 @@ export function useScannerEngine({
     }
   }, [replaceVideoSurface, startScanner]);
 
-  const notifyExitPresentation = useCallback(() => {
-    const session = lifecycleSessionRef.current ?? sessionRef.current;
-    lifecycleSessionRef.current = null;
-    session?.notifyExitPresentation();
-  }, []);
-
   const closeScanner = useCallback(async () => {
     desiredActiveRef.current = false;
     const pendingLeaseRequest = cameraLeaseRequestRef.current;
@@ -278,10 +274,9 @@ export function useScannerEngine({
     // If close races a foreground recovery, let that serialized operation
     // finish its retirement boundary before closing whichever session remains.
     await recoveryPromiseRef.current?.catch(() => undefined);
-    const session = sessionRef.current ?? lifecycleSessionRef.current;
+    const session = sessionRef.current ?? recoveryRetiredSessionRef.current;
     sessionRef.current = null;
-    // Keep the lifecycle reference until the feature animation reports
-    // EXIT_PRESENTATION; Home's close contract depends on that final signal.
+    recoveryRetiredSessionRef.current = null;
     await session?.close();
     if (mountedRef.current) {
       setIsStarting(false);
@@ -357,6 +352,6 @@ export function useScannerEngine({
 
   return {
     videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
-    prepareAudio: unlockScannerAudio, notifyExitPresentation,
+    prepareAudio: unlockScannerAudio,
   };
 }

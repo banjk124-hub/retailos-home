@@ -39,27 +39,24 @@ export default function BarcodeScanner({
   const [exitFrame, setExitFrame] = useState<string | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
-  const exitMilestonesRef = useRef({ exitRequested: false, presentation: false, cameraReleased: false, disposed: false, completed: false });
-  const handleLifecycleEvent = (event: ScannerLifecycleEvent) => {
-    if (event.type === 'EXIT_REQUESTED') exitMilestonesRef.current.exitRequested = true;
-    if (event.type === 'CAMERA_RELEASED') exitMilestonesRef.current.cameraReleased = true;
-    if (event.type === 'DISPOSED') exitMilestonesRef.current.disposed = true;
+  const exitMilestonesRef = useRef({ closeStarted: false, presentation: false, cameraLeaseReleased: false, disposed: false, completed: false });
+  const tryCompleteClose = () => {
     const milestones = exitMilestonesRef.current;
-    if (milestones.exitRequested && milestones.presentation && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
-      milestones.completed = true;
-      onCloseRef.current();
-    }
+    if (!milestones.closeStarted || !milestones.presentation || !milestones.cameraLeaseReleased || !milestones.disposed || milestones.completed) return;
+    milestones.completed = true;
+    onCloseRef.current();
+  };
+  const handleLifecycleEvent = (event: ScannerLifecycleEvent) => {
+    if (event.type === 'SESSION_CLOSE_STARTED') exitMilestonesRef.current.closeStarted = true;
+    if (event.type === 'CAMERA_LEASE_RELEASED') exitMilestonesRef.current.cameraLeaseReleased = true;
+    if (event.type === 'DISPOSED') exitMilestonesRef.current.disposed = true;
+    tryCompleteClose();
   };
   const viewportStyle = useScannerViewportStyle();
   const finishClose = (event: AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== 'scanner-home-close') return;
     exitMilestonesRef.current.presentation = true;
-    scanner.notifyExitPresentation();
-    const milestones = exitMilestonesRef.current;
-    if (milestones.exitRequested && milestones.cameraReleased && milestones.disposed && !milestones.completed) {
-      milestones.completed = true;
-      onCloseRef.current();
-    }
+    tryCompleteClose();
   };
   const scanner = useScannerEngine({ onDetected: (value) => {
     if (mode === 'single') {
