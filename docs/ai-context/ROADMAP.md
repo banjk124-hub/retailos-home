@@ -230,11 +230,25 @@ Scope: profile RGBA-to-grayscale conversion, Canvas/ImageData allocation and cop
 Acceptance: measurable improvement without material regression in scan success, first-result latency, preview smoothness, battery/thermal behavior or supported symbologies.
 
 ### 1.2I — Shared Scanner Engine Completion (supersedes the earlier decoder-capability-only definition)
-**Goal:** improve difficult-angle barcode acquisition without slowing the normal path unnecessarily.
+**Goal:** complete the reusable scanner runtime contract shared by Home, Stocktake and future features.
 
-Scope: evaluate rotation detection, perspective/deskew and conditional recovery decode tiers. Test physical labels at 0°, 15°, 30°, 45°, 60° and 90°, with varied distance, lighting and glare. Avoid promising all-angle recognition.
+Workstreams:
+- Explicit lifecycle/state contract across request, preview readiness, decoder initialization, scanning, suspension, recovery, closing, error and disposal. Preview readiness must never be mistaken for decoder readiness.
+- Camera ownership: request/claim/cancel, reference-counted leases, stream identity, stale generation protection, track-ended recovery and deterministic release.
+- Decoder adapter: initialization/disposal, format allowlist, typed decode misses/errors, bounded scheduling and capability declaration.
+- Feature-policy boundary: Home single-result cached lookup; Stocktake single-result form fill with explicit save; continuous mode only when explicitly configured by a consumer.
+- Presentation independence: Home and Stocktake retain distinct UI surfaces; the engine exposes states/events, not layout.
+- Integrate the scanner-first device profile as a policy input without allowing it to weaken correctness or accuracy invariants.
+- Privacy-safe observability and deterministic tests for pending permission, cancel-before-claim, duplicate claim, rapid open-close-open, stale completions, concurrent leases, track-ended recovery, decoder/callback failures and feature contracts.
+- Optional rotation/perspective/deskew recovery may be evaluated as a bounded sub-capability only after normal-path accuracy/latency baselines exist; it is not the whole phase.
 
-Acceptance: publish a device/condition test matrix and measured success/latency; advanced processing must be conditional and bounded.
+Acceptance:
+- Home and Stocktake use the same camera/decoder lifecycle engine without duplicating ownership logic.
+- State transitions and camera/decoder ownership invariants have deterministic regression coverage.
+- No duplicate stream, decoder loop or callback after cancellation/close.
+- Existing barcode allowlist and validation, Home lookup, Stocktake explicit-save/duplicates/manual-entry semantics remain unchanged.
+- Profile switching cannot interrupt accepted-result delivery or change correctness semantics.
+- Real iOS Safari and Android Chrome validation is recorded before phase release.
 
 ### 1.2K — Cross-platform release validation (renumbered by the device-adaptation phase)
 **Goal:** establish release evidence on real iOS and Android devices.
