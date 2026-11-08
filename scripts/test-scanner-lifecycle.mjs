@@ -67,6 +67,13 @@ assert.doesNotThrow(() => {
   safeLifecycle.disposed();
 });
 
+const hookSource = await readFile(
+  new URL('../src/features/scanner/hooks/useScannerEngine.ts', import.meta.url),
+  'utf8',
+);
+assert.match(hookSource, /cameraLeaseRequest = null,[\\s\\S]*?lifecycle,[\\s\\S]*?\\}: Options/);
+assert.match(hookSource, /hapticFeedback,\\s*lifecycle,\\s*onResult:/);
+
 const sessionSource = await readFile(
   new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url),
   'utf8',
