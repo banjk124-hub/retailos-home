@@ -21,3 +21,26 @@ Use a canonical module registry, derive library groups and search results from i
 - Every module tile has a truthful action/status.
 - Existing business/data flows still pass regression tests.
 - Responsive layout has no unexpected single-column shrink or nav/content overlap.
+
+
+## ADR-012 — Scanner-first adaptive resource profiles and shared engine completion
+**Status:** Proposed; documentation/architecture direction only (2026-11-08).
+
+### Context
+The shared scanner is already separated into feature-owned UI, a React bridge, a platform session, camera leases and a decoder adapter. However, the hook currently passes `profile: 'HIGH'` unconditionally. The profile type currently exposes `COMPACT | STANDARD | HIGH`, not the requested Low/Mid/High policy. This is not adaptive device classification.
+
+### Decision
+- Re-scope Phase 1.2I as Shared Scanner Engine Completion.
+- Define scanner-first Low/Mid/High resource profiles in Phase 1.2J; defer app-wide activation until scanner policy is measured and proven.
+- Resource adaptation may change optional visual/processing intensity only. Barcode allowlist/validation, scan accuracy, session ownership, callback delivery, persistence and feature workflows are hard invariants.
+- Home and Stocktake presentation remain independently owned while sharing the engine.
+- Do not assume universal battery/temperature telemetry in iOS Safari or Android Chrome. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
+- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified Low. Such changes require measured scan-accuracy and latency evidence.
+
+### Consequences
+- Profile selection is advisory and must degrade safely when capability data is missing.
+- Profile transitions must not create a second camera request, decoder, frame loop or session.
+- Phase 1.2G is bounded at instrumentation/source audit; further optimization is issue- or measurement-driven.
+- Angled/perspective decode is an optional capability within engine completion, not the entire 1.2I phase.
+
+See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gates.
