@@ -16,7 +16,7 @@ The checklist sections below preserve the previous PR/device acceptance history.
 
 ---
 
-# Current scanner acceptance gates — 2026-11-08
+## Historical scanner acceptance gates — PR 47A restoration baseline
 
 Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). PR #46 was merged, then its shared preview presentation was rolled back in PR 47A after iOS/Android device regressions. PR #31/#32 references below are historical.
 
