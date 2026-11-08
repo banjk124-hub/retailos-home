@@ -141,17 +141,21 @@ export function useScannerEngine({
     try {
       await start;
     } finally {
-      if (startPromiseRef.current === start) startPromiseRef.current = null;
-      if (mountedRef.current && desiredActiveRef.current) setIsStarting(false);
+      // A previous start attempt must not overwrite the UI state of a newer
+      // attempt that began after a visibility suspend/resume transition.
+      if (startPromiseRef.current === start) {
+        startPromiseRef.current = null;
+        if (mountedRef.current && desiredActiveRef.current) setIsStarting(false);
+      }
     }
   }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const pauseScanner = useCallback(async () => {
+    // UniversalScannerSession publishes the suspended state synchronously
+    // before teardown. Do not write UI state after awaiting teardown: a
+    // foreground resume may already have published a newer ready/scanning
+    // state by then.
     await sessionRef.current?.suspend('hidden');
-    if (!mountedRef.current) return;
-    setIsStarting(false);
-    setIsPreviewReady(false);
-    setIsScanning(false);
   }, []);
 
   const closeScanner = useCallback(async () => {
