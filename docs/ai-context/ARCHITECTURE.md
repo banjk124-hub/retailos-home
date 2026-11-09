@@ -400,6 +400,7 @@ Home and Stocktake share the camera session and need optional flashlight control
 
 ### Platform limitations
 - Torch is not uniformly supported by iOS Safari/WebKit, Android browsers, camera hardware or all camera modes. Capability detection is authoritative for the active track, but a reported capability can still fail at apply time.
+- WebKit's maintainer confirmed Torch support was added to WebKit in August 2024, and a user reported it working on iOS 17.5.1. This does not guarantee support on every iOS release/device; continue to gate on the active track's reported capability.
 - Do not request flash through getUserMedia constraints, alter existing camera resolution/FPS requests, or treat an unsupported Torch request as a camera/decoder failure.
 - Physical iOS Safari/PWA and Android Chrome/PWA testing is required. CI validates contracts, adapter behavior and builds but cannot prove hardware flash behavior.
 
