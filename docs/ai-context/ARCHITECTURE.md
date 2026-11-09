@@ -383,7 +383,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 
 ## ADR-016 — Optional camera torch capability (2026-11-09)
 
-**Status:** Implemented in Draft PR #51; CI and physical-device acceptance pending.
+**Status:** Implemented in PR #51 (ready for review); CI and physical-device acceptance pending.
 
 ### Context
 Home and Stocktake share the camera session and need optional flashlight control for low-light scanning. Browser engines and camera hardware do not universally expose a controllable torch.
