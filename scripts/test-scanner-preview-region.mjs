@@ -163,6 +163,59 @@ assert.ok(setter, 'session must expose source-region setter and getter');
 assert.doesNotMatch(setter[0], /startInternal|createDecoder|scheduleNextFrame|suspend\(|resume\(|close\(/,
   'region updates must not restart camera, decoder or frame loop');
 
+// Execute the real session setter/getter with dependency stubs. This proves
+// defensive snapshots and confirms publishing a region leaves the session idle.
+const makeDataModule = (source) => 'data:text/javascript;base64,' + Buffer.from(source).toString('base64');
+const stubs = {
+  '../../shared/services/cameraSession': makeDataModule(
+    'export async function acquireCameraLease() { throw new Error("not expected"); } export function subscribeCameraTrackEnded() { return () => {}; }',
+  ),
+  './decoders/zxingDecoder': makeDataModule(
+    'export class ZXingDecoderAdapter { async initialize() {} async decode() { return []; } async dispose() {} }',
+  ),
+  './barcodeValidation': makeDataModule(
+    'export function validateBarcodePayload(value) { return { valid: true, value, reason: "" }; }',
+  ),
+  './scannerLifecycleAdapter': makeDataModule(
+    'export class ScannerLifecycleAdapter { constructor() {} opening() {} ready() {} scanning() {} sessionCloseStarted() {} cameraLeaseReleased() {} disposed() {} }',
+  ),
+  './scannerTorch': makeDataModule(
+    'export async function applyScannerTorch(track, enabled) { return { supported: true, enabled, pending: false }; } export function readScannerTorchState() { return { supported: false, enabled: false, pending: false }; }',
+  ),
+};
+let sessionJs = compileModule(sessionSource);
+for (const [specifier, stubUrl] of Object.entries(stubs)) {
+  sessionJs = sessionJs.replace(`from '${specifier}';`, `from '${stubUrl}';`);
+}
+const sessionUrl = 'data:text/javascript;base64,' + Buffer.from(sessionJs).toString('base64');
+const { UniversalScannerSession } = await import(sessionUrl);
+const session = new UniversalScannerSession({}, {
+  profile: 'HIGH',
+  formats: [],
+  mode: 'continuous',
+  onResult: () => {},
+});
+const expectedRegion = {
+  coordinateSpace: 'source-frame-normalized',
+  rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.4 },
+};
+session.setScanRegion(expectedRegion);
+assert.equal(session.state, 'idle', 'region publication must not start the session');
+const firstSnapshot = session.getScanRegion();
+assert.deepEqual(firstSnapshot, expectedRegion);
+if (firstSnapshot) firstSnapshot.rect.x = 0.9;
+assert.deepEqual(session.getScanRegion(), expectedRegion,
+  'getScanRegion must return a defensive snapshot');
+
+session.setScanRegion({
+  coordinateSpace: 'source-frame-normalized',
+  rect: { x: 0.9, y: 0.2, width: 0.3, height: 0.4 },
+});
+assert.equal(session.getScanRegion(), null, 'invalid source region must clear instead of clipping/fallback');
+session.setScanRegion(null);
+assert.equal(session.getScanRegion(), null, 'null region must clear the active source ROI');
+assert.equal(session.state, 'idle', 'region clear must not change session lifecycle');
+
 const homeComponent = await readFile(
   new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),
   'utf8',
