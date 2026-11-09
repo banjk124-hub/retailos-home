@@ -6,6 +6,7 @@ import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
 import { captureScannerPreviewFrame } from '../../scanner/services/captureScannerPreviewFrame';
 import { StocktakeScannerExitGate } from '../services/stocktakeScannerExitGate';
+import { useScannerPreviewRegionBinding } from '../../scanner/hooks/useScannerPreviewRegionBinding';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -22,6 +23,7 @@ type Props = {
 /** Stocktake-owned scanner presentation; camera/decoder runtime stays shared. */
 export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
   const [isClosing, setIsClosing] = useState(false);
+  const reticleRef = useRef<HTMLDivElement>(null);
   const [exitFrame, setExitFrame] = useState<string | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -42,6 +44,14 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
     setIsClosing(true);
     onDetected(value);
   }, mode: 'single', cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
+  useScannerPreviewRegionBinding({
+    videoRef: scanner.videoRef,
+    reticleRef,
+    videoSurfaceKey: scanner.videoSurfaceKey,
+    enabled: scanner.isScanning && !isClosing,
+    onRegionChange: scanner.setScanRegion,
+  });
+
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
@@ -76,7 +86,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
         {exitFrame && <img className="stocktake-scanner-exit-frame" src={exitFrame} alt="" aria-hidden="true" />}
         {!scanner.isPreviewReady && scanner.isStarting && <div className="stocktake-scanner-message" role="status" aria-live="polite"><Camera size={17} /><span>Đang mở camera…</span></div>}
         {!scanner.isPreviewReady && scanner.error && <div className="stocktake-scanner-message is-error"><AlertTriangle size={18} /><span>Camera chưa sẵn sàng</span></div>}
-        {scanner.isScanning && <div className="stocktake-scanner-reticle" aria-hidden="true"><i /></div>}
+        {scanner.isScanning && <div ref={reticleRef} className="stocktake-scanner-reticle" aria-hidden="true"><i /></div>}
       </div>
       <p className="stocktake-scanner-instruction">Giữ mã vạch rõ nét, đủ sáng. Mỗi lần quét sẽ điền một dòng vào biểu mẫu; dữ liệu chỉ được lưu khi bạn xác nhận.</p>
       {scanner.error && <p className="stocktake-error" role="alert">{scanner.error}</p>}
