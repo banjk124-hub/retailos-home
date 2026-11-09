@@ -543,3 +543,15 @@ Camera request rules:
 - Default remains environment / 1280×720 / 30 FPS ideal / 30 FPS maximum.
 
 SCAN-01 adds platform-neutral types and this contract only. Existing Home/Stocktake behavior is unchanged. See `SCAN_01_INPUT_CONTRACT.md` for migration, strict-mode and acceptance rules.
+
+
+## ADR-023 — Pure preview-to-source geometry mapper (2026-11-10)
+**Status:** Implemented on SCAN-02 branch; no runtime consumer wired yet.
+
+`src/platform/scanner/scannerGeometry.ts` implements a pure mapping from the module-owned `preview-content-normalized` rectangle to a `source-frame-normalized` rectangle. The caller supplies intrinsic source-frame dimensions, video element content-box dimensions, CSS `object-fit`, normalized `object-position` fractions and an explicit mirror flag.
+
+The mapper models `fill`, `contain`, `cover`, `none` and `scale-down`; calculates the visible image intersection (excluding letterbox/pillarbox space); accounts for negative free space and object-position crop; and reverses horizontal mirroring before normalizing source coordinates. It returns a discriminated error result for invalid inputs rather than a full-frame fallback.
+
+The mapper performs no DOM reads and has no camera, React, media-stream or decoder dependencies. It does not create a camera-startup geometry barrier. Home and Stocktake retain separate preview/reticle ownership. SCAN-03 will wire each module independently; SCAN-04 will activate strict ROI decoding only after both integrations are valid.
+
+See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geometry.mjs`.
