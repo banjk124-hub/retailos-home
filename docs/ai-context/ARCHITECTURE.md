@@ -1,31 +1,37 @@
-## ADR-018 — Opt-in on-device Torch diagnostics (2026-11-09)
+## ADR-018 — Capability-gated camera Torch; investigation tooling retired (2026-11-09)
 
-**Status:** Implemented in PR #53; GitHub Actions run #245 passed full preflight. Physical-device validation remains pending.
+**Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing are being removed in `cleanup/remove-torch-investigation-code`.
 
 ### Context
-PR #51 added optional Torch controls and PR #52 moved initial capability discovery until after video playback and the first usable frame. The user reports that iOS works but Android Chrome on a Samsung Galaxy S23 Ultra still does not display the Flash control in either Home or Stocktake. The user cannot conveniently inspect browser DevTools on the phone.
+- PR #51/#52 introduced optional Torch control and deferred capability discovery until after video playback and the first usable frame.
+- iOS Safari/PWA Torch is confirmed working by the user.
+- Android Chrome on Samsung Galaxy S23 Ultra exposes `getCapabilities()` and `applyConstraints()`, but does not expose `capabilities.torch` or `settings.torch` on the active track.
+- The PR #54 debug-only probe sent `torch: true` and `torch: false`; both `applyConstraints()` promises resolved, but the physical LED did not illuminate. Promise resolution therefore did not establish hardware support.
+- The investigation does not justify bypassing capability detection, adding model/browser heuristics, or introducing a native camera stack solely for Flash.
 
 ### Decision
-- Add an opt-in diagnostic surface enabled only by the URL query parameter `?scannerDebug=1`.
-- Capture one active-track capability snapshot after first-frame readiness and three bounded follow-up samples at 250 ms, 1000 ms and 2500 ms. This distinguishes an absent capability from one exposed asynchronously.
-- Report API availability/errors, `torch` capability/settings values, track ready/muted state, facing mode, dimensions, frame rate and applyConstraints availability.
-- Never expose `deviceId`, enumerate camera identifiers, infer support from user-agent/device model, or force a Flash control to appear.
-- Keep diagnostics observational. They do not change camera constraints, active camera selection, Torch support decisions, enable/disable behavior, decoder behavior, scanner lifecycle or module presentation.
-- Collect samples only when the explicit debug query parameter is present. Keep at most four samples in the feature hook.
-- Home and Stocktake render the same compact diagnostic utility only when opted in; each feature retains ownership of its scanner layout and presentation.
+- Discover Torch from the active video track after `video.play()` and the first usable frame.
+- A feature renders its Flash control only when the active track reports `getCapabilities().torch === true`.
+- Apply ON/OFF through the existing active track and preserve its camera constraints.
+- Unsupported or rejected Torch remains non-fatal: preview and barcode decoding continue normally.
+- Do not infer support from user-agent, device model, camera facing mode, physical LED presence or a resolved `applyConstraints()` promise.
+- Do not send Torch constraints when the active track does not advertise support.
+- Keep iOS on the existing WebKit/MediaStreamTrack path; no native bridge or CameraX dependency is introduced.
+- Retire the temporary PR #53 sampling panel/timers and PR #54 compatibility pulse, their React/session contracts and their runbook after the evidence has been collected.
 
-### Verification / device runbook
-- Open the deployed PWA with `?scannerDebug=1` appended to its URL, then open either scanner module.
-- Expand or inspect the **SCANNER TORCH DIAGNOSTICS** panel after the camera preview appears. It reports four timed samples.
-- `torch capability=true` means the active track advertises Torch. If the control is still absent, investigate the React state bridge/render path.
-- `torch capability=false` means the active track explicitly reports no Torch capability for this session.
-- `torch capability=not-exposed` means the API exists but did not report the Torch property during the sampled window.
-- `unavailable` or API errors require inspection of the corresponding API availability/error fields.
-- Remove the query parameter to disable the panel and diagnostic sampling.
-- Automated tests/builds do not replace physical Android Chrome and iOS Safari/PWA validation.
+### Verified device outcome
+- iOS: user confirms Flash works normally.
+- Samsung Galaxy S23 Ultra / Android Chrome: Torch is not exposed on the active track; the explicit diagnostic pulse was accepted by the API but did not illuminate the LED.
+- This result is specific to the tested device/browser path. It does not establish that all Android devices are unsupported.
 
-### Protected scope
-No native bridge, Camera2/CameraX integration, camera fallback, device-specific branch, user-agent detection, Torch behavior change, camera acquisition/lease change, camera constraint change, autofocus change, first-frame readiness change, decoder change, barcode validation/delivery change, or Home/Stocktake business-flow change is included.
+### Acceptance
+- Keep the production Flash control capability-gated in both Home and Stocktake.
+- Unsupported devices continue scanning without a Flash control or Torch command.
+- Preserve camera acquisition, first-frame readiness, session generation guards, lifecycle/recovery, decoder, barcode delivery and module presentation.
+- Keep automated regression coverage for supported/unsupported tracks, ON/OFF, rejected constraints and constraint preservation.
+- Future Android compatibility work requires a reproducible device/browser test demonstrating actual LED control before any production change.
+
+---
 
 ---
 
@@ -462,27 +468,3 @@ No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, came
 - Regression test models a track whose Torch capability is absent before streaming and becomes available after streaming starts.
 - Source-order assertion verifies Torch discovery occurs after playback and first-frame readiness.
 - Physical Android Chrome/PWA retest must inspect the new `[RetailOS Scanner] Torch capability` diagnostic. If it reports `not-exposed` after the first live frame, investigate that browser/device's camera track support rather than forcing the UI control visible.
-
-
-## ADR-019 — Debug-only Torch constraint compatibility probe (2026-11-09)
-
-**Status:** Implemented in PR #54; physical-device result pending.
-
-### Context
-After PR #53 diagnostics on Android Chrome / Samsung Galaxy S23 Ultra reported `getCapabilities()` available, `torch` not exposed, `getSettings().torch` not exposed, rear camera (`environment`) live at 1280×720 / 30 FPS, and `applyConstraints()` available. The normal adapter correctly keeps Torch unsupported and does not send a command when the active track does not advertise the capability. Therefore, no real Torch constraint attempt had yet been made on this device.
-
-### Decision
-- Add an explicit compatibility probe available only through the opt-in `?scannerDebug=1` diagnostics panel.
-- On a user tap, send one `torch: true` advanced constraint to the current live video track, wait for a short 1.2-second pulse, then attempt `torch: false`.
-- Preserve the active track constraints, including width, height, frame rate, facing mode, device identity where already available, and unrelated advanced constraints.
-- Report ON/OFF promise acceptance, error names, `settings.torch` before/after and track state. A resolved promise is not proof that the physical LED illuminated; the operator must observe the LED during the pulse.
-- Do not change `ScannerTorchState.supported`, do not reveal the production Flash control, and do not infer support from user-agent, device model or camera facing mode.
-- The probe is non-blocking to normal scanner state and does not alter acquisition, autofocus, decoder, lifecycle or business flow. The command is unavailable outside debug mode.
-
-### Safety and acceptance
-- The probe runs only on explicit user action and always attempts OFF after an accepted ON request while the track remains live.
-- If the track ends during the pulse, OFF is not sent to the ended track; result records that OFF was not attempted.
-- A rejected ON request does not trigger OFF.
-- The probe never stops the camera track or mutates the ordinary Torch support state.
-- Automated regression covers capability-not-exposed, constraint preservation, ON→OFF ordering and unchanged support state.
-- Physical Android Chrome and iOS Safari/PWA validation remains required. Do not promote this probe into production compatibility behavior until the S23 Ultra result and cross-device evidence are reviewed.
