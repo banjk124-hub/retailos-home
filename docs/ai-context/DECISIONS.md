@@ -68,7 +68,7 @@ See `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 
 
 ## ADR-023 — Pure preview-to-source scanner geometry mapping (2026-11-10)
-**Status:** Implemented on SCAN-02 branch; awaiting PR CI and review. Runtime consumers remain unwired until SCAN-03.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; runtime consumers remain unwired until SCAN-03.
 
 ### Decision
 - Add a pure mapper from `preview-content-normalized` to `source-frame-normalized` coordinates.
