@@ -15,7 +15,6 @@ Status: active working plan.
 
 ---
 
-## Historical source re-baseline---
 ## Historical source re-baseline — main c7146b55 (pre lifecycle contract)
 
 Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md. The iOS viewport/layout observations in this historical snapshot predate PR #49; they are not a current engine startup requirement. PR #49 removes the DOM geometry gate, and the user reports no issue after deployment/testing.
