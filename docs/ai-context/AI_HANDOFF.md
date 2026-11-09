@@ -1,4 +1,4 @@
-# Current AI handoff — scanner Torch capability (2026-11-09)
+# Current AI handoff — shared Scanner settings and feedback QA (2026-11-09)
 
 - Repository: `banjk124-hub/retailos-home`.
 - Production implementation: PR #51/#52, shared Web MediaStreamTrack Torch path.
@@ -7,15 +7,17 @@
 - Current decision: keep capability-gated behavior. Do not bypass `getCapabilities().torch`, infer support from device/browser identity, or add native CameraX solely for Flash.
 - Cleanup PR #55: https://github.com/banjk124-hub/retailos-home/pull/55. Temporary PR #53 diagnostics and PR #54 probe code are removed; production Torch controls and regression tests remain. GitHub Actions run #42572378379 passed full preflight on head `53b14c7`. User confirms PR #55 was merged and deployed.
 
-## Current active task — shared Scanner settings (2026-11-09)
+## Current verified state — shared Scanner settings (2026-11-09)
 
-- PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 (Draft, open, unmerged, undeployed); branch `feat/scanner-settings-hub-feedback-controls`, based on current `main` after user confirmed PR #55 was merged and deployed.
-- Add Settings Hub with two separate entries: Scanner QA Monitor and Scanner preferences.
-- Scanner preferences are device-local and shared by all consumers: vibration enabled by default; beep volume 50% by default.
-- 50% maps to existing Web Audio gain 0.24; slider steps are 10%, 0 mutes and 100 maps to 0.48.
-- Shared feedback service reads settings on each accepted barcode result. No per-consumer feedback overrides remain.
-- No camera/decoder/lifecycle/business behavior changes intended. GitHub Actions run #42575410311 passed full preflight on head `47ff115`; physical iOS/Android validation remains the release gate.
-- See Architecture ADR-019 and `scripts/test-scanner-settings.mjs`.
+- PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 is merged into `main` at merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`. Do not describe it as Draft/open/unmerged. Deployment of this merge is not asserted here.
+- PR #56 final head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full preflight in GitHub Actions run #42575773839.
+- Settings Hub, independent Scanner QA Monitor and Scanner preferences entries, gear icon, device-local shared preference store and centralized feedback are present on main.
+- Defaults: vibration enabled and beep volume 50%; 50% maps to Web Audio gain 0.24, 0% mutes, 100% maps to 0.48. Slider steps are 10%.
+- Home and Stocktake consume the same feedback service. Feedback reads the latest setting when a barcode is accepted; no per-feature override remains.
+- iOS vibration remains unavailable where `navigator.vibrate` is absent. The UI reports unsupported capability and scanning remains non-fatal.
+- Physical Android/iOS QA remains an explicit acceptance gate. CI does not prove perceived loudness, actual device vibration or hardware output.
+- Current follow-up branch: `test/scanner-audio-runtime-and-doc-sync`, based on the merge commit above. It adds executable Web Audio gain/preview/vibration-policy tests and synchronizes current documentation. No camera, decoder, lifecycle or business workflow changes are intended.
+- See Architecture ADR-019/ADR-020, `scripts/test-scanner-settings.mjs` and `scripts/test-scanner-audio-runtime.mjs`.
 
 ---
 
