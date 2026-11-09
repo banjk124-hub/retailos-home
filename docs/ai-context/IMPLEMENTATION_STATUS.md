@@ -1,13 +1,14 @@
-# SCAN-02 implementation update — 2026-11-10
+# SCAN-02 implementation update — audited and merged (2026-11-10)
 
-**Status:** mapper and deterministic tests authored on `feat/scanner-preview-source-geometry`; PR/CI pending. Not merged.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; deployed and smoke-tested by the user. No existing scanner-flow regression reported.
 
-- SCAN-01 is merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deploy and testing without issues.
-- Added `src/platform/scanner/scannerGeometry.ts` with pure preview-to-source mapping, explicit geometry validation and typed failure results.
-- Added `scripts/test-scanner-geometry.mjs`; registered in `scripts/preflight.mjs`.
-- Mapper supports `fill`, `contain`, `cover`, `none`, `scale-down`, normalized object-position, visible content intersection and horizontal mirroring.
-- No runtime consumers are wired. Home/Stocktake preview, camera lifecycle, decoder and business flows remain unchanged.
-- Next: SCAN-03 module-owned integration; SCAN-04 strict ROI-only decode.
+- Main CI run #299 passed TypeScript, production build, GitHub Pages build and full preflight.
+- `src/platform/scanner/scannerGeometry.ts` provides pure preview-to-source mapping for `fill`, `contain`, `cover`, `none`, `scale-down`, normalized object-position, visible-content intersection and horizontal mirror conversion.
+- Audit reviewed sizing/crop math, coordinate-space contract, failure behavior and separation from DOM/camera/session/decoder resources.
+- A follow-up test-only correction strengthens the static guard against `window.` and `document.` access; no production runtime behavior changed.
+- No runtime consumer is wired. Home/Stocktake presentation, camera lifecycle, decoder and business flows remain unchanged; ROI-only decode is not active.
+- Next: SCAN-03 module-owned Home/Stocktake adapters and live region updates without session restart. Physical iOS/Android geometry alignment QA is required.
+- SCAN-04 remains gated on both consumers providing verified source regions before strict ROI-only decode.
 
 ---
 
