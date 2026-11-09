@@ -23,21 +23,29 @@ class MockOscillatorNode {
   frequency = new MockAudioParam();
   type = '';
   ended = null;
+  stoppedAt = null;
   connect() {}
   start() {}
-  stop() {}
+  stop(time) { this.stoppedAt = time; }
   addEventListener(type, callback) { if (type === 'ended') this.ended = callback; }
   disconnect() {}
 }
 class MockAudioContext {
   static instance;
+  static instances = [];
   state = 'suspended';
   currentTime = 1;
   destination = {};
   oscillators = [];
   gains = [];
-  constructor() { MockAudioContext.instance = this; }
-  async resume() { this.state = 'running'; }
+  constructor() {
+    MockAudioContext.instance = this;
+    MockAudioContext.instances.push(this);
+  }
+  async resume() {
+    if (this.state === 'closed') throw new Error('Cannot resume a closed AudioContext');
+    this.state = 'running';
+  }
   createOscillator() {
     const node = new MockOscillatorNode();
     this.oscillators.push(node);
@@ -88,21 +96,23 @@ assert.equal(context.oscillators.length, 0, 'zero volume creates no oscillator')
 
 audio.playScannerBeep(50);
 assert.equal(context.oscillators.length, 1);
-assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.24,
-  '50% produces the compatibility gain of 0.24');
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.3,
+  '50% produces the new gain of 0.30');
 
 audio.playScannerBeep(100);
 assert.equal(context.oscillators.length, 2);
-assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.48,
-  '100% produces the configured maximum gain of 0.48');
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.6,
+  '100% produces the configured maximum gain of 0.60');
+assert.equal(context.oscillators.at(-1).stoppedAt, context.currentTime + 0.14,
+  'beep oscillator runs for 140 ms');
 
 store.updateScannerSettings({ beepVolume: 70, vibrationEnabled: true });
 await feedback.previewScannerBeep();
-assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.336,
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.42,
   'preview reads the latest persisted setting, not a stale captured value');
 
 feedback.playScannerFeedback();
-assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.336,
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.42,
   'accepted-result feedback uses the same current volume as preview');
 assert.deepEqual(vibrationCalls, [25], 'enabled vibration sends one 25 ms pulse');
 
@@ -120,4 +130,14 @@ store.updateScannerSettings({ beepVolume: 0, vibrationEnabled: true });
 assert.doesNotThrow(() => feedback.playScannerFeedback(),
   'missing Vibration API is non-fatal and cannot block accepted-result handling');
 
-console.log('Scanner Web Audio runtime gain, preview synchronization and vibration policy tests passed.');
+// Safari may interrupt a context during backgrounding; resume it from the next gesture.
+context.state = 'suspended';
+await audio.unlockScannerAudio();
+assert.equal(context.state, 'running', 'a suspended context resumes on the next user gesture');
+
+context.state = 'closed';
+await audio.unlockScannerAudio();
+assert.equal(MockAudioContext.instances.length, 2, 'a closed context is replaced with a fresh context');
+assert.equal(MockAudioContext.instance.state, 'running', 'the replacement context resumes from the gesture');
+
+console.log('Scanner Web Audio runtime lifecycle, gain, duration, preview synchronization and vibration tests passed.');
