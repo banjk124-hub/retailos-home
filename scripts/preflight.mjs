@@ -19,7 +19,7 @@ const checks = [
     args: ["scripts/test-scanner-lifecycle.mjs"],
   },
   {
-    name: "Scanner presentation layout readiness tests",
+    name: "Scanner presentation ownership tests",
     command: process.execPath,
     args: ["scripts/test-scanner-presentation.mjs"],
   },
