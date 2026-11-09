@@ -31,9 +31,30 @@ export async function applyScannerTorch(
   if (!current.supported) return current;
 
   try {
-    const constraints: MediaTrackConstraints = {
-      advanced: [{ torch: enabled } as TorchConstraintSet],
-    };
+    // applyConstraints replaces omitted custom constraints. Preserve the
+    // current camera request and, where getConstraints is unavailable, pin
+    // the active dimensions/frame rate reported by getSettings().
+    let existing: MediaTrackConstraints = {};
+    try {
+      existing = track.getConstraints?.() ?? {};
+    } catch {
+      existing = {};
+    }
+    const settings = track.getSettings?.() as TorchSettings | undefined;
+    const constraints: MediaTrackConstraints = { ...existing };
+    if (constraints.width === undefined && typeof settings?.width === 'number') {
+      constraints.width = { exact: settings.width };
+    }
+    if (constraints.height === undefined && typeof settings?.height === 'number') {
+      constraints.height = { exact: settings.height };
+    }
+    if (constraints.frameRate === undefined && typeof settings?.frameRate === 'number') {
+      constraints.frameRate = { exact: settings.frameRate };
+    }
+    constraints.advanced = [
+      ...(existing.advanced ?? []),
+      { torch: enabled } as TorchConstraintSet,
+    ];
     await track.applyConstraints(constraints);
     const after = readScannerTorchState(track);
     return {
