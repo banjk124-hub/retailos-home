@@ -1,3 +1,15 @@
+### 2026-11-10 — SCAN-02 pure preview-to-source geometry mapping
+- Intent: implement the pure geometry transform required before Home/Stocktake ROI integration.
+- Base: SCAN-01 merge commit `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
+- Branch: `feat/scanner-preview-source-geometry`.
+- Files: `src/platform/scanner/scannerGeometry.ts`, `scripts/test-scanner-geometry.mjs`, `scripts/preflight.mjs`, and synchronized SCAN-02 architecture/roadmap/status/handoff/acceptance records.
+- Behavior: adds pure mapping for CSS object-fit modes, normalized object-position, visible-content intersection and horizontal mirror. No runtime consumer is wired.
+- Tests: deterministic tests cover portrait/landscape cover crop, object-position, contain letterbox, fill/none/scale-down, mirror and invalid input. PR CI pending.
+- Unverified: real iOS Safari/Android Chrome geometry and reticle alignment are deferred to SCAN-03 after both modules are wired.
+- Risks / rollback: low runtime risk; no camera/session/decoder/UI/CSS/business code changed. Revert the SCAN-02 commits if mapping contract review or CI fails.
+
+---
+
 ### 2026-11-09 — PR #53 opt-in Android Torch diagnostics
 
 - User confirms PR #52 merged/deployed; iOS works but Android Chrome on Samsung Galaxy S23 Ultra still hides Flash in both Home and Stocktake.
