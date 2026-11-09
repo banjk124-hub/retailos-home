@@ -1,3 +1,19 @@
+# SCAN-03 acceptance — module-owned preview region integration (2026-11-10)
+
+- [x] Home retains its own video element and reticle; only a ref is attached for measurement.
+- [x] Stocktake retains its own video element and reticle; only a ref is attached for measurement.
+- [x] Measurement adapter clips the reticle to visible image content and maps to source-frame normalized coordinates.
+- [x] Active session stores region updates in place; no session/camera/decoder/frame-loop restart is requested.
+- [x] SCAN-03 leaves decoder input full-frame; strict ROI decode remains deferred to SCAN-04.
+- [ ] New preview-region and in-place update regression tests pass in full preflight.
+- [ ] TypeScript, production build and GitHub Pages build pass on final PR head.
+- [ ] GitHub Actions CI passes.
+- [ ] Physical iOS Safari/PWA reticle alignment QA.
+- [ ] Physical Android Chrome/PWA reticle alignment QA.
+- [ ] Existing Home lookup and Stocktake form-fill/explicit-save flows are rechecked after deployment.
+
+---
+
 # SCAN-02 acceptance — pure preview/source geometry mapping (merged main, 2026-11-10)
 
 - [x] Pure mapper accepts explicit source and preview dimensions.
