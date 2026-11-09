@@ -1,4 +1,4 @@
-# SCAN-02 acceptance — pure preview/source geometry mapping
+# SCAN-02 acceptance — pure preview/source geometry mapping (merged main, 2026-11-10)
 
 - [x] Pure mapper accepts explicit source and preview dimensions.
 - [x] CSS `fill`, `contain`, `cover`, `none`, and `scale-down` sizing rules are represented.
@@ -8,9 +8,9 @@
 - [x] Invalid input returns an explicit failure; no full-frame fallback is produced.
 - [x] Geometry utility does not read DOM/window/video or own camera/session resources.
 - [x] Geometry regression script is registered in `npm run preflight`.
-- [ ] Geometry regression, TypeScript production build and full preflight pass on PR head.
-- [ ] GitHub Actions CI passes.
-- [ ] Home and Stocktake real-device geometry QA — deferred to SCAN-03 integration.
+- [x] Geometry regression, TypeScript production build and full preflight pass on merged main commit `891a3a6c8c85442d0b4a253c1fca43b36b590f1c` (GitHub Actions run #299).
+- [x] GitHub Actions main CI run #299 passed.
+- [ ] Home and Stocktake real-device geometry alignment QA — required after SCAN-03 integration; not claimed by the SCAN-02 deployment smoke test.
 
 ---
 
