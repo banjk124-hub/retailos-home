@@ -1,22 +1,18 @@
 # RetailOS — Engineering Roadmap
 
 Last reviewed: 2026-11-09
-Status: active working plan; verify source and implementation status before starting a phase.
+Status: active working plan.
 
-## Current execution order — optional scanner Torch capability (2026-11-09)
+## Current execution order — Android Torch capability timing
 
-1. PR #49 geometry-neutral video readiness is merged, deployed and user-tested.
-2. PR #50 documentation synchronization is incorporated into the current main baseline; its full CI passed.
-3. **Active implementation: PR #51 — optional camera Torch control.** The shared platform session detects and controls Torch when the active track advertises support; Home and Stocktake independently expose controls.
-4. Torch is optional and defaults off. Unsupported/rejected Torch requests must never prevent camera preview or barcode scanning.
-5. PR #51 is ready for review. GitHub Actions run #232 passed the full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`; physical iOS Safari/PWA + Android Chrome/PWA acceptance remains required before merge/deploy.
+1. PR #51 optional Torch capability is merged, deployed and user-tested. iOS works; Android currently hides the Flash control.
+2. **Active fix: PR #52 — defer capability discovery until after video playback and first decoded frame.** This addresses Chromium's documented capability availability timing without changing camera acquisition or module presentation.
+3. Run full automated preflight, then retest Android Chrome/PWA on the same physical device. Inspect safe capability diagnostics.
+4. If Torch is still `not-exposed` after the first frame, establish the device/browser track's actual support before considering another API or platform-specific path.
 
-**Architecture boundary:** platform engine owns camera/decoder/session/resource lifecycle, technical media readiness and the optional Torch capability/control API. It does not own feature DOM geometry or visual composition. Modules decide whether and how to present a Torch control.
-
-**Protected contracts:** camera lease/refcount and handoff, existing getUserMedia constraints/autofocus, first-frame readiness, lifecycle technical events, Recovery, decoder behavior/cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save and module-specific close transitions remain intact.
+**Protected contracts:** camera lease/refcount, 1280×720 / 30 FPS camera request, autofocus, first-frame readiness, lifecycle/recovery, decoder cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save, and independent module presentation.
 
 ---
-
 ## Historical source re-baseline — main c7146b55 (pre lifecycle contract)
 
 Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md. The iOS viewport/layout observations in this historical snapshot predate PR #49; they are not a current engine startup requirement. PR #49 removes the DOM geometry gate, and the user reports no issue after deployment/testing.

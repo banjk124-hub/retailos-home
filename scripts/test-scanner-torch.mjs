@@ -65,6 +65,22 @@ assert.deepEqual(readScannerTorchState(unsupportedTrack), {
 assert.equal((await applyScannerTorch(unsupportedTrack, true)).supported, false);
 assert.equal(unsupportedApplyCount, 0, 'unsupported devices are never sent torch constraints');
 
+// Chromium can expose track capabilities only after the camera has begun
+// producing live frames. The engine must re-read capabilities after preview
+// readiness instead of permanently caching the immediate post-acquisition value.
+let cameraStreaming = false;
+const lateCapabilityTrack = {
+  readyState: 'live',
+  getCapabilities: () => cameraStreaming ? ({ torch: true }) : ({}),
+  getSettings: () => ({ torch: false }),
+  applyConstraints: async () => undefined,
+};
+assert.equal(readScannerTorchState(lateCapabilityTrack).supported, false);
+cameraStreaming = true;
+assert.equal(readScannerTorchState(lateCapabilityTrack).supported, true,
+  'Torch capability becomes visible after camera streaming starts');
+
+
 const failingTrack = {
   ...supportedTrack,
   applyConstraints: async () => { throw new Error('hardware rejected torch'); },
@@ -80,6 +96,15 @@ assert.match(contract, /setTorchEnabled\(enabled: boolean\): Promise<ScannerTorc
 
 const session = await readFile(new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url), 'utf8');
 assert.match(session, /bindTorchTrack\(stream\)/);
+const videoPlayIndex = session.indexOf('await this.video.play()');
+const videoFrameReadyIndex = session.indexOf('await waitForVideoFrameReady(this.video)');
+const torchBindIndex = session.indexOf('this.bindTorchTrack(stream)');
+assert.ok(videoPlayIndex >= 0 && videoFrameReadyIndex > videoPlayIndex,
+  'camera playback and fresh-frame readiness precede Torch capability discovery');
+assert.ok(torchBindIndex > videoFrameReadyIndex,
+  'Torch capability is bound only after the first live video frame');
+assert.match(session, /Torch capability/);
+
 assert.match(session, /this\.torchTrack = null/);
 assert.match(session, /generation !== this\.generation \|\| this\.torchTrack !== track/);
 
