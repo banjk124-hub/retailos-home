@@ -43,6 +43,6 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Intent: wire each module's existing reticle to source-frame geometry without changing presentation or scanner lifecycle.
 - Files: feature-level preview measurement service/hook, scanner session region contract, Home/Stocktake ref wiring, regression tests and synchronized SCAN-03 documentation.
 - Behavior: map measured reticle rectangles through visible-content bounds and the SCAN-02 mapper; store source region in place. Decoder still receives the full video.
-- Checks: automated geometry/session-update suite and full CI pending.
+- Checks: automated geometry/session-update suite, TypeScript, production/Pages builds and full preflight passed in GitHub Actions run #302.
 - Unverified: real iOS Safari/PWA and Android Chrome/PWA reticle alignment.
 - Risks / rollback: no decoder ROI or camera/lifecycle changes; revert SCAN-03 if module geometry or in-place update contract fails.
