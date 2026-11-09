@@ -1,3 +1,38 @@
+# Current architecture baseline — 2026-11-10
+**Canonical source audit:** docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md  
+**Audited main:** 09cd3b5117ea38a16dd991f74320835b67ea04b5
+
+## Application boundary
+- App shell/auth journey: App.tsx and features/auth.
+- Home/module discovery/notices: features/home.
+- Snapshot API/cache: features/data/moduleDataService.ts.
+- Local Stocktake workflow: features/stocktake and IndexedDB database retailos-stocktake.
+- Shared scanner: shared camera lease service → platform UniversalScannerSession → ZXing decoder adapter → barcode validation → feature callback.
+- PWA lifecycle/cache: main.tsx, public/sw.js, manifest and GitHub Pages workflows.
+- Shared presentation system: brand, theme, glass, motion, navigation and ordered global CSS imports.
+
+## Current verified product boundary
+The login path is frontend-only prototype matching, not secure authorization. Snapshot sync is implemented as a service but is not wired to an application caller/token provider. Only Stocktake has a complete module workflow; its data is device-local. Push delivery requires a backend not verified here.
+
+## Accepted scanner invariants remain in force
+- Camera lease/session resource ownership and lifecycle remain platform-owned.
+- Preview readiness is technical media readiness, not CSS layout readiness.
+- No DOM geometry barrier may be reintroduced into camera startup (ADR-015).
+- Feature modules own UI, reticle, transitions, snapshots, exit timing and business result handling.
+- The platform emits technical lifecycle milestones only; no presentation completion API.
+- Home and Stocktake remain separate presentation implementations.
+- Barcode whitelist/validation, camera release ordering, single/continuous semantics and existing business flows are protected.
+
+## Proposed Scanner region boundary — pending user approval
+The module owns its reticle and active scan region. It resolves its displayed rectangle into a normalized source-frame ROI, using explicit display/source geometry and object-fit/object-position/mirror information. A pure shared mapping helper may be used, but the platform session must not inspect DOM geometry or wait for layout before camera startup.
+
+The shared hook/session accepts region updates without recreating the camera stream, session, decoder or frame loop. The decoder consumes only the resolved region once both modules have migrated. During migration, legacy behavior remains available until the new input is valid. Invalid/missing strict-mode ROI must fail closed rather than silently scan the entire frame.
+
+Camera request configuration is a separate module-owned input passed through the existing tap-origin lease request. Preserve current default environment / ideal 1280×720 / ideal-max 30 FPS until a measured and separately approved camera-configuration PR.
+
+Do not implement the proposed boundary until SCAN-01's exact types, files and tests are reviewed. See the comprehensive audit for the PR sequence and no-go list.
+
+---
 ## ADR-018 — Capability-gated camera Torch; investigation tooling retired (2026-11-09)
 
 **Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing were removed by PR #55; GitHub Actions run #42572378379 passed full preflight. User confirms PR #55 was merged and deployed.
@@ -524,3 +559,33 @@ No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, came
 - Regression test models a track whose Torch capability is absent before streaming and becomes available after streaming starts.
 - Source-order assertion verifies Torch discovery occurs after playback and first-frame readiness.
 - Physical Android Chrome/PWA retest must inspect the new `[RetailOS Scanner] Torch capability` diagnostic. If it reports `not-exposed` after the first live frame, investigate that browser/device's camera track support rather than forcing the UI control visible.
+
+
+## ADR-021 — Module-owned scan region and bounded recognition recovery (2026-11-10)
+
+**Status:** Proposed for user review. Documentation/change-map only; no runtime contract or implementation is merged by this record.
+
+### Context
+The current shared scanner is already used by Home and Stocktake. Camera lease/lifecycle/preview, validation, Torch and shared feedback are established. The current ZXing adapter decodes the full frame before a fixed centered crop, so the decoder does not obey each module's actual reticle. Home and Stocktake have different preview layouts and CSS crop behavior. The current engine must not regain a DOM-layout startup barrier.
+
+### Proposed decision
+- Each consuming module owns the active scan rectangle and its preview/presentation policy.
+- A module-side adapter or pure shared geometry helper resolves the displayed rectangle into normalized coordinates relative to the unrotated source frame. Mapping must account for object-fit, object-position, crop, responsive dimensions and mirror state when present.
+- The platform session receives a resolved region and forwards it to the decoder. The engine does not inspect CSS or infer the user's intended reticle.
+- Region updates must be applied without recreating camera stream, session, decoder or frame loop.
+- Camera capture constraints are a separate module-owned request passed through the existing tap-origin lease path. Current environment / ideal 1280×720 / 30 FPS defaults remain unchanged until measured and separately approved.
+- After both consumers provide valid regions, strict ROI-only decoding becomes the normal path; a barcode outside the active ROI must not be accepted. Migration must be backward-compatible until both consumers are wired.
+- Recovery is conditional, bounded and measurement-led. A normal no-result frame does not trigger expensive recovery. No always-on AI/object detection/OCR or unbounded rotation/scale variants.
+- Keep the existing EAN-8/EAN-13/CODE-128 whitelist, EAN check-digit validation and opaque CODE-128 payload behavior.
+
+### Protected boundaries
+- Do not alter camera lease/refcount, cancellation, session lifecycle, preview readiness, foreground recovery or release ordering.
+- Do not reintroduce a DOM geometry gate into startup (ADR-015 remains accepted).
+- Do not move reticle UI, transitions, exit decisions or business callbacks into the platform engine.
+- Do not merge Home and Stocktake presentation implementations.
+
+### Planned slices
+SCAN-01 input/module-config contract → SCAN-02 geometry mapping → SCAN-03 module integration → SCAN-04 ROI-only baseline → SCAN-05 benchmark → conditional recovery/rotation/small-code work → cross-platform resource validation.
+
+### Acceptance
+The detailed file-level Change Map, contract fields, compatibility default, invalid-region behavior and tests must be approved before implementation. See RETAILOS_CURRENT_STATE_2026-11-10.md.
