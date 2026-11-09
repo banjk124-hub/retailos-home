@@ -44,6 +44,11 @@ const checks = [
     args: ["scripts/test-scanner-geometry.mjs"],
   },
   {
+    name: "Scanner module-owned preview region integration tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-preview-region.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],
