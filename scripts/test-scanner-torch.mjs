@@ -11,12 +11,15 @@ const { readScannerTorchState, applyScannerTorch } = await import(helperUrl);
 
 let enabled = false;
 let applyCount = 0;
+let lastAppliedConstraints;
 const supportedTrack = {
   readyState: 'live',
   getCapabilities: () => ({ torch: true }),
+  getConstraints: () => ({ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 } }),
   getSettings: () => ({ torch: enabled }),
   applyConstraints: async (constraints) => {
     applyCount += 1;
+    lastAppliedConstraints = constraints;
     enabled = constraints.advanced[0].torch;
   },
 };
@@ -26,9 +29,25 @@ assert.deepEqual(readScannerTorchState(supportedTrack), {
 const turnedOn = await applyScannerTorch(supportedTrack, true);
 assert.deepEqual(turnedOn, { supported: true, enabled: true, pending: false });
 assert.equal(applyCount, 1, 'torch is applied through the active video track constraints');
+assert.deepEqual(lastAppliedConstraints.width, { ideal: 1280 }, 'torch toggle preserves the width constraint');
+assert.deepEqual(lastAppliedConstraints.height, { ideal: 720 }, 'torch toggle preserves the height constraint');
+assert.deepEqual(lastAppliedConstraints.frameRate, { ideal: 30, max: 30 }, 'torch toggle preserves the frame-rate constraint');
+assert.deepEqual(lastAppliedConstraints.advanced.at(-1), { torch: true });
 const turnedOff = await applyScannerTorch(supportedTrack, false);
 assert.equal(turnedOff.enabled, false);
 assert.equal(applyCount, 2, 'torch can be disabled through the same track');
+
+let fallbackConstraints;
+const settingsOnlyTrack = {
+  readyState: 'live',
+  getCapabilities: () => ({ torch: true }),
+  getSettings: () => ({ torch: false, width: 1280, height: 720, frameRate: 30 }),
+  applyConstraints: async (constraints) => { fallbackConstraints = constraints; },
+};
+await applyScannerTorch(settingsOnlyTrack, true);
+assert.deepEqual(fallbackConstraints.width, { exact: 1280 }, 'settings fallback preserves active width');
+assert.deepEqual(fallbackConstraints.height, { exact: 720 }, 'settings fallback preserves active height');
+assert.deepEqual(fallbackConstraints.frameRate, { exact: 30 }, 'settings fallback preserves active frame rate');
 
 let unsupportedApplyCount = 0;
 const unsupportedTrack = {
