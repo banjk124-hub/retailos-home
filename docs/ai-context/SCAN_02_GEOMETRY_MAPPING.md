@@ -19,13 +19,14 @@ Public API:
 - `ScannerObjectPosition`
 - `ScannerPreviewGeometry`
 - `ScannerGeometryMappingResult`
+- `parseScannerObjectPosition(value)` — resolves common computed CSS keywords/percentages to normalized fractions; returns `null` for unsupported length/calc forms.
 - `mapPreviewScanRegionToSourceFrame(region, geometry)`
 
 Inputs:
 - `sourceWidth` / `sourceHeight`: intrinsic decoded camera frame dimensions (for video, `videoWidth` / `videoHeight`).
 - `previewWidth` / `previewHeight`: video element content-box dimensions in CSS pixels.
 - `objectFit`: `fill`, `contain`, `cover`, `none`, or `scale-down`.
-- `objectPosition`: normalized free-space alignment fractions; 0 = start, 0.5 = center, 1 = end.
+- `objectPosition`: normalized free-space alignment fractions; 0 = start, 0.5 = center, 1 = end. Use `parseScannerObjectPosition()` for common computed CSS keywords/percentages; unsupported forms must be handled as an explicit mapping/configuration failure.
 - `mirrored`: explicit CSS horizontal mirror state.
 - `region`: a normalized rectangle relative to the actually visible image-content bounds.
 
@@ -69,7 +70,7 @@ File: `scripts/test-scanner-geometry.mjs`; registered in `npm run preflight`.
 
 Deterministic cases:
 - `cover` in portrait and landscape viewports, including horizontal and vertical crop.
-- `object-position` start/center/end alignment.
+- `object-position` start/center/end alignment and computed CSS keyword/percentage parsing.
 - `contain` and exclusion of letterbox area.
 - `fill`, `none`, and `scale-down`.
 - Mirrored preview coordinate conversion.
