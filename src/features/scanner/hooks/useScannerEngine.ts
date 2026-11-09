@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerTorchState } from '../../../platform/scanner/contracts';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerSourceScanRegion, type ScannerTorchState } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -274,6 +274,12 @@ export function useScannerEngine({
     return session.setTorchEnabled(enabled);
   }, []);
 
+  const setScanRegion = useCallback((region: ScannerSourceScanRegion | null) => {
+    // Region publication is an in-place session update. It must not alter
+    // session generation, decoder ownership, frame cadence or camera leases.
+    sessionRef.current?.setScanRegion(region);
+  }, []);
+
   const closeScanner = useCallback(async () => {
     desiredActiveRef.current = false;
     const pendingLeaseRequest = cameraLeaseRequestRef.current;
@@ -361,7 +367,8 @@ export function useScannerEngine({
   }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, setTorchEnabled,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch,
+    setTorchEnabled, setScanRegion,
     startScanner, pauseScanner, closeScanner, prepareAudio: unlockScannerAudio,
   };
 }
