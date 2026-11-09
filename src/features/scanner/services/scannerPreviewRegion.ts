@@ -43,14 +43,15 @@ function resolveHorizontalMirror(transform: string): boolean | null {
   const values = match[1].split(',').map((part) => Number(part.trim()));
   if (values.length !== 6 || values.some((part) => !Number.isFinite(part))) return null;
 
-  const [a, b, c, d] = values;
+  const [a, b, c, d, e, f] = values;
   if (Math.abs(b) > EPSILON || Math.abs(c) > EPSILON
-    || Math.abs(a) <= EPSILON || Math.abs(d) <= EPSILON) return null;
+    || Math.abs(e) > EPSILON || Math.abs(f) > EPSILON) return null;
 
-  // The mapper supports identity/uniform scale and a horizontal reflection.
-  // Rotation, skew and vertical reflection are deliberately rejected.
-  if (a < 0 && d > 0) return true;
-  if (a > 0 && d > 0) return false;
+  // The sibling reticle is not transformed with the video. Accept only the
+  // identity matrix or an exact horizontal reflection; reject scale,
+  // translation, rotation, skew and vertical reflection rather than guessing.
+  if (Math.abs(a - 1) <= EPSILON && Math.abs(d - 1) <= EPSILON) return false;
+  if (Math.abs(a + 1) <= EPSILON && Math.abs(d - 1) <= EPSILON) return true;
   return null;
 }
 
