@@ -65,3 +65,22 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gate
 
 ### Acceptance
 See `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
+
+
+## ADR-023 — Pure preview-to-source scanner geometry mapping (2026-11-10)
+**Status:** Implemented on SCAN-02 branch; awaiting PR CI and review. Runtime consumers remain unwired until SCAN-03.
+
+### Decision
+- Add a pure mapper from `preview-content-normalized` to `source-frame-normalized` coordinates.
+- Model CSS `object-fit` (`fill`, `contain`, `cover`, `none`, `scale-down`), normalized `object-position`, visible image intersection and explicit horizontal mirroring.
+- Require callers to provide intrinsic source dimensions and the video element's measured content-box dimensions.
+- Return a discriminated success/failure result. Invalid input never silently falls back to full-frame geometry.
+
+### Constraints
+- The mapper must not read DOM, window, video elements, media streams, React state or camera/session resources.
+- The platform session must not add a DOM geometry startup gate.
+- Home and Stocktake remain presentation owners; SCAN-02 does not wire or infer their reticles.
+- No camera lifecycle, decoder, ROI decode, barcode policy or CSS changes.
+
+### Acceptance
+See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geometry.mjs`.

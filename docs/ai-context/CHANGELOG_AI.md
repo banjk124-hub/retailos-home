@@ -27,3 +27,12 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Checks: pending PR CI.
 - Unverified: geometry mapping and device behavior are deferred to SCAN-02/03.
 - Risks / rollback: low; no runtime consumer is wired in this PR.
+
+
+## 2026-11-10 — SCAN-02 pure geometry mapper
+- Intent: map module preview regions into source-frame coordinates before ROI decoding.
+- Files: `scannerGeometry.ts`, `test-scanner-geometry.mjs`, `preflight.mjs`, and SCAN-02 docs/status records.
+- Behavior: pure mapping for CSS object-fit, normalized object-position, visible content and mirror transforms; no runtime consumer wired.
+- Checks: deterministic geometry test added to preflight; CI pending.
+- Unverified: real-device Home/Stocktake alignment belongs to SCAN-03.
+- Risks / rollback: no runtime behavior changed; revert SCAN-02 branch if contract or tests fail.

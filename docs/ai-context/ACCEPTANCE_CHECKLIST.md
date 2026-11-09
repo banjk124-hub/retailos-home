@@ -1,3 +1,19 @@
+# SCAN-02 acceptance — pure preview/source geometry mapping
+
+- [x] Pure mapper accepts explicit source and preview dimensions.
+- [x] CSS `fill`, `contain`, `cover`, `none`, and `scale-down` sizing rules are represented.
+- [x] Normalized object-position controls crop alignment for positive and negative free space.
+- [x] Visible content bounds exclude letterbox/pillarbox space.
+- [x] Horizontal mirror is inverted before source-frame normalization.
+- [x] Invalid input returns an explicit failure; no full-frame fallback is produced.
+- [x] Geometry utility does not read DOM/window/video or own camera/session resources.
+- [x] Geometry regression script is registered in `npm run preflight`.
+- [ ] Geometry regression, TypeScript production build and full preflight pass on PR head.
+- [ ] GitHub Actions CI passes.
+- [ ] Home and Stocktake real-device geometry QA — deferred to SCAN-03 integration.
+
+---
+
 # SCAN-01 acceptance — input and module configuration contract
 
 - [x] Preview-content and source-frame coordinate spaces have distinct discriminators.
