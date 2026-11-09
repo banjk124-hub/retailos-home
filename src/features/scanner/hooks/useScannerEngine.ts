@@ -160,7 +160,7 @@ export function useScannerEngine({
     sessionRef.current = session;
     recoveryRetiredSessionRef.current = null;
     return session;
-  }, [audioFeedback, diagnosticsEnabled, hapticFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
