@@ -5,9 +5,9 @@
 - [x] Measurement adapter clips the reticle to visible image content and maps to source-frame normalized coordinates.
 - [x] Active session stores region updates in place; no session/camera/decoder/frame-loop restart is requested.
 - [x] SCAN-03 leaves decoder input full-frame; strict ROI decode remains deferred to SCAN-04.
-- [x] New preview-region and in-place update regression tests pass in full preflight (GitHub Actions run #302).
-- [x] TypeScript, production build and GitHub Pages build pass on final PR head (run #302).
-- [x] GitHub Actions CI run #302 passes.
+- [x] New preview-region and in-place update regression tests pass in full preflight (GitHub Actions run #309).
+- [x] TypeScript, production build and GitHub Pages build pass on final PR head (run #309).
+- [x] GitHub Actions CI run #309 passes.
 - [ ] Physical iOS Safari/PWA reticle alignment QA.
 - [ ] Physical Android Chrome/PWA reticle alignment QA.
 - [ ] Existing Home lookup and Stocktake form-fill/explicit-save flows are rechecked after deployment.
