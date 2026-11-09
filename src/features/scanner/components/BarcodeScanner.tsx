@@ -6,6 +6,7 @@ import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
 import { useScannerViewportStyle } from '../hooks/useScannerViewportStyle';
 import { captureScannerPreviewFrame } from '../services/captureScannerPreviewFrame';
+import ScannerTorchDiagnosticPanel from './ScannerTorchDiagnosticPanel';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -114,5 +115,6 @@ export default function BarcodeScanner({
         {scanner.error && <div className="barcode-scanner-error-panel" role="alert"><span>{scanner.error}</span><button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button></div>}
       </div>
     </div>
+    {scanner.diagnosticsEnabled && <ScannerTorchDiagnosticPanel samples={scanner.torchDiagnostics} />}
   </section>;
 }
