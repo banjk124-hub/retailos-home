@@ -102,6 +102,7 @@ export function useScannerEngine({
   }, []);
 
   const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
+    setTorch(EMPTY_TORCH_STATE);
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
       profile: 'HIGH',
@@ -234,6 +235,7 @@ export function useScannerEngine({
       setError('');
       setIsPreviewReady(false);
       setIsScanning(false);
+      setTorch(EMPTY_TORCH_STATE);
       setIsStarting(true);
 
       // Detach the old session first so late callbacks cannot mutate the new UI.
@@ -292,6 +294,7 @@ export function useScannerEngine({
     recoveryRetiredSessionRef.current = null;
     await session?.close();
     if (mountedRef.current) {
+      setTorch(EMPTY_TORCH_STATE);
       setIsStarting(false);
       setIsPreviewReady(false);
       setIsScanning(false);
