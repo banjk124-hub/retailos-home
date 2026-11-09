@@ -15,7 +15,7 @@ let lastAppliedConstraints;
 const supportedTrack = {
   readyState: 'live',
   getCapabilities: () => ({ torch: true }),
-  getConstraints: () => ({ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 } }),
+  getConstraints: () => lastAppliedConstraints ?? ({ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 } }),
   getSettings: () => ({ torch: enabled }),
   applyConstraints: async (constraints) => {
     applyCount += 1;
@@ -36,6 +36,7 @@ assert.deepEqual(lastAppliedConstraints.advanced.at(-1), { torch: true });
 const turnedOff = await applyScannerTorch(supportedTrack, false);
 assert.equal(turnedOff.enabled, false);
 assert.equal(applyCount, 2, 'torch can be disabled through the same track');
+assert.deepEqual(lastAppliedConstraints.advanced, [{ torch: false }], 'disable replaces the prior torch:true constraint instead of stacking contradictory entries');
 
 let fallbackConstraints;
 const settingsOnlyTrack = {
