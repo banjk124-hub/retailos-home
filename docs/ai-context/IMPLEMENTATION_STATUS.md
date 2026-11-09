@@ -1,28 +1,40 @@
-# Current implementation status — PR #46 reverted; PR 47A restores module presentation (2026-11-08)
+# Current implementation status — PR #49 geometry-neutral video readiness (2026-11-09)
 
-Last reconciled: 2026-11-08.
+Last reconciled: 2026-11-09.
+Current main: `1764c858a7d7855950ebe328a3a653d6935fa796` (merge commit for PR #49).
 
-## Merged and verified
-- **PR B — Lifecycle Contract:** merged. Engine-owned session identity and lifecycle milestones are established.
-- **PR C1 — Home lifecycle migration:** merged. Home waits for feature presentation, camera release and disposal before unmount.
-- **PR #43 — Foreground Recovery:** merged; user confirms the former preview-shrink issue no longer reproduces.
-- **PR #45 / PR C2 — Stocktake lifecycle migration:** merged. Stocktake uses the shared lifecycle observer and four-milestone exit gate. User reports the merged implementation runs correctly without issues.
+## Merged and verified scanner foundations
+- **PR B — Lifecycle Contract:** merged. Engine-owned session identity and technical lifecycle milestones are established.
+- **PR C1 — Home lifecycle migration:** merged. Home owns its local presentation completion and joins it with technical close/resource milestones.
+- **PR #43 — Foreground Recovery:** merged. The shared engine serializes suspension/recovery and replaces the disposable video surface after a real background suspension.
+- **PR #45 / PR C2 — Stocktake lifecycle migration:** merged. Stocktake owns its local close gate and preserves form-fill/explicit-save behavior.
+- **PR #47 / 47A — Restore module-owned preview presentation:** merged. Home and Stocktake render and reveal their own video surfaces; no shared curtain/component is used.
+- **PR #48 — Technical-only lifecycle separation:** merged. The platform lifecycle contract contains technical execution/resource events only; presentation completion is not sent to the engine.
+- **PR #49 — Geometry-neutral engine video readiness:** merged. Removed the DOM geometry barrier and obsolete `videoPresentationLayout.ts`; engine startup no longer requires video/container geometry to match or stabilize.
 
-## Current source state — PR 47A restore
-- PR #46 was merged, then physical-device testing exposed an iOS opening regression (black screen, undersized video, abrupt resize) and visibly choppy curtain transition on Android.
-- PR 47A restores Home and Stocktake video markup/CSS and their independent `has-preview` presentation behavior from the exact pre-PR #46 baseline `af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`.
-- The shared `ScannerPreviewSurface` and curtain CSS are removed. The two modules once again own their respective video presentation, layout selectors and reveal mechanics.
-- `isPreviewReady` remains a shared engine signal; it is not a shared UI implementation contract.
-- Camera acquisition, frame readiness detection, decoder initialization, Recovery, lease ownership, barcode validation, Stocktake business and exit handoff are unchanged.
+## Current source state — after PR #49
+- `UniversalScannerSession` attaches the acquired stream directly to the supplied video element; it does not inspect parent/container bounds or CSS geometry.
+- `waitForVideoFrameReady()` remains. It checks actual media/frame readiness, including `readyState`, intrinsic `videoWidth/videoHeight`, playback state and fresh-frame evidence. These intrinsic media dimensions are not DOM layout measurements.
+- Startup order remains: stream attachment → playback → usable frame → `onPreviewReady` / lifecycle `READY` → decoder initialization → scanning after decoder readiness.
+- `isPreviewReady` is a technical frame-ready signal, not an instruction for a shared visual layout or reveal animation.
+- Home retains its own `.barcode-scanner-view`, keyed video, `.has-preview` visibility handling and full-surface presentation CSS.
+- Stocktake retains its own `.stocktake-scanner-preview`, keyed video, framed/aspect-ratio presentation and independent `.has-preview` visibility handling.
+- Both modules keep native video opacity at 1 with no opacity transition; their current markup and presentation styles were not modified by PR #49.
+- Camera acquisition/lease ownership, lifecycle contract, Recovery, decoder, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit persistence, snapshots and close flows remain unchanged by PR #49.
 
-## Verification boundary
-- GitHub Actions run #185 passed the complete local-equivalent `npm run preflight`: barcode validation, lifecycle/Stocktake exit-gate tests, presentation layout readiness, TypeScript/Vite production build, GitHub Pages build and diff checks. Run #184 exposed one stale lifecycle assertion expecting feature-owned `<video>` elements; the test was updated to assert the shared preview component contract, and run #185 passed.
-- PR 47A must pass CI and then be retested on the same iOS and Android devices. Verify first open, retry, foreground recovery and reduced-motion behavior. Do not reintroduce a shared visual layer without separate evidence for each module.
-- No merge or deployment has been performed for PR A.
+## Verification and deployment
+- GitHub Actions **run #200** passed the full `npm run preflight`: barcode validation regression, lifecycle regression, presentation-ownership regression, TypeScript/production build, GitHub Pages build and diff checks.
+- User confirms PR #49 was merged, deployed and tested without issues.
+- CI validates source-level regression guards and builds; it is not a hardware simulator. Device/deployment acceptance above is recorded as user-reported validation.
+- No runtime defect or additional implementation task is identified by this audit. Future changes should be issue- or measurement-driven.
 
+## Current scanner documentation
+- Architecture decision: `ARCHITECTURE.md` ADR-015.
+- Current phase/next-work status: `ROADMAP.md`.
+- Detailed source evidence: `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md`.
+- Historical pre-PR #49 observations and implementation records remain below and are not current source truth.
 
 ---
-
 
 # Historical implementation record — PR C1 Home lifecycle migration (2026-11-08)
 
@@ -64,7 +76,7 @@ Review the documentation PR and confirm the revised phase model. Then create sep
 
 Last updated: 2026-11-08
 
-## Current task — technical-only scanner lifecycle separation
+## Historical implementation record — PR #48 technical-only lifecycle separation (merged)
 
 - Baseline: `main` at `7f35943b33fc8ce990be0ebe172e0712ee98572d`; task branch: `refactor/scanner-lifecycle-technical-only`.
 - Objective: remove presentation-completion coupling from the platform lifecycle contract while preserving Home and Stocktake's existing local close gates, animation behavior, camera release timing, barcode delivery, and business flows.
@@ -72,7 +84,7 @@ Last updated: 2026-11-08
 - Home and Stocktake retain local presentation completion and locally join it with technical milestones. Engine no longer receives animation-completion callbacks or retains sessions for presentation.
 - Recovery-retired session retention remains only for close/recovery race handling; it is not a presentation lifecycle owner.
 - GitHub Actions run #42500947176 passed on head `88d898735105d5bfc628503637cc85d9707bf85e`: scanner barcode validation, scanner lifecycle regression suite, TypeScript/production build, Pages build, and diff checks all passed through `npm run preflight`.
-- Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA camera QA remain pending; CI does not substitute for those checks.
+- At the time of this PR #48 record, local Windows/PowerShell and device QA were still pending. PR #49 is the later main baseline; see the current verification block at the top.
 - No changes are intended to camera acquisition, decoder cadence/validation, single/continuous result semantics, snapshot capture order, Stocktake persistence, PWA, authentication, or deployment.
 
 ## Historical implementation record
