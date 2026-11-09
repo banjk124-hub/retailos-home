@@ -1,11 +1,13 @@
-## Current project focus — optional scanner Torch capability PR #51 (2026-11-09)
+## Current project focus — scanner Torch investigation closed (2026-11-09)
 
-- Current main base for PR #51: `6f821bde716c958147113f66d626c53882414108`.
-- Active work is on `feat/scanner-torch-control` (PR #51 (ready for review)). Engine exposes support/state/control; Home and Stocktake own independent flash controls.
-- Torch is opt-in and unsupported devices must continue scanning normally. CI run #232 passed the full preflight; physical-device acceptance is pending. Do not merge/deploy without explicit approval.
-- Architecture decision: `ARCHITECTURE.md` ADR-016. Source audit and QA gates: `SCANNER_TORCH_AUDIT_2026-11-09.md` and `ACCEPTANCE_CHECKLIST.md`.
+- PR #51/#52: production capability-gated Torch control is merged.
+- PR #53/#54: Android diagnostics and compatibility probe completed; their findings are recorded in `ARCHITECTURE.md` ADR-018 and `SCANNER_TORCH_AUDIT_2026-11-09.md`.
+- User confirms iOS Flash works. Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch on its active camera track; an API-accepted ON/OFF probe did not illuminate the physical LED.
+- Decision: retain the current PWA camera architecture. Show Flash only when the active track advertises Torch. Unsupported Android devices continue scanning without Flash.
+- Cleanup PR #55 removes temporary diagnostics/probe code and updates technical documentation. GitHub Actions run #42572378379 passed full preflight on the code head; PR remains open, unmerged and undeployed.
 
 ---
+
 # Historical engineering focus snapshot — 2026-11-08
 
 Historical source baseline: c7146b55f0c2210cd7b8474c6a72b1c915985793 (pre lifecycle contract and Recovery). PR #31/#32 history below is not the current implementation state.

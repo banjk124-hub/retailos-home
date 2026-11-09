@@ -3,17 +3,18 @@
 Last reviewed: 2026-11-09
 Status: active working plan.
 
-## Current execution order — cross-device Torch compatibility
+## Current execution order — scanner Torch investigation closed
 
-1. PR #51 optional Torch control: merged, deployed and user-tested; iOS works, Android control is missing.
-2. PR #52 deferred capability discovery: merged, deployed and user-tested; Android control remains missing.
-3. **Active: PR #53 — on-device diagnostics.** Capture timed active-track capability snapshots and surface them on mobile without DevTools.
-4. Use real-device evidence to determine whether the failure is capability exposure, browser support, or state propagation.
-5. Only after evidence, decide whether a bounded capability-adapter improvement or a different deployment architecture is justified. Do not add native dependencies or device-specific branches speculatively.
+1. PR #51/#52: production Torch capability detection and feature-owned controls are merged.
+2. PR #53/#54: on-device diagnostics and the explicit compatibility pulse completed the investigation.
+3. Evidence: iOS Flash works; Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch on the active track. The explicit ON/OFF probe was API-accepted but did not illuminate the physical LED.
+4. Decision: retain capability-gated behavior. Do not bypass capability detection, add device/browser heuristics, or introduce a native camera stack solely for Flash.
+5. **Cleanup PR #55:** temporary diagnostic sampling, probe code, UI and stale runbook have been removed; production Torch adapter and regression coverage remain. CI run #42572378379 passed full preflight. PR is open, unmerged and undeployed.
 
 **Protected contracts:** camera lease/refcount, current camera request/constraints, autofocus, first-frame readiness, lifecycle/recovery, decoder cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save, and independent module presentation.
 
 ---
+
 ## Historical source re-baseline — main c7146b55 (pre lifecycle contract)
 
 Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md. The iOS viewport/layout observations in this historical snapshot predate PR #49; they are not a current engine startup requirement. PR #49 removes the DOM geometry gate, and the user reports no issue after deployment/testing.
@@ -409,12 +410,9 @@ Acceptance:
 - PR remains unmerged and undeployed pending user approval and device validation.
 
 
-## Torch Android compatibility investigation — PR #54 (2026-11-09)
+## Torch investigation outcome — PR #53/#54 (2026-11-09)
 
-**Status:** Debug-only probe implemented on `feat/scanner-torch-compatibility-probe`; unmerged and undeployed.
-
-- Evidence baseline: Android Chrome / Samsung Galaxy S23 Ultra reports active rear camera `environment`, 1280×720 at 30 FPS, live track, `getCapabilities()` available but no `torch` property, `getSettings().torch` not exposed, and `applyConstraints()` available.
-- PR #54 adds a manual, diagnostics-only 1.2-second Torch ON pulse followed by an OFF attempt. It records promise acceptance/errors and settings before/after without promoting capability or showing the production Flash control.
-- The probe preserves the current camera constraints and unrelated advanced constraints. It does not alter camera acquisition, autofocus, scanner lifecycle, decoder or business flow.
-- Next evidence gate: run the probe on the S23 Ultra and visually report whether the physical LED illuminated; capture the displayed ON/OFF result. Then repeat a quick iOS Safari/PWA regression test.
-- Only if the physical LED illuminates despite capability not being exposed should a separate production compatibility-adapter PR be considered. If the promise resolves but the LED does not illuminate, keep production behavior unchanged and investigate browser/backend support instead.
+- PR #53 established that the Galaxy S23 Ultra Android Chrome camera track did not expose Torch capability/settings.
+- PR #54 tested a manual ON/OFF constraint pulse. Both requests were accepted by the API, but the physical LED did not illuminate.
+- The result does not justify a production bypass or a native camera migration. Android devices that expose Torch will continue to receive the normal capability-gated Flash control.
+- The cleanup branch removes the temporary diagnostic sampler, probe, UI and runbook. The production camera path and iOS behavior remain unchanged.

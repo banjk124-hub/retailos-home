@@ -1,24 +1,26 @@
-# Current scanner acceptance gates — PR #51 optional Torch (2026-11-09)
+# Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
-## Automated and source gates
-- [x] Dedicated Torch adapter regression passes for supported, unsupported, enable, disable and rejected constraints.
-- [x] Session state is reset on teardown/suspend/recovery and late async results cannot mutate a replacement session.
-- [x] Home and Stocktake each own their flash control and render it only when the active camera track advertises support.
+## Production behavior
+- [x] Torch capability is read from the active video track after first usable frame.
+- [x] Home and Stocktake render their own Flash controls only when the active track advertises `torch === true`.
 - [x] Unsupported/rejected Torch remains non-fatal to preview and barcode scanning.
-- [x] Full `npm run preflight` passes, including TypeScript/production and GitHub Pages builds.
+- [x] Camera acquisition, resolution/FPS, autofocus, decoder and barcode workflow remain independent of optional Torch.
+- [x] iOS Safari/PWA: user confirms Flash works normally.
+- [x] Android Chrome / Samsung Galaxy S23 Ultra: no Torch capability/settings exposed; explicit diagnostic request was API-accepted but physical LED did not illuminate. Device remains unsupported through the normal capability gate.
+- [ ] Additional Android devices that expose `getCapabilities().torch === true`: verify physical ON/OFF, close while on, background/foreground recovery and scanner stability.
 
-## Physical-device gates
-- [ ] iOS Safari/PWA: check whether the active rear camera track advertises Torch; verify enable/disable when supported.
-- [ ] iOS Safari/PWA: rapid toggle, close while Torch is on, background/foreground recovery and unsupported behavior.
-- [ ] Android Chrome/PWA: verify enable/disable on a Torch-capable rear camera.
-- [ ] Android Chrome/PWA: rapid toggle, close while Torch is on, background/foreground recovery and unsupported behavior.
-- [ ] Confirm scanner preview and barcode decoding remain stable during Torch changes.
-- [ ] Confirm Torch is off after scanner close/session teardown.
-- [ ] Confirm Home and Stocktake controls remain visually independent and do not affect native video compositing.
+## Cleanup acceptance — PR #55
+- [x] Remove PR #53 diagnostic sampler, timers, React state, panel and `scannerDebug` path.
+- [x] Remove PR #54 capability-bypass probe and probe-only contracts/state.
+- [x] Keep production Torch capability, ON/OFF adapter and regression tests.
+- [x] Full `npm run preflight` passes on cleanup PR head; GitHub Actions run #42572378379 is green.
+- [x] Source diff preserves Home/Stocktake business flows and the iOS camera path; no production camera acquisition or decoder changes.
+- [ ] Merge and deployment remain pending user approval.
 
-PR #51 is ready for review. CI run #232 passed the full preflight; physical-device gates remain outstanding and must be reviewed before merge/deploy. Capability is browser/hardware dependent; unsupported devices must retain normal scanner behavior.
+Capability is browser/device/camera-mode dependent. A resolved `applyConstraints()` promise is not proof of physical LED activation. Do not infer support from model names or user-agent.
 
 ---
+
 # Current scanner acceptance gates — post PR #49 (2026-11-09)
 
 ## PR #49 — Geometry-neutral engine video readiness

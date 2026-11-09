@@ -1,26 +1,23 @@
-# Current implementation status — Android Torch diagnostics (2026-11-09)
+# Current implementation status — scanner Torch capability (2026-11-09)
 
-User confirms PR #52 was merged, deployed and tested. iOS remains stable; Android Chrome on Samsung Galaxy S23 Ultra still does not display the Flash control in either Home or Stocktake.
+## Production behavior
+- PR #51/#52: optional Torch control is implemented in the shared Scanner Engine and discovered only after the first usable video frame.
+- Home and Stocktake render their own Flash control only when the active camera track advertises `getCapabilities().torch === true`.
+- iOS Safari/PWA: user confirms Flash works normally.
+- Android Chrome / Samsung Galaxy S23 Ultra: active track does not expose `torch`; the PR #54 diagnostic pulse was API-accepted for ON and OFF, but the physical LED did not illuminate. Production behavior remains unsupported on this tested path.
+- Unsupported/rejected Torch never blocks camera preview or barcode scanning. No user-agent/model fallback or native bridge is planned for this single capability.
 
-## PR #53 — opt-in on-device diagnostics
-- Adds privacy-safe active-track snapshots after first-frame readiness and at 250 ms, 1000 ms and 2500 ms.
-- Exposes capability/settings values, API availability/errors, track ready/muted state, facing mode, dimensions, frame rate and applyConstraints availability.
-- Shows a compact diagnostic panel in both scanner modules only when the PWA URL contains `?scannerDebug=1`.
-- Diagnostics are observational and collected only in debug mode. They do not alter Torch support decisions or camera behavior.
-- No deviceId, camera identifier, user-agent inference or device-specific workaround is added.
-- GitHub Actions run #245 passed full `npm run preflight` on the current implementation head. Physical-device validation is pending; PR #53 is ready for review.
-
-Branch: `feat/scanner-torch-device-diagnostics`.
-PR #53: https://github.com/banjk124-hub/retailos-home/pull/53.
-
-## Device verification instructions
-1. Open the deployed PWA with `?scannerDebug=1` appended to its URL.
-2. Open Home Scanner or Stocktake Scanner and wait for the live preview.
-3. Read or screenshot the **SCANNER TORCH DIAGNOSTICS** panel after its four samples appear.
-4. Send the panel output/screenshot and confirm whether both modules show the same values.
-5. Remove `?scannerDebug=1` for normal operation.
+## Cleanup PR #55 — verification passed
+- Removed PR #53 timed capability sampling, follow-up timers, diagnostic callback/state, `scannerDebug=1` handling and diagnostic panel.
+- Removed PR #54 capability-bypass pulse, probe contracts, helper, session state and hook action.
+- Deleted the obsolete Torch diagnostics runbook.
+- Preserved production capability discovery, capability-gated ON/OFF, active-track constraint preservation, session guards and production regression tests.
+- PR: https://github.com/banjk124-hub/retailos-home/pull/55.
+- GitHub Actions run #42572378379 passed full `npm run preflight` on head `53b14c7b060b172be2ad203675c81071f3ae2553`.
+- PR #55 is open, unmerged and undeployed. No merge or deployment has been performed.
 
 ---
+
 # Current implementation status — PR #49 geometry-neutral video readiness (2026-11-09)
 
 Last reconciled: 2026-11-09.
@@ -521,17 +518,9 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Next: inspect full diff, run `npm run preflight`, resolve any TypeScript/test failures, then physical-device QA as appropriate. Do not merge/deploy without explicit user approval.
 \n\n## PR B CI failure and corrective audit — 2026-11-08\n\n- GitHub Actions run #130 failed in `Scanner lifecycle contract regression tests`; dependency install and the existing barcode regression test passed. The failing assertion was `DISPOSED follows decoder disposal`.\n- Root cause 1: the test compared raw source offsets across separate class methods. Since `close()` is declared before `teardown()`, declaration order is not execution order; the assertion was invalid. It now checks the awaited teardown and DISPOSED ordering within the close method, and lease release / CAMERA_RELEASED / decoder disposal ordering within teardown.\n- Root cause 2 found during audit: `useScannerEngine` declared the optional `lifecycle` option but omitted it from parameter destructuring and from the `UniversalScannerSession` options. This would have caused a TypeScript error after the failing test was passed. Corrected both and added regression guards for adapter forwarding.\n- Updated lifecycle test covers resumed OPENING/READY/SCANNING events and verifies the hook wiring.\n- Corrective commits are on the same PR branch. CI for the latest corrected head has not yet been observed; do not mark PR B verified until that run passes.\n- No changes to Home/Stocktake UI, camera constraints, decoder, cadence, validation or business workflows.\n\n- Follow-up CI run #137 exposed a test-only guard defect: the hook destructuring assertion was overly sensitive to literal newline/escape representation, not an application failure. Replaced it with whitespace-independent source-presence guards for the destructured option and session forwarding. A fresh CI run on the latest head is still required.\n\n\n### PR B verification update — CI run #142 (2026-11-08)\n- Latest synchronized branch head: `3e67397260993778a69eb1a5d2eb7a8216bd3044`.\n- GitHub Actions run #142 (`42465469769`) completed successfully. The full local-equivalent preflight passed, including scanner barcode regression, lifecycle contract regression, TypeScript/production build, GitHub Pages build and diff checks.\n- Earlier runs #130 and #137 exposed a faulty source-order assertion and an over-escaped hook-wiring assertion; both were corrected before run #142. Do not use the earlier failures as current status.\n- Still pending: local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA verification. PR remains Draft, unmerged and undeployed.\n
 
-## PR #54 — Debug-only Torch compatibility probe (2026-11-09)
+## PR #54 — investigation result (2026-11-09)
 
-**Branch:** `feat/scanner-torch-compatibility-probe`  
-**Base:** `main` at `2fc4be24bc7f6a77c9b7f9fee07a40ea9a7969de`.  
-**Status:** Implementation authored; CI and physical-device validation pending; unmerged and undeployed.
-
-- Added an explicit probe to the active scanner session, callable only when `scannerDebug=1` diagnostics are enabled.
-- The probe bypasses only the capability gate for a single 1.2-second `torch:true` pulse, then attempts `torch:false`. It does not change the ordinary capability state or production Flash visibility.
-- Reused a shared constraint builder so existing width/height/frameRate/facingMode/deviceId constraints and unrelated advanced constraints remain intact.
-- Added on-device result reporting for ON/OFF request acceptance, error names, settings before/after and track state. The UI explicitly warns that API acceptance does not prove physical LED activation.
-- Wired the same diagnostics panel in Home Scanner and Stocktake Scanner. No feature-specific Torch logic was introduced.
-- Added regression coverage for unadvertised capability, preserved constraints, ON→OFF ordering and unchanged support state.
-- Protected: getUserMedia profile, autofocus, camera lease, first-frame readiness, decoder, scan cadence, lifecycle contract, barcode handling, module business flows and deployment.
-- Verification is pending. Do not claim CI/preflight or physical hardware success until the latest PR head is checked. User must visually confirm whether the LED illuminates during the short pulse on Android Chrome; repeat iOS smoke test to guard existing behavior.
+- PR #54 was merged into `main` at merge commit `1f67dc512d18a90a3ee90d9851401feae6dca705`.
+- On Samsung Galaxy S23 Ultra / Android Chrome, the explicit Torch ON and OFF requests both resolved, but the physical LED did not illuminate and `settings.torch` remained unexposed.
+- This is not evidence of working Torch support. The probe did not alter production capability state or Flash visibility.
+- The cleanup branch removes the probe and the temporary PR #53 diagnostics. Production capability-gated Torch behavior remains unchanged.

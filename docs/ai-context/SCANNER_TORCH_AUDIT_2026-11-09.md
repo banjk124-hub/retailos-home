@@ -1,44 +1,34 @@
-# Scanner Torch Capability Audit — 2026-11-09
+# Scanner Torch Capability Audit — final outcome (2026-11-09)
 
-## Baseline
-- Repository: `banjk124-hub/retailos-home`
-- Implementation branch: `feat/scanner-torch-control`
-- PR #51 — Optional Camera Torch Controls (merged, deployed and user-verified)
-- Base SHA: `6f821bde716c958147113f66d626c53882414108`
-- Current status: PR #51 is merged/deployed and user-verified. iOS Torch works; Android Flash control is not visible. PR #52 defers capability detection until the first live frame; Android retest pending.
+## Decision
+RetailOS retains the existing browser-based, capability-gated Torch implementation. No Android native camera bridge or device-specific workaround will be introduced solely to expose Flash on one tested device.
 
-## Post-deployment Android finding and correction
+## Verified platform evidence
+- iOS Safari/PWA: user confirms Flash toggles normally.
+- Android Chrome / Samsung Galaxy S23 Ultra: active rear camera track is live at 1280×720 / 30 FPS. `getCapabilities()` and `applyConstraints()` exist, but `capabilities.torch` and `settings.torch` are not exposed.
+- The temporary PR #54 compatibility probe sent an advanced Torch ON request followed by OFF. Both promises resolved, but the physical LED did not illuminate. API acceptance is not proof that the hardware setting was applied.
+- The result applies to the tested device/browser/camera path; it does not imply that all Android devices lack Torch support.
 
-- User confirms PR #51 was merged, deployed and tested: iOS Torch toggles reliably; Android does not show the Flash control.
-- The first PR #51 implementation queried `getCapabilities()` immediately after `getUserMedia()` resolved, before video playback and first-frame readiness. Chromium documents that camera capabilities may only be available after the camera is actually streaming.
-- PR #52 moves Torch discovery until after `video.play()` and `waitForVideoFrameReady()`, while preserving the existing session generation guard. The UI contract remains unchanged.
-- A privacy-safe diagnostic logs whether Torch is reported as true, false, not-exposed or unavailable, plus track ready state, facing mode and dimensions. Device IDs are not logged.
-- If Android still reports `not-exposed` after first-frame readiness, that is evidence that the active browser/device track does not expose the Torch capability; do not force the UI visible or attempt unsupported constraints.
+## Production source ownership
+- `src/platform/scanner/scannerTorch.ts`: reads Torch support from the active video track and applies ON/OFF only when the track advertises support. It preserves active camera constraints.
+- `src/platform/scanner/contracts.ts`: exposes `ScannerTorchState` and the production session control methods only.
+- `src/platform/scanner/universalScannerSession.ts`: binds Torch after playback and first-frame readiness; guards async completion by session generation and track identity; clears state during teardown.
+- `src/features/scanner/hooks/useScannerEngine.ts`: bridges Torch state and enable/disable operations; contains no debug query, probe or diagnostic sampling.
+- `BarcodeScanner.tsx` and `StocktakeScanner.tsx`: independently render Flash controls only when the active track advertises support.
+- `scanner-transition.css`: styles feature-owned Flash controls.
 
-## Source ownership
-- `src/platform/scanner/scannerTorch.ts`: reads active video-track capabilities/settings and applies the advanced `torch` constraint. Unsupported and rejected requests resolve as non-fatal capability state.
-- `src/platform/scanner/contracts.ts`: typed `ScannerTorchState`, optional state observer, and explicit session control methods.
-- `src/platform/scanner/universalScannerSession.ts`: binds Torch to the active video track after first-frame readiness, guards async completion by session generation and track identity, logs safe capability diagnostics, and clears state during teardown.
-- `src/features/scanner/hooks/useScannerEngine.ts`: exposes state and enable/disable operation to feature code; it does not render controls.
-- `BarcodeScanner.tsx` and `StocktakeScanner.tsx`: independently render their own flash controls only when the active track advertises support.
-- `scanner-transition.css`: styles feature-owned controls without styling or animating the native video surface.
+## Production behavior contract
+1. Camera acquisition constraints, resolution/FPS targets and autofocus remain unchanged.
+2. Torch is never enabled automatically.
+3. The active track must report `getCapabilities().torch === true` before a Flash control is shown or a Torch command is sent.
+4. Applying Torch preserves existing track constraints and unrelated advanced constraints.
+5. Unsupported or rejected Torch remains non-fatal; preview and barcode decoding continue.
+6. Repeated toggles are serialized while an applyConstraints request is pending.
+7. Session teardown, suspend and recovery clear the previous track's Torch state. Late results from retired tracks cannot mutate a replacement session.
+8. Home and Stocktake own their independent presentation; the shared engine owns only capability/state/control.
 
-## Behavior contract
-1. Camera acquisition remains unchanged.
-2. Torch is not enabled automatically.
-3. Applying Torch preserves existing track constraints; when unavailable, the adapter pins active width, height, frame rate, facing mode and device identity from `getSettings()` so a toggle does not silently reset camera quality.
-3. Capability is discovered from the actual active video track, not browser/user-agent heuristics.
-4. A module can ignore the capability; both current modules consume it.
-5. Repeated taps are blocked while an applyConstraints request is pending.
-6. Unsupported hardware and rejected constraints do not fail or stop barcode scanning.
-7. Suspend/close/recovery clears the previous track state. Late async results from a retired track cannot update the current session.
-8. Camera/decoder startup and lifecycle events do not depend on Torch.
+## Investigation tooling retirement
+The PR #53 diagnostic sampler/panel and PR #54 capability-bypass pulse were temporary. PR #55 removes their production bundle code, timer scheduling, React/session state, contracts, test fixtures and runbook. The automated suite retains only production behavior regression coverage. GitHub Actions run #42572378379 passed full preflight on the code head; PR #55 remains open, unmerged and undeployed.
 
-## Verification required
-- Automated: supported/unsupported capability, enable/disable, rejected constraint, session-generation guard, module UI wiring, full preflight and both builds.
-- iOS Safari/PWA: verify capability visibility; enable/disable if exposed; rapid toggle; close while on; background/foreground recovery; unsupported state.
-- Android Chrome/PWA: same checks, including a device with rear flash hardware and a device/camera mode without Torch if available.
-- Confirm preview and barcode decoding remain stable while toggling. Confirm Torch turns off when scanner closes or loses its active track.
-
-## Evidence boundary
-Do not claim all iPhones/Android devices support Torch. Browser capability reporting and actual hardware behavior vary; unsupported devices must continue scanning normally.
+## Future compatibility gate
+A future Android change requires reproducible evidence that a named browser/device/OS combination can physically turn the LED on and off through a supported API. A resolved promise alone is insufficient. Do not add model sniffing or capability bypasses.
