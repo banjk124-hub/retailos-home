@@ -12,7 +12,7 @@
 - Keep audio independent from camera/session lifecycle. Do not restart or reacquire the camera to restore sound.
 - The shared audio unlock is called from existing direct user gestures (Scanner surface interaction and the Settings preview button).
 - Recreate the shared AudioContext if the prior context is closed.
-- Attempt resume for every non-running state, including Safari interruption states, but only when called from a user gesture. Do not attempt autoplay recovery from visibilitychange or pageshow.
+- On visibilitychange/pageshow, make a best-effort resume attempt for an existing non-running context; browser autoplay policy may reject it. The next direct Scanner-surface or Test Beep gesture retries resume, and recreates the context if it is closed.
 - Preserve non-blocking behavior: audio failures never block scanning or barcode acceptance.
 - Increase the linear gain ceiling from 0.48 to 0.60. At the default 50% setting, gain becomes 0.30; at 100%, gain becomes 0.60. The 0% mute behavior remains unchanged.
 - Extend the tone envelope/oscillator duration from approximately 110 ms to 140 ms. Keep the existing sine waveform and 1760 Hz frequency.
