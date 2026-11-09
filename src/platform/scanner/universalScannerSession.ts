@@ -325,6 +325,14 @@ export class UniversalScannerSession implements ScannerSession {
       const videoReadyStartedAt = performance.now();
       const videoReadiness = await waitForVideoFrameReady(this.video);
       this.logStage('video_ready_ms', performance.now() - videoReadyStartedAt);
+      console.info('[RetailOS Scanner] Video readiness', {
+        videoReadyState: videoReadiness.readyState,
+        videoWidth: videoReadiness.width,
+        videoHeight: videoReadiness.height,
+        frameCallbackObserved: videoReadiness.frameCallbackObserved,
+      });
+      if (this.disposed || generation !== this.generation) return;
+
       // Chromium may expose camera capabilities only after the track is
       // actively streaming. Discover Torch after playback has produced a
       // fresh frame, not immediately after getUserMedia resolves.
@@ -345,13 +353,6 @@ export class UniversalScannerSession implements ScannerSession {
         width: torchSettings?.width ?? null,
         height: torchSettings?.height ?? null,
       });
-      console.info('[RetailOS Scanner] Video readiness', {
-        videoReadyState: videoReadiness.readyState,
-        videoWidth: videoReadiness.width,
-        videoHeight: videoReadiness.height,
-        frameCallbackObserved: videoReadiness.frameCallbackObserved,
-      });
-      if (this.disposed || generation !== this.generation) return;
 
       // Publish preview readiness before decoder initialization so the UI can
       // reveal the live camera as soon as the first real frame is available.
