@@ -1,8 +1,11 @@
 import type { CSSProperties } from 'react';
-import type { ScannerTorchDiagnosticSample } from '../../../platform/scanner/contracts';
+import type { ScannerTorchDiagnosticSample, ScannerTorchProbeResult } from '../../../platform/scanner/contracts';
 
 type Props = {
   samples: ScannerTorchDiagnosticSample[];
+  onProbe: () => void;
+  probePending: boolean;
+  probeResult: ScannerTorchProbeResult | null;
 };
 
 const panelStyle: CSSProperties = {
@@ -35,7 +38,7 @@ function value(value: string | number | boolean | null): string {
 }
 
 /** Opt-in, read-only diagnostic surface. Enabled only by ?scannerDebug=1. */
-export default function ScannerTorchDiagnosticPanel({ samples }: Props) {
+export default function ScannerTorchDiagnosticPanel({ samples, onProbe, probePending, probeResult }: Props) {
   if (samples.length === 0) return null;
   return (
     <details style={panelStyle} open>
@@ -43,6 +46,27 @@ export default function ScannerTorchDiagnosticPanel({ samples }: Props) {
         SCANNER TORCH DIAGNOSTICS · {samples.length} samples
       </summary>
       <div style={{ padding: '7px 11px 10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+          <button
+            type="button"
+            onClick={onProbe}
+            disabled={probePending}
+            style={{ border: '1px solid rgba(255,255,255,.35)', borderRadius: 8, padding: '7px 10px', background: '#3b4252', color: '#fff', font: 'inherit', fontWeight: 700, cursor: probePending ? 'wait' : 'pointer' }}
+          >
+            {probePending ? 'Đang thử Torch…' : 'Probe Torch · xung 1,2 giây'}
+          </button>
+          <span style={{ color: '#ffd58a' }}>Chỉ dùng kiểm tra. Flash sẽ tự tắt sau xung thử.</span>
+        </div>
+        {probeResult && (
+          <section style={{ marginBottom: 10, padding: 8, border: '1px solid rgba(255,255,255,.2)', borderRadius: 8 }}>
+            <strong>COMPATIBILITY PROBE · {probeResult.status}</strong>
+            <div style={rowStyle}><span>Torch ON request</span><strong>{probeResult.onAccepted ? 'accepted' : `rejected · ${probeResult.onErrorName ?? 'unavailable'}`}</strong></div>
+            <div style={rowStyle}><span>Torch OFF request</span><strong>{probeResult.offAttempted ? (probeResult.offAccepted ? 'accepted' : `rejected · ${probeResult.offErrorName ?? 'unknown'}`) : 'not-attempted'}</strong></div>
+            <div style={rowStyle}><span>settings.torch</span><span>{value(probeResult.settingsTorchBefore)} → {value(probeResult.settingsTorchAfter)}</span></div>
+            <div style={rowStyle}><span>track after probe</span><span>{probeResult.trackReadyState}</span></div>
+            <div style={{ marginTop: 6, color: '#ffd58a' }}>Accepted means the browser resolved applyConstraints(); confirm whether the physical LED actually illuminated.</div>
+          </section>
+        )}
         {samples.map((sample) => (
           <section key={sample.sample} style={{ marginBottom: 10 }}>
             <strong>{sample.sample} · +{sample.elapsedMs}ms</strong>
