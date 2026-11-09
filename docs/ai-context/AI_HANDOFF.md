@@ -3,7 +3,7 @@
 - Repository: `banjk124-hub/retailos-home`.
 - Base main SHA for PR #51: `6f821bde716c958147113f66d626c53882414108`.
 - Active branch: `feat/scanner-torch-control`.
-- Draft PR: https://github.com/banjk124-hub/retailos-home/pull/51.
+- PR #51 (ready for review): https://github.com/banjk124-hub/retailos-home/pull/51.
 - Scope: optional platform Torch API plus independent Home/Stocktake controls. No merge/deploy authorized.
 - CI and physical-device acceptance are pending; do not report success until actual checks complete.
 
