@@ -163,6 +163,18 @@ assert.deepEqual(readScannerTorchState(probeTrack), {
 }, 'a successful debug probe must not promote an unadvertised capability');
 assert.deepEqual(lastProbeConstraints.advanced, [{ focusMode: 'continuous' }, { torch: false }]);
 
+const rejectedProbe = await probeScannerTorchConstraint({
+  readyState: 'live',
+  getSettings: () => ({}),
+  getConstraints: () => ({}),
+  applyConstraints: async () => { throw new DOMException('Torch rejected', 'OverconstrainedError'); },
+}, 0);
+assert.equal(rejectedProbe.onAccepted, false);
+assert.equal(rejectedProbe.onErrorName, 'OverconstrainedError');
+assert.equal(rejectedProbe.offAttempted, false, 'OFF is not sent when ON was rejected');
+assert.equal((await probeScannerTorchConstraint(null)).status, 'unavailable');
+
+
 const contract = await readFile(new URL('../src/platform/scanner/contracts.ts', import.meta.url), 'utf8');
 assert.match(contract, /onTorchStateChange\?: \(state: ScannerTorchState\) => void/);
 assert.match(contract, /setTorchEnabled\(enabled: boolean\): Promise<ScannerTorchState>/);
