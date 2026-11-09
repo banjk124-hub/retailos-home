@@ -1,3 +1,14 @@
+# SCAN-01 execution update — 2026-11-10
+
+- SCAN-01 defines `ScannerModuleConfig`, preview/source normalized region types and explicit camera request preferences.
+- Implementation branch: `feat/scanner-input-module-config-contract`; PR/CI status is pending until opened.
+- SCAN-01 is contract-only. No camera, lifecycle, decoder, Home or Stocktake runtime behavior changes.
+- SCAN-02 remains next: pure preview-to-source geometry mapping and tests for `cover`, `contain`, `object-position` and mirroring.
+- SCAN-03 then wires Home and Stocktake independently; SCAN-04 enables strict ROI-only decode after both consumers are valid.
+- The existing camera default remains environment / 1280×720 / 30 FPS ideal / 30 FPS max.
+
+---
+
 # RetailOS — Engineering Roadmap
 
 Last reviewed: 2026-11-09
