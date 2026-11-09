@@ -10,7 +10,7 @@
 - [x] Regression test is included in preflight.
 - [x] PR #56 is merged to main at `5eee1a6a565f6263907541dac6af6b4ba77b37be`; full preflight passed on final PR head in GitHub Actions run #42575773839.
 - [ ] Physical Android test confirms vibration toggle ON/OFF and compares beep levels; physical iOS test confirms beep and unsupported-vibration fallback.
-- [ ] Follow-up branch adds executable mocked AudioContext/GainNode regression tests; verify exact gain ramps in CI. This does not replace physical acoustic QA.
+- [x] Follow-up PR #57 adds executable mocked AudioContext/GainNode regression tests; GitHub Actions run #42647819016 passed full preflight on head `bf267c5e3e5e7cc79524f3fad220fa6f7a9be68d`. This does not replace physical acoustic QA.
 - [ ] User verifies Home lookup, Stocktake form-fill/explicit-save, scanner open/close and lifecycle behavior after the PR #56 build is deployed.
 - [x] User-approved merge is reflected by merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
 - [ ] Deployment of PR #56 is confirmed separately; do not infer deployment from merge.
