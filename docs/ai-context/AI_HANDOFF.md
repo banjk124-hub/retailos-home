@@ -16,7 +16,7 @@
 - Home and Stocktake consume the same feedback service. Feedback reads the latest setting when a barcode is accepted; no per-feature override remains.
 - iOS vibration remains unavailable where `navigator.vibrate` is absent. The UI reports unsupported capability and scanning remains non-fatal.
 - Physical Android/iOS QA remains an explicit acceptance gate. CI does not prove perceived loudness, actual device vibration or hardware output.
-- Current follow-up PR #57: https://github.com/banjk124-hub/retailos-home/pull/57 on branch `test/scanner-audio-runtime-and-doc-sync`. GitHub Actions run #42647819016 passed full preflight on the latest head `bf267c5e3e5e7cc79524f3fad220fa6f7a9be68d`. It adds executable Web Audio gain/preview/vibration-policy tests and synchronizes current documentation. No camera, decoder, lifecycle or business workflow changes are included.
+- Current follow-up PR #57: https://github.com/banjk124-hub/retailos-home/pull/57 on branch `test/scanner-audio-runtime-and-doc-sync`. GitHub Actions run #42648085229 passed full preflight on the documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. It adds executable Web Audio gain/preview/vibration-policy tests and synchronizes current documentation. No camera, decoder, lifecycle or business workflow changes are included.
 - See Architecture ADR-019/ADR-020, `scripts/test-scanner-settings.mjs` and `scripts/test-scanner-audio-runtime.mjs`.
 
 ---
