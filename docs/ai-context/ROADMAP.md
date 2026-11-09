@@ -407,3 +407,14 @@ Acceptance:
 - `DISPOSED` follows completed engine teardown.
 - Existing barcode/camera regression suite and new lifecycle contract tests pass, followed by TypeScript/production/Pages builds.
 - PR remains unmerged and undeployed pending user approval and device validation.
+
+
+## Torch Android compatibility investigation — PR #54 (2026-11-09)
+
+**Status:** Debug-only probe implemented on `feat/scanner-torch-compatibility-probe`; unmerged and undeployed.
+
+- Evidence baseline: Android Chrome / Samsung Galaxy S23 Ultra reports active rear camera `environment`, 1280×720 at 30 FPS, live track, `getCapabilities()` available but no `torch` property, `getSettings().torch` not exposed, and `applyConstraints()` available.
+- PR #54 adds a manual, diagnostics-only 1.2-second Torch ON pulse followed by an OFF attempt. It records promise acceptance/errors and settings before/after without promoting capability or showing the production Flash control.
+- The probe preserves the current camera constraints and unrelated advanced constraints. It does not alter camera acquisition, autofocus, scanner lifecycle, decoder or business flow.
+- Next evidence gate: run the probe on the S23 Ultra and visually report whether the physical LED illuminated; capture the displayed ON/OFF result. Then repeat a quick iOS Safari/PWA regression test.
+- Only if the physical LED illuminates despite capability not being exposed should a separate production compatibility-adapter PR be considered. If the promise resolves but the LED does not illuminate, keep production behavior unchanged and investigate browser/backend support instead.
