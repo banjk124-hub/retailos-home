@@ -362,3 +362,16 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Opened Draft PR #56: https://github.com/banjk124-hub/retailos-home/pull/56.
 - GitHub Actions run #42575410311 passed the full local-equivalent `npm run preflight` on latest code head `47ff115a7fcc631b24ccda3c0b0e3e0800439cf7`, including the new Scanner settings regression test, existing scanner barcode/lifecycle/Torch/presentation tests, TypeScript/Vite production build and GitHub Pages build.
 - PR #56 remains Draft, open, unmerged and undeployed. Physical Android vibration/beep-level QA and iOS beep/unsupported-vibration QA remain pending.
+
+
+### 2026-11-09 — Post-merge Scanner audio audit and synchronization
+
+- Re-read current `main` source after PR #56 merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`; confirmed the Settings Hub, shared store, feedback service and both Scanner consumers are wired as intended.
+- Confirmed PR #56 final head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full preflight in GitHub Actions run #42575773839. Merge is verified; deployment is not inferred.
+- Audit finding: existing Scanner settings tests asserted source patterns and persistence but did not execute the production audio module against AudioContext/GainNode behavior.
+- Created follow-up branch `test/scanner-audio-runtime-and-doc-sync` from the PR #56 merge commit.
+- Added `scripts/test-scanner-audio-runtime.mjs` with a mocked AudioContext to verify zero mute, 50% gain 0.24, 70% gain 0.336, 100% gain 0.48, gesture unlock, preview/current-setting synchronization, shared feedback and non-fatal missing Vibration API.
+- Registered the runtime suite in `scripts/preflight.mjs`.
+- Kept the production gain curve unchanged pending controlled physical-device A/B testing; do not infer perceived loudness from the numeric gain alone.
+- Synchronized AI Handoff, Implementation Status, Roadmap, Architecture ADR-018/019/020 and Acceptance Checklist with verified PR #55/#56 merge states and the outstanding physical QA gates.
+- Protected camera, decoder, barcode, Torch, lifecycle, Home lookup and Stocktake form/save behavior. CI for this follow-up branch remains pending.
