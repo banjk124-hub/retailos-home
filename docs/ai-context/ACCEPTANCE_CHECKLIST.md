@@ -60,6 +60,12 @@ Canonical source: docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA recorded when behavior touches camera/decoder.
 
 ---
+
+
+---
+
+> HISTORICAL RECORDS BELOW: retained for traceability. Do not treat their older “current”, “active”, unchecked or pending statements as the current repository state without checking the 2026-11-10 audit and current source.
+
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
 ## Shared Scanner settings — PR #56 (merged to main)
