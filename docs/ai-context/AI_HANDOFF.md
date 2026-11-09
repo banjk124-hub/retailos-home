@@ -21,7 +21,6 @@ Read `ARCHITECTURE.md` ADR-018, `SCANNER_TORCH_AUDIT_2026-11-09.md`, source and 
 
 ---
 
-# Current AI handoff — post PR #49---
 # Current AI handoff — post PR #49 video presentation ownership (2026-11-09)
 
 ## Verified baseline
