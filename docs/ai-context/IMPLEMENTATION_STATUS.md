@@ -12,7 +12,8 @@ Active branch: `feat/scanner-torch-control`. PR #51 (ready for review): https://
 - Home and Stocktake independently render a control when the active track advertises Torch support.
 - Teardown and session replacement clear the previous track state; async results are guarded by session generation and track identity.
 - Added a dedicated Torch regression suite and wired it into repository preflight.
-- **CI status: pending at the time of this documentation update.** Physical iOS Safari/PWA and Android Chrome/PWA acceptance remains outstanding.
+- GitHub Actions **run #232 passed** the full `npm run preflight` on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`: barcode validation, lifecycle, Torch capability, presentation ownership, TypeScript/production build, Pages build and diff checks.
+- The subsequent commits in this branch update technical documentation only; they do not change executable source or regression tests. Physical iOS Safari/PWA and Android Chrome/PWA acceptance remains outstanding.
 
 ## Acceptance boundary
 A device/browser that does not advertise Torch, or rejects the Torch constraint, must still open the camera and scan barcodes normally. Do not claim universal iOS/Android support. See Architecture ADR-016 and `SCANNER_TORCH_AUDIT_2026-11-09.md`.
