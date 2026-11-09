@@ -3,17 +3,17 @@
 Last reviewed: 2026-11-09
 Status: active working plan; verify source and implementation status before starting a phase.
 
-## Current execution order — post PR #49 video presentation ownership
+## Current execution order — optional scanner Torch capability (2026-11-09)
 
-1. PR #49 — geometry-neutral video readiness — is merged to `main` at `1764c858a7d7855950ebe328a3a653d6935fa796`.
-2. The shared platform session no longer waits for or inspects video/container DOM geometry before attaching the camera stream.
-3. Technical first-frame readiness remains in the engine. Home and Stocktake independently own video DOM, sizing, crop, visibility and preview reveal behavior.
-4. GitHub Actions run #200 passed the full repository preflight. The user confirms the merged build was deployed and tested without issues.
-5. **No active scanner implementation task is currently defined by this change.** Further scanner changes must be driven by a reproducible defect, measured bottleneck, or a separately approved roadmap slice.
+1. PR #49 geometry-neutral video readiness is merged, deployed and user-tested.
+2. PR #50 documentation synchronization is incorporated into the current main baseline; its full CI passed.
+3. **Active implementation: PR #51 — optional camera Torch control.** The shared platform session detects and controls Torch when the active track advertises support; Home and Stocktake independently expose controls.
+4. Torch is optional and defaults off. Unsupported/rejected Torch requests must never prevent camera preview or barcode scanning.
+5. PR #51 is Draft. Automated CI and physical iOS Safari/PWA + Android Chrome/PWA acceptance are required before merge/deploy.
 
-**Architecture boundary:** the engine owns camera/decoder/session/resource lifecycle and technical media readiness. It does not own feature DOM geometry or visual composition. Home and Stocktake own their own video presentation and decide when their scanner surfaces unmount.
+**Architecture boundary:** platform engine owns camera/decoder/session/resource lifecycle, technical media readiness and the optional Torch capability/control API. It does not own feature DOM geometry or visual composition. Modules decide whether and how to present a Torch control.
 
-**Protected contracts:** camera lease/refcount and handoff, first-frame readiness, lifecycle technical events, Recovery, decoder behavior, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save and module-specific close transitions remain intact.
+**Protected contracts:** camera lease/refcount and handoff, existing getUserMedia constraints/autofocus, first-frame readiness, lifecycle technical events, Recovery, decoder behavior/cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save and module-specific close transitions remain intact.
 
 ---
 
