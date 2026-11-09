@@ -2,7 +2,7 @@
 
 Last reconciled: 2026-11-09.
 Current main base for PR #51: `6f821bde716c958147113f66d626c53882414108`.
-Active branch: `feat/scanner-torch-control`. Draft PR #51: https://github.com/banjk124-hub/retailos-home/pull/51.
+Active branch: `feat/scanner-torch-control`. PR #51 (ready for review): https://github.com/banjk124-hub/retailos-home/pull/51.
 
 ## PR #51 — implementation status
 - Added a platform-neutral Torch state contract and session enable/disable operation.
