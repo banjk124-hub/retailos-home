@@ -7,7 +7,7 @@
 - Home and Stocktake independently own their video DOM, layout, sizing, crop, visibility and preview reveal UX. Do not unify these presentation systems.
 - Preserve the technical-only lifecycle contract, camera lease/Recovery, decoder and barcode correctness, Home lookup, Stocktake form-fill and explicit persistence.
 - Current scanner source facts and acceptance evidence: `IMPLEMENTATION_STATUS.md`, `ARCHITECTURE.md` ADR-015, and `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md`.
-- Current task is documentation synchronization only on `docs/scanner-video-presentation-ownership`; no runtime changes are intended. Further scanner implementation must be driven by a reproducible defect, measured bottleneck or explicit new scope.
+- Current task is documentation synchronization on `docs/scanner-video-presentation-ownership`, plus correction of one stale source comment; no executable/runtime behavior changes are intended. Further scanner implementation must be driven by a reproducible defect, measured bottleneck or explicit new scope.
 
 # Historical engineering focus snapshot — 2026-11-08
 
