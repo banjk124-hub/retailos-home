@@ -134,8 +134,6 @@ export type ScannerOpenOptions = {
   formats: ScannerSymbology[];
   mode: 'single' | 'continuous';
   sameCodeCooldownMs?: number;
-  audioFeedback?: boolean;
-  hapticFeedback?: boolean;
   onResult: (result: ScannerResult) => void;
   onStateChange?: (state: ScannerLifecycleState) => void;
   /** Optional feature observer. The platform session binds it to its own session ID. */

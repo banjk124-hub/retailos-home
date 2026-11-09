@@ -33,6 +33,42 @@
 
 ---
 
+## ADR-019 — Shared persisted scanner feedback preferences (2026-11-09)
+
+**Status:** Implemented on `feat/scanner-settings-hub-feedback-controls`; GitHub Actions run #42575410311 passed full preflight on head `47ff115`. Physical-device verification remains pending; PR #56 is Draft, unmerged and undeployed.
+
+### Context
+- Accepted barcode feedback already uses one shared engine callback for Home and Stocktake.
+- The previous implementation passed `audioFeedback` and `hapticFeedback` booleans through consumer/hook options; beep gain was fixed at 0.24 and vibration was a fixed 25 ms pulse.
+- The Home Settings navigation item opened Scanner QA Monitor directly. There was no Settings Hub or persisted scanner preference UI.
+
+### Decision
+- Add one versioned device-local preference store at `retailos.scannerSettings.v1`.
+- Defaults: vibration enabled and beep volume 50%. The 50% level maps to the existing gain 0.24, preserving current sound by default.
+- Beep volume uses 11 discrete steps (0–100 in 10-point increments); 0 mutes the app beep and 100 maps to gain 0.48.
+- The shared feedback service reads the current preferences at each accepted barcode event. Do not capture preferences into a camera session or require camera restart when preferences change.
+- Remove per-feature `audioFeedback`/`hapticFeedback` overrides from Home Scanner, Stocktake Scanner, the shared hook and the platform session contract.
+- Keep feedback outside `UniversalScannerSession`: it is application behavior, not camera/decoder lifecycle.
+- Preserve gesture-based Web Audio unlocking, the existing 1760 Hz / ~110 ms tone envelope, one 25 ms vibration pulse, and non-blocking failure handling.
+- When `navigator.vibrate` is unavailable, show an explicit unsupported note and disable the control; do not pretend the device vibrated.
+- Settings navigation opens a Settings Hub. Scanner QA Monitor and Scanner preferences are separate entries and separate views. The dock settings icon uses the gear-shaped `Settings` icon.
+
+### Invariants
+- Feedback is attempted only after the existing accepted-result gate; invalid/cooldown-blocked detections remain silent.
+- Home cached lookup, Stocktake form-fill/explicit-save, duplicate-row behavior, decoder cadence, barcode validation, camera acquisition and lifecycle remain unchanged.
+- All current and future Scanner consumers use the same preference store through the shared feedback service.
+- Storage failure falls back to in-memory defaults/current state and never blocks scanning.
+- No backend, network request, dependency, auth/session or IndexedDB migration is introduced.
+
+### Acceptance
+- Settings changes persist after reload and are immediately reflected by all Scanner consumers.
+- 50% default reproduces gain 0.24; 0% suppresses beep; 100% maps to gain 0.48.
+- Android with Vibration API support follows the toggle. Unsupported iOS/browser paths remain non-fatal and visibly identify the limitation.
+- Settings Hub exposes separate Scanner QA Monitor and Scanner settings entries.
+- Full preflight and physical iOS/Android QA pass before merge/deploy.
+
+---
+
 ## ADR-015 — Geometry-neutral engine video readiness (2026-11-09)
 
 **Status:** Accepted and implemented in PR #49; merged to `main` at `1764c858a7d7855950ebe328a3a653d6935fa796`. User confirms deployment and post-deployment testing without issues.

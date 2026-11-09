@@ -24,6 +24,11 @@ const checks = [
     args: ["scripts/test-scanner-torch.mjs"],
   },
   {
+    name: "Scanner settings and shared feedback regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-settings.mjs"],
+  },
+  {
     name: "Scanner presentation ownership tests",
     command: process.execPath,
     args: ["scripts/test-scanner-presentation.mjs"],

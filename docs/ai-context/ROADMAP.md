@@ -15,6 +15,21 @@ Status: active working plan.
 
 ---
 
+## Current work — shared Scanner settings
+
+**Branch:** `feat/scanner-settings-hub-feedback-controls`  
+**Status:** Implementation authored; GitHub Actions run #42575410311 passed full preflight on head `47ff115`. Physical-device QA pending. PR #56 is Draft, unmerged and undeployed.
+
+- Settings dock action opens a Settings Hub with separate entries for Scanner QA Monitor and Scanner preferences.
+- Shared device-local preferences control haptics and beep output for every Scanner consumer.
+- Default haptics remain enabled; default beep level is 50%, preserving the current 0.24 gain.
+- Beep slider uses 0–100 in 10-point steps; zero mutes, 100 reaches gain 0.48.
+- Preferences are read by the shared feedback service when each accepted result is delivered, not captured when a camera session starts.
+- Keep camera, decoder, validation, lifecycle and Home/Stocktake business contracts unchanged.
+- Validate Android vibration on a browser exposing `navigator.vibrate`; verify iOS fallback and beep output on both platforms.
+
+---
+
 ## Historical source re-baseline — main c7146b55 (pre lifecycle contract)
 
 Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md. The iOS viewport/layout observations in this historical snapshot predate PR #49; they are not a current engine startup requirement. PR #49 removes the DOM geometry gate, and the user reports no issue after deployment/testing.

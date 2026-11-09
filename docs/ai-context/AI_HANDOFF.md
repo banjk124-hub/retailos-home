@@ -5,7 +5,19 @@
 - Investigation: PR #53/#54 completed; see `ARCHITECTURE.md` ADR-018 and `SCANNER_TORCH_AUDIT_2026-11-09.md`.
 - User-confirmed platform result: iOS Flash works; Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch, and the explicit API-accepted probe did not illuminate the LED.
 - Current decision: keep capability-gated behavior. Do not bypass `getCapabilities().torch`, infer support from device/browser identity, or add native CameraX solely for Flash.
-- Cleanup PR #55: https://github.com/banjk124-hub/retailos-home/pull/55. Temporary PR #53 diagnostics and PR #54 probe code are removed; production Torch controls and regression tests remain. GitHub Actions run #42572378379 passed full preflight on head `53b14c7`. PR remains open, unmerged and undeployed.
+- Cleanup PR #55: https://github.com/banjk124-hub/retailos-home/pull/55. Temporary PR #53 diagnostics and PR #54 probe code are removed; production Torch controls and regression tests remain. GitHub Actions run #42572378379 passed full preflight on head `53b14c7`. User confirms PR #55 was merged and deployed.
+
+## Current active task — shared Scanner settings (2026-11-09)
+
+- PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 (Draft, open, unmerged, undeployed); branch `feat/scanner-settings-hub-feedback-controls`, based on current `main` after user confirmed PR #55 was merged and deployed.
+- Add Settings Hub with two separate entries: Scanner QA Monitor and Scanner preferences.
+- Scanner preferences are device-local and shared by all consumers: vibration enabled by default; beep volume 50% by default.
+- 50% maps to existing Web Audio gain 0.24; slider steps are 10%, 0 mutes and 100 maps to 0.48.
+- Shared feedback service reads settings on each accepted barcode result. No per-consumer feedback overrides remain.
+- No camera/decoder/lifecycle/business behavior changes intended. GitHub Actions run #42575410311 passed full preflight on head `47ff115`; physical iOS/Android validation remains the release gate.
+- See Architecture ADR-019 and `scripts/test-scanner-settings.mjs`.
+
+---
 
 ## Torch implementation rules
 1. Discover support from the active video track after `video.play()` and first usable frame.

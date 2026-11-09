@@ -14,7 +14,20 @@
 - Preserved production capability discovery, capability-gated ON/OFF, active-track constraint preservation, session guards and production regression tests.
 - PR: https://github.com/banjk124-hub/retailos-home/pull/55.
 - GitHub Actions run #42572378379 passed full `npm run preflight` on head `53b14c7b060b172be2ad203675c81071f3ae2553`.
-- PR #55 is open, unmerged and undeployed. No merge or deployment has been performed.
+- User confirms PR #55 has been merged and deployed; current `main` includes the investigation cleanup.
+
+---
+
+# Current implementation status — shared Scanner settings (2026-11-09)
+
+## Implemented on `feat/scanner-settings-hub-feedback-controls`
+- Added a device-local, versioned Scanner preference store: vibration enabled by default; beep volume defaults to 50%.
+- Beep 50% maps to existing Web Audio gain 0.24; 0% mutes and 100% maps to gain 0.48. The slider has 11 discrete steps.
+- Shared accepted-result feedback reads preferences at event time; Home and Stocktake no longer pass independent audio/haptic overrides.
+- Added a Settings Hub with separate Scanner preferences and Scanner QA Monitor entries. Replaced the bottom-dock sliders icon with the gear-shaped Settings icon.
+- Vibration control feature-detects `navigator.vibrate`; unsupported browsers display a note and disable the toggle without affecting scanning.
+- Added preference-store/feedback/UI source regression tests and registered them in `npm run preflight`.
+- PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 (Draft, open, unmerged, undeployed). GitHub Actions run #42575410311 passed full `npm run preflight` on head `47ff115a7fcc631b24ccda3c0b0e3e0800439cf7`. Physical Android/iOS verification remains pending.
 
 ---
 

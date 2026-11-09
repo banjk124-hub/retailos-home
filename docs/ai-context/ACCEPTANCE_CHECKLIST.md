@@ -1,5 +1,20 @@
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
+## Shared Scanner settings — `feat/scanner-settings-hub-feedback-controls`
+- [x] Settings dock icon uses the gear-shaped Settings icon.
+- [x] Settings opens a hub with separate Scanner QA Monitor and Scanner preferences entries.
+- [x] Device-local versioned preferences default to vibration enabled and beep volume 50%.
+- [x] Beep volume slider has 11 levels; 50% preserves gain 0.24, 0% mutes, 100% maps to gain 0.48.
+- [x] Shared feedback reads current preferences at accepted-result time; Home/Stocktake cannot override global settings.
+- [x] Unsupported vibration API is surfaced honestly and does not block barcode delivery.
+- [x] Regression test is included in preflight.
+- [x] Full preflight passes on the final PR head; GitHub Actions run #42575410311 passed on `47ff115`.
+- [ ] Physical Android test confirms vibration toggle ON/OFF and beep levels; physical iOS test confirms beep and unsupported-vibration fallback.
+- [ ] User verifies Home lookup, Stocktake form-fill/explicit-save, scanner open/close and lifecycle behavior.
+- [ ] User approves merge and deployment.
+
+---
+
 ## Production behavior
 - [x] Torch capability is read from the active video track after first usable frame.
 - [x] Home and Stocktake render their own Flash controls only when the active track advertises `torch === true`.

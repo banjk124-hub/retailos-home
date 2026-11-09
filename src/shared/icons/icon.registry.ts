@@ -13,7 +13,7 @@ import {
   Sprout,
   Shirt,
   House,
-  SlidersHorizontal,
+  Settings,
   Truck,
   Warehouse,
   Boxes,
@@ -54,7 +54,7 @@ export const HOME_NAV_ICON_REGISTRY = {
   home: House,
   modules: Boxes,
   activity: ChartNoAxesCombined,
-  settings: SlidersHorizontal,
+  settings: Settings,
 } satisfies Record<'home' | 'modules' | 'activity' | 'settings', RetailIcon>;
 
 const departmentIconLookup: Partial<Record<string, RetailIcon>> = { ...DEPARTMENT_ICON_REGISTRY };

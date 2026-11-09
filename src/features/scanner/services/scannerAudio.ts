@@ -1,3 +1,5 @@
+import { getScannerSettings } from './scannerSettingsStore';
+
 let audioContext: AudioContext | null = null;
 
 /**
@@ -15,8 +17,11 @@ export async function unlockScannerAudio(): Promise<void> {
 }
 
 /** Short confirmation tone. Safe to call after a barcode has been accepted. */
-export function playScannerBeep(): void {
+export function playScannerBeep(volume = getScannerSettings().beepVolume): void {
   if (!audioContext || audioContext.state !== 'running') return;
+  const normalizedVolume = Math.min(100, Math.max(0, volume)) / 100;
+  const targetGain = normalizedVolume * 0.48;
+  if (targetGain <= 0) return;
 
   try {
     const oscillator = audioContext.createOscillator();
@@ -26,7 +31,7 @@ export function playScannerBeep(): void {
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(1760, now);
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.24, now + 0.008);
+    gain.gain.exponentialRampToValueAtTime(targetGain, now + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.105);
 
     oscillator.connect(gain);

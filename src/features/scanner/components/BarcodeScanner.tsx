@@ -18,8 +18,6 @@ type Props = {
   /** single closes through the caller after one result; continuous keeps decoding. */
   mode?: ScannerMode;
   scanCooldownMs?: number;
-  audioFeedback?: boolean;
-  hapticFeedback?: boolean;
   cameraLeaseRequest?: CameraLeaseRequest | null;
   motionOrigin?: MotionOrigin | null;
 };
@@ -30,8 +28,6 @@ export default function BarcodeScanner({
   onClose,
   mode = 'single',
   scanCooldownMs = 700,
-  audioFeedback = true,
-  hapticFeedback = true,
   cameraLeaseRequest = null,
   motionOrigin = null,
 }: Props) {
@@ -65,7 +61,7 @@ export default function BarcodeScanner({
       setIsClosing(true);
     }
     onDetected(value);
-  }, mode, scanCooldownMs, audioFeedback, hapticFeedback, cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
+  }, mode, scanCooldownMs, cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
@@ -85,7 +81,7 @@ export default function BarcodeScanner({
     role="dialog"
     aria-modal="true"
     aria-labelledby="barcode-scanner-title"
-    onPointerDown={() => { if (audioFeedback) void scanner.prepareAudio(); }}
+    onPointerDown={() => { void scanner.prepareAudio(); }}
   >
     <div className="barcode-scanner-card">
       <div className={`barcode-scanner-view ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-scanning' : ''}`}>
