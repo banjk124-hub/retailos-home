@@ -20,7 +20,6 @@ Capability is browser/device/camera-mode dependent. A resolved `applyConstraints
 
 ---
 
-# Current scanner acceptance gates — post PR #49---
 # Current scanner acceptance gates — post PR #49 (2026-11-09)
 
 ## PR #49 — Geometry-neutral engine video readiness
