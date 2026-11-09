@@ -5,7 +5,7 @@
 - Implementation branch: `feat/scanner-torch-control`
 - PR #51 (ready for review) — Optional Camera Torch Controls
 - Base SHA: `6f821bde716c958147113f66d626c53882414108`
-- Current status: implementation committed; automated CI and physical-device QA pending.
+- Current status: implementation committed; GitHub Actions run #232 passed full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`; physical-device QA pending.
 
 ## Source ownership
 - `src/platform/scanner/scannerTorch.ts`: reads active video-track capabilities/settings and applies the advanced `torch` constraint. Unsupported and rejected requests resolve as non-fatal capability state.
