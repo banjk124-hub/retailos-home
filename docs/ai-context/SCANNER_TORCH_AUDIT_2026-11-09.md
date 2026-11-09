@@ -3,7 +3,7 @@
 ## Baseline
 - Repository: `banjk124-hub/retailos-home`
 - Implementation branch: `feat/scanner-torch-control`
-- Draft PR: #51 — Optional Camera Torch Controls
+- PR #51 (ready for review) — Optional Camera Torch Controls
 - Base SHA: `6f821bde716c958147113f66d626c53882414108`
 - Current status: implementation committed; automated CI and physical-device QA pending.
 
