@@ -1,7 +1,7 @@
-### 2026-11-09 — Optional scanner Torch capability (Draft PR #51)
+### 2026-11-09 — Optional scanner Torch capability (PR #51 (ready for review))
 
 - Rebased work on current main base `6f821bde716c958147113f66d626c53882414108` after PR #49/50 documentation baseline.
-- Created `feat/scanner-torch-control` and Draft PR #51.
+- Created `feat/scanner-torch-control` and PR #51 (ready for review).
 - Added active-track Torch capability/settings detection and explicit enable/disable using the advanced MediaStreamTrack `torch` constraint.
 - Added typed session/hook state and guarded async completion by session generation and active track identity.
 - Added independent Home and Stocktake flash controls; both remain hidden when the active camera track does not advertise support.
