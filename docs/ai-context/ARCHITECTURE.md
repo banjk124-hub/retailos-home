@@ -1,6 +1,6 @@
 ## ADR-018 — Opt-in on-device Torch diagnostics (2026-11-09)
 
-**Status:** Proposed in PR #53; diagnostics-only change, pending CI and physical-device validation.
+**Status:** Implemented in PR #53; GitHub Actions run #245 passed full preflight. Physical-device validation remains pending.
 
 ### Context
 PR #51 added optional Torch controls and PR #52 moved initial capability discovery until after video playback and the first usable frame. The user reports that iOS works but Android Chrome on a Samsung Galaxy S23 Ultra still does not display the Flash control in either Home or Stocktake. The user cannot conveniently inspect browser DevTools on the phone.
