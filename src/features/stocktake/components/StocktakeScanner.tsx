@@ -63,7 +63,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
           className="stocktake-icon-button scanner-torch-toggle"
           onClick={() => { void scanner.setTorchEnabled(!scanner.torch.enabled); }}
           disabled={scanner.torch.pending || isClosing}
-          aria-label={scanner.torch.error ?? (scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash')}
+          aria-label={`${scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash'}${scanner.torch.error ? `. ${scanner.torch.error}` : ''}`}
           aria-pressed={scanner.torch.enabled}
           title={scanner.torch.error ?? (scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash')}
         >
