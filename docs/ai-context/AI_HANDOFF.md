@@ -5,7 +5,7 @@
 - Active branch: `feat/scanner-torch-control`.
 - PR #51 (ready for review): https://github.com/banjk124-hub/retailos-home/pull/51.
 - Scope: optional platform Torch API plus independent Home/Stocktake controls. No merge/deploy authorized.
-- CI and physical-device acceptance are pending; do not report success until actual checks complete.
+- GitHub Actions run #232 passed the full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`. Physical-device acceptance is still pending; do not merge/deploy until it is reviewed.
 
 ## Torch implementation rules
 1. Detect capability from the active video track's `getCapabilities().torch`; never infer from user-agent/device model.
