@@ -325,3 +325,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Added the same probe control/result display to Home and Stocktake diagnostics panels; no production Flash visibility changes.
 - Added regression coverage for not-exposed capability, constraint preservation, ON→OFF ordering and unchanged capability state.
 - CI/preflight and physical Android/iOS verification are pending. Do not merge or deploy until the latest CI head is green and the user reviews the device result.
+
+
+### 2026-11-09 — Close Torch investigation and retire temporary code
+
+- Confirmed PR #54 is merged into main at `1f67dc512d18a90a3ee90d9851401feae6dca705`; earlier PR #54 documentation incorrectly described it as unmerged.
+- Physical Galaxy S23 Ultra / Android Chrome result: Torch ON and OFF `applyConstraints()` requests both resolved, but the physical LED did not illuminate and `settings.torch` remained unexposed.
+- User confirms iOS Flash works normally. Decision: retain the existing capability-gated PWA implementation; unsupported devices show no Flash control and continue scanning.
+- Created cleanup branch `cleanup/remove-torch-investigation-code` from current main.
+- Removed the PR #54 capability-bypass pulse, probe/session contracts, probe hook state and temporary UI action.
+- Removed PR #53 timed capability sampling, timers, debug query handling, diagnostic panel and runbook. Kept production capability detection after first-frame readiness, production Torch ON/OFF, session guards and regression coverage.
+- Updated Architecture ADR-018, Implementation Status, Roadmap, Torch audit, AI Handoff, Project Context, Acceptance Checklist and this Session Log to reflect the final decision and evidence.
+- CI/preflight and final diff audit remain pending on the cleanup branch. No merge or deployment performed.
