@@ -9,7 +9,7 @@ Status: active working plan.
 2. PR #53/#54: on-device diagnostics and the explicit compatibility pulse completed the investigation.
 3. Evidence: iOS Flash works; Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch on the active track. The explicit ON/OFF probe was API-accepted but did not illuminate the physical LED.
 4. Decision: retain capability-gated behavior. Do not bypass capability detection, add device/browser heuristics, or introduce a native camera stack solely for Flash.
-5. **Cleanup in progress:** remove temporary diagnostic sampling, probe code, UI and stale runbook; retain production Torch adapter and regression coverage.
+5. **Cleanup PR #55:** temporary diagnostic sampling, probe code, UI and stale runbook have been removed; production Torch adapter and regression coverage remain. CI run #42572378379 passed full preflight. PR is open, unmerged and undeployed.
 
 **Protected contracts:** camera lease/refcount, current camera request/constraints, autofocus, first-frame readiness, lifecycle/recovery, decoder cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save, and independent module presentation.
 

@@ -5,7 +5,7 @@
 - Investigation: PR #53/#54 completed; see `ARCHITECTURE.md` ADR-018 and `SCANNER_TORCH_AUDIT_2026-11-09.md`.
 - User-confirmed platform result: iOS Flash works; Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch, and the explicit API-accepted probe did not illuminate the LED.
 - Current decision: keep capability-gated behavior. Do not bypass `getCapabilities().torch`, infer support from device/browser identity, or add native CameraX solely for Flash.
-- Cleanup branch: `cleanup/remove-torch-investigation-code`. It removes temporary PR #53 diagnostics and PR #54 probe code while retaining production Torch controls and regression tests. Verify PR/CI state before treating cleanup as merged or deployed.
+- Cleanup PR #55: https://github.com/banjk124-hub/retailos-home/pull/55. Temporary PR #53 diagnostics and PR #54 probe code are removed; production Torch controls and regression tests remain. GitHub Actions run #42572378379 passed full preflight on head `53b14c7`. PR remains open, unmerged and undeployed.
 
 ## Torch implementation rules
 1. Discover support from the active video track after `video.play()` and first usable frame.

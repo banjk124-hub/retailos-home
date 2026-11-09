@@ -337,3 +337,9 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Removed PR #53 timed capability sampling, timers, debug query handling, diagnostic panel and runbook. Kept production capability detection after first-frame readiness, production Torch ON/OFF, session guards and regression coverage.
 - Updated Architecture ADR-018, Implementation Status, Roadmap, Torch audit, AI Handoff, Project Context, Acceptance Checklist and this Session Log to reflect the final decision and evidence.
 - CI/preflight and final diff audit remain pending on the cleanup branch. No merge or deployment performed.
+
+
+- PR #55 opened: https://github.com/banjk124-hub/retailos-home/pull/55.
+- Initial CI run #42572298358 found three stale debug-state resets in `closeScanner()`; removed those setters without changing production Torch state cleanup.
+- Latest head `53b14c7b060b172be2ad203675c81071f3ae2553` passed GitHub Actions run #42572378379, including scanner regression suites, TypeScript/Vite production build, GitHub Pages build and full preflight.
+- PR #55 remains open, unmerged and undeployed pending user review/approval.

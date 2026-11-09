@@ -7,11 +7,14 @@
 - Android Chrome / Samsung Galaxy S23 Ultra: active track does not expose `torch`; the PR #54 diagnostic pulse was API-accepted for ON and OFF, but the physical LED did not illuminate. Production behavior remains unsupported on this tested path.
 - Unsupported/rejected Torch never blocks camera preview or barcode scanning. No user-agent/model fallback or native bridge is planned for this single capability.
 
-## Investigation cleanup
-- PR #53 timed capability sampling and its diagnostic panel are temporary investigation tooling.
-- PR #54's capability-bypass ON/OFF pulse is temporary investigation tooling.
-- Branch `cleanup/remove-torch-investigation-code` removes both diagnostic paths, their contracts, timers, hook state and panel while preserving production Torch control and regression tests.
-- Verification is pending on this cleanup branch. Do not treat the cleanup as merged or deployed until its PR and CI are complete.
+## Cleanup PR #55 — verification passed
+- Removed PR #53 timed capability sampling, follow-up timers, diagnostic callback/state, `scannerDebug=1` handling and diagnostic panel.
+- Removed PR #54 capability-bypass pulse, probe contracts, helper, session state and hook action.
+- Deleted the obsolete Torch diagnostics runbook.
+- Preserved production capability discovery, capability-gated ON/OFF, active-track constraint preservation, session guards and production regression tests.
+- PR: https://github.com/banjk124-hub/retailos-home/pull/55.
+- GitHub Actions run #42572378379 passed full `npm run preflight` on head `53b14c7b060b172be2ad203675c81071f3ae2553`.
+- PR #55 is open, unmerged and undeployed. No merge or deployment has been performed.
 
 ---
 

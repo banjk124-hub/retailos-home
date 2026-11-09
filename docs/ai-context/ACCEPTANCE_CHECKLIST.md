@@ -9,12 +9,13 @@
 - [x] Android Chrome / Samsung Galaxy S23 Ultra: no Torch capability/settings exposed; explicit diagnostic request was API-accepted but physical LED did not illuminate. Device remains unsupported through the normal capability gate.
 - [ ] Additional Android devices that expose `getCapabilities().torch === true`: verify physical ON/OFF, close while on, background/foreground recovery and scanner stability.
 
-## Cleanup acceptance
-- [ ] Remove PR #53 diagnostic sampler, timers, React state, panel and `scannerDebug` path.
-- [ ] Remove PR #54 capability-bypass probe and probe-only contracts/state.
-- [ ] Keep production Torch capability, ON/OFF adapter and regression tests.
-- [ ] Full `npm run preflight` passes on the cleanup PR head.
-- [ ] Confirm no behavior change in Home, Stocktake or iOS.
+## Cleanup acceptance — PR #55
+- [x] Remove PR #53 diagnostic sampler, timers, React state, panel and `scannerDebug` path.
+- [x] Remove PR #54 capability-bypass probe and probe-only contracts/state.
+- [x] Keep production Torch capability, ON/OFF adapter and regression tests.
+- [x] Full `npm run preflight` passes on cleanup PR head; GitHub Actions run #42572378379 is green.
+- [x] Source diff preserves Home/Stocktake business flows and the iOS camera path; no production camera acquisition or decoder changes.
+- [ ] Merge and deployment remain pending user approval.
 
 Capability is browser/device/camera-mode dependent. A resolved `applyConstraints()` promise is not proof of physical LED activation. Do not infer support from model names or user-agent.
 

@@ -1,6 +1,6 @@
 ## ADR-018 — Capability-gated camera Torch; investigation tooling retired (2026-11-09)
 
-**Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing are being removed in `cleanup/remove-torch-investigation-code`.
+**Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing are removed by PR #55; GitHub Actions run #42572378379 passed full preflight on the PR head. PR #55 remains open, unmerged and undeployed.
 
 ### Context
 - PR #51/#52 introduced optional Torch control and deferred capability discovery until after video playback and the first usable frame.
