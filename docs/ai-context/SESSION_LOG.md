@@ -1,3 +1,14 @@
+### 2026-11-09 — PR #53 opt-in Android Torch diagnostics
+
+- User confirms PR #52 merged/deployed; iOS works but Android Chrome on Samsung Galaxy S23 Ultra still hides Flash in both Home and Stocktake.
+- Created `feat/scanner-torch-device-diagnostics` from main after PR #52 merge.
+- Added privacy-safe active-track snapshots at first frame and +250 ms / +1000 ms / +2500 ms. Diagnostics include API availability/errors, torch capability/settings, ready/muted state, facing mode, dimensions, frame rate and applyConstraints availability; deviceId is excluded.
+- Added an opt-in mobile diagnostic panel in both scanner modules, enabled only with `?scannerDebug=1`. Diagnostic sampling is disabled in normal mode and retains at most four samples.
+- Diagnostics do not change support detection, camera constraints/acquisition, Torch commands, decoder, lifecycle, or module presentation.
+- GitHub Actions run #245 (`42562743254`) passed full `npm run preflight` on head `d481cf8bd096bd92d43fac267cd6be453c6370a8`. An earlier run failed on a stale source assertion; the assertion was corrected and the current head passed. PR #53 is ready for review; no merge or deployment performed.
+
+---
+
 ### 2026-11-09 — Android Torch control not visible after PR #51 deployment
 
 - User confirms PR #51 merged/deployed and tested: iOS Flash toggles reliably; Android Flash control does not appear.

@@ -1,3 +1,34 @@
+## ADR-018 — Opt-in on-device Torch diagnostics (2026-11-09)
+
+**Status:** Implemented in PR #53; GitHub Actions run #245 passed full preflight. Physical-device validation remains pending.
+
+### Context
+PR #51 added optional Torch controls and PR #52 moved initial capability discovery until after video playback and the first usable frame. The user reports that iOS works but Android Chrome on a Samsung Galaxy S23 Ultra still does not display the Flash control in either Home or Stocktake. The user cannot conveniently inspect browser DevTools on the phone.
+
+### Decision
+- Add an opt-in diagnostic surface enabled only by the URL query parameter `?scannerDebug=1`.
+- Capture one active-track capability snapshot after first-frame readiness and three bounded follow-up samples at 250 ms, 1000 ms and 2500 ms. This distinguishes an absent capability from one exposed asynchronously.
+- Report API availability/errors, `torch` capability/settings values, track ready/muted state, facing mode, dimensions, frame rate and applyConstraints availability.
+- Never expose `deviceId`, enumerate camera identifiers, infer support from user-agent/device model, or force a Flash control to appear.
+- Keep diagnostics observational. They do not change camera constraints, active camera selection, Torch support decisions, enable/disable behavior, decoder behavior, scanner lifecycle or module presentation.
+- Collect samples only when the explicit debug query parameter is present. Keep at most four samples in the feature hook.
+- Home and Stocktake render the same compact diagnostic utility only when opted in; each feature retains ownership of its scanner layout and presentation.
+
+### Verification / device runbook
+- Open the deployed PWA with `?scannerDebug=1` appended to its URL, then open either scanner module.
+- Expand or inspect the **SCANNER TORCH DIAGNOSTICS** panel after the camera preview appears. It reports four timed samples.
+- `torch capability=true` means the active track advertises Torch. If the control is still absent, investigate the React state bridge/render path.
+- `torch capability=false` means the active track explicitly reports no Torch capability for this session.
+- `torch capability=not-exposed` means the API exists but did not report the Torch property during the sampled window.
+- `unavailable` or API errors require inspection of the corresponding API availability/error fields.
+- Remove the query parameter to disable the panel and diagnostic sampling.
+- Automated tests/builds do not replace physical Android Chrome and iOS Safari/PWA validation.
+
+### Protected scope
+No native bridge, Camera2/CameraX integration, camera fallback, device-specific branch, user-agent detection, Torch behavior change, camera acquisition/lease change, camera constraint change, autofocus change, first-frame readiness change, decoder change, barcode validation/delivery change, or Home/Stocktake business-flow change is included.
+
+---
+
 ## ADR-015 — Geometry-neutral engine video readiness (2026-11-09)
 
 **Status:** Accepted and implemented in PR #49; merged to `main` at `1764c858a7d7855950ebe328a3a653d6935fa796`. User confirms deployment and post-deployment testing without issues.

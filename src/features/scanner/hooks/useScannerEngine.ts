@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerTorchState } from '../../../platform/scanner/contracts';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerTorchDiagnosticSample, type ScannerTorchState } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -59,6 +59,9 @@ export function useScannerEngine({
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
   const [torch, setTorch] = useState<ScannerTorchState>(EMPTY_TORCH_STATE);
+  const [torchDiagnostics, setTorchDiagnostics] = useState<ScannerTorchDiagnosticSample[]>([]);
+  const diagnosticsEnabled = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('scannerDebug') === '1';
   const lastUiStateChangeAtRef = useRef(performance.now());
   const mountedRef = useRef(false);
 
@@ -103,6 +106,7 @@ export function useScannerEngine({
 
   const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
     setTorch(EMPTY_TORCH_STATE);
+    setTorchDiagnostics([]);
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
       profile: 'HIGH',
@@ -115,6 +119,11 @@ export function useScannerEngine({
       onTorchStateChange: (state) => {
         if (mountedRef.current && sessionRef.current === session) setTorch(state);
       },
+      onTorchDiagnosticsChange: diagnosticsEnabled ? (sample) => {
+        if (mountedRef.current && sessionRef.current === session) {
+          setTorchDiagnostics((current) => [...current.slice(-3), sample]);
+        }
+      } : undefined,
       onResult: (result) => {
         // Ignore callbacks from a retired session after recovery has detached it.
         if (sessionRef.current !== session) return;
@@ -160,7 +169,7 @@ export function useScannerEngine({
     sessionRef.current = session;
     recoveryRetiredSessionRef.current = null;
     return session;
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, diagnosticsEnabled, hapticFeedback, mode, scanCooldownMs]);
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
@@ -295,6 +304,7 @@ export function useScannerEngine({
     await session?.close();
     if (mountedRef.current) {
       setTorch(EMPTY_TORCH_STATE);
+      setTorchDiagnostics([]);
       setIsStarting(false);
       setIsPreviewReady(false);
       setIsScanning(false);
@@ -367,7 +377,7 @@ export function useScannerEngine({
   }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, setTorchEnabled,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, torchDiagnostics, diagnosticsEnabled, setTorchEnabled,
     startScanner, pauseScanner, closeScanner, prepareAudio: unlockScannerAudio,
   };
 }

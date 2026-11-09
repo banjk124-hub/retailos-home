@@ -64,6 +64,26 @@ export type ScannerLifecycleEvent = {
 
 export type ScannerLifecycleObserver = (event: ScannerLifecycleEvent) => void;
 
+/** Read-only Torch capability sample for on-device diagnostics. No device identifiers are exposed. */
+export type ScannerTorchDiagnosticSample = {
+  sample: 'first-frame' | '250ms' | '1000ms' | '2500ms';
+  timestamp: number;
+  elapsedMs: number;
+  capabilityApi: 'available' | 'missing' | 'error';
+  settingsApi: 'available' | 'missing' | 'error';
+  torchCapability: boolean | 'not-exposed' | 'unavailable';
+  settingsTorch: boolean | 'not-exposed' | 'unavailable';
+  applyConstraintsApi: boolean;
+  trackReadyState: string;
+  trackMuted: boolean;
+  facingMode: string | null;
+  width: number | null;
+  height: number | null;
+  frameRate: number | null;
+  capabilitiesErrorName: string | null;
+  settingsErrorName: string | null;
+};
+
 /** Camera torch state. Support is discovered from the active video track. */
 export type ScannerTorchState = {
   supported: boolean;
@@ -144,6 +164,8 @@ export type ScannerOpenOptions = {
   onPreviewReady?: () => void;
   /** Optional technical camera capability updates; presentation stays feature-owned. */
   onTorchStateChange?: (state: ScannerTorchState) => void;
+  /** Optional read-only diagnostics; does not affect capability or presentation decisions. */
+  onTorchDiagnosticsChange?: (sample: ScannerTorchDiagnosticSample) => void;
   onError?: (error: ScannerError) => void;
 };
 

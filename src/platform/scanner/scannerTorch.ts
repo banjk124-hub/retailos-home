@@ -1,4 +1,4 @@
-import type { ScannerTorchState } from './contracts';
+import type { ScannerTorchDiagnosticSample, ScannerTorchState } from './contracts';
 
 type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
 type TorchSettings = MediaTrackSettings & { torch?: boolean };
@@ -20,6 +20,75 @@ export function readScannerTorchState(track: MediaStreamTrack | null): ScannerTo
   } catch {
     return { supported: false, enabled: false, pending: false };
   }
+}
+
+
+/**
+ * Capture one privacy-safe capability snapshot from the active video track.
+ * This is observational only: it never changes camera constraints or support state.
+ */
+export function readScannerTorchDiagnostic(
+  track: MediaStreamTrack | null,
+  sample: ScannerTorchDiagnosticSample['sample'],
+  startedAt: number,
+): ScannerTorchDiagnosticSample {
+  let capabilityApi: ScannerTorchDiagnosticSample['capabilityApi'] = 'missing';
+  let settingsApi: ScannerTorchDiagnosticSample['settingsApi'] = 'missing';
+  let torchCapability: ScannerTorchDiagnosticSample['torchCapability'] = 'unavailable';
+  let settingsTorch: ScannerTorchDiagnosticSample['settingsTorch'] = 'unavailable';
+  let facingMode: string | null = null;
+  let width: number | null = null;
+  let height: number | null = null;
+  let frameRate: number | null = null;
+  let capabilitiesErrorName: string | null = null;
+  let settingsErrorName: string | null = null;
+
+  if (track && typeof track.getCapabilities === 'function') {
+    capabilityApi = 'available';
+    try {
+      const capabilities = track.getCapabilities() as TorchCapabilities;
+      torchCapability = typeof capabilities.torch === 'boolean' ? capabilities.torch : 'not-exposed';
+    } catch (cause) {
+      capabilityApi = 'error';
+      capabilitiesErrorName = cause instanceof Error ? cause.name : 'UnknownError';
+      torchCapability = 'unavailable';
+    }
+  }
+
+  if (track && typeof track.getSettings === 'function') {
+    settingsApi = 'available';
+    try {
+      const settings = track.getSettings() as TorchSettings;
+      settingsTorch = typeof settings.torch === 'boolean' ? settings.torch : 'not-exposed';
+      facingMode = typeof settings.facingMode === 'string' ? settings.facingMode : null;
+      width = typeof settings.width === 'number' ? settings.width : null;
+      height = typeof settings.height === 'number' ? settings.height : null;
+      frameRate = typeof settings.frameRate === 'number' ? settings.frameRate : null;
+    } catch (cause) {
+      settingsApi = 'error';
+      settingsErrorName = cause instanceof Error ? cause.name : 'UnknownError';
+      settingsTorch = 'unavailable';
+    }
+  }
+
+  return {
+    sample,
+    timestamp: Date.now(),
+    elapsedMs: Math.max(0, Math.round(performance.now() - startedAt)),
+    capabilityApi,
+    settingsApi,
+    torchCapability,
+    settingsTorch,
+    applyConstraintsApi: Boolean(track && typeof track.applyConstraints === 'function'),
+    trackReadyState: track?.readyState ?? 'missing',
+    trackMuted: track?.muted ?? false,
+    facingMode,
+    width,
+    height,
+    frameRate,
+    capabilitiesErrorName,
+    settingsErrorName,
+  };
 }
 
 /** Apply the non-standard MediaStreamTrack torch constraint when advertised by the track. */

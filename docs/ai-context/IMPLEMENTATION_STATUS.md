@@ -1,15 +1,25 @@
-# Current implementation status — Android Torch capability timing correction (2026-11-09)
+# Current implementation status — Android Torch diagnostics (2026-11-09)
 
-User confirms PR #51 (optional Torch controls) has been merged, deployed and tested. iOS Torch enable/disable works reliably; Android does not display the Flash control.
+User confirms PR #52 was merged, deployed and tested. iOS remains stable; Android Chrome on Samsung Galaxy S23 Ultra still does not display the Flash control in either Home or Stocktake.
 
-## PR #52 — deferred capability discovery
-- Source audit found Torch capability was read immediately after getUserMedia lease resolution, before video attachment/playback/first decoded frame.
-- Move capability discovery until after playback and fresh-frame readiness. This aligns with Chromium's documented timing for camera capabilities.
-- Preserve session generation/disposal guards; no camera acquisition, constraints, autofocus, decoder or UI presentation changes.
-- Add safe capability diagnostics and regression coverage for a capability that becomes visible only after streaming begins.
-- Android physical-device retest is pending. Inspect the `[RetailOS Scanner] Torch capability` console diagnostic. A `not-exposed` result after first frame indicates the active track does not advertise Torch; do not force the UI visible.
+## PR #53 — opt-in on-device diagnostics
+- Adds privacy-safe active-track snapshots after first-frame readiness and at 250 ms, 1000 ms and 2500 ms.
+- Exposes capability/settings values, API availability/errors, track ready/muted state, facing mode, dimensions, frame rate and applyConstraints availability.
+- Shows a compact diagnostic panel in both scanner modules only when the PWA URL contains `?scannerDebug=1`.
+- Diagnostics are observational and collected only in debug mode. They do not alter Torch support decisions or camera behavior.
+- No deviceId, camera identifier, user-agent inference or device-specific workaround is added.
+- GitHub Actions run #245 passed full `npm run preflight` on the current implementation head. Physical-device validation is pending; PR #53 is ready for review.
 
-PR #52: https://github.com/banjk124-hub/retailos-home/pull/52.
+Branch: `feat/scanner-torch-device-diagnostics`.
+PR #53: https://github.com/banjk124-hub/retailos-home/pull/53.
+
+## Device verification instructions
+1. Open the deployed PWA with `?scannerDebug=1` appended to its URL.
+2. Open Home Scanner or Stocktake Scanner and wait for the live preview.
+3. Read or screenshot the **SCANNER TORCH DIAGNOSTICS** panel after its four samples appear.
+4. Send the panel output/screenshot and confirm whether both modules show the same values.
+5. Remove `?scannerDebug=1` for normal operation.
+
 ---
 # Current implementation status — PR #49 geometry-neutral video readiness (2026-11-09)
 
