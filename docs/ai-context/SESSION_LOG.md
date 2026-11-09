@@ -375,3 +375,5 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Kept the production gain curve unchanged pending controlled physical-device A/B testing; do not infer perceived loudness from the numeric gain alone.
 - Synchronized AI Handoff, Implementation Status, Roadmap, Architecture ADR-018/019/020 and Acceptance Checklist with verified PR #55/#56 merge states and the outstanding physical QA gates.
 - Protected camera, decoder, barcode, Torch, lifecycle, Home lookup and Stocktake form/save behavior. CI for this follow-up branch remains pending.
+
+- Final documentation-synchronized PR head `9b0d76a5931a85bd336629348ec98bbd96fb86b4` also passed full preflight in GitHub Actions run #42648085229. No production runtime source changed in this follow-up.
