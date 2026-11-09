@@ -392,7 +392,7 @@ Home and Stocktake share the camera session and need optional flashlight control
 - The platform session discovers Torch support from the active video track's `getCapabilities().torch`; it does not infer support from device model, user-agent, facing mode or camera presence alone.
 - Torch remains off by default. Camera startup, preview readiness and decoder initialization must not wait for or automatically enable it.
 - The platform contract exposes typed torch state and an explicit enable/disable operation. The session applies `MediaStreamTrack.applyConstraints()` with the advanced `torch` constraint only when support is advertised.
-- Because `applyConstraints()` can replace omitted custom constraints, the Torch adapter preserves existing constraints and falls back to pinning the active width, height and frame rate from `getSettings()` when needed.
+- Because `applyConstraints()` can replace omitted custom constraints, the Torch adapter preserves existing constraints and falls back to pinning the active width, height, frame rate and facing mode from `getSettings()` when needed.
 - A module may ignore this capability entirely. A consuming module decides whether/where to render a control, its labels, icons, feedback, visibility and interaction policy.
 - Home and Stocktake independently expose a flash control when their active track reports support. Neither module shares a presentation component or visual contract.
 - Pending operations disable repeated taps. Async completion is accepted only while the same session generation and video track remain active. Teardown, suspend and recovery clear the old track state; a replaced track must be detected again.
