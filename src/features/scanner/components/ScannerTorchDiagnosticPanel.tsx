@@ -64,7 +64,7 @@ export default function ScannerTorchDiagnosticPanel({ samples, onProbe, probePen
             <div style={rowStyle}><span>Torch OFF request</span><strong>{probeResult.offAttempted ? (probeResult.offAccepted ? 'accepted' : `rejected · ${probeResult.offErrorName ?? 'unknown'}`) : 'not-attempted'}</strong></div>
             <div style={rowStyle}><span>settings.torch</span><span>{value(probeResult.settingsTorchBefore)} → {value(probeResult.settingsTorchAfter)}</span></div>
             <div style={rowStyle}><span>track after probe</span><span>{probeResult.trackReadyState}</span></div>
-            <div style={{ marginTop: 6, color: '#ffd58a' }}>Accepted means the browser resolved applyConstraints(); confirm whether the physical LED actually illuminated.</div>
+            <div style={{ marginTop: 6, color: '#ffd58a' }}>Accepted means the browser resolved applyConstraints(); confirm whether the physical LED actually illuminated. If OFF is rejected, close the scanner to release the camera track.</div>
           </section>
         )}
         {samples.map((sample) => (
