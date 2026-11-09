@@ -234,6 +234,7 @@ export class UniversalScannerSession implements ScannerSession {
 
   private startTorchDiagnostics(track: MediaStreamTrack | null, generation: number): void {
     this.clearTorchDiagnosticTimers();
+    if (!this.options.onTorchDiagnosticsChange) return;
     const startedAt = performance.now();
     const publish = (sample: ScannerTorchDiagnosticSample['sample']) => {
       if (this.disposed || generation !== this.generation || this.torchTrack !== track) return;
