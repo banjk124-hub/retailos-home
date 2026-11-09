@@ -87,7 +87,7 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 
 
 ## ADR-024 — Feature-owned preview region integration (2026-11-10)
-**Status:** Implemented on SCAN-03 branch; GitHub Actions run #302 passed. PR #61 remains Draft pending PR #60 merge/review. ROI decode remains deferred to SCAN-04.
+**Status:** Implemented on SCAN-03 branch; GitHub Actions run #309 passed. PR #61 remains Draft pending PR #60 merge/review. ROI decode remains deferred to SCAN-04.
 
 ### Decision
 - Home and Stocktake independently own their video and reticle elements.
