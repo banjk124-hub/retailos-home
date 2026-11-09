@@ -1,14 +1,13 @@
-## Current project focus — technical-only scanner lifecycle separation (2026-11-08)
+## Current project focus — post PR #49 video presentation ownership (2026-11-09)
 
-- PR #47 restore has been merged and physically tested by the user; the restored Home/Stocktake scanner presentation works correctly.
-- Current main baseline: `7f35943b33fc8ce990be0ebe172e0712ee98572d`; active task branch: `refactor/scanner-lifecycle-technical-only`.
-- Current objective: remove presentation completion from the platform scanner lifecycle contract. Engine reports only technical session/resource events; each feature controls its own animation and UI unmount.
-- Preserve current scanner behavior: camera acquisition/release, decoder, barcode validation/delivery, single/continuous semantics, Recovery, Home lookup, Stocktake form fill and explicit persistence.
-- Do not unify module transitions or add shared presentation logic. No merge/deploy without explicit user approval.
-
-
----
-
+- Current main baseline: `1764c858a7d7855950ebe328a3a653d6935fa796` (PR #49 merge).
+- PR #49 is merged and deployed; the user confirms post-deployment testing completed without issues.
+- The shared scanner engine no longer imposes a DOM geometry condition before attaching/playing the camera stream. The obsolete `videoPresentationLayout.ts` helper has been removed.
+- Technical first-frame readiness remains engine-owned. `videoWidth/videoHeight` are intrinsic decoded-media dimensions, not DOM/container measurements.
+- Home and Stocktake independently own their video DOM, layout, sizing, crop, visibility and preview reveal UX. Do not unify these presentation systems.
+- Preserve the technical-only lifecycle contract, camera lease/Recovery, decoder and barcode correctness, Home lookup, Stocktake form-fill and explicit persistence.
+- Current scanner source facts and acceptance evidence: `IMPLEMENTATION_STATUS.md`, `ARCHITECTURE.md` ADR-015, and `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md`.
+- Current task is documentation synchronization only on `docs/scanner-video-presentation-ownership`; no runtime changes are intended. Further scanner implementation must be driven by a reproducible defect, measured bottleneck or explicit new scope.
 
 # Historical engineering focus snapshot — 2026-11-08
 
