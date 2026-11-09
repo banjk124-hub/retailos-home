@@ -84,6 +84,27 @@ closeTo(contain.region.rect.y, 0, 'contain source top');
 closeTo(contain.region.rect.width, 1, 'contain source width');
 closeTo(contain.region.rect.height, 1, 'contain source height');
 
+// Current production reticles map through their respective portrait preview geometries.
+const homeReticle = map(
+  { x: 0.08, y: 0.22, width: 0.84, height: 0.56 },
+  { previewWidth: 390, previewHeight: 844, objectPosition: { x: 0.5, y: 0.5 } },
+);
+assert.equal(homeReticle.ok, true);
+closeTo(homeReticle.region.rect.x, 0.39083234597, 'Home reticle source x');
+closeTo(homeReticle.region.rect.y, 0.22, 'Home reticle source y');
+closeTo(homeReticle.region.rect.width, 0.21833530806, 'Home reticle source width');
+closeTo(homeReticle.region.rect.height, 0.56, 'Home reticle source height');
+
+const stocktakeReticle = map(
+  { x: 0.10, y: 0.28, width: 0.80, height: 0.44 },
+  { previewWidth: 360, previewHeight: 450, objectPosition: { x: 0.5, y: 0.5 } },
+);
+assert.equal(stocktakeReticle.ok, true);
+closeTo(stocktakeReticle.region.rect.x, 0.32, 'Stocktake reticle source x');
+closeTo(stocktakeReticle.region.rect.y, 0.28, 'Stocktake reticle source y');
+closeTo(stocktakeReticle.region.rect.width, 0.36, 'Stocktake reticle source width');
+closeTo(stocktakeReticle.region.rect.height, 0.44, 'Stocktake reticle source height');
+
 // Mirroring is applied in visual preview space and inverted before source mapping.
 const leftPreviewRegion = { x: 0, y: 0.2, width: 0.2, height: 0.6 };
 const normalLeft = map(leftPreviewRegion);
