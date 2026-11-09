@@ -37,3 +37,12 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Unverified: real-device Home/Stocktake alignment belongs to SCAN-03.
 - Post-merge audit: no runtime geometry or architecture defect found. Corrected the test's DOM-boundary regex and added self-checks for `document.` / `window.` detection; no production runtime behavior changed.
 - Risks / rollback: no runtime behavior changed; revert SCAN-02 if a future audit identifies a mapping defect.
+
+
+## 2026-11-10 — SCAN-03 module-owned preview region integration
+- Intent: wire each module's existing reticle to source-frame geometry without changing presentation or scanner lifecycle.
+- Files: feature-level preview measurement service/hook, scanner session region contract, Home/Stocktake ref wiring, regression tests and synchronized SCAN-03 documentation.
+- Behavior: map measured reticle rectangles through visible-content bounds and the SCAN-02 mapper; store source region in place. Decoder still receives the full video.
+- Checks: automated geometry/session-update suite and full CI pending.
+- Unverified: real iOS Safari/PWA and Android Chrome/PWA reticle alignment.
+- Risks / rollback: no decoder ROI or camera/lifecycle changes; revert SCAN-03 if module geometry or in-place update contract fails.
