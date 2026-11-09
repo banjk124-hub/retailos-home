@@ -6,13 +6,14 @@ import type {
   ScannerLifecycleObserver,
   ScannerTorchState,
   ScannerTorchDiagnosticSample,
+  ScannerTorchProbeResult,
 } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
-import { applyScannerTorch, readScannerTorchDiagnostic, readScannerTorchState } from './scannerTorch';
+import { applyScannerTorch, probeScannerTorchConstraint, readScannerTorchDiagnostic, readScannerTorchState } from './scannerTorch';
 
 type VideoReadiness = {
   readyState: number;
@@ -143,6 +144,7 @@ export class UniversalScannerSession implements ScannerSession {
   private torchTrack: MediaStreamTrack | null = null;
   private torchState: ScannerTorchState = { supported: false, enabled: false, pending: false };
   private torchCommand: Promise<ScannerTorchState> | null = null;
+  private torchProbeCommand: Promise<ScannerTorchProbeResult> | null = null;
   private torchDiagnosticTimers: number[] = [];
   private decoder: ScannerDecoderAdapter | null = null;
   private frameHandle: number | null = null;
@@ -194,6 +196,7 @@ export class UniversalScannerSession implements ScannerSession {
 
   async setTorchEnabled(enabled: boolean): Promise<ScannerTorchState> {
     if (this.torchCommand) return this.torchCommand;
+    if (this.torchProbeCommand) return this.getTorchState();
     const track = this.torchTrack;
     const generation = this.generation;
     if (!track || track.readyState !== 'live' || !this.torchState.supported || this.disposed) {
@@ -213,6 +216,30 @@ export class UniversalScannerSession implements ScannerSession {
     })();
     this.torchCommand = command;
     return command;
+  }
+
+  async probeTorchCompatibility(): Promise<ScannerTorchProbeResult> {
+    if (!this.options.onTorchDiagnosticsChange || this.torchCommand || this.torchProbeCommand) {
+      return probeScannerTorchConstraint(null);
+    }
+    const track = this.torchTrack;
+    const generation = this.generation;
+    if (!track || track.readyState !== 'live' || this.disposed) {
+      return probeScannerTorchConstraint(null);
+    }
+
+    const command = probeScannerTorchConstraint(track, 1200);
+    this.torchProbeCommand = command;
+    try {
+      const result = await command;
+      // The probe is deliberately observational: never promote Torch support
+      // or publish a capability state from a successful non-standard request.
+      if (generation !== this.generation || this.torchTrack !== track || this.disposed) return result;
+      console.info('[RetailOS Scanner] Torch compatibility probe', result);
+      return result;
+    } finally {
+      if (this.torchProbeCommand === command) this.torchProbeCommand = null;
+    }
   }
 
   private updateTorchState(state: ScannerTorchState): void {
@@ -663,6 +690,7 @@ export class UniversalScannerSession implements ScannerSession {
     this.stream = null;
     this.torchTrack = null;
     this.torchCommand = null;
+    this.torchProbeCommand = null;
     this.updateTorchState({ supported: false, enabled: false, pending: false });
     if (this.video.srcObject === stream) {
       try {
