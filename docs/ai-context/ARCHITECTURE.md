@@ -555,3 +555,21 @@ The mapper models `fill`, `contain`, `cover`, `none` and `scale-down`; calculate
 The mapper performs no DOM reads and has no camera, React, media-stream or decoder dependencies. It does not create a camera-startup geometry barrier. Home and Stocktake retain separate preview/reticle ownership. SCAN-03 will wire each module independently; SCAN-04 will activate strict ROI decoding only after both integrations are valid.
 
 See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geometry.mjs`.
+
+
+## ADR-024 — Feature-owned preview region measurement and in-place session update (2026-11-10)
+**Status:** Implemented on SCAN-03 branch; pending CI/review. Decoder consumption is deferred to SCAN-04.
+
+### Decision
+- Home and Stocktake keep their own video and reticle DOM. A feature-level binding hook may share measurement mechanics but must not own presentation.
+- Measure the actual video/reticle DOMRects and computed object-fit/object-position after scanning is already ready; never add a camera-startup geometry barrier.
+- Clip each reticle to visible image content, then map through the SCAN-02 pure mapper.
+- Publish source-frame normalized geometry through an in-place ScannerSession setter/getter.
+- Region updates must not restart the session, camera lease, decoder or frame loop. Invalid/unsupported geometry clears the active region rather than falling back to full frame.
+
+### Constraints
+- No decoder crop/ROI-only decode in SCAN-03; the decoder continues to receive the full video.
+- No camera lifecycle, lease/refcount, readiness, recovery, cadence, validation, UI, CSS or module business-flow changes.
+- Physical iOS Safari/PWA and Android Chrome/PWA alignment QA is required after deployment.
+
+See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md` and `scripts/test-scanner-preview-region.mjs`.
