@@ -361,7 +361,7 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 
 - Opened Draft PR #56: https://github.com/banjk124-hub/retailos-home/pull/56.
 - GitHub Actions run #42575410311 passed the full local-equivalent `npm run preflight` on latest code head `47ff115a7fcc631b24ccda3c0b0e3e0800439cf7`, including the new Scanner settings regression test, existing scanner barcode/lifecycle/Torch/presentation tests, TypeScript/Vite production build and GitHub Pages build.
-- PR #56 remains Draft, open, unmerged and undeployed. Physical Android vibration/beep-level QA and iOS beep/unsupported-vibration QA remain pending.
+- At this historical point PR #56 was still Draft and unmerged; this status was superseded by merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`. Physical Android vibration/beep-level QA and iOS beep/unsupported-vibration QA remain pending.
 
 
 ### 2026-11-09 — Post-merge Scanner audio audit and synchronization
