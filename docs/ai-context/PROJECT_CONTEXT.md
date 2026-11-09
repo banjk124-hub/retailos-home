@@ -1,3 +1,31 @@
+# Current project truth — 2026-11-10
+**Authoritative audit:** docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md  
+**Audited main:** 09cd3b5117ea38a16dd991f74320835b67ea04b5
+
+- Product stage: mobile-first React PWA foundation and local-first prototype; not production-ready multi-user operations.
+- Working local workflow: Stocktake (IndexedDB on one device; manual entry, scan-to-form, explicit save, duplicate rows, revisions, review and text export).
+- Shared Scanner: camera lease/session/lifecycle/preview, ZXing, validation, Torch capability, shared feedback/settings and QA instrumentation are present; two modules consume the same engine.
+- Other seven module UIs: integrating/placeholders, not complete workflows.
+- Backend auth: not integrated; local employee-code directory is frontend-visible. Duplicate employee code is present in current source and needs owner-confirmed correction.
+- Snapshot sync: parser/cache/service exists, but syncAuthorizedModuleData has no application caller or token provider.
+- Push: client exists; backend endpoint/sender not verified/configured.
+- Deployment: GitHub Pages; main CI and deploy workflow passed at audited SHA. This does not prove product readiness.
+- Current scanner focus: recognition and module-defined ROI, not camera lifecycle rewrite.
+- Documentation-only baseline/change-map work is active on docs/retailos-current-state-and-scanner-change-map. No runtime code or deployment changes.
+
+## Product constraints
+- Preserve known-good production behavior. Prefer branch-based, reversible, narrowly scoped changes.
+- Mobile-first for iOS Safari/PWA and Android Chrome/PWA; desktop remains supported where relevant.
+- Avoid unnecessary paid infrastructure/dependencies and heavyweight always-on processing.
+- Do not infer backend security from frontend UI or snapshot availability.
+- Keep business logic in its module and platform resource logic in shared services.
+- User-facing copy remains Vietnamese; technical documentation may use concise English to match repository conventions.
+- The current source and tests outrank old chat summaries and historical audit documents.
+
+The remaining sections in this file are historical project context. They must not override the 2026-11-10 source audit.
+
+--- Historical project notes below; current source truth is in RETAILOS_CURRENT_STATE_2026-11-10.md ---
+
 ## Current project focus — scanner Torch investigation closed (2026-11-09)
 
 - PR #51/#52: production capability-gated Torch control is merged.
