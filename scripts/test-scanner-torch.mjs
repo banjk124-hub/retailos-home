@@ -161,7 +161,7 @@ assert.doesNotMatch(cameraSession, /torch/i, 'camera acquisition constraints mus
 const hook = await readFile(new URL('../src/features/scanner/hooks/useScannerEngine.ts', import.meta.url), 'utf8');
 assert.match(hook, /setTorchEnabled = useCallback/);
 assert.match(hook, /onTorchStateChange: \(state\) =>/);
-assert.match(hook, /onTorchDiagnosticsChange: \(sample\) =>/);
+assert.match(hook, /onTorchDiagnosticsChange: diagnosticsEnabled \? \(sample\) =>/);
 assert.match(hook, /scannerDebug/);
 assert.match(hook, /setTorchDiagnostics\(\(current\) => \[\.\.\.current\.slice\(-3\), sample\]\)/);
 
