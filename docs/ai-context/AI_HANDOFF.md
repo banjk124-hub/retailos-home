@@ -1,25 +1,27 @@
-# Active AI handoff — scanner Torch capability PR #51 (2026-11-09)
+# Current AI handoff — scanner Torch capability (2026-11-09)
 
 - Repository: `banjk124-hub/retailos-home`.
-- Base main SHA for PR #51: `6f821bde716c958147113f66d626c53882414108`.
-- Active branch: `feat/scanner-torch-control`.
-- PR #51 (ready for review): https://github.com/banjk124-hub/retailos-home/pull/51.
-- Scope: optional platform Torch API plus independent Home/Stocktake controls. No merge/deploy authorized.
-- GitHub Actions run #232 passed the full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`. Physical-device acceptance is still pending; do not merge/deploy until it is reviewed.
+- Production implementation: PR #51/#52, shared Web MediaStreamTrack Torch path.
+- Investigation: PR #53/#54 completed; see `ARCHITECTURE.md` ADR-018 and `SCANNER_TORCH_AUDIT_2026-11-09.md`.
+- User-confirmed platform result: iOS Flash works; Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch, and the explicit API-accepted probe did not illuminate the LED.
+- Current decision: keep capability-gated behavior. Do not bypass `getCapabilities().torch`, infer support from device/browser identity, or add native CameraX solely for Flash.
+- Cleanup branch: `cleanup/remove-torch-investigation-code`. It removes temporary PR #53 diagnostics and PR #54 probe code while retaining production Torch controls and regression tests. Verify PR/CI state before treating cleanup as merged or deployed.
 
 ## Torch implementation rules
-1. Detect capability from the active video track's `getCapabilities().torch`; never infer from user-agent/device model.
-2. Never turn Torch on automatically during startup.
-3. Unsupported/rejected constraints are non-fatal. Preview and barcode decoding must continue.
-4. Keep UI presentation in Home and Stocktake. Engine/hook expose state and operation only.
-5. Guard async completion by active session generation and track identity.
-6. Reset Torch state when the track is retired, suspended, recovered or closed.
-7. Do not alter getUserMedia resolution/FPS, autofocus, first-frame readiness, decoder cadence, validation or business workflows.
-8. Validate real hardware separately on iOS Safari/PWA and Android Chrome/PWA. CI cannot establish Torch hardware support.
+1. Discover support from the active video track after `video.play()` and first usable frame.
+2. Render Flash only when `getCapabilities().torch === true`.
+3. Never turn Torch on automatically or send a Torch constraint when support is not advertised.
+4. Unsupported/rejected constraints are non-fatal; preview and barcode decoding must continue.
+5. Preserve existing track constraints when applying ON/OFF.
+6. Guard async completion by active session generation and track identity; clear state on suspend/recovery/close.
+7. Keep Home and Stocktake presentation independent. Engine/hook expose state and operation only.
+8. iOS remains on the existing WebKit path. No native bridge is part of the current scope.
 
-Read `ARCHITECTURE.md` ADR-016, `SCANNER_TORCH_AUDIT_2026-11-09.md`, source and `ACCEPTANCE_CHECKLIST.md` before changing this work.
+Read `ARCHITECTURE.md` ADR-018, `SCANNER_TORCH_AUDIT_2026-11-09.md`, source and `ACCEPTANCE_CHECKLIST.md` before changing Torch behavior.
 
 ---
+
+# Current AI handoff — post PR #49---
 # Current AI handoff — post PR #49 video presentation ownership (2026-11-09)
 
 ## Verified baseline
