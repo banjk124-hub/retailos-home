@@ -1,3 +1,65 @@
+# Current whole-app and Scanner acceptance gates — 2026-11-10
+Canonical source: docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md
+
+## Current release truth
+- [x] Main baseline identified: 09cd3b5117ea38a16dd991f74320835b67ea04b5.
+- [x] No open PRs at audit time.
+- [x] Main CI run 42652303936 succeeded.
+- [x] Pages workflow run 42652303768 succeeded.
+- [ ] Do not infer production multi-user readiness from CI/deployment.
+- [ ] Backend authentication/authorization integrated and security-reviewed.
+- [ ] Snapshot sync wired to real token provider and verified endpoint.
+- [ ] Complete operational UI for all required modules.
+- [ ] Stocktake backup/cross-device synchronization designed and tested.
+- [ ] Push backend delivery configured and verified.
+- [ ] Operational recovery/support and cross-platform acceptance completed.
+
+## Current app facts
+- [x] Stocktake local-first workflow exists.
+- [x] Seven other module UIs are marked integrating.
+- [x] Snapshot service and IndexedDB cache code exist.
+- [ ] Snapshot sync has an application caller/token provider.
+- [x] Push client and Service Worker event handlers exist.
+- [ ] Push backend endpoint and sender are verified.
+- [x] Prototype login is explicitly frontend-only.
+- [ ] Duplicate employee identifier in local directory resolved by owner-approved mapping.
+
+## Scanner protected foundation
+- [x] Shared engine consumed by Home and Stocktake.
+- [x] Camera lease/session and lifecycle recovery are present.
+- [x] Preview readiness is separate from decoder readiness.
+- [x] Feature-owned Home/Stocktake presentation remains separate.
+- [x] Technical lifecycle contract contains no presentation-completion event.
+- [x] Barcode whitelist and validation remain EAN-8, EAN-13 and CODE-128.
+- [x] Capability-gated Torch and shared feedback/settings exist.
+- [ ] Do not modify protected behavior without a scoped PR and regression evidence.
+
+## Scanner recognition expansion — not yet implemented
+- [ ] SCAN-01 module scan-region and camera-request contracts approved.
+- [ ] SCAN-02 pure preview-to-source geometry mapping tests.
+- [ ] SCAN-03 Home and Stocktake provide their own active region.
+- [ ] SCAN-04 strict ROI-only decoding; outside-ROI barcode cannot be accepted.
+- [ ] SCAN-05 labelled benchmark dataset and baseline metrics.
+- [ ] SCAN-06 bounded conditional recovery.
+- [ ] SCAN-07 rotation and deskew.
+- [ ] SCAN-08 small/far/low-light handling.
+- [ ] SCAN-09 advanced perspective/glare/curved cases only if justified.
+- [ ] SCAN-10 resource adaptation and iOS/Android device QA.
+
+## Required regression checks for every Scanner PR
+- [ ] Camera lease claim/cancel/release and no duplicate getUserMedia.
+- [ ] Preview readiness and foreground recovery unchanged.
+- [ ] No session/decoder/frame-loop recreation on ROI update.
+- [ ] No concurrent decode.
+- [ ] ROI geometry and invalid-region behavior covered.
+- [ ] No accepted barcode outside strict active ROI.
+- [ ] Validation whitelist/check digit/CODE-128 payload unchanged.
+- [ ] Home lookup and single-result close unchanged.
+- [ ] Stocktake form-fill, explicit save, manual entry, duplicates, revisions and export unchanged.
+- [ ] Existing Scanner preflight and production/Pages builds pass.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA recorded when behavior touches camera/decoder.
+
+---
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
 ## Shared Scanner settings — PR #56 (merged to main)
