@@ -13,8 +13,6 @@ type Options = {
   onDetected: (value: string) => void;
   mode?: ScannerMode;
   scanCooldownMs?: number;
-  audioFeedback?: boolean;
-  hapticFeedback?: boolean;
   cameraLeaseRequest?: CameraLeaseRequest | null;
   /** Optional observer; the engine binds events to the real platform session ID. */
   lifecycleObserver?: ScannerLifecycleObserver;
@@ -29,8 +27,6 @@ export function useScannerEngine({
   onDetected,
   mode = 'single',
   scanCooldownMs = 700,
-  audioFeedback = true,
-  hapticFeedback = true,
   cameraLeaseRequest = null,
   lifecycleObserver,
 }: Options) {
@@ -109,8 +105,6 @@ export function useScannerEngine({
       formats: [...SUPPORTED_BARCODE_FORMATS],
       mode,
       sameCodeCooldownMs: scanCooldownMs,
-      audioFeedback,
-      hapticFeedback,
       lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
       onTorchStateChange: (state) => {
         if (mountedRef.current && sessionRef.current === session) setTorch(state);
@@ -130,7 +124,7 @@ export function useScannerEngine({
         if (mode === 'single') desiredActiveRef.current = false;
         onDetectedRef.current(result.value);
         try {
-          playScannerFeedback({ audio: audioFeedback, haptic: hapticFeedback });
+          playScannerFeedback();
         } catch (feedbackError) {
           console.warn('[RetailOS Scanner] Feedback failed after barcode delivery:', feedbackError);
         }
@@ -160,7 +154,7 @@ export function useScannerEngine({
     sessionRef.current = session;
     recoveryRetiredSessionRef.current = null;
     return session;
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [mode, scanCooldownMs]);
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;

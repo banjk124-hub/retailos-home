@@ -342,4 +342,23 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - PR #55 opened: https://github.com/banjk124-hub/retailos-home/pull/55.
 - Initial CI run #42572298358 found three stale debug-state resets in `closeScanner()`; removed those setters without changing production Torch state cleanup.
 - Latest head `53b14c7b060b172be2ad203675c81071f3ae2553` passed GitHub Actions run #42572378379, including scanner regression suites, TypeScript/Vite production build, GitHub Pages build and full preflight.
-- PR #55 remains open, unmerged and undeployed pending user review/approval.
+- User later confirmed PR #55 was merged and deployed; this supersedes the earlier pending-status note.
+
+
+### 2026-11-09 — Shared Scanner settings audit and implementation
+
+- User confirmed PR #55 was merged and deployed; current `main` baseline inspected at `841e406966748bb3c9a012f5d4faf7da272facd4`.
+- Audited Home Settings navigation, QA Monitor, Home Scanner, Stocktake Scanner, `useScannerEngine`, platform contracts, Web Audio and vibration services.
+- Findings: Settings previously opened QA Monitor directly; gear icon was represented by `SlidersHorizontal`; feedback defaults were true but feature options could override them; beep gain was fixed at 0.24; haptics used one 25 ms pulse.
+- Created `feat/scanner-settings-hub-feedback-controls`.
+- Added a versioned device-local settings store, reactive hook, Settings Hub, Scanner settings panel and mobile-first styles.
+- Default beep level 50% maps to existing gain 0.24; 0% mutes; 100% maps to 0.48. Vibration remains enabled by default and uses the existing 25 ms pulse where `navigator.vibrate` is available.
+- Updated shared feedback to read current preferences at each accepted barcode result. Removed per-feature audio/haptic overrides from the hook and platform contract.
+- Added `scripts/test-scanner-settings.mjs` and registered it in preflight.
+- Protected: camera acquisition/lease, decoder, barcode validation, accepted-result gate, Home lookup, Stocktake form-fill/explicit-save, Torch and scanner lifecycle.
+- CI and physical-device QA are pending. No merge or deployment performed.
+
+
+- Opened Draft PR #56: https://github.com/banjk124-hub/retailos-home/pull/56.
+- GitHub Actions run #42575410311 passed the full local-equivalent `npm run preflight` on latest code head `47ff115a7fcc631b24ccda3c0b0e3e0800439cf7`, including the new Scanner settings regression test, existing scanner barcode/lifecycle/Torch/presentation tests, TypeScript/Vite production build and GitHub Pages build.
+- PR #56 remains Draft, open, unmerged and undeployed. Physical Android vibration/beep-level QA and iOS beep/unsupported-vibration QA remain pending.

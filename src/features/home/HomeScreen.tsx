@@ -28,6 +28,8 @@ import StocktakeModule from '../stocktake/components/StocktakeModule';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import ScannerQaMonitor from './components/ScannerQaMonitor';
+import SettingsHub from './components/SettingsHub';
+import ScannerSettingsPanel from '../scanner/components/ScannerSettingsPanel';
 import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 
 type Props = {
@@ -63,8 +65,29 @@ export default function HomeScreen({
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [showScannerQa, setShowScannerQa] = useState(false);
-  const closeScannerQa = useCallback(() => setShowScannerQa(false), []);
+  const [showScannerSettings, setShowScannerSettings] = useState(false);
+  const closeSettings = useCallback(() => {
+    setShowSettings(false);
+    setActiveNav('home');
+  }, []);
+  const openScannerQa = useCallback(() => {
+    setShowSettings(false);
+    setShowScannerQa(true);
+  }, []);
+  const closeScannerQa = useCallback(() => {
+    setShowScannerQa(false);
+    setShowSettings(true);
+  }, []);
+  const openScannerSettings = useCallback(() => {
+    setShowSettings(false);
+    setShowScannerSettings(true);
+  }, []);
+  const closeScannerSettings = useCallback(() => {
+    setShowScannerSettings(false);
+    setShowSettings(true);
+  }, []);
   useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
   const [barcodeLookup, setBarcodeLookup] = useState<{
     barcode: string;
@@ -537,7 +560,7 @@ export default function HomeScreen({
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    else if (id === 'settings') { setActiveNav('settings'); setShowScannerQa(true); }
+    else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
   };
   return <>
@@ -733,7 +756,9 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
+    {showSettings && <SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} />}
     {showScannerQa && <ScannerQaMonitor onClose={closeScannerQa} />}
+    {showScannerSettings && <ScannerSettingsPanel onClose={closeScannerSettings} />}
     {isBarcodeScannerOpen && <AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary>}
