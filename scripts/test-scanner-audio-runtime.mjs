@@ -58,6 +58,14 @@ class MockAudioContext {
   }
 }
 globalThis.AudioContext = MockAudioContext;
+const lifecycleListeners = { document: new Map(), window: new Map() };
+globalThis.document = {
+  hidden: false,
+  addEventListener(type, callback) { lifecycleListeners.document.set(type, callback); },
+};
+globalThis.window = {
+  addEventListener(type, callback) { lifecycleListeners.window.set(type, callback); },
+};
 
 const compile = (source) => ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
@@ -130,18 +138,24 @@ store.updateScannerSettings({ beepVolume: 0, vibrationEnabled: true });
 assert.doesNotThrow(() => feedback.playScannerFeedback(),
   'missing Vibration API is non-fatal and cannot block accepted-result handling');
 
-// Safari may interrupt a context during backgrounding; resume it from the next gesture.
+// Best-effort foreground recovery resumes an existing interrupted context without camera work.
 context.state = 'suspended';
-await audio.unlockScannerAudio();
-assert.equal(context.state, 'running', 'a suspended context resumes on the next user gesture');
+lifecycleListeners.document.get('visibilitychange')();
+await Promise.resolve();
+assert.equal(context.state, 'running', 'visible-page transition resumes a suspended context');
 
 context.state = 'interrupted';
-await audio.unlockScannerAudio();
-assert.equal(context.state, 'running', 'an interrupted Safari context resumes on the next user gesture');
+lifecycleListeners.window.get('pageshow')();
+await Promise.resolve();
+assert.equal(context.state, 'running', 'pageshow resumes a Safari-interrupted context');
 
+// A closed context cannot be recovered by a background event; the next explicit gesture recreates it.
 context.state = 'closed';
+lifecycleListeners.window.get('pageshow')();
+await Promise.resolve();
+assert.equal(MockAudioContext.instances.length, 1, 'foreground events do not create a replacement context without a gesture');
 await audio.unlockScannerAudio();
-assert.equal(MockAudioContext.instances.length, 2, 'a closed context is replaced with a fresh context');
+assert.equal(MockAudioContext.instances.length, 2, 'a closed context is replaced with a fresh context on a user gesture');
 assert.equal(MockAudioContext.instance.state, 'running', 'the replacement context resumes from the gesture');
 
 console.log('Scanner Web Audio runtime lifecycle, gain, duration, preview synchronization and vibration tests passed.');
