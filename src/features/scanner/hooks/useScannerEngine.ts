@@ -59,6 +59,9 @@ export function useScannerEngine({
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
   const [torch, setTorch] = useState<ScannerTorchState>(EMPTY_TORCH_STATE);
+  const [torchDiagnostic, setTorchDiagnostic] = useState<ScannerTorchDiagnosticSample | null>(null);
+  const diagnosticsEnabled = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('scannerDebug') === '1';
   const lastUiStateChangeAtRef = useRef(performance.now());
   const mountedRef = useRef(false);
 
@@ -103,6 +106,7 @@ export function useScannerEngine({
 
   const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
     setTorch(EMPTY_TORCH_STATE);
+    setTorchDiagnostic(null);
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
       profile: 'HIGH',
@@ -114,6 +118,9 @@ export function useScannerEngine({
       lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
       onTorchStateChange: (state) => {
         if (mountedRef.current && sessionRef.current === session) setTorch(state);
+      },
+      onTorchDiagnosticsChange: (sample) => {
+        if (mountedRef.current && sessionRef.current === session) setTorchDiagnostic(sample);
       },
       onResult: (result) => {
         // Ignore callbacks from a retired session after recovery has detached it.
@@ -295,6 +302,7 @@ export function useScannerEngine({
     await session?.close();
     if (mountedRef.current) {
       setTorch(EMPTY_TORCH_STATE);
+      setTorchDiagnostic(null);
       setIsStarting(false);
       setIsPreviewReady(false);
       setIsScanning(false);
@@ -367,7 +375,7 @@ export function useScannerEngine({
   }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, setTorchEnabled,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, torchDiagnostic, diagnosticsEnabled, setTorchEnabled,
     startScanner, pauseScanner, closeScanner, prepareAudio: unlockScannerAudio,
   };
 }
