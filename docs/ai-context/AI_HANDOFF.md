@@ -1,30 +1,50 @@
-# Current AI handoff — technical-only scanner lifecycle separation (2026-11-08)
+# Current AI handoff — post PR #49 video presentation ownership (2026-11-09)
 
 ## Verified baseline
-- PR #47 has been merged and the user has physically tested the restored Home/Stocktake preview presentation; the user reports the result works correctly.
-- Main baseline: `7f35943b33fc8ce990be0ebe172e0712ee98572d`.
-- Current task branch: `refactor/scanner-lifecycle-technical-only`.
+- Repository: `banjk124-hub/retailos-home`.
+- Current `main`: `1764c858a7d7855950ebe328a3a653d6935fa796`, merge commit for PR #49.
+- PR #49 removed the engine-owned DOM video geometry barrier and deleted `src/platform/scanner/videoPresentationLayout.ts`.
+- GitHub Actions run #200 passed the complete repository preflight.
+- User confirms the merged build was deployed and tested without issues.
+- Documentation synchronization branch: `docs/scanner-video-presentation-ownership` (documentation updates plus one source-comment-only correction; no executable/runtime behavior changes).
 
-## Current task
-Remove presentation-completion coupling from the platform scanner contract. Preserve the existing user-visible close flow while moving presentation completion entirely into each feature module.
+## Current architecture
+1. The platform engine owns camera lease/session/stream resources, decoder lifecycle, recovery and truthful technical media/frame readiness.
+2. The platform engine does **not** own feature DOM geometry. It must not require a parent element, container bounds, matching rectangles, CSS dimensions, aspect-ratio equality or stable layout before attaching/playing a stream.
+3. `waitForVideoFrameReady()` remains a technical media check. Intrinsic `videoWidth/videoHeight` describe the decoded media frame, not the CSS size or position of the DOM element.
+4. Startup order is stream attachment → `video.play()` → usable first frame → `onPreviewReady` / lifecycle `READY` → decoder initialization → scanning after decoder readiness.
+5. `isPreviewReady` means a usable preview frame exists. It does not prescribe how the module displays, crops, scales, masks, animates or positions that frame.
+6. Home and Stocktake own their separate video elements, DOM containers, layout, sizing, crop, visibility, overlays, reveal policy and close presentation.
+7. Platform lifecycle events remain technical only: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, `DISPOSED`. No presentation-completion event/API is sent to the engine.
 
 ## Protected invariants
-1. Platform contract exposes only technical milestones: `OPENING`, `READY`, `SCANNING`, `SESSION_CLOSE_STARTED`, `CAMERA_LEASE_RELEASED`, `DISPOSED`.
-2. Engine never receives an animation/presentation-completed callback and never retains a session for UI presentation.
-3. Home and Stocktake own their presentation completion and locally join it with technical close/resource milestones.
-4. Camera teardown/release remains prompt and independent of motion duration.
-5. Preserve barcode delivery, single/continuous behavior, preview snapshots, Recovery, Stocktake form fill, duplicate rows and explicit persistence.
-6. Do not change CSS timings, preview layout, camera constraints, decoder cadence, validation, auth, PWA or deployment.
+- Do not reintroduce a DOM geometry gate in the platform engine.
+- Do not remove technical first-frame/media readiness when changing presentation.
+- Preserve camera acquisition/lease/refcount, stream attachment/release, foreground Recovery and lifecycle serialization.
+- Preserve decoder initialization, scheduling/cadence, supported formats, barcode validation/delivery and single/continuous semantics.
+- Preserve Home cached lookup and Stocktake form-fill, manual entry, duplicate rows and explicit persistence.
+- Keep Home and Stocktake presentation independent; do not introduce a shared preview component or universal CSS contract without a separately approved design decision.
+- Keep camera release prompt and independent of module animation/transition duration.
 
-## Verification state
-- Source and regression-test changes are prepared on the task branch.
-- CI and Windows local preflight have not yet run on this head.
-- Physical iOS Safari/PWA and Android Chrome/PWA QA remain a separate user verification gate.
+## Mandatory reading order
+1. `AGENTS.md` — operating contract and safety rules.
+2. `docs/ai-context/PROJECT_CONTEXT.md` — product constraints and session protocol.
+3. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
+4. `docs/ai-context/ARCHITECTURE.md` — accepted boundaries and ADR-015.
+5. `docs/ai-context/ROADMAP.md` — active phases and next work.
+6. `docs/ai-context/IMPLEMENTATION_STATUS.md` — latest verified state.
+7. `docs/ai-context/SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md` — detailed source audit.
+8. `docs/ai-context/ACCEPTANCE_CHECKLIST.md` and relevant source/tests.
+
+Accepted architecture decisions are recorded in `ARCHITECTURE.md`. `DECISIONS.md` also exists and contains supplementary/proposed decision records; check each decision's status before treating it as accepted.
+
+## Session start/end rules
+- Confirm repository, branch, latest main SHA, branch base/head and diff before editing.
+- Treat current source/tests/config as authoritative for runtime behavior. Treat old session notes and audit snapshots as historical when they predate the current baseline.
+- Make narrowly scoped changes. Do not modify unrelated modules or runtime code during documentation-only work.
+- Run targeted tests and the repository preflight when source changes are made; record exact evidence and distinguish CI from real-device acceptance.
+- Update Architecture, Roadmap, Implementation Status, Handoff and Session Log together when a durable scanner boundary changes.
 - Do not merge or deploy without explicit user approval.
-
-
----
-
 
 # Historical handoff snapshot — 2026-11-08 (pre C1/Recovery merge)
 
@@ -80,7 +100,7 @@ Do not implement decoder tuning, adaptive camera constraints, or broad app-wide 
 5. `docs/ai-context/ROADMAP.md` — phases, dependencies, and acceptance gates.
 6. `docs/ai-context/IMPLEMENTATION_STATUS.md` — latest verified state and chronological record.
 
-Durable engineering decisions are recorded in `ARCHITECTURE.md`; there is currently no separate `DECISIONS.md`.
+Accepted architecture decisions are recorded in `ARCHITECTURE.md`; `DECISIONS.md` contains supplementary/proposed records, and each entry's status must be checked before treating it as accepted.
 7. Relevant feature source, tests, package scripts, and current git diff.
 
 If any item is missing or contradicts the current source, stop treating this handoff as authoritative for that detail. Inspect the repository, then update the relevant document in the same change set.

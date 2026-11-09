@@ -1,4 +1,8 @@
-# Historical scanner source audit — post PR #32 (superseded by main 43f1637)
+# Historical scanner source audit — pre PR #49 (2026-11-08)
+
+> **Historical only — superseded for current scanner source facts by [SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md](SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md).** This report describes an earlier main baseline before the later lifecycle and geometry-neutral readiness changes. In particular, its iOS viewport/layout observations and proposed geometry diagnostics must not be treated as current engine startup requirements. PR #49 removed the engine DOM geometry barrier; the user reports the merged/deployed build was tested without issues. The original observations and reasoning are retained below as historical evidence.
+
+
 
 Historical audit baseline: `main` at `c7146b55f0c2210cd7b8474c6a72b1c915985793` (2026-11-08), before PR B, C1 and PR #43. Current status is in ROADMAP.md and IMPLEMENTATION_STATUS.md; current C2 findings are in SCANNER_C2_AUDIT_2026-11-08.md.
 Scope: source inspection and documentation realignment only. No runtime code, dependencies, configuration, data contracts, or deployment files changed in this audit.

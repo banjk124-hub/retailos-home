@@ -1,18 +1,37 @@
-# Current scanner acceptance gates — 2026-11-08
+# Current scanner acceptance gates — post PR #49 (2026-11-09)
 
-## Technical-only lifecycle separation — branch `refactor/scanner-lifecycle-technical-only`
+## PR #49 — Geometry-neutral engine video readiness
 
-- [x] Platform lifecycle vocabulary contains only scanner execution/resource milestones.
-- [x] No presentation event or `notifyExitPresentation()` API exists in platform contract/session/hook.
-- [x] Home owns presentation completion locally and joins it with technical close/lease/disposal signals.
-- [x] Stocktake owns presentation completion locally and joins it with technical close/lease/disposal signals.
-- [x] Recovery-retired session reference exists only to preserve terminal close signals across a recovery race.
-- [x] Camera lease release is not delayed by feature animation.
-- [x] Targeted lifecycle regression suite passes on this branch.
-- [x] TypeScript and production/Pages preflight pass on this branch.
-- [ ] iOS Safari/PWA and Android Chrome/PWA smoke tests confirm unchanged behavior.
+**Main merge:** `1764c858a7d7855950ebe328a3a653d6935fa796`  
+**CI:** GitHub Actions run #200 — full `npm run preflight` passed.  
+**Deployment/device acceptance:** user confirms merged build was deployed and tested without issues.
 
-The checklist sections below preserve the previous PR/device acceptance history. Their checked items describe the earlier merged PRs; they are not evidence that this new branch has passed CI or device QA.
+### Engine boundary
+- [x] Platform startup no longer imports or calls `waitForVideoPresentationLayout()`.
+- [x] Obsolete `src/platform/scanner/videoPresentationLayout.ts` is deleted.
+- [x] Engine does not require a video parent/container, non-zero CSS bounds, matching rectangles, equal aspect ratios or stable DOM geometry before attaching/playing the stream.
+- [x] Technical media readiness remains: decoded media state, intrinsic `videoWidth/videoHeight`, playback state and fresh-frame evidence.
+- [x] Intrinsic media frame dimensions are documented as media validity, not DOM geometry.
+- [x] Startup ordering remains stream attach → play → first usable frame → preview-ready/technical READY → decoder initialization → scanning.
+- [x] Regression tests assert no DOM geometry inspection in the platform session and preserve frame-readiness/startup-order checks.
+
+### Feature-owned presentation
+- [x] Home continues to render its own keyed video element and owns `.barcode-scanner-view` / `.has-preview` presentation.
+- [x] Stocktake continues to render its own keyed video element and owns `.stocktake-scanner-preview` / `.has-preview` presentation.
+- [x] Home and Stocktake retain independent sizing, crop, visibility, overlay and reveal policies.
+- [x] Native video opacity remains 1 with no opacity transition in the current module styles.
+- [x] PR #49 does not modify either feature component or their presentation styles.
+
+### Protected behavior
+- [x] Camera acquisition, lease/refcount and stream ownership remain unchanged.
+- [x] Lifecycle technical event contract and Recovery remain unchanged.
+- [x] Decoder initialization/algorithm/cadence and barcode validation/delivery remain unchanged.
+- [x] Home lookup and Stocktake form-fill, duplicate-row and explicit-save behavior remain unchanged.
+- [x] Regression suite, TypeScript/production build, Pages build and diff checks passed in CI run #200.
+- [x] User confirms deployment and post-deployment testing without issues.
+
+This is the current acceptance record for the PR #49 change. The sections below retain earlier PR and device-test history; their unchecked items are historical records from earlier gates, not outstanding acceptance criteria for PR #49.
+
 
 ---
 

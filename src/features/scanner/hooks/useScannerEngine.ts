@@ -243,7 +243,8 @@ export function useScannerEngine({
 
       // WebKit may retain a stale native presentation layer on a reused video
       // node. Replace only that disposable surface, then use the normal startup
-      // pipeline (layout barrier -> stream attach -> play -> fresh frame -> decoder).
+      // pipeline (stream attach -> play -> fresh frame -> decoder). The feature
+      // owns DOM geometry; the platform session does not wait for a layout barrier.
       const video = await replaceVideoSurface();
       if (!video || !desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
 
