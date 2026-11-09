@@ -19,7 +19,7 @@ Status: active working plan.
 
 **Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.  
 **Branch:** `test/scanner-audio-runtime-and-doc-sync`  
-**Status:** Runtime regression test and documentation synchronization authored; CI pending.
+**Status:** Runtime regression test and documentation synchronization authored; GitHub Actions run #42647819016 passed full preflight on head `bf267c5e3e5e7cc79524f3fad220fa6f7a9be68d`. Draft PR #57 remains open and unmerged.
 
 - PR #56 introduced the Settings Hub and one device-local feedback preference store shared by Home, Stocktake and future Scanner consumers.
 - Default haptics remain enabled; default beep level is 50%, preserving existing Web Audio gain 0.24. Slider steps are 0–100 in increments of 10; zero mutes and 100 maps to gain 0.48.
