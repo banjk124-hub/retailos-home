@@ -231,6 +231,10 @@ export type ScannerError = {
 export interface ScannerSession {
   readonly id: string;
   readonly state: ScannerLifecycleState;
+  /** Update the active source-frame ROI without restarting camera, decoder or frame loop. */
+  setScanRegion(region: ScannerSourceScanRegion | null): void;
+  /** Return a defensive snapshot of the currently published source-frame ROI. */
+  getScanRegion(): ScannerSourceScanRegion | null;
   start(): Promise<void>;
   getTorchState(): ScannerTorchState;
   setTorchEnabled(enabled: boolean): Promise<ScannerTorchState>;

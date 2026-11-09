@@ -1,3 +1,14 @@
+### 2026-11-10 — SCAN-03 module-owned preview region integration
+
+- Branch: `feat/scan-03-module-region-integration`, based on SCAN-02 audit follow-up head `2f1373af02f45e5023cbddc1642863af972c22db`.
+- Added a pure feature-level adapter that measures the module-owned reticle against the video element, resolves computed object-fit/object-position, clips to visible image content and maps to source-frame normalized coordinates.
+- Added a shared feature-level binding hook for ResizeObserver, viewport/orientation and video metadata changes. Home and Stocktake pass their own refs; their markup and reticle styling remain independent.
+- Added in-place `ScannerSession.setScanRegion()/getScanRegion()` state and exposed it through `useScannerEngine`. It does not recreate session, camera, decoder or frame loop.
+- Decoder remains full-frame; no ROI-only decode is active. SCAN-04 is still gated on physical geometry QA.
+- GitHub Actions run #309 passed the new preview-region suite, full preflight, TypeScript, production build and GitHub Pages build. Physical iOS/Android reticle alignment and post-deploy flow QA remain pending.
+
+---
+
 ### 2026-11-10 — SCAN-02 post-merge technical audit
 
 - Audited PR #59 and the merged main source at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`.

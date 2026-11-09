@@ -1,3 +1,16 @@
+# SCAN-03 implementation update — module-owned preview region integration (2026-11-10)
+
+**Status:** Implemented on `feat/scan-03-module-region-integration`; GitHub Actions run #309 passed full preflight and builds. PR #61 remains Draft and depends on PR #60 merge.
+
+- Home and Stocktake retain their own video elements and reticles.
+- A feature-level binding hook measures each module's video/reticle geometry after scanning is ready and observes viewport/element changes.
+- The pure adapter clips the reticle to visible image content and maps it to source-frame normalized coordinates.
+- The active session receives the latest region through an in-place setter/getter; this does not restart camera, decoder or frame loop.
+- Decoder remains full-frame in SCAN-03. ROI-only decode is not active and remains SCAN-04.
+- Automated tests, CI and real-device iOS/Android geometry QA are pending.
+
+---
+
 # SCAN-02 implementation update — audited and merged (2026-11-10)
 
 **Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; deployed and smoke-tested by the user. No existing scanner-flow regression reported.

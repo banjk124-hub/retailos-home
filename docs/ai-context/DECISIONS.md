@@ -84,3 +84,22 @@ See `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 
 ### Acceptance
 See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geometry.mjs`.
+
+
+## ADR-024 — Feature-owned preview region integration (2026-11-10)
+**Status:** Implemented on SCAN-03 branch; GitHub Actions run #309 passed. PR #61 remains Draft pending PR #60 merge/review. ROI decode remains deferred to SCAN-04.
+
+### Decision
+- Home and Stocktake independently own their video and reticle elements.
+- A feature-level adapter measures their DOMRects and computed object-fit/object-position after scanner readiness, then uses the pure SCAN-02 mapper.
+- Publish the resulting source-frame region into the active session using an in-place setter/getter.
+- Resize/viewport updates must not restart the camera, decoder, session or frame loop.
+- Invalid geometry clears the region; no full-frame fallback is permitted.
+
+### Constraints
+- No shared UI/reticle or presentation ownership.
+- No decoder crop/ROI-only decoding, camera/lifecycle/readiness/cadence, validation or business-flow changes.
+- Verify real reticle alignment on iOS Safari/PWA and Android Chrome/PWA after deployment.
+
+### Acceptance
+See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md`.

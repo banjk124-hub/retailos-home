@@ -1,3 +1,14 @@
+# SCAN-03 execution update — module-owned preview region integration (2026-11-10)
+
+- Implementation branch: `feat/scan-03-module-region-integration`, based on the SCAN-02 audit follow-up branch.
+- Wire Home and Stocktake's existing independent reticles to source-frame geometry through a feature-level measurement adapter.
+- Publish source regions to the current session in place; no camera/session/decoder/frame-loop restart.
+- Keep the decoder full-frame. SCAN-03 does not activate ROI-only decoding.
+- Automated geometry/session-update tests, TypeScript, production build, GitHub Pages build and full preflight passed in GitHub Actions run #309. Physical iOS Safari/PWA and Android Chrome/PWA alignment QA remains required after deployment.
+- SCAN-04 remains gated until both module geometries are verified.
+
+---
+
 # SCAN-02 execution update — audited and merged (2026-11-10)
 
 - SCAN-01 merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.

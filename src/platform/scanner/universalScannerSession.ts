@@ -5,6 +5,7 @@ import type {
   ScannerError,
   ScannerLifecycleObserver,
   ScannerTorchState,
+  ScannerSourceScanRegion,
 } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
@@ -137,6 +138,7 @@ function scannerError(cause: unknown): ScannerError {
 export class UniversalScannerSession implements ScannerSession {
   readonly id = `scanner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   private currentState: ScannerLifecycleState = 'idle';
+  private sourceScanRegion: ScannerSourceScanRegion | null = null;
   private stream: MediaStream | null = null;
   private cameraLease: CameraStreamLease | null = null;
   private torchTrack: MediaStreamTrack | null = null;
@@ -188,6 +190,32 @@ export class UniversalScannerSession implements ScannerSession {
 
   getTorchState(): ScannerTorchState {
     return { ...this.torchState };
+  }
+
+  setScanRegion(region: ScannerSourceScanRegion | null): void {
+    if (!region || region.coordinateSpace !== 'source-frame-normalized'
+      || !region.rect || typeof region.rect !== 'object') {
+      this.sourceScanRegion = null;
+      return;
+    }
+
+    const rect = region.rect;
+    const valid = Number.isFinite(rect.x) && Number.isFinite(rect.y)
+      && Number.isFinite(rect.width) && Number.isFinite(rect.height)
+      && rect.x >= 0 && rect.y >= 0 && rect.width > 0 && rect.height > 0
+      && rect.x + rect.width <= 1 + 1e-7
+      && rect.y + rect.height <= 1 + 1e-7;
+    this.sourceScanRegion = valid
+      ? { coordinateSpace: 'source-frame-normalized', rect: { ...rect } }
+      : null;
+  }
+
+  getScanRegion(): ScannerSourceScanRegion | null {
+    const region = this.sourceScanRegion;
+    return region ? {
+      coordinateSpace: 'source-frame-normalized',
+      rect: { ...region.rect },
+    } : null;
   }
 
   async setTorchEnabled(enabled: boolean): Promise<ScannerTorchState> {
