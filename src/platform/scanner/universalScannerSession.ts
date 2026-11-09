@@ -207,7 +207,7 @@ export class UniversalScannerSession implements ScannerSession {
         this.updateTorchState(result);
         return this.getTorchState();
       } finally {
-        if (this.torchCommand === command) this.torchCommand = null;
+        if (this.torchTrack === track && this.generation === generation) this.torchCommand = null;
       }
     })();
     this.torchCommand = command;
