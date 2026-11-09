@@ -10,7 +10,6 @@ import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
-import { waitForVideoPresentationLayout } from './videoPresentationLayout';
 
 type VideoReadiness = {
   readyState: number;
@@ -264,15 +263,9 @@ export class UniversalScannerSession implements ScannerSession {
         this.options.onError?.({ code: 'STREAM_INTERRUPTED', message: 'Kết nối camera bị gián đoạn. Hãy nhấn thử lại để kết nối.', recoverable: true });
       });
 
-      // A fresh MediaStream can resolve before the scanner overlay has had
-      // a committed layout pass. Safari may create its native video layer
-      // against that transient geometry, briefly presenting a tiny preview.
-      // Wait for the already-mounted preview box to be stable before attaching
-      // the stream; this is bounded to a few animation frames and does not
-      // delay camera acquisition or run during decoding.
-      await waitForVideoPresentationLayout(this.video);
-      if (this.disposed || generation !== this.generation) return;
-
+      // The platform engine attaches the stream to the supplied video element
+      // without inspecting its DOM geometry. Each feature owns the element's
+      // container, sizing, crop, visibility and presentation layout.
       this.video.srcObject = stream;
       this.video.muted = true;
       this.video.playsInline = true;
