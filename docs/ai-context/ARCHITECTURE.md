@@ -406,3 +406,28 @@ Home and Stocktake share the camera session and need optional flashlight control
 
 ### Protected scope
 No changes to camera lease/refcount, getUserMedia resolution/FPS constraints, autofocus, first-frame readiness, DOM presentation ownership (ADR-015), decoder/ROI/110 ms cadence, barcode validation/delivery, technical lifecycle event vocabulary, Recovery ordering, Home lookup or Stocktake form-fill/explicit-save behavior.
+
+## ADR-017 — Discover camera Torch after first live frame (2026-11-09)
+
+**Status:** Implemented in PR #52; Android physical-device retest pending.
+
+### Context
+After PR #51 was merged and deployed, the user confirmed that Torch worked reliably on iOS but the Flash control did not appear on Android. The feature UI intentionally renders the control only when the active video track advertises `getCapabilities().torch === true`.
+
+Source audit found that `bindTorchTrack(stream)` called `getCapabilities()` immediately after the shared `getUserMedia()` lease resolved, before assigning `video.srcObject`, calling `video.play()`, and observing the first decoded frame. Chromium documents that camera capabilities may only become available once the camera is actually streaming. The initial unsupported result was cached for the lifetime of the session; there was no later refresh.
+
+### Decision
+- Keep camera acquisition, lease ownership and camera constraints unchanged.
+- Bind/read Torch capability only after the current session has attached the stream, started playback and passed `waitForVideoFrameReady()` with a usable fresh frame.
+- Retain the existing generation/disposal guard before binding, so a retired session cannot publish a late capability update.
+- Emit a privacy-safe diagnostic with the reported Torch capability state (`true`, `false`, `not-exposed`, or `unavailable`), track ready state, facing mode and dimensions. Do not log device IDs.
+- Do not infer support from Android user-agent, model names, rear-camera assumption or `getSupportedConstraints()`; only the active track's post-start capability is authoritative.
+- Keep the module UI contract unchanged: the Flash control remains hidden when the active track genuinely does not expose Torch.
+
+### Protected scope
+No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, camera lease/refcount, preview readiness definition, decoder startup/cadence, barcode validation/delivery, Home/Stocktake UI composition or Torch apply/disable semantics.
+
+### Verification
+- Regression test models a track whose Torch capability is absent before streaming and becomes available after streaming starts.
+- Source-order assertion verifies Torch discovery occurs after playback and first-frame readiness.
+- Physical Android Chrome/PWA retest must inspect the new `[RetailOS Scanner] Torch capability` diagnostic. If it reports `not-exposed` after the first live frame, investigate that browser/device's camera track support rather than forcing the UI control visible.
