@@ -33,8 +33,6 @@
 
 ---
 
----
-
 ## ADR-015 — Geometry-neutral engine video readiness (2026-11-09)
 
 **Status:** Accepted and implemented in PR #49; merged to `main` at `1764c858a7d7855950ebe328a3a653d6935fa796`. User confirms deployment and post-deployment testing without issues.
