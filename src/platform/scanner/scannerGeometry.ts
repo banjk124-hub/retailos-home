@@ -52,7 +52,7 @@ export type ScannerGeometryMappingResult =
  * silently substitute center when the actual presentation value is unknown.
  */
 export function parseScannerObjectPosition(value: string): ScannerObjectPosition | null {
-  const tokens = value.trim().toLowerCase().split(/\\s+/).filter(Boolean);
+  const tokens = value.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if (tokens.length === 0 || tokens.length > 2) return null;
 
   const parseAxis = (token: string, axis: 'x' | 'y'): number | null => {
@@ -61,7 +61,7 @@ export function parseScannerObjectPosition(value: string): ScannerObjectPosition
     if (axis === 'x' && token === 'right') return 1;
     if (axis === 'y' && token === 'top') return 0;
     if (axis === 'y' && token === 'bottom') return 1;
-    const percentage = token.match(/^(-?(?:\\d+|\\d*\\.\\d+))%$/);
+    const percentage = token.match(/^(-?(?:\d+|\d*\.\d+))%$/);
     if (!percentage) return null;
     const fraction = Number(percentage[1]) / 100;
     return Number.isFinite(fraction) && fraction >= 0 && fraction <= 1 ? fraction : null;
