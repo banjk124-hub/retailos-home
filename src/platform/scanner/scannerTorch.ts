@@ -51,8 +51,13 @@ export async function applyScannerTorch(
     if (constraints.frameRate === undefined && typeof settings?.frameRate === 'number') {
       constraints.frameRate = { exact: settings.frameRate };
     }
+    // Replace a previous Torch advanced constraint instead of stacking
+    // torch:true and torch:false entries whose order can be browser-dependent.
+    const preservedAdvanced = (existing.advanced ?? []).filter(
+      (constraint) => !('torch' in (constraint as TorchConstraintSet)),
+    );
     constraints.advanced = [
-      ...(existing.advanced ?? []),
+      ...preservedAdvanced,
       { torch: enabled } as TorchConstraintSet,
     ];
     await track.applyConstraints(constraints);
