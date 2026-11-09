@@ -135,6 +135,10 @@ context.state = 'suspended';
 await audio.unlockScannerAudio();
 assert.equal(context.state, 'running', 'a suspended context resumes on the next user gesture');
 
+context.state = 'interrupted';
+await audio.unlockScannerAudio();
+assert.equal(context.state, 'running', 'an interrupted Safari context resumes on the next user gesture');
+
 context.state = 'closed';
 await audio.unlockScannerAudio();
 assert.equal(MockAudioContext.instances.length, 2, 'a closed context is replaced with a fresh context');
