@@ -55,6 +55,9 @@ const compile = (source) => ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const asModuleUrl = (source) => 'data:text/javascript;base64,' + Buffer.from(source).toString('base64');
+const assertGain = (actual, expected, message) => {
+  assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: expected ${expected}, received ${actual}`);
+};
 
 const storeSource = compile(await read('../src/features/scanner/services/scannerSettingsStore.ts'));
 const storeUrl = asModuleUrl(storeSource);
@@ -85,21 +88,21 @@ assert.equal(context.oscillators.length, 0, 'zero volume creates no oscillator')
 
 audio.playScannerBeep(50);
 assert.equal(context.oscillators.length, 1);
-assert.equal(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.24,
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.24,
   '50% produces the compatibility gain of 0.24');
 
 audio.playScannerBeep(100);
 assert.equal(context.oscillators.length, 2);
-assert.equal(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.48,
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.48,
   '100% produces the configured maximum gain of 0.48');
 
 store.updateScannerSettings({ beepVolume: 70, vibrationEnabled: true });
 await feedback.previewScannerBeep();
-assert.equal(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.336,
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.336,
   'preview reads the latest persisted setting, not a stale captured value');
 
 feedback.playScannerFeedback();
-assert.equal(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.336,
+assertGain(context.gains.at(-1).gain.ramps.find((entry) => entry.kind === 'exponential').value, 0.336,
   'accepted-result feedback uses the same current volume as preview');
 assert.deepEqual(vibrationCalls, [25], 'enabled vibration sends one 25 ms pulse');
 
