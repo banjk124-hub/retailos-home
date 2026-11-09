@@ -198,8 +198,7 @@ export class UniversalScannerSession implements ScannerSession {
       return this.getTorchState();
     }
 
-    let command: Promise<ScannerTorchState>;
-    command = (async () => {
+    const command = (async () => {
       this.updateTorchState({ ...this.torchState, pending: true, error: undefined });
       try {
         const result = await applyScannerTorch(track, enabled);
