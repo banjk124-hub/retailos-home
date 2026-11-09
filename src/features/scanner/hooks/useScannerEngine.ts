@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerTorchDiagnosticSample, type ScannerTorchState } from '../../../platform/scanner/contracts';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerTorchDiagnosticSample, type ScannerTorchProbeResult, type ScannerTorchState } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -60,6 +60,8 @@ export function useScannerEngine({
   const [error, setError] = useState('');
   const [torch, setTorch] = useState<ScannerTorchState>(EMPTY_TORCH_STATE);
   const [torchDiagnostics, setTorchDiagnostics] = useState<ScannerTorchDiagnosticSample[]>([]);
+  const [torchProbeResult, setTorchProbeResult] = useState<ScannerTorchProbeResult | null>(null);
+  const [torchProbePending, setTorchProbePending] = useState(false);
   const diagnosticsEnabled = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('scannerDebug') === '1';
   const lastUiStateChangeAtRef = useRef(performance.now());
@@ -289,6 +291,20 @@ export function useScannerEngine({
     return session.setTorchEnabled(enabled);
   }, []);
 
+  const probeTorchCompatibility = useCallback(async (): Promise<void> => {
+    if (!diagnosticsEnabled || torchProbePending) return;
+    const session = sessionRef.current;
+    if (!session) return;
+    setTorchProbePending(true);
+    setTorchProbeResult(null);
+    try {
+      const result = await session.probeTorchCompatibility();
+      if (mountedRef.current && sessionRef.current === session) setTorchProbeResult(result);
+    } finally {
+      if (mountedRef.current && sessionRef.current === session) setTorchProbePending(false);
+    }
+  }, [diagnosticsEnabled, torchProbePending]);
+
   const closeScanner = useCallback(async () => {
     desiredActiveRef.current = false;
     const pendingLeaseRequest = cameraLeaseRequestRef.current;
@@ -305,6 +321,8 @@ export function useScannerEngine({
     if (mountedRef.current) {
       setTorch(EMPTY_TORCH_STATE);
       setTorchDiagnostics([]);
+      setTorchProbeResult(null);
+      setTorchProbePending(false);
       setIsStarting(false);
       setIsPreviewReady(false);
       setIsScanning(false);
@@ -377,7 +395,7 @@ export function useScannerEngine({
   }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, torchDiagnostics, diagnosticsEnabled, setTorchEnabled,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, torchDiagnostics, diagnosticsEnabled, setTorchEnabled, torchProbeResult, torchProbePending, probeTorchCompatibility,
     startScanner, pauseScanner, closeScanner, prepareAudio: unlockScannerAudio,
   };
 }

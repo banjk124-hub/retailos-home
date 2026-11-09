@@ -115,6 +115,6 @@ export default function BarcodeScanner({
         {scanner.error && <div className="barcode-scanner-error-panel" role="alert"><span>{scanner.error}</span><button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button></div>}
       </div>
     </div>
-    {scanner.diagnosticsEnabled && <ScannerTorchDiagnosticPanel samples={scanner.torchDiagnostics} />}
+    {scanner.diagnosticsEnabled && <ScannerTorchDiagnosticPanel samples={scanner.torchDiagnostics} onProbe={() => { void scanner.probeTorchCompatibility(); }} probePending={scanner.torchProbePending} probeResult={scanner.torchProbeResult} />}
   </section>;
 }

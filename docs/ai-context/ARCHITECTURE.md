@@ -462,3 +462,27 @@ No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, came
 - Regression test models a track whose Torch capability is absent before streaming and becomes available after streaming starts.
 - Source-order assertion verifies Torch discovery occurs after playback and first-frame readiness.
 - Physical Android Chrome/PWA retest must inspect the new `[RetailOS Scanner] Torch capability` diagnostic. If it reports `not-exposed` after the first live frame, investigate that browser/device's camera track support rather than forcing the UI control visible.
+
+
+## ADR-019 — Debug-only Torch constraint compatibility probe (2026-11-09)
+
+**Status:** Implemented in PR #54; physical-device result pending.
+
+### Context
+After PR #53 diagnostics on Android Chrome / Samsung Galaxy S23 Ultra reported `getCapabilities()` available, `torch` not exposed, `getSettings().torch` not exposed, rear camera (`environment`) live at 1280×720 / 30 FPS, and `applyConstraints()` available. The normal adapter correctly keeps Torch unsupported and does not send a command when the active track does not advertise the capability. Therefore, no real Torch constraint attempt had yet been made on this device.
+
+### Decision
+- Add an explicit compatibility probe available only through the opt-in `?scannerDebug=1` diagnostics panel.
+- On a user tap, send one `torch: true` advanced constraint to the current live video track, wait for a short 1.2-second pulse, then attempt `torch: false`.
+- Preserve the active track constraints, including width, height, frame rate, facing mode, device identity where already available, and unrelated advanced constraints.
+- Report ON/OFF promise acceptance, error names, `settings.torch` before/after and track state. A resolved promise is not proof that the physical LED illuminated; the operator must observe the LED during the pulse.
+- Do not change `ScannerTorchState.supported`, do not reveal the production Flash control, and do not infer support from user-agent, device model or camera facing mode.
+- The probe is non-blocking to normal scanner state and does not alter acquisition, autofocus, decoder, lifecycle or business flow. The command is unavailable outside debug mode.
+
+### Safety and acceptance
+- The probe runs only on explicit user action and always attempts OFF after an accepted ON request while the track remains live.
+- If the track ends during the pulse, OFF is not sent to the ended track; result records that OFF was not attempted.
+- A rejected ON request does not trigger OFF.
+- The probe never stops the camera track or mutates the ordinary Torch support state.
+- Automated regression covers capability-not-exposed, constraint preservation, ON→OFF ordering and unchanged support state.
+- Physical Android Chrome and iOS Safari/PWA validation remains required. Do not promote this probe into production compatibility behavior until the S23 Ultra result and cross-device evidence are reviewed.

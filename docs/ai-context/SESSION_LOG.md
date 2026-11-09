@@ -315,3 +315,13 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Full `npm run preflight` passed: barcode validation regression, lifecycle contract regression, TypeScript/production build, GitHub Pages build and diff checks.
 - The initial run on the preceding head failed only at the new Home source assertion; the failure was investigated from the job log and corrected rather than bypassed.
 - Local Windows/PowerShell preflight and physical iOS Safari/PWA + Android Chrome/PWA smoke tests remain pending. PR #48 stays open, unmerged and undeployed.
+
+
+### 2026-11-09 — PR #54 Torch compatibility probe
+
+- Audited merged main after PR #53. The Android sample confirms an active rear camera track at 1280×720 / 30 FPS, `getCapabilities()` and `applyConstraints()` APIs available, but no exposed `torch` capability or setting. The standard adapter correctly exits before sending Torch constraints, so actual control compatibility remained untested.
+- Created `feat/scanner-torch-compatibility-probe` from main `2fc4be24bc7f6a77c9b7f9fee07a40ea9a7969de`.
+- Added a diagnostics-only, explicit 1.2-second Torch ON pulse followed by an OFF attempt. The probe preserves current constraints, reports request acceptance/errors and settings before/after, and does not mutate normal Torch support state.
+- Added the same probe control/result display to Home and Stocktake diagnostics panels; no production Flash visibility changes.
+- Added regression coverage for not-exposed capability, constraint preservation, ON→OFF ordering and unchanged capability state.
+- CI/preflight and physical Android/iOS verification are pending. Do not merge or deploy until the latest CI head is green and the user reviews the device result.

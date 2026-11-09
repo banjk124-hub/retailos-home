@@ -7,7 +7,7 @@ const compiled = ts.transpileModule(helperSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const helperUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { readScannerTorchState, readScannerTorchDiagnostic, applyScannerTorch } = await import(helperUrl);
+const { readScannerTorchState, readScannerTorchDiagnostic, applyScannerTorch, probeScannerTorchConstraint } = await import(helperUrl);
 
 let enabled = false;
 let applyCount = 0;
@@ -132,6 +132,49 @@ assert.equal(failed.supported, true);
 assert.equal(failed.enabled, false);
 assert.match(failed.error, /Không thể bật đèn flash/);
 
+// Explicit compatibility probe may test a live track even when Torch is not advertised.
+// The pulse must preserve camera constraints, attempt OFF after ON, and never promote support.
+let probeTorch = 'not-exposed';
+const probeCalls = [];
+let lastProbeConstraints;
+const probeTrack = {
+  readyState: 'live',
+  getCapabilities: () => ({}),
+  getSettings: () => ({ torch: probeTorch === 'not-exposed' ? undefined : probeTorch, width: 1280, height: 720, frameRate: 30, facingMode: 'environment' }),
+  getConstraints: () => ({ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 }, advanced: [{ focusMode: 'continuous' }] }),
+  applyConstraints: async (constraints) => {
+    lastProbeConstraints = constraints;
+    const requestedTorch = constraints.advanced.at(-1).torch;
+    probeCalls.push(requestedTorch);
+    probeTorch = requestedTorch;
+  },
+};
+const probeResult = await probeScannerTorchConstraint(probeTrack, 0);
+assert.equal(probeResult.status, 'completed');
+assert.equal(probeResult.onAccepted, true);
+assert.equal(probeResult.offAttempted, true);
+assert.equal(probeResult.offAccepted, true);
+assert.deepEqual(probeCalls, [true, false], 'probe sends one ON pulse and then restores OFF');
+assert.equal(probeResult.settingsTorchBefore, 'not-exposed');
+assert.equal(probeResult.settingsTorchAfter, false);
+assert.equal(probeResult.trackReadyState, 'live');
+assert.deepEqual(readScannerTorchState(probeTrack), {
+  supported: false, enabled: false, pending: false,
+}, 'a successful debug probe must not promote an unadvertised capability');
+assert.deepEqual(lastProbeConstraints.advanced, [{ focusMode: 'continuous' }, { torch: false }]);
+
+const rejectedProbe = await probeScannerTorchConstraint({
+  readyState: 'live',
+  getSettings: () => ({}),
+  getConstraints: () => ({}),
+  applyConstraints: async () => { throw new DOMException('Torch rejected', 'OverconstrainedError'); },
+}, 0);
+assert.equal(rejectedProbe.onAccepted, false);
+assert.equal(rejectedProbe.onErrorName, 'OverconstrainedError');
+assert.equal(rejectedProbe.offAttempted, false, 'OFF is not sent when ON was rejected');
+assert.equal((await probeScannerTorchConstraint(null)).status, 'unavailable');
+
+
 const contract = await readFile(new URL('../src/platform/scanner/contracts.ts', import.meta.url), 'utf8');
 assert.match(contract, /onTorchStateChange\?: \(state: ScannerTorchState\) => void/);
 assert.match(contract, /setTorchEnabled\(enabled: boolean\): Promise<ScannerTorchState>/);
@@ -146,6 +189,8 @@ assert.ok(videoPlayIndex >= 0 && videoFrameReadyIndex > videoPlayIndex,
 assert.ok(torchBindIndex > videoFrameReadyIndex,
   'Torch capability is bound only after the first live video frame');
 assert.match(session, /Torch capability/);
+assert.match(session, /probeTorchCompatibility\(\)/);
+assert.match(session, /probeScannerTorchConstraint\(track, 1200\)/);
 assert.match(session, /startTorchDiagnostics\(track, this\.generation\)/);
 assert.match(session, /delay: 250, sample: '250ms'/);
 assert.match(session, /delay: 1000, sample: '1000ms'/);
@@ -163,11 +208,15 @@ assert.match(hook, /setTorchEnabled = useCallback/);
 assert.match(hook, /onTorchStateChange: \(state\) =>/);
 assert.match(hook, /onTorchDiagnosticsChange: diagnosticsEnabled \? \(sample\) =>/);
 assert.match(hook, /scannerDebug/);
+assert.match(hook, /probeTorchCompatibility/);
+assert.match(hook, /torchProbePending/);
 assert.match(hook, /setTorchDiagnostics\(\(current\) => \[\.\.\.current\.slice\(-3\), sample\]\)/);
 
 const diagnosticsPanel = await readFile(new URL('../src/features/scanner/components/ScannerTorchDiagnosticPanel.tsx', import.meta.url), 'utf8');
 assert.match(diagnosticsPanel, /SCANNER TORCH DIAGNOSTICS/);
 assert.match(diagnosticsPanel, /No deviceId/);
+assert.match(diagnosticsPanel, /Probe Torch/);
+assert.match(diagnosticsPanel, /physical LED actually illuminated/);
 
 for (const path of [
   '../src/features/scanner/components/BarcodeScanner.tsx',

@@ -84,6 +84,20 @@ export type ScannerTorchDiagnosticSample = {
   settingsErrorName: string | null;
 };
 
+/** Result of an explicit debug-only Torch constraint pulse. Promise resolution is not proof of physical illumination. */
+export type ScannerTorchProbeResult = {
+  status: 'completed' | 'unavailable';
+  pulseDurationMs: number;
+  onAccepted: boolean;
+  onErrorName: string | null;
+  offAttempted: boolean;
+  offAccepted: boolean | null;
+  offErrorName: string | null;
+  settingsTorchBefore: boolean | 'not-exposed' | 'unavailable';
+  settingsTorchAfter: boolean | 'not-exposed' | 'unavailable';
+  trackReadyState: string;
+};
+
 /** Camera torch state. Support is discovered from the active video track. */
 export type ScannerTorchState = {
   supported: boolean;
@@ -196,6 +210,8 @@ export interface ScannerSession {
   start(): Promise<void>;
   getTorchState(): ScannerTorchState;
   setTorchEnabled(enabled: boolean): Promise<ScannerTorchState>;
+  /** Debug-only short Torch pulse; does not alter advertised support state. */
+  probeTorchCompatibility(): Promise<ScannerTorchProbeResult>;
   suspend(reason?: 'hidden' | 'manual'): Promise<void>;
   resume(): Promise<void>;
   /** Retire this session for foreground recovery without emitting feature exit milestones. */

@@ -1,4 +1,4 @@
-import type { ScannerTorchDiagnosticSample, ScannerTorchState } from './contracts';
+import type { ScannerTorchDiagnosticSample, ScannerTorchProbeResult, ScannerTorchState } from './contracts';
 
 type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
 type TorchSettings = MediaTrackSettings & { torch?: boolean };
@@ -91,6 +91,119 @@ export function readScannerTorchDiagnostic(
   };
 }
 
+function readSettingsTorch(track: MediaStreamTrack): boolean | 'not-exposed' | 'unavailable' {
+  try {
+    const value = (track.getSettings?.() as TorchSettings | undefined)?.torch;
+    return typeof value === 'boolean' ? value : 'not-exposed';
+  } catch {
+    return 'unavailable';
+  }
+}
+
+/** Preserve the active camera request while adding/replacing only the non-standard Torch constraint. */
+function buildTorchConstraints(track: MediaStreamTrack, enabled: boolean): MediaTrackConstraints {
+  let existing: MediaTrackConstraints = {};
+  try {
+    existing = track.getConstraints?.() ?? {};
+  } catch {
+    existing = {};
+  }
+  const settings = track.getSettings?.() as TorchSettings | undefined;
+  const constraints: MediaTrackConstraints = { ...existing };
+  if (constraints.width === undefined && typeof settings?.width === 'number') {
+    constraints.width = { exact: settings.width };
+  }
+  if (constraints.height === undefined && typeof settings?.height === 'number') {
+    constraints.height = { exact: settings.height };
+  }
+  if (constraints.frameRate === undefined && typeof settings?.frameRate === 'number') {
+    constraints.frameRate = { exact: settings.frameRate };
+  }
+  if (constraints.facingMode === undefined && typeof settings?.facingMode === 'string') {
+    constraints.facingMode = { exact: settings.facingMode };
+  }
+  if (constraints.deviceId === undefined && typeof settings?.deviceId === 'string' && settings.deviceId) {
+    constraints.deviceId = { exact: settings.deviceId };
+  }
+  const preservedAdvanced = (existing.advanced ?? []).filter(
+    (constraint) => !('torch' in (constraint as TorchConstraintSet)),
+  );
+  constraints.advanced = [...preservedAdvanced, { torch: enabled } as TorchConstraintSet];
+  return constraints;
+}
+
+function errorName(cause: unknown): string {
+  return cause instanceof Error ? cause.name : 'UnknownError';
+}
+
+/**
+ * Explicit debug-only compatibility probe. It bypasses capability gating for one
+ * short ON pulse, then attempts OFF. A resolved constraint promise is not proof
+ * that the physical LED illuminated; callers must verify that visually.
+ */
+export async function probeScannerTorchConstraint(
+  track: MediaStreamTrack | null,
+  pulseDurationMs = 1200,
+): Promise<ScannerTorchProbeResult> {
+  const startedAt = performance.now();
+  const settingsTorchBefore = track ? readSettingsTorch(track) : 'unavailable';
+  const unavailable = (): ScannerTorchProbeResult => ({
+    status: 'unavailable',
+    pulseDurationMs: 0,
+    onAccepted: false,
+    onErrorName: null,
+    offAttempted: false,
+    offAccepted: null,
+    offErrorName: null,
+    settingsTorchBefore,
+    settingsTorchAfter: track ? readSettingsTorch(track) : 'unavailable',
+    trackReadyState: track?.readyState ?? 'missing',
+  });
+
+  if (!track || track.readyState !== 'live' || typeof track.applyConstraints !== 'function') {
+    return unavailable();
+  }
+
+  let onAccepted = false;
+  let onErrorName: string | null = null;
+  try {
+    await track.applyConstraints(buildTorchConstraints(track, true));
+    onAccepted = true;
+  } catch (cause) {
+    onErrorName = errorName(cause);
+  }
+
+  let offAttempted = false;
+  let offAccepted: boolean | null = null;
+  let offErrorName: string | null = null;
+  if (onAccepted) {
+    await new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, pulseDurationMs)));
+    if (track.readyState === 'live') {
+      offAttempted = true;
+      try {
+        await track.applyConstraints(buildTorchConstraints(track, false));
+        offAccepted = true;
+      } catch (cause) {
+        offAccepted = false;
+        offErrorName = errorName(cause);
+      }
+    }
+  }
+
+  return {
+    status: 'completed',
+    pulseDurationMs: Math.max(0, Math.round(performance.now() - startedAt)),
+    onAccepted,
+    onErrorName,
+    offAttempted,
+    offAccepted,
+    offErrorName,
+    settingsTorchBefore,
+    settingsTorchAfter: readSettingsTorch(track),
+    trackReadyState: track.readyState,
+  };
+}
+
 /** Apply the non-standard MediaStreamTrack torch constraint when advertised by the track. */
 export async function applyScannerTorch(
   track: MediaStreamTrack,
@@ -100,41 +213,7 @@ export async function applyScannerTorch(
   if (!current.supported) return current;
 
   try {
-    // applyConstraints replaces omitted custom constraints. Preserve the
-    // current camera request and, where getConstraints is unavailable, pin
-    // the active dimensions/frame rate reported by getSettings().
-    let existing: MediaTrackConstraints = {};
-    try {
-      existing = track.getConstraints?.() ?? {};
-    } catch {
-      existing = {};
-    }
-    const settings = track.getSettings?.() as TorchSettings | undefined;
-    const constraints: MediaTrackConstraints = { ...existing };
-    if (constraints.width === undefined && typeof settings?.width === 'number') {
-      constraints.width = { exact: settings.width };
-    }
-    if (constraints.height === undefined && typeof settings?.height === 'number') {
-      constraints.height = { exact: settings.height };
-    }
-    if (constraints.frameRate === undefined && typeof settings?.frameRate === 'number') {
-      constraints.frameRate = { exact: settings.frameRate };
-    }
-    if (constraints.facingMode === undefined && typeof settings?.facingMode === 'string') {
-      constraints.facingMode = { exact: settings.facingMode };
-    }
-    if (constraints.deviceId === undefined && typeof settings?.deviceId === 'string' && settings.deviceId) {
-      constraints.deviceId = { exact: settings.deviceId };
-    }
-    // Replace a previous Torch advanced constraint instead of stacking
-    // torch:true and torch:false entries whose order can be browser-dependent.
-    const preservedAdvanced = (existing.advanced ?? []).filter(
-      (constraint) => !('torch' in (constraint as TorchConstraintSet)),
-    );
-    constraints.advanced = [
-      ...preservedAdvanced,
-      { torch: enabled } as TorchConstraintSet,
-    ];
+    const constraints = buildTorchConstraints(track, enabled);
     await track.applyConstraints(constraints);
     const after = readScannerTorchState(track);
     return {
