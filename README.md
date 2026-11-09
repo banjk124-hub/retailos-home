@@ -1,5 +1,8 @@
 # RetailOS Home
 
+> Current engineering truth (2026-11-10): see [the comprehensive source audit and Change Map](docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md). This repository is a local-first PWA prototype, not yet a production multi-user operations system.
+
+
 PWA nội bộ được xây dựng bằng React, TypeScript và Vite. Repository hiện là frontend prototype: tài khoản được khai báo trong code, dữ liệu nghiệp vụ chưa kết nối Google Drive/Sheets, và Web Push cần backend để gửi thông báo.
 
 ## Yêu cầu
