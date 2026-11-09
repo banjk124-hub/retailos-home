@@ -1,6 +1,6 @@
 import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
 import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, Flashlight, FlashlightOff, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
@@ -96,6 +96,17 @@ export default function BarcodeScanner({
             <span>RETAILOS · TRA CỨU NHANH</span>
             <h2 id="barcode-scanner-title">Tra cứu sản phẩm</h2>
           </div>
+          {scanner.torch.supported && <button
+            className="scanner-torch-toggle"
+            type="button"
+            onClick={() => { void scanner.setTorchEnabled(!scanner.torch.enabled); }}
+            disabled={scanner.torch.pending || isClosing}
+            aria-label={scanner.torch.error ?? (scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash')}
+            aria-pressed={scanner.torch.enabled}
+            title={scanner.torch.error ?? (scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash')}
+          >
+            {scanner.torch.enabled ? <FlashlightOff size={19} /> : <Flashlight size={19} />}
+          </button>}
           <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng tra cứu"><X size={20} /></button>
         </header>
         {scanner.isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
