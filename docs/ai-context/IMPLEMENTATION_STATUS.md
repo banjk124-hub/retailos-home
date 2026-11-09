@@ -33,7 +33,7 @@
 ## Current follow-up — runtime audio regression and documentation sync
 - Branch: `test/scanner-audio-runtime-and-doc-sync`, based on PR #56 merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
 - Adds a mocked Web Audio runtime test for actual GainNode ramp values (0, 50, 70 and 100%), AudioContext gesture unlock, preview/current-setting synchronization, shared accepted-result feedback and missing-Vibration-API behavior.
-- Registers the runtime test in `npm run preflight`. GitHub Actions run #42647819016 passed full preflight on latest head `bf267c5e3e5e7cc79524f3fad220fa6f7a9be68d`.
+- Registers the runtime test in `npm run preflight`. GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`.
 - Does not alter the production volume curve: 50% remains gain 0.24 and 100% remains 0.48 until real-device comparison supports a change.
 - Camera acquisition/lease, decoder, validation, lifecycle, Torch, Home lookup and Stocktake form/save flows remain outside scope.
 - CI for PR #57 passed; PR remains Draft, open, unmerged and undeployed. Real-device audio loudness and vibration QA remain pending.
