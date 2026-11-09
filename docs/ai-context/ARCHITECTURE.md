@@ -546,7 +546,7 @@ SCAN-01 adds platform-neutral types and this contract only. Existing Home/Stockt
 
 
 ## ADR-023 — Pure preview-to-source geometry mapper (2026-11-10)
-**Status:** Implemented on SCAN-02 branch; no runtime consumer wired yet.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 and deployment smoke test passed. Runtime consumers remain unwired until SCAN-03.
 
 `src/platform/scanner/scannerGeometry.ts` implements a pure mapping from the module-owned `preview-content-normalized` rectangle to a `source-frame-normalized` rectangle. The caller supplies intrinsic source-frame dimensions, video element content-box dimensions, CSS `object-fit`, normalized `object-position` fractions and an explicit mirror flag.
 
