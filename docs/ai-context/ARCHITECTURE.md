@@ -1,6 +1,6 @@
 ## ADR-018 — Capability-gated camera Torch; investigation tooling retired (2026-11-09)
 
-**Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing are removed by PR #55; GitHub Actions run #42572378379 passed full preflight on the PR head. PR #55 remains open, unmerged and undeployed.
+**Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing were removed by PR #55; GitHub Actions run #42572378379 passed full preflight. User confirms PR #55 was merged and deployed.
 
 ### Context
 - PR #51/#52 introduced optional Torch control and deferred capability discovery until after video playback and the first usable frame.
@@ -35,7 +35,7 @@
 
 ## ADR-019 — Shared persisted scanner feedback preferences (2026-11-09)
 
-**Status:** Implemented on `feat/scanner-settings-hub-feedback-controls`; GitHub Actions run #42575410311 passed full preflight on head `47ff115`. Physical-device verification remains pending; PR #56 is Draft, unmerged and undeployed.
+**Status:** Implemented and merged to `main` by PR #56 at `5eee1a6a565f6263907541dac6af6b4ba77b37be`; final PR head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full preflight in GitHub Actions run #42575773839. Deployment is not asserted by this record. Physical-device verification remains pending.
 
 ### Context
 - Accepted barcode feedback already uses one shared engine callback for Home and Stocktake.
@@ -66,6 +66,28 @@
 - Android with Vibration API support follows the toggle. Unsupported iOS/browser paths remain non-fatal and visibly identify the limitation.
 - Settings Hub exposes separate Scanner QA Monitor and Scanner settings entries.
 - Full preflight and physical iOS/Android QA pass before merge/deploy.
+
+---
+
+## ADR-020 — Runtime verification of shared Scanner audio feedback (2026-11-09)
+
+**Status:** Implemented on `test/scanner-audio-runtime-and-doc-sync`; full preflight passed in GitHub Actions run #42648085229 on documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Draft PR #57 remains open and unmerged. Production audio mapping is intentionally unchanged pending physical-device comparison.
+
+### Context
+- PR #56 centralizes Scanner feedback preferences and maps the 0–100 UI level linearly to Web Audio gain 0–0.48.
+- The existing settings regression test checked source text and store behavior, but did not execute the audio service against an AudioContext/GainNode implementation.
+- A subjective report that 50% and 100% sound similar cannot, by itself, establish a defect in the gain calculation or justify changing the curve.
+
+### Decision
+- Add a deterministic mocked Web Audio runtime test that executes the production audio and feedback modules.
+- Assert that 0% creates no oscillator; 50% ramps to gain 0.24; 70% ramps to 0.336; and 100% ramps to 0.48.
+- Verify AudioContext gesture unlock, preview reads the latest shared setting, accepted-result feedback uses the same setting, vibration emits one 25 ms pulse when enabled, and absent Vibration API remains non-fatal.
+- Register the test in the repository preflight.
+- Do not alter the production gain mapping, tone frequency, envelope or duration until controlled A/B testing on representative iOS and Android devices supports a change. App gain is not a calibrated acoustic SPL measurement; device media volume, speaker response and browser audio processing affect perceived loudness.
+
+### Protected scope
+- No changes to camera acquisition/lease, camera constraints, autofocus, first-frame readiness, decoder, barcode validation/delivery, accepted-result gate, Torch, scanner lifecycle, Home lookup, Stocktake form-fill/explicit-save, auth, backend, storage architecture or PWA deployment.
+- CI proves deterministic software-level gain routing only. It does not prove physical loudness, speaker quality, vibration hardware behavior or platform support.
 
 ---
 

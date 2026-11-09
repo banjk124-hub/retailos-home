@@ -79,10 +79,10 @@ export default function ScannerSettingsPanel({ onClose }: Props) {
             onChange={(event) => updateScannerSettings({ beepVolume: Number(event.currentTarget.value) })}
             aria-label="Âm lượng beep"
           />
-          <span className="scanner-volume-scale"><span>0 · Tắt</span><span>50 · Mặc định</span><span>100 · Tối đa</span></span>
+          <span className="scanner-volume-scale"><span>0 · Tắt</span><span>50 · Mức trung bình</span><span>100 · Tối đa</span></span>
         </label>
         <div className="scanner-beep-preview-row">
-          <p className="scanner-preference-note">50% giữ nguyên mức beep hiện tại. Âm lượng thực tế còn phụ thuộc âm lượng media của thiết bị.</p>
+          <p className="scanner-preference-note">Đã tăng mức âm thanh và kéo dài beep lên 140 ms. Âm lượng thực tế còn phụ thuộc âm lượng media của thiết bị.</p>
           <button type="button" className="scanner-beep-preview" disabled={settings.beepVolume === 0} onClick={() => { void previewScannerBeep(); }}>
             <Volume2 size={16} /> Thử beep
           </button>

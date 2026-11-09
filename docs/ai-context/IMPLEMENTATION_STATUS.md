@@ -1,4 +1,4 @@
-# Current implementation status — scanner Torch capability (2026-11-09)
+# Current implementation status — shared Scanner settings and feedback QA (2026-11-09)
 
 ## Production behavior
 - PR #51/#52: optional Torch control is implemented in the shared Scanner Engine and discovered only after the first usable video frame.
@@ -20,14 +20,23 @@
 
 # Current implementation status — shared Scanner settings (2026-11-09)
 
-## Implemented on `feat/scanner-settings-hub-feedback-controls`
-- Added a device-local, versioned Scanner preference store: vibration enabled by default; beep volume defaults to 50%.
-- Beep 50% maps to existing Web Audio gain 0.24; 0% mutes and 100% maps to gain 0.48. The slider has 11 discrete steps.
+## Merged on main — PR #56
+- PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 is merged at `5eee1a6a565f6263907541dac6af6b4ba77b37be`. Deployment status is not asserted by this record.
+- Final PR head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full `npm run preflight` in GitHub Actions run #42575773839.
+- Device-local versioned preferences are shared by all Scanner consumers: vibration enabled by default; beep volume 50% by default.
+- 50% maps to existing Web Audio gain 0.24; 0% mutes; 100% maps to 0.48. The slider has 11 discrete steps.
 - Shared accepted-result feedback reads preferences at event time; Home and Stocktake no longer pass independent audio/haptic overrides.
-- Added a Settings Hub with separate Scanner preferences and Scanner QA Monitor entries. Replaced the bottom-dock sliders icon with the gear-shaped Settings icon.
-- Vibration control feature-detects `navigator.vibrate`; unsupported browsers display a note and disable the toggle without affecting scanning.
-- Added preference-store/feedback/UI source regression tests and registered them in `npm run preflight`.
-- PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 (Draft, open, unmerged, undeployed). GitHub Actions run #42575410311 passed full `npm run preflight` on head `47ff115a7fcc631b24ccda3c0b0e3e0800439cf7`. Physical Android/iOS verification remains pending.
+- Settings Hub exposes separate Scanner preferences and Scanner QA Monitor entries. The dock uses the gear-shaped Settings icon.
+- Vibration control feature-detects `navigator.vibrate`; unsupported browsers display a note and disable the control without affecting scanning.
+- Physical Android/iOS verification remains pending and must be recorded separately from CI.
+
+## Current follow-up — runtime audio regression and documentation sync
+- Branch: `test/scanner-audio-runtime-and-doc-sync`, based on PR #56 merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
+- Adds a mocked Web Audio runtime test for actual GainNode ramp values (0, 50, 70 and 100%), AudioContext gesture unlock, preview/current-setting synchronization, shared accepted-result feedback and missing-Vibration-API behavior.
+- Registers the runtime test in `npm run preflight`. GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`.
+- Does not alter the production volume curve: 50% remains gain 0.24 and 100% remains 0.48 until real-device comparison supports a change.
+- Camera acquisition/lease, decoder, validation, lifecycle, Torch, Home lookup and Stocktake form/save flows remain outside scope.
+- CI for PR #57 passed; PR remains Draft, open, unmerged and undeployed. Real-device audio loudness and vibration QA remain pending.
 
 ---
 
