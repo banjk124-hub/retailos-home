@@ -100,7 +100,7 @@ Do not implement decoder tuning, adaptive camera constraints, or broad app-wide 
 5. `docs/ai-context/ROADMAP.md` — phases, dependencies, and acceptance gates.
 6. `docs/ai-context/IMPLEMENTATION_STATUS.md` — latest verified state and chronological record.
 
-Durable engineering decisions are recorded in `ARCHITECTURE.md`; there is currently no separate `DECISIONS.md`.
+Accepted architecture decisions are recorded in `ARCHITECTURE.md`; `DECISIONS.md` contains supplementary/proposed records, and each entry's status must be checked before treating it as accepted.
 7. Relevant feature source, tests, package scripts, and current git diff.
 
 If any item is missing or contradicts the current source, stop treating this handoff as authoritative for that detail. Inspect the repository, then update the relevant document in the same change set.
