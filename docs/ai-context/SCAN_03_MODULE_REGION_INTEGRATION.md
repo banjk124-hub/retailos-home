@@ -1,6 +1,6 @@
 # SCAN-03 — Module-owned preview region integration
 
-**Status:** Implementation in progress on `feat/scan-03-module-region-integration`; dependent on SCAN-02 audit follow-up PR #60.  
+**Status:** Implemented on `feat/scan-03-module-region-integration`; GitHub Actions run #302 passed full preflight/build. PR #61 remains Draft and depends on PR #60.  
 **Base:** SCAN-02 merged main `891a3a6c8c85442d0b4a253c1fca43b36b590f1c` plus the SCAN-02 audit/test correction branch.  
 **Scope:** Measure Home and Stocktake's existing reticles independently, map each to source-frame coordinates, and publish the result into the active session without restarting it.
 
