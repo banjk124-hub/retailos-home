@@ -7,7 +7,8 @@
 - Added independent Home and Stocktake flash controls; both remain hidden when the active camera track does not advertise support.
 - Torch defaults off. Unsupported/rejected requests are non-fatal; camera startup and barcode scanning do not depend on Torch.
 - Added dedicated Torch regression coverage and wired it into preflight.
-- Automated CI and physical iOS Safari/PWA + Android Chrome/PWA QA are still pending. No merge or deployment performed.
+- GitHub Actions run #232 passed full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`; a prior run exposed TS2454, which was fixed by guarding command cleanup with active track + session generation.
+- Physical iOS Safari/PWA + Android Chrome/PWA QA remains pending. No merge or deployment performed.
 
 ---
 ### 2026-11-09 — PR #49 post-merge video presentation ownership audit and documentation sync
