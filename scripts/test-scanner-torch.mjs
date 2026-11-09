@@ -61,6 +61,9 @@ assert.match(session, /bindTorchTrack\(stream\)/);
 assert.match(session, /this\.torchTrack = null/);
 assert.match(session, /generation !== this\.generation \|\| this\.torchTrack !== track/);
 
+const cameraSession = await readFile(new URL('../src/shared/services/cameraSession.ts', import.meta.url), 'utf8');
+assert.doesNotMatch(cameraSession, /torch/i, 'camera acquisition constraints must remain independent of optional Torch control');
+
 const hook = await readFile(new URL('../src/features/scanner/hooks/useScannerEngine.ts', import.meta.url), 'utf8');
 assert.match(hook, /setTorchEnabled = useCallback/);
 assert.match(hook, /onTorchStateChange: \(state\) =>/);
