@@ -1,3 +1,16 @@
+# SCAN-01 acceptance — input and module configuration contract
+
+- [x] Preview-content and source-frame coordinate spaces have distinct discriminators.
+- [x] Rectangles use normalized fractions and document top-left origin and bounds invariants.
+- [x] Module contract separates scan region from camera request.
+- [x] Camera request values are preferred constraints, independent of display aspect ratio.
+- [x] Default camera request remains environment / 1280×720 / 30 FPS ideal / 30 FPS maximum.
+- [x] Runtime call sites, camera lifecycle, decoder, validation and module business flows are untouched.
+- [ ] TypeScript production build and full `npm run preflight` pass on PR head.
+- [ ] GitHub Actions CI passes.
+
+---
+
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
 ## Shared Scanner settings — PR #56 (merged to main)
