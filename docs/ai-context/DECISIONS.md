@@ -44,3 +44,24 @@ The shared scanner is already separated into feature-owned UI, a React bridge, a
 - Angled/perspective decode is an optional capability within engine completion, not the entire 1.2I phase.
 
 See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gates.
+
+
+## ADR-022 — Separate module scan intent from source-frame processing geometry (2026-11-10)
+**Status:** Accepted as the SCAN-01 source contract; runtime wiring is deferred to SCAN-02/03.
+
+### Decision
+- Feature modules own a `ScannerModuleConfig` containing a `preview-content-normalized` scan region and a `ScannerCameraRequest`.
+- Shared scanner processing consumes a resolved `source-frame-normalized` region only after the pure mapping step in SCAN-02.
+- Rectangles use normalized fractions with a top-left origin and explicit coordinate-space discriminators.
+- Camera preferences are independent of preview aspect ratio. Preserve the current environment / 1280×720 / 30 FPS default.
+- Home and Stocktake retain independent presentation and reticle ownership.
+
+### Constraints
+- No DOM geometry barrier during camera startup.
+- Mapping must account for object-fit, object-position, source dimensions and mirroring.
+- Region updates must not recreate the camera/session/decoder/frame loop.
+- Strict ROI mode must reject invalid/missing region data; no silent full-frame fallback after strict mode is enabled.
+- No lifecycle, decoder algorithm, barcode policy, business flow or dependency changes in SCAN-01.
+
+### Acceptance
+See `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
