@@ -6,7 +6,7 @@
 - PR #49 removed the engine-owned DOM video geometry barrier and deleted `src/platform/scanner/videoPresentationLayout.ts`.
 - GitHub Actions run #200 passed the complete repository preflight.
 - User confirms the merged build was deployed and tested without issues.
-- Documentation synchronization branch: `docs/scanner-video-presentation-ownership` (documentation-only; no runtime source changes).
+- Documentation synchronization branch: `docs/scanner-video-presentation-ownership` (documentation updates plus one source-comment-only correction; no executable/runtime behavior changes).
 
 ## Current architecture
 1. The platform engine owns camera lease/session/stream resources, decoder lifecycle, recovery and truthful technical media/frame readiness.
