@@ -1,6 +1,6 @@
 # SCAN-03 implementation update — module-owned preview region integration (2026-11-10)
 
-**Status:** In progress on `feat/scan-03-module-region-integration`; depends on SCAN-02 audit follow-up PR #60.
+**Status:** Implemented on `feat/scan-03-module-region-integration`; GitHub Actions run #302 passed full preflight and builds. PR #61 remains Draft and depends on PR #60 merge.
 
 - Home and Stocktake retain their own video elements and reticles.
 - A feature-level binding hook measures each module's video/reticle geometry after scanning is ready and observes viewport/element changes.
