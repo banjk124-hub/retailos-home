@@ -18,7 +18,7 @@
 ## Behavior contract
 1. Camera acquisition remains unchanged.
 2. Torch is not enabled automatically.
-3. Applying Torch preserves existing track constraints; when unavailable, the adapter pins active width, height and frame rate from `getSettings()` so a toggle does not silently reset camera quality.
+3. Applying Torch preserves existing track constraints; when unavailable, the adapter pins active width, height, frame rate, facing mode and device identity from `getSettings()` so a toggle does not silently reset camera quality.
 3. Capability is discovered from the actual active video track, not browser/user-agent heuristics.
 4. A module can ignore the capability; both current modules consume it.
 5. Repeated taps are blocked while an applyConstraints request is pending.
