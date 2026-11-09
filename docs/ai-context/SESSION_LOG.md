@@ -1,3 +1,18 @@
+### 2026-11-09 — PR #49 post-merge video presentation ownership audit and documentation sync
+
+- Audited current `main` after PR #49 merge: `1764c858a7d7855950ebe328a3a653d6935fa796`.
+- Confirmed `UniversalScannerSession` no longer imports or invokes `waitForVideoPresentationLayout()`; `src/platform/scanner/videoPresentationLayout.ts` is deleted.
+- Confirmed technical media readiness remains in `waitForVideoFrameReady()`: decoded media state, intrinsic frame dimensions, playback state and fresh-frame handling remain separate from DOM/container geometry.
+- Confirmed startup ordering remains stream attachment → playback → usable first frame → `onPreviewReady` / lifecycle `READY` → decoder initialization.
+- Confirmed Home (`BarcodeScanner.tsx` / `.barcode-scanner-view`) and Stocktake (`StocktakeScanner.tsx` / `.stocktake-scanner-preview`) still render their own keyed video elements and retain independent `.has-preview` reveal CSS. PR #49 did not modify their components or styles.
+- Confirmed PR #49 scope did not alter camera acquisition/lease, technical lifecycle contract, Recovery, decoder, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save, snapshots or close behavior.
+- GitHub Actions run #200 passed full `npm run preflight`: scanner validation, lifecycle, presentation ownership, production build, Pages build and diff checks.
+- User confirms PR #49 was merged, deployed and tested without issues. Device/deployment acceptance is user-reported; CI is source/build validation.
+- Synchronized Architecture ADR-015, Roadmap, Implementation Status, Acceptance Checklist, AI Handoff, Project Context and this Session Log. Added `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md`; older audits remain as explicitly historical evidence.
+- Documentation-only branch: `docs/scanner-video-presentation-ownership`, based on PR #49 merge commit. No runtime source, tests, configuration, dependencies or deployment files changed.
+
+---
+
 ### 2026-11-08 — PR 47A restore module-owned scanner presentation
 
 - PR #46 was merged at `f668b4ea188e37f11659c74c1663821cc9f75ddb`, then physical-device testing exposed a regression: iOS displayed black → undersized video → sudden resize; Android curtain transition visibly flickered/chopped.
