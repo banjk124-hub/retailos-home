@@ -295,9 +295,6 @@ export function useScannerEngine({
     await session?.close();
     if (mountedRef.current) {
       setTorch(EMPTY_TORCH_STATE);
-      setTorchDiagnostics([]);
-      setTorchProbeResult(null);
-      setTorchProbePending(false);
       setIsStarting(false);
       setIsPreviewReady(false);
       setIsScanning(false);
