@@ -11,7 +11,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText
   .replace("from './contracts';", "from './contracts.js';");
 const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { mapPreviewScanRegionToSourceFrame } = await import(moduleUrl);
+const { mapPreviewScanRegionToSourceFrame, parseScannerObjectPosition } = await import(moduleUrl);
 
 const closeTo = (actual, expected, message, epsilon = 1e-6) => {
   assert.ok(Math.abs(actual - expected) <= epsilon,
@@ -31,6 +31,18 @@ const map = (rect, overrides = {}) => mapPreviewScanRegionToSourceFrame(
   },
 );
 const full = { x: 0, y: 0, width: 1, height: 1 };
+
+// Computed CSS object-position values resolve to explicit normalized fractions.
+assert.deepEqual(parseScannerObjectPosition('center'), { x: 0.5, y: 0.5 });
+assert.deepEqual(parseScannerObjectPosition('left top'), { x: 0, y: 0 });
+assert.deepEqual(parseScannerObjectPosition('right bottom'), { x: 1, y: 1 });
+assert.deepEqual(parseScannerObjectPosition('top right'), { x: 1, y: 0 });
+assert.deepEqual(parseScannerObjectPosition('25% 75%'), { x: 0.25, y: 0.75 });
+assert.deepEqual(parseScannerObjectPosition('50%'), { x: 0.5, y: 0.5 });
+assert.equal(parseScannerObjectPosition('10px 20px'), null,
+  'unsupported length-based object-position must not silently default to center');
+assert.equal(parseScannerObjectPosition('calc(50% - 2px) center'), null,
+  'unsupported calc object-position must fail explicitly');
 
 // Cover: a 16:9 source cropped into a portrait 4:5 preview.
 // The centered viewport is 45% of the source width, with equal vertical bounds.
