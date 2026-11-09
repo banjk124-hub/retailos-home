@@ -5,6 +5,7 @@ import type {
   ScannerError,
   ScannerLifecycleObserver,
   ScannerTorchState,
+  ScannerSourceScanRegion,
 } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
@@ -137,7 +138,7 @@ function scannerError(cause: unknown): ScannerError {
 export class UniversalScannerSession implements ScannerSession {
   readonly id = `scanner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   private currentState: ScannerLifecycleState = 'idle';
-  private sourceScanRegion: import('./contracts').ScannerSourceScanRegion | null = null;
+  private sourceScanRegion: ScannerSourceScanRegion | null = null;
   private stream: MediaStream | null = null;
   private cameraLease: CameraStreamLease | null = null;
   private torchTrack: MediaStreamTrack | null = null;
@@ -191,8 +192,9 @@ export class UniversalScannerSession implements ScannerSession {
     return { ...this.torchState };
   }
 
-  setScanRegion(region: import('./contracts').ScannerSourceScanRegion | null): void {
-    if (!region || region.coordinateSpace !== 'source-frame-normalized') {
+  setScanRegion(region: ScannerSourceScanRegion | null): void {
+    if (!region || region.coordinateSpace !== 'source-frame-normalized'
+      || !region.rect || typeof region.rect !== 'object') {
       this.sourceScanRegion = null;
       return;
     }
@@ -208,7 +210,7 @@ export class UniversalScannerSession implements ScannerSession {
       : null;
   }
 
-  getScanRegion(): import('./contracts').ScannerSourceScanRegion | null {
+  getScanRegion(): ScannerSourceScanRegion | null {
     const region = this.sourceScanRegion;
     return region ? {
       coordinateSpace: 'source-frame-normalized',
