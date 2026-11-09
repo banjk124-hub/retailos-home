@@ -143,7 +143,15 @@ export function mapPreviewScanRegionToSourceFrame(
     };
   }
 
-  const { sourceWidth, sourceHeight, previewWidth, previewHeight, objectFit, objectPosition, mirrored } = geometry ?? {};
+  if (!geometry || typeof geometry !== 'object') {
+    return {
+      ok: false,
+      error: 'invalid-geometry',
+      message: 'Preview geometry is required.',
+    };
+  }
+
+  const { sourceWidth, sourceHeight, previewWidth, previewHeight, objectFit, objectPosition, mirrored } = geometry;
   if (!isFinitePositive(sourceWidth)
     || !isFinitePositive(sourceHeight)
     || !isFinitePositive(previewWidth)
