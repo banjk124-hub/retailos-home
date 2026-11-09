@@ -120,6 +120,16 @@ assert.equal(measureScannerPreviewRegion({
 }), null, 'rotation/skew must not be misinterpreted as horizontal mirroring');
 
 assert.equal(measureScannerPreviewRegion({
+  videoRect: { left: 0, top: 0, width: 400, height: 500 },
+  reticleRect: { left: 0, top: 100, width: 80, height: 300 },
+  sourceWidth: 1280,
+  sourceHeight: 720,
+  objectFit: 'cover',
+  objectPosition: '50% 50%',
+  transform: 'matrix(0.94, 0, 0, 0.94, 0, 0)',
+}), null, 'video-only scale transform must fail closed because the reticle is a sibling');
+
+assert.equal(measureScannerPreviewRegion({
   videoRect: { left: 0, top: 0, width: 0, height: 500 },
   reticleRect: { left: 0, top: 100, width: 80, height: 300 },
   sourceWidth: 1280,
