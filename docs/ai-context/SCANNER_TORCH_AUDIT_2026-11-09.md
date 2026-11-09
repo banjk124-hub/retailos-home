@@ -28,7 +28,7 @@ RetailOS retains the existing browser-based, capability-gated Torch implementati
 8. Home and Stocktake own their independent presentation; the shared engine owns only capability/state/control.
 
 ## Investigation tooling retirement
-The PR #53 diagnostic sampler/panel and PR #54 capability-bypass pulse were temporary. PR #55 removes their production bundle code, timer scheduling, React/session state, contracts, test fixtures and runbook. The automated suite retains only production behavior regression coverage. GitHub Actions run #42572378379 passed full preflight on the code head; PR #55 remains open, unmerged and undeployed.
+The PR #53 diagnostic sampler/panel and PR #54 capability-bypass pulse were temporary. PR #55 removes their production bundle code, timer scheduling, React/session state, contracts, test fixtures and runbook. The automated suite retains only production behavior regression coverage. GitHub Actions run #42572378379 passed full preflight on the code head; user confirms PR #55 was merged and deployed.
 
 ## Future compatibility gate
 A future Android change requires reproducible evidence that a named browser/device/OS combination can physically turn the LED on and off through a supported API. A resolved promise alone is insufficient. Do not add model sniffing or capability bypasses.
