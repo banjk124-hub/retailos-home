@@ -1,3 +1,16 @@
+# SCAN-02 implementation update — 2026-11-10
+
+**Status:** mapper and deterministic tests authored on `feat/scanner-preview-source-geometry`; PR/CI pending. Not merged.
+
+- SCAN-01 is merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deploy and testing without issues.
+- Added `src/platform/scanner/scannerGeometry.ts` with pure preview-to-source mapping, explicit geometry validation and typed failure results.
+- Added `scripts/test-scanner-geometry.mjs`; registered in `scripts/preflight.mjs`.
+- Mapper supports `fill`, `contain`, `cover`, `none`, `scale-down`, normalized object-position, visible content intersection and horizontal mirroring.
+- No runtime consumers are wired. Home/Stocktake preview, camera lifecycle, decoder and business flows remain unchanged.
+- Next: SCAN-03 module-owned integration; SCAN-04 strict ROI-only decode.
+
+---
+
 # SCAN-01 implementation update — 2026-11-10
 
 **Status:** source contract authored on `feat/scanner-input-module-config-contract`; PR CI pending. Not merged.
