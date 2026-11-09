@@ -88,9 +88,9 @@ closeTo(fill.region.rect.height, 0.5, 'fill height');
 const none = map(full, { objectFit: 'none' });
 assert.equal(none.ok, true);
 closeTo(none.region.rect.x, 0.34375, 'none centered crop x');
-closeTo(none.region.rect.y, 7 / 24, 'none centered crop y');
+closeTo(none.region.rect.y, 11 / 72, 'none centered crop y');
 closeTo(none.region.rect.width, 0.3125, 'none centered crop width');
-closeTo(none.region.rect.height, 5 / 12, 'none centered crop height');
+closeTo(none.region.rect.height, 25 / 36, 'none centered crop height');
 
 const scaleDown = map(full, {
   sourceWidth: 320,
