@@ -15,7 +15,6 @@
 
 ---
 
-# Current implementation status — PR #49---
 # Current implementation status — PR #49 geometry-neutral video readiness (2026-11-09)
 
 Last reconciled: 2026-11-09.
