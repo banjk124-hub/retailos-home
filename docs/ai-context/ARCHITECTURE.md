@@ -383,7 +383,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 
 ## ADR-016 — Optional camera torch capability (2026-11-09)
 
-**Status:** Implemented in PR #51 (ready for review). GitHub Actions run #232 passed the full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`; physical-device acceptance remains pending.
+**Status:** Merged, deployed and user-verified in PR #51. iOS enable/disable is stable; a post-deployment Android issue (Flash control not visible) is being corrected in ADR-017 / PR #52.
 
 ### Context
 Home and Stocktake share the camera session and need optional flashlight control for low-light scanning. Browser engines and camera hardware do not universally expose a controllable torch.
