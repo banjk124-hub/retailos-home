@@ -1,6 +1,6 @@
 import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
 import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
-import { AlertTriangle, Camera, X } from 'lucide-react';
+import { AlertTriangle, Camera, Flashlight, FlashlightOff, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine } from '../../scanner/hooks/useScannerEngine';
@@ -58,6 +58,17 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
       onPointerDown={() => { void scanner.prepareAudio(); }}>
       <header className="stocktake-scanner-heading">
         <div><span className="stocktake-eyebrow">RETAILOS · KIỂM KÊ</span><h2 id="stocktake-scanner-title">Quét hàng hóa</h2><p>Đưa mã sản phẩm vào giữa khung hình</p></div>
+        {scanner.torch.supported && <button
+          type="button"
+          className="stocktake-icon-button scanner-torch-toggle"
+          onClick={() => { void scanner.setTorchEnabled(!scanner.torch.enabled); }}
+          disabled={scanner.torch.pending || isClosing}
+          aria-label={scanner.torch.error ?? (scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash')}
+          aria-pressed={scanner.torch.enabled}
+          title={scanner.torch.error ?? (scanner.torch.enabled ? 'Tắt đèn flash' : 'Bật đèn flash')}
+        >
+          {scanner.torch.enabled ? <FlashlightOff size={19} /> : <Flashlight size={19} />}
+        </button>}
         <button type="button" className="stocktake-icon-button" onClick={close} aria-label="Đóng máy quét"><X size={19} /></button>
       </header>
       <div className={`stocktake-scanner-preview ${scanner.isPreviewReady ? 'has-preview' : ''} ${scanner.isScanning ? 'is-active' : ''}`}>
