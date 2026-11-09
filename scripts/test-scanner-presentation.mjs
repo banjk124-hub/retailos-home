@@ -1,66 +1,49 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import ts from 'typescript';
 
-const source = await readFile(
-  new URL('../src/platform/scanner/videoPresentationLayout.ts', import.meta.url),
-  'utf8',
-);
-const compiled = ts.transpileModule(source, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
+const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 
-let frameCount = 0;
-Object.defineProperty(globalThis, 'window', {
-  configurable: true,
-  value: {
-    requestAnimationFrame: (callback) => {
-      frameCount += 1;
-      queueMicrotask(() => callback(frameCount * 16));
-      return frameCount;
-    },
-  },
-});
+const sessionSource = await read('../src/platform/scanner/universalScannerSession.ts');
+assert.doesNotMatch(sessionSource, /videoPresentationLayout|waitForVideoPresentationLayout/,
+  'platform session must not import or invoke a DOM presentation-layout gate');
+assert.doesNotMatch(sessionSource, /getBoundingClientRect|parentElement|clientWidth|clientHeight|offsetWidth|offsetHeight/,
+  'platform session must not inspect module DOM geometry');
 
-const rect = (width, height, left = 0, top = 0) => ({ width, height, left, top, right: left + width, bottom: top + height });
-const { waitForVideoPresentationLayout } = await import(moduleUrl);
+const attachAt = sessionSource.indexOf('this.video.srcObject = stream');
+const playAt = sessionSource.indexOf('await this.video.play()', attachAt);
+const frameReadyAt = sessionSource.indexOf('await waitForVideoFrameReady(this.video)', playAt);
+const previewReadyAt = sessionSource.indexOf('this.options.onPreviewReady?.()', frameReadyAt);
+const decoderAt = sessionSource.indexOf('await this.createDecoder()', previewReadyAt);
+assert.ok(attachAt >= 0 && playAt > attachAt && frameReadyAt > playAt
+  && previewReadyAt > frameReadyAt && decoderAt > previewReadyAt,
+'startup must attach/play the stream, confirm a real frame, publish preview readiness, then initialize the decoder');
 
-// Simulate a preview whose first layout pass is stale/small, then settles.
-const parent = { getBoundingClientRect: () => rect(390, 780), parentElement: null };
-const videoRects = [rect(72, 41), rect(390, 780), rect(390, 780)];
-const video = {
-  parentElement: parent,
-  getBoundingClientRect: () => videoRects[Math.min(frameCount - 1, videoRects.length - 1)],
-};
-await waitForVideoPresentationLayout(video);
-assert.equal(frameCount, 3, 'startup waits until the video and preview geometry match and remain stable for a frame');
+assert.match(sessionSource, /video\.readyState >= HTMLMediaElement\.HAVE_CURRENT_DATA/,
+  'technical frame readiness must continue requiring decoded media data');
+assert.match(sessionSource, /video\.videoWidth > 0\s*&&\s*video\.videoHeight > 0/,
+  'technical frame readiness must continue requiring intrinsic decoded frame dimensions');
 
-// Already-stable geometry should cost exactly two animation frames.
-frameCount = 0;
-const stableVideo = { parentElement: parent, getBoundingClientRect: () => rect(390, 780) };
-await waitForVideoPresentationLayout(stableVideo);
-assert.equal(frameCount, 2, 'stable startup uses only a two-frame layout barrier');
+// The feature modules retain their own DOM and preview-reveal contracts.
+const homeSource = await read('../src/features/scanner/components/BarcodeScanner.tsx');
+assert.match(homeSource, /barcode-scanner-view \$\{scanner\.isPreviewReady \? 'has-preview'/,
+  'Home must retain its own preview-ready class');
+assert.match(homeSource, /<video key=\{scanner\.videoSurfaceKey\} ref=\{scanner\.videoRef\}/,
+  'Home must retain its feature-owned video element');
 
-// Broken/zero-sized layout must fail within the bounded frame budget.
-frameCount = 0;
-const zeroParent = { getBoundingClientRect: () => rect(0, 0), parentElement: null };
-const zeroVideo = { parentElement: zeroParent, getBoundingClientRect: () => rect(0, 0) };
-await assert.rejects(
-  waitForVideoPresentationLayout(zeroVideo),
-  /layout did not stabilize/,
-  'invalid preview geometry is rejected instead of presenting a broken camera layer',
-);
-assert.equal(frameCount, 8, 'layout readiness is bounded and cannot wait indefinitely');
+const stocktakeSource = await read('../src/features/stocktake/components/StocktakeScanner.tsx');
+assert.match(stocktakeSource, /stocktake-scanner-preview \$\{scanner\.isPreviewReady \? 'has-preview'/,
+  'Stocktake must retain its own preview-ready class');
+assert.match(stocktakeSource, /<video key=\{scanner\.videoSurfaceKey\} ref=\{scanner\.videoRef\}/,
+  'Stocktake must retain its feature-owned video element');
 
-const sessionSource = await readFile(
-  new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url),
-  'utf8',
-);
-const layoutWaitAt = sessionSource.indexOf('await waitForVideoPresentationLayout(this.video)');
-const streamAttachAt = sessionSource.indexOf('this.video.srcObject = stream', layoutWaitAt);
-const playAt = sessionSource.indexOf('await this.video.play()', streamAttachAt);
-assert.ok(layoutWaitAt >= 0 && streamAttachAt > layoutWaitAt && playAt > streamAttachAt,
-  'stable presentation layout must be confirmed before MediaStream attachment and play()');
+const transitionCss = await read('../src/features/scanner/scanner-transition.css');
+assert.match(transitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video \{ visibility: hidden; \}/,
+  'Home must continue hiding the native video until its module receives preview readiness');
+assert.match(transitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video \{ visibility: visible; \}/,
+  'Home must reveal the native video through its own presentation CSS');
+assert.match(transitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video \{ visibility: hidden; \}/,
+  'Stocktake must continue hiding the native video until its module receives preview readiness');
+assert.match(transitionCss, /\.stocktake-scanner-preview\.has-preview video \{ visibility: visible; \}/,
+  'Stocktake must reveal the native video through its own presentation CSS');
 
-console.log('Scanner presentation layout readiness tests passed.');
+console.log('Scanner presentation ownership tests passed.');
