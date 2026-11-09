@@ -1,13 +1,14 @@
-# Current scanner handoff — SCAN-02 geometry mapping (2026-11-10)
+# Current scanner handoff — SCAN-02 audited; SCAN-03 next (2026-11-10)
 
-- SCAN-01 is merged to main by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deployment and testing without issues.
-- Current SCAN-02 branch: `feat/scanner-preview-source-geometry`, based on that merge commit.
-- Added pure mapper `src/platform/scanner/scannerGeometry.ts`: `mapPreviewScanRegionToSourceFrame()`.
-- Mapper handles CSS object-fit modes, normalized object-position, visible image intersection, mirror state, normalized source output and explicit failures.
-- Added `scripts/test-scanner-geometry.mjs` and registered it in `scripts/preflight.mjs`.
-- No Home/Stocktake consumer wiring; no runtime scanner behavior is changed. Do not claim ROI-only decoding is active.
-- No DOM reads or camera-startup geometry barrier in platform core. No camera lifecycle, decoder, barcode validation, cadence, UI, CSS or business-flow changes.
-- Next: SCAN-03 independently wires Home and Stocktake region/config inputs; then SCAN-04 enables strict ROI-only decode after both are verified.
+- SCAN-01 is merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
+- SCAN-02 is merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed TypeScript, production/Pages builds and full preflight.
+- User confirms the merged build is deployed and the existing scanner flows operate normally without regression.
+- Audited the pure mapper `src/platform/scanner/scannerGeometry.ts`: object-fit sizing, object-position crop, visible-content intersection, mirror inversion, validation and explicit failures are consistent with the contract.
+- Follow-up audit hardens the test guard so DOM/window access is actually detected; this is a test-quality correction, not a runtime scanner fix.
+- No Home/Stocktake consumer is wired yet. SCAN-02 does not activate ROI decoding; full-frame decode remains the current behavior.
+- SCAN-03 independently wires module-owned preview geometry and source-region updates. Region updates must not restart camera/session/decoder/frame loop.
+- Physical iOS Safari/PWA and Android Chrome/PWA reticle-alignment QA is required after SCAN-03.
+- SCAN-04 is the later phase for strict ROI-only decoding after both consumers are proven valid.
 - Protect camera lease/refcount, single-claim handoff, lifecycle/recovery, preview readiness, ZXing, validation, Torch, feedback, Home lookup and Stocktake save/revision/export.
 - No merge/deploy without explicit user approval.
 

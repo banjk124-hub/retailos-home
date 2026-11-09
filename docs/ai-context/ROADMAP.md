@@ -1,11 +1,12 @@
-# SCAN-02 execution update — 2026-11-10
+# SCAN-02 execution update — audited and merged (2026-11-10)
 
-- SCAN-01 merged to main by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deploy and test.
-- SCAN-02 implementation branch: `feat/scanner-preview-source-geometry`; PR/CI pending.
-- Added pure geometry mapper for `fill`, `contain`, `cover`, `none`, `scale-down`, object-position, visible-content bounds and horizontal mirror conversion.
-- Added deterministic geometry tests and registered them in full preflight.
-- No runtime consumer, camera, lifecycle, decoder, ROI, UI or CSS behavior changed.
-- Next: SCAN-03 module-owned Home/Stocktake adapters and region updates without session restart; SCAN-04 strict ROI-only decode after both consumers are valid.
+- SCAN-01 merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
+- SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed full preflight and production/Pages builds.
+- User confirms deployment and normal operation of existing scanner flows.
+- Pure geometry mapper audit found no runtime calculation or architecture defect; a follow-up correction strengthens its DOM-boundary regression guard.
+- No runtime consumer is wired and ROI-only decoding is not active.
+- Next: SCAN-03 independently wires Home and Stocktake preview/reticle geometry and updates the source-region contract without restarting the session. Verify alignment on iOS and Android.
+- SCAN-04 enables strict ROI-only decode only after both module consumers pass geometry and device QA.
 
 ---
 

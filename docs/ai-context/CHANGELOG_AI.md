@@ -33,6 +33,7 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Intent: map module preview regions into source-frame coordinates before ROI decoding.
 - Files: `scannerGeometry.ts`, `test-scanner-geometry.mjs`, `preflight.mjs`, and SCAN-02 docs/status records.
 - Behavior: pure mapping for CSS object-fit, normalized object-position, visible content and mirror transforms; no runtime consumer wired.
-- Checks: deterministic geometry test added to preflight; CI pending.
+- Checks: merged main CI run #299 passed full preflight, TypeScript, production build and GitHub Pages build. User confirms deployed smoke test with no existing-flow regression.
 - Unverified: real-device Home/Stocktake alignment belongs to SCAN-03.
-- Risks / rollback: no runtime behavior changed; revert SCAN-02 branch if contract or tests fail.
+- Post-merge audit: no runtime geometry or architecture defect found. Corrected the test's DOM-boundary regex and added self-checks for `document.` / `window.` detection; no production runtime behavior changed.
+- Risks / rollback: no runtime behavior changed; revert SCAN-02 if a future audit identifies a mapping defect.

@@ -177,5 +177,10 @@ const geometrySource = await readFile(
   new URL('../src/platform/scanner/scannerGeometry.ts', import.meta.url),
   'utf8',
 );
-assert.doesNotMatch(geometrySource, /document\\.|window\\.|getBoundingClientRect|HTMLVideoElement/,
+const forbiddenDomPattern = /\b(?:window|document)\s*(?:\.|\?\.)|getBoundingClientRect|HTMLVideoElement/;
+assert.match('document.querySelector("video")', forbiddenDomPattern,
+  'DOM boundary guard must detect document access');
+assert.match('window.getComputedStyle(video)', forbiddenDomPattern,
+  'DOM boundary guard must detect window access');
+assert.doesNotMatch(geometrySource, forbiddenDomPattern,
   'geometry mapping must remain pure and must not inspect presentation DOM');

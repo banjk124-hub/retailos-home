@@ -1,3 +1,15 @@
+### 2026-11-10 — SCAN-02 post-merge technical audit
+
+- Audited PR #59 and the merged main source at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`.
+- Reviewed object-fit sizing, object-position crop, visible image intersection, mirror inversion, normalized source output, invalid-input behavior and platform/session boundaries.
+- No runtime geometry defect found; no Home/Stocktake consumer or ROI decode is active in SCAN-02.
+- Verified main CI run #299 passed full preflight, TypeScript, production build and GitHub Pages build. User confirms deployment and existing-flow smoke test without regression.
+- Found a test-quality defect: the static DOM-boundary regex was over-escaped and did not detect ordinary `document.` / `window.` access. Follow-up strengthens the regex and self-tests the guard.
+- Physical Home/Stocktake reticle alignment remains a SCAN-03 iOS Safari/PWA and Android Chrome/PWA acceptance gate.
+- No camera, lifecycle, decoder, validation, cadence, UI, CSS or business-flow runtime code changed.
+
+---
+
 ### 2026-11-10 — SCAN-02 pure preview-to-source geometry mapping
 - Intent: implement the pure geometry transform required before Home/Stocktake ROI integration.
 - Base: SCAN-01 merge commit `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
