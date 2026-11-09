@@ -1,3 +1,20 @@
+# Current scanner handoff — SCAN-02 geometry mapping (2026-11-10)
+
+- SCAN-01 is merged to main by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deployment and testing without issues.
+- Current SCAN-02 branch: `feat/scanner-preview-source-geometry`, based on that merge commit.
+- Added pure mapper `src/platform/scanner/scannerGeometry.ts`: `mapPreviewScanRegionToSourceFrame()`.
+- Mapper handles CSS object-fit modes, normalized object-position, visible image intersection, mirror state, normalized source output and explicit failures.
+- Added `scripts/test-scanner-geometry.mjs` and registered it in `scripts/preflight.mjs`.
+- No Home/Stocktake consumer wiring; no runtime scanner behavior is changed. Do not claim ROI-only decoding is active.
+- No DOM reads or camera-startup geometry barrier in platform core. No camera lifecycle, decoder, barcode validation, cadence, UI, CSS or business-flow changes.
+- Next: SCAN-03 independently wires Home and Stocktake region/config inputs; then SCAN-04 enables strict ROI-only decode after both are verified.
+- Protect camera lease/refcount, single-claim handoff, lifecycle/recovery, preview readiness, ZXing, validation, Torch, feedback, Home lookup and Stocktake save/revision/export.
+- No merge/deploy without explicit user approval.
+
+Canonical SCAN-02 design: `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md`.
+
+---
+
 # Current scanner handoff — SCAN-01 contract implementation (2026-11-10)
 
 - Active implementation branch: `feat/scanner-input-module-config-contract`.
