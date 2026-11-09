@@ -16,7 +16,7 @@
 - [ ] Confirm Torch is off after scanner close/session teardown.
 - [ ] Confirm Home and Stocktake controls remain visually independent and do not affect native video compositing.
 
-PR #51 is Draft and must not be merged/deployed until CI and device gates are reviewed. Capability is browser/hardware dependent; unsupported devices must retain normal scanner behavior.
+PR #51 is ready for review and must not be merged/deployed until CI and device gates are reviewed. Capability is browser/hardware dependent; unsupported devices must retain normal scanner behavior.
 
 ---
 # Current scanner acceptance gates — post PR #49 (2026-11-09)
