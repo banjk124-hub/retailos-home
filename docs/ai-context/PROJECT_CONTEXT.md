@@ -2,7 +2,7 @@
 
 - Current main base for PR #51: `6f821bde716c958147113f66d626c53882414108`.
 - Active work is on `feat/scanner-torch-control` (PR #51 (ready for review)). Engine exposes support/state/control; Home and Stocktake own independent flash controls.
-- Torch is opt-in and unsupported devices must continue scanning normally. CI and physical-device acceptance are pending; do not merge/deploy without explicit approval.
+- Torch is opt-in and unsupported devices must continue scanning normally. CI run #232 passed the full preflight; physical-device acceptance is pending. Do not merge/deploy without explicit approval.
 - Architecture decision: `ARCHITECTURE.md` ADR-016. Source audit and QA gates: `SCANNER_TORCH_AUDIT_2026-11-09.md` and `ACCEPTANCE_CHECKLIST.md`.
 
 ---
