@@ -6,6 +6,7 @@ import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
 import { useScannerViewportStyle } from '../hooks/useScannerViewportStyle';
 import { captureScannerPreviewFrame } from '../services/captureScannerPreviewFrame';
+import { useScannerPreviewRegionBinding } from '../hooks/useScannerPreviewRegionBinding';
 
 type ScannerTransitionStyle = CSSProperties & {
   '--scanner-origin-x': string;
@@ -32,6 +33,7 @@ export default function BarcodeScanner({
   motionOrigin = null,
 }: Props) {
   const [isClosing, setIsClosing] = useState(false);
+  const reticleRef = useRef<HTMLDivElement>(null);
   const [exitFrame, setExitFrame] = useState<string | null>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -62,6 +64,14 @@ export default function BarcodeScanner({
     }
     onDetected(value);
   }, mode, scanCooldownMs, cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
+  useScannerPreviewRegionBinding({
+    videoRef: scanner.videoRef,
+    reticleRef,
+    videoSurfaceKey: scanner.videoSurfaceKey,
+    enabled: scanner.isScanning && !isClosing,
+    onRegionChange: scanner.setScanRegion,
+  });
+
   const transitionStyle: ScannerTransitionStyle = {
     '--scanner-origin-x': motionOrigin ? `${motionOrigin.x}px` : '50vw',
     '--scanner-origin-y': motionOrigin ? `${motionOrigin.y}px` : '50vh',
@@ -105,7 +115,7 @@ export default function BarcodeScanner({
           </button>}
           <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng tra cứu"><X size={20} /></button>
         </header>
-        {scanner.isScanning && <div className="barcode-scan-frame" aria-hidden="true"><i /></div>}
+        {scanner.isScanning && <div ref={reticleRef} className="barcode-scan-frame" aria-hidden="true"><i /></div>}
         {!scanner.isPreviewReady && scanner.error && <div className="barcode-scanner-placeholder"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
         {scanner.error && <div className="barcode-scanner-error-panel" role="alert"><span>{scanner.error}</span><button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button></div>}
       </div>
