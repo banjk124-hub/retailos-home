@@ -284,7 +284,6 @@ export class UniversalScannerSession implements ScannerSession {
         throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
       }
       this.stream = stream;
-      this.bindTorchTrack(stream);
       this.trackEventCleanups.splice(0).forEach((cleanup) => cleanup());
       stream.getVideoTracks().forEach((track) => {
         const logTrackEvent = (trackEvent: 'mute' | 'unmute') => {
@@ -326,6 +325,26 @@ export class UniversalScannerSession implements ScannerSession {
       const videoReadyStartedAt = performance.now();
       const videoReadiness = await waitForVideoFrameReady(this.video);
       this.logStage('video_ready_ms', performance.now() - videoReadyStartedAt);
+      // Chromium may expose camera capabilities only after the track is
+      // actively streaming. Discover Torch after playback has produced a
+      // fresh frame, not immediately after getUserMedia resolves.
+      this.bindTorchTrack(stream);
+      const torchSettings = this.torchTrack?.getSettings?.();
+      let torchCapability: boolean | 'not-exposed' | 'unavailable' = 'unavailable';
+      try {
+        const capabilities = this.torchTrack?.getCapabilities?.() as (MediaTrackCapabilities & { torch?: boolean }) | undefined;
+        torchCapability = typeof capabilities?.torch === 'boolean' ? capabilities.torch : 'not-exposed';
+      } catch {
+        torchCapability = 'unavailable';
+      }
+      console.info('[RetailOS Scanner] Torch capability', {
+        supported: this.torchState.supported,
+        torchCapability,
+        trackReadyState: this.torchTrack?.readyState ?? 'missing',
+        facingMode: torchSettings?.facingMode ?? 'unknown',
+        width: torchSettings?.width ?? null,
+        height: torchSettings?.height ?? null,
+      });
       console.info('[RetailOS Scanner] Video readiness', {
         videoReadyState: videoReadiness.readyState,
         videoWidth: videoReadiness.width,
