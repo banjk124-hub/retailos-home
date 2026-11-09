@@ -10,14 +10,14 @@
 
 Verify that the platform scanner engine no longer imposes DOM/container geometry as a precondition for video startup, while retaining real media-frame readiness and preserving the existing Home and Stocktake presentation implementations.
 
-This is a source/documentation audit. No runtime source, test code, dependencies, package scripts, configuration, data contracts or deployment files are changed by this documentation synchronization.
+This is a source/documentation audit. No runtime behavior or executable logic, test code, dependencies, package scripts, configuration, data contracts or deployment files are changed by this synchronization. One stale comment in the Recovery hook was corrected to remove the obsolete “layout barrier” description; the comment-only edit does not change runtime behavior.
 
 ## 2. Source map inspected
 
 | Responsibility | Source |
 |---|---|
 | Shared platform camera/session startup and frame readiness | `src/platform/scanner/universalScannerSession.ts` |
-| React bridge and `isPreviewReady` state | `src/features/scanner/hooks/useScannerEngine.ts` |
+| React bridge, Recovery orchestration and `isPreviewReady` state | `src/features/scanner/hooks/useScannerEngine.ts` |
 | Home video DOM and module presentation | `src/features/scanner/components/BarcodeScanner.tsx` |
 | Stocktake video DOM and module presentation | `src/features/stocktake/components/StocktakeScanner.tsx` |
 | Home and Stocktake scanner transition/reveal rules | `src/features/scanner/scanner-transition.css` |
@@ -25,7 +25,7 @@ This is a source/documentation audit. No runtime source, test code, dependencies
 | Geometry-neutral readiness regression assertions | `scripts/test-scanner-presentation.mjs` |
 | Repository verification sequence | `scripts/preflight.mjs` |
 
-The deleted helper `src/platform/scanner/videoPresentationLayout.ts` is no longer part of the current source tree.
+The deleted helper `src/platform/scanner/videoPresentationLayout.ts` is no longer part of the current source tree. The Recovery hook's explanatory comment was also aligned with the current no-layout-barrier startup sequence; no executable statement changed.
 
 ## 3. Engine behavior verified on main
 
@@ -172,7 +172,7 @@ The user confirms PR #49 was merged, deployed and tested without issues. The exa
 ### Verification limits
 - CI proves the checked source assertions and builds on the runner; it does not prove camera hardware behavior.
 - User-reported deployment testing is recorded separately from CI evidence.
-- No new device QA was performed by this documentation-only audit.
+- No new device QA was performed by this documentation/source-comment audit.
 
 ## 8. Audit conclusion
 
