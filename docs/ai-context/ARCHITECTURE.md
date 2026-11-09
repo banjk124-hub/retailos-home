@@ -71,7 +71,7 @@
 
 ## ADR-020 — Runtime verification of shared Scanner audio feedback (2026-11-09)
 
-**Status:** Follow-up test implementation authored on `test/scanner-audio-runtime-and-doc-sync`; CI pending. Production audio mapping is intentionally unchanged pending physical-device comparison.
+**Status:** Implemented on `test/scanner-audio-runtime-and-doc-sync`; full preflight passed in GitHub Actions run #42647819016 on head `bf267c5e3e5e7cc79524f3fad220fa6f7a9be68d`. Draft PR #57 remains open and unmerged. Production audio mapping is intentionally unchanged pending physical-device comparison.
 
 ### Context
 - PR #56 centralizes Scanner feedback preferences and maps the 0–100 UI level linearly to Web Audio gain 0–0.48.
