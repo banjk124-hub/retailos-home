@@ -8,7 +8,6 @@
 
 ---
 
-# Historical engineering focus snapshot---
 # Historical engineering focus snapshot — 2026-11-08
 
 Historical source baseline: c7146b55f0c2210cd7b8474c6a72b1c915985793 (pre lifecycle contract and Recovery). PR #31/#32 history below is not the current implementation state.
