@@ -2,6 +2,27 @@ import { getScannerSettings } from './scannerSettingsStore';
 
 let audioContext: AudioContext | null = null;
 
+function resumeExistingAudioContext(): void {
+  const context = audioContext;
+  if (!context || context.state === 'running' || context.state === 'closed') return;
+
+  // Best-effort foreground recovery. Browsers may reject this without a gesture;
+  // the Scanner surface and Test Beep button still provide the explicit fallback.
+  void context.resume().catch((error) => {
+    console.warn('Scanner audio foreground recovery was deferred:', error);
+  });
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) resumeExistingAudioContext();
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('pageshow', resumeExistingAudioContext);
+}
+
 function getUsableAudioContext(): AudioContext {
   // iOS may leave a context permanently closed after an interruption/background cycle.
   // Recreate it only from the next explicit user gesture, never from a background event.
