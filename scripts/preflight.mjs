@@ -39,6 +39,11 @@ const checks = [
     args: ["scripts/test-scanner-presentation.mjs"],
   },
   {
+    name: "Scanner preview/source geometry mapping tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-geometry.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],
