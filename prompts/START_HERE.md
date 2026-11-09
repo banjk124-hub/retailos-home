@@ -1,16 +1,26 @@
-# Prompts for coding agents
+# RetailOS — Start Here
 
-## Start every session
-Read `AGENTS.md`, `.github/copilot-instructions.md`, `.github/skills/retailos-implementation/SKILL.md`, and all files in `docs/ai-context/`. Inspect the actual working tree before making edits. First report baseline findings, then propose the smallest safe implementation plan. Do not edit until you have identified affected contracts and regression risks.
+## Every new session
+1. Read AGENTS.md.
+2. Read docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md. This is the canonical whole-app audit and Change Map.
+3. Read docs/ai-context/AI_HANDOFF.md.
+4. Read docs/ai-context/PROJECT_CONTEXT.md, ARCHITECTURE.md, ROADMAP.md and IMPLEMENTATION_STATUS.md.
+5. Read .github/skills/retailos-implementation/SKILL.md.
+6. Inspect current main SHA, branches, open PRs, workflow runs, local git status and full diff. Current source always outranks historical chat notes.
 
-## Audit-only prompt
-Perform a source-grounded audit of this repository. Do not edit files. Map module registry, Home, navigation, auth/session, data services, IndexedDB snapshots, barcode, notifications, PWA/service worker and deployment. Report concrete file/line references, verified issues versus hypotheses, risk severity, and prioritized remediation.
+## Before code
+Report the current baseline, exact task/PR, allowed files, protected files, behavior delta, regression tests and rollback. Do not edit until the Change Map is approved. Work on a branch from latest main.
 
-## Module library implementation prompt
-Implement the next approved module-library slice. Use the canonical registry only after verifying it against actual module IDs and navigation. Keep data availability, UI implementation status, permissions, connectivity and operation state distinct. No fake/demo behavior. Add or update tests. Run typecheck/build and report exact commands and results. Do not deploy.
+## Current project phase
+RetailOS is a local-first PWA prototype preparing for operational MVP integration. Stocktake is the only complete module UI; backend authentication, live snapshot sync, multi-device Stocktake and remote Push delivery are not integrated. Scanner foundations exist; current Scanner work is recognition/geometry expansion, not lifecycle rewrite.
 
-## CSS/design-system prompt
-Audit stylesheet import order, duplicate selectors and responsive rules before editing. Propose tokens and a migration map. Do not add another permanent override layer unless explicitly documented as temporary with removal criteria. Validate phone/tablet/desktop and reduced-motion/accessibility states. Do not claim visual verification without browser evidence.
+## Scanner hard boundaries
+- Preserve camera lease/session/lifecycle/preview/recovery.
+- Home and Stocktake own their own video UI, reticle, transitions and business flow.
+- Module defines the scan region and camera request. Engine receives resolved source-frame ROI and must not inspect DOM geometry as a startup gate.
+- Preserve EAN-8/EAN-13/CODE-128 validation, 110 ms cadence and current camera defaults until a scoped measured PR is approved.
+- Recovery must be conditional and bounded; no-result alone is not a reason for expensive processing.
+- Do not combine UI, lifecycle, camera constraints and decoder algorithms in one PR.
 
-## Release-readiness prompt
-Do not deploy. Verify build scripts, test scripts, base path, service-worker behavior and git diff. List every unverified risk and the commands the user should run. Ask for explicit approval before any push/deploy.
+## Safety
+Never discard local/untracked work. Never change auth/session, stable module IDs, Apps Script payloads, IndexedDB schema, Service Worker, Vite base path or deployment without a migration plan. Never merge/deploy or change cloud settings without explicit user approval. Record exact tests and distinguish CI, local and physical-device evidence.
