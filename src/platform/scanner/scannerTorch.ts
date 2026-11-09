@@ -51,6 +51,9 @@ export async function applyScannerTorch(
     if (constraints.frameRate === undefined && typeof settings?.frameRate === 'number') {
       constraints.frameRate = { exact: settings.frameRate };
     }
+    if (constraints.facingMode === undefined && typeof settings?.facingMode === 'string') {
+      constraints.facingMode = { exact: settings.facingMode };
+    }
     // Replace a previous Torch advanced constraint instead of stacking
     // torch:true and torch:false entries whose order can be browser-dependent.
     const preservedAdvanced = (existing.advanced ?? []).filter(
