@@ -64,6 +64,15 @@ export type ScannerLifecycleEvent = {
 
 export type ScannerLifecycleObserver = (event: ScannerLifecycleEvent) => void;
 
+/** Camera torch state. Support is discovered from the active video track. */
+export type ScannerTorchState = {
+  supported: boolean;
+  enabled: boolean;
+  pending: boolean;
+  error?: string;
+};
+
+
 export type ScannerPoint = {
   x: number;
   y: number;
@@ -133,6 +142,8 @@ export type ScannerOpenOptions = {
   lifecycleObserver?: ScannerLifecycleObserver;
   /** Fires once the attached video element has its first usable camera frame. */
   onPreviewReady?: () => void;
+  /** Optional technical camera capability updates; presentation stays feature-owned. */
+  onTorchStateChange?: (state: ScannerTorchState) => void;
   onError?: (error: ScannerError) => void;
 };
 
@@ -161,6 +172,8 @@ export interface ScannerSession {
   readonly id: string;
   readonly state: ScannerLifecycleState;
   start(): Promise<void>;
+  getTorchState(): ScannerTorchState;
+  setTorchEnabled(enabled: boolean): Promise<ScannerTorchState>;
   suspend(reason?: 'hidden' | 'manual'): Promise<void>;
   resume(): Promise<void>;
   /** Retire this session for foreground recovery without emitting feature exit milestones. */

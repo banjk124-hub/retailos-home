@@ -1,3 +1,25 @@
+# Active AI handoff — scanner Torch capability PR #51 (2026-11-09)
+
+- Repository: `banjk124-hub/retailos-home`.
+- Base main SHA for PR #51: `6f821bde716c958147113f66d626c53882414108`.
+- Active branch: `feat/scanner-torch-control`.
+- PR #51 (ready for review): https://github.com/banjk124-hub/retailos-home/pull/51.
+- Scope: optional platform Torch API plus independent Home/Stocktake controls. No merge/deploy authorized.
+- GitHub Actions run #232 passed the full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`. Physical-device acceptance is still pending; do not merge/deploy until it is reviewed.
+
+## Torch implementation rules
+1. Detect capability from the active video track's `getCapabilities().torch`; never infer from user-agent/device model.
+2. Never turn Torch on automatically during startup.
+3. Unsupported/rejected constraints are non-fatal. Preview and barcode decoding must continue.
+4. Keep UI presentation in Home and Stocktake. Engine/hook expose state and operation only.
+5. Guard async completion by active session generation and track identity.
+6. Reset Torch state when the track is retired, suspended, recovered or closed.
+7. Do not alter getUserMedia resolution/FPS, autofocus, first-frame readiness, decoder cadence, validation or business workflows.
+8. Validate real hardware separately on iOS Safari/PWA and Android Chrome/PWA. CI cannot establish Torch hardware support.
+
+Read `ARCHITECTURE.md` ADR-016, `SCANNER_TORCH_AUDIT_2026-11-09.md`, source and `ACCEPTANCE_CHECKLIST.md` before changing this work.
+
+---
 # Current AI handoff — post PR #49 video presentation ownership (2026-11-09)
 
 ## Verified baseline

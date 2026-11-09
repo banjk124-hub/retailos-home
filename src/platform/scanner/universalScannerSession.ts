@@ -4,12 +4,14 @@ import type {
   ScannerSession,
   ScannerError,
   ScannerLifecycleObserver,
+  ScannerTorchState,
 } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
+import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
 
 type VideoReadiness = {
   readyState: number;
@@ -137,6 +139,9 @@ export class UniversalScannerSession implements ScannerSession {
   private currentState: ScannerLifecycleState = 'idle';
   private stream: MediaStream | null = null;
   private cameraLease: CameraStreamLease | null = null;
+  private torchTrack: MediaStreamTrack | null = null;
+  private torchState: ScannerTorchState = { supported: false, enabled: false, pending: false };
+  private torchCommand: Promise<ScannerTorchState> | null = null;
   private decoder: ScannerDecoderAdapter | null = null;
   private frameHandle: number | null = null;
   private frameKind: 'video' | 'raf' | null = null;
@@ -180,6 +185,49 @@ export class UniversalScannerSession implements ScannerSession {
     this.lifecycle = new ScannerLifecycleAdapter(this.id, options.lifecycleObserver);
   }
   get state(): ScannerLifecycleState { return this.currentState; }
+
+  getTorchState(): ScannerTorchState {
+    return { ...this.torchState };
+  }
+
+  async setTorchEnabled(enabled: boolean): Promise<ScannerTorchState> {
+    if (this.torchCommand) return this.torchCommand;
+    const track = this.torchTrack;
+    const generation = this.generation;
+    if (!track || track.readyState !== 'live' || !this.torchState.supported || this.disposed) {
+      return this.getTorchState();
+    }
+
+    const command = (async () => {
+      this.updateTorchState({ ...this.torchState, pending: true, error: undefined });
+      try {
+        const result = await applyScannerTorch(track, enabled);
+        if (generation !== this.generation || this.torchTrack !== track || this.disposed) return this.getTorchState();
+        this.updateTorchState(result);
+        return this.getTorchState();
+      } finally {
+        if (this.torchTrack === track && this.generation === generation) this.torchCommand = null;
+      }
+    })();
+    this.torchCommand = command;
+    return command;
+  }
+
+  private updateTorchState(state: ScannerTorchState): void {
+    this.torchState = { ...state };
+    try {
+      this.options.onTorchStateChange?.(this.getTorchState());
+    } catch (cause) {
+      console.warn('[RetailOS Scanner] Torch observer failed:', cause);
+    }
+  }
+
+  private bindTorchTrack(stream: MediaStream): void {
+    const track = stream.getVideoTracks()[0] ?? null;
+    this.torchTrack = track;
+    this.torchCommand = null;
+    this.updateTorchState(readScannerTorchState(track));
+  }
 
   private setState(state: ScannerLifecycleState): void {
     this.currentState = state;
@@ -236,6 +284,7 @@ export class UniversalScannerSession implements ScannerSession {
         throw new Error('Luồng camera đã kết thúc. Hãy thử kết nối lại camera.');
       }
       this.stream = stream;
+      this.bindTorchTrack(stream);
       this.trackEventCleanups.splice(0).forEach((cleanup) => cleanup());
       stream.getVideoTracks().forEach((track) => {
         const logTrackEvent = (trackEvent: 'mute' | 'unmute') => {
@@ -556,6 +605,9 @@ export class UniversalScannerSession implements ScannerSession {
     // leased while a closing transition is running or a worker is slow.
     const stream = this.stream;
     this.stream = null;
+    this.torchTrack = null;
+    this.torchCommand = null;
+    this.updateTorchState({ supported: false, enabled: false, pending: false });
     if (this.video.srcObject === stream) {
       try {
         this.video.pause();

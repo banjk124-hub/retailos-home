@@ -19,6 +19,11 @@ const checks = [
     args: ["scripts/test-scanner-lifecycle.mjs"],
   },
   {
+    name: "Scanner torch capability regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-torch.mjs"],
+  },
+  {
     name: "Scanner presentation ownership tests",
     command: process.execPath,
     args: ["scripts/test-scanner-presentation.mjs"],

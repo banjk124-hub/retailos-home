@@ -380,3 +380,29 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 - Do not create a second engine, retain camera in the background, add polling/retry timers, or move recovery into feature components.
 
 ---
+
+## ADR-016 — Optional camera torch capability (2026-11-09)
+
+**Status:** Implemented in PR #51 (ready for review). GitHub Actions run #232 passed the full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`; physical-device acceptance remains pending.
+
+### Context
+Home and Stocktake share the camera session and need optional flashlight control for low-light scanning. Browser engines and camera hardware do not universally expose a controllable torch.
+
+### Decision
+- The platform session discovers Torch support from the active video track's `getCapabilities().torch`; it does not infer support from device model, user-agent, facing mode or camera presence alone.
+- Torch remains off by default. Camera startup, preview readiness and decoder initialization must not wait for or automatically enable it.
+- The platform contract exposes typed torch state and an explicit enable/disable operation. The session applies `MediaStreamTrack.applyConstraints()` with the advanced `torch` constraint only when support is advertised.
+- Because `applyConstraints()` can replace omitted custom constraints, the Torch adapter preserves existing constraints and falls back to pinning the active width, height, frame rate, facing mode and device identity from `getSettings()` when needed.
+- A module may ignore this capability entirely. A consuming module decides whether/where to render a control, its labels, icons, feedback, visibility and interaction policy.
+- Home and Stocktake independently expose a flash control when their active track reports support. Neither module shares a presentation component or visual contract.
+- Pending operations disable repeated taps. Async completion is accepted only while the same session generation and video track remain active. Teardown, suspend and recovery clear the old track state; a replaced track must be detected again.
+- Unsupported or rejected constraints are non-fatal to scanning. The barcode scanner remains usable without Torch.
+
+### Platform limitations
+- Torch is not uniformly supported by iOS Safari/WebKit, Android browsers, camera hardware or all camera modes. Capability detection is authoritative for the active track, but a reported capability can still fail at apply time.
+- WebKit's maintainer confirmed Torch support was added to WebKit in August 2024, and a user reported it working on iOS 17.5.1. This does not guarantee support on every iOS release/device; continue to gate on the active track's reported capability.
+- Do not request flash through getUserMedia constraints, alter existing camera resolution/FPS requests, or treat an unsupported Torch request as a camera/decoder failure.
+- Physical iOS Safari/PWA and Android Chrome/PWA testing is required. CI validates contracts, adapter behavior and builds but cannot prove hardware flash behavior.
+
+### Protected scope
+No changes to camera lease/refcount, getUserMedia resolution/FPS constraints, autofocus, first-frame readiness, DOM presentation ownership (ADR-015), decoder/ROI/110 ms cadence, barcode validation/delivery, technical lifecycle event vocabulary, Recovery ordering, Home lookup or Stocktake form-fill/explicit-save behavior.

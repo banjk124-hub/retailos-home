@@ -1,14 +1,11 @@
-## Current project focus — post PR #49 video presentation ownership (2026-11-09)
+## Current project focus — optional scanner Torch capability PR #51 (2026-11-09)
 
-- Current main baseline: `1764c858a7d7855950ebe328a3a653d6935fa796` (PR #49 merge).
-- PR #49 is merged and deployed; the user confirms post-deployment testing completed without issues.
-- The shared scanner engine no longer imposes a DOM geometry condition before attaching/playing the camera stream. The obsolete `videoPresentationLayout.ts` helper has been removed.
-- Technical first-frame readiness remains engine-owned. `videoWidth/videoHeight` are intrinsic decoded-media dimensions, not DOM/container measurements.
-- Home and Stocktake independently own their video DOM, layout, sizing, crop, visibility and preview reveal UX. Do not unify these presentation systems.
-- Preserve the technical-only lifecycle contract, camera lease/Recovery, decoder and barcode correctness, Home lookup, Stocktake form-fill and explicit persistence.
-- Current scanner source facts and acceptance evidence: `IMPLEMENTATION_STATUS.md`, `ARCHITECTURE.md` ADR-015, and `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md`.
-- Current task is documentation synchronization on `docs/scanner-video-presentation-ownership`, plus correction of one stale source comment; no executable/runtime behavior changes are intended. Further scanner implementation must be driven by a reproducible defect, measured bottleneck or explicit new scope.
+- Current main base for PR #51: `6f821bde716c958147113f66d626c53882414108`.
+- Active work is on `feat/scanner-torch-control` (PR #51 (ready for review)). Engine exposes support/state/control; Home and Stocktake own independent flash controls.
+- Torch is opt-in and unsupported devices must continue scanning normally. CI run #232 passed the full preflight; physical-device acceptance is pending. Do not merge/deploy without explicit approval.
+- Architecture decision: `ARCHITECTURE.md` ADR-016. Source audit and QA gates: `SCANNER_TORCH_AUDIT_2026-11-09.md` and `ACCEPTANCE_CHECKLIST.md`.
 
+---
 # Historical engineering focus snapshot — 2026-11-08
 
 Historical source baseline: c7146b55f0c2210cd7b8474c6a72b1c915985793 (pre lifecycle contract and Recovery). PR #31/#32 history below is not the current implementation state.

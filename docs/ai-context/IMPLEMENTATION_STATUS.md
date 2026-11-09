@@ -1,3 +1,24 @@
+# Current implementation status — optional scanner Torch capability (2026-11-09)
+
+Last reconciled: 2026-11-09.
+Current main base for PR #51: `6f821bde716c958147113f66d626c53882414108`.
+Active branch: `feat/scanner-torch-control`. PR #51 (ready for review): https://github.com/banjk124-hub/retailos-home/pull/51.
+
+## PR #51 — implementation status
+- Added a platform-neutral Torch state contract and session enable/disable operation.
+- Added active-track capability/settings detection and `applyConstraints({ advanced: [{ torch }] })` adapter.
+- Torch is opt-in and is not enabled during camera startup.
+- Hook exposes Torch state/control without owning UI presentation.
+- Home and Stocktake independently render a control when the active track advertises Torch support.
+- Teardown and session replacement clear the previous track state; async results are guarded by session generation and track identity.
+- Added a dedicated Torch regression suite and wired it into repository preflight.
+- GitHub Actions **run #232 passed** the full `npm run preflight` on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`: barcode validation, lifecycle, Torch capability, presentation ownership, TypeScript/production build, Pages build and diff checks.
+- The subsequent commits in this branch update technical documentation only; they do not change executable source or regression tests. Physical iOS Safari/PWA and Android Chrome/PWA acceptance remains outstanding.
+
+## Acceptance boundary
+A device/browser that does not advertise Torch, or rejects the Torch constraint, must still open the camera and scan barcodes normally. Do not claim universal iOS/Android support. See Architecture ADR-016 and `SCANNER_TORCH_AUDIT_2026-11-09.md`.
+
+---
 # Current implementation status — PR #49 geometry-neutral video readiness (2026-11-09)
 
 Last reconciled: 2026-11-09.

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession } from '../../../platform/scanner/contracts';
+import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerTorchState } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
@@ -7,6 +7,8 @@ import type { CameraLeaseRequest } from '../../../shared/services/cameraSession'
 import { ScannerPageLifecycleCoordinator } from '../../../platform/scanner/scannerPageLifecycleCoordinator';
 
 export type ScannerMode = 'single' | 'continuous';
+
+const EMPTY_TORCH_STATE: ScannerTorchState = { supported: false, enabled: false, pending: false };
 type Options = {
   onDetected: (value: string) => void;
   mode?: ScannerMode;
@@ -56,6 +58,7 @@ export function useScannerEngine({
   const [isPreviewReady, setIsPreviewReady] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
+  const [torch, setTorch] = useState<ScannerTorchState>(EMPTY_TORCH_STATE);
   const lastUiStateChangeAtRef = useRef(performance.now());
   const mountedRef = useRef(false);
 
@@ -99,6 +102,7 @@ export function useScannerEngine({
   }, []);
 
   const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
+    setTorch(EMPTY_TORCH_STATE);
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
       profile: 'HIGH',
@@ -108,6 +112,9 @@ export function useScannerEngine({
       audioFeedback,
       hapticFeedback,
       lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
+      onTorchStateChange: (state) => {
+        if (mountedRef.current && sessionRef.current === session) setTorch(state);
+      },
       onResult: (result) => {
         // Ignore callbacks from a retired session after recovery has detached it.
         if (sessionRef.current !== session) return;
@@ -228,6 +235,7 @@ export function useScannerEngine({
       setError('');
       setIsPreviewReady(false);
       setIsScanning(false);
+      setTorch(EMPTY_TORCH_STATE);
       setIsStarting(true);
 
       // Detach the old session first so late callbacks cannot mutate the new UI.
@@ -266,6 +274,12 @@ export function useScannerEngine({
     }
   }, [replaceVideoSurface, startScanner]);
 
+  const setTorchEnabled = useCallback((enabled: boolean): Promise<ScannerTorchState> => {
+    const session = sessionRef.current;
+    if (!session) return Promise.resolve(EMPTY_TORCH_STATE);
+    return session.setTorchEnabled(enabled);
+  }, []);
+
   const closeScanner = useCallback(async () => {
     desiredActiveRef.current = false;
     const pendingLeaseRequest = cameraLeaseRequestRef.current;
@@ -280,6 +294,7 @@ export function useScannerEngine({
     recoveryRetiredSessionRef.current = null;
     await session?.close();
     if (mountedRef.current) {
+      setTorch(EMPTY_TORCH_STATE);
       setIsStarting(false);
       setIsPreviewReady(false);
       setIsScanning(false);
@@ -352,7 +367,7 @@ export function useScannerEngine({
   }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, startScanner, pauseScanner, closeScanner,
-    prepareAudio: unlockScannerAudio,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, setTorchEnabled,
+    startScanner, pauseScanner, closeScanner, prepareAudio: unlockScannerAudio,
   };
 }

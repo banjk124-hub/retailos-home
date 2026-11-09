@@ -1,3 +1,16 @@
+### 2026-11-09 — Optional scanner Torch capability (PR #51 (ready for review))
+
+- Rebased work on current main base `6f821bde716c958147113f66d626c53882414108` after PR #49/50 documentation baseline.
+- Created `feat/scanner-torch-control` and PR #51 (ready for review).
+- Added active-track Torch capability/settings detection and explicit enable/disable using the advanced MediaStreamTrack `torch` constraint.
+- Added typed session/hook state and guarded async completion by session generation and active track identity.
+- Added independent Home and Stocktake flash controls; both remain hidden when the active camera track does not advertise support.
+- Torch defaults off. Unsupported/rejected requests are non-fatal; camera startup and barcode scanning do not depend on Torch.
+- Added dedicated Torch regression coverage and wired it into preflight.
+- GitHub Actions run #232 passed full preflight on implementation/test head `83bf883054c3715d37f52ee858ec126471183899`; a prior run exposed TS2454, which was fixed by guarding command cleanup with active track + session generation.
+- Physical iOS Safari/PWA + Android Chrome/PWA QA remains pending. No merge or deployment performed.
+
+---
 ### 2026-11-09 — PR #49 post-merge video presentation ownership audit and documentation sync
 
 - Audited current `main` after PR #49 merge: `1764c858a7d7855950ebe328a3a653d6935fa796`.
