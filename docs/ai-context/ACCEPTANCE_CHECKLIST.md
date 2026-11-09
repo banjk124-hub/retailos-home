@@ -1,3 +1,24 @@
+# Current scanner acceptance gates — PR #51 optional Torch (2026-11-09)
+
+## Automated and source gates
+- [ ] Dedicated Torch adapter regression passes for supported, unsupported, enable, disable and rejected constraints.
+- [ ] Session state is reset on teardown/suspend/recovery and late async results cannot mutate a replacement session.
+- [ ] Home and Stocktake each own their flash control and render it only when the active camera track advertises support.
+- [ ] Unsupported/rejected Torch remains non-fatal to preview and barcode scanning.
+- [ ] Full `npm run preflight` passes, including TypeScript/production and GitHub Pages builds.
+
+## Physical-device gates
+- [ ] iOS Safari/PWA: check whether the active rear camera track advertises Torch; verify enable/disable when supported.
+- [ ] iOS Safari/PWA: rapid toggle, close while Torch is on, background/foreground recovery and unsupported behavior.
+- [ ] Android Chrome/PWA: verify enable/disable on a Torch-capable rear camera.
+- [ ] Android Chrome/PWA: rapid toggle, close while Torch is on, background/foreground recovery and unsupported behavior.
+- [ ] Confirm scanner preview and barcode decoding remain stable during Torch changes.
+- [ ] Confirm Torch is off after scanner close/session teardown.
+- [ ] Confirm Home and Stocktake controls remain visually independent and do not affect native video compositing.
+
+PR #51 is Draft and must not be merged/deployed until CI and device gates are reviewed. Capability is browser/hardware dependent; unsupported devices must retain normal scanner behavior.
+
+---
 # Current scanner acceptance gates — post PR #49 (2026-11-09)
 
 ## PR #49 — Geometry-neutral engine video readiness
