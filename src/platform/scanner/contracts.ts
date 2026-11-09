@@ -30,6 +30,68 @@ export type ScannerSymbology =
 
 export type ScannerProfileName = 'COMPACT' | 'STANDARD' | 'HIGH';
 
+/**
+ * A rectangle expressed in normalized coordinates.
+ * Values are fractions of the referenced image/content dimensions, never CSS pixels.
+ */
+export type ScannerNormalizedRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * Feature-owned scan region in the visible video-content coordinate space.
+ * Origin is the top-left of the visible image; x increases left-to-right as
+ * rendered by the module, including any CSS mirror transform.
+ */
+export type ScannerPreviewScanRegion = {
+  coordinateSpace: 'preview-content-normalized';
+  rect: ScannerNormalizedRect;
+};
+
+/**
+ * Resolved scan region consumed by scanner processing.
+ * Coordinates refer to the unrotated camera source frame, before decoder-side
+ * rotation, deskew or perspective correction.
+ */
+export type ScannerSourceScanRegion = {
+  coordinateSpace: 'source-frame-normalized';
+  rect: ScannerNormalizedRect;
+};
+
+/**
+ * Module intent for the camera opened from the initiating user gesture.
+ * Dimensions and frame rates are preferred/ideal values, not exact demands.
+ */
+export type ScannerCameraRequest = {
+  facingMode: 'environment' | 'user';
+  preferredWidth: number;
+  preferredHeight: number;
+  preferredFrameRate: number;
+  maxFrameRate?: number;
+};
+
+/**
+ * Required module-owned input to the shared scanner.
+ * SCAN-02 maps previewScanRegion to source-frame coordinates; SCAN-03 wires
+ * this contract into Home and Stocktake without changing their presentations.
+ */
+export type ScannerModuleConfig = {
+  previewScanRegion: ScannerPreviewScanRegion;
+  cameraRequest: ScannerCameraRequest;
+};
+
+/** Current production camera request; preserve until measured and approved. */
+export const DEFAULT_SCANNER_CAMERA_REQUEST: ScannerCameraRequest = {
+  facingMode: 'environment',
+  preferredWidth: 1280,
+  preferredHeight: 720,
+  preferredFrameRate: 30,
+  maxFrameRate: 30,
+};
+
 export type ScannerLifecycleState =
   | 'idle'
   | 'requesting'
