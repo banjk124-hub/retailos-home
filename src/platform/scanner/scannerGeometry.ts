@@ -46,6 +46,49 @@ export type ScannerGeometryMappingResult =
       message: string;
     };
 
+/**
+ * Resolve the common computed CSS object-position forms into free-space
+ * fractions. Unsupported length/calc syntax returns null; callers must not
+ * silently substitute center when the actual presentation value is unknown.
+ */
+export function parseScannerObjectPosition(value: string): ScannerObjectPosition | null {
+  const tokens = value.trim().toLowerCase().split(/\\s+/).filter(Boolean);
+  if (tokens.length === 0 || tokens.length > 2) return null;
+
+  const parseAxis = (token: string, axis: 'x' | 'y'): number | null => {
+    if (token === 'center') return 0.5;
+    if (axis === 'x' && token === 'left') return 0;
+    if (axis === 'x' && token === 'right') return 1;
+    if (axis === 'y' && token === 'top') return 0;
+    if (axis === 'y' && token === 'bottom') return 1;
+    const percentage = token.match(/^(-?(?:\\d+|\\d*\\.\\d+))%$/);
+    if (!percentage) return null;
+    const fraction = Number(percentage[1]) / 100;
+    return Number.isFinite(fraction) && fraction >= 0 && fraction <= 1 ? fraction : null;
+  };
+
+  if (tokens.length === 1) {
+    const token = tokens[0];
+    if (token === 'top' || token === 'bottom') {
+      const y = parseAxis(token, 'y');
+      return y === null ? null : { x: 0.5, y };
+    }
+    const x = parseAxis(token, 'x');
+    return x === null ? null : { x, y: 0.5 };
+  }
+
+  let [horizontal, vertical] = tokens;
+  const firstIsVertical = horizontal === 'top' || horizontal === 'bottom';
+  const secondIsHorizontal = vertical === 'left' || vertical === 'right';
+  if (firstIsVertical && secondIsHorizontal) {
+    [horizontal, vertical] = [vertical, horizontal];
+  }
+
+  const x = parseAxis(horizontal, 'x');
+  const y = parseAxis(vertical, 'y');
+  return x === null || y === null ? null : { x, y };
+}
+
 type PixelRect = { x: number; y: number; width: number; height: number };
 
 const EPSILON = 1e-7;
