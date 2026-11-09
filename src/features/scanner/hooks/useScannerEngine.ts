@@ -119,11 +119,11 @@ export function useScannerEngine({
       onTorchStateChange: (state) => {
         if (mountedRef.current && sessionRef.current === session) setTorch(state);
       },
-      onTorchDiagnosticsChange: (sample) => {
+      onTorchDiagnosticsChange: diagnosticsEnabled ? (sample) => {
         if (mountedRef.current && sessionRef.current === session) {
           setTorchDiagnostics((current) => [...current.slice(-3), sample]);
         }
-      },
+      } : undefined,
       onResult: (result) => {
         // Ignore callbacks from a retired session after recovery has detached it.
         if (sessionRef.current !== session) return;
@@ -169,7 +169,7 @@ export function useScannerEngine({
     sessionRef.current = session;
     recoveryRetiredSessionRef.current = null;
     return session;
-  }, [audioFeedback, hapticFeedback, mode, scanCooldownMs]);
+  }, [audioFeedback, diagnosticsEnabled, hapticFeedback, mode, scanCooldownMs]);
 
   const startScanner = useCallback(async () => {
     if (!desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;
