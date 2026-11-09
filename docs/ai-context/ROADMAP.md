@@ -1,3 +1,56 @@
+# RetailOS — Current Engineering Roadmap (2026-11-10)
+**Canonical audit:** docs/ai-context/RETAILOS_CURRENT_STATE_2026-11-10.md  
+**Baseline:** main 09cd3b5117ea38a16dd991f74320835b67ea04b5  
+**Status:** documentation and Change Map review before implementation.
+
+## Overall product phase
+**Foundation + local-first prototype → Operational MVP integration.** The app shell and Stocktake local workflow exist, but secure backend authentication, live snapshot sync, most module workflows, multi-device Stocktake data and remote Push delivery are not integrated. A green Pages deployment is not production readiness.
+
+## Current priority
+1. DOC-01 — synchronize the whole-app audit, handoff, architecture, roadmap, status and acceptance documents.
+2. SCAN-01 — agree the module-defined scan-region and camera-request input contracts, with exact file-level Change Map.
+3. SCAN-02/03 — pure geometry mapping and independent Home/Stocktake region wiring.
+4. SCAN-04 — ROI-only decode baseline and tests proving out-of-region codes are not accepted.
+5. SCAN-05 — benchmark harness and representative labelled barcode image set.
+6. SCAN-06 onward — bounded recovery, rotation/deskew, small/far/low-light and only then advanced geometry cases.
+7. In parallel but separate: app identity integrity, backend auth, snapshot sync activation, business modules, Stocktake portability and Push backend.
+
+## Scanner recognition PR sequence
+- SCAN-01 Input and Module Config Contract.
+- SCAN-02 Geometry Mapping Utility.
+- SCAN-03 Home and Stocktake ROI Integration.
+- SCAN-04 ROI-Only Decode Baseline.
+- SCAN-05 Recognition Benchmark Harness.
+- SCAN-06 Conditional Recovery Foundation.
+- SCAN-07 Rotation and Skew.
+- SCAN-08 Small/Far/Low-Light Recovery.
+- SCAN-09 Advanced Perspective/Glare/Curved cases, only if benchmarks justify them.
+- SCAN-10 Resource Adaptation and iOS/Android release QA.
+
+Each PR changes one coherent boundary. No PR combines camera lifecycle, UI presentation and decoder algorithm. Recovery is not always-on; no-result alone does not mean a difficult barcode. No new decoder dependency or AI/CV pipeline without evidence and approval.
+
+## Whole-app operational MVP sequence
+- APP-01 resolve duplicate local employee identifier and define stable identity mapping.
+- APP-02 design and integrate backend authentication/authorization.
+- APP-03 wire snapshot sync to authenticated token lifecycle and endpoint.
+- APP-04 implement one business module at a time from the canonical registry.
+- APP-05 design Stocktake backup/sync and conflict behavior before changing its local schema.
+- APP-06 configure Push subscription endpoint and trusted sender.
+- APP-07 operational release acceptance: auth, data recovery, offline behavior, permissions, cross-device QA and support.
+
+These app PRs are separate from Scanner PRs. Preserve module IDs, snapshot payloads, IndexedDB schemas and local Stocktake behavior until their own migration plans are approved.
+
+## Phase governance
+- A planned PR is not implemented.
+- A merged PR is not automatically deployed or physically verified.
+- CI/build success is not device QA.
+- Mark complete only with exact commit, tests, CI, deployment and device evidence appropriate to the feature.
+- Every PR lists allowed files, protected files, expected behavior delta, regression suite and rollback.
+- main is the stable baseline; branch from latest main and inspect local work before checkout/edit.
+- No merge/deploy without explicit user approval.
+
+---
+
 # RetailOS — Engineering Roadmap
 
 Last reviewed: 2026-11-09
