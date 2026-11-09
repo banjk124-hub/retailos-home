@@ -1,3 +1,14 @@
+# SCAN-02 execution update — 2026-11-10
+
+- SCAN-01 merged to main by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deploy and test.
+- SCAN-02 implementation branch: `feat/scanner-preview-source-geometry`; PR/CI pending.
+- Added pure geometry mapper for `fill`, `contain`, `cover`, `none`, `scale-down`, object-position, visible-content bounds and horizontal mirror conversion.
+- Added deterministic geometry tests and registered them in full preflight.
+- No runtime consumer, camera, lifecycle, decoder, ROI, UI or CSS behavior changed.
+- Next: SCAN-03 module-owned Home/Stocktake adapters and region updates without session restart; SCAN-04 strict ROI-only decode after both consumers are valid.
+
+---
+
 # SCAN-01 execution update — 2026-11-10
 
 - SCAN-01 defines `ScannerModuleConfig`, preview/source normalized region types and explicit camera request preferences.
