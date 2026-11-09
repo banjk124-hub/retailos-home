@@ -2,7 +2,7 @@
 
 - SCAN-01 merged by PR #58; SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`.
 - SCAN-02 post-merge audit follow-up is PR #60; its corrected DOM-boundary test guard passed full CI run #301. Merge PR #60 before merging dependent SCAN-03.
-- SCAN-03 branch: `feat/scan-03-module-region-integration`.
+- SCAN-03 branch: `feat/scan-03-module-region-integration`; PR #61 is Draft and GitHub Actions run #302 passed full preflight/build. Merge PR #60 first, then review PR #61.
 - Home and Stocktake retain independent video/reticle DOM and presentation. New feature-level adapter measures DOMRects and computed object-fit/object-position, clips reticle to visible content and maps to source coordinates.
 - `ScannerSession.setScanRegion()/getScanRegion()` store a defensive source-region snapshot. Updates do not restart camera, decoder or frame loop.
 - Decoder still receives the full video. No ROI-only decode, crop, rotation, deskew, perspective, barcode validation or cadence changes in SCAN-03.
