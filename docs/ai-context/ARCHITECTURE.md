@@ -524,3 +524,22 @@ No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, came
 - Regression test models a track whose Torch capability is absent before streaming and becomes available after streaming starts.
 - Source-order assertion verifies Torch discovery occurs after playback and first-frame readiness.
 - Physical Android Chrome/PWA retest must inspect the new `[RetailOS Scanner] Torch capability` diagnostic. If it reports `not-exposed` after the first live frame, investigate that browser/device's camera track support rather than forcing the UI control visible.
+
+
+## ADR-022 — Module-owned scanner input contract (2026-11-10)
+**Status:** Accepted in SCAN-01 for the type boundary; implementation of mapping and runtime consumption is deferred.
+
+The module contract is `ScannerModuleConfig`: a visible-image region in `preview-content-normalized` coordinates plus an explicit `ScannerCameraRequest`. The geometry mapper in SCAN-02 converts the preview region into `source-frame-normalized` coordinates. The scanner core consumes only that resolved source-frame region; it does not query the reticle DOM or own presentation.
+
+Coordinate-space rules:
+- Both rectangles use normalized fractions in [0,1], with a top-left origin and explicit coordinate-space tags.
+- Preview coordinates refer to the visible video image content, not the outer preview element or viewport, and follow the rendered orientation including CSS mirroring.
+- Source-frame coordinates refer to the unrotated camera frame, independent of CSS layout and preview aspect ratio.
+- Mapping must account for `object-fit`, `object-position`, source dimensions and mirror state.
+
+Camera request rules:
+- Preferred width, height and frame rate are camera preferences, not exact constraints.
+- Camera resolution is independent of the module's display aspect ratio.
+- Default remains environment / 1280×720 / 30 FPS ideal / 30 FPS maximum.
+
+SCAN-01 adds platform-neutral types and this contract only. Existing Home/Stocktake behavior is unchanged. See `SCAN_01_INPUT_CONTRACT.md` for migration, strict-mode and acceptance rules.

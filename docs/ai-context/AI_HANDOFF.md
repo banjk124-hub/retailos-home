@@ -1,3 +1,19 @@
+# Current scanner handoff — SCAN-01 contract implementation (2026-11-10)
+
+- Active implementation branch: `feat/scanner-input-module-config-contract`.
+- Base: main `09cd3b5117ea38a16dd991f74320835b67ea04b5`.
+- SCAN-01 defines `ScannerModuleConfig`, `ScannerPreviewScanRegion`, `ScannerSourceScanRegion`, `ScannerCameraRequest` and `DEFAULT_SCANNER_CAMERA_REQUEST` in `src/platform/scanner/contracts.ts`.
+- Coordinate spaces are explicit: preview-content normalized (feature input) and source-frame normalized (core input after SCAN-02 mapping).
+- Camera preferences are independent of UI aspect ratio. Existing default is unchanged: environment, ideal 1280×720, 30 FPS ideal/max.
+- SCAN-01 is contract-only; Home and Stocktake are not wired yet. Do not claim ROI-only decode is active.
+- Next: SCAN-02 pure geometry mapping; then SCAN-03 Home/Stocktake integration; then SCAN-04 strict ROI-only decode.
+- Protect camera lease/refcount, lifecycle/recovery, preview readiness, decoder cadence, ZXing, validation, Torch, feedback, Home lookup and Stocktake save/revision/export.
+- No merge/deploy without explicit user approval.
+
+Canonical contract: `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
+
+---
+
 # Current AI handoff — shared Scanner settings and feedback QA (2026-11-09)
 
 - Repository: `banjk124-hub/retailos-home`.

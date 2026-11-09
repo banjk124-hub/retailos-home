@@ -377,3 +377,14 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Protected camera, decoder, barcode, Torch, lifecycle, Home lookup and Stocktake form/save behavior. CI for this follow-up branch remains pending.
 
 - Final documentation-synchronized PR head `9b0d76a5931a85bd336629348ec98bbd96fb86b4` also passed full preflight in GitHub Actions run #42648085229. No production runtime source changed in this follow-up.
+
+
+### 2026-11-10 — SCAN-01 input and module config contract
+- Intent: define the module-to-scanner boundary before geometry mapping and ROI decode changes.
+- Branch: `feat/scanner-input-module-config-contract`, based on main `09cd3b5117ea38a16dd991f74320835b67ea04b5`.
+- Files: `src/platform/scanner/contracts.ts`, `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`, plus architecture/decision/roadmap/status/handoff/acceptance records.
+- Behavior: platform-neutral contract types only; no runtime behavior, camera constraints, decoder, lifecycle, UI or business flow changed.
+- Contract: preview-content normalized region, source-frame normalized region, module config and explicit camera preferences; default camera request remains environment 1280×720 30 FPS.
+- Checks: pending full preflight and GitHub Actions on PR head.
+- Unverified: no physical-device QA is required for this type-only change; later SCAN-02/03 require iOS and Android mapping validation.
+- Risks / rollback: low; revert the SCAN-01 commit if contract review finds coordinate-space ambiguity before dependent PRs begin.
