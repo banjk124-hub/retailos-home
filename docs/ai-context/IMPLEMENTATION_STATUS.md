@@ -1,3 +1,33 @@
+# Current implementation status — 2026-11-10
+**Source baseline:** main 09cd3b5117ea38a16dd991f74320835b67ea04b5  
+**Repository:** banjk124-hub/retailos-home  
+**Open PRs at audit time:** none  
+**Latest main CI:** 42652303936 — success  
+**Latest Pages workflow:** 42652303768 — success
+
+## Verified whole-app state
+- App shell, local prototype login, Home and PWA deployment path exist.
+- Stocktake is the only complete business module UI; it persists locally in IndexedDB and supports scan-to-form, manual entry, explicit save, duplicate rows, revisions, review and text export.
+- Seven other module UIs are marked integrating and show an integration message.
+- Local employee-code login is not secure backend authentication. Duplicate employee code exists in the source directory; owner confirmation is required before correcting identity records.
+- Snapshot manifest/cache service exists, but syncAuthorizedModuleData has no app call site and no token provider is wired.
+- Web Push client exists; backend endpoint/sender are not verified/configured.
+- Shared Scanner is used by Home and Stocktake. Camera lease/lifecycle/preview, ZXing, validation, Torch, shared feedback/settings and diagnostics are present.
+- User confirms recent Scanner foundation changes were merged, deployed and tested stable for the tested flows. Do not generalize this to every device/feature; physical audio/haptic checks remain separate acceptance evidence.
+- Current decoder is main-thread ZXing, full-frame first then fixed centered ROI (82% × 66%, 1.5× upscale), GlobalHistogram fallback every third ROI pass, 110 ms minimum decode interval.
+- Module reticles are not passed to the decoder. ScannerGeometry exists but current ZXing output does not populate it. Camera profile is hardcoded HIGH in the hook; cameraSession uses fixed ideal environment 1280×720 / 30 FPS.
+- Advanced rotation, deskew, perspective, glare, adaptive contrast and small/far barcode recovery are not implemented.
+
+## Current engineering phase
+Documentation baseline / whole-app source audit → Scanner Recognition & Geometry Expansion. No runtime source changes are included in the current documentation branch.
+
+## Evidence limits
+This audit inspected GitHub source, tests, docs, repository metadata, CI and Pages workflow. It did not run local Windows/PowerShell preflight, browser E2E or a new physical-device test. Do not report those as run.
+
+## Current next action
+Review DOC-01 documentation synchronization, then approve the exact SCAN-01 contract and file-level Change Map before runtime implementation. See RETAILOS_CURRENT_STATE_2026-11-10.md.
+
+---
 # Current implementation status — shared Scanner settings and feedback QA (2026-11-09)
 
 ## Production behavior
