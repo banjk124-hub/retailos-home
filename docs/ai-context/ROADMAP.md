@@ -4,7 +4,7 @@
 - Wire Home and Stocktake's existing independent reticles to source-frame geometry through a feature-level measurement adapter.
 - Publish source regions to the current session in place; no camera/session/decoder/frame-loop restart.
 - Keep the decoder full-frame. SCAN-03 does not activate ROI-only decoding.
-- CI and automated geometry/session-update tests are pending. Physical iOS Safari/PWA and Android Chrome/PWA alignment QA is required after deployment.
+- Automated geometry/session-update tests, TypeScript, production build, GitHub Pages build and full preflight passed in GitHub Actions run #302. Physical iOS Safari/PWA and Android Chrome/PWA alignment QA remains required after deployment.
 - SCAN-04 remains gated until both module geometries are verified.
 
 ---
