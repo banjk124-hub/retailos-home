@@ -51,6 +51,12 @@ These app PRs are separate from Scanner PRs. Preserve module IDs, snapshot paylo
 
 ---
 
+
+
+---
+
+> HISTORICAL RECORDS BELOW: retained for traceability. Do not treat their older “current”, “active”, unchecked or pending statements as the current repository state without checking the 2026-11-10 audit and current source.
+
 # RetailOS — Engineering Roadmap
 
 Last reviewed: 2026-11-09
