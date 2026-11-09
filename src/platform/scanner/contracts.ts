@@ -64,40 +64,6 @@ export type ScannerLifecycleEvent = {
 
 export type ScannerLifecycleObserver = (event: ScannerLifecycleEvent) => void;
 
-/** Read-only Torch capability sample for on-device diagnostics. No device identifiers are exposed. */
-export type ScannerTorchDiagnosticSample = {
-  sample: 'first-frame' | '250ms' | '1000ms' | '2500ms';
-  timestamp: number;
-  elapsedMs: number;
-  capabilityApi: 'available' | 'missing' | 'error';
-  settingsApi: 'available' | 'missing' | 'error';
-  torchCapability: boolean | 'not-exposed' | 'unavailable';
-  settingsTorch: boolean | 'not-exposed' | 'unavailable';
-  applyConstraintsApi: boolean;
-  trackReadyState: string;
-  trackMuted: boolean;
-  facingMode: string | null;
-  width: number | null;
-  height: number | null;
-  frameRate: number | null;
-  capabilitiesErrorName: string | null;
-  settingsErrorName: string | null;
-};
-
-/** Result of an explicit debug-only Torch constraint pulse. Promise resolution is not proof of physical illumination. */
-export type ScannerTorchProbeResult = {
-  status: 'completed' | 'unavailable';
-  pulseDurationMs: number;
-  onAccepted: boolean;
-  onErrorName: string | null;
-  offAttempted: boolean;
-  offAccepted: boolean | null;
-  offErrorName: string | null;
-  settingsTorchBefore: boolean | 'not-exposed' | 'unavailable';
-  settingsTorchAfter: boolean | 'not-exposed' | 'unavailable';
-  trackReadyState: string;
-};
-
 /** Camera torch state. Support is discovered from the active video track. */
 export type ScannerTorchState = {
   supported: boolean;
@@ -178,8 +144,6 @@ export type ScannerOpenOptions = {
   onPreviewReady?: () => void;
   /** Optional technical camera capability updates; presentation stays feature-owned. */
   onTorchStateChange?: (state: ScannerTorchState) => void;
-  /** Optional read-only diagnostics; does not affect capability or presentation decisions. */
-  onTorchDiagnosticsChange?: (sample: ScannerTorchDiagnosticSample) => void;
   onError?: (error: ScannerError) => void;
 };
 
@@ -210,8 +174,6 @@ export interface ScannerSession {
   start(): Promise<void>;
   getTorchState(): ScannerTorchState;
   setTorchEnabled(enabled: boolean): Promise<ScannerTorchState>;
-  /** Debug-only short Torch pulse; does not alter advertised support state. */
-  probeTorchCompatibility(): Promise<ScannerTorchProbeResult>;
   suspend(reason?: 'hidden' | 'manual'): Promise<void>;
   resume(): Promise<void>;
   /** Retire this session for foreground recovery without emitting feature exit milestones. */
