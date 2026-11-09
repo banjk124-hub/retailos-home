@@ -389,3 +389,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - No runtime source, tests, dependencies, schemas, environment settings, PWA configuration or deployment files changed.
 - No local Windows/PowerShell preflight, browser E2E or new physical-device QA was run. Remote main CI and Pages workflow evidence is recorded separately.
 - Next: review documentation branch; approve SCAN-01 exact contract and file-level Change Map before any code changes. No merge/deploy without explicit approval.
+
+
+### 2026-11-10 — Whole-app source audit and scanner Change Map (documentation-only)
+- Baseline: main 09cd3b5117ea38a16dd991f74320835b67ea04b5; repository banjk124-hub/retailos-home.
+- Verified repository tree (204 files), latest commits, open PR list (none), branch list, latest main CI run #42652303936 and Pages workflow #42652303768 (both success).
+- Audited app shell, auth/session, module registry/library, snapshot data service, Stocktake IndexedDB workflow, scanner/camera architecture, notifications, PWA/service worker, package scripts, CI/deploy workflows, tests and current technical documents.
+- Key findings: app remains a local-first prototype; frontend-only employee-code auth; duplicate employee code in local directory; snapshot sync function has no app caller/token provider; only Stocktake UI is ready; other seven module UIs integrate later; Stocktake data is device-local; Push backend is not verified/configured.
+- Scanner findings: shared camera/lifecycle/preview/validation/Torch/settings foundations exist and are protected; current decoder uses full-frame-first then hardcoded centered ROI, does not receive module reticles, runs main-thread ZXing, and does not populate ScannerGeometry. Camera request defaults remain environment ideal 1280×720 / 30 FPS; hook passes HIGH unconditionally.
+- Added canonical RETAILOS_CURRENT_STATE_2026-11-10.md and synchronized AI Handoff, Project Context, Architecture, Roadmap, Implementation Status, Acceptance Checklist, Decisions, Session Log, Changelog, README pointer and START_HERE prompt.
+- No runtime source, tests, dependencies, schemas, environment settings, PWA configuration or deployment files changed.
+- No local Windows/PowerShell preflight, browser E2E or new physical-device QA was run. Remote main CI and Pages workflow evidence is recorded separately.
+- Next: review documentation branch; approve SCAN-01 exact contract and file-level Change Map before any code changes. No merge/deploy without explicit approval.
