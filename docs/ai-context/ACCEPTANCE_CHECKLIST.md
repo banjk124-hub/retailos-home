@@ -1,6 +1,6 @@
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
-## Shared Scanner settings — `feat/scanner-settings-hub-feedback-controls`
+## Shared Scanner settings — PR #56 (merged to main)
 - [x] Settings dock icon uses the gear-shaped Settings icon.
 - [x] Settings opens a hub with separate Scanner QA Monitor and Scanner preferences entries.
 - [x] Device-local versioned preferences default to vibration enabled and beep volume 50%.
@@ -8,10 +8,12 @@
 - [x] Shared feedback reads current preferences at accepted-result time; Home/Stocktake cannot override global settings.
 - [x] Unsupported vibration API is surfaced honestly and does not block barcode delivery.
 - [x] Regression test is included in preflight.
-- [x] Full preflight passes on the final PR head; GitHub Actions run #42575410311 passed on `47ff115`.
-- [ ] Physical Android test confirms vibration toggle ON/OFF and beep levels; physical iOS test confirms beep and unsupported-vibration fallback.
-- [ ] User verifies Home lookup, Stocktake form-fill/explicit-save, scanner open/close and lifecycle behavior.
-- [ ] User approves merge and deployment.
+- [x] PR #56 is merged to main at `5eee1a6a565f6263907541dac6af6b4ba77b37be`; full preflight passed on final PR head in GitHub Actions run #42575773839.
+- [ ] Physical Android test confirms vibration toggle ON/OFF and compares beep levels; physical iOS test confirms beep and unsupported-vibration fallback.
+- [ ] Follow-up branch adds executable mocked AudioContext/GainNode regression tests; verify exact gain ramps in CI. This does not replace physical acoustic QA.
+- [ ] User verifies Home lookup, Stocktake form-fill/explicit-save, scanner open/close and lifecycle behavior after the PR #56 build is deployed.
+- [x] User-approved merge is reflected by merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
+- [ ] Deployment of PR #56 is confirmed separately; do not infer deployment from merge.
 
 ---
 
@@ -30,7 +32,7 @@
 - [x] Keep production Torch capability, ON/OFF adapter and regression tests.
 - [x] Full `npm run preflight` passes on cleanup PR head; GitHub Actions run #42572378379 is green.
 - [x] Source diff preserves Home/Stocktake business flows and the iOS camera path; no production camera acquisition or decoder changes.
-- [ ] Merge and deployment remain pending user approval.
+- [x] PR #55 merge and deployment are user-confirmed. PR #56 merge is recorded above; deployment confirmation remains separate.
 
 Capability is browser/device/camera-mode dependent. A resolved `applyConstraints()` promise is not proof of physical LED activation. Do not infer support from model names or user-agent.
 
