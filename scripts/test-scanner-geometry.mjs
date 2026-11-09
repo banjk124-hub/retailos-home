@@ -52,6 +52,24 @@ closeTo(coverLeft.region.rect.width, 0.45, 'cover left crop width');
 closeTo(coverRight.region.rect.x, 0.55, 'cover right object-position');
 closeTo(coverRight.region.rect.width, 0.45, 'cover right crop width');
 
+// Cover can also crop vertically; object-position top/bottom selects the source rows.
+const wideTop = map(full, {
+  previewWidth: 800,
+  previewHeight: 400,
+  objectPosition: { x: 0.5, y: 0 },
+});
+const wideBottom = map(full, {
+  previewWidth: 800,
+  previewHeight: 400,
+  objectPosition: { x: 0.5, y: 1 },
+});
+assert.equal(wideTop.ok, true);
+assert.equal(wideBottom.ok, true);
+closeTo(wideTop.region.rect.y, 0, 'cover top object-position');
+closeTo(wideTop.region.rect.height, 8 / 9, 'cover vertical crop height');
+closeTo(wideBottom.region.rect.y, 1 / 9, 'cover bottom object-position');
+closeTo(wideBottom.region.rect.height, 8 / 9, 'cover bottom crop height');
+
 // A smaller contained image excludes letterbox space from preview-content coordinates.
 const contain = map(full, {
   previewWidth: 800,
@@ -121,3 +139,10 @@ assert.equal(map(full, { previewHeight: Number.POSITIVE_INFINITY }).error, 'inva
 assert.equal(map(full, { objectPosition: { x: 1.1, y: 0.5 } }).error, 'invalid-geometry');
 
 console.log('Scanner preview/source geometry mapping tests passed.');
+
+const geometrySource = await readFile(
+  new URL('../src/platform/scanner/scannerGeometry.ts', import.meta.url),
+  'utf8',
+);
+assert.doesNotMatch(geometrySource, /document\\.|window\\.|getBoundingClientRect|HTMLVideoElement/,
+  'geometry mapping must remain pure and must not inspect presentation DOM');
