@@ -5,7 +5,7 @@
 - Added a shared feature-level binding hook for ResizeObserver, viewport/orientation and video metadata changes. Home and Stocktake pass their own refs; their markup and reticle styling remain independent.
 - Added in-place `ScannerSession.setScanRegion()/getScanRegion()` state and exposed it through `useScannerEngine`. It does not recreate session, camera, decoder or frame loop.
 - Decoder remains full-frame; no ROI-only decode is active. SCAN-04 is still gated on physical geometry QA.
-- Automated tests, full CI and device QA pending.
+- GitHub Actions run #302 passed the new preview-region suite, full preflight, TypeScript, production build and GitHub Pages build. Physical iOS/Android reticle alignment and post-deploy flow QA remain pending.
 
 ---
 
