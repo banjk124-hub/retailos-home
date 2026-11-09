@@ -8,10 +8,10 @@ User confirms PR #52 was merged, deployed and tested. iOS remains stable; Androi
 - Shows a compact diagnostic panel in both scanner modules only when the PWA URL contains `?scannerDebug=1`.
 - Diagnostics are observational and collected only in debug mode. They do not alter Torch support decisions or camera behavior.
 - No deviceId, camera identifier, user-agent inference or device-specific workaround is added.
-- CI and physical-device validation are pending; do not merge/deploy until the PR checks pass and the diff is reviewed.
+- GitHub Actions run #245 passed full `npm run preflight` on the current implementation head. Physical-device validation is pending; PR #53 is ready for review.
 
 Branch: `feat/scanner-torch-device-diagnostics`.
-PR: pending creation.
+PR #53: https://github.com/banjk124-hub/retailos-home/pull/53.
 
 ## Device verification instructions
 1. Open the deployed PWA with `?scannerDebug=1` appended to its URL.
