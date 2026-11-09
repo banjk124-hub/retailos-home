@@ -9,24 +9,24 @@ Status: active working plan.
 2. PR #53/#54: on-device diagnostics and the explicit compatibility pulse completed the investigation.
 3. Evidence: iOS Flash works; Samsung Galaxy S23 Ultra / Android Chrome does not expose Torch on the active track. The explicit ON/OFF probe was API-accepted but did not illuminate the physical LED.
 4. Decision: retain capability-gated behavior. Do not bypass capability detection, add device/browser heuristics, or introduce a native camera stack solely for Flash.
-5. **Cleanup PR #55:** temporary diagnostic sampling, probe code, UI and stale runbook have been removed; production Torch adapter and regression coverage remain. CI run #42572378379 passed full preflight. PR is open, unmerged and undeployed.
+5. **Cleanup PR #55:** temporary diagnostic sampling, probe code, UI and stale runbook have been removed; production Torch adapter and regression coverage remain. CI run #42572378379 passed full preflight. User confirms PR #55 was merged and deployed.
 
 **Protected contracts:** camera lease/refcount, current camera request/constraints, autofocus, first-frame readiness, lifecycle/recovery, decoder cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save, and independent module presentation.
 
 ---
 
-## Current work — shared Scanner settings
+## Current work — Scanner audio runtime verification and documentation sync
 
-**Branch:** `feat/scanner-settings-hub-feedback-controls`  
-**Status:** Implementation authored; GitHub Actions run #42575410311 passed full preflight on head `47ff115`. Physical-device QA pending. PR #56 is Draft, unmerged and undeployed.
+**Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.  
+**Branch:** `test/scanner-audio-runtime-and-doc-sync`  
+**Status:** Runtime regression test and documentation synchronization authored; CI pending.
 
-- Settings dock action opens a Settings Hub with separate entries for Scanner QA Monitor and Scanner preferences.
-- Shared device-local preferences control haptics and beep output for every Scanner consumer.
-- Default haptics remain enabled; default beep level is 50%, preserving the current 0.24 gain.
-- Beep slider uses 0–100 in 10-point steps; zero mutes, 100 reaches gain 0.48.
-- Preferences are read by the shared feedback service when each accepted result is delivered, not captured when a camera session starts.
-- Keep camera, decoder, validation, lifecycle and Home/Stocktake business contracts unchanged.
-- Validate Android vibration on a browser exposing `navigator.vibrate`; verify iOS fallback and beep output on both platforms.
+- PR #56 introduced the Settings Hub and one device-local feedback preference store shared by Home, Stocktake and future Scanner consumers.
+- Default haptics remain enabled; default beep level is 50%, preserving existing Web Audio gain 0.24. Slider steps are 0–100 in increments of 10; zero mutes and 100 maps to gain 0.48.
+- This follow-up adds executable AudioContext/GainNode tests to verify the actual gain ramp, gesture unlock, preview/current-setting synchronization and shared feedback behavior.
+- Production volume mapping remains unchanged until real-device A/B comparison demonstrates a justified alternative. A numeric gain difference is not a substitute for perceived-loudness testing.
+- Physical Android vibration/beep and iOS beep/unsupported-vibration validation remain open. CI cannot verify physical haptics or acoustic output.
+- No camera, decoder, barcode validation, accepted-result gate, Torch, lifecycle, Home lookup or Stocktake form/save changes are in scope.
 
 ---
 
