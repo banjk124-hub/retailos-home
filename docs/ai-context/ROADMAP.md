@@ -1,25 +1,29 @@
-## Current execution order — technical-only scanner lifecycle separation (2026-11-08)
+# RetailOS — Engineering Roadmap
 
-1. PR B lifecycle foundation, PR C1 Home migration, PR #43 foreground Recovery, and PR #45/C2 Stocktake migration are merged; the user has verified the Stocktake flow.
-2. PR #46 shared preview presentation was merged and then rolled back in PR 47A after iOS/Android presentation regressions. Home and Stocktake again own their preview DOM/CSS.
-3. **Current task:** remove presentation-completion coupling from the shared scanner lifecycle contract while preserving each module's local presentation gate and all technical scanner behavior.
-4. After CI and source review, the user performs the iOS Safari/PWA and Android Chrome/PWA smoke test. Do not merge or deploy without explicit user approval.
+Last reviewed: 2026-11-09
+Status: active working plan; verify source and implementation status before starting a phase.
 
-**Architecture boundary:** the engine owns camera/decoder/session/resource lifecycle and emits technical signals only. Home and Stocktake own all UI presentation and decide when their own scanner surfaces unmount.
+## Current execution order — post PR #49 video presentation ownership
 
+1. PR #49 — geometry-neutral video readiness — is merged to `main` at `1764c858a7d7855950ebe328a3a653d6935fa796`.
+2. The shared platform session no longer waits for or inspects video/container DOM geometry before attaching the camera stream.
+3. Technical first-frame readiness remains in the engine. Home and Stocktake independently own video DOM, sizing, crop, visibility and preview reveal behavior.
+4. GitHub Actions run #200 passed the full repository preflight. The user confirms the merged build was deployed and tested without issues.
+5. **No active scanner implementation task is currently defined by this change.** Further scanner changes must be driven by a reproducible defect, measured bottleneck, or a separately approved roadmap slice.
+
+**Architecture boundary:** the engine owns camera/decoder/session/resource lifecycle and technical media readiness. It does not own feature DOM geometry or visual composition. Home and Stocktake own their own video presentation and decide when their scanner surfaces unmount.
+
+**Protected contracts:** camera lease/refcount and handoff, first-frame readiness, lifecycle technical events, Recovery, decoder behavior, barcode validation/delivery, Home lookup, Stocktake form-fill/explicit-save and module-specific close transitions remain intact.
 
 ---
 
-
-
-
 ## Historical source re-baseline — main c7146b55 (pre lifecycle contract)
 
-Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md.
+Historical snapshot before PR B, C1 and PR #43. Current execution order is defined at the top of this file. Detailed evidence for that earlier baseline: SCANNER_SOURCE_AUDIT_2026-11-08.md. The iOS viewport/layout observations in this historical snapshot predate PR #49; they are not a current engine startup requirement. PR #49 removes the DOM geometry gate, and the user reports no issue after deployment/testing.
 
 - PR #31 and PR #32 are merged. PR #32 merge commit: `c7146b55f0c2210cd7b8474c6a72b1c915985793`. Do not describe either PR as Draft/open.
 - Camera acquisition is initiated inside the Home dock action and Stocktake scan-button click via `requestCameraLease()`, before scanner presentation mounts. The request is handed once to the shared session. Remaining wait belongs to browser permission/hardware acquisition, first usable video frame and decoder initialization; do not issue a second camera request.
-- Home uses a fixed `inset:0` root and percentage-height full-screen card; Stocktake uses dynamic viewport units. Android is reported stable by the user; iOS remains visually unstable. Root cause is not proven; collect visualViewport/safe-area/element geometry evidence before changing layout.
+- At this historical baseline, Home used a fixed `inset:0` root and percentage-height full-screen card while Stocktake used dynamic viewport units; Android was reported stable and iOS visually unstable. This was a pre-PR #49 observation, not proof of an engine-level geometry defect.
 - Exit mismatch is source-supported: camera teardown detaches video immediately while the dark fixed overlay remains for a 180 ms opacity exit. Design visual exit independently from camera release.
 - Phase 1.2G is bounded at source instrumentation/audit. Do not keep tuning motion/cadence without a reproducible issue or measured bottleneck. Device traces and specific defects remain open; this is not a claim that all hardware performance is solved.
 - Existing telemetry does not directly measure GPU frame drops, battery percentage or device temperature. Safari may not expose all Long Task/Layout Shift observers. Use only supported, privacy-safe proxies and record their limitations.
