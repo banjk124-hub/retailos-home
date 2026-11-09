@@ -59,7 +59,7 @@ export function useScannerEngine({
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState('');
   const [torch, setTorch] = useState<ScannerTorchState>(EMPTY_TORCH_STATE);
-  const [torchDiagnostic, setTorchDiagnostic] = useState<ScannerTorchDiagnosticSample | null>(null);
+  const [torchDiagnostics, setTorchDiagnostics] = useState<ScannerTorchDiagnosticSample[]>([]);
   const diagnosticsEnabled = typeof window !== 'undefined'
     && new URLSearchParams(window.location.search).get('scannerDebug') === '1';
   const lastUiStateChangeAtRef = useRef(performance.now());
@@ -106,7 +106,7 @@ export function useScannerEngine({
 
   const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
     setTorch(EMPTY_TORCH_STATE);
-    setTorchDiagnostic(null);
+    setTorchDiagnostics([]);
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
       profile: 'HIGH',
@@ -120,7 +120,9 @@ export function useScannerEngine({
         if (mountedRef.current && sessionRef.current === session) setTorch(state);
       },
       onTorchDiagnosticsChange: (sample) => {
-        if (mountedRef.current && sessionRef.current === session) setTorchDiagnostic(sample);
+        if (mountedRef.current && sessionRef.current === session) {
+          setTorchDiagnostics((current) => [...current.slice(-3), sample]);
+        }
       },
       onResult: (result) => {
         // Ignore callbacks from a retired session after recovery has detached it.
@@ -375,7 +377,7 @@ export function useScannerEngine({
   }, [pauseScanner, recoverScanner, startScanner]);
 
   return {
-    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, torchDiagnostic, diagnosticsEnabled, setTorchEnabled,
+    videoRef, videoSurfaceKey, isStarting, isPreviewReady, isScanning, error, torch, torchDiagnostics, diagnosticsEnabled, setTorchEnabled,
     startScanner, pauseScanner, closeScanner, prepareAudio: unlockScannerAudio,
   };
 }
