@@ -1,6 +1,6 @@
 # SCAN-02 — Pure preview-to-source geometry mapping
 
-**Status:** Implemented on branch `feat/scanner-preview-source-geometry`; PR and CI pending.  
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed. User confirms deployment and existing-flow smoke test.  
 **Base:** `main` at SCAN-01 merge commit `47b991de8a0040aa44e500aa6228127f9e59f0f6`.  
 **Scope:** pure geometry utility and deterministic regression tests. No runtime consumer is wired.
 
@@ -75,7 +75,7 @@ Deterministic cases:
 - `fill`, `none`, and `scale-down`.
 - Mirrored preview coordinate conversion.
 - Invalid rectangles, invalid dimensions and invalid object-position.
-- Pure-function boundary: no DOM/window reads.
+- Pure-function boundary: regression guard rejects `window.` / `document.` access, DOM geometry APIs and `HTMLVideoElement` references.
 
 ## 7. Explicitly out of scope
 
