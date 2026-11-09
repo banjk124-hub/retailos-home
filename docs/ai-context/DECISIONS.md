@@ -44,3 +44,33 @@ The shared scanner is already separated into feature-owned UI, a React bridge, a
 - Angled/perspective decode is an optional capability within engine completion, not the entire 1.2I phase.
 
 See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gates.
+
+
+## ADR-021 — Module-owned scan region and bounded recognition recovery (2026-11-10)
+
+**Status:** Proposed for user review. Documentation/change-map only; no runtime contract or implementation is merged by this record.
+
+### Context
+The current shared scanner is already used by Home and Stocktake. Camera lease/lifecycle/preview, validation, Torch and shared feedback are established. The current ZXing adapter decodes the full frame before a fixed centered crop, so the decoder does not obey each module's actual reticle. Home and Stocktake have different preview layouts and CSS crop behavior. The current engine must not regain a DOM-layout startup barrier.
+
+### Proposed decision
+- Each consuming module owns the active scan rectangle and its preview/presentation policy.
+- A module-side adapter or pure shared geometry helper resolves the displayed rectangle into normalized coordinates relative to the unrotated source frame. Mapping must account for object-fit, object-position, crop, responsive dimensions and mirror state when present.
+- The platform session receives a resolved region and forwards it to the decoder. The engine does not inspect CSS or infer the user's intended reticle.
+- Region updates must be applied without recreating camera stream, session, decoder or frame loop.
+- Camera capture constraints are a separate module-owned request passed through the existing tap-origin lease path. Current environment / ideal 1280×720 / 30 FPS defaults remain unchanged until measured and separately approved.
+- After both consumers provide valid regions, strict ROI-only decoding becomes the normal path; a barcode outside the active ROI must not be accepted. Migration must be backward-compatible until both consumers are wired.
+- Recovery is conditional, bounded and measurement-led. A normal no-result frame does not trigger expensive recovery. No always-on AI/object detection/OCR or unbounded rotation/scale variants.
+- Keep the existing EAN-8/EAN-13/CODE-128 whitelist, EAN check-digit validation and opaque CODE-128 payload behavior.
+
+### Protected boundaries
+- Do not alter camera lease/refcount, cancellation, session lifecycle, preview readiness, foreground recovery or release ordering.
+- Do not reintroduce a DOM geometry gate into startup (ADR-015 remains accepted).
+- Do not move reticle UI, transitions, exit decisions or business callbacks into the platform engine.
+- Do not merge Home and Stocktake presentation implementations.
+
+### Planned slices
+SCAN-01 input/module-config contract → SCAN-02 geometry mapping → SCAN-03 module integration → SCAN-04 ROI-only baseline → SCAN-05 benchmark → conditional recovery/rotation/small-code work → cross-platform resource validation.
+
+### Acceptance
+The detailed file-level Change Map, contract fields, compatibility default, invalid-region behavior and tests must be approved before implementation. See RETAILOS_CURRENT_STATE_2026-11-10.md.
