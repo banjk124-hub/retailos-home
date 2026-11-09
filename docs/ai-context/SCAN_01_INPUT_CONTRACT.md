@@ -1,7 +1,7 @@
 # SCAN-01 — Scanner input and module configuration contract
 
-**Status:** Implemented on branch `feat/scanner-input-module-config-contract`; awaiting CI and review.  
-**Base:** `main` at `09cd3b5117ea38a16dd991f74320835b67ea04b5`.  
+**Status:** Merged to `main` by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`; user confirms deploy and device testing without issues.  
+**Original base:** `main` at `09cd3b5117ea38a16dd991f74320835b67ea04b5`.  
 **Scope:** platform-neutral TypeScript contracts only. No scanner runtime behavior is changed by this PR.
 
 ## 1. Purpose
