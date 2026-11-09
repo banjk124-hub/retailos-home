@@ -1,3 +1,15 @@
+# SCAN-01 implementation update — 2026-11-10
+
+**Status:** source contract authored on `feat/scanner-input-module-config-contract`; PR CI pending. Not merged.
+
+- Added platform-neutral `ScannerNormalizedRect`, `ScannerPreviewScanRegion`, `ScannerSourceScanRegion`, `ScannerCameraRequest`, `ScannerModuleConfig` and the unchanged default camera request.
+- Added `docs/ai-context/SCAN_01_INPUT_CONTRACT.md` with coordinate semantics, rectangle invariants, ownership, migration and acceptance rules.
+- No runtime consumer is wired yet. Home and Stocktake behavior is unchanged.
+- No camera lease, camera constraints, lifecycle, session, decoder, barcode validation, UI, CSS or business behavior changed.
+- Next: SCAN-02 pure geometry mapping; SCAN-03 module integration; SCAN-04 strict ROI decode.
+
+---
+
 # Current implementation status — shared Scanner settings and feedback QA (2026-11-09)
 
 ## Production behavior
