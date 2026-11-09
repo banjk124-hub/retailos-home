@@ -46,7 +46,7 @@ assert.equal(notifications, 5, 'unsubscribed listeners stop receiving changes');
 
 const audio = await read('../src/features/scanner/services/scannerAudio.ts');
 assert.match(audio, /getScannerSettings\(\)\.beepVolume/, 'beep reads the shared current volume');
-assert.match(audio, /normalizedVolume \\* 0\\.6/, 'the 50% default maps to gain 0.30 and 100% maps to 0.60');
+assert.match(audio, /normalizedVolume \* 0\.6/, 'the 50% default maps to gain 0.30 and 100% maps to 0.60');
 assert.match(audio, /if \(targetGain <= 0\) return/, 'zero volume suppresses the beep');
 
 const feedback = await read('../src/features/scanner/services/scannerFeedback.ts');
