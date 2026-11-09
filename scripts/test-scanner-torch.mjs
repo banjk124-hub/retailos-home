@@ -42,13 +42,14 @@ let fallbackConstraints;
 const settingsOnlyTrack = {
   readyState: 'live',
   getCapabilities: () => ({ torch: true }),
-  getSettings: () => ({ torch: false, width: 1280, height: 720, frameRate: 30 }),
+  getSettings: () => ({ torch: false, width: 1280, height: 720, frameRate: 30, facingMode: 'environment' }),
   applyConstraints: async (constraints) => { fallbackConstraints = constraints; },
 };
 await applyScannerTorch(settingsOnlyTrack, true);
 assert.deepEqual(fallbackConstraints.width, { exact: 1280 }, 'settings fallback preserves active width');
 assert.deepEqual(fallbackConstraints.height, { exact: 720 }, 'settings fallback preserves active height');
 assert.deepEqual(fallbackConstraints.frameRate, { exact: 30 }, 'settings fallback preserves active frame rate');
+assert.deepEqual(fallbackConstraints.facingMode, { exact: 'environment' }, 'settings fallback preserves the active rear-camera facing mode');
 
 let unsupportedApplyCount = 0;
 const unsupportedTrack = {
