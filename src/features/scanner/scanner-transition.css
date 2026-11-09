@@ -105,9 +105,11 @@
 }
 .barcode-scanner.scanner-home-transition .barcode-scanner-close {
   display: grid;
+  box-sizing: border-box;
   width: 46px;
   height: 46px;
   flex: 0 0 auto;
+  padding: 0;
   place-items: center;
   border: 1px solid rgba(255,255,255,.25);
   border-radius: 15px;
