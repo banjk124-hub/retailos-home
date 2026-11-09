@@ -1,22 +1,40 @@
-## ADR-014 — Engine-owned first-frame preview reveal (2026-11-08)
+## ADR-015 — Geometry-neutral engine video readiness (2026-11-09)
 
-Status: **Reverted by PR 47A** after physical-device testing exposed iOS native-video sizing regression and visibly poor Android curtain motion. PR #46 is retained as historical implementation evidence, not the current presentation architecture.
+**Status:** Accepted and implemented in PR #49; merged to `main` at `1764c858a7d7855950ebe328a3a653d6935fa796`. User confirms deployment and post-deployment testing without issues.
 
-**Decision**
-- The shared scanner engine owns the preview readiness handoff. `UniversalScannerSession` confirms a fresh usable frame, invokes the internal `onPreviewReady` bridge and publishes `READY` before decoder initialization.
-- `useScannerEngine` continues to expose `isPreviewReady` as a technical readiness signal. Each feature module consumes that signal through its own UI presentation.
-- Home and Stocktake retain their own video presentation CSS and reveal mechanisms. Their layout, containing blocks, stacking contexts and motion requirements are not assumed to be interchangeable.
-- The curtain fades away only after a fresh frame is confirmed. During initial acquisition and foreground recovery it remains in place; decoder initialization is not part of preview readiness.
-- The engine owns camera/frame readiness, not module-specific visual composition. Module UI owns its own video element presentation, CSS selectors and transition policy.
-- PR #46's shared curtain and `ScannerPreviewSurface` were removed in PR 47A. The pre-PR #46 module-owned presentation implementation was restored without changing camera, decoder, lease, barcode or lifecycle behavior.
+### Context
+The former `waitForVideoPresentationLayout()` gate made shared scanner startup depend on a feature DOM arrangement: a video parent had to exist, video/container rectangles had to be non-zero and nearly equal, and their geometry had to remain stable across animation frames. That assumption was not a platform/media requirement and constrained module-specific UI composition.
 
-**Current architecture after PR 47A**
-- Home renders and styles its own video element; Stocktake renders and styles its own video element.
-- Each module owns its own reveal presentation and adapts it to its actual layout and UX.
-- `isPreviewReady` remains the shared technical signal. It does not dictate one shared animation or CSS implementation.
-- No shared curtain or shared preview-surface component is used.
+### Decision
+- The platform engine attaches the acquired `MediaStream` to the supplied `HTMLVideoElement` without reading DOM presentation geometry.
+- The engine must not require a parent element, non-zero CSS box, matching video/container rectangles, positional alignment, aspect-ratio equality, or stable DOM bounds before stream attachment or playback.
+- Remove the geometry gate and its helper entirely when no consumer remains. The obsolete `src/platform/scanner/videoPresentationLayout.ts` has been deleted.
+- Keep technical media readiness. `waitForVideoFrameReady()` still checks decoded media availability (`readyState >= HAVE_CURRENT_DATA` and intrinsic `videoWidth/videoHeight > 0`), playback state, and fresh-frame evidence using `requestVideoFrameCallback` where available or the media timeline fallback. This is media/frame validity, not CSS layout geometry.
+- Preserve startup ordering: attach stream → play video → confirm usable frame → invoke `onPreviewReady` and publish lifecycle `READY` → initialize decoder → enter scanning only after decoder readiness.
+- `isPreviewReady` is a technical signal that a usable camera frame exists. It is not a command for a particular reveal animation, container size, crop, or visual layout.
+- Home and Stocktake own their video DOM, containing blocks, sizing, aspect ratio, crop/object position, visibility, overlays, reveal timing and other UI/UX choices independently.
+- A module may intentionally use a video surface that is cropped, scaled, inset, letterboxed, overlaid, transformed, or otherwise geometrically different from its container. Such choices must not block engine startup.
+- Keep the platform engine responsible for camera lease/session/stream/decoder resources and technical readiness only. Do not move feature presentation decisions into the engine.
+
+### Current module implementations (verified on main)
+- **Home:** `BarcodeScanner.tsx` renders its own keyed video inside `.barcode-scanner-view`. The Home transition stylesheet owns its full-surface video presentation, `object-fit: cover`, and `.has-preview` visibility gate. Native video opacity remains 1 with no opacity transition.
+- **Stocktake:** `StocktakeScanner.tsx` renders its own keyed video inside `.stocktake-scanner-preview`. Stocktake retains its framed preview (base `aspect-ratio: 4/5`; mobile sizing is independently constrained), `object-fit: cover`, and its own `.has-preview` visibility gate. Native video opacity remains 1 with no opacity transition.
+- Both modules consume the shared `isPreviewReady` signal but do not share a video presentation component or CSS contract.
+
+### Protected scope
+PR #49 changed only the platform startup geometry gate, its obsolete helper, and regression/preflight assertions. It did not change camera acquisition/lease ownership, lifecycle event contract, Recovery orchestration, decoder implementation/cadence, barcode validation/delivery, Home lookup, Stocktake form-fill/persistence, snapshots, module markup/CSS, PWA configuration, or deployment configuration.
+
+### Verification
+- GitHub Actions run #200 passed the full `npm run preflight`: barcode validation regression, lifecycle regression, presentation-ownership regression, TypeScript/production build, GitHub Pages build and diff checks.
+- The presentation regression now asserts that the platform session does not inspect DOM geometry, technical frame readiness remains present, startup ordering is preserved, and Home/Stocktake retain their own video/reveal contracts.
+- User confirms PR #49 was merged, deployed and tested without issues. This is user-reported device/deployment acceptance; CI itself remains source/build validation, not hardware simulation.
 
 ---
+
+## Historical implementation note — PR #46 shared preview experiment (2026-11-08)
+
+PR #46 briefly introduced an engine-owned shared preview curtain and `ScannerPreviewSurface`. Physical-device testing exposed iOS native-video sizing and Android transition regressions; PR 47A reverted that shared presentation. Retain this record as historical evidence only. The current rule is ADR-015: engine-owned technical frame readiness, module-owned visual presentation, and no DOM geometry gate.
+
 
 ## ADR-009 — Serialized cross-platform page lifecycle recovery (2026-11-08)
 
@@ -357,7 +375,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for the source evidence and phase seque
 
 - The existing shared scanner engine and session remain the single camera/decoder implementation.
 - After a real background suspension, foreground recovery retires the old session, waits for its resource teardown and any in-flight camera lease handoff, then replaces only the disposable video DOM surface.
-- Recovery waits for React to commit the replacement node and reuses the normal startup pipeline: layout barrier, stream attachment, playback, fresh-frame readiness, decoder initialization and scanning.
+- Recovery waits for React to commit the replacement node and reuses the normal startup pipeline: stream attachment, playback, fresh-frame readiness, decoder initialization and scanning. The platform session does not insert a DOM geometry/layout barrier; see ADR-015.
 - Home and Stocktake share this behavior through useScannerEngine; feature-specific presentation and business logic remain independent.
 - Do not create a second engine, retain camera in the background, add polling/retry timers, or move recovery into feature components.
 
