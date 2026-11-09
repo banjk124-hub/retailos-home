@@ -1,3 +1,13 @@
+### 2026-11-09 — Android Torch control not visible after PR #51 deployment
+
+- User confirms PR #51 merged/deployed and tested: iOS Flash toggles reliably; Android Flash control does not appear.
+- Audited current main: `bindTorchTrack(stream)` was called immediately after the camera lease resolved, before assigning the stream to video, starting playback or observing a decoded frame.
+- Chromium documentation notes that camera capabilities may only be available after the camera is actually streaming.
+- Created `fix/scanner-torch-capability-timing` / PR #52. Torch discovery now occurs after video playback and first-frame readiness, with the existing session generation guard retained.
+- Added privacy-safe diagnostics (`true` / `false` / `not-exposed` / `unavailable`, track ready state, facing mode and dimensions; no device IDs) and a regression test for late capability exposure.
+- Android physical-device retest and full CI are pending. No merge/deploy performed for PR #52.
+
+---
 ### 2026-11-09 — Optional scanner Torch capability (PR #51 (ready for review))
 
 - Rebased work on current main base `6f821bde716c958147113f66d626c53882414108` after PR #49/50 documentation baseline.
