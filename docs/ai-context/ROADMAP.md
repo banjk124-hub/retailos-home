@@ -9,7 +9,7 @@ Status: active working plan; verify source and implementation status before star
 2. PR #50 documentation synchronization is incorporated into the current main baseline; its full CI passed.
 3. **Active implementation: PR #51 — optional camera Torch control.** The shared platform session detects and controls Torch when the active track advertises support; Home and Stocktake independently expose controls.
 4. Torch is optional and defaults off. Unsupported/rejected Torch requests must never prevent camera preview or barcode scanning.
-5. PR #51 is Draft. Automated CI and physical iOS Safari/PWA + Android Chrome/PWA acceptance are required before merge/deploy.
+5. PR #51 is ready for review. Automated CI and physical iOS Safari/PWA + Android Chrome/PWA acceptance are required before merge/deploy.
 
 **Architecture boundary:** platform engine owns camera/decoder/session/resource lifecycle, technical media readiness and the optional Torch capability/control API. It does not own feature DOM geometry or visual composition. Modules decide whether and how to present a Torch control.
 
