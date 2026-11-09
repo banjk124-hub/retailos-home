@@ -28,6 +28,12 @@ This audit inspected GitHub source, tests, docs, repository metadata, CI and Pag
 Review DOC-01 documentation synchronization, then approve the exact SCAN-01 contract and file-level Change Map before runtime implementation. See RETAILOS_CURRENT_STATE_2026-11-10.md.
 
 ---
+
+
+---
+
+> HISTORICAL RECORDS BELOW: retained for traceability. Do not treat their older “current”, “active”, unchecked or pending statements as the current repository state without checking the 2026-11-10 audit and current source.
+
 # Current implementation status — shared Scanner settings and feedback QA (2026-11-09)
 
 ## Production behavior
