@@ -184,4 +184,3 @@ assert.match('window.getComputedStyle(video)', forbiddenDomPattern,
   'DOM boundary guard must detect window access');
 assert.doesNotMatch(geometrySource, forbiddenDomPattern,
   'geometry mapping must remain pure and must not inspect presentation DOM');
-  'geometry mapping must remain pure and must not inspect presentation DOM');
