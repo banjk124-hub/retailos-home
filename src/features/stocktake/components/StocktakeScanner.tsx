@@ -83,7 +83,7 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
       {scanner.error && <p className="stocktake-error" role="alert">{scanner.error}</p>}
       {scanner.error && <button type="button" className="stocktake-primary" onClick={() => { void scanner.startScanner(); }}>Thử kết nối lại</button>}
       <button type="button" className="stocktake-secondary" onClick={close}>Đóng camera</button>
-      {scanner.diagnosticsEnabled && <ScannerTorchDiagnosticPanel samples={scanner.torchDiagnostics} />}
+      {scanner.diagnosticsEnabled && <ScannerTorchDiagnosticPanel samples={scanner.torchDiagnostics} onProbe={() => { void scanner.probeTorchCompatibility(); }} probePending={scanner.torchProbePending} probeResult={scanner.torchProbeResult} />}
     </section>
   );
 }
