@@ -21,13 +21,14 @@ import './stocktake-import.css';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
-type ZoneConflict = { zoneCode: string; existingRows: number; incomingRows: number };
+type ZoneConflict = { zoneCode: string; existingRows: number; incomingRows: number; duplicateWithinBatch: boolean };
 type PendingImportReview = {
   incoming: StocktakeImportResult[];
   duplicateFiles: string[];
   sameNameDifferentContent: string[];
   zoneConflicts: ZoneConflict[];
 };
+type ImportReviewMeta = { duplicateFiles: string[]; sameNameDifferentContent: string[] };
 const PAGE_SIZE = 100;
 
 function localDate(value: string): string {
@@ -131,12 +132,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   useEffect(() => { void refreshHistory(); }, []);
 
-  const commitIncoming = async (incoming: StocktakeImportResult[], mergeConflicts: boolean) => {
+  const commitIncoming = async (incoming: StocktakeImportResult[], mergeConflicts: boolean, reviewMeta: ImportReviewMeta = { duplicateFiles: [], sameNameDifferentContent: [] }) => {
     if (incoming.length === 0) return;
     const base = result;
     const importedAt = base?.importedAt ?? incoming[0].importedAt;
     const zones = base ? base.zones.map((zone) => ({ ...zone, rows: [...zone.rows] })) : [];
     const zoneIndexes = new Map(zones.map((zone, index) => [zone.zoneCode, index]));
+    const skippedZoneWarnings: string[] = [];
     for (const parsed of incoming) {
       for (const incomingZone of parsed.zones) {
         const existingIndex = zoneIndexes.get(incomingZone.zoneCode);
@@ -145,6 +147,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             ...zones[existingIndex],
             rows: [...zones[existingIndex].rows, ...incomingZone.rows],
           };
+          else skippedZoneWarnings.push('Đã bỏ qua ' + incomingZone.rows.length + ' dòng bổ sung của vùng ' + incomingZone.zoneCode + ' từ ' +
+            [...new Set(incomingZone.rows.map((row) => row.sourceFileName).filter(Boolean))].join(', ') + '.');
           continue;
         }
         zoneIndexes.set(incomingZone.zoneCode, zones.length);
@@ -165,7 +169,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         content: buildStocktakeOutput(employeeCode, zone.zoneCode, zone.rows, new Date(importedAt)),
         fileName: buildZoneFileName(zone.zoneCode),
       })),
-      warnings: [...(base?.warnings ?? []), ...incoming.flatMap((item) => item.warnings)],
+      warnings: [
+        ...(base?.warnings ?? []),
+        ...incoming.flatMap((item) => item.warnings),
+        ...skippedZoneWarnings,
+        ...reviewMeta.sameNameDifferentContent.map((name) => 'Tên file ' + name + ' trùng với nguồn đã có nhưng nội dung khác; đã nhận như một nguồn riêng.'),
+        ...(reviewMeta.duplicateFiles.length ? ['Đã bỏ qua file trùng nội dung: ' + reviewMeta.duplicateFiles.join(', ') + '.'] : []),
+      ],
       blockingIssues: [...(base?.blockingIssues ?? []), ...incoming.flatMap((item) => item.blockingIssues)],
     };
     const preservedZoneCode = activeZone?.zoneCode;
@@ -225,31 +235,28 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         incoming.push(parsed);
       }
       const existingRowCounts = new Map((result?.zones ?? []).map((zone) => [zone.zoneCode, zone.rows.length]));
-      const seenRows = new Map<string, number>();
-      const conflictCodes = new Set<string>();
-      const conflictBaseRows = new Map<string, number>();
+      const incomingRowCounts = new Map<string, number>();
+      const incomingSourceCounts = new Map<string, number>();
       for (const parsed of incoming) {
         for (const zone of parsed.zones) {
-          const priorRows = existingRowCounts.get(zone.zoneCode) ?? seenRows.get(zone.zoneCode);
-          if (priorRows !== undefined) {
-            conflictCodes.add(zone.zoneCode);
-            if (!conflictBaseRows.has(zone.zoneCode)) conflictBaseRows.set(zone.zoneCode, priorRows);
-          }
-          seenRows.set(zone.zoneCode, (priorRows ?? 0) + zone.rows.length);
+          incomingRowCounts.set(zone.zoneCode, (incomingRowCounts.get(zone.zoneCode) ?? 0) + zone.rows.length);
+          incomingSourceCounts.set(zone.zoneCode, (incomingSourceCounts.get(zone.zoneCode) ?? 0) + 1);
         }
       }
-      const zoneConflicts = [...conflictCodes].map((zoneCode) => ({
-        zoneCode,
-        existingRows: conflictBaseRows.get(zoneCode) ?? 0,
-        incomingRows: incoming.reduce((sum, item) =>
-          sum + (item.zones.find((zone) => zone.zoneCode === zoneCode)?.rows.length ?? 0), 0),
-      }));
+      const zoneConflicts = [...incomingRowCounts.keys()]
+        .filter((zoneCode) => existingRowCounts.has(zoneCode) || (incomingSourceCounts.get(zoneCode) ?? 0) > 1)
+        .map((zoneCode) => ({
+          zoneCode,
+          existingRows: existingRowCounts.get(zoneCode) ?? 0,
+          incomingRows: incomingRowCounts.get(zoneCode) ?? 0,
+          duplicateWithinBatch: (incomingSourceCounts.get(zoneCode) ?? 0) > 1,
+        }));
       const pending: PendingImportReview = { incoming, duplicateFiles, sameNameDifferentContent, zoneConflicts };
       if (duplicateFiles.length || sameNameDifferentContent.length || zoneConflicts.length) {
         setPendingImport(pending);
         setNotice('Đã phân tích file bổ sung. Phiên hiện tại chưa bị thay đổi; cần xác nhận các điểm trùng trước khi tiếp tục.');
       } else {
-        await commitIncoming(incoming, true);
+        await commitIncoming(incoming, true, { duplicateFiles, sameNameDifferentContent });
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể đọc file kiểm kê.');
@@ -265,9 +272,14 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setBusy(true);
     setError('');
     try {
-      if (pending.incoming.length) await commitIncoming(pending.incoming, mergeConflicts);
+      if (pending.incoming.length) await commitIncoming(pending.incoming, mergeConflicts, {
+        duplicateFiles: pending.duplicateFiles,
+        sameNameDifferentContent: pending.sameNameDifferentContent,
+      });
       else setNotice('File trùng đã được bỏ qua. Phiên hiện tại không thay đổi.');
       setPendingImport(null);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể xác nhận dữ liệu bổ sung.');
     } finally {
       setBusy(false);
     }
@@ -548,7 +560,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               </div>}
               {pendingImport.zoneConflicts.length > 0 && <div className="stocktake-import-review-group">
                 <strong>Vùng trùng · dữ liệu đang chờ xác nhận</strong>
-                {pendingImport.zoneConflicts.map((zone) => <small key={zone.zoneCode}>{zone.zoneCode}: hiện có {zone.existingRows} dòng · file mới {zone.incomingRows} dòng</small>)}
+                {pendingImport.zoneConflicts.map((zone) => <small key={zone.zoneCode}>{zone.zoneCode}: phiên hiện tại {zone.existingRows} dòng · nguồn bổ sung {zone.incomingRows} dòng{zone.duplicateWithinBatch ? ' · xuất hiện ở nhiều file trong lượt này' : ''}</small>)}
               </div>}
               <div className="stocktake-import-review-actions">
                 <button type="button" disabled={busy} onClick={() => setPendingImport(null)}>Hủy bổ sung</button>
@@ -598,6 +610,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <div><small>SỐ VÙNG</small><strong>{result.zones.length}</strong></div>
               <div><small>TỔNG DÒNG</small><strong>{totalRows}</strong></div>
             </div>
+            {result.sourceFiles && result.sourceFiles.length > 1 && <details className="stocktake-import-source-list">
+              <summary>{result.sourceFiles.length} file nguồn trong phiên</summary>
+              {result.sourceFiles.map((source) => <small key={source.fingerprint}>{source.name}</small>)}
+            </details>}
             {result.blockingIssues.map((issue) => <p className="stocktake-import-error" role="alert" key={issue}>{issue}</p>)}
             {result.warnings.map((warning) => <p className="stocktake-import-warning" key={warning}>{warning}</p>)}
 
@@ -680,7 +696,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                         {visibleRows.map((row, visibleIndex) => {
                           const rowIndex = page * PAGE_SIZE + visibleIndex;
                           return <tr key={(row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex} className={row.issues.length ? 'has-error' : ''}>
-                            <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>{row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}</td>
+                            <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>{row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}{result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}</small>}</td>
                             <td>{editingZone
                               ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
                                   onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
