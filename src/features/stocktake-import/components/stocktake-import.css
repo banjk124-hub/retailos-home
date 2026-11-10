@@ -475,7 +475,7 @@
   transition: transform 300ms var(--motion-ease-spatial, ease);
 }
 .stocktake-import-output-details[open] summary > span:first-child::before { transform: rotate(180deg); }
-.stocktake-import-preview-actions { display: flex; flex: 0 0 auto; gap: 6px; padding-right: 18px; }
+.stocktake-import-preview-actions { display: flex; justify-content: flex-end; flex: 0 0 auto; gap: 6px; padding: 0 10px 10px; }
 .stocktake-import-preview-actions button {
   display: inline-flex;
   align-items: center;
