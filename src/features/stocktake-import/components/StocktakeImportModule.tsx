@@ -669,6 +669,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                           <tbody>
                             {visibleRows.map((row, visibleIndex) => {
                               const rowIndex = page * PAGE_SIZE + visibleIndex;
+                              const rowIssues = getRowIssues(row);
                               return <tr key={(row.sourceFileName ?? '') + '-' + (row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex}
                                 className={rowIssues.length ? 'has-error' : ''}>
                                 <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
