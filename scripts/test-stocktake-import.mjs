@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 
 const parser = readFileSync("src/features/stocktake-import/services/stocktakeImportParser.ts", "utf8");
 const component = readFileSync("src/features/stocktake-import/components/StocktakeImportModule.tsx", "utf8");
@@ -13,7 +14,7 @@ function extractFunction(name, nextName) {
   return parser.slice(start, end);
 }
 
-const runtime = new Function(
+const runtimeSource =
   "const BARCODE_HEADERS = ['BARCODE','BAR CODE','PRODUCT BARCODE','EAN','EAN13','EAN8','UPC','GTIN'];" +
   "const FALLBACK_BARCODE_HEADERS = ['MA VACH','MA VACH HANG'];" +
   "const QUANTITY_HEADERS = ['SO LUONG','QUANTITY','QTY','SL','SO LUONG KIEM KE'];" +
