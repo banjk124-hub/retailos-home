@@ -99,6 +99,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const [selectedZone, setSelectedZone] = useState(0);
   const [history, setHistory] = useState<StocktakeImportHistoryItem[]>([]);
   const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<'import' | 'save' | 'zip' | 'history' | null>(null);
   const [historyBusy, setHistoryBusy] = useState(true);
   const [historyPersisted, setHistoryPersisted] = useState(false);
   const [error, setError] = useState('');
@@ -184,6 +185,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setError('');
     setNotice('');
     setBusy(true);
+    setBusyAction('import');
     try {
       if (!employeeCode) throw new Error('Không xác định được mã nhân viên để tạo file theo định dạng Kiểm kê.');
       const knownSources = result?.sourceFiles ?? [];
@@ -223,6 +225,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError(cause instanceof Error ? cause.message : 'Không thể đọc file kiểm kê.');
     } finally {
       setBusy(false);
+      setBusyAction(null);
       if (inputRef.current) inputRef.current.value = '';
     }
   };
@@ -231,6 +234,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     if (!pendingImport) return;
     const pending = pendingImport;
     setBusy(true);
+    setBusyAction('import');
     setError('');
     try {
       if (pending.incoming.length) await commitIncoming(pending.incoming, mergeConflicts, {
@@ -243,6 +247,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError(cause instanceof Error ? cause.message : 'Không thể xác nhận dữ liệu bổ sung.');
     } finally {
       setBusy(false);
+      setBusyAction(null);
     }
   };
 
@@ -346,6 +351,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         : zone),
     };
     setBusy(true);
+    setBusyAction('save');
     setError('');
     try {
       const id = await stocktakeImportStore.saveResult(updatedResult, historyId);
@@ -361,6 +367,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError(cause instanceof Error ? cause.message : 'Không thể lưu chỉnh sửa của vùng.');
     } finally {
       setBusy(false);
+      setBusyAction(null);
     }
   };
 
@@ -408,6 +415,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       return;
     }
     setBusy(true);
+    setBusyAction('zip');
     setError('');
     try {
       const zip = new JSZip();
@@ -421,11 +429,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError(cause instanceof Error ? cause.message : 'Không thể đóng gói file kết quả.');
     } finally {
       setBusy(false);
+      setBusyAction(null);
     }
   };
 
   const clearHistory = async () => {
     setBusy(true);
+    setBusyAction('history');
     setError('');
     try {
       await stocktakeImportStore.clearHistory();
@@ -440,6 +450,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError(cause instanceof Error ? cause.message : 'Không thể xóa lịch sử.');
     } finally {
       setBusy(false);
+      setBusyAction(null);
     }
   };
 
@@ -556,7 +567,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               inputRef.current?.click();
             }}>
             {busy ? <LoaderCircle className="stocktake-import-spin" size={18} /> : <Upload size={18} />}
-            {busy ? 'Đang xử lý…' : result ? 'Thêm file vào phiên' : 'Chọn file Excel'}
+            {busyAction === 'import' ? 'Đang xử lý workbook…' : result ? 'Thêm file vào phiên' : 'Chọn file Excel'}
           </button>
           <p className="stocktake-import-hint">Hỗ trợ chọn nhiều workbook .xlsx cùng lúc. Có thể thêm file vào phiên đang xử lý; dữ liệu chỉ được cộng dồn sau khi kiểm tra và xác nhận trùng file hoặc trùng vùng.</p>
           {result && <button className="stocktake-import-secondary" type="button" disabled={busy || hasDirtyZones}
@@ -603,7 +614,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                       : <>
                         <button type="button" disabled={busy} onClick={cancelEdit}><X size={15} /> Hủy</button>
                         <button type="button" className="is-save" disabled={busy || !dirtyZones.includes(activeZone.zoneCode)} onClick={() => void saveActiveZone()}>
-                          {busy ? <LoaderCircle className="stocktake-import-spin" size={15} /> : <Save size={15} />} Lưu thay đổi
+                          {busyAction === 'save' ? <LoaderCircle className="stocktake-import-spin" size={15} /> : <Save size={15} />} {busyAction === 'save' ? 'Đang lưu…' : 'Lưu thay đổi'}
                         </button>
                       </>}
 
@@ -696,7 +707,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 <small>{result.blockingIssues.length ? 'Không xuất một phần workbook. Hãy đổi tên header theo hướng dẫn và nạp lại file.' : hasDirtyZones || invalidZones.length ? 'Cần xử lý và lưu từng vùng trước khi xuất ZIP.' : 'Mỗi vùng sẽ thành một file TXT riêng.'}</small></div>
               <button className="stocktake-import-primary stocktake-import-export" type="button"
                 disabled={!canExportAll} onClick={() => void exportAll()}>
-                <Download size={18} /> Xuất tất cả vùng thành ZIP
+                {busyAction === 'zip' ? <LoaderCircle className="stocktake-import-spin" size={18} /> : <Download size={18} />} {busyAction === 'zip' ? 'Đang tạo ZIP…' : 'Xuất tất cả vùng thành ZIP'}
               </button>
             </div>
           </>}
