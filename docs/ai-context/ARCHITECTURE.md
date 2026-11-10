@@ -527,7 +527,7 @@ No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, came
 
 
 ## ADR-022 — Module-owned scanner input contract (2026-11-10)
-**Status:** Accepted in SCAN-01 for the type boundary; implementation of mapping and runtime consumption is deferred.
+**Status:** SCAN-01 contract merged by PR #58; geometry mapping and Home/Stocktake wiring were completed in SCAN-02/03. SCAN-04 consumes the mapped source region.
 
 The module contract is `ScannerModuleConfig`: a visible-image region in `preview-content-normalized` coordinates plus an explicit `ScannerCameraRequest`. The geometry mapper in SCAN-02 converts the preview region into `source-frame-normalized` coordinates. The scanner core consumes only that resolved source-frame region; it does not query the reticle DOM or own presentation.
 
@@ -546,7 +546,7 @@ SCAN-01 adds platform-neutral types and this contract only. Existing Home/Stockt
 
 
 ## ADR-023 — Pure preview-to-source geometry mapper (2026-11-10)
-**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 and deployment smoke test passed. Runtime consumers remain unwired until SCAN-03.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 and deployment smoke test passed. Home and Stocktake runtime consumers were wired in merged SCAN-03 (PR #61).
 
 `src/platform/scanner/scannerGeometry.ts` implements a pure mapping from the module-owned `preview-content-normalized` rectangle to a `source-frame-normalized` rectangle. The caller supplies intrinsic source-frame dimensions, video element content-box dimensions, CSS `object-fit`, normalized `object-position` fractions and an explicit mirror flag.
 
@@ -558,7 +558,7 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 
 
 ## ADR-024 — Feature-owned preview region measurement and in-place session update (2026-11-10)
-**Status:** Implemented on SCAN-03 branch; GitHub Actions run #309 passed. PR #61 remains Draft pending PR #60 merge/review. Decoder consumption is deferred to SCAN-04.
+**Status:** Merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms iOS and Android verification with no detected issue. SCAN-04 consumes this region in the decoder.
 
 ### Decision
 - Home and Stocktake keep their own video and reticle DOM. A feature-level binding hook may share measurement mechanics but must not own presentation.
@@ -573,3 +573,26 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 - Physical iOS Safari/PWA and Android Chrome/PWA alignment QA is required after deployment.
 
 See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md` and `scripts/test-scanner-preview-region.mjs`.
+
+
+## ADR-025 — Strict decoder consumption of module-owned source ROI (2026-11-10)
+
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
+
+### Context
+SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the active session. The previous ZXing adapter still decoded the full frame first and then tried a hard-coded centered crop, so the actual module scan intent did not constrain decoder work.
+
+### Decision
+- Each decoder invocation receives the current session region with its timestamp.
+- A pure resolver validates the coordinate-space tag and rectangle, then converts normalized bounds into integer source pixels using floor-leading/ceil-trailing rounding and source-frame clamping.
+- ZXing draws only that source crop into its working canvas and decodes the ROI. The full-frame-first pass and fixed centered fallback are removed.
+- Missing or invalid geometry is a decode miss, not a decoder error, and must never trigger full-frame fallback.
+- Preserve the supported barcode allowlist, existing binarizer schedule, 1.5× aspect-preserving ROI upscale, 110 ms frame-loop cadence, validation and result-delivery policy.
+
+### Constraints
+- No camera acquisition/lease, readiness, lifecycle/recovery, frame scheduling, CSS, Home/Stocktake UI or business-flow changes.
+- No rotation, deskew, perspective correction, adaptive exposure or camera-constraint changes in SCAN-04.
+- Physical barcode accuracy/performance QA on iOS Safari/PWA and Android Chrome/PWA is required before release acceptance.
+
+### Acceptance
+See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.

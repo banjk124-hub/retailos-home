@@ -1,20 +1,35 @@
-# Current scanner handoff — SCAN-03 module-owned preview regions (2026-11-10)
+# Current AI handoff — SCAN-04 strict module-reticle ROI decoding (2026-11-10)
+
+- Repository: `banjk124-hub/retailos-home`.
+- Baseline: SCAN-03 merge commit `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms iOS and Android geometry/flow verification passed without detected issues.
+- Current branch: `feat/scan-04-strict-reticle-roi-decoding`.
+- SCAN-04 replaces full-frame-first ZXing decode plus fixed centered crop with a source-frame ROI derived from the current Home/Stocktake reticle region.
+- Decoder API now accepts `{ timestamp, scanRegion }`; the session passes a fresh defensive snapshot on each scheduled frame.
+- `resolveScannerRoiCrop()` validates source-normalized geometry and converts it to integer pixel bounds. Invalid/missing regions fail closed; no full-frame or centered fallback.
+- Preserve 110 ms cadence, camera request/lease, lifecycle/recovery, ZXing format allowlist, validation, result delivery, Home lookup and Stocktake form/save.
+- New regression suite: `scripts/test-scanner-roi-decoder.mjs`, registered in preflight. New technical design/QA contract: `SCAN_04_STRICT_ROI_DECODING.md`.
+- Draft PR #62 is open. GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; the subsequent status-only documentation update does not change executable code. Physical post-deploy iOS and Android barcode accuracy/performance QA remains mandatory.
+- Do not merge or deploy without explicit user approval.
+
+---
+
+# Historical handoff — SCAN-03 module-owned preview regions (completed 2026-11-10)
 
 - SCAN-01 merged by PR #58; SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`.
-- SCAN-02 post-merge audit follow-up is PR #60; its corrected DOM-boundary test guard passed full CI run #301. Merge PR #60 before merging dependent SCAN-03.
-- SCAN-03 branch: `feat/scan-03-module-region-integration`; PR #61 is Draft and GitHub Actions run #309 passed full preflight/build. Merge PR #60 first, then review PR #61.
+- SCAN-02 audit follow-up PR #60 is merged; its corrected DOM-boundary guard passed full CI run #301.
+- SCAN-03 merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; final PR-head CI run #312 passed. User confirms iOS/Android geometry and existing Home/Stocktake flows were checked without detected issues.
 - Home and Stocktake retain independent video/reticle DOM and presentation. New feature-level adapter measures DOMRects and computed object-fit/object-position, clips reticle to visible content and maps to source coordinates.
 - `ScannerSession.setScanRegion()/getScanRegion()` store a defensive source-region snapshot. Updates do not restart camera, decoder or frame loop.
 - Decoder still receives the full video. No ROI-only decode, crop, rotation, deskew, perspective, barcode validation or cadence changes in SCAN-03.
 - Protect camera lease/refcount, single-claim handoff, lifecycle/recovery, preview readiness, ZXing, validation, Torch, feedback, Home lookup and Stocktake save/revision/export.
-- Run full preflight/CI and inspect the exact diff. Physical iOS Safari/PWA and Android Chrome/PWA geometry alignment QA is required after deployment.
-- No merge/deploy without explicit user approval.
+- SCAN-03 is complete; decoder consumption was intentionally deferred to SCAN-04.
+- No further SCAN-03 merge/deploy action is pending.
 
 Canonical design: `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md`.
 
 ---
 
-# Current scanner handoff — SCAN-02 audited; SCAN-03 next (2026-11-10)
+# Historical handoff — SCAN-02 audit and SCAN-03 planning (completed 2026-11-10)
 
 - SCAN-01 is merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
 - SCAN-02 is merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed TypeScript, production/Pages builds and full preflight.
@@ -32,7 +47,7 @@ Canonical SCAN-02 design: `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md`.
 
 ---
 
-# Current scanner handoff — SCAN-01 contract implementation (2026-11-10)
+# Historical handoff — SCAN-01 contract implementation (merged 2026-11-10)
 
 - Active implementation branch: `feat/scanner-input-module-config-contract`.
 - Base: main `09cd3b5117ea38a16dd991f74320835b67ea04b5`.
@@ -48,7 +63,7 @@ Canonical contract: `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 
 ---
 
-# Current AI handoff — shared Scanner settings and feedback QA (2026-11-09)
+# Historical handoff — shared Scanner settings and feedback QA (2026-11-09)
 
 - Repository: `banjk124-hub/retailos-home`.
 - Production implementation: PR #51/#52, shared Web MediaStreamTrack Torch path.
@@ -85,7 +100,7 @@ Read `ARCHITECTURE.md` ADR-018, `SCANNER_TORCH_AUDIT_2026-11-09.md`, source and 
 
 ---
 
-# Current AI handoff — post PR #49 video presentation ownership (2026-11-09)
+# Historical handoff — post PR #49 video presentation ownership (2026-11-09)
 
 ## Verified baseline
 - Repository: `banjk124-hub/retailos-home`.

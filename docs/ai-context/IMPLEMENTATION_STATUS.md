@@ -1,13 +1,15 @@
-# SCAN-03 implementation update — module-owned preview region integration (2026-11-10)
+# SCAN-04 implementation update — strict module-reticle ROI decoding (2026-11-10)
 
-**Status:** Implemented on `feat/scan-03-module-region-integration`; GitHub Actions run #309 passed full preflight and builds. PR #61 remains Draft and depends on PR #60 merge.
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`. Physical post-deployment barcode QA remains pending.
 
-- Home and Stocktake retain their own video elements and reticles.
-- A feature-level binding hook measures each module's video/reticle geometry after scanning is ready and observes viewport/element changes.
-- The pure adapter clips the reticle to visible image content and maps it to source-frame normalized coordinates.
-- The active session receives the latest region through an in-place setter/getter; this does not restart camera, decoder or frame loop.
-- Decoder remains full-frame in SCAN-03. ROI-only decode is not active and remains SCAN-04.
-- Automated tests, CI and real-device iOS/Android geometry QA are pending.
+- SCAN-03 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms both iOS and Android geometry/flow checks passed without detected issues.
+- Decoder now receives the current `source-frame-normalized` region from the active session on every decode call.
+- New pure `resolveScannerRoiCrop()` maps normalized source coordinates to integer pixel bounds; leading edges floor and trailing edges ceil to avoid clipping.
+- ZXing draws and decodes only the measured ROI. The previous full-frame-first pass and fixed centered `82% × 66%` secondary crop are removed.
+- Missing/invalid/out-of-bounds ROI returns no result and increments `roiUnavailable`; no full-frame or centered fallback exists.
+- Preserved camera acquisition/lease, first-frame readiness, recovery, 110 ms decode cadence, supported symbologies, validation, result delivery, Home lookup and Stocktake form/save workflows.
+- Added `scripts/test-scanner-roi-decoder.mjs` to preflight for normalized-to-pixel mapping, edge rounding, invalid geometry and runtime wiring.
+- GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; the subsequent status-only documentation update does not change executable code. Real-device iOS/Android barcode accuracy/performance validation remains pending.
 
 ---
 
@@ -19,21 +21,20 @@
 - `src/platform/scanner/scannerGeometry.ts` provides pure preview-to-source mapping for `fill`, `contain`, `cover`, `none`, `scale-down`, normalized object-position, visible-content intersection and horizontal mirror conversion.
 - Audit reviewed sizing/crop math, coordinate-space contract, failure behavior and separation from DOM/camera/session/decoder resources.
 - A follow-up test-only correction strengthens the static guard against `window.` and `document.` access; no production runtime behavior changed.
-- No runtime consumer is wired. Home/Stocktake presentation, camera lifecycle, decoder and business flows remain unchanged; ROI-only decode is not active.
-- Next: SCAN-03 module-owned Home/Stocktake adapters and live region updates without session restart. Physical iOS/Android geometry alignment QA is required.
-- SCAN-04 remains gated on both consumers providing verified source regions before strict ROI-only decode.
+- SCAN-03 subsequently wired Home and Stocktake reticles to the active session without restart; PR #61 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`. User confirms iOS/Android geometry and existing-flow checks found no issue.
+- SCAN-04 now consumes that verified region in the decoder.
 
 ---
 
 # SCAN-01 implementation update — 2026-11-10
 
-**Status:** source contract authored on `feat/scanner-input-module-config-contract`; PR CI pending. Not merged.
+**Status:** merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
 
 - Added platform-neutral `ScannerNormalizedRect`, `ScannerPreviewScanRegion`, `ScannerSourceScanRegion`, `ScannerCameraRequest`, `ScannerModuleConfig` and the unchanged default camera request.
 - Added `docs/ai-context/SCAN_01_INPUT_CONTRACT.md` with coordinate semantics, rectangle invariants, ownership, migration and acceptance rules.
 - No runtime consumer is wired yet. Home and Stocktake behavior is unchanged.
 - No camera lease, camera constraints, lifecycle, session, decoder, barcode validation, UI, CSS or business behavior changed.
-- Next: SCAN-02 pure geometry mapping; SCAN-03 module integration; SCAN-04 strict ROI decode.
+- SCAN-02 geometry mapping and SCAN-03 module integration are merged; SCAN-04 strict ROI decoding is the current phase.
 
 ---
 

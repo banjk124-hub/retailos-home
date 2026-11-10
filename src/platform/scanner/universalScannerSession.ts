@@ -440,7 +440,10 @@ export class UniversalScannerSession implements ScannerSession {
     const decodeStartedAt = performance.now();
     this.diagnosticFrames += 1;
     try {
-      const results = await this.decoder.decode(this.video, timestamp);
+      const results = await this.decoder.decode(this.video, {
+        timestamp,
+        scanRegion: this.getScanRegion(),
+      });
       const decodeDurationMs = performance.now() - decodeStartedAt;
       this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
       this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);

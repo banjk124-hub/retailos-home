@@ -47,7 +47,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gate
 
 
 ## ADR-022 — Separate module scan intent from source-frame processing geometry (2026-11-10)
-**Status:** Accepted as the SCAN-01 source contract; runtime wiring is deferred to SCAN-02/03.
+**Status:** SCAN-01 contract merged by PR #58; geometry mapping and Home/Stocktake wiring were completed in SCAN-02/03. SCAN-04 consumes the mapped source region.
 
 ### Decision
 - Feature modules own a `ScannerModuleConfig` containing a `preview-content-normalized` scan region and a `ScannerCameraRequest`.
@@ -68,7 +68,7 @@ See `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 
 
 ## ADR-023 — Pure preview-to-source scanner geometry mapping (2026-11-10)
-**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; runtime consumers remain unwired until SCAN-03.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; Home and Stocktake runtime consumers were wired in merged SCAN-03 (PR #61).
 
 ### Decision
 - Add a pure mapper from `preview-content-normalized` to `source-frame-normalized` coordinates.
@@ -87,7 +87,7 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 
 
 ## ADR-024 — Feature-owned preview region integration (2026-11-10)
-**Status:** Implemented on SCAN-03 branch; GitHub Actions run #309 passed. PR #61 remains Draft pending PR #60 merge/review. ROI decode remains deferred to SCAN-04.
+**Status:** Merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms iOS and Android geometry verification. SCAN-04 consumes the mapped region.
 
 ### Decision
 - Home and Stocktake independently own their video and reticle elements.
@@ -103,3 +103,26 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 
 ### Acceptance
 See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md`.
+
+
+## ADR-025 — Strict decoder consumption of module-owned source ROI (2026-11-10)
+
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
+
+### Context
+SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the active session. The previous ZXing adapter still decoded the full frame first and then tried a hard-coded centered crop, so the actual module scan intent did not constrain decoder work.
+
+### Decision
+- Each decoder invocation receives the current session region with its timestamp.
+- A pure resolver validates the coordinate-space tag and rectangle, then converts normalized bounds into integer source pixels using floor-leading/ceil-trailing rounding and source-frame clamping.
+- ZXing draws only that source crop into its working canvas and decodes the ROI. The full-frame-first pass and fixed centered fallback are removed.
+- Missing or invalid geometry is a decode miss, not a decoder error, and must never trigger full-frame fallback.
+- Preserve the supported barcode allowlist, existing binarizer schedule, 1.5× aspect-preserving ROI upscale, 110 ms frame-loop cadence, validation and result-delivery policy.
+
+### Constraints
+- No camera acquisition/lease, readiness, lifecycle/recovery, frame scheduling, CSS, Home/Stocktake UI or business-flow changes.
+- No rotation, deskew, perspective correction, adaptive exposure or camera-constraint changes in SCAN-04.
+- Physical barcode accuracy/performance QA on iOS Safari/PWA and Android Chrome/PWA is required before release acceptance.
+
+### Acceptance
+See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.

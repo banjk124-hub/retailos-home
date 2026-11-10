@@ -8,12 +8,15 @@ import {
   RGBLuminanceSource,
 } from '@zxing/library';
 import { SUPPORTED_BARCODE_FORMATS, type ScannerSymbology } from '../contracts';
+import { resolveScannerRoiCrop } from '../scannerRoi';
 import type {
+  DecoderDecodeOptions,
   DecoderInitOptions,
   DecoderOutput,
   ScannerDecoderAdapter,
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
+
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
   EAN_13: BarcodeFormat.EAN_13,
@@ -35,8 +38,6 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
 };
 
 const MAX_FRAME_WIDTH = 1280;
-const ROI_WIDTH_RATIO = 0.82;
-const ROI_HEIGHT_RATIO = 0.66;
 const ROI_UPSCALE = 1.5;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
@@ -82,14 +83,15 @@ function classifyDecodeError(error: unknown): DecodeMiss | null {
 /**
  * Multi-format ZXing adapter.
  *
- * It tries the complete frame first (so codes near the edge are not lost),
- * then an upscaled centered region matching the visual scan reticle. The
- * more expensive global-histogram fallback runs only on every third ROI pass
- * to limit mobile CPU use. Camera ownership and frame scheduling remain in
- * UniversalScannerSession.
+ * Each decode is cropped directly from the source frame using the latest
+ * module-owned reticle region. There is no full-frame pass and no centered
+ * fallback: absent/invalid geometry produces a decode miss. The ROI is
+ * upscaled without changing its aspect ratio; the more expensive
+ * GlobalHistogramBinarizer runs every third ROI pass to bound mobile CPU use.
+ * Camera ownership and frame scheduling remain in UniversalScannerSession.
  */
 export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
-  readonly id = 'zxing-retail-ean-code128';
+  readonly id = 'zxing-retail-ean-code128-roi';
   private reader: MultiFormatReader | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private context: CanvasRenderingContext2D | null = null;
@@ -105,8 +107,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticFormat = 0;
   private diagnosticUnexpected = 0;
   private diagnosticRoiHits = 0;
+  private diagnosticRoiUnavailable = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
+  private lastRoiWidth = 0;
+  private lastRoiHeight = 0;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -132,7 +137,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
 
   async decode(
     source: CanvasImageSource,
-    timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(),
+    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion }: DecoderDecodeOptions,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !this.canvas || !this.context) {
       throw new Error('ZXing adapter has not been initialized.');
@@ -144,51 +149,39 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       const dimensions = getFrameDimensions(source);
       this.lastFrameWidth = dimensions.width;
       this.lastFrameHeight = dimensions.height;
-      this.diagnosticFrames += 1;
-      const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
-      const width = Math.max(1, Math.round(dimensions.width * scale));
-      const height = Math.max(1, Math.round(dimensions.height * scale));
-      this.canvas.width = width;
-      this.canvas.height = height;
-      const fullFrameDrawStartedAt = performance.now();
-      this.context.drawImage(source, 0, 0, width, height);
-      this.recordStageCost('full_frame_draw', performance.now() - fullFrameDrawStartedAt);
-
-      let output = this.decodeCurrentCanvas(timestamp, false);
-      if (output) {
-        this.diagnosticDecoded += 1;
+      const crop = resolveScannerRoiCrop(scanRegion, dimensions.width, dimensions.height);
+      if (!crop) {
+        this.diagnosticRoiUnavailable += 1;
         this.emitDiagnostics();
-        return [output];
+        return [];
       }
 
-      // The UI reticle is centered. A second pass over that region increases
-      // effective barcode pixel density without excluding edge-positioned codes
-      // from the first full-frame pass.
-      const cropWidth = Math.max(1, Math.round(width * ROI_WIDTH_RATIO));
-      const cropHeight = Math.max(1, Math.round(height * ROI_HEIGHT_RATIO));
-      const sx = Math.round((width - cropWidth) / 2);
-      const sy = Math.round((height - cropHeight) / 2);
-      // Upscale the centered crop without changing its aspect ratio. Stretching
-      // a wide barcode to the full frame distorts bar/space geometry and can
-      // make ZXing fail on otherwise readable labels.
-      const roiWidth = Math.max(1, Math.round(cropWidth * ROI_UPSCALE));
-      const roiHeight = Math.max(1, Math.round(cropHeight * ROI_UPSCALE));
+      this.diagnosticFrames += 1;
+      this.lastRoiWidth = crop.width;
+      this.lastRoiHeight = crop.height;
+      const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
+      const baseWidth = Math.max(1, Math.round(crop.width * scale));
+      const baseHeight = Math.max(1, Math.round(crop.height * scale));
+      const roiWidth = Math.max(1, Math.round(baseWidth * ROI_UPSCALE));
+      const roiHeight = Math.max(1, Math.round(baseHeight * ROI_UPSCALE));
       this.canvas.width = roiWidth;
       this.canvas.height = roiHeight;
+
       const roiDrawStartedAt = performance.now();
       this.context.drawImage(
         source,
-        sx / scale,
-        sy / scale,
-        cropWidth / scale,
-        cropHeight / scale,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
         0,
         0,
         roiWidth,
         roiHeight,
       );
       this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
-      output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
+
+      const output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
       if (output) {
         this.diagnosticDecoded += 1;
         this.diagnosticRoiHits += 1;
@@ -250,16 +243,17 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
     this.recordStageCost('image_data_read', performance.now() - imageReadStartedAt);
     const grayscaleStartedAt = performance.now();
-const grayscale = rgbaToLuminance(
-  image.data,
-  this.canvas.width,
-  this.canvas.height,
-);
-const luminance = new RGBLuminanceSource(
-  grayscale,
-  this.canvas.width,
-  this.canvas.height,
-);
+    const grayscale = rgbaToLuminance(
+      image.data,
+      this.canvas.width,
+      this.canvas.height,
+    );
+    const luminance = new RGBLuminanceSource(
+      grayscale,
+      this.canvas.width,
+      this.canvas.height,
+    );
+    this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
     const binarizers = includeGlobalHistogram
       ? [HybridBinarizer, GlobalHistogramBinarizer]
       : [HybridBinarizer];
@@ -305,12 +299,15 @@ const luminance = new RGBLuminanceSource(
       frames: this.diagnosticFrames,
       decoded: this.diagnosticDecoded,
       roiHits: this.diagnosticRoiHits,
+      roiUnavailable: this.diagnosticRoiUnavailable,
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,
       unexpectedErrors: this.diagnosticUnexpected,
       sourceWidth: this.lastFrameWidth,
       sourceHeight: this.lastFrameHeight,
+      roiWidth: this.lastRoiWidth,
+      roiHeight: this.lastRoiHeight,
       averageDecodeMs: this.decodeCostCount ? Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)) : 0,
     });
     this.diagnosticStartedAt = now;
@@ -321,6 +318,7 @@ const luminance = new RGBLuminanceSource(
     this.diagnosticFormat = 0;
     this.diagnosticUnexpected = 0;
     this.diagnosticRoiHits = 0;
+    this.diagnosticRoiUnavailable = 0;
   }
 
   dispose(): void {

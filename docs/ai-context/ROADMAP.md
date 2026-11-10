@@ -1,11 +1,11 @@
-# SCAN-03 execution update — module-owned preview region integration (2026-11-10)
+# SCAN-04 execution update — strict module-reticle ROI decoding (2026-11-10)
 
-- Implementation branch: `feat/scan-03-module-region-integration`, based on the SCAN-02 audit follow-up branch.
-- Wire Home and Stocktake's existing independent reticles to source-frame geometry through a feature-level measurement adapter.
-- Publish source regions to the current session in place; no camera/session/decoder/frame-loop restart.
-- Keep the decoder full-frame. SCAN-03 does not activate ROI-only decoding.
-- Automated geometry/session-update tests, TypeScript, production build, GitHub Pages build and full preflight passed in GitHub Actions run #309. Physical iOS Safari/PWA and Android Chrome/PWA alignment QA remains required after deployment.
-- SCAN-04 remains gated until both module geometries are verified.
+- Baseline: SCAN-03 merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms successful iOS and Android geometry/flow verification.
+- Replace the decoder's full-frame-first pass and fixed centered `82% × 66%` crop with the source-frame ROI published by each module's reticle.
+- `ScannerSession.getScanRegion()` is passed to the decoder on every scheduled frame; the decoder maps normalized coordinates to source pixels and draws only that crop.
+- Missing, malformed or out-of-bounds geometry fails closed: no decode and no full-frame fallback.
+- Preserve ZXing formats, 110 ms session cadence, camera constraints, binarizer strategy (Global Histogram only every third ROI pass), barcode validation and result delivery.
+- SCAN-04 branch: `feat/scan-04-strict-reticle-roi-decoding`. GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; physical post-deploy barcode QA remains required on iOS and Android.
 
 ---
 
@@ -15,26 +15,24 @@
 - SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed full preflight and production/Pages builds.
 - User confirms deployment and normal operation of existing scanner flows.
 - Pure geometry mapper audit found no runtime calculation or architecture defect; a follow-up correction strengthens its DOM-boundary regression guard.
-- No runtime consumer is wired and ROI-only decoding is not active.
-- Next: SCAN-03 independently wires Home and Stocktake preview/reticle geometry and updates the source-region contract without restarting the session. Verify alignment on iOS and Android.
-- SCAN-04 enables strict ROI-only decode only after both module consumers pass geometry and device QA.
+- SCAN-03 subsequently wired Home and Stocktake independently; PR #61 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`, and the user confirms iOS/Android geometry and existing-flow checks found no issue.
+- SCAN-04 is now implementing strict ROI-only decoding using the verified source region.
 
 ---
 
 # SCAN-01 execution update — 2026-11-10
 
 - SCAN-01 defines `ScannerModuleConfig`, preview/source normalized region types and explicit camera request preferences.
-- Implementation branch: `feat/scanner-input-module-config-contract`; PR/CI status is pending until opened.
-- SCAN-01 is contract-only. No camera, lifecycle, decoder, Home or Stocktake runtime behavior changes.
-- SCAN-02 remains next: pure preview-to-source geometry mapping and tests for `cover`, `contain`, `object-position` and mirroring.
-- SCAN-03 then wires Home and Stocktake independently; SCAN-04 enables strict ROI-only decode after both consumers are valid.
+- SCAN-01 contract-only change merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
+- No camera, lifecycle, decoder, Home or Stocktake runtime behavior changed in SCAN-01.
+- SCAN-02 geometry mapping and SCAN-03 module integration are both merged; SCAN-04 consumes the verified source ROI.
 - The existing camera default remains environment / 1280×720 / 30 FPS ideal / 30 FPS max.
 
 ---
 
 # RetailOS — Engineering Roadmap
 
-Last reviewed: 2026-11-09
+Last reviewed: 2026-11-10
 Status: active working plan.
 
 ## Current execution order — scanner Torch investigation closed

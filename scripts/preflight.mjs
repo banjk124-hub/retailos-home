@@ -49,6 +49,11 @@ const checks = [
     args: ["scripts/test-scanner-preview-region.mjs"],
   },
   {
+    name: "Scanner strict reticle ROI decoder regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-roi-decoder.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],
