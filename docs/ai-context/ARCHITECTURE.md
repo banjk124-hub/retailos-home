@@ -683,3 +683,26 @@ No changes to Scanner Engine, camera/session/lifecycle contracts, Stocktake scan
 ### Acceptance
 
 See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`. Required checks include full `npm run preflight`, both supplied workbook fixtures, multi-sheet/multi-zone coverage, iOS Safari/PWA and Android Chrome/PWA file-picker/download QA, and confirmation that the downstream system accepts numeric-only zone and percentage representations.
+
+
+## ADR-029 — Stocktake import accuracy, layout tolerance and editable zone review (2026-11-10)
+
+**Status:** Proposed implementation in `feat/stocktake-import-desktop-editor`; not merged.
+
+### Context
+
+After PR #69 was merged and deployed, practical use exposed four correctness/usability gaps: Excel decimal display values were not preserved, material rows could lack a sales barcode but have GOLDCODE, workbooks could contain varying table layouts, and there was no saved manual correction step. Desktop use also needs a wider working surface.
+
+### Decision
+
+- Keep the importer a standalone business workflow. `RetailModuleId` must be defined independently from `ModuleDataId`; importer history stays in its own IndexedDB database.
+- Treat OOXML numeric values as decimal strings. Apply the cell's Excel number format and precision using string-based decimal rounding; never round-trip the quantity through JavaScript floating-point numbers.
+- Resolve row code in this order: non-empty BARCODE, then non-empty GOLDCODE, then the legacy MÃ VẠCH fallback. Missing code/quantity rows remain visible and editable; they are not silently discarded.
+- Detect table headers independently across each sheet and each table block. Merge all recognized blocks that resolve to the same zone while preserving row order and duplicates. If a block is unsupported or zone resolution is ambiguous, show a diagnostic and block all exports rather than silently exporting a partial workbook.
+- Require explicit per-zone save before export. Persist edited rows and diagnostics with the import history record.
+- Use zone-only filenames and ZIP names. Keep the existing date/time in the `NHAN VIEN` content record until downstream format compatibility is confirmed.
+- Provide a wide desktop workspace, a stacked mobile layout, short opacity/transform transitions, and reduced-motion support.
+
+### Acceptance
+
+Validate Excel display parity for integer, fixed-decimal, General and percent formats; GOLDCODE fallback; missing-code correction; multiple layouts/tables in one workbook; aggregation of same-zone tables; save/restore; and file downloads on desktop, iOS and Android. Confirm whether the date/time content record remains required.
