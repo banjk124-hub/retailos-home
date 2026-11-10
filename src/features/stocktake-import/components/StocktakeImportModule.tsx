@@ -8,6 +8,7 @@ import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import {
   buildStocktakeOutput,
+  buildZoneFileName,
   parseStocktakeWorkbook,
   type ImportedStocktakeRow,
   type StocktakeImportResult,
@@ -37,6 +38,11 @@ function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): s
     issues.push('Kết quả thực tế không phải số hợp lệ.');
   }
   return issues;
+}
+
+function normalizeEditableQuantity(value: string): string {
+  const normalized = value.trim().replace(/\\s/g, '');
+  return /^[+-]?\\d+,\\d+(?:[eE][+-]?\\d+)?%?$/.test(normalized) ? normalized.replace(',', '.') : value.trim();
 }
 
 function downloadBlob(fileName: string, blob: Blob): void {
@@ -214,15 +220,28 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const saveActiveZone = async () => {
     if (!result || !activeZone) return;
-    const invalid = activeZone.rows.filter((row) => row.issues.length > 0 || validateRow(row).length > 0);
+    const normalizedRows = activeZone.rows.map((row) => {
+      const quantity = normalizeEditableQuantity(row.quantity);
+      const updated = { ...row, quantity };
+      return { ...updated, issues: [...new Set([...validateRow(updated), ...row.issues.filter((issue) =>
+        /barcode|goldcode|mã hàng|mã vạch|diễn giải/i.test(issue) && issue.includes('MÃ VẠCH'))])] };
+    });
+    const invalid = normalizedRows.filter((row) => row.issues.length > 0 || validateRow(row).length > 0);
     if (invalid.length > 0) {
       setError('Vùng ' + activeZone.zoneCode + ' còn ' + invalid.length + ' dòng chưa hợp lệ. Hãy bổ sung mã hàng và kết quả thực tế.');
       return;
     }
+    const updatedResult: StocktakeImportResult = {
+      ...result,
+      zones: result.zones.map((zone, index) => index === selectedZone
+        ? { ...zone, rows: normalizedRows, content: buildStocktakeOutput(employeeCode, zone.zoneCode, normalizedRows, new Date(result.importedAt)) }
+        : zone),
+    };
     setBusy(true);
     setError('');
     try {
-      const id = await stocktakeImportStore.saveResult(result, historyId);
+      const id = await stocktakeImportStore.saveResult(updatedResult, historyId);
+      setResult(updatedResult);
       setHistoryId(id);
       setDirtyZones((current) => current.filter((code) => code !== activeZone.zoneCode));
       setEditingZone(false);
@@ -309,7 +328,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
           sheetName: file.zoneCode,
           rows,
           content: file.content,
-          fileName: file.fileName,
+          fileName: buildZoneFileName(file.zoneCode),
         };
       }),
     });
@@ -478,7 +497,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                   <button type="button" onClick={() => restoreHistoryItem(item)}>Mở</button>
                   <button type="button" onClick={async () => {
                     const zip = new JSZip();
-                    item.files.forEach((file) => zip.file(file.fileName, file.content));
+                    item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
                     const blob = await zip.generateAsync({ type: 'blob' });
                     downloadBlob('KIEM_KE_IMPORT.zip', blob);
                   }} aria-label="Tải lại kết quả"><Download size={16} /></button>
