@@ -760,7 +760,7 @@ Run full preflight and test all source precedence, multi-file, duplicate-file, d
 
 ## ADR-032 — Unified Stocktake Import workspace and interaction state (2026-11-10)
 
-**Status:** Implemented in draft PR #72 (feat/stocktake-import-native-workspace). RetailOS CI #524 passed on head 13ae9a96e270642d5349041f5d01bfd8a7a542f4; physical-device acceptance remains pending.
+**Status:** PR #72 merged into main at `036fb89d8e3bcc79e39cdd56f45979e872a800cf`; PR #73 merged/deployed at `629c31c28e808cd5c3181c42b7d29e611a8ad890` (user-confirmed). Workspace v2 is proposed in draft PR #74; CI and physical-device acceptance pending.
 
 ### Context
 
@@ -770,11 +770,11 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 
 - Supersede ADR-031's mutually exclusive Output/Editor layer presentation. Keep one continuous selected-zone workspace.
 - The review/edit table is the primary work surface. Read-only review and inline edit share the same table; editing changes the row controls in place. Cancel restores the captured edit baseline; save persists the updated zone.
-- TXT Preview is an expandable secondary inspector below the table. It is not a separate mode or independent data model. Preview, Clipboard copy, individual TXT download and ZIP all consume the same generated zone payload.
+- TXT Preview is a dedicated view inside the selected-zone workspace, replacing the table until the operator returns to it. It is not a separate data model. Preview, Clipboard copy, individual TXT download and ZIP all consume the same generated zone payload.
 - Keep TXT Preview as a read-only inspector. Copy and per-zone Download are primary operator actions in the selected-zone heading beside Edit; they must not require scrolling to the preview.
 - Separate in-memory session state from IndexedDB persistence. A failed history write cannot be represented as persisted; keep the in-memory data recoverable while showing the unsaved persistence state.
 - Provide action-specific progress feedback for import, zone save, ZIP generation, history clear and history re-export. Success/warning/info notices use a centered, non-blocking popup that auto-dismisses after approximately 2.6 seconds; errors remain separate visible alert states. Never show success before an operation completes.
-- Keep Add file and New session side by side when a session exists; initial file selection remains full-width. The all-zone ZIP footer must remain compact and responsive.
+- Keep Add file and New session side by side when a session exists; initial file selection remains full-width. The all-zone ZIP action is a compact control beside the zone-list heading and appears only for sessions with more than one zone.
 - Preserve validation and export invariants: dirty or invalid zones and workbook-level blocking issues prevent the corresponding export; all-zone ZIP requires every zone to be valid and saved.
 - Use semantic visual hierarchy rather than a uniform treatment: red for primary actions, blue for TXT/technical inspection, green for valid/persisted state, amber for pending/unsaved state and red for errors. Compact containers to their content and use empty space only for useful metadata or actions.
 - Use restrained transform/opacity motion and shared motion tokens where available. Respect prefers-reduced-motion and the app's power-conserve mode. Avoid continuous decorative animation, unnecessary remounts and expensive sticky-header blur on mobile.
@@ -791,3 +791,37 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 - PR #73 applies the operator-QA layout and feedback refinements. CI #540 passed on `1f41319fa7c14d4d7b6a4577e576e6fc70cb3eb2`. Still required: manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA QA; real workbook verification for multi-file merge/skip, persistence/history restore, Clipboard fallback and TXT/ZIP payload parity.
 - Do not merge or deploy until the user explicitly approves.
 
+
+
+## ADR-033 — Stocktake Import workspace v2: product identity, action states and viewport ownership (2026-11-10)
+
+**Status:** Proposed in draft PR #74 (`feat/stocktake-import-workspace-v2`), based on deployed main `629c31c28e808cd5c3181c42b7d29e611a8ad890`. CI and physical-device QA pending.
+
+### Context
+
+Operator testing after PR #73 identified that the ZIP action could overlap the editor at some desktop viewport sizes, the module frame required excessive page scrolling, and the workflow did not expose action completion on each zone. Operational review also needs a unique product count distinct from row count and optional product names from some source workbooks.
+
+### Decisions
+
+- Place the compact ZIP action beside the zone-list heading. Render it only when the current session has more than one zone. Keep the existing ZIP payload, one TXT per zone, and all export guards unchanged.
+- Use a fixed viewport-bounded modal frame. The content region, zone navigator and data table own independent bounded scroll regions. Desktop prioritizes a wide two-column layout; mobile uses a compact stacked navigator and touch-operable controls.
+- Track each zone's latest action state independently: Ready, Saved, Copied, TXT downloaded, ZIP exported, Dirty or Invalid. Data edits invalidate prior output action confirmation. A canceled edit returns the unchanged baseline to Ready; history restore marks the persisted zone Saved.
+- Count product identity from the resolved code field, independent of the source column. Normalize with Unicode NFKC, trim surrounding whitespace and compare case-insensitively. Preserve punctuation and leading zeroes. Ignore blank identifiers. Count globally across all zones and separately per zone; keep row count independent and preserve duplicate rows.
+- Recognize optional product-name headers `TÊN SẢN PHẨM`, `SẢN PHẨM`, exact `TÊN`, `TÊN HÀNG`, and supported English equivalents. Carry `productName` as an optional row field through session merge and IndexedDB history. Render its table column between code and actual quantity only when present in the zone.
+- Product name is review metadata only; do not alter the downstream Stocktake TXT `ARTICLE` record or employee/date/zone output format.
+- Replace the inline TXT disclosure with a dedicated selected-zone preview view and explicit return-to-table transition. Keep the selected zone and navigator context.
+- Keep IndexedDB schema version unchanged because `productName` is an optional additive field; older history rows remain valid.
+
+### Protected boundaries
+
+- No change to Excel numeric precision, code-source precedence, zone detection, source fingerprints/provenance, duplicate preservation, multi-file merge/skip, output filename, TXT payload, session timestamp or export validation.
+- No change to Scanner Engine, camera lifecycle, existing Stocktake workflow/store, auth, snapshot/cache, service worker or deployment configuration.
+
+### Acceptance
+
+- Parser tests cover optional product-name aliases and unique product-code counting, including duplicates across zones, case normalization, whitespace and blanks.
+- Full preflight, TypeScript, production and Pages builds pass.
+- Real workbooks with and without product-name columns retain correct table shape and identical TXT output contract.
+- Desktop Chrome/Edge at multiple viewport heights verifies no overlap, no accidental whole-frame scrolling and usable bounded table/zone-list scrolling.
+- iOS Safari/PWA and Android Chrome/PWA verify compact layout, touch targets, preview navigation, file picker, clipboard and downloads.
+- PR remains unmerged until CI, manual QA and explicit user approval are complete.
