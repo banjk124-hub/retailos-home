@@ -1,6 +1,6 @@
 # Nạp file kiểm kê — implementation contract
 
-**Status:** Implementation in PR #69; RetailOS CI run #448 passed; not merged or deployed.
+**Status:** Implementation in PR #69; RetailOS CI run #454 passed; not merged or deployed.
 **Base:** `main` at `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
 **Feature branch:** `feat/stocktake-file-import`.
 
