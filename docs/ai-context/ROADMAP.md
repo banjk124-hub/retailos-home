@@ -1,7 +1,7 @@
 # Current work — Xuất file: output layers and additive multi-file sessions (2026-11-10)
 
 - PR #70 is merged, deployed and manually accepted. Main baseline: `b9cc4ce9a848acd51027dff64f5620f65e660a4b`. RetailOS CI #466 and PWA deployment #85 succeeded.
-- Follow-up branch: `feat/stocktake-import-session-output`.
+- Follow-up branch: `feat/stocktake-import-session-output`; draft PR #71: https://github.com/banjk124-hub/retailos-home/pull/71.
 - Preserve existing import, zone selection, editor, save, history and export behavior.
 - Add an output-first/editor-second layer transition only inside the selected zone component; do not alter the outer module UI or zone navigator.
 - Update code source resolution to BARCODE → CODE → GOLDCODE → TILLCODE, with legacy MÃ VẠCH only as a final fallback.
