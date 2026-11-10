@@ -15,6 +15,7 @@
 - Smooth the histogram locally, select the dominant orientation, and compute a sub-degree circular mean around that peak.
 - Require minimum directional energy concentration and local orientation coherence. Blank, low-texture and directionally ambiguous ROIs fail closed. Ignore sub-0.65° estimates and bound the signed correction to ±90°.
 - Normalize the result to a signed half-turn range of -90° through +90°. This supports intermediate barcode angles without enumerating a fixed list of angle constants.
+- Before correction, apply a percentile-based contrast stretch only when the ROI's 1st–99th percentile luminance range is compressed (24–220 levels). Orientation confidence is still computed from the original pixels, so contrast normalization cannot manufacture a direction.
 - Rotate with inverse-angle bilinear sampling and expanded output bounds. The allocation remains bounded; the current cap is 6 million pixels.
 - Evaluate both the original ROI and its quarter-turned representation. Prefer the smaller correction angle first, then try the alternate representation if ZXing still misses.
 - Decode each candidate with both HybridBinarizer and GlobalHistogramBinarizer. ZXing checksum/format validation remains the final authority; orientation estimates alone never produce a barcode result.
@@ -34,7 +35,7 @@ This is in-plane orientation recovery. It does not claim perspective/keystone co
 ## Regression coverage
 
 - Synthetic Code 128 angle sweep through positive and negative intermediate angles, including large rotations up to ±75° and exact 90°.
-- Medium-low contrast Code 128 fixture at an intermediate angle is estimated, corrected and decoded by the helper and production adapter.
+- Low-contrast Code 128 fixture (40/255 source contrast) at an intermediate angle is estimated, contrast-normalized, corrected and decoded by the helper and production adapter.
 - Deskew helper tests verify estimate accuracy, correction and decode.
 - Production `ZXingDecoderAdapter` integration tests verify the same angle sweep, 90°/270°, combined quarter-turn plus residual skew, strict ROI crop and no full-frame fallback.
 - Negative tests cover blank/invalid frames and out-of-range rotation input.
