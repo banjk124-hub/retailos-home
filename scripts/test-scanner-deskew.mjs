@@ -79,7 +79,7 @@ function decode(frame) {
 const original = makeCode128();
 const lowContrastLuminance = Uint8ClampedArray.from(
   original.luminance,
-  (value) => value < 128 ? 88 : 168,
+  (value) => value < 128 ? 108 : 148,
 );
 const lowContrastRotated = rotateLuminanceByAngle(
   lowContrastLuminance, original.width, original.height, 27,
@@ -89,7 +89,7 @@ const lowContrastSkew = {
   ...lowContrastRotated,
   // Keep the transformed ROI background at the source's off-white level;
   // the synthetic rotation's default white fill is not part of the barcode.
-  luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 168)),
+  luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 148)),
 };
 const lowContrastEstimate = estimateScannerSkewAngle(
   lowContrastSkew.luminance, lowContrastSkew.width, lowContrastSkew.height,
