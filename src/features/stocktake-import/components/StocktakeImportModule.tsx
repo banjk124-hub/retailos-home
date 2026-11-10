@@ -632,7 +632,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 <div className="stocktake-import-zone-layer" data-active-layer={zoneLayer}>
                   <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'output' ? 'is-active' : 'is-inactive')}
                     aria-hidden={zoneLayer !== 'output'}>
-                    <div className="stocktake-import-output-layer">
+                    {zoneLayer === 'output' && <div className="stocktake-import-output-layer">
                       <div className="stocktake-import-output-meta">
                         <strong>{activeZone.fileName}</strong>
                         <span>{activeZone.rows.length} dòng · TXT UTF-8</span>
@@ -644,7 +644,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                         : <div className="stocktake-import-output-unavailable" role="status">
                             Output chưa sẵn sàng. Hãy mở kiểm kê, xử lý lỗi và lưu vùng trước khi sao chép hoặc tải xuống.
                           </div>}
-                    </div>
+                    </div>}
                   </div>
                   <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'editor' ? 'is-active' : 'is-inactive')}
                     aria-hidden={zoneLayer !== 'editor'}>
