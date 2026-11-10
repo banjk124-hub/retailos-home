@@ -1,7 +1,7 @@
 # SCAN-05/06 corrective execution — continuous orientation recovery (2026-11-10)
 
-**Baseline:** `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66 merged).  
-**Corrective branch:** `fix/scan-05-06-continuous-orientation`.  
+**Baseline:** `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66 merged).
+**Corrective branch:** `fix/scan-05-06-continuous-orientation`.
 **Status:** source/test correction implemented; CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical device acceptance pending.
 
 - User-reported failures after the earlier deployment: sideways barcodes are missed, intermediate angles are not sufficiently covered, and recognition feels slow/insensitive.
@@ -59,8 +59,8 @@ Status: active working plan.
 
 ## Current work — Scanner audio runtime verification and documentation sync
 
-**Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.  
-**Branch:** `test/scanner-audio-runtime-and-doc-sync`  
+**Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
+**Branch:** `test/scanner-audio-runtime-and-doc-sync`
 **Status:** Runtime regression test and documentation synchronization authored; GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Draft PR #57 remains open and unmerged.
 
 - PR #56 introduced the Settings Hub and one device-local feedback preference store shared by Home, Stocktake and future Scanner consumers.
