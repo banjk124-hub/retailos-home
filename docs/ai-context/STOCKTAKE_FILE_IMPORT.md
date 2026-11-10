@@ -2,7 +2,7 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70 and PR #71 are merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #524 passed on head `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; physical-device QA remains pending.
+**Status:** PR #70 and PR #71 are merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #534 passed on head `2dc003ad4b1a17556fd18188b30206ae3bf06670`; physical-device QA remains pending.
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 **Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
 **Business/session implementation:** PR #71 merged at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
@@ -129,7 +129,7 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 **Business/session implementation:** PR #71 merged into main at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
 **Current UX branch:** `feat/stocktake-import-native-workspace`.
 **Current UX PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft).
-**Current CI:** RetailOS CI run #524 passed on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`. This includes the full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite. Physical-device QA is not implied by CI.
+**Current CI:** RetailOS CI run #534 passed on `2dc003ad4b1a17556fd18188b30206ae3bf06670`. This includes the full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite. Physical-device QA is not implied by CI.
 
 ### Unified workspace contract
 
@@ -182,7 +182,7 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 
 - [x] Unified editor/preview workspace static regression assertions.
 - [x] Semantic notice states, IndexedDB-persisted status and action-specific loading feedback covered by source assertions.
-- [x] TypeScript, production build, GitHub Pages build and full preflight passed in CI #524 on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`.
+- [x] TypeScript, production build, GitHub Pages build and full preflight passed in CI #534 on `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
 - [x] Existing scanner regression suite passed in the same preflight; no scanner source files were changed.
 - [ ] Desktop Chrome/Edge visual and functional QA.
 - [ ] iOS Safari/PWA QA: viewport behavior, disclosure interaction, file picker, Clipboard fallback, downloads and history restore.
