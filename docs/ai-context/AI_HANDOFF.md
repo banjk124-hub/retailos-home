@@ -1,3 +1,34 @@
+# Current task — Stocktake offline file import (2026-11-10)
+
+**PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
+**Branch:** `feat/stocktake-file-import`.
+**Base main:** `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
+**Status:** Draft implementation; do not merge or deploy until CI, workbook fixture validation, downstream format acceptance and real-device QA are complete.
+
+## Current implementation
+
+- `Nạp file kiểm kê` is a separate local-only workflow inside the existing Kiểm kê library.
+- `RetailModuleId` is separate from `ModuleDataId`; importer does not enter snapshot sync.
+- `.xlsx` parsing is local using JSZip and browser XML APIs; no source workbook upload or network fetch.
+- Detects sheet list, header row, BARCODE and SỐ LƯỢNG; preserves duplicates and source order.
+- Supports decimal quantities, decimal-comma text values and percentage-formatted numeric cells.
+- Resolves alphabetic+numeric and numeric-only zone codes; numeric-only output currently uses `ADRESSE,,540`.
+- Preview output before download; ZIP contains one TXT file per zone; individual zone download is available.
+- Import history/output uses a separate IndexedDB database and has its own clear-history action.
+- Existing Stocktake and Scanner behavior is intentionally unchanged.
+
+## Required next steps
+
+1. Review the complete PR diff and resolve TypeScript/preflight/CI failures.
+2. Run the parser regression suite against the two supplied workbooks and a multi-sheet workbook.
+3. Confirm downstream compatibility of `ADRESSE,,<number>` and percent-suffixed quantities.
+4. Test file picker, local parsing, history persistence, individual TXT and ZIP downloads on iOS Safari/PWA and Android Chrome/PWA.
+5. Only then mark the feature ready. Do not merge/deploy without the user's explicit approval.
+
+See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
+
+---
+
 # Current AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
 
 - Repository: banjk124-hub/retailos-home; default branch: main.
