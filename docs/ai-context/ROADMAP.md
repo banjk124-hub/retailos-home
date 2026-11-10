@@ -1,3 +1,12 @@
+# Current work — Stocktake import follow-up (2026-11-10)
+
+- PR #69 has merged and deployed. Follow-up branch `feat/stocktake-import-desktop-editor` addresses decimal fidelity, GOLDCODE fallback, variable/multiple workbook table layouts, manual per-zone correction and desktop UX.
+- Keep the importer isolated from snapshot IDs/cache and the existing Stocktake workflow.
+- Required before release: CI/preflight, source-workbook comparison, multiple-layout tests, edit/save/restore, desktop download QA, iOS/Android regression and confirmation of the date/time line in TXT.
+- Full contract: `STOCKTAKE_FILE_IMPORT.md`; proposed decision: ADR-029.
+
+---
+
 # Current work — Stocktake offline file import (2026-11-10)
 
 **PR #69:** [Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
