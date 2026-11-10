@@ -206,6 +206,7 @@ assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
 assert.match(component, /saveActiveZone/);
+assert.match(component, /function getRowIssues/);
 assert.match(component, /multiple/);
 assert.match(component, /knownFingerprints/);
 assert.match(component, /batchFingerprints/);
