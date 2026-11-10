@@ -730,7 +730,7 @@ Validate Excel display parity for integer, fixed-decimal, General and percent fo
 
 ## ADR-031 — Output layer transition and additive multi-file import sessions (2026-11-10)
 
-**Status:** Implemented on follow-up branch `feat/stocktake-import-session-output`; CI and device acceptance pending.
+**Status:** Implemented on follow-up branch `feat/stocktake-import-session-output`, draft PR #71; CI and device acceptance pending.
 
 ### Context
 
@@ -740,7 +740,7 @@ After PR #70 was deployed and accepted, the operator requested a faster output w
 
 - Keep the current module shell and zone list. Add two mutually exclusive layers only inside the selected zone workspace: TXT Output as the front/default layer and the existing review/editor table as the back layer.
 - Do not show both layers at once and do not replace the whole module view when switching. The transition is local to the zone content component.
-- Use a readonly textarea as a scoped text-selection fallback. Ctrl+A must select only its contents when focused; never programmatically select the PWA document.
+- Use a readonly textarea as a scoped text-selection fallback. Ctrl+A is explicitly handled only on the focused textarea and selects only its contents; never programmatically select the PWA document.
 - Use one output payload for preview, Clipboard copy, individual TXT download and ZIP entry generation.
 - Extend row code precedence to BARCODE → CODE → GOLDCODE → TILLCODE, retaining legacy MÃ VẠCH only as the final backward-compatibility fallback.
 - Accept multiple workbooks in one picker action and append files to the active session. Parse sequentially on mobile to constrain peak memory.
