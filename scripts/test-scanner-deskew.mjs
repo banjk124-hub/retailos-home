@@ -144,4 +144,4 @@ assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must 
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
 assert.match(decoderSource, /lastDeskewAngleDegrees:/, 'measured skew angle must be observable');
 
-console.log('Scanner bounded deskew tests passed: ±5°/±8°, EAN orientation normalization path, and fail-closed bounds.');
+console.log('Scanner bounded deskew tests passed: ±5°/±8°, 90°/270° normalization path, and fail-closed bounds.');
