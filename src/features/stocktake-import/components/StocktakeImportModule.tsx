@@ -351,8 +351,11 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         }
       : zone);
     setResult({ ...result, zones });
+    const hadUnsavedChanges = dirtyZones.includes(activeZone.zoneCode);
     setDirtyZones((current) => current.filter((code) => code !== activeZone.zoneCode));
-    setZoneActionStates((current) => ({ ...current, [activeZone.zoneCode]: 'ready' }));
+    if (hadUnsavedChanges) {
+      setZoneActionStates((current) => ({ ...current, [activeZone.zoneCode]: 'ready' }));
+    }
     setEditingZone(false);
     setEditBaseline(null);
     setNotice('Đã hủy các chỉnh sửa chưa lưu của vùng ' + activeZone.zoneCode + '.');
