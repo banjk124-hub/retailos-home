@@ -8,7 +8,7 @@
 - `resolveScannerRoiCrop()` validates source-normalized geometry and converts it to integer pixel bounds. Invalid/missing regions fail closed; no full-frame or centered fallback.
 - Preserve 110 ms cadence, camera request/lease, lifecycle/recovery, ZXing format allowlist, validation, result delivery, Home lookup and Stocktake form/save.
 - New regression suite: `scripts/test-scanner-roi-decoder.mjs`, registered in preflight. New technical design/QA contract: `SCAN_04_STRICT_ROI_DECODING.md`.
-- Current work is implemented on the branch; run full preflight/CI and audit the exact final diff before opening/accepting the PR. Physical post-deploy iOS and Android barcode accuracy/performance QA remains mandatory.
+- Draft PR #62 is open. GitHub Actions run #317 passed full preflight/build on implementation head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54`; a docs-only synchronization follows that run. Physical post-deploy iOS and Android barcode accuracy/performance QA remains mandatory.
 - Do not merge or deploy without explicit user approval.
 
 ---
