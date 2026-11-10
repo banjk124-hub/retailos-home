@@ -5,6 +5,7 @@
 **Status:** PR #70 merged, deployed and manually accepted by the user. Follow-up implementation is in progress on `feat/stocktake-import-session-output`; not yet merged/deployed.
 **Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 **Follow-up branch:** `feat/stocktake-import-session-output`.
+**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI/device QA pending).
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
@@ -132,9 +133,9 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - The selected zone workspace has two mutually exclusive layers in the same component frame:
   - Front/default layer: generated TXT output, a scoped `textarea readOnly`, Copy TXT and Download TXT.
   - Back layer: the existing review table with source row, resolved code, actual quantity, code source, validation and the existing edit/save workflow.
-- The user explicitly moves between layers. Do not show the two layers side-by-side, as tabs, or as permanently visible cards.
+- The user explicitly moves between layers. Do not show the two layers side-by-side, as tabs, or as permanently visible cards. Keep the editor layer mounted to preserve its scroll position; mount the TXT textarea only while the output layer is active.
 - Layer transition affects only the zone content region. It must not remount the module, reset the zone list, alter the selected zone or change session data.
-- Copy writes the exact zone output payload via Clipboard API. If unavailable or denied, focus/select only the readonly output textarea and instruct manual copy. Never select the document or PWA root.
+- Copy writes the exact zone output payload via Clipboard API. If unavailable or denied, focus/select only the readonly output textarea and instruct manual copy. Ctrl+A is explicitly intercepted only when the textarea has focus; it selects that textarea value and stops propagation. Never select the document or PWA root.
 - Copy and Download are blocked while the zone is invalid, dirty/unsaved, or the workbook has blocking issues.
 - The output payload remains the single source for Preview, Copy and Download. The ZIP uses the same per-zone payloads.
 - Keep transitions short and transform/opacity-only; respect `prefers-reduced-motion`.
