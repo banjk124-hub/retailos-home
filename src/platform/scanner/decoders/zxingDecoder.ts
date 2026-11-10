@@ -16,6 +16,7 @@ import type {
   ScannerDecoderAdapter,
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
+import { rotateLuminance90Clockwise } from '../scannerRotation';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -108,6 +109,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticUnexpected = 0;
   private diagnosticRoiHits = 0;
   private diagnosticRoiUnavailable = 0;
+  private diagnosticRotationAttempts = 0;
+  private diagnosticRotationHits = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
@@ -181,7 +184,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       );
       this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
 
-      const output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
+      const includeGlobalHistogram = this.diagnosticFrames % 3 === 0;
+      const tryRotated = this.diagnosticFrames % 3 === 0;
+      const output = this.decodeCurrentCanvas(timestamp, includeGlobalHistogram, tryRotated);
       if (output) {
         this.diagnosticDecoded += 1;
         this.diagnosticRoiHits += 1;
@@ -237,7 +242,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.stageCosts[stage] = current;
   }
 
-  private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
+  private decodeCurrentCanvas(
+    timestamp: number,
+    includeGlobalHistogram: boolean,
+    tryRotated: boolean,
+  ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -248,12 +257,54 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.width,
       this.canvas.height,
     );
-    const luminance = new RGBLuminanceSource(
+    this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+
+    const uprightOutput = this.decodeLuminance(
+      grayscale,
+      this.canvas.width,
+      this.canvas.height,
+      timestamp,
+      includeGlobalHistogram,
+      'upright',
+    );
+    if (uprightOutput || !tryRotated) return uprightOutput;
+
+    // One clockwise quarter-turn is sufficient for both 90° and 270° input:
+    // the opposite direction becomes 180°, which OneDReader already handles
+    // through TRY_HARDER scanline reversal. Run this extra ROI pass every third
+    // frame to bound CPU cost on lower-end mobile devices.
+    const rotationStartedAt = performance.now();
+    const rotated = rotateLuminance90Clockwise(
       grayscale,
       this.canvas.width,
       this.canvas.height,
     );
-    this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+    this.recordStageCost('rotation_90_clockwise', performance.now() - rotationStartedAt);
+    if (!rotated) return null;
+
+    this.diagnosticRotationAttempts += 1;
+    const rotatedOutput = this.decodeLuminance(
+      rotated.luminance,
+      rotated.width,
+      rotated.height,
+      timestamp,
+      includeGlobalHistogram,
+      'rotated_90',
+    );
+    if (rotatedOutput) this.diagnosticRotationHits += 1;
+    return rotatedOutput;
+  }
+
+  private decodeLuminance(
+    grayscale: Uint8ClampedArray,
+    width: number,
+    height: number,
+    timestamp: number,
+    includeGlobalHistogram: boolean,
+    orientation: 'upright' | 'rotated_90',
+  ): DecoderOutput | null {
+    if (!this.reader) return null;
+    const luminance = new RGBLuminanceSource(grayscale, width, height);
     const binarizers = includeGlobalHistogram
       ? [HybridBinarizer, GlobalHistogramBinarizer]
       : [HybridBinarizer];
@@ -268,7 +319,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         const symbology = REVERSE_FORMAT_MAP.get(result.getBarcodeFormat());
         const value = result.getText();
         if (!symbology || !this.formats.includes(symbology) || value.length === 0) return null;
-        return { value, symbology, timestamp, decoder: { id: this.id } };
+        return { value, symbology, timestamp, decoder: { id: this.id, version: orientation } };
       } catch (error) {
         const miss = classifyDecodeError(error);
         if (!miss) {
@@ -284,7 +335,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         else if (miss === 'checksum') this.diagnosticChecksum += 1;
         else this.diagnosticFormat += 1;
       } finally {
-        this.recordStageCost('zxing_decode', performance.now() - zxingStartedAt);
+        this.recordStageCost(
+          orientation === 'upright' ? 'zxing_decode' : 'zxing_decode_rotated_90',
+          performance.now() - zxingStartedAt,
+        );
         this.reader.reset();
       }
     }
@@ -300,6 +354,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       decoded: this.diagnosticDecoded,
       roiHits: this.diagnosticRoiHits,
       roiUnavailable: this.diagnosticRoiUnavailable,
+      rotationAttempts: this.diagnosticRotationAttempts,
+      rotationHits: this.diagnosticRotationHits,
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,
@@ -319,6 +375,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticUnexpected = 0;
     this.diagnosticRoiHits = 0;
     this.diagnosticRoiUnavailable = 0;
+    this.diagnosticRotationAttempts = 0;
+    this.diagnosticRotationHits = 0;
   }
 
   dispose(): void {
