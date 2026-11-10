@@ -1,56 +1,47 @@
-# SCAN-06 — Bounded in-plane barcode deskew
+# SCAN-06 — Continuous barcode orientation estimation and deskew
 
-**Status:** Implemented on final consolidated PR #66. Final consolidated PR #66 CI run #395 passed the full preflight, including production-adapter deskew integration. Physical iOS/Android accuracy and performance QA remains pending.
+**Status:** Corrective implementation in progress on `fix/scan-05-06-continuous-orientation`, based on merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616`. Do not mark accepted until production integration tests, CI and physical iOS/Android QA pass.
 
-## Scope
+## Problem found in the previous implementation
 
-SCAN-06 corrects small in-plane barcode roll after SCAN-05 orthogonal normalization. It does not implement perspective/keystone correction, curved-label dewarping, arbitrary-angle search, large rotations, adaptive exposure or camera changes.
+- The previous Sobel structure tensor reduced every ROI edge to one global dominant direction. Packaging text, borders and decorative graphics could dominate that estimate.
+- Correction was limited to 1.2°–12°. Intermediate orientations outside that narrow window had no continuous normalization path.
+- The previous decoder tried deskew only after upright and orthogonal misses, and only on the scheduled third valid ROI frame.
+- The previous production integration fixture covered +5° deskew, not a broad angle sweep or combined orthogonal-plus-skew through the actual adapter.
 
-## Processing method
+## Corrective estimator
 
-- `estimateScannerSkewAngle()` samples the reticle ROI luminance and accumulates a Sobel structure tensor.
-- The dominant gradient direction estimates the barcode's in-plane roll.
-- Accept only coherent estimates (confidence ≥0.35) between 1.2° and 12°.
-- `rotateLuminanceByAngle()` applies one inverse-angle bilinear transform. Output bounds expand to contain the rotated ROI; uncovered pixels are white.
-- Invalid buffers, blank/low-confidence images and out-of-range angles return no correction.
-- Output allocation is capped at 4,000,000 pixels.
+- Build a 180-bin Sobel gradient-orientation histogram. Opposite gradient polarities are folded together because a 1D barcode's bar axis is directionless.
+- Smooth the histogram locally, select the dominant orientation, and compute a sub-degree circular mean around that peak.
+- Require minimum directional energy concentration and local orientation coherence. Blank, low-texture and directionally ambiguous ROIs fail closed.
+- Normalize the result to a signed half-turn range of -90° through +90°. This supports intermediate barcode angles without enumerating a fixed list of angle constants.
+- Rotate with inverse-angle bilinear sampling and expanded output bounds. The allocation remains bounded; the current cap is 6 million pixels.
+- Evaluate both the original ROI and its quarter-turned representation. Prefer the smaller correction angle first, then try the alternate representation if ZXing still misses.
+- Decode each candidate with both HybridBinarizer and GlobalHistogramBinarizer. ZXing checksum/format validation remains the final authority; orientation estimates alone never produce a barcode result.
 
-## Runtime flow
+This is in-plane orientation recovery. It does not claim perspective/keystone correction, curved-label dewarping, motion-blur recovery or camera autofocus changes.
 
-1. Decode the original strict ROI first.
-2. On every third valid ROI frame after a miss, perform SCAN-05's single 90° clockwise normalization pass.
-3. If both orthogonal paths miss, estimate skew on the upright ROI.
-4. If the upright ROI has no valid small-angle estimate, estimate on the normalized 90° ROI.
-5. Apply at most one deskew transform and one additional HybridBinarizer decode.
-6. If no valid estimate exists, return a normal decode miss; never fall back to the full frame.
+## Runtime diagnostics
 
-Deskew runs only on the scheduled extended frame after normal orientation paths miss. Session cadence remains 110 ms.
-
-## Diagnostics
-
-- Deskew attempts and successful hits.
-- Last accepted deskew angle.
-- Separate deskew transform and decode processing costs.
-- No barcode payload, employee identity, camera device ID or persistent device identifier is added.
+- `deskewAttempts` counts estimator invocations, including no-estimate outcomes.
+- `deskewEstimateMisses` counts candidates rejected by the confidence/angle gates.
+- `deskewHits` counts candidates that produce a ZXing result.
+- `lastDeskewAngleDegrees` records the latest accepted orientation estimate.
+- Stage timings separate ROI draw, image read, grayscale conversion, quarter-turn, estimator/rotation and ZXing candidate decode.
+- Diagnostics must not include barcode payload, employee identity, camera device ID or persistent device identifier.
 
 ## Regression coverage
 
-`scripts/test-scanner-deskew.mjs` verifies:
-- level/blank inputs do not trigger correction;
-- invalid dimensions and angles beyond the supported range fail closed;
-- synthetic Code 128 at ±5° and ±8° decodes after correction;
-- combined 90°/270° normalization followed by deskew decodes;
-- deskew has no DOM/presentation dependency;
-- decoder wiring runs deskew only after upright and orthogonal paths miss and uses one HybridBinarizer pass.
+- Synthetic Code 128 angle sweep through positive and negative intermediate angles, including large rotations up to ±75° and exact 90°.
+- Deskew helper tests verify estimate accuracy, correction and decode.
+- Production `ZXingDecoderAdapter` integration tests verify the same angle sweep, 90°/270°, combined quarter-turn plus residual skew, strict ROI crop and no full-frame fallback.
+- Negative tests cover blank/invalid frames and out-of-range rotation input.
+- Preflight must include the estimator, production adapter integration, TypeScript, production build and Pages build.
 
-The suite is registered in preflight. CI #342 and #395 passed; #395 includes production-adapter deskew integration.
+## Performance policy
 
-## Performance and device acceptance
+Correctness and recognition coverage take priority over a strict ultra-low-end CPU budget. The session minimum decode interval is 70 ms, and all supported binarizer/orientation candidates can run after a miss. Decode calls remain serialized; there is no unbounded queue or concurrent use of one ZXing reader. Measure actual decode duration, stage maxima, first-result latency and UI responsiveness on representative devices. Do not claim the CPU cost is acceptable until device measurements are recorded.
 
-The estimator samples every three pixels and runs only after earlier decode paths miss on the extended frame. The extended-frame schedule is driven by a dedicated valid-ROI sequence, not by diagnostics window counters. Bilinear interpolation may soften narrow bars. Extra processing can increase latency/CPU on weak devices; synthetic tests do not replace physical QA.
+## Out of scope
 
-On iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake with EAN-13/EAN-8/Code 128 at 0°/90°/180°/270° and ±5°/±8° skew. Record accuracy, latency and CPU on weak and strong devices. Perspective and curved-label correction remain future work.
-
-## Rollback
-
-Revert `scannerDeskew.ts` and its decoder integration as one unit. SCAN-05 orthogonal rotation and the pre-existing 0°/180° baseline can remain active.
+Perspective distortion, curved surfaces, glare removal, adaptive exposure, autofocus, camera acquisition/lifecycle changes, module presentation, barcode validation policy and business result delivery.
