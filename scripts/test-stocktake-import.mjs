@@ -27,7 +27,7 @@ const runtimeSource =
   "const BARCODE_HEADERS = ['BARCODE','BAR CODE','PRODUCT BARCODE','EAN','EAN13','EAN8','UPC','GTIN','MA BARCODE'];" +
   "const CODE_HEADERS = ['CODE','ITEM CODE','PRODUCT CODE','MATERIAL CODE'];" +
   "const GOLD_CODE_HEADERS = ['GOLDCODE','GOLD CODE','GOLD_CODE','GOLD PRODUCT CODE'];" +
-  "const TILL_CODE_HEADERS = ['TILLCODE','TILL CODE','TILL_CODE'];" +
+  "const TILL_CODE_HEADERS = ['TILLCODE','TILL CODE','TILL_CODE'];const PRODUCT_NAME_HEADERS = ['TEN SAN PHAM','PRODUCT NAME','ITEM NAME','DESCRIPTION','TEN HANG','TEN'];" +
   "const FALLBACK_BARCODE_HEADERS = ['MA VACH','MA VACH HANG'];" +
   "const QUANTITY_HEADERS = ['SO LUONG','QUANTITY','QTY','SL','SO LUONG KIEM KE','SO LUONG THUC TE','KET QUA THUC TE','KET QUA KIEM KE','THUC TE','ACTUAL QTY','ACTUAL QUANTITY','COUNTED QTY','COUNTED QUANTITY','COUNTED','COUNT','RESULT','KET QUA','ACTUAL','WEIGHT','NET WEIGHT','MASS','KHOI LUONG','TRONG LUONG','SO CAN','KL','THUC DEM'];" +
   "const ZONE_HEADERS = ['VUNG','ZONE','MA VUNG','ZONE CODE','KHU VUC'];" +
@@ -63,6 +63,9 @@ new Function("require", "exports", "module", sessionCode)(
   sessionModule,
 );
 const sessionRuntime = sessionModule.exports;
+assert.equal(sessionRuntime.countUniqueProductCodes([
+  { barcode: '8936001' }, { barcode: '8936001' }, { barcode: ' gold-02 ' }, { barcode: 'GOLD-02' }, { barcode: '' },
+]), 2, 'Unique product counts are normalized, cross-zone-safe and ignore blank codes.');
 
 
 assert.equal(runtime.normalizeHeader("SỐ LƯỢNG THỰC TẾ"), "SO LUONG THUC TE");
@@ -83,6 +86,7 @@ assert.throws(() => runtime.parseTextQuantity("1,234.56"), /mơ hồ/);
 // Multiple tables in one sheet can use different column positions and aliases.
 const table1 = new Map([
   [1, { value: "GOLDCODE", type: "s", styleIndex: 0 }],
+  [2, { value: "TÊN SẢN PHẨM", type: "s", styleIndex: 0 }],
   [3, { value: "KẾT QUẢ THỰC TẾ (KG)", type: "s", styleIndex: 0 }],
   [5, { value: "VÙNG", type: "s", styleIndex: 0 }],
 ]);
@@ -94,7 +98,7 @@ const table2 = new Map([
 const scanned = runtime.findHeaders(new Map([[4, table1], [16, table2]]));
 assert.equal(scanned.mappings.length, 2);
 assert.deepEqual(scanned.mappings[0], {
-  rowNumber: 4, quantityColumn: 3, goldCodeColumn: 1, barcodeHeader: "GOLDCODE", zoneColumn: 5,
+  rowNumber: 4, quantityColumn: 3, goldCodeColumn: 1, productNameColumn: 2, barcodeHeader: "GOLDCODE", zoneColumn: 5,
 });
 assert.deepEqual(scanned.mappings[1], {
   rowNumber: 16, quantityColumn: 4, barcodeColumn: 2, barcodeHeader: "BARCODE", zoneColumn: 6,
@@ -108,6 +112,13 @@ const codeAndTillScan = runtime.findHeaders(new Map([[22, new Map([
 ])]]));
 assert.equal(codeAndTillScan.mappings[0].codeColumn, 1);
 assert.equal(codeAndTillScan.mappings[0].tillCodeColumn, 2);
+
+const productNameScan = runtime.findHeaders(new Map([[30, new Map([
+  [0, { value: 'BARCODE', type: 's', styleIndex: 0 }],
+  [1, { value: 'TEN', type: 's', styleIndex: 0 }],
+  [2, { value: 'QUANTITY', type: 's', styleIndex: 0 }],
+])]]));
+assert.equal(productNameScan.mappings[0].productNameColumn, 1, 'Optional TEN column must be recognized.');
 
 
 assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
@@ -202,6 +213,8 @@ assert.match(parser, /blockingIssues\.push/);
 assert.match(parser, /crypto\.subtle\.digest/);
 assert.match(parser, /sourceFileName: file\.name/);
 assert.match(parser, /sourceFileId: fingerprint\.slice\(0, 16\)/);
+assert.match(parser, /productNameColumn/);
+assert.match(parser, /productName, quantity/);
 assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
@@ -255,6 +268,7 @@ assert.match(store, /rows: zone\.rows/);
 assert.match(store, /sourceFiles/);
 assert.match(sessionService, /detectStocktakeImportConflicts/);
 assert.match(sessionService, /mergeStocktakeImportSession/);
+assert.match(sessionService, /countUniqueProductCodes/);
 assert.match(sessionService, /skippedZoneWarnings/);
 assert.match(sessionService, /sourceFileName: sourceFiles.length/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
