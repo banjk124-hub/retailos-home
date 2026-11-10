@@ -5,7 +5,7 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** PR #70–#73 merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest head `f96dc58e6ea78f993a76ca1f581a150742ea5313` awaits CI. Physical-device QA remains pending.  
+**Current status:** PR #70–#73 merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc` awaits CI. Physical-device QA remains pending.  
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
 **Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
