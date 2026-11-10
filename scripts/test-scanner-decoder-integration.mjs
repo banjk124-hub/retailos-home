@@ -242,9 +242,18 @@ try {
     noiseFrame.luminance[index] = noiseSeed >>> 24;
   }
   const noiseDecoder = await createDecoder();
-  assert.deepEqual(await decodeOnce(noiseDecoder, toSource(noiseFrame)), [],
-    'directionally ambiguous non-barcode texture must not produce a result');
-  await noiseDecoder.dispose();
+  const originalWarn = console.warn;
+  const decodeWarnings = [];
+  console.warn = (...args) => decodeWarnings.push(args);
+  try {
+    assert.deepEqual(await decodeOnce(noiseDecoder, toSource(noiseFrame)), [],
+      'directionally ambiguous non-barcode texture must not produce a result');
+  } finally {
+    console.warn = originalWarn;
+    await noiseDecoder.dispose();
+  }
+  assert.equal(decodeWarnings.length, 0,
+    'expected ZXing NotFoundException misses must not flood the console during continuous scanning');
 
   const roiSourceFrame = {
     width: upright.width * 2,
