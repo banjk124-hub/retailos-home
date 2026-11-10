@@ -27,7 +27,7 @@
 - [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
 - [x] Final consolidated PR #66 CI run #387 passed full preflight, TypeScript, production/Pages builds and diff checks.
 - [x] Follow-up separates processing cadence from diagnostics sampling and adds deterministic cadence regression coverage.
-- [x] Production decoder integration test is registered in preflight: upright decode, scheduled 90°/270° recovery, strict ROI crop and no-fallback behavior.
+- [x] Production decoder integration test is registered in preflight: upright decode, scheduled 90°/270° recovery and deskew, strict ROI crop and no-fallback behavior.
 - [x] Fresh CI run #387 passed the audit follow-up, including production decoder integration.
 - [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
 - [ ] Physical Android Chrome/PWA QA: same matrix.
