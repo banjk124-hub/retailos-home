@@ -192,7 +192,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       return {
         ...zone,
         rows,
-        content: buildStocktakeOutput(employeeCode, zone.zoneCode, rows, new Date(result.importedAt)),
+        content: buildStocktakeOutput(employeeCode, zone.zoneCode, rows.map((row) => ({ ...row, quantity: normalizeEditableQuantity(row.quantity) })), new Date(result.importedAt)),
       };
     });
     setResult({ ...result, zones: updatedZones });
