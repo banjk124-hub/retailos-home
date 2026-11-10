@@ -70,10 +70,21 @@ try {
     },
   };
 
+  const sessionSource = await readFile(
+    path.join(root, 'src/platform/scanner/universalScannerSession.ts'),
+    'utf8',
+  );
+  assert.match(sessionSource, /const minDecodeIntervalMs = 70/,
+    'the shared session must use the approved higher decode sampling cadence');
+
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
-  const { rotateLuminanceByAngle } = await import(pathToFileURL(
+  const {
+    estimateScannerSkewAngle,
+    deskewLuminanceFrame,
+    rotateLuminanceByAngle,
+  } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerDeskew.js'),
   ).href);
 
@@ -108,6 +119,31 @@ try {
     }
     return { luminance, width, height };
   }
+  const EAN_L = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
+  const EAN_G = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
+  const EAN_FIRST_PARITY = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
+  function makeEanFrame(value, format) {
+    const digits = [...value].map(Number);
+    assert.ok((format === 'EAN_13' && digits.length === 13) || (format === 'EAN_8' && digits.length === 8));
+    let bits = '0'.repeat(10) + '101';
+    if (format === 'EAN_13') {
+      const parity = EAN_FIRST_PARITY[digits[0]];
+      for (let i = 0; i < 6; i++) bits += parity[i] === 'L' ? EAN_L[digits[i + 1]] : EAN_G[digits[i + 1]];
+      bits += '01010';
+      for (let i = 7; i < 13; i++) bits += EAN_L[digits[i]].replace(/./g, bit => bit === '0' ? '1' : '0');
+    } else {
+      for (let i = 0; i < 4; i++) bits += EAN_L[digits[i]];
+      bits += '01010';
+      for (let i = 4; i < 8; i++) bits += EAN_L[digits[i]].replace(/./g, bit => bit === '0' ? '1' : '0');
+    }
+    bits += '101' + '0'.repeat(10);
+    const width = bits.length * 3, height = 84;
+    const luminance = new Uint8ClampedArray(width * height);
+    for (let y = 0; y < height; y++) for (let x = 0; x < bits.length; x++) {
+      luminance.fill(bits[x] === '1' ? 0 : 255, y * width + x * 3, y * width + (x + 1) * 3);
+    }
+    return { luminance, width, height };
+  }
   function rotateCW(frame) {
     const luminance = new Uint8ClampedArray(frame.luminance.length);
     const width = frame.height, height = frame.width;
@@ -131,9 +167,9 @@ try {
     coordinateSpace: 'source-frame-normalized',
     rect: { x: 0, y: 0, width: 1, height: 1 },
   };
-  async function createDecoder() {
+  async function createDecoder(format = 'CODE_128') {
     const decoder = new ZXingDecoderAdapter();
-    await decoder.initialize({ formats: ['CODE_128'] });
+    await decoder.initialize({ formats: [format] });
     return decoder;
   }
   async function decodeOnce(decoder, source, scanRegion = fullRegion) {
@@ -152,31 +188,124 @@ try {
     ['270-degree', rotateCW(rotateCW(rotateCW(upright)))],
   ]) {
     const decoder = await createDecoder();
-    const source = toSource(sourceFrame);
-    assert.deepEqual(await decodeOnce(decoder, source), [],
-      `${orientation} input must not bypass the scheduled extended pass on frame one`);
-    assert.deepEqual(await decodeOnce(decoder, source), [],
-      `${orientation} input must remain upright-first on frame two`);
-    const result = await decodeOnce(decoder, source);
+    const result = await decodeOnce(decoder, toSource(sourceFrame));
     assert.equal(result[0]?.value, '12345',
-      `production adapter must decode ${orientation} input on the scheduled third frame`);
+      `production adapter must recover ${orientation} input on the first scheduled decode frame`);
     await decoder.dispose();
   }
 
-  const skewedFrame = rotateLuminanceByAngle(
-    upright.luminance, upright.width, upright.height, 5,
+  // Continuous orientation sweep: these are not a finite set of hard-coded
+  // transform branches. Every fixture must pass through the live adapter.
+  for (const angle of [5, -5, 15, -15, 25, -25, 35, -35, 45, -45, 60, -60, 75, -75]) {
+    const angled = rotateLuminanceByAngle(
+      upright.luminance, upright.width, upright.height, angle,
+    );
+    assert.ok(angled, `integration fixture at ${angle} degrees must be generated`);
+    const decoder = await createDecoder();
+    const result = await decodeOnce(decoder, toSource(angled));
+    assert.equal(result[0]?.value, '12345',
+      `production adapter must normalize and decode ${angle}-degree barcode orientation`);
+    await decoder.dispose();
+  }
+
+  const lowContrastFrame = {
+    width: upright.width,
+    height: upright.height,
+    luminance: Uint8ClampedArray.from(
+      upright.luminance,
+      (value) => value < 128 ? 108 : 148,
+    ),
+  };
+  const lowContrastUprightDecoder = await createDecoder();
+  const lowContrastUprightResult = await decodeOnce(
+    lowContrastUprightDecoder, toSource(lowContrastFrame),
   );
-  assert.ok(skewedFrame, 'integration skew fixture must be generated');
-  const deskewDecoder = await createDecoder();
-  const skewedSource = toSource(skewedFrame);
-  assert.deepEqual(await decodeOnce(deskewDecoder, skewedSource), [],
-    'skewed input must remain upright-first on frame one');
-  assert.deepEqual(await decodeOnce(deskewDecoder, skewedSource), [],
-    'skewed input must not deskew before the scheduled extended frame');
-  const deskewResult = await decodeOnce(deskewDecoder, skewedSource);
-  assert.equal(deskewResult[0]?.value, '12345',
-    'production adapter must deskew and decode the barcode on the scheduled extended frame');
-  await deskewDecoder.dispose();
+  await lowContrastUprightDecoder.dispose();
+  assert.equal(lowContrastUprightResult[0]?.value, '12345',
+    'low-contrast upright baseline must decode before testing orientation correction');
+
+  const lowContrastRotated = rotateLuminanceByAngle(
+    lowContrastFrame.luminance, lowContrastFrame.width, lowContrastFrame.height, -31,
+  );
+  assert.ok(lowContrastRotated, 'low-contrast adapter fixture must be generated');
+  const lowContrastAngled = {
+    ...lowContrastRotated,
+    luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 148)),
+  };
+  const lowContrastEstimate = estimateScannerSkewAngle(
+    lowContrastAngled.luminance, lowContrastAngled.width, lowContrastAngled.height,
+  );
+  assert.ok(lowContrastEstimate, 'low-contrast rotated barcode must produce an orientation estimate');
+  assert.ok(Math.abs(lowContrastEstimate.angleDegrees + 31) < 3,
+    `low-contrast orientation estimate must remain accurate; got ${lowContrastEstimate.angleDegrees}`);
+  const lowContrastCorrected = deskewLuminanceFrame(
+    lowContrastAngled.luminance, lowContrastAngled.width, lowContrastAngled.height,
+  );
+  assert.ok(lowContrastCorrected, 'low-contrast rotated barcode must produce a correction candidate');
+  const lowContrastCorrectedDecoder = await createDecoder();
+  const lowContrastCorrectedResult = await decodeOnce(
+    lowContrastCorrectedDecoder, toSource(lowContrastCorrected),
+  );
+  await lowContrastCorrectedDecoder.dispose();
+  assert.equal(lowContrastCorrectedResult[0]?.value, '12345',
+    'low-contrast corrected pixels must decode when supplied directly to the production adapter');
+
+  const lowContrastDecoder = await createDecoder();
+  const lowContrastResult = await decodeOnce(lowContrastDecoder, toSource(lowContrastAngled));
+  assert.equal(lowContrastResult[0]?.value, '12345',
+    'production adapter must recover a low-contrast barcode at an intermediate angle');
+  await lowContrastDecoder.dispose();
+
+  for (const [format, value, angle] of [
+    ['EAN_8', '96385074', 27],
+    ['EAN_13', '5901234123457', -38],
+  ]) {
+    const ean = makeEanFrame(value, format);
+    const angled = rotateLuminanceByAngle(ean.luminance, ean.width, ean.height, angle);
+    assert.ok(angled, `${format} integration fixture must be generated`);
+    const decoder = await createDecoder(format);
+    const result = await decodeOnce(decoder, toSource(angled));
+    assert.equal(result[0]?.value, value,
+      `production adapter must recover ${format} at ${angle} degrees`);
+    await decoder.dispose();
+  }
+
+  // Combined quarter-turn + residual skew must be recovered through the same
+  // production adapter, not merely by calling the pure transform helpers.
+  const residualSkew = rotateLuminanceByAngle(
+    upright.luminance, upright.width, upright.height, 7,
+  );
+  assert.ok(residualSkew, 'combined orientation fixture must be generated');
+  for (const [orientation, sourceFrame] of [
+    ['90-degree', rotateCW(residualSkew)],
+    ['270-degree', rotateCW(rotateCW(rotateCW(residualSkew)))],
+  ]) {
+    const decoder = await createDecoder();
+    const result = await decodeOnce(decoder, toSource(sourceFrame));
+    assert.equal(result[0]?.value, '12345',
+      `production adapter must recover combined ${orientation} + residual skew`);
+    await decoder.dispose();
+  }
+
+  const noiseFrame = { width: 320, height: 160, luminance: new Uint8ClampedArray(320 * 160) };
+  let noiseSeed = 0x5eed1234;
+  for (let index = 0; index < noiseFrame.luminance.length; index += 1) {
+    noiseSeed = (1664525 * noiseSeed + 1013904223) >>> 0;
+    noiseFrame.luminance[index] = noiseSeed >>> 24;
+  }
+  const noiseDecoder = await createDecoder();
+  const originalWarn = console.warn;
+  const decodeWarnings = [];
+  console.warn = (...args) => decodeWarnings.push(args);
+  try {
+    assert.deepEqual(await decodeOnce(noiseDecoder, toSource(noiseFrame)), [],
+      'directionally ambiguous non-barcode texture must not produce a result');
+  } finally {
+    console.warn = originalWarn;
+    await noiseDecoder.dispose();
+  }
+  assert.equal(decodeWarnings.length, 0,
+    'expected ZXing NotFoundException misses must not flood the console during continuous scanning');
 
   const roiSourceFrame = {
     width: upright.width * 2,
@@ -212,7 +341,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: upright decode, scheduled 90°/270° recovery and deskew, strict ROI crop and fail-closed no-fallback.');
+  console.log('Production ZXing adapter integration passed: upright, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });

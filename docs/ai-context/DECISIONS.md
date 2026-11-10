@@ -128,20 +128,28 @@ SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the act
 See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.
 
 
-## ADR-026 — Bounded orthogonal ROI rotation (2026-11-10)
-**Status:** Implemented on final consolidated PR #66; CI run #395 passed the audit follow-up and production-adapter upright/rotation/deskew integration. Physical QA pending.
+## ADR-026 — Continuous ROI orientation recovery (2026-11-10)
 
-- ZXing's existing `TRY_HARDER` path owns 180° 1D scanline reversal.
-- One clockwise 90° ROI transform after an upright miss covers both 90° and 270° source orientations when combined with that reversal.
-- The extra transform is scheduled every third valid ROI frame; the unrotated ROI remains first.
-- Preserve strict ROI/no-fallback, 110 ms session cadence, camera/session and feature contracts.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical iOS/Android QA remains pending.
+
+- ZXing's existing `TRY_HARDER` path retains 180° 1D scanline reversal.
+- Keep an exact clockwise 90° ROI transform as a fast path after an upright miss; run it on the current valid ROI frame, not every third frame.
+- Follow the quarter-turn miss with continuous orientation estimation over the signed half-turn range; do not enumerate a fixed angle list.
+- Use the latest strict module-owned ROI only. Missing/invalid geometry remains fail-closed with no full-frame or centered fallback.
+- The shared session minimum decode interval is 70 ms; decode calls remain serialized.
+- Preserve camera/session/lifecycle, validation, result delivery and Home/Stocktake feature contracts.
 - See `SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-rotation.mjs`.
 
-## ADR-027 — Bounded ROI in-plane deskew (2026-11-10)
-**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #368 passed before the audit follow-up commits. Fresh CI and physical QA pending.
+## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
-- Estimate small-angle roll from a sampled Sobel structure tensor on the ROI luminance frame.
-- Accept only coherent 1.2°–12° estimates; apply one inverse-angle bilinear transform with expanded bounds and white fill.
-- Attempt one HybridBinarizer deskew decode only after upright and orthogonal decode misses on the scheduled extended frame.
-- Fail closed for blank/invalid/low-confidence/out-of-range inputs. Perspective and curved-label correction remain out of scope.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical optical QA remains pending.
+
+- Estimate the dominant ROI gradient orientation using a 180-bin Sobel histogram, directional-energy concentration and local coherence.
+- Normalize the estimate modulo 180° into a signed ±90° range; ignore estimates below 0.65° and reject low-confidence/ambiguous textures.
+- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–220 luminance levels), then inverse-angle bilinear correction with expanded bounds and a 6,000,000-pixel allocation ceiling.
+- Evaluate the original and quarter-turned ROI representations; attempt correction candidates in ascending absolute angle.
+- Use HybridBinarizer and GlobalHistogramBinarizer as successive decode strategies for each candidate. ZXing's valid format/checksum result remains the only accepted output.
+- Count estimator invocations, confidence/angle-gate misses and decode hits separately.
+- Perspective/keystone correction, curved-label dewarping and camera acquisition/focus changes remain out of scope.
 - See `SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
+

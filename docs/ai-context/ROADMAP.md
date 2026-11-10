@@ -1,20 +1,20 @@
-# SCAN-05/06 execution update — rotation baseline, orthogonal rotation and bounded deskew (2026-11-10)
+# SCAN-05/06 corrective execution — continuous orientation recovery (2026-11-10)
 
-**Final consolidated branch:** `feat/scan-05-06-final-consolidation`  
-**Final consolidated PR:** #66 — https://github.com/banjk124-hub/retailos-home/pull/66 (Draft, open, not merged/deployed).  
-**Staged PRs:** #63 baseline, #64 SCAN-05 and #65 SCAN-06 were closed without merging as superseded by final PR #66.
+**Baseline:** `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66 merged).
+**Corrective branch:** `fix/scan-05-06-continuous-orientation`.
+**Status:** source/test correction implemented; CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical device acceptance pending.
 
-- SCAN-04 strict ROI decoding was merged/deployed by the user; the user confirms the deployed scanner runs normally. No detailed optical stress matrix was supplied.
-- Baseline audit: ZXing `TRY_HARDER` already supplies 180° scanline reversal for 1D readers. EAN-8/EAN-13 inherit `OneDReader`; RetailOS `RGBLuminanceSource` does not support bitmap rotation.
-- PR #63 added a runtime Code 128 0°/180° baseline fixture and EAN inheritance guards. CI run #337 passed.
-- SCAN-05 adds one clockwise 90° ROI transform every third valid ROI frame after upright decode misses. Combined with the built-in 180° reversal, this handles both 90° and 270° source orientations. CI run #338 passed.
-- SCAN-06 adds bounded in-plane deskew (1.2°–12°) using a sampled Sobel structure tensor, one inverse-angle ROI transform and one HybridBinarizer decode after upright and orthogonal paths miss.
-- PR #66 CI run #395 passed full preflight, TypeScript, production and Pages builds, including production-adapter upright/rotation/deskew integration. The PR's latest checks remain the release source of truth.
-- No SCAN-05/06 merge or deployment has occurred. Physical iOS Safari/PWA and Android Chrome/PWA accuracy/latency/CPU QA remains required.
+- User-reported failures after the earlier deployment: sideways barcodes are missed, intermediate angles are not sufficiently covered, and recognition feels slow/insensitive.
+- User clarified that ultra-low-end CPU conservation is not a hard constraint. Prioritize accuracy and responsiveness; higher processing cost is acceptable if the application remains stable.
+- Source audit found the old quarter-turn ran every third valid ROI frame after upright miss; deskew was limited to 1.2°–12° and estimated one global dominant edge direction; session cadence was 110 ms.
+- Corrective implementation: continuous orientation histogram, full signed half-turn normalization, percentile-based contrast stretch for compressed ROI ranges, both original/quarter-turned candidates, both ZXing binarizers, and per-frame extended processing after an upright miss.
+- Session minimum decode interval is changed to 70 ms. Calls remain serialized and ROI-only.
+- No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior is in scope.
+- Device QA remains mandatory. CI cannot establish real-world barcode accuracy, iOS camera orientation behavior, focus quality or CPU responsiveness.
 
-**Protected invariants:** strict reticle ROI only; no full-frame fallback; existing 110 ms session cadence; camera lease/lifecycle/readiness/recovery; supported symbologies; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save; independent Home/Stocktake presentation.
+**Next:** physical iOS Safari/PWA and Android Chrome/PWA testing in both Home and Stocktake, including measured decode latency and UI responsiveness. Merge/deploy only after explicit user approval.
 
-**Next:** physical QA of the consolidated build on iOS and Android, inspect rotation/deskew diagnostics and low-end latency, and merge only after acceptance.
+
 ---
 
 ---
@@ -59,8 +59,8 @@ Status: active working plan.
 
 ## Current work — Scanner audio runtime verification and documentation sync
 
-**Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.  
-**Branch:** `test/scanner-audio-runtime-and-doc-sync`  
+**Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
+**Branch:** `test/scanner-audio-runtime-and-doc-sync`
 **Status:** Runtime regression test and documentation synchronization authored; GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Draft PR #57 remains open and unmerged.
 
 - PR #56 introduced the Settings Hub and one device-local feedback preference store shared by Home, Stocktake and future Scanner consumers.
@@ -260,7 +260,7 @@ Acceptance criteria:
 > Status: planned. This section records the agreed next phases; it does not claim implementation or device verification.
 
 ### Source-aligned corrections
-- Current `UniversalScannerSession` source uses a 110 ms minimum decode interval. Older Phase 1.2F notes below that say 70 ms are historical and must not be used as the current runtime specification.
+- Historical note: before the SCAN-05/06 correction, `UniversalScannerSession` used a 110 ms minimum decode interval. The corrective branch changes this to 70 ms; the current specification is recorded in the SCAN-05/06 section at the top of this roadmap.
 - P0 camera lease serialization is merged to `main` in commit `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`. CI passed for PR #24. Physical-device QA remains outstanding; deployment state must be checked independently.
 
 ### 1.2G — Rendering, motion and interaction performance

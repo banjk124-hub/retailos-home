@@ -36,12 +36,3 @@ export function rotateLuminance90Clockwise(
   };
 }
 
-/**
- * Keep the expensive orientation/deskew path on a stable valid-ROI sequence.
- * This counter is deliberately independent of diagnostics sampling windows.
- */
-export function shouldAttemptExtendedDecode(frameSequence: number): boolean {
-  return Number.isSafeInteger(frameSequence)
-    && frameSequence > 0
-    && frameSequence % 3 === 0;
-}

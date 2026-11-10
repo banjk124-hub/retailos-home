@@ -16,17 +16,7 @@ const compiled = ts.transpileModule(rotationSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { rotateLuminance90Clockwise, shouldAttemptExtendedDecode } = await import(moduleUrl);
-
-assert.deepEqual(
-  Array.from({ length: 9 }, (_, index) => shouldAttemptExtendedDecode(index + 1)),
-  [false, false, true, false, false, true, false, false, true],
-  'extended decode must run on every third valid ROI sequence number',
-);
-for (const invalid of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
-  assert.equal(shouldAttemptExtendedDecode(invalid), false,
-    'invalid sequence values must not schedule extended decode');
-}
+const { rotateLuminance90Clockwise } = await import(moduleUrl);
 
 const matrix = new Uint8ClampedArray([1, 2, 3, 4, 5, 6]);
 const rotatedMatrix = rotateLuminance90Clockwise(matrix, 3, 2);
@@ -147,15 +137,13 @@ const decoderSource = await readFile(
   'utf8',
 );
 assert.match(decoderSource, /rotateLuminance90Clockwise\(/, 'decoder must consume the pure rotation helper');
-assert.match(decoderSource, /this\.frameSequence\s*\+=\s*1/,
-  'valid ROI frames must advance a dedicated processing sequence');
-assert.match(decoderSource, /shouldAttemptExtendedDecode\(this\.frameSequence\)/,
-  'extended decode scheduling must use the dedicated frame sequence');
-assert.doesNotMatch(decoderSource, /diagnosticFrames\s*%\s*3/,
-  'diagnostics counters must not control decode cadence');
-assert.match(decoderSource, /if \(uprightOutput \|\| !tryRotated\) return uprightOutput/,
-  'upright decode must be attempted first and rotation must be skipped on success');
+assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(timestamp\)/,
+  'every valid ROI frame must enter the complete production decode pipeline');
+assert.match(decoderSource, /if \(uprightOutput\) return uprightOutput/,
+  'upright decode must be attempted first');
+assert.match(decoderSource, /deskewLuminanceFrame\(/,
+  'continuous deskew must be wired into the production decoder');
 assert.match(decoderSource, /rotationAttempts:/, 'rotation attempt diagnostics must be exposed');
 assert.match(decoderSource, /rotationHits:/, 'rotation hit diagnostics must be exposed');
 
-console.log('Scanner orthogonal rotation tests passed: pixel mapping and Code 128 at 90°/270°.');
+console.log('Scanner rotation tests passed: quarter-turn pixel mapping and Code 128/EAN-8/EAN-13 at 90°/270°.');

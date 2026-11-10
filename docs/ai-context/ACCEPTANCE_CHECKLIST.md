@@ -1,47 +1,34 @@
-# SCAN-05/06 acceptance — consolidated rotation and bounded deskew (2026-11-10)
+# SCAN-05/06 corrective acceptance — continuous orientation recovery (2026-11-10)
 
-## Baseline rotation
-- [x] Confirm ZXing `TRY_HARDER` retains the existing 180° scanline reversal for 1D readers.
-- [x] Runtime Code 128 fixture decodes at 0° and 180° and reports orientation 180°.
-- [x] EAN-8/EAN-13 inheritance path is guarded through the shared `OneDReader` hierarchy.
-- [x] Baseline test is registered in preflight; CI run #337 passed.
+## Source and pipeline
+- [x] Current baseline is verified as merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616`.
+- [x] Continuous orientation estimator is called from the production ZXing adapter after upright and quarter-turn misses.
+- [x] Angle sign, modulo-180 normalization and inverse rotation are verified.
+- [x] Both original and quarter-turned ROI candidates are evaluated in correction order.
+- [x] HybridBinarizer and GlobalHistogramBinarizer are attempted for each candidate.
+- [x] Strict module-owned ROI remains enforced; no full-frame or centered fallback.
+- [x] Estimator attempt, confidence rejection and successful decode diagnostics are distinct.
+- [x] Session minimum decode interval is 70 ms; decoder calls remain serialized.
 
-## SCAN-05 — 90°/270° orthogonal rotation
-- [x] Pure ROI luminance transform swaps dimensions and validates input.
-- [x] Code 128 runtime fixture passes after normalization of both 90° and 270° input.
-- [x] EAN-8 and EAN-13 runtime fixtures pass after normalization of both 90° and 270° input.
-- [x] Unrotated ROI is attempted first; extra quarter-turn is bounded to every third valid ROI frame after a miss.
-- [x] Rotation diagnostics and stage timings are present.
-- [x] Extended decode cadence is driven by a dedicated valid-ROI sequence, not diagnostics-window counters; deterministic schedule tests cover valid and invalid sequence values.
-- [x] CI run #338 passed; consolidated CI run #342 passed.
-- [ ] Physical iOS Safari/PWA QA: Home and Stocktake, 0°/90°/180°/270°.
-- [ ] Physical Android Chrome/PWA QA: same matrix.
-- [ ] Compare decode latency/CPU on lower-end devices.
+## Automated regression
+- [x] Code 128, EAN-8 and EAN-13 baseline and orthogonal fixtures pass.
+- [x] Continuous positive/negative angle sweep passes through the production adapter.
+- [x] Low-contrast Code 128 fixture (40/255) passes through the production adapter after bounded percentile contrast normalization.
+- [x] Combined 90°/270° plus residual skew passes through the production adapter.
+- [x] Blank, low-texture, ambiguous-orientation and invalid-buffer cases fail closed.
+- [x] ROI exclusion and missing-region cases do not decode outside the reticle.
+- [x] Full preflight, TypeScript, production build and GitHub Pages build pass on the final corrective head.
 
-## SCAN-06 — bounded in-plane deskew
-- [x] Sobel structure-tensor estimate is confidence-gated and bounded to 1.2°–12°.
-- [x] Bilinear inverse-angle transform expands ROI bounds, fills uncovered pixels white and enforces a 4M-pixel allocation cap.
-- [x] Synthetic Code 128 at ±5°/±8° decodes after correction.
-- [x] Combined 90°/270° normalization plus skew correction passes.
-- [x] Level, blank, invalid and >12° cases fail closed; pure service has no DOM/presentation dependency.
-- [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
-- [x] Final consolidated PR #66 CI run #395 passed full preflight, production adapter integration, TypeScript, production/Pages builds and diff checks.
-- [x] Follow-up separates processing cadence from diagnostics sampling and adds deterministic cadence regression coverage.
-- [x] Production decoder integration test is registered in preflight: upright decode, scheduled 90°/270° recovery and deskew, strict ROI crop and no-fallback behavior.
-- [x] Fresh CI run #395 passed the audit follow-up, including production upright/rotation/deskew decoder integration.
-- [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
-- [ ] Physical Android Chrome/PWA QA: same matrix.
-- [ ] Record latency, CPU and accuracy on low-end and high-end devices.
+## Physical device acceptance
+- [ ] iOS Safari/PWA: Home and Stocktake; rotate device and barcode independently; test cardinal and intermediate orientations.
+- [ ] Android Chrome/PWA: same matrix.
+- [ ] EAN-13, EAN-8 and Code 128; center and near-edge ROI placement; small/far labels; reflective packaging and lower light.
+- [ ] Record first-result latency, stage costs, CPU responsiveness and decode success rate.
+- [ ] Confirm Home lookup and Stocktake form-fill, duplicate rows and explicit save remain unchanged.
+- [ ] User explicitly approves merge and deployment after reviewing source, CI and device evidence.
 
-## Consolidated delivery
-- [x] SCAN-04 strict ROI baseline was merged/deployed by the user; normal operation confirmed.
-- [x] SCAN-05 and SCAN-06 source/tests are consolidated on final PR #66.
-- [x] Documentation and ADRs synchronized on the consolidated branch; AI handoff points to PR #66 and the active final branch.
-- [x] Current PR and CI references corrected; stale PR #65/branch references removed from the current handoff.
-- [x] Final source/docs diff audit completed on consolidated PR #66; no scope leakage found.
-- [ ] Physical device QA remains outstanding; do not merge until accepted.
-- [x] Add individual EAN-8/EAN-13 runtime image fixtures for 90°/270° rotated input.
-- [ ] Merge final consolidated PR #66 after device acceptance. PR #63/#64/#65 are closed as superseded and must not be merged separately.
+**Automated acceptance:** CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`. **Release acceptance is not complete until physical iOS and Android evidence is recorded.**
+
 
 ---
 
@@ -178,7 +165,7 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [x] Stocktake tap starts `requestCameraLease()` before scanner UI mounts.
 - [x] Request is cancellable before claim and single-claim at session handoff.
 - [x] Preview readiness is distinct from decoder/scanning readiness.
-- [x] Current session uses 110 ms minimum decode interval; do not tune without measurements.
+- [x] Historical PR 47A baseline used 110 ms; current SCAN-05/06 corrective branch uses a 70 ms minimum decode interval with serialized calls.
 - [x] Current hook hardcodes profile `HIGH`; adaptive Low/Mid/High is not implemented.
 - [ ] iOS opening geometry root cause measured and fixed.
 - [ ] Exit fade visually synchronized while camera teardown remains prompt.

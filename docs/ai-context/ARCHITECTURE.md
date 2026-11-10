@@ -598,48 +598,49 @@ SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the act
 See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.
 
 
-## ADR-026 — Bounded orthogonal rotation within strict ROI (2026-11-10)
+## ADR-026 — Continuous ROI orientation recovery (2026-11-10)
 
-**Status:** Implemented on final consolidated PR #66; CI run #395 passed the audit follow-up and production-adapter upright/rotation/deskew integration. Physical iOS/Android QA remains pending.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical iOS/Android QA remains pending.
 
 ### Context
-ZXing `OneDReader` already supports 180° 1D barcode reversal when `TRY_HARDER` is enabled. RetailOS uses `RGBLuminanceSource`, which does not support ZXing's source-image rotation; 90°/270° inputs therefore require an explicit ROI transform.
+The prior orthogonal-only extension ran every third valid ROI frame and did not cover intermediate in-plane angles. Device testing reported missed sideways barcodes, blind angles and slow recognition. The user clarified that accuracy and sensitivity take priority over a strict ultra-low-end CPU budget.
 
 ### Decision
-- Decode the unrotated strict ROI first.
-- After a miss, perform one 90° clockwise luminance transform only every third valid ROI frame.
-- Reuse the existing 180° scanline reversal: 90° input normalizes to 180°, and 270° input normalizes to 0°.
-- Do not perform four independent orientation passes.
-- Keep the transform pure and ROI-local; no DOM, camera, session or presentation ownership.
+- Decode the upright strict ROI first.
+- On a miss, try one exact clockwise 90° ROI transform as the fast sideways path on the same valid frame.
+- If that misses, run SCAN-06 continuous orientation estimation and correction; no finite hard-coded angle list.
+- Use both HybridBinarizer and GlobalHistogramBinarizer as successive strategies for each orientation candidate.
+- Set the shared session minimum decode interval to 70 ms. Keep decode calls serialized; do not queue overlapping work.
+- Keep the transform and estimator pure and ROI-local; no DOM, camera, session or presentation ownership.
 - Expose rotation attempts/hits and separate transform/decode timings.
-- Drive the extended-pass cadence from a dedicated valid-ROI sequence; diagnostics sampling/reset must not influence processing cadence.
 
 ### Constraints
-- Preserve the 110 ms session cadence, camera request/lifecycle, ROI contract, supported symbologies, validation and result delivery.
-- Missing/invalid ROI remains fail-closed; no full-frame fallback.
+- Preserve strict module-owned ROI/no-fallback, camera request/lifecycle, supported symbologies, validation, result delivery and Home/Stocktake contracts.
+- Missing/invalid ROI remains fail-closed; no full-frame or centered fallback.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA is required before release acceptance.
 
 ### Acceptance
 See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-rotation.mjs`.
 
-## ADR-027 — Bounded in-plane deskew after orientation normalization (2026-11-10)
+## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
-**Status:** Implemented on final consolidated PR #66; CI run #395 passed the audit follow-up and production-adapter upright/rotation/deskew integration. Physical accuracy/performance QA remains pending.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical optical QA remains pending.
 
 ### Context
-After orthogonal orientation normalization, a barcode can still be tilted within the image plane. Unbounded angle search or perspective correction would multiply decode cost and mix separate image-processing problems.
+The previous estimator used one global Sobel structure tensor and accepted only 1.2°–12°. This left large intermediate angles unsupported and could be dominated by packaging text, borders or graphics. A continuous estimate must be validated by the production decoder, not accepted as a barcode result by itself.
 
 ### Decision
-- Estimate dominant barcode edge tilt using a sampled Sobel structure tensor on the strict ROI luminance buffer.
-- Accept only coherent estimates from 1.2° through 12°.
-- Apply one inverse-angle bilinear ROI transform with expanded bounds, white fill and a 4,000,000-pixel allocation ceiling.
-- Run deskew only after upright and orthogonal passes miss, on the scheduled extended frame; use one HybridBinarizer decode pass.
-- Reject low-confidence, blank, invalid and out-of-range inputs without a fallback to the full frame.
+- Estimate gradient orientation from a 180-bin Sobel histogram, using directional-energy concentration and local coherence gates.
+- Normalize modulo 180° to a signed ±90° correction range; ignore estimates below 0.65° and fail closed on ambiguous textures.
+- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–220 luminance levels), then inverse-angle bilinear ROI correction with expanded bounds, white fill and a 6,000,000-pixel allocation ceiling.
+- Evaluate the original and quarter-turned ROI representations, preferring the smaller correction angle first and retaining the alternate as fallback.
+- Run HybridBinarizer and GlobalHistogramBinarizer for each candidate; ZXing format/checksum validation remains authoritative.
+- Count estimator invocations, rejected estimates and decode hits independently. Suppress only the library's expected `NotFoundException` console warning during synchronous misses; forward unrelated warnings.
 - Keep perspective/keystone correction and curved-label dewarping out of scope.
 
 ### Constraints
-- No camera/session/lifecycle, ROI mapping, cadence, UI, validation or Home/Stocktake business-flow changes.
-- Compare physical accuracy, latency and CPU cost on iOS/Android, including lower-end devices, before release acceptance.
+- No camera/session/lifecycle, ROI mapping, UI, validation or Home/Stocktake business-flow changes.
+- Measure physical accuracy, first-result latency, stage cost and UI responsiveness on iOS/Android before release acceptance.
 
 ### Acceptance
 See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
