@@ -472,3 +472,5 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Updated SCAN-05/06 designs, ADRs, Roadmap, Implementation Status and Acceptance Checklist. CI #368 is explicitly recorded as pre-follow-up validation; a new CI run is required for the latest commits.
 - Protected strict ROI/no full-frame fallback, 110 ms cadence, camera/session/lifecycle, Home/Stocktake presentation and business flows. No merge or deployment performed.
 - Remaining release gates: fresh CI, physical iOS Safari/PWA and Android Chrome/PWA matrix, and low-end/high-end latency/CPU evidence. These cannot be inferred from automated CI.
+
+- Added `scripts/test-scanner-decoder-integration.mjs` to execute the production `ZXingDecoderAdapter` with a mocked canvas and real ZXing decode path. It verifies upright decode, no early rotation before the scheduled third valid ROI frame, 90°/270° recovery, module-owned strict crop, and no full-frame fallback for outside/missing ROI. Registered the integration suite in `scripts/preflight.mjs`; fresh CI validation is pending.
