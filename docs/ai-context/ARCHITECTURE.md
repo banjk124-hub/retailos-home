@@ -600,7 +600,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Bounded orthogonal rotation within strict ROI (2026-11-10)
 
-**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #342 passed. Physical iOS/Android QA remains pending.
+**Status:** Implemented on final consolidated PR #66; CI run #350 passed on head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`. Physical iOS/Android QA remains pending.
 
 ### Context
 ZXing `OneDReader` already supports 180° 1D barcode reversal when `TRY_HARDER` is enabled. RetailOS uses `RGBLuminanceSource`, which does not support ZXing's source-image rotation; 90°/270° inputs therefore require an explicit ROI transform.
@@ -623,7 +623,7 @@ See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Bounded in-plane deskew after orientation normalization (2026-11-10)
 
-**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #342 passed. Physical accuracy/performance QA remains pending.
+**Status:** Implemented on final consolidated PR #66; CI run #350 passed on head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`. Physical accuracy/performance QA remains pending.
 
 ### Context
 After orthogonal orientation normalization, a barcode can still be tilted within the image plane. Unbounded angle search or perspective correction would multiply decode cost and mix separate image-processing problems.
