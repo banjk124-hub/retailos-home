@@ -554,7 +554,7 @@ export async function parseStocktakeWorkbook(
         mapping.codeColumn === undefined && mapping.goldCodeColumn === undefined && mapping.tillCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
         dataRows.forEach((row) => {
           if (row.barcodeSource === 'MÃ VẠCH') {
-            row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE hoặc GOLDCODE.');
+            row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE, CODE, GOLDCODE hoặc TILLCODE.');
           }
         });
       }
