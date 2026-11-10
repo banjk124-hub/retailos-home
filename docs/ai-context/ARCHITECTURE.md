@@ -573,3 +573,26 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 - Physical iOS Safari/PWA and Android Chrome/PWA alignment QA is required after deployment.
 
 See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md` and `scripts/test-scanner-preview-region.mjs`.
+
+
+## ADR-025 — Strict decoder consumption of module-owned source ROI (2026-11-10)
+
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
+
+### Context
+SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the active session. The previous ZXing adapter still decoded the full frame first and then tried a hard-coded centered crop, so the actual module scan intent did not constrain decoder work.
+
+### Decision
+- Each decoder invocation receives the current session region with its timestamp.
+- A pure resolver validates the coordinate-space tag and rectangle, then converts normalized bounds into integer source pixels using floor-leading/ceil-trailing rounding and source-frame clamping.
+- ZXing draws only that source crop into its working canvas and decodes the ROI. The full-frame-first pass and fixed centered fallback are removed.
+- Missing or invalid geometry is a decode miss, not a decoder error, and must never trigger full-frame fallback.
+- Preserve the supported barcode allowlist, existing binarizer schedule, 1.5× aspect-preserving ROI upscale, 110 ms frame-loop cadence, validation and result-delivery policy.
+
+### Constraints
+- No camera acquisition/lease, readiness, lifecycle/recovery, frame scheduling, CSS, Home/Stocktake UI or business-flow changes.
+- No rotation, deskew, perspective correction, adaptive exposure or camera-constraint changes in SCAN-04.
+- Physical barcode accuracy/performance QA on iOS Safari/PWA and Android Chrome/PWA is required before release acceptance.
+
+### Acceptance
+See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.
