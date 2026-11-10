@@ -148,7 +148,7 @@ assert.match(output, /ARTICLE,089686011036,19\.236/);
 
 const source = (name, fingerprint) => ({ name, fingerprint, size: 100, lastModified: 1 });
 const importedRow = (barcode, sourceFileName, sourceRow) => ({
-  barcode, quantity: "1", sourceRow, sourceSheet: "BT01", sourceFileName,
+  barcode, quantity: "1", sourceRow, sourceSheet: "BT01", sourceFileName, sourceFileId: sourceFileName.slice(0, 8),
   barcodeSource: "BARCODE", issues: [],
 });
 const zone = (zoneCode, rows) => ({
@@ -183,6 +183,7 @@ assert.deepEqual(mergedSession.zones.map((item) => item.zoneCode), ["BT01", "BT0
 assert.deepEqual(mergedSession.zones[0].rows.map((row) => row.barcode), ["BASE", "A1", "A2", "A1"]);
 assert.equal(mergedSession.zones[0].rows[1].sourceFileName, "a.xlsx");
 assert.equal(mergedSession.zones[0].rows[3].sourceFileName, "b.xlsx");
+assert.equal(mergedSession.zones[0].rows[1].sourceFileId, "a.xlsx".slice(0, 8));
 assert.equal(mergedSession.zones[0].rows.length, 4, "Merge must preserve every row and duplicate occurrence.");
 assert.equal(mergedSession.sourceFiles.length, 3);
 assert.match(mergedSession.warnings.join(" "), /Đã gộp 2 dòng bổ sung vào vùng BT01/);
@@ -225,6 +226,7 @@ assert.match(component, /sameNameDifferentContent/);
 assert.match(component, /zoneConflicts/);
 assert.match(component, /Tạo phiên mới/);
 assert.match(component, /sourceFileName/);
+assert.match(component, /sourceFileId/);
 assert.match(component, /updateRow/);
 assert.match(component, /Chỉnh sửa/);
 assert.match(component, /Lưu vùng/);
