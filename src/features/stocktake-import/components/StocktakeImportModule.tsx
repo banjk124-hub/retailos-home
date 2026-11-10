@@ -669,7 +669,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                                 className={row.issues.length ? 'has-error' : ''}>
                                 <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
                                   {row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}
-                                  {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFingerprint ? ' · ' + row.sourceFingerprint.slice(0, 8) : ''}</small>}
+                                  {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFileId ? ' · ' + row.sourceFileId.slice(0, 8) : ''}</small>}
                                 </td>
                                 <td>{editingZone
                                   ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
