@@ -79,7 +79,7 @@ function decode(frame) {
 const original = makeCode128();
 const lowContrastLuminance = Uint8ClampedArray.from(
   original.luminance,
-  (value) => value < 128 ? 108 : 148,
+  (value) => value < 128 ? 88 : 168,
 );
 const lowContrastSkew = rotateLuminanceByAngle(
   lowContrastLuminance, original.width, original.height, 27,
