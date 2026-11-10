@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Download, FileSpreadsheet, History, LoaderCircle, Trash2, Upload, X } from 'lucide-react';
 import JSZip from 'jszip';
 import type { EmployeeSession } from '../../auth/types';
+import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import {
   parseStocktakeWorkbook,
   type StocktakeImportResult,
@@ -46,7 +47,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const [notice, setNotice] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  const employeeCode = employee.employeeCode.trim();
+  const employeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
   const activeZone = result?.zones[selectedZone] ?? null;
   const totalRows = useMemo(() => result?.zones.reduce((total, zone) => total + zone.rows.length, 0) ?? 0, [result]);
 
