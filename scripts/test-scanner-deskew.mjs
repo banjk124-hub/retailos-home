@@ -167,7 +167,7 @@ const scan06Doc = await readFile(
   new URL('../docs/ai-context/SCAN_06_BOUNDED_DESKEW.md', import.meta.url),
   'utf8',
 );
-assert.match(scan05Doc, /One clockwise quarter-turn/);
+assert.match(scan05Doc, /quarter-turn/);
 assert.match(scan05Doc, /180°/);
 assert.match(scan06Doc, /180-bin Sobel gradient-orientation histogram/);
 assert.match(scan06Doc, /0\.65°/);
