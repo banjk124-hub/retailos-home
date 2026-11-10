@@ -633,8 +633,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                       <strong>{editingZone ? 'Đang chỉnh sửa dữ liệu' : 'Bảng dữ liệu kiểm kê'}</strong>
                       <span>{editingZone ? 'Thay đổi sẽ được lưu vào lịch sử trên thiết bị.' : 'Chọn Chỉnh sửa để cập nhật mã hàng hoặc kết quả thực tế.'}</span>
                     </div>
-                    <span className={dirtyZones.includes(activeZone.zoneCode) || !historyPersisted ? 'stocktake-import-state is-dirty' : invalidCount ? 'stocktake-import-state is-warning' : 'stocktake-import-state is-ready'}>
-                      {dirtyZones.includes(activeZone.zoneCode) ? 'Chưa lưu thay đổi' : invalidCount ? invalidCount + ' dòng lỗi' : historyPersisted ? 'Đã lưu trên thiết bị' : 'Chưa lưu lịch sử'}
+                    <span className={invalidCount ? 'stocktake-import-state is-invalid' : dirtyZones.includes(activeZone.zoneCode) || !historyPersisted ? 'stocktake-import-state is-dirty' : 'stocktake-import-state is-ready'}>
+                      {invalidCount ? invalidCount + ' dòng lỗi' : dirtyZones.includes(activeZone.zoneCode) ? 'Chưa lưu thay đổi' : historyPersisted ? 'Đã lưu trên thiết bị' : 'Chưa lưu lịch sử'}
                     </span>
                   </div>
                   <div className="stocktake-import-table-wrap">
