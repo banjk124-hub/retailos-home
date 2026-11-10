@@ -1,6 +1,6 @@
 # SCAN-06 — Bounded in-plane barcode deskew
 
-**Status:** Implemented on final consolidated PR #66. Final consolidated PR #66 CI run #360 passed the full preflight. Physical iOS/Android accuracy and performance QA remains pending.
+**Status:** Implemented on final consolidated PR #66. Final consolidated PR #66 CI run #368 passed the full preflight before the audit follow-up commits; fresh CI is required for the latest head. Physical iOS/Android accuracy and performance QA remains pending.
 
 ## Scope
 
@@ -43,11 +43,11 @@ Deskew runs only on the scheduled extended frame after normal orientation paths 
 - deskew has no DOM/presentation dependency;
 - decoder wiring runs deskew only after upright and orthogonal paths miss and uses one HybridBinarizer pass.
 
-The suite is registered in preflight. Consolidated CI #342 passed deskew, scanner regressions, TypeScript and production/Pages builds.
+The suite is registered in preflight. CI #342 and #368 passed the pre-follow-up implementation; the latest audit follow-up requires a fresh CI run.
 
 ## Performance and device acceptance
 
-The estimator samples every three pixels and runs only after earlier decode paths miss on the extended frame. Bilinear interpolation may soften narrow bars. Extra processing can increase latency/CPU on weak devices; synthetic tests do not replace physical QA.
+The estimator samples every three pixels and runs only after earlier decode paths miss on the extended frame. The extended-frame schedule is driven by a dedicated valid-ROI sequence, not by diagnostics window counters. Bilinear interpolation may soften narrow bars. Extra processing can increase latency/CPU on weak devices; synthetic tests do not replace physical QA.
 
 On iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake with EAN-13/EAN-8/Code 128 at 0°/90°/180°/270° and ±5°/±8° skew. Record accuracy, latency and CPU on weak and strong devices. Perspective and curved-label correction remain future work.
 
