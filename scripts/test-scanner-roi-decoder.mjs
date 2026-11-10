@@ -79,5 +79,7 @@ assert.doesNotMatch(decoderSource, /ROI_WIDTH_RATIO|ROI_HEIGHT_RATIO/,
   'fixed centered ROI constants must be removed');
 assert.match(decoderSource, /this\.context\.drawImage\([\s\S]*?crop\.x,[\s\S]*?crop\.y,[\s\S]*?crop\.width,[\s\S]*?crop\.height/);
 assert.match(decoderSource, /diagnosticRoiUnavailable/);
+assert.match(decoderSource, /Math\.min\(1, MAX_FRAME_WIDTH \/ dimensions\.width\)/,
+  'ROI sampling must preserve the existing source-frame width cap before upscaling');
 
 console.log('Scanner strict reticle ROI decoder regression tests passed.');
