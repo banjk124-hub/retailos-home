@@ -632,7 +632,7 @@ The previous estimator used one global Sobel structure tensor and accepted only 
 ### Decision
 - Estimate gradient orientation from a 180-bin Sobel histogram, using directional-energy concentration and local coherence gates.
 - Normalize modulo 180° to a signed ±90° correction range; ignore estimates below 0.65° and fail closed on ambiguous textures.
-- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–220 luminance levels), then inverse-angle bilinear ROI correction with expanded bounds, white fill and a 6,000,000-pixel allocation ceiling.
+- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–219 luminance levels), then inverse-angle bilinear ROI correction with expanded bounds, white fill and a 6,000,000-pixel allocation ceiling.
 - Evaluate the original and quarter-turned ROI representations, preferring the smaller correction angle first and retaining the alternate as fallback.
 - Run HybridBinarizer and GlobalHistogramBinarizer for each candidate; ZXing format/checksum validation remains authoritative.
 - Count estimator invocations, rejected estimates and decode hits independently. Suppress only the library's expected `NotFoundException` console warning during synchronous misses; forward unrelated warnings.
