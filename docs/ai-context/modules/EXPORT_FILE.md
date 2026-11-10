@@ -5,7 +5,7 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** PR #70–#73 merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc` awaits CI. Physical-device QA remains pending.  
+**Current status:** PR #70–#73 merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`. Physical-device QA remains pending.  
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
 **Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
@@ -84,8 +84,7 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 - [x] PR #71 TypeScript, production/Pages builds and full preflight passed on code commit `37b5f69d8dedcd36ed8a9273131eb60b78bd0f13` (GitHub Actions run #509).
 - [x] PR #72 unified-workspace and state implementation passed CI #534.
 - [x] PR #73 operator-action layout and transient feedback passed CI #540 on `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`; user confirms merge and deployment.
-- [x] PR #74 full preflight, TypeScript, production and Pages build passed in CI #544 on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`.
-- [ ] Rerun CI on latest PR #74 head `f96dc58e6ea78f993a76ca1f581a150742ea5313`.
+- [x] PR #74 full preflight, TypeScript, production and Pages build passed in CI #545 on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.
 - [ ] Manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA acceptance.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
 - [ ] Verify per-zone correction, save, history restore, individual TXT and ZIP.
