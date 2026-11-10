@@ -25,7 +25,7 @@ import type { MotionOrigin } from '../../shared/motion';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import StocktakeModule from '../stocktake/components/StocktakeModule';
-import StocktakeImportModule from '../../features/stocktake-import/components/StocktakeImportModule';
+import StocktakeImportModule from '../stocktake-import/components/StocktakeImportModule';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import ScannerQaMonitor from './components/ScannerQaMonitor';
