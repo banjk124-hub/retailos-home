@@ -5,11 +5,10 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** In progress — PR #70 open, not merged or deployed  
-**Branch:** `feat/stocktake-import-desktop-editor`  
-**Base:** `main` at `853f79607f770000a506f7c1836f1131133497b6`  
-**Last verified PR head:** `7e2570fcb7df160651e7ba8ccf861e4507e2d13a` (documentation contract reconciliation; check GitHub for any later head)  
-**PR:** https://github.com/banjk124-hub/retailos-home/pull/70
+**Current status:** PR #70 merged, deployed and manually accepted by the user. Follow-up implementation is in progress on `feat/stocktake-import-session-output`; not yet merged or deployed.  
+**Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
+**PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
+**Follow-up branch base:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`
 
 ## 1. Purpose and current capability
 
@@ -17,11 +16,13 @@ The module reads local `.xlsx` workbooks, detects tables and zones, normalizes r
 
 Current PR #70 includes:
 - Excel display-precision-aware decimal handling without a JavaScript floating-point round trip.
-- BARCODE preference with same-row GOLDCODE fallback; unresolved rows remain visible for correction.
+- Code resolution priority: BARCODE → CODE → GOLDCODE → TILLCODE, with legacy MÃ VẠCH retained only as the final compatibility fallback; unresolved rows remain visible for correction.
 - Variable header aliases, different table layouts across sheets, multiple blocks per sheet, same-zone aggregation and blocking diagnostics for unsupported blocks.
 - Per-zone edit/save, isolated import history, invalid/unsaved export guards and history restore.
 - Zone-only TXT filenames and fixed ZIP filename. Confirmed by user: remove date/time only from filenames; retain the existing date/time fields in the `NHAN VIEN` content line unchanged.
 - Desktop two-column workspace, mobile stacked layout, lightweight motion and reduced-motion support.
+- Follow-up: output-first layer inside the selected zone component; editor remains the second layer in the same zone frame. Readonly TXT textarea scopes Ctrl+A to output content; Copy uses Clipboard API with manual-selection fallback.
+- Follow-up: multi-file `.xlsx` selection and additive import sessions. SHA-256 source fingerprints detect identical files; duplicate zones across separate source files are staged for explicit merge/skip confirmation. Source file provenance is retained per row and in session history.
 
 ## 2. Lifecycle metadata
 
@@ -70,10 +71,11 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 ## 5. Current release gates
 
 - [x] PR #70 TypeScript, production build, Pages build and full preflight passed on code commit `55c49995875ba4e8d9a605e60ba1a58c8cff3080` (run #461); later recorded head change was documentation-only.
-- [ ] Re-run CI after the current module-governance/name update.
+- [x] PR #70 merged into main at `b9cc4ce9a848acd51027dff64f5620f65e660a4b`; RetailOS CI run #466 and Pages deploy run #85 succeeded. User confirmed deployment and operational testing.
 - [x] User confirmed: remove date/time only from filenames; preserve date/time in the `NHAN VIEN` content line.
 - [ ] Compare Excel displayed quantity values with exported TXT, including `19,236` and fixed-decimal/General formats.
-- [ ] Verify BARCODE-empty/GOLDCODE-present material rows.
+- [x] PR #70 acceptance and operational testing confirmed by the user.
+- [ ] Follow-up CI and regression coverage for CODE/GOLDCODE/TILLCODE precedence, in-zone output/editor transition, multi-file import, additive session and conflict review.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
 - [ ] Verify per-zone correction, save, history restore, individual TXT and ZIP.
 - [ ] Manual QA on desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA.
@@ -92,6 +94,15 @@ When the user says “tiếp tục Xuất file” or asks to resume this module:
 7. Update this file, detailed contract, roadmap and handoff with exact changed files, current status, evidence, unresolved decisions and next step.
 8. Do not merge or deploy without explicit user approval.
 
-## 7. Next technical step
+## 7. Current follow-up implementation
 
-Complete the remaining audit and CI after the current PR update. Date/time output decision is resolved: filenames only are date-free; preserve the `NHAN VIEN` content line. Continue final audit and acceptance, then wait for explicit approval to merge/deploy.
+Branch: `feat/stocktake-import-session-output`, based on main `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
+
+- Implement output-first and editor-second layers inside the existing selected-zone component. Do not change the outer module UI or zone navigator.
+- Preserve the existing editor, validation, save, pagination, per-zone output and ZIP flows.
+- Extend source code precedence to BARCODE → CODE → GOLDCODE → TILLCODE; legacy MÃ VẠCH remains a final compatibility fallback only.
+- Add multi-file intake and cumulative sessions with SHA-256 duplicate detection, staging, explicit duplicate-zone review and merge/skip confirmation.
+- Keep `NHAN VIEN` date/time unchanged; only filenames omit date/time.
+- Update the detailed contract, architecture ADR, roadmap, handoff and module status after verification.
+
+Do not merge/deploy until the user explicitly approves. Device QA for the new flow remains separate from CI.
