@@ -9,6 +9,7 @@
   animation: stocktake-import-fade-in 160ms ease-out both;
 }
 .stocktake-import-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: min(1240px, 96vw);
