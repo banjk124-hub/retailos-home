@@ -20,6 +20,7 @@ const runtimeSource =
   "const BARCODE_HEADERS = ['BARCODE','BAR CODE','PRODUCT BARCODE','EAN','EAN13','EAN8','UPC','GTIN'];" +
   "const FALLBACK_BARCODE_HEADERS = ['MA VACH','MA VACH HANG'];" +
   "const QUANTITY_HEADERS = ['SO LUONG','QUANTITY','QTY','SL','SO LUONG KIEM KE'];" +
+  "const ZONE_HEADERS = ['VUNG','ZONE','MA VUNG','ZONE CODE','KHU VUC'];" +
   extractFunction("normalizeHeader", "decodeCell") +
   extractFunction("findHeader", "shiftDecimal") +
   extractFunction("shiftDecimal", "parseQuantity") +
@@ -62,6 +63,21 @@ const flexibleHeaderCells = new Map([
 assert.deepEqual(runtime.findHeader(new Map([[7, flexibleHeaderCells]])), {
   rowNumber: 7, barcodeColumn: 1, quantityColumn: 5, barcodeHeader: "BARCODE SAN PHAM",
 });
+
+const zoneHeaderCells = new Map([
+  [2, { value: "BARCODE", type: "s", styleIndex: 0 }],
+  [4, { value: "SỐ LƯỢNG", type: "s", styleIndex: 0 }],
+  [6, { value: "VÙNG", type: "s", styleIndex: 0 }],
+]);
+assert.deepEqual(runtime.findHeader(new Map([[5, zoneHeaderCells]])), {
+  rowNumber: 5, barcodeColumn: 2, quantityColumn: 4, barcodeHeader: "BARCODE", zoneColumn: 6,
+});
+const zoneColumnRows = new Map([[6, new Map([[6, { value: "BT01", type: "s", styleIndex: 0 }]])]]);
+assert.equal(runtime.resolveZoneCode("Sheet1", zoneColumnRows, 5, 6), "BT01");
+assert.throws(() => runtime.resolveZoneCode("Sheet1", new Map([
+  [6, new Map([[6, { value: "BT01", type: "s", styleIndex: 0 }]])],
+  [7, new Map([[6, { value: "BT02", type: "s", styleIndex: 0 }]])],
+]), 5, 6), /nhiều mã vùng/);
 
 const zoneRows = new Map([[1, new Map([[5, { value: "540", type: "n", styleIndex: 0 }]])]]);
 assert.equal(runtime.resolveZoneCode("Sheet1", zoneRows, 4), "540");
