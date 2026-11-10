@@ -597,9 +597,9 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     {zoneLayer === 'output'
                       ? <>
                         <button type="button" onClick={() => setZoneLayer('editor')}><Pencil size={15} /> Xem kiểm kê</button>
-                        <button type="button" disabled={invalidCount > 0 || dirtyZones.includes(activeZone.zoneCode) || result.blockingIssues.length > 0}
+                        <button type="button" disabled={!outputReady}
                           onClick={() => void copyOutput()}><Copy size={15} /> Sao chép TXT</button>
-                        <button type="button" disabled={invalidCount > 0 || dirtyZones.includes(activeZone.zoneCode) || result.blockingIssues.length > 0}
+                        <button type="button" disabled={!outputReady}
                           onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
                       </>
                       : <>
