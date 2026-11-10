@@ -235,6 +235,17 @@ try {
     await decoder.dispose();
   }
 
+  const noiseFrame = { width: 320, height: 160, luminance: new Uint8ClampedArray(320 * 160) };
+  let noiseSeed = 0x5eed1234;
+  for (let index = 0; index < noiseFrame.luminance.length; index += 1) {
+    noiseSeed = (1664525 * noiseSeed + 1013904223) >>> 0;
+    noiseFrame.luminance[index] = noiseSeed >>> 24;
+  }
+  const noiseDecoder = await createDecoder();
+  assert.deepEqual(await decodeOnce(noiseDecoder, toSource(noiseFrame)), [],
+    'directionally ambiguous non-barcode texture must not produce a result');
+  await noiseDecoder.dispose();
+
   const roiSourceFrame = {
     width: upright.width * 2,
     height: upright.height,
