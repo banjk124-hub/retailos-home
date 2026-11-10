@@ -6,7 +6,7 @@
 - Found stale docs: SCAN-05/06 and ADRs still said Draft/pending; Implementation Status/Roadmap/Handoff still instructed merge/deploy; Acceptance Checklist still had physical acceptance unchecked; Architecture and SCAN-04 retained superseded 110 ms/every-third-frame binarizer statements.
 - Updated the current SCAN-05/06 specs, implementation status, roadmap, acceptance, handoff, project context, ADRs, architecture, SCAN-04 supersession note and changelog.
 - Recorded user-confirmed functional acceptance without inventing exact device matrix, latency, CPU or success-rate measurements.
-- No runtime source, tests, configuration, dependency or deployment code changed in this documentation-only audit.
+- No executable logic, tests, configuration, dependency or deployment code changed. One duplicated word in the scannerDeskew.ts resampling comment was corrected.
 - Remaining optional evidence: detailed iOS/Android × Home/Stocktake × symbology/orientation matrix and quantitative first-result latency, per-stage timing, CPU responsiveness and decode success-rate measurements.
 
 ---
