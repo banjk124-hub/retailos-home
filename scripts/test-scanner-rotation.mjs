@@ -137,11 +137,11 @@ const decoderSource = await readFile(
   'utf8',
 );
 assert.match(decoderSource, /rotateLuminance90Clockwise\(/, 'decoder must consume the pure rotation helper');
-assert.match(decoderSource, /const output = this\\.decodeCurrentCanvas\\(timestamp\\)/,
+assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(timestamp\)/,
   'every valid ROI frame must enter the complete production decode pipeline');
-assert.match(decoderSource, /if \\(uprightOutput\\) return uprightOutput/,
+assert.match(decoderSource, /if \(uprightOutput\) return uprightOutput/,
   'upright decode must be attempted first');
-assert.match(decoderSource, /deskewLuminanceFrame\\(/,
+assert.match(decoderSource, /deskewLuminanceFrame\(/,
   'continuous deskew must be wired into the production decoder');
 assert.match(decoderSource, /rotationAttempts:/, 'rotation attempt diagnostics must be exposed');
 assert.match(decoderSource, /rotationHits:/, 'rotation hit diagnostics must be exposed');
