@@ -116,7 +116,7 @@ export function mergeStocktakeImportSession(
       ...mergedZoneWarnings,
       ...skippedZoneWarnings,
       ...reviewMeta.sameNameDifferentContent.map((name) =>
-        'Tên file ' + name + ' trùng với nguồn đã có nhưng nội dung khác; đã nhận như một nguồn riêng.'),
+        'Tên file ' + name + ' trùng với nguồn đã có nhưng nội dung chưa được xác nhận là trùng; đã nhận như một nguồn riêng.'),
       ...(reviewMeta.duplicateFiles.length
         ? ['Đã bỏ qua file trùng nội dung: ' + reviewMeta.duplicateFiles.join(', ') + '.']
         : []),
