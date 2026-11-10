@@ -577,7 +577,7 @@ See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md` and `scripts/test-sca
 
 ## ADR-025 — Strict decoder consumption of module-owned source ROI (2026-11-10)
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
+**Status:** Merged and deployed by the user; the user confirms normal scanner operation. Detailed optical stress scenarios were not individually recorded. SCAN-05/06 extend the ROI decoder in later decisions.
 
 ### Context
 SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the active session. The previous ZXing adapter still decoded the full frame first and then tried a hard-coded centered crop, so the actual module scan intent did not constrain decoder work.
@@ -596,3 +596,49 @@ SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the act
 
 ### Acceptance
 See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.
+
+
+## ADR-026 — Bounded orthogonal rotation within strict ROI (2026-11-10)
+
+**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #342 passed. Physical iOS/Android QA remains pending.
+
+### Context
+ZXing `OneDReader` already supports 180° 1D barcode reversal when `TRY_HARDER` is enabled. RetailOS uses `RGBLuminanceSource`, which does not support ZXing's source-image rotation; 90°/270° inputs therefore require an explicit ROI transform.
+
+### Decision
+- Decode the unrotated strict ROI first.
+- After a miss, perform one 90° clockwise luminance transform only every third valid ROI frame.
+- Reuse the existing 180° scanline reversal: 90° input normalizes to 180°, and 270° input normalizes to 0°.
+- Do not perform four independent orientation passes.
+- Keep the transform pure and ROI-local; no DOM, camera, session or presentation ownership.
+- Expose rotation attempts/hits and separate transform/decode timings.
+
+### Constraints
+- Preserve the 110 ms session cadence, camera request/lifecycle, ROI contract, supported symbologies, validation and result delivery.
+- Missing/invalid ROI remains fail-closed; no full-frame fallback.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA is required before release acceptance.
+
+### Acceptance
+See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-rotation.mjs`.
+
+## ADR-027 — Bounded in-plane deskew after orientation normalization (2026-11-10)
+
+**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #342 passed. Physical accuracy/performance QA remains pending.
+
+### Context
+After orthogonal orientation normalization, a barcode can still be tilted within the image plane. Unbounded angle search or perspective correction would multiply decode cost and mix separate image-processing problems.
+
+### Decision
+- Estimate dominant barcode edge tilt using a sampled Sobel structure tensor on the strict ROI luminance buffer.
+- Accept only coherent estimates from 1.2° through 12°.
+- Apply one inverse-angle bilinear ROI transform with expanded bounds, white fill and a 4,000,000-pixel allocation ceiling.
+- Run deskew only after upright and orthogonal passes miss, on the scheduled extended frame; use one HybridBinarizer decode pass.
+- Reject low-confidence, blank, invalid and out-of-range inputs without a fallback to the full frame.
+- Keep perspective/keystone correction and curved-label dewarping out of scope.
+
+### Constraints
+- No camera/session/lifecycle, ROI mapping, cadence, UI, validation or Home/Stocktake business-flow changes.
+- Compare physical accuracy, latency and CPU cost on iOS/Android, including lower-end devices, before release acceptance.
+
+### Acceptance
+See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
