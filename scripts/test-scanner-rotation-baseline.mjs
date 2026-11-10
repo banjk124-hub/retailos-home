@@ -49,6 +49,41 @@ function encodeEan8(data) {
   for (let i = 4; i < 8; i++) bits += invertPattern(L[Number(digits[i])]);
   return { value: digits, bits: '0'.repeat(10) + bits + '0'.repeat(10), format: BarcodeFormat.EAN_8 };
 }
+
+const CODE128_PATTERNS = new Map([
+  [104, [2, 1, 1, 2, 1, 4]],
+  [17, [1, 2, 3, 2, 2, 1]],
+  [18, [2, 2, 3, 2, 1, 1]],
+  [19, [2, 2, 1, 1, 3, 2]],
+  [20, [2, 2, 1, 2, 3, 1]],
+  [21, [2, 1, 3, 2, 1, 2]],
+  [90, [2, 1, 4, 1, 2, 1]],
+  [106, [2, 3, 3, 1, 1, 1, 2]],
+]);
+function code128Bits(codes) {
+  let bits = '';
+  for (const code of codes) {
+    const pattern = CODE128_PATTERNS.get(code);
+    assert.ok(pattern, `missing Code 128 fixture pattern for code ${code}`);
+    let black = true;
+    for (const run of pattern) {
+      bits += (black ? '1' : '0').repeat(run);
+      black = !black;
+    }
+  }
+  return bits;
+}
+function encodeCode128B() {
+  const dataCodes = [17, 18, 19, 20, 21]; // Code Set B: ASCII "12345"
+  const checksumCode = (104 + dataCodes.reduce((sum, code, index) => sum + code * (index + 1), 0)) % 103;
+  const bits = code128Bits([104, ...dataCodes, checksumCode, 106]);
+  return {
+    value: '12345',
+    bits: '0'.repeat(10) + bits + '0'.repeat(10),
+    format: BarcodeFormat.CODE_128,
+  };
+}
+
 function rasterize(bits, scale = 3, height = 84) {
   const width = bits.length * scale;
   const pixels = new Uint8ClampedArray(width * height);
@@ -86,7 +121,7 @@ function decode(frame, format) {
   }
 }
 
-for (const fixture of [encodeEan13('893850597001'), encodeEan8('9638507')]) {
+for (const fixture of [encodeEan13('893850597001'), encodeEan8('9638507'), encodeCode128B()]) {
   const uprightResult = decode(rasterize(fixture.bits), fixture.format);
   assert.equal(uprightResult.getText(), fixture.value, '0-degree barcode must decode');
   const invertedResult = decode(rotate180(rasterize(fixture.bits)), fixture.format);
