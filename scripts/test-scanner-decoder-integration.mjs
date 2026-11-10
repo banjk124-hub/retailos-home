@@ -212,6 +212,14 @@ try {
       (value) => value < 128 ? 108 : 148,
     ),
   };
+  const lowContrastUprightDecoder = await createDecoder();
+  const lowContrastUprightResult = await decodeOnce(
+    lowContrastUprightDecoder, toSource(lowContrastFrame),
+  );
+  await lowContrastUprightDecoder.dispose();
+  assert.equal(lowContrastUprightResult[0]?.value, '12345',
+    'low-contrast upright baseline must decode before testing orientation correction');
+
   const lowContrastRotated = rotateLuminanceByAngle(
     lowContrastFrame.luminance, lowContrastFrame.width, lowContrastFrame.height, -31,
   );
