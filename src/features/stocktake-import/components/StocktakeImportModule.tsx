@@ -34,7 +34,7 @@ function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): s
   if (!barcode) issues.push('Thiếu BARCODE/GOLDCODE.');
   else if (/[\r\n,]/.test(barcode)) issues.push('Mã hàng chứa dấu phẩy hoặc ký tự xuống dòng.');
   if (!quantity) issues.push('Thiếu kết quả thực tế.');
-  else if (!/^[+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?%?$/.test(quantity)) {
+  else if (!/^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)(?:[eE][+-]?\d+)?%?$/.test(quantity)) {
     issues.push('Kết quả thực tế không phải số hợp lệ.');
   }
   return issues;
