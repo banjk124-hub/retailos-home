@@ -158,15 +158,13 @@ export function estimateScannerSkewAngle(
 /**
  * Rotate a grayscale ROI by a continuous in-plane angle (positive = clockwise).
  * The output bounds expand to contain the full rotated input. Bilinear
- * sampling is selectable: bilinear for general image transforms, nearest-neighbor
- * for barcode deskew to preserve narrow high-contrast bar transitions. Uncovered pixels are white.
+ * Bilinear sampling softens resampling artifacts; uncovered pixels are white.
  */
 export function rotateLuminanceByAngle(
   luminance: Uint8ClampedArray,
   width: number,
   height: number,
   angleDegrees: number,
-  samplingMode: 'bilinear' | 'nearest' = 'bilinear',
 ): ScannerLuminanceFrame | null {
   if (!isValidFrame(luminance, width, height)
     || !Number.isFinite(angleDegrees)
@@ -203,13 +201,6 @@ export function rotateLuminanceByAngle(
       const sourceY = -sine * destinationX + cosine * destinationY + sourceCenterY;
       if (sourceX < 0 || sourceY < 0 || sourceX > width - 1 || sourceY > height - 1) continue;
 
-      if (samplingMode === 'nearest') {
-        const nearestX = Math.round(sourceX);
-        const nearestY = Math.round(sourceY);
-        rotated[y * rotatedWidth + x] = luminance[nearestY * width + nearestX];
-        continue;
-      }
-
       const x0 = Math.floor(sourceX);
       const y0 = Math.floor(sourceY);
       const x1 = Math.min(width - 1, x0 + 1);
@@ -227,6 +218,56 @@ export function rotateLuminanceByAngle(
   return { luminance: rotated, width: rotatedWidth, height: rotatedHeight };
 }
 
+/**
+ * Stretch only genuinely compressed ROI luminance ranges. Percentile bounds
+ * ignore a small number of glare/shadow outliers; the estimator still runs on
+ * the original pixels so contrast normalization cannot manufacture direction.
+ */
+function normalizeLuminanceContrast(luminance: Uint8ClampedArray): Uint8ClampedArray {
+  const histogram = new Uint32Array(256);
+  for (let index = 0; index < luminance.length; index += 1) {
+    histogram[luminance[index]] += 1;
+  }
+
+  const lowerTarget = Math.floor(luminance.length * 0.01);
+  const upperTarget = Math.ceil(luminance.length * 0.99);
+  let cumulative = 0;
+  let lower = 0;
+  let upper = 255;
+  for (let value = 0; value < 256; value += 1) {
+    cumulative += histogram[value];
+    if (cumulative > lowerTarget) {
+      lower = value;
+      break;
+    }
+  }
+  cumulative = 0;
+  for (let value = 0; value < 256; value += 1) {
+    cumulative += histogram[value];
+    if (cumulative >= upperTarget) {
+      upper = value;
+      break;
+    }
+  }
+
+  const dynamicRange = upper - lower;
+  if (dynamicRange < 24 || dynamicRange >= 220) {
+    return new Uint8ClampedArray(luminance);
+  }
+
+  const scale = 255 / dynamicRange;
+  const normalized = new Uint8ClampedArray(luminance.length);
+  for (let index = 0; index < luminance.length; index += 1) {
+    const value = luminance[index];
+    normalized[index] = value <= lower
+      ? 0
+      : value >= upper
+        ? 255
+        : Math.round((value - lower) * scale);
+  }
+  return normalized;
+}
+
 /** Estimate and correct a continuous in-plane barcode orientation; null means no safe estimate. */
 export function deskewLuminanceFrame(
   luminance: Uint8ClampedArray,
@@ -235,12 +276,12 @@ export function deskewLuminanceFrame(
 ): (ScannerLuminanceFrame & ScannerSkewEstimate) | null {
   const estimate = estimateScannerSkewAngle(luminance, width, height);
   if (!estimate) return null;
+  const contrastNormalized = normalizeLuminanceContrast(luminance);
   const corrected = rotateLuminanceByAngle(
-    luminance,
+    contrastNormalized,
     width,
     height,
     -estimate.angleDegrees,
-    'nearest',
   );
   return corrected ? { ...corrected, ...estimate } : null;
 }
