@@ -61,6 +61,7 @@ function rowsFromLegacyContent(content: string): ImportedStocktakeRow[] {
       barcode: parts[0] ?? '',
       quantity: parts.slice(1).join(','),
       sourceRow: index + 1,
+      sourceSheet: undefined,
       barcodeSource: 'BARCODE' as const,
     };
     return { ...row, issues: validateRow(row) };
@@ -416,8 +417,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     <tbody>
                       {visibleRows.map((row, visibleIndex) => {
                         const rowIndex = page * PAGE_SIZE + visibleIndex;
-                        return <tr key={row.sourceRow + '-' + rowIndex} className={row.issues.length ? 'has-error' : ''}>
-                          <td className="stocktake-import-source-row">{row.sourceRow}</td>
+                        return <tr key={(row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex} className={row.issues.length ? 'has-error' : ''}>
+                          <td className="stocktake-import-source-row">{row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}</td>
                           <td>{editingZone
                             ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
                                 onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
