@@ -1,6 +1,6 @@
 # SCAN-05 — Orthogonal ROI rotation decoding
 
-**Status:** Implemented on final consolidated PR #66. Staged PR #64 CI run #338 and final consolidated PR #66 CI run #387 passed, including the production-adapter integration suite. Physical iOS/Android QA remains pending.
+**Status:** Implemented on final consolidated PR #66. Staged PR #64 CI run #338 and final consolidated PR #66 CI run #395 passed, including production-adapter upright/rotation/deskew integration. Physical iOS/Android QA remains pending.
 
 ## Verified baseline
 
@@ -45,7 +45,7 @@ One clockwise quarter-turn covers both source directions: 90° input becomes 180
 - `scripts/test-scanner-rotation-baseline.mjs`: Code 128 runtime decode at 0°/180°, 180° metadata, EAN inheritance guards and production `TRY_HARDER` wiring.
 - `scripts/test-scanner-rotation.mjs`: pixel mapping, dimensions, invalid-input rejection and runtime Code 128, EAN-8 and EAN-13 decode after 90°/270° normalization.
 - `scripts/test-scanner-decoder-integration.mjs`: production `ZXingDecoderAdapter` integration for upright decode, third-valid-frame 90°/270° recovery, strict ROI crop and fail-closed no-full-frame-fallback behavior.
-- All suites are registered in preflight. CI #338 and #387 passed; #387 includes the production-adapter integration suite and the updated EAN rotation fixtures.
+- All suites are registered in preflight. CI #338 and #395 passed; #395 includes production-adapter integration and the updated EAN rotation fixtures.
 
 ## Device acceptance
 
