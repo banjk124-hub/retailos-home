@@ -1,20 +1,42 @@
-# SCAN-05/06 implementation status — orthogonal rotation and bounded deskew (2026-11-10)
+# SCAN-05/06 corrective implementation status — continuous orientation recovery (2026-11-10)
 
-**Status:** Implementation and automated follow-up are on `feat/scan-05-06-final-consolidation`; PR #66 remains Draft/open and not merged/deployed. Physical device acceptance remains outstanding.  
-**CI:** PR #66 run #395 passed full preflight (including production decoder upright/rotation/deskew integration), TypeScript, production build, GitHub Pages build and diff checks on the implementation head. Subsequent changes are documentation-only.
+**Baseline:** merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66).  
+**Corrective branch:** `fix/scan-05-06-continuous-orientation`.  
+**PR #66:** merged; its earlier automated checks did not complete physical device acceptance.  
+**Corrective CI/device status:** pending. Do not merge/deploy this corrective branch until CI, source review and physical iOS/Android acceptance pass.
 
-- SCAN-04 was merged/deployed by the user; the user confirms normal scanner operation after deployment.
-- ZXing baseline: `TRY_HARDER` supports 180° reversal for 1D readers. The runtime fixture verifies Code 128 at 0°/180°; EAN-8/EAN-13 inheritance is source-guarded, not separately runtime-fixture tested.
-- SCAN-05: pure clockwise 90° luminance transform, upright-first decode, one extra ROI pass every third frame after a miss. 90° normalizes to 180° and 270° normalizes to 0°.
-- SCAN-06: Sobel structure-tensor skew estimate, confidence gate, bounded 1.2°–12° inverse-angle bilinear correction, expanded ROI bounds, white fill and 4M-pixel allocation cap. One HybridBinarizer deskew pass follows failed upright/orthogonal paths.
-- Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, EAN-8/EAN-13 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
-- Added a production `ZXingDecoderAdapter` integration suite: actual adapter upright decode, scheduled 90°/270° recovery and +5° deskew on the third valid ROI frame, strict reticle crop and no full-frame fallback; registered in preflight.
-- Audit follow-up decouples processing cadence from diagnostics sampling using a dedicated valid-ROI frame sequence; deterministic regression tests cover cadence and invalid sequence values.
-- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code), #368 (pre-audit-fix consolidated head), #387 (adapter integration) and #395 (adapter deskew integration) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
-- No camera/session/lifecycle, ROI mapping, UI/CSS, barcode validation, business flow, dependency or deployment changes.
-- Physical iOS Safari/PWA and Android Chrome/PWA QA remains pending. CI does not prove physical optical accuracy, device CPU cost or latency.
+## Audit findings
 
-**Next gate:** complete the physical device matrix and low-end performance comparison, then perform final consolidated diff/docs audit before merge.
+- The previous SCAN-05 path tried one 90° clockwise ROI rotation only every third valid ROI frame after an upright miss. It did not provide continuous intermediate-angle normalization.
+- The previous SCAN-06 estimator used one global Sobel structure tensor and accepted only 1.2°–12°. It could be dominated by non-barcode packaging edges and left larger intermediate angles unsupported.
+- The shared session used a 110 ms minimum decode interval. Rotation and deskew opportunities were therefore sparse.
+- The production adapter was wired correctly, but its integration fixtures covered only upright, 90°/270° and +5° deskew; broad continuous-angle and combined production-path coverage was absent.
+- Previous deskew diagnostics counted only successful estimates as attempts, hiding estimator invocations that failed confidence gates.
+
+## Corrective implementation in progress
+
+- Replace the global tensor with a 180-bin Sobel orientation histogram, directional-energy and local-coherence gates, and a continuous signed half-turn estimate.
+- Extend bilinear correction to the full -90°…+90° normalization range, retaining expanded bounds and a bounded allocation.
+- Run upright, quarter-turn and continuous correction candidates on the same valid ROI frame after a miss; try both HybridBinarizer and GlobalHistogramBinarizer.
+- Evaluate both the original and quarter-turned ROI for the smaller correction first, then try the alternate representation if ZXing still misses.
+- Increase minimum session decode sampling from 110 ms to 70 ms. Decode remains serialized; no overlapping ZXing calls or unbounded work queue.
+- Correct diagnostics so estimator invocations, rejected estimates and successful decode hits are distinguishable.
+- Expand pure and production-adapter tests to continuous positive/negative angles, combined quarter-turn plus residual skew, strict ROI and fail-closed cases.
+
+## Protected invariants
+
+Strict module-owned ROI/no full-frame fallback; camera acquisition and lease ownership; camera constraints and autofocus; lifecycle/recovery; module-owned video presentation; barcode validation and result delivery; Home lookup; Stocktake form-fill, duplicate rows and explicit save. Perspective correction, curved-label dewarping and camera changes remain out of scope.
+
+## Acceptance gate
+
+- [ ] Run full preflight, TypeScript, production build and GitHub Pages build on the corrective head.
+- [ ] Review full source diff and verify estimator → transform → production ZXing decoder call order.
+- [ ] Verify continuous-angle and combined-angle tests through the actual adapter.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA tests in Home and Stocktake.
+- [ ] Record accuracy, first-result latency, per-stage duration and UI responsiveness on representative devices.
+- [ ] User explicitly approves merge/deploy after reviewing evidence.
+
+
 ---
 
 ---
