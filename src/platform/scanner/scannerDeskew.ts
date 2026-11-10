@@ -157,7 +157,7 @@ export function estimateScannerSkewAngle(
 
 /**
  * Rotate a grayscale ROI by a continuous in-plane angle (positive = clockwise).
- * The output bounds expand to contain the full rotated input. Bilinear
+ * The output bounds expand to contain the full rotated input.
  * Bilinear sampling softens resampling artifacts; uncovered pixels are white.
  */
 export function rotateLuminanceByAngle(

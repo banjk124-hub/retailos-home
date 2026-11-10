@@ -295,7 +295,7 @@ Status: engineering constraints for the planned Phase 1.2G–1.2J work; not a cl
 - Measure before optimizing. Keep instrumentation privacy-safe: no barcode payloads and no unnecessary persistent device identifiers.
 
 ### Current source facts to preserve
-- `UniversalScannerSession` currently uses a 110 ms minimum decode interval. Older 70 ms statements in historical Phase 1.2F text are superseded.
+- `UniversalScannerSession` currently uses a 70 ms minimum decode interval (SCAN-05/06, PR #67). Older 110 ms statements in SCAN-04 and pre-correction records are historical and superseded.
 - Camera stream ownership uses reference-counted leases after P0 merge. Session-level release and app-level global invalidation are distinct operations.
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save, duplicate Stocktake rows, manual entry and EAN-8/EAN-13/CODE-128 validation.
 - Any future rotation/perspective/deskew work must be conditional and measured; do not penalize the normal scan path without evidence.
@@ -587,7 +587,7 @@ SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the act
 - A pure resolver validates the coordinate-space tag and rectangle, then converts normalized bounds into integer source pixels using floor-leading/ceil-trailing rounding and source-frame clamping.
 - ZXing draws only that source crop into its working canvas and decodes the ROI. The full-frame-first pass and fixed centered fallback are removed.
 - Missing or invalid geometry is a decode miss, not a decoder error, and must never trigger full-frame fallback.
-- Preserve the supported barcode allowlist, existing binarizer schedule, 1.5× aspect-preserving ROI upscale, 110 ms frame-loop cadence, validation and result-delivery policy.
+- At the SCAN-04 stage, the supported barcode allowlist, then-current binarizer schedule, 1.5× aspect-preserving ROI upscale and 110 ms cadence were preserved. The cadence/binarizer policy was superseded by SCAN-05/06 (ADR-026/027); strict ROI, allowlist, validation and result delivery remain.
 
 ### Constraints
 - No camera acquisition/lease, readiness, lifecycle/recovery, frame scheduling, CSS, Home/Stocktake UI or business-flow changes.
@@ -600,7 +600,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Continuous ROI orientation recovery (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical iOS/Android QA remains pending.
+**Status:** Accepted and merged by PR #67 at `9406ac30d53bc9984912bd1928a32fd78157cf60`; final PR-head CI #432 passed. User confirms deployed operation is good.
 
 ### Context
 The prior orthogonal-only extension ran every third valid ROI frame and did not cover intermediate in-plane angles. Device testing reported missed sideways barcodes, blind angles and slow recognition. The user clarified that accuracy and sensitivity take priority over a strict ultra-low-end CPU budget.
@@ -624,7 +624,7 @@ See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical optical QA remains pending.
+**Status:** Accepted and merged by PR #67 at `9406ac30d53bc9984912bd1928a32fd78157cf60`; final PR-head CI #432 passed. User confirms deployed operation is good.
 
 ### Context
 The previous estimator used one global Sobel structure tensor and accepted only 1.2°–12°. This left large intermediate angles unsupported and could be dominated by packaging text, borders or graphics. A continuous estimate must be validated by the production decoder, not accepted as a barcode result by itself.
@@ -632,7 +632,7 @@ The previous estimator used one global Sobel structure tensor and accepted only 
 ### Decision
 - Estimate gradient orientation from a 180-bin Sobel histogram, using directional-energy concentration and local coherence gates.
 - Normalize modulo 180° to a signed ±90° correction range; ignore estimates below 0.65° and fail closed on ambiguous textures.
-- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–220 luminance levels), then inverse-angle bilinear ROI correction with expanded bounds, white fill and a 6,000,000-pixel allocation ceiling.
+- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–219 luminance levels), then inverse-angle bilinear ROI correction with expanded bounds, white fill and a 6,000,000-pixel allocation ceiling.
 - Evaluate the original and quarter-turned ROI representations, preferring the smaller correction angle first and retaining the alternate as fallback.
 - Run HybridBinarizer and GlobalHistogramBinarizer for each candidate; ZXing format/checksum validation remains authoritative.
 - Count estimator invocations, rejected estimates and decode hits independently. Suppress only the library's expected `NotFoundException` console warning during synchronous misses; forward unrelated warnings.

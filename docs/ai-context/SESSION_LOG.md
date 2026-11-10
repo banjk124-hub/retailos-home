@@ -1,3 +1,15 @@
+### 2026-11-10 — SCAN-05/06 post-merge documentation audit
+
+- Confirmed PR #67 is merged/closed at 9406ac30d53bc9984912bd1928a32fd78157cf60; main compares identical to the merge commit.
+- Confirmed final PR head c9794a5422aa2d6ace16480c2948c1bae3e0d06b passed CI run #432, including full preflight, TypeScript, production build, GitHub Pages build and diff checks. CI #425 passed the executable source head e0b28787f40db8c811bc7fde912bae2558289198; the 13 commits between the two heads were documentation-only.
+- User confirms deployment and successful real-world testing; scanner is working well with sensitive multi-stage recognition.
+- Found stale docs: SCAN-05/06 and ADRs still said Draft/pending; Implementation Status/Roadmap/Handoff still instructed merge/deploy; Acceptance Checklist still had physical acceptance unchecked; Architecture and SCAN-04 retained superseded 110 ms/every-third-frame binarizer statements.
+- Updated the current SCAN-05/06 specs, implementation status, roadmap, acceptance, handoff, project context, ADRs, architecture, SCAN-04 supersession note and changelog.
+- Recorded user-confirmed functional acceptance without inventing exact device matrix, latency, CPU or success-rate measurements.
+- No executable logic, tests, configuration, dependency or deployment code changed. One duplicated word in the scannerDeskew.ts resampling comment was corrected.
+- Remaining optional evidence: detailed iOS/Android × Home/Stocktake × symbology/orientation matrix and quantitative first-result latency, per-stage timing, CPU responsiveness and decode success-rate measurements.
+
+---
 ### 2026-11-10 — SCAN-06 low-contrast correction and CI #425
 
 - A 40/255 contrast Code 128 fixture decoded upright but failed after an intermediate-angle correction, even after removing the synthetic rotation's white border. A direct corrected-pixel test isolated the loss to the transformed candidate, not the orientation estimate.

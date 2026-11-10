@@ -1,43 +1,51 @@
-# SCAN-05/06 corrective implementation status — continuous orientation recovery (2026-11-10)
+# SCAN-05/06 — merged, deployed and user-validated (2026-11-10)
 
-**Baseline:** merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66).
-**Corrective branch:** `fix/scan-05-06-continuous-orientation`.
-**PR #66:** merged; its earlier automated checks did not complete physical device acceptance.
-**Corrective CI:** run #425 passed on code head `e0b28787f40db8c811bc7fde912bae2558289198` (full preflight, TypeScript, production build, Pages build and diff checks). **Physical device QA:** pending. Do not merge/deploy until device acceptance passes.
+**Repository:** banjk124-hub/retailos-home
+**Current main:** 9406ac30d53bc9984912bd1928a32fd78157cf60 (PR #67 merge commit).
+**PR:** [#67 — Continuous barcode orientation recovery](https://github.com/banjk124-hub/retailos-home/pull/67), merged 2026-11-10.
+**Final PR head:** c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
+**CI:** run #432 passed full preflight on the final PR head. CI #425 passed the executable source head e0b28787f40db8c811bc7fde912bae2558289198; the 13 commits between those heads were documentation-only.
+**Deployment/device outcome:** user confirms the PR was merged, deployed and tested; scanner operation is good and multi-stage recognition feels sensitive.
 
-## Audit findings
+## Corrective source now in main
 
-- The previous SCAN-05 path tried one 90° clockwise ROI rotation only every third valid ROI frame after an upright miss. It did not provide continuous intermediate-angle normalization.
-- The previous SCAN-06 estimator used one global Sobel structure tensor and accepted only 1.2°–12°. It could be dominated by non-barcode packaging edges and left larger intermediate angles unsupported.
-- The shared session used a 110 ms minimum decode interval. Rotation and deskew opportunities were therefore sparse.
-- The production adapter was wired correctly, but its integration fixtures covered only upright, 90°/270° and +5° deskew; broad continuous-angle and combined production-path coverage was absent.
-- Previous deskew diagnostics counted only successful estimates as attempts, hiding estimator invocations that failed confidence gates.
+- Replaced the former global Sobel structure tensor with a 180-bin Sobel gradient-orientation histogram, directional-energy concentration and local-coherence gates.
+- Normalizes the estimated in-plane orientation continuously across a signed half-turn range of -90°…+90°; ignores estimates below 0.65° and rejects low-confidence/ambiguous textures.
+- Retains an exact 90° clockwise ROI transform as the fast sideways path. Upright, quarter-turn and continuous correction are now attempted on the same valid ROI frame after an upright miss; no every-third-frame rotation scheduler remains.
+- Estimates both the original and quarter-turned ROI representations, then tries correction candidates in ascending absolute angle.
+- Uses inverse-angle bilinear resampling with expanded bounds and a 6,000,000-pixel allocation cap.
+- Applies a percentile-based contrast stretch only when the ROI's 1st–99th percentile luminance range is compressed (24–219 levels). Orientation confidence is calculated from original pixels.
+- Tries HybridBinarizer and GlobalHistogramBinarizer for each orientation candidate. ZXing format/checksum result remains the final decode authority.
+- Reduces the session minimum decode interval from 110 ms to 70 ms. Calls remain serialized; no overlapping ZXing reader use or unbounded queue.
+- Separates deskew estimator attempts, confidence/angle-gate misses and successful decode hits in diagnostics.
+- Suppresses only the expected ZXing 0.23.0 NotFoundException warning during synchronous decode misses; unrelated warnings continue to be forwarded.
 
-## Corrective implementation completed on Draft PR #67
+## Automated verification
 
-- Replaced the global tensor with a 180-bin Sobel orientation histogram, directional-energy and local-coherence gates, and a continuous signed half-turn estimate.
-- Extended bilinear correction to the full -90°…+90° normalization range, retaining expanded bounds and a bounded allocation.
-- Rewired the production decoder to run upright, quarter-turn and continuous correction candidates on the same valid ROI frame after a miss; try both HybridBinarizer and GlobalHistogramBinarizer.
-- Evaluate both the original and quarter-turned ROI for the smaller correction first, then try the alternate representation if ZXing still misses.
-- Increased minimum session decode sampling from 110 ms to 70 ms. Decode remains serialized; no overlapping ZXing calls or unbounded work queue.
-- Corrected diagnostics so estimator invocations, rejected estimates and successful decode hits are distinguishable.
-- Added percentile-based contrast normalization before rotation only when the ROI's 1st–99th percentile luminance range is compressed (24–220 levels); orientation confidence remains based on original pixels.
-- Expanded pure and production-adapter tests to continuous positive/negative angles, low-contrast Code 128 (40/255), EAN-8/EAN-13, combined quarter-turn plus residual skew, ambiguous texture, strict ROI and fail-closed cases.
-- Suppress only ZXing 0.23.0's expected `NotFoundException` console warning during synchronous decode misses; unrelated warnings are forwarded. CI run #411 confirms the integration test remains quiet.
+- [x] CI #425 passed full preflight on the final executable source head: continuous positive/negative angle sweep, 90°/270°, combined quarter-turn plus residual skew, Code 128, EAN-8/EAN-13, low-contrast 40/255 fixture, ambiguous texture, strict ROI/no-fallback, TypeScript, production build, Pages build and diff checks.
+- [x] CI #432 passed full preflight on final PR head c9794a5422aa2d6ace16480c2948c1bae3e0d06b, including the documentation-only synchronization commits.
+- [x] Main is identical to PR #67 merge commit; no unmerged corrective source remains.
+
+## User-reported operational acceptance
+
+- [x] User confirms merge and deployment are complete.
+- [x] User confirms scanner works well in actual use and recognition is sensitive across multiple processing paths.
+- [x] No blocking post-deploy regression was reported.
+
+## Evidence not quantified in this record
+
+- Detailed device/browser × Home/Stocktake × symbology matrix was not provided.
+- First-result latency, per-stage timing, CPU utilization, long-task frequency and decode success-rate percentages were not provided.
+- The synthetic 40/255 fixture is a regression fixture only; it is not a calibrated real-world optical sensitivity threshold.
+- These are useful future performance/coverage measurements, not unresolved release blockers given the user's explicit post-deploy acceptance.
 
 ## Protected invariants
 
-Strict module-owned ROI/no full-frame fallback; camera acquisition and lease ownership; camera constraints and autofocus; lifecycle/recovery; module-owned video presentation; barcode validation and result delivery; Home lookup; Stocktake form-fill, duplicate rows and explicit save. Perspective correction, curved-label dewarping and camera changes remain out of scope.
+Strict module-owned ROI/no full-frame fallback; camera acquisition and lease ownership; camera constraints/autofocus; lifecycle/recovery; module-owned video presentation; barcode validation/result delivery; Home lookup; Stocktake form-fill, duplicate rows and explicit save. Perspective correction, curved-label dewarping and camera changes remain out of scope for SCAN-05/06.
 
-## Acceptance gate
+## Next action
 
-- [x] Run full preflight, TypeScript, production build and GitHub Pages build on the corrective code head (CI #411).
-- [x] Review full source diff and verify estimator → transform → production ZXing decoder call order.
-- [x] Verify continuous-angle, medium-low contrast and combined-angle tests through the actual adapter.
-- [ ] Physical iOS Safari/PWA and Android Chrome/PWA tests in Home and Stocktake.
-- [ ] Record accuracy, first-result latency, per-stage duration and UI responsiveness on representative devices.
-- [ ] User explicitly approves merge/deploy after reviewing evidence.
-
+SCAN-05/06 is closed as a completed corrective slice. Do not reopen or alter its algorithm without a reproducible defect or measured performance issue. Continue with the next separately scoped roadmap item only after confirming the user's intended priority.
 
 ---
 

@@ -1,3 +1,14 @@
+# Current scanner state — SCAN-05/06 merged and user-validated (2026-11-10)
+
+- PR #67 merged to main at 9406ac30d53bc9984912bd1928a32fd78157cf60; current main matches the merge commit.
+- User confirms deployment and successful operational testing. Scanner recognition is working well and feels sensitive across multiple processing paths.
+- Final PR-head CI #432 passed full preflight; executable source head CI #425 also passed.
+- Current decoder minimum interval is 70 ms, not the historical 110 ms SCAN-04 value. Decode remains serialized and strict module-owned ROI/no-fallback remains mandatory.
+- Current orientation path uses upright decode, a 90° fast path, continuous ±90° in-plane estimation, bounded bilinear correction and both ZXing binarizers.
+- No quantitative per-device latency, CPU, success-rate or detailed optical matrix was provided; do not invent such measurements.
+- SCAN-05/06 is complete. Future scanner work should be separately scoped and evidence-driven; preserve camera/session/lifecycle, Home and Stocktake contracts.
+
+---
 ## Current project focus — scanner Torch investigation closed (2026-11-09)
 
 - PR #51/#52: production capability-gated Torch control is merged.
@@ -107,7 +118,7 @@ Repository source and current tests/config are authoritative for actual behavior
 ## Scanner roadmap focus update (2026-11-07)
 - P0 camera lifecycle serialization is merged to `main` at `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`; GitHub CI passed TypeScript and production preflight. Real-device QA and deployment status remain separate verification items.
 - The next scanner focus is measurement-led: establish a performance baseline, then Phase 1.2G (rendering, motion, interaction and lifecycle smoothness), followed by conditional decoder optimization (1.2H), angled barcode capability (1.2I), and cross-platform validation (1.2J).
-- Current source decode cadence is 110 ms; older 70 ms notes are historical and stale.
+- Historical note (2026-11-07): source decode cadence was 110 ms before SCAN-05/06. PR #67 superseded it with a 70 ms minimum interval.
 - Keep roadmap/status/handoff synchronized. Do not claim planned phases are implemented; do not change source code in documentation-only work.
 
 

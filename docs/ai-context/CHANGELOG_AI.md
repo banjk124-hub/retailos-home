@@ -12,6 +12,16 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Unverified:
 - Risks / rollback:
 
+## 2026-11-10 — SCAN-05/06 post-merge audit and deployed acceptance
+
+- PR #67 [SCAN-05/06] Continuous barcode orientation recovery is merged and closed at merge commit 9406ac30d53bc9984912bd1928a32fd78157cf60; main is identical to that commit at audit time.
+- Final PR head c9794a5422aa2d6ace16480c2948c1bae3e0d06b passed GitHub Actions CI run #432 (full preflight, TypeScript, production build, GitHub Pages build and diff checks). Executable source head e0b28787f40db8c811bc7fde912bae2558289198 passed CI #425; the 13 commits between those heads were documentation-only.
+- User confirms deployment and successful real-world operation; recognition is described as sensitive across multiple processing paths.
+- Audited the merged source and technical records. Found stale Draft/pending/deploy wording, stale CI #411 references, and architecture/current-source notes still claiming a 110 ms cadence and every-third-frame binarizer policy.
+- Updated SCAN-05/06, SCAN-04 supersession note, ADR-026/027, Architecture, Implementation Status, Roadmap, Acceptance Checklist, AI Handoff, Project Context and Session Log.
+- Functional acceptance is recorded as user-confirmed. Detailed device/browser/module/symbology matrix and quantitative latency/CPU/success-rate evidence remain unreported and are not claimed.
+- No executable logic or runtime behavior changed. One duplicated word in the scannerDeskew.ts resampling comment was corrected; this is a documentation/source-comment synchronization branch.
+
 ## 2026-11-10 — SCAN-05/06 corrective continuous orientation recovery
 
 - Intent: correct the missed sideways and intermediate-angle barcode cases reported after the earlier consolidated delivery; prioritize accuracy and responsiveness over a strict ultra-low-end CPU budget.
