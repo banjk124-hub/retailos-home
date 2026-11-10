@@ -13,6 +13,7 @@ export type ScannerLuminanceFrame = {
 
 // The estimate is modulo 180° because a 1D barcode's bars have no directional
 // polarity. The signed range [-90°, 90°] is sufficient to align scanlines.
+// Ignore sub-pixel orientation noise; larger estimates are normalized continuously.
 const MIN_SKEW_DEGREES = 0.65;
 const MAX_SKEW_DEGREES = 90;
 const MIN_DIRECTIONAL_ENERGY_RATIO = 0.18;
