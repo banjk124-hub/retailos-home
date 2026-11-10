@@ -85,11 +85,6 @@ assert.deepEqual(scanned.mappings[1], {
 });
 assert.equal(scanned.unsupportedRows.length, 0);
 
-const unsupported = runtime.findHeaders(new Map([[8, new Map([
-  [1, { value: "MÃ HÀNG NỘI BỘ", type: "s", styleIndex: 0 }],
-  [3, { value: "THỰC TẾ (KG)", type: "s", styleIndex: 0 }],
-])]]));
-assert.equal(unsupported.mappings.length, 0);
 assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
   [1, { value: "MÃ HÀNG NỘI BỘ", type: "s", styleIndex: 0 }],
   [3, { value: "THỰC TẾ (KG)", type: "s", styleIndex: 0 }],
