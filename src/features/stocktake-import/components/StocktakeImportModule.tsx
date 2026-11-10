@@ -38,7 +38,7 @@ function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): s
   const issues: string[] = [];
   const barcode = row.barcode.trim();
   const quantity = row.quantity.trim();
-  if (!barcode) issues.push('Thiếu BARCODE/GOLDCODE.');
+  if (!barcode) issues.push('Thiếu BARCODE/CODE/GOLDCODE/TILLCODE.');
   else if (/[\r\n,]/.test(barcode)) issues.push('Mã hàng chứa dấu phẩy hoặc ký tự xuống dòng.');
   if (!quantity) issues.push('Thiếu kết quả thực tế.');
   else if (!/^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)(?:[eE][+-]?\d+)?%?$/.test(quantity)) {
@@ -201,6 +201,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       const knownSources = result?.sourceFiles ?? [];
       const knownFingerprints = new Set(knownSources.map((source) => source.fingerprint));
       const knownNames = new Map(knownSources.map((source) => [source.name, source.fingerprint]));
+      if (result && knownSources.length === 0) knownNames.set(result.sourceFileName, 'legacy-unknown');
       const incoming: StocktakeImportResult[] = [];
       const duplicateFiles: string[] = [];
       const sameNameDifferentContent: string[] = [];
@@ -223,16 +224,20 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       const existingRowCounts = new Map((result?.zones ?? []).map((zone) => [zone.zoneCode, zone.rows.length]));
       const seenRows = new Map<string, number>();
       const conflictCodes = new Set<string>();
+      const conflictBaseRows = new Map<string, number>();
       for (const parsed of incoming) {
         for (const zone of parsed.zones) {
           const priorRows = existingRowCounts.get(zone.zoneCode) ?? seenRows.get(zone.zoneCode);
-          if (priorRows !== undefined) conflictCodes.add(zone.zoneCode);
+          if (priorRows !== undefined) {
+            conflictCodes.add(zone.zoneCode);
+            if (!conflictBaseRows.has(zone.zoneCode)) conflictBaseRows.set(zone.zoneCode, priorRows);
+          }
           seenRows.set(zone.zoneCode, (priorRows ?? 0) + zone.rows.length);
         }
       }
       const zoneConflicts = [...conflictCodes].map((zoneCode) => ({
         zoneCode,
-        existingRows: existingRowCounts.get(zoneCode) ?? 0,
+        existingRows: conflictBaseRows.get(zoneCode) ?? 0,
         incomingRows: incoming.reduce((sum, item) =>
           sum + (item.zones.find((zone) => zone.zoneCode === zoneCode)?.rows.length ?? 0), 0),
       }));
@@ -276,6 +281,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setPage(0);
     setPendingImport(null);
     setShowNewSessionConfirm(false);
+    setError('');
     setNotice('Đã tạo phiên mới. Dữ liệu lịch sử trước đó vẫn được giữ lại.');
   };
 
