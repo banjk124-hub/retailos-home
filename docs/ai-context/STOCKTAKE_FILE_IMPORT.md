@@ -5,7 +5,7 @@
 **Status:** PR #70 merged, deployed and manually accepted by the user. Follow-up implementation is in progress on `feat/stocktake-import-session-output`; not yet merged/deployed.
 **Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 **Follow-up branch:** `feat/stocktake-import-session-output`.
-**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI/device QA pending).
+**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI #509 passed on code head `37b5f69d`; physical device QA pending).
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
@@ -154,14 +154,15 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - Same filename with different content is a separate warning and requires explicit confirmation.
 - If a new source file contains a zone already present in the session, or another file in the same batch contains that zone, stage the incoming batch and ask the operator to confirm. Never silently merge or replace.
 - Conflict review supports explicit merge of all listed duplicate-zone rows or skipping the duplicate-zone additions while retaining non-conflicting zones. Existing rows are never replaced.
-- Rows retain `sourceFileName`, `sourceSheet` and `sourceRow` provenance. The history record stores optional `sourceFiles` metadata with fingerprint, size and lastModified. Old history records without this field remain readable.
+- Rows retain `sourceFileName`, `sourceFileId` (16-character SHA-256 prefix), `sourceSheet` and `sourceRow` provenance. The history record stores optional `sourceFiles` metadata with the full fingerprint, size and lastModified. Old history records without this field remain readable.
 - The session is updated only after the operator confirms the staged batch. Parse failure or cancellation leaves the active session unchanged.
 - If an active zone has unsaved edits, adding files is blocked until save or cancel.
 - A new session is an explicit action. It clears only the active workspace; saved history remains available.
 
 ### Follow-up verification gates
 
-- [ ] TypeScript, production build, Pages build and full preflight on the follow-up PR head.
+- [x] TypeScript, production build, Pages build and full preflight passed on code head `37b5f69d` (run #509). Later documentation-only updates do not change runtime code.
+
 - [ ] Source precedence tests for BARCODE, CODE, GOLDCODE, TILLCODE and legacy fallback.
 - [ ] One-file, multi-file, repeated exact file, same-name/different-content, repeated zone and additive second-batch scenarios.
 - [ ] Merge/skip behavior, source provenance, session save and history restore.

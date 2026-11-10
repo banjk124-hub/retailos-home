@@ -730,7 +730,7 @@ Validate Excel display parity for integer, fixed-decimal, General and percent fo
 
 ## ADR-031 — Output layer transition and additive multi-file import sessions (2026-11-10)
 
-**Status:** Implemented on follow-up branch `feat/stocktake-import-session-output`, draft PR #71; CI and device acceptance pending.
+**Status:** Implemented on follow-up branch `feat/stocktake-import-session-output`, draft PR #71; CI #509 passed on code head `37b5f69d`; physical device acceptance pending.
 
 ### Context
 

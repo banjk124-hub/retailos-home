@@ -7,7 +7,7 @@
 - Update code source resolution to BARCODE → CODE → GOLDCODE → TILLCODE, with legacy MÃ VẠCH only as a final fallback.
 - Add multiple-file selection, additive sessions, SHA-256 duplicate-file detection, staging, and explicit duplicate-zone merge/skip confirmation.
 - Keep all output methods on the same payload and preserve row-level source provenance and history compatibility.
-- Required gates: full CI/preflight, desktop/iOS/Android QA, copy/textarea selection and TXT/ZIP parity.
+- Full CI/preflight passed on code head `37b5f69d` (run #509). Remaining gate: desktop/iOS/Android manual QA for copy/textarea selection, file picking, session restore and TXT/ZIP parity.
 - Module status: `modules/EXPORT_FILE.md`. Detailed contract: `STOCKTAKE_FILE_IMPORT.md`.
 
 

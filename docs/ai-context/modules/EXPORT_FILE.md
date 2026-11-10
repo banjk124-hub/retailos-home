@@ -9,7 +9,7 @@
 **Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
 **Follow-up branch base:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
-**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI/device QA pending)
+**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI #509 passed; physical device QA pending)
 
 ## 1. Purpose and current capability
 
@@ -76,7 +76,8 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 - [x] User confirmed: remove date/time only from filenames; preserve date/time in the `NHAN VIEN` content line.
 - [ ] Compare Excel displayed quantity values with exported TXT, including `19,236` and fixed-decimal/General formats.
 - [x] PR #70 acceptance and operational testing confirmed by the user.
-- [ ] Follow-up CI and regression coverage for CODE/GOLDCODE/TILLCODE precedence, in-zone output/editor transition, multi-file import, additive session and conflict review.
+- [x] Follow-up TypeScript, production/Pages builds and full preflight passed on code commit `37b5f69d8dedcd36ed8a9273131eb60b78bd0f13` (GitHub Actions run #509).
+- [ ] Manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA acceptance.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
 - [ ] Verify per-zone correction, save, history restore, individual TXT and ZIP.
 - [ ] Manual QA on desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA.
