@@ -78,3 +78,5 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Final head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`; GitHub Actions run #350 passed baseline, orthogonal rotation, bounded deskew, existing scanner ROI regressions, TypeScript, production build, GitHub Pages build and diff checks.
 - Staged PRs #63/#64/#65 were closed without merging; their changes are included in #66. PR #66 remains Draft/open/unmerged/undeployed.
 - Device QA remains mandatory on iOS Safari/PWA and Android Chrome/PWA, including low-end latency/CPU comparison.
+
+- Final consolidated PR #66 CI run #360 passed after the final branch was rebased onto the restored `main` baseline. The PR remains unmerged/undeployed pending physical device acceptance.
