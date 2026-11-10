@@ -43,8 +43,9 @@ One clockwise quarter-turn covers both source directions: 90° input becomes 180
 ## Regression coverage
 
 - `scripts/test-scanner-rotation-baseline.mjs`: Code 128 runtime decode at 0°/180°, 180° metadata, EAN inheritance guards and production `TRY_HARDER` wiring.
-- `scripts/test-scanner-rotation.mjs`: pixel mapping, dimensions, invalid-input rejection and runtime Code 128 decode after 90°/270° normalization.
-- Both suites are registered in preflight. CI #338 and #368 passed the pre-follow-up baseline; the latest audit follow-up requires a fresh CI run.
+- `scripts/test-scanner-rotation.mjs`: pixel mapping, dimensions, invalid-input rejection and runtime Code 128, EAN-8 and EAN-13 decode after 90°/270° normalization.
+- `scripts/test-scanner-decoder-integration.mjs`: production `ZXingDecoderAdapter` integration for upright decode, third-valid-frame 90°/270° recovery, strict ROI crop and fail-closed no-full-frame-fallback behavior.
+- All suites are registered in preflight. CI #338 and #368 passed the pre-follow-up baseline; the latest audit follow-up requires a fresh CI run.
 
 ## Device acceptance
 
