@@ -638,9 +638,19 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                         <span>{activeZone.rows.length} dòng · TXT UTF-8</span>
                       </div>
                       {outputReady
-                        ? <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
-                            aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
-                            readOnly spellCheck={false} wrap="off" />
+                        ? <>
+                            <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
+                              aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
+                              readOnly spellCheck={false} wrap="off"
+                              onKeyDown={(event) => {
+                                if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  event.currentTarget.setSelectionRange(0, event.currentTarget.value.length);
+                                }
+                              }} />
+                            <small className="stocktake-import-output-hint">Chọn vùng nội dung rồi nhấn Ctrl+A, Ctrl+C; hoặc dùng nút Sao chép TXT.</small>
+                          </>
                         : <div className="stocktake-import-output-unavailable" role="status">
                             Output chưa sẵn sàng. Hãy mở kiểm kê, xử lý lỗi và lưu vùng trước khi sao chép hoặc tải xuống.
                           </div>}
