@@ -13,17 +13,17 @@
 
 ---
 
-# Current scanner handoff — SCAN-03 module-owned preview regions (2026-11-10)
+# Historical handoff — SCAN-03 module-owned preview regions (completed 2026-11-10)
 
 - SCAN-01 merged by PR #58; SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`.
-- SCAN-02 post-merge audit follow-up is PR #60; its corrected DOM-boundary test guard passed full CI run #301. Merge PR #60 before merging dependent SCAN-03.
-- SCAN-03 branch: `feat/scan-03-module-region-integration`; PR #61 is Draft and GitHub Actions run #309 passed full preflight/build. Merge PR #60 first, then review PR #61.
+- SCAN-02 audit follow-up PR #60 is merged; its corrected DOM-boundary guard passed full CI run #301.
+- SCAN-03 merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; final PR-head CI run #312 passed. User confirms iOS/Android geometry and existing Home/Stocktake flows were checked without detected issues.
 - Home and Stocktake retain independent video/reticle DOM and presentation. New feature-level adapter measures DOMRects and computed object-fit/object-position, clips reticle to visible content and maps to source coordinates.
 - `ScannerSession.setScanRegion()/getScanRegion()` store a defensive source-region snapshot. Updates do not restart camera, decoder or frame loop.
 - Decoder still receives the full video. No ROI-only decode, crop, rotation, deskew, perspective, barcode validation or cadence changes in SCAN-03.
 - Protect camera lease/refcount, single-claim handoff, lifecycle/recovery, preview readiness, ZXing, validation, Torch, feedback, Home lookup and Stocktake save/revision/export.
-- Run full preflight/CI and inspect the exact diff. Physical iOS Safari/PWA and Android Chrome/PWA geometry alignment QA is required after deployment.
-- No merge/deploy without explicit user approval.
+- SCAN-03 is complete; decoder consumption was intentionally deferred to SCAN-04.
+- No further SCAN-03 merge/deploy action is pending.
 
 Canonical design: `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md`.
 
