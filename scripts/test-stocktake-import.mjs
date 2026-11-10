@@ -221,7 +221,12 @@ assert.match(component, /navigator\.clipboard\.writeText\(activeZone\.content\)/
 assert.match(component, /downloadText\(zone\.fileName, zone\.content\)/);
 assert.match(component, /zip\.file\(zone\.fileName, zone\.content\)/);
 assert.doesNotMatch(component, /document\.getSelection|selectAll/);
-assert.match(component, /stocktake-import-zone-layer/);
+assert.match(component, /stocktake-import-editor-layer/);
+assert.match(component, /stocktake-import-output-details/);
+assert.match(component, /stocktake-import-table-toolbar/);
+assert.match(component, /historyPersisted/);
+assert.match(component, /noticeTone/);
+assert.doesNotMatch(component, /zoneLayer|setZoneLayer/, "Editor and TXT preview must share one workspace instead of switching layers.");
 assert.match(component, /handleFiles/);
 assert.match(component, /confirmPendingImport/);
 assert.match(component, /sameNameDifferentContent/);
@@ -231,7 +236,7 @@ assert.match(component, /sourceFileName/);
 assert.match(component, /sourceFileId/);
 assert.match(component, /updateRow/);
 assert.match(component, /Chỉnh sửa/);
-assert.match(component, /Lưu vùng/);
+assert.match(component, /Lưu thay đổi/);
 assert.match(component, /PAGE_SIZE = 100/);
 assert.match(component, /blockingIssues\.length/);
 assert.doesNotMatch(component, /slice\(0,\s*80\)/);
@@ -252,8 +257,9 @@ assert.doesNotMatch(registry, /ModuleDataId/, "Workflow identity must not depend
 assert.equal(snapshotService.includes("stocktake-import"), false, "The local workflow must not enter snapshot synchronization.");
 assert.match(styles, /grid-template-columns:210px minmax\(0,1fr\)/);
 assert.match(styles, /stocktake-import-output-textarea/);
-assert.match(styles, /stocktake-import-zone-layer-panel/);
-assert.match(styles, /is-inactive/);
+assert.match(styles, /stocktake-import-preview-actions/);
+assert.match(styles, /stocktake-import-workspace-enter/);
+assert.match(styles, /stocktake-import-state/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
 
