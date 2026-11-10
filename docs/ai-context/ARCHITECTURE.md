@@ -527,7 +527,7 @@ No change to getUserMedia constraints, 1280×720/30 FPS targets, autofocus, came
 
 
 ## ADR-022 — Module-owned scanner input contract (2026-11-10)
-**Status:** Accepted in SCAN-01 for the type boundary; implementation of mapping and runtime consumption is deferred.
+**Status:** SCAN-01 contract merged by PR #58; geometry mapping and Home/Stocktake wiring were completed in SCAN-02/03. SCAN-04 consumes the mapped source region.
 
 The module contract is `ScannerModuleConfig`: a visible-image region in `preview-content-normalized` coordinates plus an explicit `ScannerCameraRequest`. The geometry mapper in SCAN-02 converts the preview region into `source-frame-normalized` coordinates. The scanner core consumes only that resolved source-frame region; it does not query the reticle DOM or own presentation.
 
@@ -546,7 +546,7 @@ SCAN-01 adds platform-neutral types and this contract only. Existing Home/Stockt
 
 
 ## ADR-023 — Pure preview-to-source geometry mapper (2026-11-10)
-**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 and deployment smoke test passed. Runtime consumers remain unwired until SCAN-03.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 and deployment smoke test passed. Home and Stocktake runtime consumers were wired in merged SCAN-03 (PR #61).
 
 `src/platform/scanner/scannerGeometry.ts` implements a pure mapping from the module-owned `preview-content-normalized` rectangle to a `source-frame-normalized` rectangle. The caller supplies intrinsic source-frame dimensions, video element content-box dimensions, CSS `object-fit`, normalized `object-position` fractions and an explicit mirror flag.
 
