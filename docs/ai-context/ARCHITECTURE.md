@@ -600,7 +600,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Bounded orthogonal rotation within strict ROI (2026-11-10)
 
-**Status:** Implemented on final consolidated PR #66; final consolidated PR #66 CI run #360 passed. Physical iOS/Android QA remains pending.
+**Status:** Implemented on final consolidated PR #66; CI run #368 passed before the audit follow-up. Fresh CI and physical iOS/Android QA remain pending.
 
 ### Context
 ZXing `OneDReader` already supports 180° 1D barcode reversal when `TRY_HARDER` is enabled. RetailOS uses `RGBLuminanceSource`, which does not support ZXing's source-image rotation; 90°/270° inputs therefore require an explicit ROI transform.
@@ -612,6 +612,7 @@ ZXing `OneDReader` already supports 180° 1D barcode reversal when `TRY_HARDER` 
 - Do not perform four independent orientation passes.
 - Keep the transform pure and ROI-local; no DOM, camera, session or presentation ownership.
 - Expose rotation attempts/hits and separate transform/decode timings.
+- Drive the extended-pass cadence from a dedicated valid-ROI sequence; diagnostics sampling/reset must not influence processing cadence.
 
 ### Constraints
 - Preserve the 110 ms session cadence, camera request/lifecycle, ROI contract, supported symbologies, validation and result delivery.
@@ -623,7 +624,7 @@ See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Bounded in-plane deskew after orientation normalization (2026-11-10)
 
-**Status:** Implemented on final consolidated PR #66; final consolidated PR #66 CI run #360 passed. Physical accuracy/performance QA remains pending.
+**Status:** Implemented on final consolidated PR #66; CI run #368 passed before the audit follow-up. Fresh CI and physical accuracy/performance QA remain pending.
 
 ### Context
 After orthogonal orientation normalization, a barcode can still be tilted within the image plane. Unbounded angle search or perspective correction would multiply decode cost and mix separate image-processing problems.
