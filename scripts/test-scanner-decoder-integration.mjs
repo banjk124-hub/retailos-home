@@ -152,31 +152,42 @@ try {
     ['270-degree', rotateCW(rotateCW(rotateCW(upright)))],
   ]) {
     const decoder = await createDecoder();
-    const source = toSource(sourceFrame);
-    assert.deepEqual(await decodeOnce(decoder, source), [],
-      `${orientation} input must not bypass the scheduled extended pass on frame one`);
-    assert.deepEqual(await decodeOnce(decoder, source), [],
-      `${orientation} input must remain upright-first on frame two`);
-    const result = await decodeOnce(decoder, source);
+    const result = await decodeOnce(decoder, toSource(sourceFrame));
     assert.equal(result[0]?.value, '12345',
-      `production adapter must decode ${orientation} input on the scheduled third frame`);
+      `production adapter must recover ${orientation} input on the first scheduled decode frame`);
     await decoder.dispose();
   }
 
-  const skewedFrame = rotateLuminanceByAngle(
-    upright.luminance, upright.width, upright.height, 5,
+  // Continuous orientation sweep: these are not a finite set of hard-coded
+  // transform branches. Every fixture must pass through the live adapter.
+  for (const angle of [5, -5, 15, -15, 25, -25, 35, -35, 45, -45, 60, -60, 75, -75]) {
+    const angled = rotateLuminanceByAngle(
+      upright.luminance, upright.width, upright.height, angle,
+    );
+    assert.ok(angled, `integration fixture at ${angle} degrees must be generated`);
+    const decoder = await createDecoder();
+    const result = await decodeOnce(decoder, toSource(angled));
+    assert.equal(result[0]?.value, '12345',
+      `production adapter must normalize and decode ${angle}-degree barcode orientation`);
+    await decoder.dispose();
+  }
+
+  // Combined quarter-turn + residual skew must be recovered through the same
+  // production adapter, not merely by calling the pure transform helpers.
+  const residualSkew = rotateLuminanceByAngle(
+    upright.luminance, upright.width, upright.height, 7,
   );
-  assert.ok(skewedFrame, 'integration skew fixture must be generated');
-  const deskewDecoder = await createDecoder();
-  const skewedSource = toSource(skewedFrame);
-  assert.deepEqual(await decodeOnce(deskewDecoder, skewedSource), [],
-    'skewed input must remain upright-first on frame one');
-  assert.deepEqual(await decodeOnce(deskewDecoder, skewedSource), [],
-    'skewed input must not deskew before the scheduled extended frame');
-  const deskewResult = await decodeOnce(deskewDecoder, skewedSource);
-  assert.equal(deskewResult[0]?.value, '12345',
-    'production adapter must deskew and decode the barcode on the scheduled extended frame');
-  await deskewDecoder.dispose();
+  assert.ok(residualSkew, 'combined orientation fixture must be generated');
+  for (const [orientation, sourceFrame] of [
+    ['90-degree', rotateCW(residualSkew)],
+    ['270-degree', rotateCW(rotateCW(rotateCW(residualSkew)))],
+  ]) {
+    const decoder = await createDecoder();
+    const result = await decodeOnce(decoder, toSource(sourceFrame));
+    assert.equal(result[0]?.value, '12345',
+      `production adapter must recover combined ${orientation} + residual skew`);
+    await decoder.dispose();
+  }
 
   const roiSourceFrame = {
     width: upright.width * 2,
@@ -212,7 +223,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: upright decode, scheduled 90°/270° recovery and deskew, strict ROI crop and fail-closed no-fallback.');
+  console.log('Production ZXing adapter integration passed: upright, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });
