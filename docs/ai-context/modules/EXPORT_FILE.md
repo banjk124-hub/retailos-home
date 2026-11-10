@@ -8,7 +8,8 @@
 **Current status:** PR #70 merged, deployed and manually accepted by the user. Follow-up implementation is in progress on `feat/stocktake-import-session-output`; not yet merged or deployed.  
 **Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
-**Follow-up branch base:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`
+**Follow-up branch base:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
+**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI/device QA pending)
 
 ## 1. Purpose and current capability
 
