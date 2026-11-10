@@ -1,15 +1,20 @@
-# SCAN-04 implementation update — strict module-reticle ROI decoding (2026-11-10)
+# SCAN-05/06 implementation status — orthogonal rotation and bounded deskew (2026-11-10)
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`. Physical post-deployment barcode QA remains pending.
+**Status:** Implemented on `feat/scan-06-bounded-deskew`; consolidated PR #65 is Draft/open and not merged/deployed.  
+**Final recorded head:** `7bd77ffd7acd6a04e65b731b3ffa3a3e9546a7f1`.  
+**CI:** run #342 passed the complete preflight, TypeScript, production build and GitHub Pages build.
 
-- SCAN-03 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms both iOS and Android geometry/flow checks passed without detected issues.
-- Decoder now receives the current `source-frame-normalized` region from the active session on every decode call.
-- New pure `resolveScannerRoiCrop()` maps normalized source coordinates to integer pixel bounds; leading edges floor and trailing edges ceil to avoid clipping.
-- ZXing draws and decodes only the measured ROI. The previous full-frame-first pass and fixed centered `82% × 66%` secondary crop are removed.
-- Missing/invalid/out-of-bounds ROI returns no result and increments `roiUnavailable`; no full-frame or centered fallback exists.
-- Preserved camera acquisition/lease, first-frame readiness, recovery, 110 ms decode cadence, supported symbologies, validation, result delivery, Home lookup and Stocktake form/save workflows.
-- Added `scripts/test-scanner-roi-decoder.mjs` to preflight for normalized-to-pixel mapping, edge rounding, invalid geometry and runtime wiring.
-- GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; the subsequent status-only documentation update does not change executable code. Real-device iOS/Android barcode accuracy/performance validation remains pending.
+- SCAN-04 was merged/deployed by the user; the user confirms normal scanner operation after deployment.
+- ZXing baseline: `TRY_HARDER` supports 180° reversal for 1D readers. The runtime fixture verifies Code 128 at 0°/180°; EAN-8/EAN-13 inheritance is source-guarded, not separately runtime-fixture tested.
+- SCAN-05: pure clockwise 90° luminance transform, upright-first decode, one extra ROI pass every third frame after a miss. 90° normalizes to 180° and 270° normalizes to 0°.
+- SCAN-06: Sobel structure-tensor skew estimate, confidence gate, bounded 1.2°–12° inverse-angle bilinear correction, expanded ROI bounds, white fill and 4M-pixel allocation cap. One HybridBinarizer deskew pass follows failed upright/orthogonal paths.
+- Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
+- CI runs #337 (baseline), #338 (SCAN-05) and #342 (consolidated SCAN-06) passed.
+- No camera/session/lifecycle, ROI mapping, UI/CSS, barcode validation, business flow, dependency or deployment changes.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remains pending. CI does not prove physical optical accuracy, device CPU cost or latency.
+
+**Next gate:** complete device matrix and low-end performance comparison, then perform final consolidated diff/docs audit before merge.
+---
 
 ---
 

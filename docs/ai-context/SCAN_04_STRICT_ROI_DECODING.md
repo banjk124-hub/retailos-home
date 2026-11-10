@@ -1,6 +1,6 @@
 # SCAN-04 — Strict module-reticle ROI decoding
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`. Physical post-deployment barcode QA is pending.  
+**Status:** Merged and deployed by the user; the user confirms normal scanner operation. The detailed optical stress matrix was not individually recorded. SCAN-05/06 extend this strict ROI pipeline in later phases.  
 **Baseline:** SCAN-03 merge commit `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms successful iOS and Android geometry/flow verification.  
 **Objective:** Make the decoder consume the exact source-frame region published by each module-owned reticle, instead of decoding the full frame and then trying a fixed centered crop.
 
@@ -84,7 +84,7 @@ On both iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake independe
 6. Orientation/viewport changes and background/foreground recovery.
 7. Confirm scan latency, accuracy and existing lookup/form-save workflows.
 
-CI cannot prove optical accuracy or device performance. Do not mark SCAN-04 release-accepted until physical testing is recorded on both platforms.
+CI cannot prove optical accuracy or device performance. The user has confirmed normal post-deployment operation; detailed low-light/reflective/small/far barcode scenarios remain separately unrecorded. SCAN-05/06 have their own device acceptance gates.
 
 ## 7. Rollback
 
