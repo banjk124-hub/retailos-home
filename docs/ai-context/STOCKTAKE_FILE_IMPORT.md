@@ -2,16 +2,17 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70 open; implementation and CI complete, pending final audit and user approval. Not merged or deployed.
-**Base:** `main` at `853f79607f770000a506f7c1836f1131133497b6`.
-**Feature branch:** `feat/stocktake-import-desktop-editor`.
+**Status:** PR #70 merged, deployed and manually accepted by the user. Follow-up implementation is in progress on `feat/stocktake-import-session-output`; not yet merged/deployed.
+**Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
+**Follow-up branch:** `feat/stocktake-import-session-output`.
+**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI #509 passed on code head `37b5f69d`; physical device QA pending).
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
 
 Provide an independent local workflow inside the existing **Kiểm kê** library. It accepts an Excel workbook from the device, extracts product barcodes and quantities, resolves one zone per data sheet, previews Stocktake-compatible output, and exports one TXT file per zone.
 
-The feature must work without a network connection after the PWA has loaded.
+The feature must work without a network connection after the PWA has loaded. Follow-up source fingerprinting uses Web Crypto SHA-256 locally; workbook contents remain on-device.
 
 ## 2. Ownership and isolation
 
@@ -31,12 +32,12 @@ Current reader accepts OOXML `.xlsx` workbooks. It reads:
 - Scan worksheet rows for header-like table blocks without a fixed row cutoff; resolve each block independently.
 
 Column detection:
-- Prefer a non-empty `BARCODE` value for each row.
-- If that row's BARCODE is blank, use its non-empty `GOLDCODE` value.
-- Use legacy `MÃ VẠCH` only when neither BARCODE nor GOLDCODE is available in the detected layout.
+- Resolve each row using the first non-empty value in this order: `BARCODE` → `CODE` → `GOLDCODE` → `TILLCODE`.
+- Retain legacy `MÃ VẠCH` as a final compatibility fallback only when all four preferred source fields are absent/empty in the row.
+- Store the resolved code and its actual source field in `barcodeSource`; manual corrections are marked `manual`.
 - Recognize common Vietnamese/English aliases and detect each table block's columns independently.
 - Quantity candidates include operational Vietnamese/English aliases for counted, actual-result and quantity fields.
-- The parser does not map `CODE` into `BARCODE`.
+- Header detection recognizes the four explicit code columns independently; it does not relabel or overwrite their original source fields.
 - A row with no usable code is retained with a validation issue for manual correction; it is never silently dropped.
 
 Data rules:
@@ -119,3 +120,52 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 
 
 **Contract reconciliation (2026-11-10):** The original PR #69 parser limitations above have been superseded where noted by PR #70. In particular, header scanning is no longer limited to the first 40 rows; table blocks are detected independently; same-zone blocks across sheets are aggregated; BARCODE falls back to same-row GOLDCODE; and history stores editable row-level data. The remaining one-zone-per-block limitation and lack of an interactive mapping wizard are intentional and documented.
+
+
+## 9. Follow-up — output layers and additive multi-file sessions
+
+**Branch:** `feat/stocktake-import-session-output`  
+**Base:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`
+
+### Zone workspace layer contract
+
+- Keep the existing outer module UI, import area, zone navigator and selected-zone workspace frame unchanged.
+- The selected zone workspace has two mutually exclusive layers in the same component frame:
+  - Front/default layer: generated TXT output, a scoped `textarea readOnly`, Copy TXT and Download TXT.
+  - Back layer: the existing review table with source row, resolved code, actual quantity, code source, validation and the existing edit/save workflow.
+- The user explicitly moves between layers. Do not show the two layers side-by-side, as tabs, or as permanently visible cards. Keep the editor layer mounted to preserve its scroll position; mount the TXT textarea only while the output layer is active.
+- Layer transition affects only the zone content region. It must not remount the module, reset the zone list, alter the selected zone or change session data.
+- Copy writes the exact zone output payload via Clipboard API. If unavailable or denied, focus/select only the readonly output textarea and instruct manual copy. Ctrl+A is explicitly intercepted only when the textarea has focus; it selects that textarea value and stops propagation. Never select the document or PWA root.
+- Copy and Download are blocked while the zone is invalid, dirty/unsaved, or the workbook has blocking issues.
+- The output payload remains the single source for Preview, Copy and Download. The ZIP uses the same per-zone payloads.
+- Keep transitions short and transform/opacity-only; respect `prefers-reduced-motion`.
+
+### Code-source precedence
+
+`BARCODE` → `CODE` → `GOLDCODE` → `TILLCODE` → legacy `MÃ VẠCH` final fallback → manual correction if no value exists. The source tag must reflect the field actually selected.
+
+### Multi-file and session contract
+
+- One file picker selection can contain multiple `.xlsx` files. Parse them sequentially to limit peak memory on mobile devices.
+- A user may add more files to the active import session without replacing previously accepted sources.
+- A session preserves its original `importedAt` so the `NHAN VIEN` line does not silently change when files are appended.
+- Every file is parsed independently using the existing workbook parser. Multiple sheets/blocks within one workbook continue to aggregate by zone as before.
+- Each source file receives a local SHA-256 fingerprint. Exact duplicate content is staged and shown to the operator; it is not imported again.
+- Same filename with different content is a separate warning and requires explicit confirmation.
+- If a new source file contains a zone already present in the session, or another file in the same batch contains that zone, stage the incoming batch and ask the operator to confirm. Never silently merge or replace.
+- Conflict review supports explicit merge of all listed duplicate-zone rows or skipping the duplicate-zone additions while retaining non-conflicting zones. Existing rows are never replaced.
+- Rows retain `sourceFileName`, `sourceFileId` (16-character SHA-256 prefix), `sourceSheet` and `sourceRow` provenance. The history record stores optional `sourceFiles` metadata with the full fingerprint, size and lastModified. Old history records without this field remain readable.
+- The session is updated only after the operator confirms the staged batch. Parse failure or cancellation leaves the active session unchanged.
+- If an active zone has unsaved edits, adding files is blocked until save or cancel.
+- A new session is an explicit action. It clears only the active workspace; saved history remains available.
+
+### Follow-up verification gates
+
+- [x] TypeScript, production build, Pages build and full preflight passed on code head `37b5f69d` (run #509). Later documentation-only updates do not change runtime code.
+
+- [x] Source precedence unit tests for BARCODE, CODE, GOLDCODE, TILLCODE and legacy fallback passed in preflight run #509.
+- [ ] One-file, multi-file, repeated exact file, same-name/different-content, repeated zone and additive second-batch scenarios.
+- [x] Merge/skip behavior and row-level source provenance unit tests passed in preflight run #509.
+- [ ] Full IndexedDB session save/history restore and duplicate-file end-to-end QA.
+- [ ] Output layer transition, scoped Ctrl+A, Clipboard success/fallback, download parity and ZIP parity.
+- [ ] Desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA manual QA.

@@ -7,6 +7,7 @@ const HISTORY_STORE = 'history';
 export type StocktakeImportHistoryItem = {
   id: string;
   sourceFileName: string;
+  sourceFiles?: Array<{ name: string; fingerprint: string; size: number; lastModified: number }>;
   importedAt: string;
   zoneCount: number;
   rowCount: number;
@@ -71,6 +72,7 @@ export const stocktakeImportStore = {
     const item: StocktakeImportHistoryItem = {
       id,
       sourceFileName: result.sourceFileName,
+      sourceFiles: result.sourceFiles ? result.sourceFiles.map((source) => ({ ...source })) : undefined,
       importedAt: result.importedAt,
       zoneCount: result.zones.length,
       rowCount: result.zones.reduce((total, zone) => total + zone.rows.length, 0),

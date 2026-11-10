@@ -648,7 +648,7 @@ See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew
 
 ## ADR-028 — Separate business workflow identity from snapshot identity and add local Stocktake import (2026-11-10)
 
-**Status:** Implementation in PR #69; CI run #454 passed; not merged or deployed.
+**Status:** PR #69 and PR #70 merged/deployed; PR #70 accepted by user. Main baseline for follow-up: `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 
 ### Context
 
@@ -687,7 +687,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`. Required checks include full `np
 
 ## ADR-029 — Stocktake import accuracy, layout tolerance and editable zone review (2026-11-10)
 
-**Status:** Implemented on PR #70 (`feat/stocktake-import-desktop-editor`); open and not merged/deployed. See `docs/ai-context/modules/EXPORT_FILE.md` for lifecycle, isolation and resume protocol.
+**Status:** PR #70 (`feat/stocktake-import-desktop-editor`) merged and accepted. See `docs/ai-context/modules/EXPORT_FILE.md` for current follow-up status.
 
 ### Context
 
@@ -697,7 +697,7 @@ After PR #69 was merged and deployed, practical use exposed four correctness/usa
 
 - Keep the importer a standalone business workflow. `RetailModuleId` must be defined independently from `ModuleDataId`; importer history stays in its own IndexedDB database.
 - Treat OOXML numeric values as decimal strings. Apply the cell's Excel number format and precision using string-based decimal rounding; never round-trip the quantity through JavaScript floating-point numbers.
-- Resolve row code in this order: non-empty BARCODE, then non-empty GOLDCODE, then the legacy MÃ VẠCH fallback. Missing code/quantity rows remain visible and editable; they are not silently discarded.
+- PR #70 baseline resolution was BARCODE → GOLDCODE → legacy MÃ VẠCH. The follow-up contract extends this to BARCODE → CODE → GOLDCODE → TILLCODE → legacy MÃ VẠCH final fallback. Missing code/quantity rows remain visible and editable; they are not silently discarded.
 - Detect table headers independently across each sheet and each table block. Merge all recognized blocks that resolve to the same zone while preserving row order and duplicates. If a block is unsupported or zone resolution is ambiguous, show a diagnostic and block all exports rather than silently exporting a partial workbook.
 - Require explicit per-zone save before export. Persist edited rows and diagnostics with the import history record.
 - Use zone-only filenames and ZIP names. Keep the existing date/time in the `NHAN VIEN` content record until downstream format compatibility is confirmed.
@@ -710,7 +710,7 @@ Validate Excel display parity for integer, fixed-decimal, General and percent fo
 
 ## ADR-030 — Independent module work lifecycle and handoff (2026-11-10)
 
-**Status:** Implemented in PR #70; pending merge.
+**Status:** Implemented and merged in PR #70.
 
 ### Decision
 
@@ -726,3 +726,34 @@ Validate Excel display parity for integer, fixed-decimal, General and percent fo
 - No dependency on Stocktake local store, scanner engine, camera lifecycle, shared snapshot cache, snapshot IDs, authentication semantics or deployment configuration.
 - Keep implementation under `src/features/stocktake-import/`; shared registry metadata is the only intended shared integration point.
 - Resume by reading the dedicated module record, checking branch/PR head against GitHub, auditing the current diff and changed files, then rerunning full preflight. Never resume from stale notes alone.
+
+
+## ADR-031 — Output layer transition and additive multi-file import sessions (2026-11-10)
+
+**Status:** Implemented on follow-up branch `feat/stocktake-import-session-output`, draft PR #71; CI #509 passed on code head `37b5f69d`; physical device acceptance pending.
+
+### Context
+
+After PR #70 was deployed and accepted, the operator requested a faster output workflow and the ability to combine multiple independent workbooks in one working session. The extension must preserve the stable editor, zone navigation, local history, numeric fidelity and the surrounding module UI.
+
+### Decisions
+
+- Keep the current module shell and zone list. Add two mutually exclusive layers only inside the selected zone workspace: TXT Output as the front/default layer and the existing review/editor table as the back layer.
+- Do not show both layers at once and do not replace the whole module view when switching. The transition is local to the zone content component.
+- Use a readonly textarea as a scoped text-selection fallback. Ctrl+A is explicitly handled only on the focused textarea and selects only its contents; never programmatically select the PWA document.
+- Use one output payload for preview, Clipboard copy, individual TXT download and ZIP entry generation.
+- Extend row code precedence to BARCODE → CODE → GOLDCODE → TILLCODE, retaining legacy MÃ VẠCH only as the final backward-compatibility fallback.
+- Accept multiple workbooks in one picker action and append files to the active session. Parse sequentially on mobile to constrain peak memory.
+- Fingerprint each source file locally with SHA-256. Identical files are staged as duplicates; same-name/different-content files are separately flagged.
+- Stage the entire incoming batch before mutating the active session. A parse error or cancellation leaves the current session untouched.
+- Same-zone data from different files requires explicit conflict confirmation. Merge appends rows in source order and preserves duplicates; skip leaves existing zone data unchanged while accepting non-conflicting zones. Never silently replace or deduplicate rows.
+- Persist source file metadata and per-row file/sheet/row provenance as additive optional history fields. Keep old history records readable without an IndexedDB schema migration.
+- Keep the session's original import timestamp stable so additive imports do not rewrite the `NHAN VIEN` line.
+
+### Protected scope
+
+No changes to the existing Stocktake module, scanner engine, camera lifecycle, snapshot synchronization, authentication, service worker or deployment configuration.
+
+### Acceptance
+
+Run full preflight and test all source precedence, multi-file, duplicate-file, duplicate-zone merge/skip, history restore, output payload parity, scoped textarea selection and Clipboard fallback cases. Perform manual QA on desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA before release.

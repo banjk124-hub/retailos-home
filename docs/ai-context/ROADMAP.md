@@ -1,9 +1,15 @@
-# Current work — Xuất file module follow-up (2026-11-10)
+# Current work — Xuất file: output layers and additive multi-file sessions (2026-11-10)
 
-- PR #69 has merged and deployed. Follow-up branch `feat/stocktake-import-desktop-editor` addresses decimal fidelity, GOLDCODE fallback, variable/multiple workbook table layouts, manual per-zone correction and desktop UX.
-- Keep the importer isolated from snapshot IDs/cache and the existing Stocktake workflow.
-- Required before release: CI/preflight, source-workbook comparison, multiple-layout tests, edit/save/restore, desktop download QA, iOS/Android regression and confirmation of the date/time line in TXT.
-- Module state and resume point: `modules/EXPORT_FILE.md`. Full contract: `STOCKTAKE_FILE_IMPORT.md`; decisions: ADR-029 and ADR-030.
+- PR #70 is merged, deployed and manually accepted. Main baseline: `b9cc4ce9a848acd51027dff64f5620f65e660a4b`. RetailOS CI #466 and PWA deployment #85 succeeded.
+- Follow-up branch: `feat/stocktake-import-session-output`; draft PR #71: https://github.com/banjk124-hub/retailos-home/pull/71.
+- Preserve existing import, zone selection, editor, save, history and export behavior.
+- Add an output-first/editor-second layer transition only inside the selected zone component; do not alter the outer module UI or zone navigator.
+- Update code source resolution to BARCODE → CODE → GOLDCODE → TILLCODE, with legacy MÃ VẠCH only as a final fallback.
+- Add multiple-file selection, additive sessions, SHA-256 duplicate-file detection, staging, and explicit duplicate-zone merge/skip confirmation.
+- Keep all output methods on the same payload and preserve row-level source provenance and history compatibility.
+- Full CI/preflight passed on code head `37b5f69d` (run #509). Remaining gate: desktop/iOS/Android manual QA for copy/textarea selection, file picking, session restore and TXT/ZIP parity.
+- Module status: `modules/EXPORT_FILE.md`. Detailed contract: `STOCKTAKE_FILE_IMPORT.md`.
+
 
 ---
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Download, FileSpreadsheet,
+  ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet,
   History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
 } from 'lucide-react';
 import JSZip from 'jszip';
@@ -14,6 +14,12 @@ import {
   type StocktakeImportResult,
 } from '../services/stocktakeImportParser';
 import {
+  detectStocktakeImportConflicts,
+  mergeStocktakeImportSession,
+  type ImportReviewMeta,
+  type ZoneConflict,
+} from '../services/stocktakeImportSession';
+import {
   stocktakeImportStore,
   type StocktakeImportHistoryItem,
 } from '../services/stocktakeImportStore';
@@ -21,6 +27,12 @@ import './stocktake-import.css';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
+type PendingImportReview = {
+  incoming: StocktakeImportResult[];
+  duplicateFiles: string[];
+  sameNameDifferentContent: string[];
+  zoneConflicts: ZoneConflict[];
+};
 const PAGE_SIZE = 100;
 
 function localDate(value: string): string {
@@ -31,13 +43,17 @@ function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): s
   const issues: string[] = [];
   const barcode = row.barcode.trim();
   const quantity = row.quantity.trim();
-  if (!barcode) issues.push('Thiếu BARCODE/GOLDCODE.');
+  if (!barcode) issues.push('Thiếu BARCODE/CODE/GOLDCODE/TILLCODE.');
   else if (/[\r\n,]/.test(barcode)) issues.push('Mã hàng chứa dấu phẩy hoặc ký tự xuống dòng.');
   if (!quantity) issues.push('Thiếu kết quả thực tế.');
   else if (!/^[+-]?(?:\d+(?:[.,]\d+)?|[.,]\d+)(?:[eE][+-]?\d+)?%?$/.test(quantity)) {
     issues.push('Kết quả thực tế không phải số hợp lệ.');
   }
   return issues;
+}
+
+function getRowIssues(row: ImportedStocktakeRow): string[] {
+  return [...new Set([...(row.issues ?? []), ...validateRow(row)])];
 }
 
 function normalizeEditableQuantity(value: string): string {
@@ -76,6 +92,7 @@ function rowsFromLegacyContent(content: string): ImportedStocktakeRow[] {
 
 export default function StocktakeImportModule({ employee, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const outputTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [view, setView] = useState<View>('import');
   const [result, setResult] = useState<StocktakeImportResult | null>(null);
   const [historyId, setHistoryId] = useState<string | undefined>();
@@ -86,7 +103,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showNewSessionConfirm, setShowNewSessionConfirm] = useState(false);
+  const [pendingImport, setPendingImport] = useState<PendingImportReview | null>(null);
   const [editingZone, setEditingZone] = useState(false);
+  const [zoneLayer, setZoneLayer] = useState<'output' | 'editor'>('output');
   const [editBaseline, setEditBaseline] = useState<ImportedStocktakeRow[] | null>(null);
   const [dirtyZones, setDirtyZones] = useState<string[]>([]);
   const [page, setPage] = useState(0);
@@ -100,11 +120,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     () => result?.zones.reduce((total, zone) => total + zone.rows.length, 0) ?? 0,
     [result],
   );
-  const invalidCount = activeZone?.rows.filter((row) => row.issues.length > 0).length ?? 0;
+  const invalidCount = activeZone?.rows.filter((row) => getRowIssues(row).length > 0).length ?? 0;
+  const outputReady = Boolean(activeZone && result && invalidCount === 0 &&
+    !editingZone && !dirtyZones.includes(activeZone.zoneCode) && result.blockingIssues.length === 0);
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
-  const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => row.issues.length > 0)) ?? [];
+  const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [];
   const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
   const refreshHistory = async () => {
@@ -120,31 +142,78 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   useEffect(() => { void refreshHistory(); }, []);
 
-  const handleFile = async (file?: File) => {
-    if (!file) return;
-    setError('');
-    setNotice('');
-    setResult(null);
-    setHistoryId(undefined);
-    setDirtyZones([]);
+  const commitIncoming = async (
+    incoming: StocktakeImportResult[],
+    mergeConflicts: boolean,
+    reviewMeta: ImportReviewMeta = { duplicateFiles: [], sameNameDifferentContent: [] },
+  ) => {
+    if (incoming.length === 0) return;
+    const nextResult = mergeStocktakeImportSession(result, incoming, employeeCode, mergeConflicts, reviewMeta);
+    const preservedZoneCode = activeZone?.zoneCode;
+    setResult(nextResult);
+    setSelectedZone(Math.max(0, nextResult.zones.findIndex((zone) => zone.zoneCode === preservedZoneCode)));
+    setZoneLayer('output');
     setEditingZone(false);
     setEditBaseline(null);
-    setSelectedZone(0);
+    setDirtyZones([]);
     setPage(0);
+    try {
+      const id = await stocktakeImportStore.saveResult(nextResult, historyId);
+      setHistoryId(id);
+      await refreshHistory();
+      setNotice('Đã cập nhật phiên xử lý với ' + incoming.length + ' file nguồn. ' +
+        nextResult.zones.length + ' vùng · ' +
+        nextResult.zones.reduce((sum, zone) => sum + zone.rows.length, 0) + ' dòng.');
+    } catch (storageError) {
+      setNotice('Đã cập nhật dữ liệu trong phiên hiện tại nhưng không lưu được lịch sử trên thiết bị: ' +
+        (storageError instanceof Error ? storageError.message : 'lỗi bộ nhớ cục bộ.'));
+    }
+  };
+
+  const handleFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+    if (hasDirtyZones) {
+      setNotice('Phiên hiện tại có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy trước khi thêm file.');
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
+    setError('');
+    setNotice('');
     setBusy(true);
     try {
       if (!employeeCode) throw new Error('Không xác định được mã nhân viên để tạo file theo định dạng Kiểm kê.');
-      const parsed = await parseStocktakeWorkbook(file, employeeCode);
-      setResult(parsed);
-      setNotice('Đã đọc ' + parsed.zones.length + ' vùng, ' +
-        parsed.zones.reduce((sum, zone) => sum + zone.rows.length, 0) + ' dòng. Hãy rà soát lỗi và lưu chỉnh sửa trước khi xuất.');
-      try {
-        const id = await stocktakeImportStore.saveResult(parsed);
-        setHistoryId(id);
-        await refreshHistory();
-      } catch (storageError) {
-        setNotice('Đã đọc file thành công nhưng không lưu được lịch sử trên thiết bị: ' +
-          (storageError instanceof Error ? storageError.message : 'lỗi bộ nhớ cục bộ.'));
+      const knownSources = result?.sourceFiles ?? [];
+      const knownFingerprints = new Map(knownSources.map((source) => [source.fingerprint, source.name]));
+      const knownNames = new Map(knownSources.map((source) => [source.name, source.fingerprint]));
+      if (result && knownSources.length === 0) knownNames.set(result.sourceFileName, 'legacy-unknown');
+      const incoming: StocktakeImportResult[] = [];
+      const duplicateFiles: string[] = [];
+      const sameNameDifferentContent: string[] = [];
+      const batchFingerprints = new Map<string, string>();
+      for (const file of files) {
+        const parsed = await parseStocktakeWorkbook(file, employeeCode, result ? new Date(result.importedAt) : new Date());
+        const source = parsed.sourceFiles?.[0];
+        if (!source) throw new Error('Không tạo được định danh cho file ' + file.name + '.');
+        const knownDuplicateName = knownFingerprints.get(source.fingerprint);
+        const batchDuplicateName = batchFingerprints.get(source.fingerprint);
+        if (knownDuplicateName || batchDuplicateName) {
+          duplicateFiles.push(file.name + ' (trùng nội dung với ' + (knownDuplicateName ?? batchDuplicateName) + ')');
+          continue;
+        }
+        batchFingerprints.set(source.fingerprint, file.name);
+        const sameNameFingerprint = knownNames.get(file.name);
+        if (sameNameFingerprint && sameNameFingerprint !== source.fingerprint) sameNameDifferentContent.push(file.name + ' (SHA ' + source.fingerprint.slice(0, 8) + ')');
+        knownNames.set(file.name, source.fingerprint);
+        parsed.zones.forEach((zone) => zone.rows.forEach((row) => { row.sourceFileName = file.name; }));
+        incoming.push(parsed);
+      }
+      const zoneConflicts = detectStocktakeImportConflicts(result, incoming);
+      const pending: PendingImportReview = { incoming, duplicateFiles, sameNameDifferentContent, zoneConflicts };
+      if (duplicateFiles.length || sameNameDifferentContent.length || zoneConflicts.length) {
+        setPendingImport(pending);
+        setNotice('Đã phân tích file bổ sung. Phiên hiện tại chưa bị thay đổi; cần xác nhận các điểm trùng trước khi tiếp tục.');
+      } else {
+        await commitIncoming(incoming, true, { duplicateFiles, sameNameDifferentContent });
       }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể đọc file kiểm kê.');
@@ -154,12 +223,47 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     }
   };
 
+  const confirmPendingImport = async (mergeConflicts: boolean) => {
+    if (!pendingImport) return;
+    const pending = pendingImport;
+    setBusy(true);
+    setError('');
+    try {
+      if (pending.incoming.length) await commitIncoming(pending.incoming, mergeConflicts, {
+        duplicateFiles: pending.duplicateFiles,
+        sameNameDifferentContent: pending.sameNameDifferentContent,
+      });
+      else setNotice('File trùng đã được bỏ qua. Phiên hiện tại không thay đổi.');
+      setPendingImport(null);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể xác nhận dữ liệu bổ sung.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resetActiveSession = () => {
+    setResult(null);
+    setHistoryId(undefined);
+    setSelectedZone(0);
+    setZoneLayer('output');
+    setEditingZone(false);
+    setEditBaseline(null);
+    setDirtyZones([]);
+    setPage(0);
+    setPendingImport(null);
+    setShowNewSessionConfirm(false);
+    setError('');
+    setNotice('Đã tạo phiên mới. Dữ liệu lịch sử trước đó vẫn được giữ lại.');
+  };
+
   const selectZone = (index: number) => {
     if (editingZone && activeZone && dirtyZones.includes(activeZone.zoneCode)) {
       setNotice('Vùng hiện tại có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi chuyển vùng.');
       return;
     }
     setSelectedZone(index);
+    setZoneLayer('output');
     setPage(0);
     setEditingZone(false);
     setEditBaseline(null);
@@ -169,6 +273,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const beginEdit = () => {
     if (!activeZone) return;
     setEditBaseline(activeZone.rows.map((row) => ({ ...row, issues: [...row.issues] })));
+    setZoneLayer('editor');
     setEditingZone(true);
     setNotice('Đang chỉnh sửa vùng ' + activeZone.zoneCode + '. Các thay đổi cần được lưu trước khi xuất.');
   };
@@ -215,6 +320,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setDirtyZones((current) => current.filter((code) => code !== activeZone.zoneCode));
     setEditingZone(false);
     setEditBaseline(null);
+    setZoneLayer('output');
     setNotice('Đã hủy các chỉnh sửa chưa lưu của vùng ' + activeZone.zoneCode + '.');
   };
 
@@ -247,12 +353,35 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setDirtyZones((current) => current.filter((code) => code !== activeZone.zoneCode));
       setEditingZone(false);
       setEditBaseline(null);
+      setZoneLayer('output');
       setNotice('Đã lưu ' + activeZone.zoneCode + ' · ' + activeZone.rows.length + ' dòng. Có thể xuất vùng này.');
       await refreshHistory();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể lưu chỉnh sửa của vùng.');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const copyOutput = async () => {
+    if (!activeZone) return;
+    if (!outputReady) {
+      setNotice('Output chưa sẵn sàng. Hãy sửa lỗi và lưu vùng trước khi sao chép.');
+      return;
+    }
+    const textarea = outputTextareaRef.current;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API không khả dụng.');
+      await navigator.clipboard.writeText(activeZone.content);
+      setNotice('Đã sao chép nội dung TXT của vùng ' + activeZone.zoneCode + '.');
+    } catch {
+      if (textarea) {
+        textarea.focus();
+        textarea.select();
+        setNotice('Không thể sao chép tự động. Nội dung TXT đã được chọn riêng trong vùng này; nhấn Ctrl+C hoặc dùng Sao chép trên thiết bị.');
+      } else {
+        setError('Không thể truy cập Clipboard. Hãy chọn nội dung trong vùng TXT và sao chép thủ công.');
+      }
     }
   };
 
@@ -263,7 +392,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError('Workbook còn sheet chưa được nhận diện. Hãy xem hướng dẫn lỗi trước khi xuất để tránh bỏ sót dữ liệu.');
       return;
     }
-    if (dirtyZones.includes(zone.zoneCode) || zone.rows.some((row) => row.issues.length > 0)) {
+    if (dirtyZones.includes(zone.zoneCode) || zone.rows.some((row) => getRowIssues(row).length > 0)) {
       setError('Vùng ' + zone.zoneCode + ' còn chỉnh sửa chưa lưu hoặc dữ liệu chưa hợp lệ.');
       return;
     }
@@ -316,6 +445,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const restoreHistoryItem = (item: StocktakeImportHistoryItem) => {
     setResult({
       sourceFileName: item.sourceFileName,
+      sourceFiles: item.sourceFiles ?? [],
       importedAt: item.importedAt,
       warnings: item.warnings ?? [],
       blockingIssues: item.blockingIssues ?? [],
@@ -338,6 +468,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setEditingZone(false);
     setEditBaseline(null);
     setSelectedZone(0);
+    setZoneLayer('output');
     setPage(0);
     setView('import');
     setNotice('Đã khôi phục bản dữ liệu đã lưu. Có thể tiếp tục rà soát hoặc tải lại kết quả.');
@@ -372,6 +503,43 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         {notice && <p className="stocktake-import-notice" role="status"><CheckCircle2 size={16} />{notice}</p>}
 
         {view === 'import' && <>
+          {pendingImport && <div className="stocktake-import-review-backdrop">
+            <section className="stocktake-import-review-dialog" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-import-review-title">
+              <h3 id="stocktake-import-review-title">Kiểm tra file bổ sung</h3>
+              <p>Chưa có dữ liệu nào được cộng vào phiên hiện tại. Kiểm tra các mục dưới đây rồi xác nhận.</p>
+              {pendingImport.duplicateFiles.length > 0 && <div className="stocktake-import-review-group">
+                <strong>File trùng nội dung · sẽ bỏ qua</strong>
+                {pendingImport.duplicateFiles.map((name, index) => <small key={name + index}>{name}</small>)}
+              </div>}
+              {pendingImport.sameNameDifferentContent.length > 0 && <div className="stocktake-import-review-group">
+                <strong>Cùng tên nhưng nội dung khác hoặc chưa đối chiếu được · cần xác nhận</strong>
+                {pendingImport.sameNameDifferentContent.map((name, index) => <small key={name + index}>{name}</small>)}
+              </div>}
+              {pendingImport.zoneConflicts.length > 0 && <div className="stocktake-import-review-group">
+                <strong>Vùng trùng · dữ liệu đang chờ xác nhận</strong>
+                {pendingImport.zoneConflicts.map((zone) => <small key={zone.zoneCode}>{zone.zoneCode}: phiên hiện tại {zone.existingRows} dòng · nguồn bổ sung {zone.incomingRows} dòng{zone.duplicateWithinBatch ? ' · xuất hiện ở nhiều file trong lượt này' : ''}</small>)}
+              </div>}
+              <div className="stocktake-import-review-actions">
+                <button type="button" disabled={busy} onClick={() => { setPendingImport(null); setNotice('Đã hủy nhập bổ sung. Phiên hiện tại không thay đổi.'); }}>Hủy bổ sung</button>
+                {pendingImport.zoneConflicts.length > 0
+                  ? <>
+                    <button type="button" disabled={busy} onClick={() => void confirmPendingImport(false)}>Bỏ qua vùng trùng</button>
+                    <button type="button" disabled={busy} onClick={() => void confirmPendingImport(true)}>Gộp vùng trùng</button>
+                  </>
+                  : <button type="button" disabled={busy} onClick={() => void confirmPendingImport(true)}>Xác nhận tiếp tục</button>}
+              </div>
+            </section>
+          </div>}
+          {showNewSessionConfirm && <div className="stocktake-import-review-backdrop">
+            <section className="stocktake-import-review-dialog" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-import-new-session-title">
+              <h3 id="stocktake-import-new-session-title">Tạo phiên xử lý mới?</h3>
+              <p>Phiên đang mở sẽ được đóng khỏi workspace. Lịch sử đã lưu vẫn được giữ nguyên và có thể khôi phục sau.</p>
+              <div className="stocktake-import-review-actions">
+                <button type="button" onClick={() => setShowNewSessionConfirm(false)}>Quay lại</button>
+                <button type="button" onClick={resetActiveSession}>Tạo phiên mới</button>
+              </div>
+            </section>
+          </div>}
           <div className="stocktake-import-intro">
             <div className="stocktake-import-symbol"><FileSpreadsheet size={23} /></div>
             <div><strong>Xử lý workbook ngay trên thiết bị</strong><p>Không tải file lên máy chủ. Có thể sử dụng khi offline.</p></div>
@@ -379,16 +547,19 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
           <input ref={inputRef} className="stocktake-import-file-input" type="file"
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            onChange={(event) => void handleFile(event.target.files?.[0])} />
+            multiple
+            onChange={(event) => void handleFiles(Array.from(event.target.files ?? []))} />
           <button className="stocktake-import-primary" type="button" disabled={busy}
             onClick={() => {
               if (hasDirtyZones) { setNotice('Vùng hiện tại có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy trước khi nạp workbook khác.'); return; }
               inputRef.current?.click();
             }}>
             {busy ? <LoaderCircle className="stocktake-import-spin" size={18} /> : <Upload size={18} />}
-            {busy ? 'Đang xử lý…' : 'Chọn file Excel'}
+            {busy ? 'Đang xử lý…' : result ? 'Thêm file vào phiên' : 'Chọn file Excel'}
           </button>
-          <p className="stocktake-import-hint">Hỗ trợ workbook .xlsx. Mỗi sheet được nhận diện độc lập; tên cột và thứ tự cột có thể khác nhau nếu mang cùng ý nghĩa.</p>
+          <p className="stocktake-import-hint">Hỗ trợ chọn nhiều workbook .xlsx cùng lúc. Có thể thêm file vào phiên đang xử lý; dữ liệu chỉ được cộng dồn sau khi kiểm tra và xác nhận trùng file hoặc trùng vùng.</p>
+          {result && <button className="stocktake-import-secondary" type="button" disabled={busy || hasDirtyZones}
+            onClick={() => setShowNewSessionConfirm(true)}>Tạo phiên mới</button>}
 
           {result && <>
             <div className="stocktake-import-summary">
@@ -396,6 +567,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <div><small>SỐ VÙNG</small><strong>{result.zones.length}</strong></div>
               <div><small>TỔNG DÒNG</small><strong>{totalRows}</strong></div>
             </div>
+            {result.sourceFiles && result.sourceFiles.length > 1 && <details className="stocktake-import-source-list">
+              <summary>{result.sourceFiles.length} file nguồn trong phiên</summary>
+              {result.sourceFiles.map((source) => <small key={source.fingerprint}>{source.name} · {source.fingerprint.slice(0, 8)}</small>)}
+            </details>}
             {result.blockingIssues.map((issue) => <p className="stocktake-import-error" role="alert" key={issue}>{issue}</p>)}
             {result.warnings.map((warning) => <p className="stocktake-import-warning" key={warning}>{warning}</p>)}
 
@@ -403,7 +578,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <aside className="stocktake-import-zone-nav" aria-label="Danh sách vùng">
                 <div className="stocktake-import-zone-nav-heading">CÁC VÙNG</div>
                 {result.zones.map((zone, index) => {
-                  const rowErrors = zone.rows.filter((row) => row.issues.length > 0).length;
+                  const rowErrors = zone.rows.filter((row) => getRowIssues(row).length > 0).length;
                   const isDirty = dirtyZones.includes(zone.zoneCode);
                   return <button key={zone.zoneCode} type="button"
                     className={selectedZone === index ? 'is-active' : ''}
@@ -422,16 +597,34 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                   <div><span className="stocktake-import-eyebrow">VÙNG KIỂM KÊ</span><h3>{activeZone.zoneCode}</h3>
                     <p>{activeZone.rows.length} dòng · {invalidCount} dòng cần xử lý</p></div>
                   <div className="stocktake-import-zone-actions">
-                    {!editingZone
-                      ? <button type="button" onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
+                    {zoneLayer === 'output'
+                      ? <>
+                        <button type="button" onClick={() => setZoneLayer('editor')}><Pencil size={15} /> Xem kiểm kê</button>
+                        <button type="button" disabled={!outputReady}
+                          onClick={() => void copyOutput()}><Copy size={15} /> Sao chép TXT</button>
+                        <button type="button" disabled={!outputReady}
+                          onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
+                      </>
                       : <>
-                        <button type="button" disabled={busy} onClick={cancelEdit}><X size={15} /> Hủy</button>
-                        <button type="button" className="is-save" disabled={busy} onClick={() => void saveActiveZone()}>
-                          {busy ? <LoaderCircle className="stocktake-import-spin" size={15} /> : <Save size={15} />} Lưu vùng
-                        </button>
+                        {!editingZone
+                          ? <button type="button" onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
+                          : <>
+                            <button type="button" disabled={busy} onClick={cancelEdit}><X size={15} /> Hủy</button>
+                            <button type="button" className="is-save" disabled={busy} onClick={() => void saveActiveZone()}>
+                              {busy ? <LoaderCircle className="stocktake-import-spin" size={15} /> : <Save size={15} />} Lưu vùng
+                            </button>
+                          </>}
+                        <button type="button" disabled={busy || (editingZone && dirtyZones.includes(activeZone.zoneCode))}
+                          onClick={() => {
+                            if (editingZone && dirtyZones.includes(activeZone.zoneCode)) {
+                              setNotice('Hãy lưu hoặc hủy chỉnh sửa trước khi quay lại TXT Output.');
+                              return;
+                            }
+                            setEditingZone(false);
+                            setEditBaseline(null);
+                            setZoneLayer('output');
+                          }}><ArrowLeft size={15} /> Quay lại Output</button>
                       </>}
-                    <button type="button" disabled={editingZone || invalidCount > 0 || dirtyZones.includes(activeZone.zoneCode)}
-                      onClick={() => exportZone(selectedZone)}><Download size={15} /> Xuất TXT</button>
                   </div>
                 </header>
 
@@ -440,46 +633,78 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 </p>}
                 {dirtyZones.includes(activeZone.zoneCode) && <p className="stocktake-import-unsaved" role="status">Có thay đổi chưa lưu. Hãy lưu vùng trước khi xuất.</p>}
 
-                <div className="stocktake-import-table-wrap">
-                  <table className="stocktake-import-edit-table">
-                    <thead><tr><th>DÒNG NGUỒN</th><th>BARCODE / GOLDCODE</th><th>KẾT QUẢ THỰC TẾ</th><th>NGUỒN MÃ</th><th>KIỂM TRA</th></tr></thead>
-                    <tbody>
-                      {visibleRows.map((row, visibleIndex) => {
-                        const rowIndex = page * PAGE_SIZE + visibleIndex;
-                        return <tr key={(row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex} className={row.issues.length ? 'has-error' : ''}>
-                          <td className="stocktake-import-source-row">{row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}</td>
-                          <td>{editingZone
-                            ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
-                                onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
-                            : <span className="stocktake-import-cell-value">{row.barcode || '—'}</span>}</td>
-                          <td>{editingZone
-                            ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} inputMode="decimal"
-                                value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
-                            : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
-                          <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
-                          <td>{row.issues.length
-                            ? <span className="stocktake-import-row-error" title={row.issues.join(' ')}>{row.issues.join(' ')}</span>
-                            : <span className="stocktake-import-row-ok">Hợp lệ</span>}</td>
-                        </tr>;
-                      })}
-                    </tbody>
-                  </table>
-                  {activeZone.rows.length === 0 && <p className="stocktake-import-muted">Không có dòng dữ liệu.</p>}
-                </div>
-                {activeZone.rows.length > PAGE_SIZE && <div className="stocktake-import-pagination">
-                  <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activeZone.rows.length)} / {activeZone.rows.length} dòng</span>
-                  <div>
-                    <button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
-                    <strong>{page + 1}/{pageCount}</strong>
-                    <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
+                <div className="stocktake-import-zone-layer" data-active-layer={zoneLayer}>
+                  <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'output' ? 'is-active' : 'is-inactive')}
+                    aria-hidden={zoneLayer !== 'output'}>
+                    {zoneLayer === 'output' && <div className="stocktake-import-output-layer">
+                      <div className="stocktake-import-output-meta">
+                        <strong>{activeZone.fileName}</strong>
+                        <span>{activeZone.rows.length} dòng · TXT UTF-8</span>
+                      </div>
+                      {outputReady
+                        ? <>
+                            <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
+                              aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
+                              readOnly spellCheck={false} wrap="off"
+                              onKeyDown={(event) => {
+                                if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  event.currentTarget.setSelectionRange(0, event.currentTarget.value.length);
+                                }
+                              }} />
+                            <small className="stocktake-import-output-hint">Chọn vùng nội dung rồi nhấn Ctrl+A, Ctrl+C; hoặc dùng nút Sao chép TXT.</small>
+                          </>
+                        : <div className="stocktake-import-output-unavailable" role="status">
+                            Output chưa sẵn sàng. Hãy mở kiểm kê, xử lý lỗi và lưu vùng trước khi sao chép hoặc tải xuống.
+                          </div>}
+                    </div>}
                   </div>
-                </div>}
-
-                <details className="stocktake-import-output-details">
-                  <summary>Xem trước nội dung TXT</summary>
-                  <div className="stocktake-import-output-preview"><pre>{activeZone.content}</pre></div>
-                </details>
-              </section>}
+                  <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'editor' ? 'is-active' : 'is-inactive')}
+                    aria-hidden={zoneLayer !== 'editor'}>
+                    <div className="stocktake-import-editor-layer">
+                      <div className="stocktake-import-table-wrap">
+                        <table className="stocktake-import-edit-table">
+                          <thead><tr><th>DÒNG NGUỒN</th><th>BARCODE / GOLDCODE</th><th>KẾT QUẢ THỰC TẾ</th><th>NGUỒN MÃ</th><th>KIỂM TRA</th></tr></thead>
+                          <tbody>
+                            {visibleRows.map((row, visibleIndex) => {
+                              const rowIndex = page * PAGE_SIZE + visibleIndex;
+                              const rowIssues = getRowIssues(row);
+                              return <tr key={(row.sourceFileName ?? '') + '-' + (row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex}
+                                className={rowIssues.length ? 'has-error' : ''}>
+                                <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
+                                  {row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}
+                                  {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFileId ? ' · ' + row.sourceFileId.slice(0, 8) : ''}</small>}
+                                </td>
+                                <td>{editingZone
+                                  ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
+                                      onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
+                                  : <span className="stocktake-import-cell-value">{row.barcode || '—'}</span>}</td>
+                                <td>{editingZone
+                                  ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} inputMode="decimal"
+                                      value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
+                                  : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
+                                <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
+                                <td>{rowIssues.length
+                                  ? <span className="stocktake-import-row-error" title={rowIssues.join(' ')}>{rowIssues.join(' ')}</span>
+                                  : <span className="stocktake-import-row-ok">Hợp lệ</span>}</td>
+                              </tr>;
+                            })}
+                          </tbody>
+                        </table>
+                        {activeZone.rows.length === 0 && <p className="stocktake-import-muted">Không có dòng dữ liệu.</p>}
+                      </div>
+                      {activeZone.rows.length > PAGE_SIZE && <div className="stocktake-import-pagination">
+                        <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activeZone.rows.length)} / {activeZone.rows.length} dòng</span>
+                        <div>
+                          <button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
+                          <strong>{page + 1}/{pageCount}</strong>
+                          <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
+                        </div>
+                      </div>}
+                    </div>
+                  </div>
+                </div>              </section>}
             </div>
 
             <div className="stocktake-import-export-footer">

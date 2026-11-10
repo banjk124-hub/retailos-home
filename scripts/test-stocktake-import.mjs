@@ -5,6 +5,7 @@ import ts from "typescript";
 const parser = readFileSync("src/features/stocktake-import/services/stocktakeImportParser.ts", "utf8");
 const component = readFileSync("src/features/stocktake-import/components/StocktakeImportModule.tsx", "utf8");
 const store = readFileSync("src/features/stocktake-import/services/stocktakeImportStore.ts", "utf8");
+const sessionService = readFileSync("src/features/stocktake-import/services/stocktakeImportSession.ts", "utf8");
 const registry = readFileSync("src/features/home/moduleRegistry.ts", "utf8");
 const snapshotService = readFileSync("src/features/data/moduleDataService.ts", "utf8");
 const styles = readFileSync("src/features/stocktake-import/components/stocktake-import.css", "utf8");
@@ -24,7 +25,9 @@ function extractFunction(name, nextName) {
 
 const runtimeSource =
   "const BARCODE_HEADERS = ['BARCODE','BAR CODE','PRODUCT BARCODE','EAN','EAN13','EAN8','UPC','GTIN','MA BARCODE'];" +
+  "const CODE_HEADERS = ['CODE','ITEM CODE','PRODUCT CODE','MATERIAL CODE'];" +
   "const GOLD_CODE_HEADERS = ['GOLDCODE','GOLD CODE','GOLD_CODE','GOLD PRODUCT CODE'];" +
+  "const TILL_CODE_HEADERS = ['TILLCODE','TILL CODE','TILL_CODE'];" +
   "const FALLBACK_BARCODE_HEADERS = ['MA VACH','MA VACH HANG'];" +
   "const QUANTITY_HEADERS = ['SO LUONG','QUANTITY','QTY','SL','SO LUONG KIEM KE','SO LUONG THUC TE','KET QUA THUC TE','KET QUA KIEM KE','THUC TE','ACTUAL QTY','ACTUAL QUANTITY','COUNTED QTY','COUNTED QUANTITY','COUNTED','COUNT','RESULT','KET QUA','ACTUAL','WEIGHT','NET WEIGHT','MASS','KHOI LUONG','TRONG LUONG','SO CAN','KL','THUC DEM'];" +
   "const ZONE_HEADERS = ['VUNG','ZONE','MA VUNG','ZONE CODE','KHU VUC'];" +
@@ -48,6 +51,19 @@ const runtimeSource =
   extractFunction("rowIssues", "parseStocktakeWorkbook") +
   "return { normalizeHeader, matchesHeader, findHeaders, expandDecimal, roundDecimal, generalPrecision, numberFormatPrecision, formatExcelNumber, parseTextQuantity, formatBarcode, resolveBarcode, resolveZoneCode, buildStocktakeOutput, buildZoneFileName, rowIssues };";
 const runtime = new Function(ts.transpile(runtimeSource, { target: ts.ScriptTarget.ES2022 }))();
+
+const sessionModule = { exports: {} };
+const sessionCode = ts.transpile(sessionService, {
+  target: ts.ScriptTarget.ES2022,
+  module: ts.ModuleKind.CommonJS,
+});
+new Function("require", "exports", "module", sessionCode)(
+  () => ({ buildStocktakeOutput: runtime.buildStocktakeOutput, buildZoneFileName: runtime.buildZoneFileName }),
+  sessionModule.exports,
+  sessionModule,
+);
+const sessionRuntime = sessionModule.exports;
+
 
 assert.equal(runtime.normalizeHeader("SỐ LƯỢNG THỰC TẾ"), "SO LUONG THUC TE");
 assert.equal(runtime.normalizeHeader("MÃ VẠCH"), "MA VACH");
@@ -85,6 +101,15 @@ assert.deepEqual(scanned.mappings[1], {
 });
 assert.equal(scanned.unsupportedRows.length, 0);
 
+const codeAndTillScan = runtime.findHeaders(new Map([[22, new Map([
+  [1, { value: "CODE", type: "s", styleIndex: 0 }],
+  [2, { value: "TILLCODE", type: "s", styleIndex: 0 }],
+  [4, { value: "KẾT QUẢ THỰC TẾ", type: "s", styleIndex: 0 }],
+])]]));
+assert.equal(codeAndTillScan.mappings[0].codeColumn, 1);
+assert.equal(codeAndTillScan.mappings[0].tillCodeColumn, 2);
+
+
 assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
   [1, { value: "MÃ HÀNG NỘI BỘ", type: "s", styleIndex: 0 }],
   [3, { value: "THỰC TẾ (KG)", type: "s", styleIndex: 0 }],
@@ -92,20 +117,18 @@ assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
 
 // BARCODE wins when present; GOLDCODE is the row-level fallback for materials without a sales barcode.
 const widths = new Map();
-assert.deepEqual(runtime.resolveBarcode(
-  { value: "8936000829285", type: "s", styleIndex: 0 },
-  { value: "MAT001", type: "s", styleIndex: 0 }, undefined, widths,
-), { barcode: "8936000829285", source: "BARCODE" });
-assert.deepEqual(runtime.resolveBarcode(
-  { value: "", type: "s", styleIndex: 0 },
-  { value: "MAT001", type: "s", styleIndex: 0 }, undefined, widths,
-), { barcode: "MAT001", source: "GOLDCODE" });
-assert.deepEqual(runtime.resolveBarcode(undefined,
-  { value: "MAT002", type: "s", styleIndex: 0 }, undefined, widths),
-{ barcode: "MAT002", source: "GOLDCODE" });
-assert.deepEqual(runtime.resolveBarcode(undefined, undefined,
-  { value: "*089686011036*", type: "s", styleIndex: 0 }, widths),
-{ barcode: "*089686011036*", source: "MÃ VẠCH" });
+// Barcode source precedence: BARCODE -> CODE -> GOLDCODE -> TILLCODE -> legacy MÃ VẠCH.
+const cell = (value) => ({ value, type: "s", styleIndex: 0 });
+assert.deepEqual(runtime.resolveBarcode(cell("8936000829285"), cell("CODE1"), cell("GOLD1"), cell("TILL1"), undefined, widths),
+  { barcode: "8936000829285", source: "BARCODE" });
+assert.deepEqual(runtime.resolveBarcode(cell(""), cell("CODE1"), cell("GOLD1"), cell("TILL1"), undefined, widths),
+  { barcode: "CODE1", source: "CODE" });
+assert.deepEqual(runtime.resolveBarcode(undefined, undefined, cell("GOLD1"), cell("TILL1"), undefined, widths),
+  { barcode: "GOLD1", source: "GOLDCODE" });
+assert.deepEqual(runtime.resolveBarcode(undefined, undefined, undefined, cell("TILL1"), undefined, widths),
+  { barcode: "TILL1", source: "TILLCODE" });
+assert.deepEqual(runtime.resolveBarcode(undefined, undefined, undefined, undefined, cell("*089686011036*"), widths),
+  { barcode: "*089686011036*", source: "MÃ VẠCH" });
 assert.equal(runtime.rowIssues("", "19.236").length, 1);
 assert.equal(runtime.rowIssues("MAT001", "19.236").length, 0);
 
@@ -123,13 +146,89 @@ const output = runtime.buildStocktakeOutput("E001", "BT01", [
 assert.match(output, /^NHAN VIEN,E001,2026\/11\/10,09:08:07\r\nADRESSE,BT,01\r\n/);
 assert.match(output, /ARTICLE,089686011036,19\.236/);
 
+const source = (name, fingerprint) => ({ name, fingerprint, size: 100, lastModified: 1 });
+const importedRow = (barcode, sourceFileName, sourceRow) => ({
+  barcode, quantity: "1", sourceRow, sourceSheet: "BT01", sourceFileName, sourceFileId: sourceFileName.slice(0, 8),
+  barcodeSource: "BARCODE", issues: [],
+});
+const zone = (zoneCode, rows) => ({
+  zoneCode, prefix: "BT", number: zoneCode.slice(2), sheetName: zoneCode,
+  rows, content: "", fileName: zoneCode + ".txt",
+});
+const sessionBase = {
+  sourceFileName: "base.xlsx", sourceFiles: [source("base.xlsx", "base-hash")],
+  importedAt: "2026-11-10T09:00:00.000Z",
+  zones: [zone("BT01", [importedRow("BASE", "base.xlsx", 1)])],
+  warnings: [], blockingIssues: [],
+};
+const sessionA = {
+  sourceFileName: "a.xlsx", sourceFiles: [source("a.xlsx", "a-hash")],
+  importedAt: "2026-11-10T10:00:00.000Z",
+  zones: [zone("BT01", [importedRow("A1", "a.xlsx", 2), importedRow("A2", "a.xlsx", 3)]),
+    zone("BT02", [importedRow("A3", "a.xlsx", 4)])],
+  warnings: [], blockingIssues: [],
+};
+const sessionB = {
+  sourceFileName: "b.xlsx", sourceFiles: [source("b.xlsx", "b-hash")],
+  importedAt: "2026-11-10T10:01:00.000Z",
+  zones: [zone("BT01", [importedRow("A1", "b.xlsx", 5)])],
+  warnings: [], blockingIssues: [],
+};
+assert.deepEqual(sessionRuntime.detectStocktakeImportConflicts(sessionBase, [sessionA, sessionB]), [
+  { zoneCode: "BT01", existingRows: 1, incomingRows: 3, duplicateWithinBatch: true },
+]);
+const mergedSession = sessionRuntime.mergeStocktakeImportSession(sessionBase, [sessionA, sessionB], "E001", true);
+assert.equal(mergedSession.importedAt, sessionBase.importedAt, "Appending files must preserve the session timestamp.");
+assert.deepEqual(mergedSession.zones.map((item) => item.zoneCode), ["BT01", "BT02"]);
+assert.deepEqual(mergedSession.zones[0].rows.map((row) => row.barcode), ["BASE", "A1", "A2", "A1"]);
+assert.equal(mergedSession.zones[0].rows[1].sourceFileName, "a.xlsx");
+assert.equal(mergedSession.zones[0].rows[3].sourceFileName, "b.xlsx");
+assert.equal(mergedSession.zones[0].rows[1].sourceFileId, "a.xlsx".slice(0, 8));
+assert.equal(mergedSession.zones[0].rows.length, 4, "Merge must preserve every row and duplicate occurrence.");
+assert.equal(mergedSession.sourceFiles.length, 3);
+assert.match(mergedSession.warnings.join(" "), /Đã gộp 2 dòng bổ sung vào vùng BT01/);
+assert.match(mergedSession.warnings.join(" "), /Đã gộp 1 dòng bổ sung vào vùng BT01/);
+assert.ok(mergedSession.zones[0].content.includes("NHAN VIEN,E001,2026/11/10,09:00:00"));
+const skippedSession = sessionRuntime.mergeStocktakeImportSession(sessionBase, [sessionA, sessionB], "E001", false);
+assert.deepEqual(skippedSession.zones[0].rows.map((row) => row.barcode), ["BASE"]);
+assert.deepEqual(skippedSession.zones[1].rows.map((row) => row.barcode), ["A3"]);
+assert.match(skippedSession.warnings.join(" "), /Đã bỏ qua 2 dòng bổ sung của vùng BT01/);
+assert.match(skippedSession.warnings.join(" "), /Đã bỏ qua 1 dòng bổ sung của vùng BT01/);
+
+
 assert.match(parser, /xl\/workbook\.xml/);
 assert.match(parser, /xl\/_rels\/workbook\.xml\.rels/);
 assert.match(parser, /blockingIssues\.push/);
+assert.match(parser, /crypto\.subtle\.digest/);
+assert.match(parser, /sourceFileName: file\.name/);
+assert.match(parser, /sourceFileId: fingerprint\.slice\(0, 16\)/);
 assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
 assert.match(component, /saveActiveZone/);
+assert.match(component, /function getRowIssues/);
+assert.match(component, /multiple/);
+assert.match(component, /knownFingerprints/);
+assert.match(component, /batchFingerprints/);
+assert.match(component, /readOnly/);
+assert.match(component, /setSelectionRange/);
+assert.match(component, /stopPropagation/);
+assert.match(component, /navigator\.clipboard/);
+assert.match(component, /disabled={!outputReady}/);
+assert.match(component, /textarea ref={outputTextareaRef}/);
+assert.match(component, /activeZone\.content/);
+assert.match(component, /navigator\.clipboard\.writeText\(activeZone\.content\)/);
+assert.match(component, /downloadText\(zone\.fileName, zone\.content\)/);
+assert.match(component, /zip\.file\(zone\.fileName, zone\.content\)/);
+assert.doesNotMatch(component, /document\.getSelection|selectAll/);
+assert.match(component, /stocktake-import-zone-layer/);
+assert.match(component, /handleFiles/);
+assert.match(component, /confirmPendingImport/);
+assert.match(component, /sameNameDifferentContent/);
+assert.match(component, /zoneConflicts/);
+assert.match(component, /Tạo phiên mới/);
+assert.match(component, /sourceFileName/);
+assert.match(component, /sourceFileId/);
 assert.match(component, /updateRow/);
 assert.match(component, /Chỉnh sửa/);
 assert.match(component, /Lưu vùng/);
@@ -138,6 +237,11 @@ assert.match(component, /blockingIssues\.length/);
 assert.doesNotMatch(component, /slice\(0,\s*80\)/);
 assert.match(store, /retailos-stocktake-import/);
 assert.match(store, /rows: zone\.rows/);
+assert.match(store, /sourceFiles/);
+assert.match(sessionService, /detectStocktakeImportConflicts/);
+assert.match(sessionService, /mergeStocktakeImportSession/);
+assert.match(sessionService, /skippedZoneWarnings/);
+assert.match(sessionService, /sourceFileName: sourceFiles.length/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
 assert.doesNotMatch(store, /retailos-module-data|retailos-stocktake['"]/);
 assert.ok(registry.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
@@ -147,7 +251,10 @@ assert.ok(registry.includes("workStatus?: 'planned' | 'in-progress' | 'paused' |
 assert.doesNotMatch(registry, /ModuleDataId/, "Workflow identity must not depend on snapshot identity.");
 assert.equal(snapshotService.includes("stocktake-import"), false, "The local workflow must not enter snapshot synchronization.");
 assert.match(styles, /grid-template-columns:210px minmax\(0,1fr\)/);
+assert.match(styles, /stocktake-import-output-textarea/);
+assert.match(styles, /stocktake-import-zone-layer-panel/);
+assert.match(styles, /is-inactive/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
 
-console.log("Stocktake import accuracy, GoldCode fallback, multi-layout parsing, editor and responsive UI tests passed.");
+console.log("Stocktake import accuracy, code-source precedence, additive multi-file sessions, conflict review, output-layer and responsive UI tests passed.");
