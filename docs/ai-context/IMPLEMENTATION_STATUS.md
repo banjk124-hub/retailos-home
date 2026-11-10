@@ -13,15 +13,15 @@
 - The production adapter was wired correctly, but its integration fixtures covered only upright, 90°/270° and +5° deskew; broad continuous-angle and combined production-path coverage was absent.
 - Previous deskew diagnostics counted only successful estimates as attempts, hiding estimator invocations that failed confidence gates.
 
-## Corrective implementation in progress
+## Corrective implementation completed on Draft PR #67
 
-- Replace the global tensor with a 180-bin Sobel orientation histogram, directional-energy and local-coherence gates, and a continuous signed half-turn estimate.
-- Extend bilinear correction to the full -90°…+90° normalization range, retaining expanded bounds and a bounded allocation.
-- Run upright, quarter-turn and continuous correction candidates on the same valid ROI frame after a miss; try both HybridBinarizer and GlobalHistogramBinarizer.
+- Replaced the global tensor with a 180-bin Sobel orientation histogram, directional-energy and local-coherence gates, and a continuous signed half-turn estimate.
+- Extended bilinear correction to the full -90°…+90° normalization range, retaining expanded bounds and a bounded allocation.
+- Rewired the production decoder to run upright, quarter-turn and continuous correction candidates on the same valid ROI frame after a miss; try both HybridBinarizer and GlobalHistogramBinarizer.
 - Evaluate both the original and quarter-turned ROI for the smaller correction first, then try the alternate representation if ZXing still misses.
-- Increase minimum session decode sampling from 110 ms to 70 ms. Decode remains serialized; no overlapping ZXing calls or unbounded work queue.
-- Correct diagnostics so estimator invocations, rejected estimates and successful decode hits are distinguishable.
-- Expand pure and production-adapter tests to continuous positive/negative angles, medium-low contrast, EAN-8/EAN-13, combined quarter-turn plus residual skew, ambiguous texture, strict ROI and fail-closed cases.
+- Increased minimum session decode sampling from 110 ms to 70 ms. Decode remains serialized; no overlapping ZXing calls or unbounded work queue.
+- Corrected diagnostics so estimator invocations, rejected estimates and successful decode hits are distinguishable.
+- Expanded pure and production-adapter tests to continuous positive/negative angles, medium-low contrast, EAN-8/EAN-13, combined quarter-turn plus residual skew, ambiguous texture, strict ROI and fail-closed cases.
 - Suppress only ZXing 0.23.0's expected `NotFoundException` console warning during synchronous decode misses; unrelated warnings are forwarded. CI run #411 confirms the integration test remains quiet.
 
 ## Protected invariants
