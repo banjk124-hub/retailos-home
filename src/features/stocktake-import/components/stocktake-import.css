@@ -150,6 +150,12 @@
 .stocktake-import-review-actions button { min-height:36px; padding:0 10px; border:1px solid var(--border-subtle,#e5e9f0); border-radius:10px; color:inherit; background:var(--surface-secondary,#f7f8fb); font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
 .stocktake-import-review-actions button:last-child { border-color:#c82b39; color:#fff; background:#c82b39; }
 .stocktake-import-review-actions button:disabled { opacity:.45; cursor:not-allowed; }
+
+.stocktake-import-source-list { margin:0 0 10px; padding:8px 10px; border:1px solid var(--border-subtle,#e5e9f0); border-radius:10px; background:var(--surface-secondary,#f7f8fb); }
+.stocktake-import-source-list summary { color:var(--text-secondary,#687386); font-size:10px; font-weight:750; cursor:pointer; }
+.stocktake-import-source-list small { display:block; overflow:hidden; margin-top:5px; color:var(--text-secondary,#687386); font-size:10px; text-overflow:ellipsis; white-space:nowrap; }
+.stocktake-import-source-row small { display:block; max-width:150px; overflow:hidden; margin-top:3px; color:var(--text-tertiary,#8490a2); font-size:9px; text-overflow:ellipsis; white-space:nowrap; }
+.stocktake-import-output-textarea { max-height:min(54dvh,610px); }
 @media (max-width:900px) {
   .stocktake-import-panel { width:min(100%,860px); }
   .stocktake-import-workspace { grid-template-columns:170px minmax(0,1fr); }
