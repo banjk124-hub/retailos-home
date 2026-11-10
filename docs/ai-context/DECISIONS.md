@@ -117,7 +117,7 @@ SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the act
 - A pure resolver validates the coordinate-space tag and rectangle, then converts normalized bounds into integer source pixels using floor-leading/ceil-trailing rounding and source-frame clamping.
 - ZXing draws only that source crop into its working canvas and decodes the ROI. The full-frame-first pass and fixed centered fallback are removed.
 - Missing or invalid geometry is a decode miss, not a decoder error, and must never trigger full-frame fallback.
-- Preserve the supported barcode allowlist, existing binarizer schedule, 1.5× aspect-preserving ROI upscale, 110 ms frame-loop cadence, validation and result-delivery policy.
+- Historical SCAN-04 baseline: supported barcode allowlist, then-current binarizer schedule, 1.5× aspect-preserving ROI upscale and 110 ms cadence. The cadence/binarizer policy was intentionally superseded by SCAN-05/06 (ADR-026/027); strict ROI, allowlist, validation and result-delivery policy remain.
 
 ### Constraints
 - No camera acquisition/lease, readiness, lifecycle/recovery, frame scheduling, CSS, Home/Stocktake UI or business-flow changes.
@@ -130,7 +130,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Continuous ROI orientation recovery (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical iOS/Android QA remains pending.
+**Status:** Accepted and merged by PR #67 at `9406ac30d53bc9984912bd1928a32fd78157cf60`; final PR-head CI #432 passed. User confirms deployed operation is good.
 
 - ZXing's existing `TRY_HARDER` path retains 180° 1D scanline reversal.
 - Keep an exact clockwise 90° ROI transform as a fast path after an upright miss; run it on the current valid ROI frame, not every third frame.
@@ -142,7 +142,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical optical QA remains pending.
+**Status:** Accepted and merged by PR #67 at `9406ac30d53bc9984912bd1928a32fd78157cf60`; final PR-head CI #432 passed. User confirms deployed operation is good.
 
 - Estimate the dominant ROI gradient orientation using a 180-bin Sobel histogram, directional-energy concentration and local coherence.
 - Normalize the estimate modulo 180° into a signed ±90° range; ignore estimates below 0.65° and reject low-confidence/ambiguous textures.
