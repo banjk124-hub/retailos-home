@@ -624,7 +624,7 @@ See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Bounded in-plane deskew after orientation normalization (2026-11-10)
 
-**Status:** Implemented on final consolidated PR #66; CI run #387 passed the audit follow-up and production-adapter integration. Physical accuracy/performance QA remains pending.
+**Status:** Implemented on final consolidated PR #66; CI run #395 passed the audit follow-up and production-adapter upright/rotation/deskew integration. Physical accuracy/performance QA remains pending.
 
 ### Context
 After orthogonal orientation normalization, a barcode can still be tilted within the image plane. Unbounded angle search or perspective correction would multiply decode cost and mix separate image-processing problems.
