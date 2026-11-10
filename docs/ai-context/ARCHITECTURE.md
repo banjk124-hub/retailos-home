@@ -558,7 +558,7 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 
 
 ## ADR-024 — Feature-owned preview region measurement and in-place session update (2026-11-10)
-**Status:** Implemented on SCAN-03 branch; GitHub Actions run #309 passed. PR #61 remains Draft pending PR #60 merge/review. Decoder consumption is deferred to SCAN-04.
+**Status:** Merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms iOS and Android verification with no detected issue. SCAN-04 consumes this region in the decoder.
 
 ### Decision
 - Home and Stocktake keep their own video and reticle DOM. A feature-level binding hook may share measurement mechanics but must not own presentation.
