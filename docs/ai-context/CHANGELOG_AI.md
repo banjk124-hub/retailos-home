@@ -20,7 +20,7 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Audited the merged source and technical records. Found stale Draft/pending/deploy wording, stale CI #411 references, and architecture/current-source notes still claiming a 110 ms cadence and every-third-frame binarizer policy.
 - Updated SCAN-05/06, SCAN-04 supersession note, ADR-026/027, Architecture, Implementation Status, Roadmap, Acceptance Checklist, AI Handoff, Project Context and Session Log.
 - Functional acceptance is recorded as user-confirmed. Detailed device/browser/module/symbology matrix and quantitative latency/CPU/success-rate evidence remain unreported and are not claimed.
-- No application source code changed during this documentation audit; this is a documentation-only follow-up branch.
+- No executable logic or runtime behavior changed. One duplicated word in the scannerDeskew.ts resampling comment was corrected; this is a documentation/source-comment synchronization branch.
 
 ## 2026-11-10 — SCAN-05/06 corrective continuous orientation recovery
 
