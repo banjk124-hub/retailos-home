@@ -1,6 +1,6 @@
 # SCAN-05 — Continuous ROI orientation recovery
 
-**Status:** Corrective implementation is on Draft PR #67 (`fix/scan-05-06-continuous-orientation`). CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical iOS/Android QA remains pending.
+**Status:** Corrective implementation is on Draft PR #67 (`fix/scan-05-06-continuous-orientation`). CI #425 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical iOS/Android QA remains pending.
 
 ## Problem found in the previous implementation
 
