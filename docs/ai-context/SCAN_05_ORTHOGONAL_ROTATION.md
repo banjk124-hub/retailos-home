@@ -1,6 +1,6 @@
 # SCAN-05 — Orthogonal ROI rotation decoding
 
-**Status:** Implemented on final consolidated PR #66. Staged PR #64 CI run #338 and final consolidated PR #66 CI run #360 passed. Physical iOS/Android QA remains pending.
+**Status:** Implemented on final consolidated PR #66. Staged PR #64 CI run #338 and final consolidated PR #66 CI run #368 passed before the audit follow-up commits; fresh CI is required for the latest head. Physical iOS/Android QA remains pending.
 
 ## Verified baseline
 
@@ -8,7 +8,7 @@
 - ZXing `OneDReader` already reverses 1D scanlines and reports orientation 180°.
 - EAN-8 and EAN-13 inherit the shared `OneDReader` implementation.
 - RetailOS uses `RGBLuminanceSource`, which does not support ZXing bitmap rotation; 90°/270° therefore require an explicit ROI transform.
-- Runtime baseline fixture verifies Code 128 at 0°/180°. EAN-8/EAN-13 are guarded at the dependency-inheritance level, not claimed as separate runtime image-fixture tests.
+- Runtime baseline fixture verifies Code 128 at 0°/180°. The orthogonal rotation suite now also rasterizes EAN-8 and EAN-13 fixtures and verifies both 90° and 270° normalization at runtime.
 
 ## Runtime flow
 
@@ -36,7 +36,7 @@ One clockwise quarter-turn covers both source directions: 90° input becomes 180
 - `src/platform/scanner/scannerRotation.ts` provides pure `rotateLuminance90Clockwise()`.
 - It swaps output dimensions, maps source pixels deterministically and fails closed on invalid input.
 - Decoder always tries the unrotated strict ROI first.
-- Extra quarter-turn runs only after a miss and every third valid ROI frame.
+- Extra quarter-turn runs only after a miss and every third valid ROI frame, using a dedicated processing sequence independent of diagnostics sampling.
 - Existing 110 ms session cadence, supported formats, binarizer schedule, validation and result delivery remain unchanged.
 - Diagnostics expose rotation attempts/hits and separate processing-stage costs.
 
@@ -44,7 +44,7 @@ One clockwise quarter-turn covers both source directions: 90° input becomes 180
 
 - `scripts/test-scanner-rotation-baseline.mjs`: Code 128 runtime decode at 0°/180°, 180° metadata, EAN inheritance guards and production `TRY_HARDER` wiring.
 - `scripts/test-scanner-rotation.mjs`: pixel mapping, dimensions, invalid-input rejection and runtime Code 128 decode after 90°/270° normalization.
-- Both suites are registered in preflight. CI #338 and consolidated CI #342 passed.
+- Both suites are registered in preflight. CI #338 and #368 passed the pre-follow-up baseline; the latest audit follow-up requires a fresh CI run.
 
 ## Device acceptance
 
