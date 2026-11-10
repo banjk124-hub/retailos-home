@@ -19,7 +19,7 @@ function extractFunction(name, nextName) {
   const end = candidates.length ? Math.min(...candidates) : -1;
   assert.notEqual(start, -1, "Missing function " + name);
   assert.notEqual(end, -1, "Missing next function " + nextName);
-  return parser.slice(start, end);
+  return parser.slice(start, end).replace(/^export\\s+/gm, "");
 }
 
 const runtimeSource =
