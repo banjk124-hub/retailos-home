@@ -1,7 +1,7 @@
 # SCAN-05/06 implementation status — orthogonal rotation and bounded deskew (2026-11-10)
 
 **Status:** Implementation and automated follow-up are on `feat/scan-05-06-final-consolidation`; PR #66 remains Draft/open and not merged/deployed. Physical device acceptance remains outstanding.  
-**CI:** PR #66 run #368 passed the complete preflight, TypeScript, production build and GitHub Pages build on the pre-audit-fix head. A fresh CI run is required for the latest follow-up commits, including the production-adapter integration suite.
+**CI:** PR #66 run #387 passed full preflight (including production decoder integration), TypeScript, production build, GitHub Pages build and diff checks on the implementation head. The subsequent session-log update was documentation-only.
 
 - SCAN-04 was merged/deployed by the user; the user confirms normal scanner operation after deployment.
 - ZXing baseline: `TRY_HARDER` supports 180° reversal for 1D readers. The runtime fixture verifies Code 128 at 0°/180°; EAN-8/EAN-13 inheritance is source-guarded, not separately runtime-fixture tested.
@@ -10,11 +10,11 @@
 - Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, EAN-8/EAN-13 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
 - Added a production `ZXingDecoderAdapter` integration suite: actual adapter upright decode, scheduled 90°/270° recovery on the third valid ROI frame, strict reticle crop and no full-frame fallback; registered in preflight.
 - Audit follow-up decouples processing cadence from diagnostics sampling using a dedicated valid-ROI frame sequence; deterministic regression tests cover cadence and invalid sequence values.
-- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code) and #368 (pre-audit-fix consolidated PR #66 head) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
+- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code), #368 (pre-audit-fix consolidated head) and #387 (audit follow-up with production-adapter integration) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
 - No camera/session/lifecycle, ROI mapping, UI/CSS, barcode validation, business flow, dependency or deployment changes.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA remains pending. CI does not prove physical optical accuracy, device CPU cost or latency.
 
-**Next gate:** obtain a fresh green CI result for the audit follow-up, complete the device matrix and low-end performance comparison, then perform final consolidated diff/docs audit before merge.
+**Next gate:** complete the physical device matrix and low-end performance comparison, then perform final consolidated diff/docs audit before merge.
 ---
 
 ---
