@@ -170,7 +170,7 @@ const scan06Doc = await readFile(
 assert.match(scan05Doc, /One clockwise quarter-turn/);
 assert.match(scan05Doc, /180°/);
 assert.match(scan06Doc, /180-bin Sobel gradient-orientation histogram/);
-assert.match(scan06Doc, /1\.2°/);
+assert.match(scan06Doc, /0\.65°/);
 assert.match(scan06Doc, /90°/);
 assert.match(scan06Doc, /perspective/);
 
