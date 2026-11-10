@@ -17,10 +17,11 @@ import {
   Truck,
   Warehouse,
   Boxes,
+  FileSpreadsheet,
 } from 'lucide-react';
 import type { DepartmentId } from '../../features/auth/types';
 import type { ModuleLibraryId } from '../../features/home/moduleRegistry';
-import type { ModuleDataId } from '../../features/data/moduleDataService';
+import type { RetailModuleId } from '../../features/home/moduleRegistry';
 import type { RetailIcon } from './icon.types';
 
 export const DEPARTMENT_ICON_REGISTRY: Record<DepartmentId, RetailIcon> = {
@@ -31,7 +32,7 @@ export const DEPARTMENT_ICON_REGISTRY: Record<DepartmentId, RetailIcon> = {
   warehouse: Warehouse,
 };
 
-export const MODULE_ICON_REGISTRY: Record<ModuleDataId, RetailIcon> = {
+export const MODULE_ICON_REGISTRY: Record<RetailModuleId, RetailIcon> = {
   inventory: Warehouse,
   price: CreditCard,
   orders: ClipboardList,
@@ -40,6 +41,7 @@ export const MODULE_ICON_REGISTRY: Record<ModuleDataId, RetailIcon> = {
   delivery: Truck,
   'product-dates': CalendarDays,
   stocktake: Check,
+  'stocktake-import': FileSpreadsheet,
 };
 
 export const LIBRARY_ICON_REGISTRY: Record<ModuleLibraryId, RetailIcon> = {

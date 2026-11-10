@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Stocktake offline file import regression tests",
+    command: process.execPath,
+    args: ["scripts/test-stocktake-import.mjs"],
+  },
+  {
     name: "Scanner barcode validation regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-validation.mjs"],

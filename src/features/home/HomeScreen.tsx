@@ -10,7 +10,7 @@ import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { GlassSurface } from '../../shared/components/glass';
-import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT, type ModuleDataId } from '../data/moduleDataService';
+import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
@@ -25,6 +25,7 @@ import type { MotionOrigin } from '../../shared/motion';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import StocktakeModule from '../stocktake/components/StocktakeModule';
+import StocktakeImportModule from '../stocktake-import/components/StocktakeImportModule';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import ScannerQaMonitor from './components/ScannerQaMonitor';
@@ -128,6 +129,7 @@ export default function HomeScreen({
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
   const [isStocktakeOpen, setIsStocktakeOpen] = useState(false);
+  const [isStocktakeImportOpen, setIsStocktakeImportOpen] = useState(false);
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
@@ -857,6 +859,11 @@ export default function HomeScreen({
                   setIsStocktakeOpen(true);
                   return;
                 }
+                if (module.id === 'stocktake-import') {
+                  setSelectedLibrary(null);
+                  setIsStocktakeImportOpen(true);
+                  return;
+                }
                 announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`);
               }}>
                 <span className="module-icon"><MotionIcon icon={ModuleIcon} variant="module" size={20} /></span><span className="app-library-module-copy"><strong>{module.title}</strong><small>{module.description}</small><span className="module-availability">{module.availability === 'ready' ? 'Đã triển khai' : 'Đang tích hợp'}</span></span><ArrowUpRight size={16} className="app-library-module-arrow" />
@@ -886,6 +893,7 @@ export default function HomeScreen({
       </div>;
     })()}
     {isStocktakeOpen && <StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} />}
+    {isStocktakeImportOpen && <StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} />}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }

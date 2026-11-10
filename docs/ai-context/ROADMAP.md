@@ -1,3 +1,19 @@
+# Current work — Stocktake offline file import (2026-11-10)
+
+**PR #69:** [Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
+**Branch:** `feat/stocktake-file-import`.
+**Status:** Draft implementation; not merged/deployed.
+
+- Add a separate local-only `Nạp file kiểm kê` workflow inside the existing Kiểm kê library.
+- Decouple business `RetailModuleId` from server snapshot `ModuleDataId`.
+- Read `.xlsx` locally, detect each sheet/header/zone, extract BARCODE + SỐ LƯỢNG, preserve duplicates and decimals, preview Stocktake-compatible TXT output, and export one file per zone.
+- Import history/cache is isolated in `retailos-stocktake-import`; clear-history must not affect the existing `retailos-stocktake` database.
+- Existing Stocktake scanner, save/export, Scanner Engine, camera lifecycle and snapshot sync are protected.
+- Remaining gates: CI/preflight, supplied workbook fixture validation, multi-sheet test, downstream confirmation for numeric-only zones and percent suffixes, and iOS/Android PWA file/download QA.
+- Full contract: `STOCKTAKE_FILE_IMPORT.md`; architecture decision: ADR-028.
+
+---
+
 # SCAN-05/06 — corrective execution closed (2026-11-10)
 
 **Status:** Complete, merged, deployed and user-validated.

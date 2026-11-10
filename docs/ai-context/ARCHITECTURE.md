@@ -644,3 +644,42 @@ The previous estimator used one global Sobel structure tensor and accepted only 
 
 ### Acceptance
 See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
+
+
+## ADR-028 — Separate business workflow identity from snapshot identity and add local Stocktake import (2026-11-10)
+
+**Status:** Implementation in PR #69; CI run #454 passed; not merged or deployed.
+
+### Context
+
+The Home module registry currently typed every workflow ID as `ModuleDataId`. That conflates two different concepts:
+- a business workflow that can be opened by an employee;
+- a server-provided snapshot dataset that can be synchronized and cached.
+
+The new `Nạp file kiểm kê` workflow is local-only. It reads a workbook from the device and does not require a server snapshot. Adding it to `MODULE_DATA_IDS` would incorrectly make it part of the Apps Script manifest and snapshot synchronization contract.
+
+### Decision
+
+- Introduce `RetailModuleId` for business workflow identity, with `ModuleDataId` retained as the snapshot-data identity.
+- Add `stocktake-import` to the existing Kiểm kê library as a separate ready/local workflow.
+- Keep the importer separate from `StocktakeModule`; do not modify Stocktake entry persistence, scanner, camera lifecycle or existing manual/scanner/export flows.
+- Parse OOXML `.xlsx` in the browser using the existing JSZip dependency and browser XML APIs. Do not upload the workbook or make network requests.
+- Store import history/output in its own IndexedDB database, `retailos-stocktake-import`.
+- Preview output before export. Multi-zone output is a ZIP containing one TXT per zone; individual zone downloads remain available.
+- Preserve duplicate rows and exact source row order. Prefer the explicit BARCODE column over MÃ VẠCH.
+
+### Data and output constraints
+
+- Preserve raw numeric XML tokens to avoid JavaScript floating-point loss.
+- Convert textual decimal commas to dots; reject mixed/ambiguous separators.
+- Convert percentage-formatted numeric cells from Excel's stored fraction to displayed percent text (e.g. 0.125 → 12.5%).
+- Resolve zone codes from recognizable sheet names or top-of-sheet metadata.
+- Numeric-only zones currently map to `ADRESSE,,<number>`; this and literal percent suffix compatibility require business acceptance.
+
+### Protected scope
+
+No changes to Scanner Engine, camera/session/lifecycle contracts, Stocktake scanner, existing Stocktake IndexedDB schema, Stocktake save/export behavior, authentication, snapshot API, or deployment configuration.
+
+### Acceptance
+
+See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`. Required checks include full `npm run preflight`, both supplied workbook fixtures, multi-sheet/multi-zone coverage, iOS Safari/PWA and Android Chrome/PWA file-picker/download QA, and confirmation that the downstream system accepts numeric-only zone and percentage representations.

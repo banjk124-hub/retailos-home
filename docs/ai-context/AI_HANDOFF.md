@@ -1,3 +1,34 @@
+# Current task — Stocktake offline file import (2026-11-10)
+
+**PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
+**Branch:** `feat/stocktake-file-import`.
+**Base main:** `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
+**Status:** Implementation and CI complete (RetailOS CI run #454 passed); do not merge/deploy until downstream format acceptance and real-device QA are complete.
+
+## Current implementation
+
+- `Nạp file kiểm kê` is a separate local-only workflow inside the existing Kiểm kê library.
+- `RetailModuleId` is separate from `ModuleDataId`; importer does not enter snapshot sync.
+- `.xlsx` parsing is local using JSZip and browser XML APIs; no source workbook upload or network fetch.
+- Detects sheet list, header row, BARCODE, SỐ LƯỢNG and an explicit VÙNG/ZONE column when present; validates the zone against sheet metadata and preserves duplicates/source order.
+- Supports decimal quantities, decimal-comma text values and percentage-formatted numeric cells.
+- Resolves alphabetic+numeric and numeric-only zone codes; numeric-only output currently uses `ADRESSE,,540`.
+- Preview output before download; ZIP contains one TXT file per zone; individual zone download is available.
+- Import history/output uses a separate IndexedDB database and has its own clear-history action.
+- Existing Stocktake and Scanner behavior is intentionally unchanged.
+
+## Required next steps
+
+1. CI/preflight passed in RetailOS CI run #454; keep this check green on subsequent changes.
+2. Structural review of both supplied workbook examples is complete; execute actual import/output comparison on device.
+3. Confirm downstream compatibility of `ADRESSE,,<number>` and percent-suffixed quantities.
+4. Test file picker, local parsing, history persistence, individual TXT and ZIP downloads on iOS Safari/PWA and Android Chrome/PWA.
+5. Do not merge/deploy without the user's explicit approval.
+
+See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
+
+---
+
 # Current AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
 
 - Repository: banjk124-hub/retailos-home; default branch: main.
