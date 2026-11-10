@@ -267,6 +267,8 @@ assert.match(component, /stocktake-import-zip-compact/);
 assert.match(component, /stocktake-import-content/);
 assert.match(component, /zoneActionStates/);
 assert.match(component, /hadUnsavedChanges/);
+assert.match(component, /result\.blockingIssues\.length > 0/);
+assert.match(component, /isDirty \|\| !historyPersisted/);
 assert.match(component, /Đã sao chép/);
 assert.match(component, /Đã tải TXT/);
 assert.match(component, /Đã xuất ZIP/);
