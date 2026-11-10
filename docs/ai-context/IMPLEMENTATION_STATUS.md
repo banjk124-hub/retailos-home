@@ -1,13 +1,15 @@
-# SCAN-03 implementation update — module-owned preview region integration (2026-11-10)
+# SCAN-04 implementation update — strict module-reticle ROI decoding (2026-11-10)
 
-**Status:** Implemented on `feat/scan-03-module-region-integration`; GitHub Actions run #309 passed full preflight and builds. PR #61 remains Draft and depends on PR #60 merge.
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
 
-- Home and Stocktake retain their own video elements and reticles.
-- A feature-level binding hook measures each module's video/reticle geometry after scanning is ready and observes viewport/element changes.
-- The pure adapter clips the reticle to visible image content and maps it to source-frame normalized coordinates.
-- The active session receives the latest region through an in-place setter/getter; this does not restart camera, decoder or frame loop.
-- Decoder remains full-frame in SCAN-03. ROI-only decode is not active and remains SCAN-04.
-- Automated tests, CI and real-device iOS/Android geometry QA are pending.
+- SCAN-03 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms both iOS and Android geometry/flow checks passed without detected issues.
+- Decoder now receives the current `source-frame-normalized` region from the active session on every decode call.
+- New pure `resolveScannerRoiCrop()` maps normalized source coordinates to integer pixel bounds; leading edges floor and trailing edges ceil to avoid clipping.
+- ZXing draws and decodes only the measured ROI. The previous full-frame-first pass and fixed centered `82% × 66%` secondary crop are removed.
+- Missing/invalid/out-of-bounds ROI returns no result and increments `roiUnavailable`; no full-frame or centered fallback exists.
+- Preserved camera acquisition/lease, first-frame readiness, recovery, 110 ms decode cadence, supported symbologies, validation, result delivery, Home lookup and Stocktake form/save workflows.
+- Added `scripts/test-scanner-roi-decoder.mjs` to preflight for normalized-to-pixel mapping, edge rounding, invalid geometry and runtime wiring.
+- Automated CI and real-device iOS/Android barcode accuracy/performance validation remain pending.
 
 ---
 
