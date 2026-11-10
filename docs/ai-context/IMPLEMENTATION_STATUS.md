@@ -21,21 +21,20 @@
 - `src/platform/scanner/scannerGeometry.ts` provides pure preview-to-source mapping for `fill`, `contain`, `cover`, `none`, `scale-down`, normalized object-position, visible-content intersection and horizontal mirror conversion.
 - Audit reviewed sizing/crop math, coordinate-space contract, failure behavior and separation from DOM/camera/session/decoder resources.
 - A follow-up test-only correction strengthens the static guard against `window.` and `document.` access; no production runtime behavior changed.
-- No runtime consumer is wired. Home/Stocktake presentation, camera lifecycle, decoder and business flows remain unchanged; ROI-only decode is not active.
-- Next: SCAN-03 module-owned Home/Stocktake adapters and live region updates without session restart. Physical iOS/Android geometry alignment QA is required.
-- SCAN-04 remains gated on both consumers providing verified source regions before strict ROI-only decode.
+- SCAN-03 subsequently wired Home and Stocktake reticles to the active session without restart; PR #61 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`. User confirms iOS/Android geometry and existing-flow checks found no issue.
+- SCAN-04 now consumes that verified region in the decoder.
 
 ---
 
 # SCAN-01 implementation update — 2026-11-10
 
-**Status:** source contract authored on `feat/scanner-input-module-config-contract`; PR CI pending. Not merged.
+**Status:** merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
 
 - Added platform-neutral `ScannerNormalizedRect`, `ScannerPreviewScanRegion`, `ScannerSourceScanRegion`, `ScannerCameraRequest`, `ScannerModuleConfig` and the unchanged default camera request.
 - Added `docs/ai-context/SCAN_01_INPUT_CONTRACT.md` with coordinate semantics, rectangle invariants, ownership, migration and acceptance rules.
 - No runtime consumer is wired yet. Home and Stocktake behavior is unchanged.
 - No camera lease, camera constraints, lifecycle, session, decoder, barcode validation, UI, CSS or business behavior changed.
-- Next: SCAN-02 pure geometry mapping; SCAN-03 module integration; SCAN-04 strict ROI decode.
+- SCAN-02 geometry mapping and SCAN-03 module integration are merged; SCAN-04 strict ROI decoding is the current phase.
 
 ---
 
