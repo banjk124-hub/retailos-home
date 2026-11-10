@@ -634,8 +634,14 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 {result.zones.map((zone, index) => {
                   const rowErrors = zone.rows.filter((row) => getRowIssues(row).length > 0).length;
                   const isDirty = dirtyZones.includes(zone.zoneCode);
-                  const actionState = rowErrors ? 'invalid' : isDirty ? 'dirty' : (zoneActionStates[zone.zoneCode] ?? 'ready');
-                  const actionLabel: Record<string, string> = { ready: 'Sẵn sàng', saved: 'Đã lưu', copied: 'Đã sao chép', downloaded: 'Đã tải TXT', zipped: 'Đã xuất ZIP', dirty: 'Chưa lưu', invalid: rowErrors + ' lỗi' };
+                  const actionState = rowErrors || result.blockingIssues.length > 0
+                    ? 'invalid'
+                    : isDirty || !historyPersisted ? 'dirty' : (zoneActionStates[zone.zoneCode] ?? 'ready');
+                  const actionLabel: Record<string, string> = {
+                    ready: 'Sẵn sàng', saved: 'Đã lưu', copied: 'Đã sao chép',
+                    downloaded: 'Đã tải TXT', zipped: 'Đã xuất ZIP', dirty: 'Chưa lưu',
+                    invalid: rowErrors ? rowErrors + ' lỗi' : 'File lỗi',
+                  };
                   return <button key={zone.zoneCode} type="button"
                     className={selectedZone === index ? 'is-active' : ''}
                     aria-current={selectedZone === index ? 'true' : undefined}
