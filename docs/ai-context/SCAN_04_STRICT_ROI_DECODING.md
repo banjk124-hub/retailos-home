@@ -1,5 +1,7 @@
 # SCAN-04 — Strict module-reticle ROI decoding
 
+> **Superseded runtime note (2026-11-10):** This document records the SCAN-04 implementation baseline. Its 110 ms cadence and every-third-ROI GlobalHistogram schedule were later superseded by SCAN-05/06, merged in PR #67. Current runtime uses a 70 ms minimum decode interval and tries HybridBinarizer plus GlobalHistogramBinarizer for each orientation candidate. Strict ROI-only behavior remains unchanged.
+
 **Status:** Merged and deployed by the user; the user confirms normal scanner operation. The detailed optical stress matrix was not individually recorded. SCAN-05/06 extend this strict ROI pipeline in later phases.  
 **Baseline:** SCAN-03 merge commit `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms successful iOS and Android geometry/flow verification.  
 **Objective:** Make the decoder consume the exact source-frame region published by each module-owned reticle, instead of decoding the full frame and then trying a fixed centered crop.
