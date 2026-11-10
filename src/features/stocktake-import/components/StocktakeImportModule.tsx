@@ -33,7 +33,6 @@ type PendingImportReview = {
   sameNameDifferentContent: string[];
   zoneConflicts: ZoneConflict[];
 };
-type ImportReviewMeta = { duplicateFiles: string[]; sameNameDifferentContent: string[] };
 const PAGE_SIZE = 100;
 
 function localDate(value: string): string {
