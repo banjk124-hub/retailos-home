@@ -59,6 +59,11 @@ const checks = [
     args: ["scripts/test-scanner-rotation.mjs"],
   },
   {
+    name: "Scanner production decoder integration tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-decoder-integration.mjs"],
+  },
+  {
     name: "Scanner bounded deskew regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-deskew.mjs"],
