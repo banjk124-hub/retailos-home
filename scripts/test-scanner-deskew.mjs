@@ -139,7 +139,7 @@ const deskewSource = await readFile(
   new URL('../src/platform/scanner/scannerDeskew.ts', import.meta.url),
   'utf8',
 );
-assert.doesNotMatch(deskewSource, /\\b(?:window|document)\\s*(?:\\.|\\?\\.)|HTMLCanvasElement/,
+assert.doesNotMatch(deskewSource, /\b(?:window|document)\s*(?:\.|\?\.)|HTMLCanvasElement/,
   'deskew processing must remain pure and independent of browser presentation');
 assert.match(deskewSource, /MAX_SKEW_DEGREES = 12/,
   'deskew angle must remain explicitly bounded');
@@ -153,7 +153,7 @@ assert.match(decoderSource, /uprightDeskew \?\? \(rotated/,
   'deskew must select the upright or normalized orthogonal ROI, not the full frame');
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
-assert.match(decoderSource, /false,\\s*'deskew'/,
+assert.match(decoderSource, /false,\s*'deskew'/,
   'deskew decode must use the bounded HybridBinarizer-only pass');
 assert.match(decoderSource, /lastDeskewAngleDegrees:/, 'measured skew angle must be observable');
 
