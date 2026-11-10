@@ -3,7 +3,7 @@
 - Repository: `banjk124-hub/retailos-home`.
 - Current branch: `feat/scan-06-bounded-deskew`.
 - Current consolidated Draft PR: #65 — https://github.com/banjk124-hub/retailos-home/pull/65.
-- Final recorded head: `7bd77ffd7acd6a04e65b731b3ffa3a3e9546a7f1`; GitHub Actions run #342 passed the full preflight and both builds.
+- GitHub Actions run #360 passed the full preflight and both builds on the consolidated PR #66 branch.
 - Earlier staged PRs #63 (baseline), #64 (SCAN-05) and #65 (SCAN-06) are closed without merging as superseded by final PR #66.
 - SCAN-04 was merged/deployed by the user; user confirms normal scanner operation.
 - Existing ZXing 1D support already handles 180° through `TRY_HARDER` scanline reversal. Code 128 runtime fixture confirms 0°/180°; EAN-8/EAN-13 retain the shared OneDReader inheritance path.
