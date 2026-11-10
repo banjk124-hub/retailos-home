@@ -80,7 +80,11 @@ try {
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
-  const { rotateLuminanceByAngle } = await import(pathToFileURL(
+  const {
+    estimateScannerSkewAngle,
+    deskewLuminanceFrame,
+    rotateLuminanceByAngle,
+  } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerDeskew.js'),
   ).href);
 
