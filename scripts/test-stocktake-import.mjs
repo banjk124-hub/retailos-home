@@ -201,6 +201,7 @@ assert.match(parser, /xl\/_rels\/workbook\.xml\.rels/);
 assert.match(parser, /blockingIssues\.push/);
 assert.match(parser, /crypto\.subtle\.digest/);
 assert.match(parser, /sourceFileName: file\.name/);
+assert.match(parser, /sourceFileId: fingerprint\\.slice\\(0, 16\\)/);
 assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
