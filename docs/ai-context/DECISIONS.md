@@ -87,7 +87,7 @@ See `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md` and `scripts/test-scanner-geom
 
 
 ## ADR-024 — Feature-owned preview region integration (2026-11-10)
-**Status:** Implemented on SCAN-03 branch; GitHub Actions run #309 passed. PR #61 remains Draft pending PR #60 merge/review. ROI decode remains deferred to SCAN-04.
+**Status:** Merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms iOS and Android geometry verification. SCAN-04 consumes the mapped region.
 
 ### Decision
 - Home and Stocktake independently own their video and reticle elements.
