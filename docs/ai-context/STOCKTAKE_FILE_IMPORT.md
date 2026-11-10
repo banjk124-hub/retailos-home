@@ -99,3 +99,13 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - Desktop uses a wide two-column zone/workspace layout; mobile retains a stacked layout. Lightweight transitions and `prefers-reduced-motion` support are included. The table is paginated at 100 rows per page.
 
 **Acceptance still required:** verify decimal examples against the original Excel display, material GOLDCODE rows, mixed-layout/multi-table workbook, same-zone aggregation, edit/save/restore, and desktop browser download behavior. Also confirm whether date/time should remain inside the `NHAN VIEN` line.
+
+
+## Operational review additions
+
+- A zone can contain several recognized table blocks in one sheet, and the same zone can be assembled from different sheets. The parser preserves source sheet and row references in the review table.
+- Each detected table block is resolved independently. If a workbook contains a header-like block that cannot be mapped, the parser reports its sheet and row and blocks export of the workbook to prevent partial output.
+- Manual correction is scoped to one zone at a time. Unsaved edits prevent changing zones, replacing the workbook, opening history or closing the module. Save writes corrected row values into the import-only history record.
+- Decimal-comma values typed during correction are normalized to decimal-point output on save. An incomplete decimal such as `19,` is rejected.
+- Zone-only naming applies to current exports and history re-downloads. The date/time in the `NHAN VIEN` content line is intentionally retained until the downstream consumer is confirmed not to require it.
+- Desktop layout uses a two-column zone navigator and editor workspace. Mobile uses a stacked layout; row review is paginated to keep large workbooks responsive.
