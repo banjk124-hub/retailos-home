@@ -209,7 +209,7 @@ try {
     height: upright.height,
     luminance: Uint8ClampedArray.from(
       upright.luminance,
-      (value) => value < 128 ? 88 : 168,
+      (value) => value < 128 ? 108 : 148,
     ),
   };
   const lowContrastRotated = rotateLuminanceByAngle(
@@ -218,7 +218,7 @@ try {
   assert.ok(lowContrastRotated, 'low-contrast adapter fixture must be generated');
   const lowContrastAngled = {
     ...lowContrastRotated,
-    luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 168)),
+    luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 148)),
   };
   const lowContrastDecoder = await createDecoder();
   const lowContrastResult = await decodeOnce(lowContrastDecoder, toSource(lowContrastAngled));
