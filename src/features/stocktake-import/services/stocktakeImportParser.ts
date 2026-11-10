@@ -366,11 +366,12 @@ function resolveZoneCode(
   rows: Map<number, Map<number, CellValue>>,
   headerRow: number,
   zoneColumn?: number,
+  endRow = Number.POSITIVE_INFINITY,
 ): string {
   const normalizedSheet = sheetName.trim().toUpperCase();
   if (zoneColumn !== undefined) {
     const zoneValues = new Set([...rows.entries()]
-      .filter(([rowNumber]) => rowNumber > headerRow)
+      .filter(([rowNumber]) => rowNumber > headerRow && rowNumber < endRow)
       .map(([, cells]) => cells.get(zoneColumn)?.value.trim().toUpperCase() ?? '')
       .filter((value) => /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(value)));
     if (zoneValues.size > 1) throw new Error('Một sheet có nhiều mã vùng trong cột VÙNG. Hãy tách mỗi vùng thành một sheet riêng.');
