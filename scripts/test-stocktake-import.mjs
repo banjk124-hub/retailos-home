@@ -26,7 +26,7 @@ const runtimeSource =
   extractFunction("splitZoneCode", "pad") +
   extractFunction("pad", "buildOutput") +
   extractFunction("buildOutput", "safeFilePart") +
-  "return { normalizeHeader, findHeader, shiftDecimal, parseQuantity, resolveZoneCode, splitZoneCode, buildOutput };";
+  "return { normalizeHeader, findHeader, shiftDecimal, parseQuantity, formatBarcode, resolveZoneCode, splitZoneCode, buildOutput };";
 const runtime = new Function(ts.transpile(runtimeSource, { target: ts.ScriptTarget.ES2022 }))();
 
 assert.equal(runtime.normalizeHeader("SỐ LƯỢNG"), "SO LUONG");
@@ -39,6 +39,8 @@ assert.equal(runtime.parseQuantity("1,25", "s", false), "1.25");
 assert.equal(runtime.parseQuantity("1.250", "n", false), "1.250");
 assert.equal(runtime.parseQuantity("0.125", "n", true), "12.5%");
 assert.equal(runtime.parseQuantity("25%", "s", false), "25%");
+assert.equal(runtime.formatBarcode({ value: "89686011036", type: "n", styleIndex: 7 }, new Map([[7, 12]])), "0089686011036");
+assert.equal(runtime.formatBarcode({ value: "0089686011036", type: "s", styleIndex: 0 }, new Map()), "0089686011036");
 assert.throws(() => runtime.parseQuantity("1,234.56", "s", false), /mơ hồ/);
 assert.deepEqual(runtime.splitZoneCode("BT01"), { prefix: "BT", number: "01" });
 assert.deepEqual(runtime.splitZoneCode("540"), { prefix: "", number: "540" });
