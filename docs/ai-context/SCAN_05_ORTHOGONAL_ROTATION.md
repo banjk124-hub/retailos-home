@@ -1,6 +1,6 @@
 # SCAN-05 — Continuous ROI orientation recovery
 
-**Status:** Corrective implementation is on Draft PR #67 (`fix/scan-05-06-continuous-orientation`). CI #425 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical iOS/Android QA remains pending.
+**Status:** Merged to `main` by PR #67 at `9406ac30d53bc9984912bd1928a32fd78157cf60`. Final PR-head CI #432 passed on `c9794a5422aa2d6ace16480c2948c1bae3e0d06b`; user confirms the merged/deployed scanner works well with sensitive multi-stage recognition.
 
 ## Problem found in the previous implementation
 
@@ -35,8 +35,11 @@ The exact quarter-turn remains a cheap fast path for the common sideways case. I
 - Continuous-angle and combined-angle coverage is owned by SCAN-06 tests.
 - Preflight must verify the production adapter path, TypeScript, production build and GitHub Pages build.
 
-## Device acceptance
+## Post-merge device validation
 
-On iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake independently with EAN-13, EAN-8 and Code 128. Rotate the phone and barcode separately; include all four cardinal orientations, intermediate angles, reticle center/edges, small/far labels, reflective packaging and low light. Record first-result latency and decoder stage costs.
+- [x] User confirms PR #67 was merged, deployed and tested in real use; scanner recognition is operating well and feels sensitive across multiple processing/orientation paths.
+- [x] User reports no blocking scanner regression after deployment.
+- [ ] Detailed per-device/per-module matrix (iOS Safari/PWA + Android Chrome/PWA; Home + Stocktake; exact symbologies, lighting, distance and reticle-edge cases) has not been recorded in this handoff.
+- [ ] Quantitative first-result latency, decode-stage costs, CPU responsiveness and decode success-rate measurements have not been supplied.
 
-CI does not prove physical optical accuracy, focus quality or device CPU cost.
+The user-confirmed operational test is sufficient to record the current functional acceptance. The remaining items are deeper performance/coverage evidence, not a claim that the deployed build is failing.
