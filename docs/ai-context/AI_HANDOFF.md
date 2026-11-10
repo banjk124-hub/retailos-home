@@ -29,7 +29,7 @@ Canonical design: `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md`.
 
 ---
 
-# Current scanner handoff — SCAN-02 audited; SCAN-03 next (2026-11-10)
+# Historical handoff — SCAN-02 audit and SCAN-03 planning (completed 2026-11-10)
 
 - SCAN-01 is merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
 - SCAN-02 is merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed TypeScript, production/Pages builds and full preflight.
@@ -47,7 +47,7 @@ Canonical SCAN-02 design: `docs/ai-context/SCAN_02_GEOMETRY_MAPPING.md`.
 
 ---
 
-# Current scanner handoff — SCAN-01 contract implementation (2026-11-10)
+# Historical handoff — SCAN-01 contract implementation (merged 2026-11-10)
 
 - Active implementation branch: `feat/scanner-input-module-config-contract`.
 - Base: main `09cd3b5117ea38a16dd991f74320835b67ea04b5`.
@@ -63,7 +63,7 @@ Canonical contract: `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 
 ---
 
-# Current AI handoff — shared Scanner settings and feedback QA (2026-11-09)
+# Historical handoff — shared Scanner settings and feedback QA (2026-11-09)
 
 - Repository: `banjk124-hub/retailos-home`.
 - Production implementation: PR #51/#52, shared Web MediaStreamTrack Torch path.
@@ -100,7 +100,7 @@ Read `ARCHITECTURE.md` ADR-018, `SCANNER_TORCH_AUDIT_2026-11-09.md`, source and 
 
 ---
 
-# Current AI handoff — post PR #49 video presentation ownership (2026-11-09)
+# Historical handoff — post PR #49 video presentation ownership (2026-11-09)
 
 ## Verified baseline
 - Repository: `banjk124-hub/retailos-home`.
