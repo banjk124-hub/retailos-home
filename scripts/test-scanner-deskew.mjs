@@ -83,6 +83,14 @@ assert.equal(estimateScannerSkewAngle(original.luminance, 0, original.height), n
   'invalid dimensions must fail closed');
 assert.equal(estimateScannerSkewAngle(new Uint8ClampedArray(100 * 100).fill(255), 100, 100), null,
   'a blank ROI must not produce a skew estimate');
+const ambiguousTexture = new Uint8ClampedArray(160 * 120);
+let noiseSeed = 0x12345678;
+for (let index = 0; index < ambiguousTexture.length; index += 1) {
+  noiseSeed = (1664525 * noiseSeed + 1013904223) >>> 0;
+  ambiguousTexture[index] = noiseSeed >>> 24;
+}
+assert.equal(estimateScannerSkewAngle(ambiguousTexture, 160, 120), null,
+  'directionally ambiguous texture must fail the orientation confidence gates');
 assert.equal(rotateLuminanceByAngle(original.luminance, original.width, original.height, 91), null,
   'angles beyond the half-turn normalization range must fail closed');
 
@@ -153,6 +161,7 @@ assert.match(decoderSource, /deskewLuminanceFrame\(/, 'decoder must consume the 
 assert.match(decoderSource, /const candidates = \[uprightDeskew, rotatedDeskew\]/,
   'production decoder must consider both source axes for continuous orientation recovery');
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');
+assert.match(decoderSource, /deskewEstimateMisses:/, 'failed orientation estimates must be observable separately');
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
 assert.match(decoderSource, /true,\s*'deskew'/,
   'deskew candidates must use both production binarizers');
