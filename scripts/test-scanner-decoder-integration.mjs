@@ -228,6 +228,24 @@ try {
     ...lowContrastRotated,
     luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 148)),
   };
+  const lowContrastEstimate = estimateScannerSkewAngle(
+    lowContrastAngled.luminance, lowContrastAngled.width, lowContrastAngled.height,
+  );
+  assert.ok(lowContrastEstimate, 'low-contrast rotated barcode must produce an orientation estimate');
+  assert.ok(Math.abs(lowContrastEstimate.angleDegrees + 31) < 3,
+    `low-contrast orientation estimate must remain accurate; got ${lowContrastEstimate.angleDegrees}`);
+  const lowContrastCorrected = deskewLuminanceFrame(
+    lowContrastAngled.luminance, lowContrastAngled.width, lowContrastAngled.height,
+  );
+  assert.ok(lowContrastCorrected, 'low-contrast rotated barcode must produce a correction candidate');
+  const lowContrastCorrectedDecoder = await createDecoder();
+  const lowContrastCorrectedResult = await decodeOnce(
+    lowContrastCorrectedDecoder, toSource(lowContrastCorrected),
+  );
+  await lowContrastCorrectedDecoder.dispose();
+  assert.equal(lowContrastCorrectedResult[0]?.value, '12345',
+    'low-contrast corrected pixels must decode when supplied directly to the production adapter');
+
   const lowContrastDecoder = await createDecoder();
   const lowContrastResult = await decodeOnce(lowContrastDecoder, toSource(lowContrastAngled));
   assert.equal(lowContrastResult[0]?.value, '12345',
