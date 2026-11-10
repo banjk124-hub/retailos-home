@@ -138,6 +138,7 @@
 .stocktake-import-output-meta strong { color:var(--text-primary,#172033); font-size:12px; }
 .stocktake-import-output-textarea { display:block; width:100%; min-height:290px; max-height:min(54vh,610px); resize:vertical; overflow:auto; padding:13px; border:1px solid var(--border-subtle,#dce2eb); border-radius:12px; outline:none; color:#e8eef9; background:#101827; font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre; tab-size:2; -webkit-user-select:text; user-select:text; }
 .stocktake-import-output-textarea:focus { border-color:#3c8bd7; box-shadow:0 0 0 3px rgba(60,139,215,.13); }
+.stocktake-import-output-hint { color:var(--text-tertiary,#8490a2); font-size:10px; line-height:1.4; }
 .stocktake-import-output-unavailable { display:grid; min-height:190px; place-items:center; padding:18px; border:1px dashed var(--border-subtle,#cbd3df); border-radius:12px; color:var(--text-secondary,#687386); background:var(--surface-secondary,#f7f8fb); font-size:12px; line-height:1.55; text-align:center; }
 .stocktake-import-editor-layer { min-width:0; }
 
