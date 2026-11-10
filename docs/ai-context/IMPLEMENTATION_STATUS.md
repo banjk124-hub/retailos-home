@@ -8,7 +8,7 @@
 - SCAN-05: pure clockwise 90° luminance transform, upright-first decode, one extra ROI pass every third frame after a miss. 90° normalizes to 180° and 270° normalizes to 0°.
 - SCAN-06: Sobel structure-tensor skew estimate, confidence gate, bounded 1.2°–12° inverse-angle bilinear correction, expanded ROI bounds, white fill and 4M-pixel allocation cap. One HybridBinarizer deskew pass follows failed upright/orthogonal paths.
 - Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, EAN-8/EAN-13 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
-- Added a production `ZXingDecoderAdapter` integration suite: actual adapter upright decode, scheduled 90°/270° recovery on the third valid ROI frame, strict reticle crop and no full-frame fallback; registered in preflight.
+- Added a production `ZXingDecoderAdapter` integration suite: actual adapter upright decode, scheduled 90°/270° recovery and deskew on the third valid ROI frame, strict reticle crop and no full-frame fallback; registered in preflight.
 - Audit follow-up decouples processing cadence from diagnostics sampling using a dedicated valid-ROI frame sequence; deterministic regression tests cover cadence and invalid sequence values.
 - CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code), #368 (pre-audit-fix consolidated head) and #387 (audit follow-up with production-adapter integration) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
 - No camera/session/lifecycle, ROI mapping, UI/CSS, barcode validation, business flow, dependency or deployment changes.
