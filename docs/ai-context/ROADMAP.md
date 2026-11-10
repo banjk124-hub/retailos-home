@@ -1,14 +1,16 @@
-# Current work — Xuất file: output layers and additive multi-file sessions (2026-11-10)
+# Current work — Xuất file: unified workspace and interaction system (2026-11-10)
 
-- PR #70 is merged, deployed and manually accepted. Main baseline: `b9cc4ce9a848acd51027dff64f5620f65e660a4b`. RetailOS CI #466 and PWA deployment #85 succeeded.
-- Follow-up branch: `feat/stocktake-import-session-output`; draft PR #71: https://github.com/banjk124-hub/retailos-home/pull/71.
-- Preserve existing import, zone selection, editor, save, history and export behavior.
-- Add an output-first/editor-second layer transition only inside the selected zone component; do not alter the outer module UI or zone navigator.
-- Update code source resolution to BARCODE → CODE → GOLDCODE → TILLCODE, with legacy MÃ VẠCH only as a final fallback.
-- Add multiple-file selection, additive sessions, SHA-256 duplicate-file detection, staging, and explicit duplicate-zone merge/skip confirmation.
-- Keep all output methods on the same payload and preserve row-level source provenance and history compatibility.
-- Full CI/preflight passed on code head `37b5f69d` (run #509). Remaining gate: desktop/iOS/Android manual QA for copy/textarea selection, file picking, session restore and TXT/ZIP parity.
-- Module status: `modules/EXPORT_FILE.md`. Detailed contract: `STOCKTAKE_FILE_IMPORT.md`.
+- PR #70 is deployed and user-accepted; PR #71 (multi-file sessions and output generation) is merged into main.
+- Current UX branch: `feat/stocktake-import-native-workspace`; draft PR #72: https://github.com/banjk124-hub/retailos-home/pull/72.
+- Base main: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`; code head at CI #534: `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
+- CI #534 passed the Stocktake import regression suite, existing scanner regression suite, TypeScript, production build, GitHub Pages build and diff checks.
+- Preserve all import/session business rules: source parsing and numeric fidelity, code precedence, multi-file additive import, SHA-256 duplicate detection, explicit duplicate-zone merge/skip, row provenance, IndexedDB history and TXT/ZIP payload parity.
+- Replace the mutually exclusive Output/Editor layers with one continuous zone workspace: table as the primary review/edit surface, TXT Preview as an expandable secondary inspector.
+- Add explicit in-memory vs persisted state, action-specific loading feedback, semantic success/warning/info notices and separate error states.
+- Refine header, typography, numerical hierarchy, semantic colors, compact text containers and responsive spacing. Use restrained transform/opacity motion; honor reduced-motion and power-conserve settings.
+- Protected: Stocktake scanner, Scanner Engine, camera lifecycle, snapshot/cache, auth, service worker and deployment configuration.
+- Remaining gates: desktop Chrome/Edge, iOS Safari/PWA, Android Chrome/PWA and real workbook end-to-end QA. Do not merge/deploy without explicit approval.
+- Module record: `modules/EXPORT_FILE.md`; detailed contract: `STOCKTAKE_FILE_IMPORT.md`.
 
 
 ---

@@ -1,22 +1,35 @@
-# Current task — Xuất file: output layers and additive import sessions (2026-11-10)
+# Current task — Xuất file: unified workspace and interaction system (2026-11-10)
 
-**Accepted baseline:** PR #70 merged and deployed; main commit `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
-**Baseline CI:** RetailOS CI run #466 passed; Build and deploy PWA run #85 succeeded. User confirmed operational testing.
-**Follow-up branch:** `feat/stocktake-import-session-output` (based on the accepted main commit).
-**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; code CI #509 passed). **Follow-up status:** code and full preflight passed on `37b5f69d` (run #509); physical device QA remains. Do not merge/deploy until explicit user approval.
+**Accepted baseline:** PR #70 deployed and user-accepted; PR #71 merged. Current main baseline: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
+**Current branch:** `feat/stocktake-import-native-workspace`.
+**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft, open; not merged/deployed).
+**Current head:** `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
+**CI:** RetailOS CI run #534 passed: Stocktake import regression suite, all scanner regression tests, TypeScript, production build, GitHub Pages build and diff checks.
+**Physical QA:** Desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA remain pending.
 **Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
 **Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`.
 
-- Preserve the current module shell, zone navigator, editor, save, history, individual download and ZIP behavior.
-- Inside the selected zone frame only, make TXT Output the front/default layer and the existing review/editor table the back layer. Switch only the zone content component; do not change the outer module UI.
-- Output layer uses readonly textarea, scoped Ctrl+A and Copy component fallback. Preview, Copy, individual Download and ZIP must share the same exact output payload.
-- Code source order: BARCODE → CODE → GOLDCODE → TILLCODE; legacy MÃ VẠCH is final compatibility fallback only.
-- Support multiple `.xlsx` files per selection and additive imports into the active session.
-- Detect identical files by local SHA-256 fingerprint; show same-name/different-content and duplicate-zone conflicts for explicit confirmation. Stage first; never mutate the active session before confirmation.
-- Preserve source file/sheet/row provenance and backward compatibility for existing IndexedDB history.
-- Keep the original `NHAN VIEN` date/time line stable for the full session. Filenames remain date-free.
+## Current UX contract
 
-Protected: Scanner Engine, camera lifecycle, existing Stocktake workflow and IndexedDB, snapshot/cache IDs, auth, service worker and deployment configuration.
+- Preserve the full business flow and data rules: local workbook import, header/zone detection, code-source precedence, validation, multi-file staging, duplicate-file detection, duplicate-zone merge/skip, source provenance, local history, per-zone TXT and ZIP output.
+- Use one continuous selected-zone workspace. The table is the primary review/edit surface; there is no longer a separate mutually exclusive Output/Editor layer.
+- Read-only review and inline edit share the same table. Save persists to the module-owned IndexedDB; cancel restores the edit baseline.
+- TXT Preview is a secondary expandable inspector below the table. Preview, Copy, individual Download and ZIP must use the same output payload.
+- Distinguish in-memory state from IndexedDB persistence. A failed persistence operation must never be shown as saved.
+- Provide action-specific loading feedback for import, save, ZIP generation, history clear and history re-export. Notices distinguish success, warning and information; errors remain separate.
+- Motion should feel native and deliberate but remain lightweight: transform/opacity, short spatial transitions, clear icon/control feedback, reduced-motion and power-conserve support. No continuous decorative motion or unnecessary backdrop blur on mobile.
+- Keep text containers compact and purposeful. Use color, weight, numbers and contrast to establish hierarchy by information role rather than flattening every surface into one style.
+
+Protected: Scanner Engine, camera lifecycle, existing Stocktake scanner/workflow and IndexedDB, snapshot/cache IDs, auth, service worker and deployment configuration.
+
+## Remaining gates
+
+1. Review final PR diff and confirm only the three intended module/test files plus technical docs are changed.
+2. Manual desktop Chrome/Edge QA.
+3. Manual iOS Safari/PWA and Android Chrome/PWA QA, including file picker, scroll/layout, disclosure, clipboard fallback, download and history restore.
+4. Run real workbook end-to-end checks for multi-file conflict review, merge/skip, persistence and TXT/ZIP parity.
+5. Update this handoff with exact QA evidence; do not merge or deploy without explicit user approval.
+
 ---
 
 # Current task — Stocktake offline file import (2026-11-10)
