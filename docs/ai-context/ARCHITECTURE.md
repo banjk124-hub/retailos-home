@@ -600,7 +600,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Bounded orthogonal rotation within strict ROI (2026-11-10)
 
-**Status:** Implemented on final consolidated PR #66; CI run #387 passed the audit follow-up and production-adapter integration. Physical iOS/Android QA remains pending.
+**Status:** Implemented on final consolidated PR #66; CI run #395 passed the audit follow-up and production-adapter upright/rotation/deskew integration. Physical iOS/Android QA remains pending.
 
 ### Context
 ZXing `OneDReader` already supports 180° 1D barcode reversal when `TRY_HARDER` is enabled. RetailOS uses `RGBLuminanceSource`, which does not support ZXing's source-image rotation; 90°/270° inputs therefore require an explicit ROI transform.
