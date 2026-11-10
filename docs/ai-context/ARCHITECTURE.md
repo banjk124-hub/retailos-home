@@ -796,7 +796,7 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 
 ## ADR-033 — Stocktake Import workspace v2: product identity, action states and viewport ownership (2026-11-10)
 
-**Status:** Proposed in draft PR #74 (`feat/stocktake-import-workspace-v2`), based on deployed main `629c31c28e808cd5c3181c42b7d29e611a8ad890`. CI #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc` awaits rerun. Physical-device QA pending.
+**Status:** Proposed in draft PR #74 (`feat/stocktake-import-workspace-v2`), based on deployed main `629c31c28e808cd5c3181c42b7d29e611a8ad890`. CI #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`. Physical-device QA pending.
 
 ### Context
 
