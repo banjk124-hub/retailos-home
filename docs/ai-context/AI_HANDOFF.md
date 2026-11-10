@@ -9,8 +9,9 @@
 - Corrective source replaces the estimator with a continuous 180-bin gradient-orientation histogram, widens correction to the signed half-turn range, runs orientation candidates on each ROI miss, tries both ZXing binarizers and increases minimum sampling cadence to 70 ms.
 - Strict module-owned ROI/no full-frame fallback remains mandatory. The shared engine owns camera/session/decoder scheduling; Home and Stocktake own UI/presentation and business policy.
 - Do not change camera acquisition, autofocus, camera lease, lifecycle/recovery, module UI, validation, Home lookup or Stocktake form/save behavior as part of SCAN-05/06.
-- Automated tests are being expanded to cover continuous angle sweeps and combined orientation+skew through the production `ZXingDecoderAdapter`, not just isolated helpers.
-- Current corrective CI and physical-device acceptance are pending. Do not merge or deploy until the full diff, CI and iOS/Android evidence are reviewed and the user explicitly approves.
+- Automated tests now cover continuous positive/negative angle sweeps, medium-low contrast, EAN-8/EAN-13, combined orientation+skew and ambiguous texture through the production `ZXingDecoderAdapter`, not just isolated helpers.
+- CI run #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`, including preflight, TypeScript, production build, Pages build and diff checks. Expected ZXing 0.23.0 NotFoundException console warnings are filtered narrowly; the integration test verified zero such warnings.
+- Corrective CI #411 is green; physical iOS/Android acceptance remains pending. Do not merge or deploy until device evidence is reviewed and the user explicitly approves.
 
 ## Immediate review checklist
 
