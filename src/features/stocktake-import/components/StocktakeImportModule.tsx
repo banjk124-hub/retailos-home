@@ -571,7 +571,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             {result.sourceFiles && result.sourceFiles.length > 1 && <details className="stocktake-import-source-list">
               <summary>{result.sourceFiles.length} file nguồn trong phiên</summary>
               {result.sourceFiles.map((source) => <small key={source.fingerprint}>{source.name} · {source.fingerprint.slice(0, 8)}</small>)}
-            </details>}
+            </details>
             {result.blockingIssues.map((issue) => <p className="stocktake-import-error" role="alert" key={issue}>{issue}</p>)}
             {result.warnings.map((warning) => <p className="stocktake-import-warning" key={warning}>{warning}</p>)}
 
@@ -606,16 +606,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                           {busy ? <LoaderCircle className="stocktake-import-spin" size={15} /> : <Save size={15} />} Lưu thay đổi
                         </button>
                       </>}
-                        <button type="button" disabled={busy || (editingZone && dirtyZones.includes(activeZone.zoneCode))}
-                          onClick={() => {
-                            if (editingZone && dirtyZones.includes(activeZone.zoneCode)) {
-                              setNotice('Hãy lưu hoặc hủy chỉnh sửa trước khi quay lại TXT Output.');
-                              return;
-                            }
-                            setEditingZone(false);
-                            setEditBaseline(null);
-                          }}><ArrowLeft size={15} /> Quay lại Output</button>
-                      </>}
+
                   </div>
                 </header>
 
