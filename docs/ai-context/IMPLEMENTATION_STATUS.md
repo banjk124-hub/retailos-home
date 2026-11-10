@@ -14,7 +14,7 @@
 - Retains an exact 90° clockwise ROI transform as the fast sideways path. Upright, quarter-turn and continuous correction are now attempted on the same valid ROI frame after an upright miss; no every-third-frame rotation scheduler remains.
 - Estimates both the original and quarter-turned ROI representations, then tries correction candidates in ascending absolute angle.
 - Uses inverse-angle bilinear resampling with expanded bounds and a 6,000,000-pixel allocation cap.
-- Applies a percentile-based contrast stretch only when the ROI's 1st–99th percentile luminance range is compressed (24–220 levels). Orientation confidence is calculated from original pixels.
+- Applies a percentile-based contrast stretch only when the ROI's 1st–99th percentile luminance range is compressed (24–219 levels). Orientation confidence is calculated from original pixels.
 - Tries HybridBinarizer and GlobalHistogramBinarizer for each orientation candidate. ZXing format/checksum result remains the final decode authority.
 - Reduces the session minimum decode interval from 110 ms to 70 ms. Calls remain serialized; no overlapping ZXing reader use or unbounded queue.
 - Separates deskew estimator attempts, confidence/angle-gate misses and successful decode hits in diagnostics.
