@@ -24,7 +24,9 @@ function extractFunction(name, nextName) {
 
 const runtimeSource =
   "const BARCODE_HEADERS = ['BARCODE','BAR CODE','PRODUCT BARCODE','EAN','EAN13','EAN8','UPC','GTIN','MA BARCODE'];" +
+  "const CODE_HEADERS = ['CODE','ITEM CODE','PRODUCT CODE','MATERIAL CODE'];" +
   "const GOLD_CODE_HEADERS = ['GOLDCODE','GOLD CODE','GOLD_CODE','GOLD PRODUCT CODE'];" +
+  "const TILL_CODE_HEADERS = ['TILLCODE','TILL CODE','TILL_CODE'];" +
   "const FALLBACK_BARCODE_HEADERS = ['MA VACH','MA VACH HANG'];" +
   "const QUANTITY_HEADERS = ['SO LUONG','QUANTITY','QTY','SL','SO LUONG KIEM KE','SO LUONG THUC TE','KET QUA THUC TE','KET QUA KIEM KE','THUC TE','ACTUAL QTY','ACTUAL QUANTITY','COUNTED QTY','COUNTED QUANTITY','COUNTED','COUNT','RESULT','KET QUA','ACTUAL','WEIGHT','NET WEIGHT','MASS','KHOI LUONG','TRONG LUONG','SO CAN','KL','THUC DEM'];" +
   "const ZONE_HEADERS = ['VUNG','ZONE','MA VUNG','ZONE CODE','KHU VUC'];" +
@@ -92,20 +94,18 @@ assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
 
 // BARCODE wins when present; GOLDCODE is the row-level fallback for materials without a sales barcode.
 const widths = new Map();
-assert.deepEqual(runtime.resolveBarcode(
-  { value: "8936000829285", type: "s", styleIndex: 0 },
-  { value: "MAT001", type: "s", styleIndex: 0 }, undefined, widths,
-), { barcode: "8936000829285", source: "BARCODE" });
-assert.deepEqual(runtime.resolveBarcode(
-  { value: "", type: "s", styleIndex: 0 },
-  { value: "MAT001", type: "s", styleIndex: 0 }, undefined, widths,
-), { barcode: "MAT001", source: "GOLDCODE" });
-assert.deepEqual(runtime.resolveBarcode(undefined,
-  { value: "MAT002", type: "s", styleIndex: 0 }, undefined, widths),
-{ barcode: "MAT002", source: "GOLDCODE" });
-assert.deepEqual(runtime.resolveBarcode(undefined, undefined,
-  { value: "*089686011036*", type: "s", styleIndex: 0 }, widths),
-{ barcode: "*089686011036*", source: "MÃ VẠCH" });
+// Barcode source precedence: BARCODE -> CODE -> GOLDCODE -> TILLCODE -> legacy MÃ VẠCH.
+const cell = (value) => ({ value, type: "s", styleIndex: 0 });
+assert.deepEqual(runtime.resolveBarcode(cell("8936000829285"), cell("CODE1"), cell("GOLD1"), cell("TILL1"), undefined, widths),
+  { barcode: "8936000829285", source: "BARCODE" });
+assert.deepEqual(runtime.resolveBarcode(cell(""), cell("CODE1"), cell("GOLD1"), cell("TILL1"), undefined, widths),
+  { barcode: "CODE1", source: "CODE" });
+assert.deepEqual(runtime.resolveBarcode(undefined, undefined, cell("GOLD1"), cell("TILL1"), undefined, widths),
+  { barcode: "GOLD1", source: "GOLDCODE" });
+assert.deepEqual(runtime.resolveBarcode(undefined, undefined, undefined, cell("TILL1"), undefined, widths),
+  { barcode: "TILL1", source: "TILLCODE" });
+assert.deepEqual(runtime.resolveBarcode(undefined, undefined, undefined, undefined, cell("*089686011036*"), widths),
+  { barcode: "*089686011036*", source: "MÃ VẠCH" });
 assert.equal(runtime.rowIssues("", "19.236").length, 1);
 assert.equal(runtime.rowIssues("MAT001", "19.236").length, 0);
 
@@ -130,6 +130,13 @@ assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
 assert.match(component, /saveActiveZone/);
+assert.match(component, /multiple/);
+assert.match(component, /readOnly/);
+assert.match(component, /navigator\.clipboard/);
+assert.match(component, /stocktake-import-zone-layer/);
+assert.match(component, /handleFiles/);
+assert.match(component, /confirmPendingImport/);
+assert.match(component, /sourceFileName/);
 assert.match(component, /updateRow/);
 assert.match(component, /Chỉnh sửa/);
 assert.match(component, /Lưu vùng/);
@@ -138,6 +145,7 @@ assert.match(component, /blockingIssues\.length/);
 assert.doesNotMatch(component, /slice\(0,\s*80\)/);
 assert.match(store, /retailos-stocktake-import/);
 assert.match(store, /rows: zone\.rows/);
+assert.match(store, /sourceFiles/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
 assert.doesNotMatch(store, /retailos-module-data|retailos-stocktake['"]/);
 assert.ok(registry.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
