@@ -59,12 +59,18 @@ export function mergeStocktakeImportSession(
     : [];
   const zoneIndexes = new Map(zones.map((zone, index) => [zone.zoneCode, index]));
   const skippedZoneWarnings: string[] = [];
+  const mergedZoneWarnings: string[] = [];
 
   for (const parsed of incoming) {
     for (const incomingZone of parsed.zones) {
       const existingIndex = zoneIndexes.get(incomingZone.zoneCode);
       if (existingIndex !== undefined) {
         if (mergeConflicts) {
+          const sourceNames = [...new Set(incomingZone.rows.map((row) => row.sourceFileName).filter(Boolean))];
+          mergedZoneWarnings.push(
+            'Đã gộp ' + incomingZone.rows.length + ' dòng bổ sung vào vùng ' +
+            incomingZone.zoneCode + (sourceNames.length ? ' từ ' + sourceNames.join(', ') : '') + ' sau xác nhận.',
+          );
           zones[existingIndex] = {
             ...zones[existingIndex],
             rows: [...zones[existingIndex].rows, ...incomingZone.rows],
@@ -107,6 +113,7 @@ export function mergeStocktakeImportSession(
     warnings: [
       ...(current?.warnings ?? []),
       ...incoming.flatMap((item) => item.warnings),
+      ...mergedZoneWarnings,
       ...skippedZoneWarnings,
       ...reviewMeta.sameNameDifferentContent.map((name) =>
         'Tên file ' + name + ' trùng với nguồn đã có nhưng nội dung khác; đã nhận như một nguồn riêng.'),
