@@ -5,6 +5,8 @@ import ts from "typescript";
 const parser = readFileSync("src/features/stocktake-import/services/stocktakeImportParser.ts", "utf8");
 const component = readFileSync("src/features/stocktake-import/components/StocktakeImportModule.tsx", "utf8");
 const store = readFileSync("src/features/stocktake-import/services/stocktakeImportStore.ts", "utf8");
+const registry = readFileSync("src/features/home/moduleRegistry.ts", "utf8");
+const snapshotService = readFileSync("src/features/data/moduleDataService.ts", "utf8");
 
 function extractFunction(name, nextName) {
   const start = parser.indexOf("function " + name + "(");
@@ -84,5 +86,7 @@ assert.match(component, /Xuất tất cả vùng thành ZIP/);
 assert.match(store, /retailos-stocktake-import/);
 assert.match(store, /clearHistory/);
 assert.doesNotMatch(store, /retailos-stocktake['"]/);
+assert.ok(registry.includes("id: 'stocktake-import'") && registry.includes("dataSource: 'local'"));
+assert.equal(snapshotService.includes("stocktake-import"), false, "The local workflow must not be registered as a server snapshot.");
 
 console.log("Stocktake file import parser and offline workflow regression tests passed.");
