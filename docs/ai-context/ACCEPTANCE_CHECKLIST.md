@@ -11,6 +11,7 @@
 - [x] Code 128 runtime fixture passes after normalization of both 90° and 270° input.
 - [x] Unrotated ROI is attempted first; extra quarter-turn is bounded to every third valid ROI frame after a miss.
 - [x] Rotation diagnostics and stage timings are present.
+- [x] Extended decode cadence is driven by a dedicated valid-ROI sequence, not diagnostics-window counters; deterministic schedule tests cover valid and invalid sequence values.
 - [x] CI run #338 passed; consolidated CI run #342 passed.
 - [ ] Physical iOS Safari/PWA QA: Home and Stocktake, 0°/90°/180°/270°.
 - [ ] Physical Android Chrome/PWA QA: same matrix.
@@ -23,7 +24,9 @@
 - [x] Combined 90°/270° normalization plus skew correction passes.
 - [x] Level, blank, invalid and >12° cases fail closed; pure service has no DOM/presentation dependency.
 - [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
-- [x] final consolidated Final consolidated PR #66 CI run #360 passed the full preflight and builds.
+- [x] Previous consolidated PR #66 head passed full preflight and builds in CI run #368 (before the audit follow-up commits).
+- [x] Follow-up separates processing cadence from diagnostics sampling and adds deterministic cadence regression coverage.
+- [ ] Fresh CI run for the audit follow-up commits must pass before merge.
 - [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
 - [ ] Physical Android Chrome/PWA QA: same matrix.
 - [ ] Record latency, CPU and accuracy on low-end and high-end devices.
@@ -31,9 +34,11 @@
 ## Consolidated delivery
 - [x] SCAN-04 strict ROI baseline was merged/deployed by the user; normal operation confirmed.
 - [x] SCAN-05 and SCAN-06 source/tests are consolidated on final PR #66.
-- [x] Documentation and ADRs synchronized on the consolidated branch.
+- [x] Documentation and ADRs synchronized on the consolidated branch; AI handoff points to PR #66 and the active final branch.
+- [x] Current PR and CI references corrected; stale PR #65/branch references removed from the current handoff.
 - [x] Final source/docs diff audit completed on consolidated PR #66; no scope leakage found.
 - [ ] Physical device QA remains outstanding; do not merge until accepted.
+- [ ] Add individual EAN-8/EAN-13 runtime image fixtures for rotated input; current evidence is dependency-inheritance guards plus Code 128 runtime fixtures.
 - [ ] Merge final consolidated PR #66 after device acceptance. PR #63/#64/#65 are closed as superseded and must not be merged separately.
 
 ---
