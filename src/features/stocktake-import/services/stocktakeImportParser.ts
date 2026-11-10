@@ -178,6 +178,21 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): {
   throw new Error('Không nhận diện được cột BARCODE và SỐ LƯỢNG. Không có dữ liệu nào được xuất.');
 }
 
+function shiftDecimal(value: string, places: number): string {
+  const match = value.match(/^([+-]?)(\\d+)(?:\\.(\\d*))?(?:[eE]([+-]?\\d+))?$/);
+  if (!match) throw new Error('Giá trị phần trăm không hợp lệ.');
+  const sign = match[1];
+  const digits = match[2] + (match[3] ?? '');
+  const decimalPosition = match[2].length + Number(match[4] ?? 0) + places;
+  const padded = digits.padEnd(Math.max(digits.length, decimalPosition), '0');
+  const normalized = decimalPosition <= 0
+    ? `0.${'0'.repeat(-decimalPosition)}${padded}`
+    : decimalPosition >= padded.length
+      ? padded + '0'.repeat(decimalPosition - padded.length)
+      : `${padded.slice(0, decimalPosition)}.${padded.slice(decimalPosition)}`;
+  return sign + normalized.replace(/(\\.\\d*?)0+$/, '$1').replace(/\\.$/, '');
+}
+
 function parseQuantity(value: string, type: string, percentageStyle: boolean): string {
   const trimmed = value.trim();
   if (!trimmed) throw new Error('Thiếu số lượng.');
