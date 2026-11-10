@@ -1,14 +1,14 @@
-# SCAN-05/06 corrective acceptance — continuous orientation recovery (2026-11-10)
+# SCAN-05/06 acceptance — merged and user-validated (2026-11-10)
 
 ## Source and pipeline
-- [x] Current baseline is verified as merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616`.
 - [x] Continuous orientation estimator is called from the production ZXing adapter after upright and quarter-turn misses.
 - [x] Angle sign, modulo-180 normalization and inverse rotation are verified.
-- [x] Both original and quarter-turned ROI candidates are evaluated in correction order.
+- [x] Original and quarter-turned ROI candidates are evaluated in correction order.
 - [x] HybridBinarizer and GlobalHistogramBinarizer are attempted for each candidate.
 - [x] Strict module-owned ROI remains enforced; no full-frame or centered fallback.
 - [x] Estimator attempt, confidence rejection and successful decode diagnostics are distinct.
 - [x] Session minimum decode interval is 70 ms; decoder calls remain serialized.
+- [x] Bounded percentile contrast normalization covers compressed ROI luminance ranges without influencing orientation estimation.
 
 ## Automated regression
 - [x] Code 128, EAN-8 and EAN-13 baseline and orthogonal fixtures pass.
@@ -17,18 +17,21 @@
 - [x] Combined 90°/270° plus residual skew passes through the production adapter.
 - [x] Blank, low-texture, ambiguous-orientation and invalid-buffer cases fail closed.
 - [x] ROI exclusion and missing-region cases do not decode outside the reticle.
-- [x] Full preflight, TypeScript, production build and GitHub Pages build pass on the final corrective head.
+- [x] CI #425 passed on the executable source head e0b28787f40db8c811bc7fde912bae2558289198.
+- [x] CI #432 passed full preflight on final PR head c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
 
-## Physical device acceptance
-- [ ] iOS Safari/PWA: Home and Stocktake; rotate device and barcode independently; test cardinal and intermediate orientations.
-- [ ] Android Chrome/PWA: same matrix.
-- [ ] EAN-13, EAN-8 and Code 128; center and near-edge ROI placement; small/far labels; reflective packaging and lower light.
-- [ ] Record first-result latency, stage costs, CPU responsiveness and decode success rate.
-- [ ] Confirm Home lookup and Stocktake form-fill, duplicate rows and explicit save remain unchanged.
-- [ ] User explicitly approves merge and deployment after reviewing source, CI and device evidence.
+## Merge and deployed functional acceptance
+- [x] PR #67 merged to main at 9406ac30d53bc9984912bd1928a32fd78157cf60.
+- [x] User confirms deployment and successful operational testing.
+- [x] User reports good scanner operation and sensitive recognition across multiple processing paths.
+- [x] No blocking post-deployment regression was reported.
 
-**Automated acceptance:** CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`. **Release acceptance is not complete until physical iOS and Android evidence is recorded.**
+## Additional evidence not yet recorded
+- [ ] Detailed iOS Safari/PWA and Android Chrome/PWA × Home/Stocktake × symbology/orientation matrix.
+- [ ] Quantitative first-result latency, stage timing, CPU/long-task responsiveness and decode success-rate measurements.
+- [ ] Separate optical tests for reflective packaging, small/far labels, low light and reticle-edge placement.
 
+These additional measurements are not required to describe the user's functional acceptance as complete. Do not mark them passed without evidence.
 
 ---
 
