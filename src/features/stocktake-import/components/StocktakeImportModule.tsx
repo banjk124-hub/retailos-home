@@ -102,6 +102,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const [busyAction, setBusyAction] = useState<'import' | 'save' | 'zip' | 'history' | null>(null);
   const [historyBusy, setHistoryBusy] = useState(true);
   const [historyPersisted, setHistoryPersisted] = useState(false);
+  const [historyExportingId, setHistoryExportingId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -724,13 +725,22 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 {history.map((item) => <article key={item.id}>
                   <FileSpreadsheet size={19} />
                   <div><strong>{item.sourceFileName}</strong><p>{item.zoneCount} vùng · {item.rowCount} dòng</p><small>{localDate(item.importedAt)}</small></div>
-                  <button type="button" onClick={() => restoreHistoryItem(item)}>Mở</button>
-                  <button type="button" onClick={async () => {
-                    const zip = new JSZip();
-                    item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
-                    const blob = await zip.generateAsync({ type: 'blob' });
-                    downloadBlob('KIEM_KE_IMPORT.zip', blob);
-                  }} aria-label="Tải lại kết quả"><Download size={16} /></button>
+                  <button type="button" disabled={busy || historyExportingId !== null} onClick={() => restoreHistoryItem(item)}>Mở</button>
+                  <button type="button" disabled={busy || historyExportingId !== null} onClick={async () => {
+                    setHistoryExportingId(item.id);
+                    setError('');
+                    try {
+                      const zip = new JSZip();
+                      item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
+                      const blob = await zip.generateAsync({ type: 'blob' });
+                      downloadBlob('KIEM_KE_IMPORT.zip', blob);
+                      setNotice('Đã tải lại ZIP của phiên ' + item.sourceFileName + '.');
+                    } catch (cause) {
+                      setError(cause instanceof Error ? cause.message : 'Không thể tạo ZIP từ lịch sử.');
+                    } finally {
+                      setHistoryExportingId(null);
+                    }
+                  }} aria-label="Tải lại kết quả">{historyExportingId === item.id ? <LoaderCircle className="stocktake-import-spin" size={16} /> : <Download size={16} />}</button>
                 </article>)}
               </div>}
         </>}
@@ -742,7 +752,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         <section className="stocktake-import-confirm" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-import-clear-title">
           <h3 id="stocktake-import-clear-title">Xóa lịch sử và bộ nhớ đệm?</h3>
           <p>Thao tác chỉ xóa lịch sử file kết quả của Xuất file trên thiết bị. Không ảnh hưởng dữ liệu, lịch sử hoặc file đã xuất của module Kiểm kê.</p>
-          <div><button type="button" onClick={() => setShowClearConfirm(false)}>Giữ lại</button><button type="button" onClick={() => void clearHistory()}>Xóa lịch sử</button></div>
+          <div><button type="button" disabled={busy} onClick={() => setShowClearConfirm(false)}>Giữ lại</button><button type="button" disabled={busy} onClick={() => void clearHistory()}>{busyAction === 'history' ? 'Đang xóa…' : 'Xóa lịch sử'}</button></div>
         </section>
       </div>}
     </div>
