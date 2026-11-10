@@ -70,3 +70,11 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Synthetic Code 128 tests pass at ±5°/±8° and after combined 90°/270° normalization. Blank, level, invalid and >12° inputs fail closed.
 - Consolidated CI run #342 passed full preflight, TypeScript, production build and Pages build on head `7bd77ffd7acd6a04e65b731b3ffa3a3e9546a7f1`.
 - Updated technical designs, ADRs, roadmap, implementation status, acceptance checklist and handoff. PR #65 remains Draft/open/unmerged/undeployed; physical iOS/Android QA and low-end performance comparison remain pending.
+
+
+### 2026-11-10 — Final SCAN-05/06 consolidation
+
+- Created final consolidated Draft PR #66 on branch `feat/scan-05-06-final-consolidation`, rebased directly on the restored `main` baseline.
+- Final head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`; GitHub Actions run #350 passed baseline, orthogonal rotation, bounded deskew, existing scanner ROI regressions, TypeScript, production build, GitHub Pages build and diff checks.
+- Staged PRs #63/#64/#65 were closed without merging; their changes are included in #66. PR #66 remains Draft/open/unmerged/undeployed.
+- Device QA remains mandatory on iOS Safari/PWA and Android Chrome/PWA, including low-end latency/CPU comparison.
