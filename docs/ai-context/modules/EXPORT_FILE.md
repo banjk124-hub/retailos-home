@@ -8,7 +8,7 @@
 **Current status:** In progress — PR #70 open, not merged or deployed  
 **Branch:** `feat/stocktake-import-desktop-editor`  
 **Base:** `main` at `853f79607f770000a506f7c1836f1131133497b6`  
-**Last recorded PR head:** `7c56e2ba4f382e04062b7097c0c424b26c1f2fe8` (historical checkpoint; this update advances it)  
+**Last verified PR head:** `bfb9172082d72abbb3eeb6add74b9df63088c222` (governance/name update; check GitHub for any later head)  
 **PR:** https://github.com/banjk124-hub/retailos-home/pull/70
 
 ## 1. Purpose and current capability

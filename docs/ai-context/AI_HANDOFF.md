@@ -2,7 +2,7 @@
 
 **Merged baseline:** PR #69, main commit `853f79607f770000a506f7c1836f1131133497b6`.
 **Follow-up branch:** `feat/stocktake-import-desktop-editor`.
-**Status:** PR #70 open; implementation and CI pass recorded, final module-isolation audit and user approval pending. Not merged/deployed.
+**Status:** PR #70 open; implementation CI run #461 passed before the latest governance/name update. Latest head CI run #463 is pending. Not merged/deployed.
 **Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
 **Display name:** Xuất file. Stable ID remains `stocktake-import`; do not rename the ID or IndexedDB database.
 
