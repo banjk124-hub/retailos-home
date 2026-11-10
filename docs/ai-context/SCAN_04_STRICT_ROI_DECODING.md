@@ -47,7 +47,7 @@ The scanner session continues to own the camera, decoder instance and frame loop
 
 - Supported barcode formats and format allowlist are unchanged.
 - The ROI is aspect-ratio-preserving; no horizontal/vertical stretching is introduced.
-- ROI width is bounded to 1280 pixels before the existing 1.5× upscale stage.
+- Preserve the existing source-frame downscale cap: frames wider than 1280 pixels are scaled proportionally before the ROI is enlarged 1.5×. The crop retains the source aspect ratio and does not increase decode pixel density merely because a device reports a higher-resolution camera stream.
 - Hybrid binarization remains the normal path. Global Histogram remains a bounded secondary binarizer every third ROI pass.
 - Session decode cadence remains 110 ms.
 - Barcode payload validation, duplicate/cooldown policy, single/continuous mode and result delivery are unchanged.
