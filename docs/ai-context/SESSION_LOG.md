@@ -460,3 +460,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Remaining acceptance: physical iOS Safari/PWA and Android Chrome/PWA matrix (Home + Stocktake, 0°/90°/180°/270°, ±5°/±8°) and low-end latency/CPU measurements. Do not merge/deploy before device acceptance.
 
 - After rebasing the final branch and closing staged PRs, consolidated PR #66 CI run #360 passed the full preflight on its current head. PR #66 remains Draft/open pending physical iOS/Android QA; no merge/deploy was performed.
+
+### 2026-11-10 — SCAN-05/06 audit follow-up on consolidated PR #66
+
+- Re-opened the current PR #66 head and audited runtime decoder scheduling, regression tests, current handoff, acceptance checklist and SCAN-05/06 technical documents.
+- Found that the processing cadence used `diagnosticFrames`, which is reset by the five-second diagnostics reporting window. This coupled algorithm scheduling to observability.
+- Added a dedicated valid-ROI `frameSequence` and pure `shouldAttemptExtendedDecode()` helper. Both the extra orientation/deskew pass and the global-histogram schedule now use that stable processing sequence; diagnostics counters remain reporting-only.
+- Added deterministic tests for every-third-frame cadence and invalid sequence inputs.
+- Extended the SCAN-05 runtime fixtures to include EAN-8 and EAN-13 at 90° and 270°, in addition to the existing Code 128 fixtures.
+- Corrected the current AI handoff to identify branch `feat/scan-05-06-final-consolidation` and PR #66; removed stale current-status references to branch `feat/scan-06-bounded-deskew` and PR #65.
+- Updated SCAN-05/06 designs, ADRs, Roadmap, Implementation Status and Acceptance Checklist. CI #368 is explicitly recorded as pre-follow-up validation; a new CI run is required for the latest commits.
+- Protected strict ROI/no full-frame fallback, 110 ms cadence, camera/session/lifecycle, Home/Stocktake presentation and business flows. No merge or deployment performed.
+- Remaining release gates: fresh CI, physical iOS Safari/PWA and Android Chrome/PWA matrix, and low-end/high-end latency/CPU evidence. These cannot be inferred from automated CI.
