@@ -83,10 +83,10 @@ assert.equal(estimateScannerSkewAngle(original.luminance, 0, original.height), n
   'invalid dimensions must fail closed');
 assert.equal(estimateScannerSkewAngle(new Uint8ClampedArray(100 * 100).fill(255), 100, 100), null,
   'a blank ROI must not produce a skew estimate');
-assert.equal(rotateLuminanceByAngle(original.luminance, original.width, original.height, 13), null,
-  'angles beyond the bounded correction range must fail closed');
+assert.equal(rotateLuminanceByAngle(original.luminance, original.width, original.height, 91), null,
+  'angles beyond the half-turn normalization range must fail closed');
 
-for (const angle of [5, -5, 8, -8]) {
+for (const angle of [5, -5, 8, -8, 15, -15, 25, -25, 35, -35, 45, -45, 60, -60, 75, -75]) {
   const skewed = rotateLuminanceByAngle(
     original.luminance, original.width, original.height, angle,
   );
@@ -125,15 +125,16 @@ for (const angle of [5, -5, 8, -8]) {
     '270-degree barcode with in-plane skew must decode after rotation and deskew');
 }
 
-const nineDegrees = rotateLuminanceByAngle(
-  original.luminance, original.width, original.height, 9,
+const sideways = rotateLuminanceByAngle(
+  original.luminance, original.width, original.height, 90,
 );
-const eighteenDegrees = rotateLuminanceByAngle(
-  nineDegrees.luminance, nineDegrees.width, nineDegrees.height, 9,
+assert.ok(sideways, 'a quarter-turn must remain inside the continuous orientation range');
+const sidewaysEstimate = estimateScannerSkewAngle(
+  sideways.luminance, sideways.width, sideways.height,
 );
-assert.equal(estimateScannerSkewAngle(
-  eighteenDegrees.luminance, eighteenDegrees.width, eighteenDegrees.height,
-), null, 'skew beyond the 12-degree correction window must be rejected');
+assert.ok(sidewaysEstimate, '90-degree barcode orientation must be estimated');
+assert.ok(Math.abs(Math.abs(sidewaysEstimate.angleDegrees) - 90) < 1,
+  'sideways orientation must resolve at the half-turn boundary');
 
 const deskewSource = await readFile(
   new URL('../src/platform/scanner/scannerDeskew.ts', import.meta.url),
@@ -141,20 +142,20 @@ const deskewSource = await readFile(
 );
 assert.doesNotMatch(deskewSource, /\b(?:window|document)\s*(?:\.|\?\.)|HTMLCanvasElement/,
   'deskew processing must remain pure and independent of browser presentation');
-assert.match(deskewSource, /MAX_SKEW_DEGREES = 12/,
-  'deskew angle must remain explicitly bounded');
+assert.match(deskewSource, /MAX_SKEW_DEGREES = 90/,
+  'continuous orientation correction must be bounded to the signed half-turn range');
 
 const decoderSource = await readFile(
   new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
   'utf8',
 );
 assert.match(decoderSource, /deskewLuminanceFrame\(/, 'decoder must consume the deskew service');
-assert.match(decoderSource, /uprightDeskew \?\? \(rotated/, 
-  'deskew must select the upright or normalized orthogonal ROI, not the full frame');
+assert.match(decoderSource, /const candidates = \[uprightDeskew, rotatedDeskew\]/,
+  'production decoder must consider both source axes for continuous orientation recovery');
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
-assert.match(decoderSource, /false,\s*'deskew'/,
-  'deskew decode must use the bounded HybridBinarizer-only pass');
+assert.match(decoderSource, /true,\s*'deskew'/,
+  'deskew candidates must use both production binarizers');
 assert.match(decoderSource, /lastDeskewAngleDegrees:/, 'measured skew angle must be observable');
 
 
@@ -173,4 +174,4 @@ assert.match(scan06Doc, /1\.2°/);
 assert.match(scan06Doc, /12°/);
 assert.match(scan06Doc, /perspective/);
 
-console.log('Scanner bounded deskew tests passed: ±5°/±8°, 90°/270° normalization path, and fail-closed bounds.');
+console.log('Scanner continuous orientation tests passed: angle sweep through ±75°, 90°/270° normalization path, and fail-closed bounds.');
