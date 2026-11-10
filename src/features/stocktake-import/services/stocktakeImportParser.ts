@@ -179,38 +179,37 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): {
 }
 
 function shiftDecimal(value: string, places: number): string {
-  const match = value.match(/^([+-]?)(\\d+)(?:\\.(\\d*))?(?:[eE]([+-]?\\d+))?$/);
+  const match = value.match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
   if (!match) throw new Error('Giá trị phần trăm không hợp lệ.');
   const sign = match[1];
   const digits = match[2] + (match[3] ?? '');
   const decimalPosition = match[2].length + Number(match[4] ?? 0) + places;
   const padded = digits.padEnd(Math.max(digits.length, decimalPosition), '0');
   const normalized = decimalPosition <= 0
-    ? `0.${'0'.repeat(-decimalPosition)}${padded}`
+    ? \`0.\${'0'.repeat(-decimalPosition)}\${padded}\`
     : decimalPosition >= padded.length
       ? padded + '0'.repeat(decimalPosition - padded.length)
-      : `${padded.slice(0, decimalPosition)}.${padded.slice(decimalPosition)}`;
-  return sign + normalized.replace(/(\\.\\d*?)0+$/, '$1').replace(/\\.$/, '');
+      : \`\${padded.slice(0, decimalPosition)}.\${padded.slice(decimalPosition)}\`;
+  return sign + normalized.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
 }
-
 function parseQuantity(value: string, type: string, percentageStyle: boolean): string {
   const trimmed = value.trim();
   if (!trimmed) throw new Error('Thiếu số lượng.');
   if (type === 'n') {
     if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) {
-      throw new Error(`Số lượng không hợp lệ: ${trimmed}`);
+      throw new Error(\`Số lượng không hợp lệ: \${trimmed}\`);
     }
-    // Keep the raw OOXML numeric token: it avoids Number precision loss and preserves decimals.
-    // Percentage-formatted cells retain their underlying Excel value without silent scaling.
+    // Excel stores percentage-formatted values as fractions; restore the displayed percent.
+    if (percentageStyle) return \`\${shiftDecimal(trimmed, 2)}%\`;
+    // Keep the raw OOXML numeric token to avoid Number precision loss.
     return trimmed;
   }
   const normalized = trimmed.replace(/\s/g, '');
   const decimalComma = /^[+-]?\d+,\d+(?:[eE][+-]?\d+)?%?$/.test(normalized);
   if (decimalComma) return normalized.replace(',', '.');
   if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?$/.test(normalized)) return normalized;
-  throw new Error(`Số lượng không hợp lệ hoặc có dấu phân cách mơ hồ: ${trimmed}`);
+  throw new Error(\`Số lượng không hợp lệ hoặc có dấu phân cách mơ hồ: \${trimmed}\`);
 }
-
 function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellValue>>, headerRow: number): string {
   const normalizedSheet = sheetName.trim().toUpperCase();
   if (!/^SHEET\s*\d*$/i.test(normalizedSheet) && /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(normalizedSheet)) {
@@ -276,7 +275,13 @@ export async function parseStocktakeWorkbook(
     }
     const xml = await worksheet.async('string');
     const rows = readRows(xml, sharedStrings);
-    const header = findHeader(rows);
+    let header: ReturnType<typeof findHeader>;
+    try {
+      header = findHeader(rows);
+    } catch {
+      warnings.push(`Sheet "${sheet.name}" không có cặp cột BARCODE và SỐ LƯỢNG; đã bỏ qua.`);
+      continue;
+    }
     const zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber);
     if (seenZones.has(zoneCode)) throw new Error(`Có nhiều sheet cùng mã vùng "${zoneCode}". Không thể xuất tách biệt an toàn.`);
     seenZones.add(zoneCode);
