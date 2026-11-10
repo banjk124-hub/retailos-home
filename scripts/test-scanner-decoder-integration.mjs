@@ -21,10 +21,15 @@ try {
     const source = await readFile(path.join(root, relativePath), 'utf8');
     const compiled = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-    }).outputText.replace(
-      /(from\s+['"])(\.\.?\/[^'"]+)(['"])/g,
-      (_match, prefix, specifier, suffix) => `${prefix}${specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : `${specifier}.js`}${suffix}`,
-    );
+    }).outputText
+      .replace(
+        /(from\\s+['"])(\\.\\.?\\/[^'"]+)(['"])/g,
+        (_match, prefix, specifier, suffix) => `${prefix}${specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : `${specifier}.js`}${suffix}`,
+      )
+      .replace(
+        /import \\{([^}]+)\\} from ['"]@zxing\\/library['"];?/,
+        (_match, names) => `import ZXing from '@zxing/library';\\nconst { ${names} } = ZXing;`,
+      );
     const outputPath = path.join(tempRoot, relativePath.replace(/\.ts$/, '.js'));
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(outputPath, compiled, 'utf8');
