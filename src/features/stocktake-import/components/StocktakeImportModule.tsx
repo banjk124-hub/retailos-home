@@ -381,7 +381,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={(event) => void handleFile(event.target.files?.[0])} />
           <button className="stocktake-import-primary" type="button" disabled={busy}
-            onClick={() => inputRef.current?.click()}>
+            onClick={() => {
+              if (hasDirtyZones) { setNotice('Vùng hiện tại có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy trước khi nạp workbook khác.'); return; }
+              inputRef.current?.click();
+            }}>
             {busy ? <LoaderCircle className="stocktake-import-spin" size={18} /> : <Upload size={18} />}
             {busy ? 'Đang xử lý…' : 'Chọn file Excel'}
           </button>
