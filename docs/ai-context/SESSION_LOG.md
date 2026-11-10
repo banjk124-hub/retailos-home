@@ -448,3 +448,13 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Scope audit: no camera/session/lifecycle, ROI geometry, cadence, UI/CSS, validation, Home lookup, Stocktake save/persistence, dependency or deployment changes.
 - Consolidated PR #65 is Draft/open; PR #63/#64 remain staged drafts and are included in #65. No merge/deploy performed.
 - Remaining acceptance: physical iOS Safari/PWA and Android Chrome/PWA tests for 0°/90°/180°/270° and ±5°/±8°, plus latency/CPU comparison on weak devices. CI is not device QA.
+
+
+### 2026-11-10 — Final consolidated SCAN-05/06 review
+
+- Rebased the full SCAN-05/06 source, tests and synchronized technical documentation onto the current `main` tree in final branch `feat/scan-05-06-final-consolidation`.
+- Final consolidated PR #66 is Draft/open, mergeable and not merged/deployed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
+- Final head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`; CI run #350 passed the complete preflight, TypeScript, production and Pages builds. Logs confirm the 0°/180° baseline, 90°/270° rotation and ±5°/±8° deskew suites passed.
+- Scope audit found no changes to camera/session/lifecycle, strict ROI geometry, 110 ms cadence, UI/CSS, barcode validation, Home lookup, Stocktake save/persistence, dependencies or deployment settings.
+- Repository hygiene incident: two SCAN-05/06 design Markdown files were briefly created on `main` by the GitHub file-creation action despite the intended branch target. Both files were immediately deleted from `main` in two revert commits. Comparing the current `main` tree against the pre-incident baseline `34c5a1da03df50f6e9da9827ffb580e753661251` returns no changed files; no source code or production behavior was changed on `main`. The design files are present on the final PR branch.
+- Remaining acceptance: physical iOS Safari/PWA and Android Chrome/PWA matrix (Home + Stocktake, 0°/90°/180°/270°, ±5°/±8°) and low-end latency/CPU measurements. Do not merge/deploy before device acceptance.
