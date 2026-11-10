@@ -164,7 +164,7 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [x] Stocktake tap starts `requestCameraLease()` before scanner UI mounts.
 - [x] Request is cancellable before claim and single-claim at session handoff.
 - [x] Preview readiness is distinct from decoder/scanning readiness.
-- [x] Current session uses 110 ms minimum decode interval; do not tune without measurements.
+- [x] Historical PR 47A baseline used 110 ms; current SCAN-05/06 corrective branch uses a 70 ms minimum decode interval with serialized calls.
 - [x] Current hook hardcodes profile `HIGH`; adaptive Low/Mid/High is not implemented.
 - [ ] iOS opening geometry root cause measured and fixed.
 - [ ] Exit fade visually synchronized while camera teardown remains prompt.
