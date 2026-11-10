@@ -98,7 +98,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
   const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => row.issues.length > 0)) ?? [];
-  const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && !busy);
+  const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy);
 
   const refreshHistory = async () => {
     setHistoryBusy(true);
@@ -177,7 +177,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
           [field]: value,
           barcodeSource: field === 'barcode' ? 'manual' as const : row.barcodeSource,
         };
-        return { ...updated, issues: validateRow(updated) };
+        const retainedIssues = row.issues.filter((issue) => field === 'barcode'
+          ? /kết quả|số lượng|diễn giải/i.test(issue)
+          : /barcode|goldcode|mã hàng|mã vạch/i.test(issue));
+        return { ...updated, issues: [...new Set([...validateRow(updated), ...retainedIssues])] };
       });
       return {
         ...zone,
@@ -210,7 +213,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const saveActiveZone = async () => {
     if (!result || !activeZone) return;
-    const invalid = activeZone.rows.filter((row) => validateRow(row).length > 0);
+    const invalid = activeZone.rows.filter((row) => row.issues.length > 0 || validateRow(row).length > 0);
     if (invalid.length > 0) {
       setError('Vùng ' + activeZone.zoneCode + ' còn ' + invalid.length + ' dòng chưa hợp lệ. Hãy bổ sung mã hàng và kết quả thực tế.');
       return;
@@ -235,6 +238,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const exportZone = (zoneIndex: number) => {
     if (!result) return;
     const zone = result.zones[zoneIndex];
+    if (result.blockingIssues.length > 0) {
+      setError('Workbook còn sheet chưa được nhận diện. Hãy xem hướng dẫn lỗi trước khi xuất để tránh bỏ sót dữ liệu.');
+      return;
+    }
     if (dirtyZones.includes(zone.zoneCode) || zone.rows.some((row) => row.issues.length > 0)) {
       setError('Vùng ' + zone.zoneCode + ' còn chỉnh sửa chưa lưu hoặc dữ liệu chưa hợp lệ.');
       return;
@@ -289,7 +296,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setResult({
       sourceFileName: item.sourceFileName,
       importedAt: item.importedAt,
-      warnings: [],
+      warnings: item.warnings ?? [],
+      blockingIssues: item.blockingIssues ?? [],
       zones: item.files.map((file) => {
         const match = file.zoneCode.match(/^([A-Z]*)(\d+)$/);
         const rows = file.rows?.map((row) => ({ ...row, issues: [...row.issues] })) ?? rowsFromLegacyContent(file.content);
@@ -358,6 +366,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <div><small>SỐ VÙNG</small><strong>{result.zones.length}</strong></div>
               <div><small>TỔNG DÒNG</small><strong>{totalRows}</strong></div>
             </div>
+            {result.blockingIssues.map((issue) => <p className="stocktake-import-error" role="alert" key={issue}>{issue}</p>)}
             {result.warnings.map((warning) => <p className="stocktake-import-warning" key={warning}>{warning}</p>)}
 
             <div className="stocktake-import-workspace">
@@ -444,8 +453,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             </div>
 
             <div className="stocktake-import-export-footer">
-              <div><strong>{invalidZones.length ? invalidZones.length + ' vùng có lỗi' : hasDirtyZones ? 'Còn chỉnh sửa chưa lưu' : 'Tất cả vùng đã sẵn sàng'}</strong>
-                <small>{hasDirtyZones || invalidZones.length ? 'Cần xử lý và lưu từng vùng trước khi xuất ZIP.' : 'Mỗi vùng sẽ thành một file TXT riêng.'}</small></div>
+              <div><strong>{result.blockingIssues.length ? 'Workbook còn sheet chưa hỗ trợ' : invalidZones.length ? invalidZones.length + ' vùng có lỗi' : hasDirtyZones ? 'Còn chỉnh sửa chưa lưu' : 'Tất cả vùng đã sẵn sàng'}</strong>
+                <small>{result.blockingIssues.length ? 'Không xuất một phần workbook. Hãy đổi tên header theo hướng dẫn và nạp lại file.' : hasDirtyZones || invalidZones.length ? 'Cần xử lý và lưu từng vùng trước khi xuất ZIP.' : 'Mỗi vùng sẽ thành một file TXT riêng.'}</small></div>
               <button className="stocktake-import-primary stocktake-import-export" type="button"
                 disabled={!canExportAll} onClick={() => void exportAll()}>
                 <Download size={18} /> Xuất tất cả vùng thành ZIP
