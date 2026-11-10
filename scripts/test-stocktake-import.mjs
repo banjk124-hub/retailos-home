@@ -249,7 +249,7 @@ assert.match(component, /onClick=\{\(\) => void copyOutput\(\)\}/);
 assert.match(component, /onClick=\{\(\) => exportZone\(selectedZone\)\}/);
 assert.doesNotMatch(component, /stocktake-import-notice is-/);
 assert.match(component, /busyAction/);
-assert.match(component, /Xem trước TXT/);
+assert.match(component, /Xem TXT/);
 assert.doesNotMatch(component, /zoneLayer|setZoneLayer/, "Editor and TXT preview must share one workspace instead of switching layers.");
 assert.match(component, /handleFiles/);
 assert.match(component, /confirmPendingImport/);
