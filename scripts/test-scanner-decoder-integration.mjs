@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import ts from 'typescript';
@@ -24,7 +23,7 @@ try {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
     }).outputText.replace(
       /(from\s+['"])(\.\.?\/[^'"]+)(['"])/g,
-      (_match, prefix, specifier, suffix) => `${prefix}${/\\.(?:js|mjs)$/.test(specifier) ? specifier : `${specifier}.js`}${suffix}`,
+      (_match, prefix, specifier, suffix) => `${prefix}${specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : `${specifier}.js`}${suffix}`,
     );
     const outputPath = path.join(tempRoot, relativePath.replace(/\.ts$/, '.js'));
     await mkdir(path.dirname(outputPath), { recursive: true });
