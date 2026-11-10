@@ -44,8 +44,10 @@ Data rules:
 
 ## 4. Zone resolution
 
-- Prefer a recognizable sheet name such as `BT01` or `540`.
-- Otherwise inspect non-header metadata near the top of the sheet for a recognizable zone token.
+- Prefer a consistent explicit `VÙNG` / `ZONE` column when present; if a recognizable sheet name also exists, it must match the column value.
+- Otherwise use a recognizable sheet name such as `BT01` or `540`.
+- As a final fallback, inspect non-header metadata near the top of the sheet for a recognizable zone token.
+- One sheet must resolve to exactly one zone. Multiple distinct values in one zone column fail safely; separate zones should be represented by separate sheets.
 - Generic names such as `Sheet1` are not treated as zone codes.
 - Duplicate zone codes across sheets fail closed rather than overwrite/merge files.
 - Alphabetic-plus-numeric codes split into prefix and number (e.g. `BT01` → `BT`, `01`).
