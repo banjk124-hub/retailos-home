@@ -156,6 +156,7 @@ const output = runtime.buildStocktakeOutput("E001", "BT01", [
 ], new Date(2026, 10, 10, 9, 8, 7));
 assert.match(output, /^NHAN VIEN,E001,2026\/11\/10,09:08:07\r\nADRESSE,BT,01\r\n/);
 assert.match(output, /ARTICLE,089686011036,19\.236/);
+assert.doesNotMatch(output, /productName|TÊN SẢN PHẨM/, 'Product names must never alter the Stocktake TXT payload.');
 
 const source = (name, fingerprint) => ({ name, fingerprint, size: 100, lastModified: 1 });
 const importedRow = (barcode, sourceFileName, sourceRow) => ({
