@@ -445,10 +445,9 @@ export async function parseStocktakeWorkbook(
   ]);
   if (sheets.length === 0) throw new Error('Workbook không có sheet dữ liệu.');
 
-  const zones: ImportedStocktakeZone[] = [];
+  const zonesByCode = new Map<string, ImportedStocktakeZone>();
   const warnings: string[] = [];
   const blockingIssues: string[] = [];
-  const seenZones = new Set<string>();
 
   for (const sheet of sheets) {
     const worksheet = zip.file(sheet.path);
@@ -457,78 +456,110 @@ export async function parseStocktakeWorkbook(
       continue;
     }
     const rows = readRows(await worksheet.async('string'), sharedStrings);
-    let header: HeaderMapping;
-    try {
-      header = findHeader(rows);
-    } catch (cause) {
-      blockingIssues.push('Không hỗ trợ sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không nhận diện được cấu trúc.'));
+    if (![...rows.values()].some((cells) => [...cells.values()].some((cell) => cell.value.trim()))) {
+      warnings.push('Sheet "' + sheet.name + '" trống; đã bỏ qua.');
       continue;
     }
-    let zoneCode: string;
-    try {
-      zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber, header.zoneColumn);
-    } catch (cause) {
-      blockingIssues.push('Sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không xác định được vùng.'));
-      continue;
-    }
-    if (seenZones.has(zoneCode)) throw new Error('Có nhiều sheet cùng mã vùng "' + zoneCode + '". Không thể xuất tách biệt an toàn.');
-    seenZones.add(zoneCode);
 
-    const dataRows: ImportedStocktakeRow[] = [];
-    let fallbackRepeatedValue = '';
-    let fallbackIsRepeated = true;
-    for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
-      if (rowNumber <= header.rowNumber) continue;
-      const barcodeCell = header.barcodeColumn !== undefined ? cells.get(header.barcodeColumn) : undefined;
-      const goldCodeCell = header.goldCodeColumn !== undefined ? cells.get(header.goldCodeColumn) : undefined;
-      const fallbackCell = header.fallbackBarcodeColumn !== undefined ? cells.get(header.fallbackBarcodeColumn) : undefined;
-      const resolvedBarcode = resolveBarcode(barcodeCell, goldCodeCell, fallbackCell, styleMetadata.zeroPaddingWidths);
-      const barcode = resolvedBarcode.barcode;
-      const barcodeSource = resolvedBarcode.source;
-      const fallbackBarcode = fallbackCell ? formatBarcode(fallbackCell, styleMetadata.zeroPaddingWidths) : '';
-      const explicitBarcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
-      const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, styleMetadata.zeroPaddingWidths) : '';
-      const actualQuantityCell = cells.get(header.quantityColumn);
-      const quantityRaw = actualQuantityCell?.value.trim() ?? '';
-      if (!barcode && !quantityRaw) continue;
-      let quantity = quantityRaw;
-      let quantityParseIssue = '';
-      if (actualQuantityCell && quantityRaw) {
-        try {
-          quantity = parseQuantityCell(actualQuantityCell, styleMetadata);
-        } catch (cause) {
-          quantityParseIssue = cause instanceof Error ? cause.message : 'Không thể đọc định dạng số Excel.';
-        }
-      }
-      const issues = rowIssues(barcode, quantity);
-      if (quantityParseIssue) issues.push('Không thể diễn giải kết quả thực tế: ' + quantityParseIssue);
-      if (fallbackBarcode && !explicitBarcode && !goldCode) {
-        if (!fallbackRepeatedValue) fallbackRepeatedValue = fallbackBarcode;
-        else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
-      }
-      dataRows.push({ barcode, quantity, sourceRow: rowNumber, barcodeSource, issues });
-    }
-    if (header.fallbackBarcodeColumn !== undefined && header.barcodeColumn === undefined &&
-      header.goldCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
-      dataRows.forEach((row) => {
-        if (row.barcodeSource === 'MÃ VẠCH') row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE hoặc GOLDCODE.');
-      });
-    }
-    if (dataRows.length === 0) {
-      warnings.push('Sheet "' + sheet.name + '" đã nhận diện header nhưng không có dòng dữ liệu.');
+    let scan: HeaderScan;
+    try {
+      scan = findHeaders(rows);
+    } catch (cause) {
+      blockingIssues.push('Không hỗ trợ sheet "' + sheet.name + '": ' +
+        (cause instanceof Error ? cause.message : 'Không nhận diện được cấu trúc.'));
       continue;
     }
-    const match = zoneCode.match(/^([A-Z]*)(\d+)$/);
-    if (!match) {
-      warnings.push('Mã vùng "' + zoneCode + '" không thể tách thành tiền tố và số.');
-      continue;
-    }
-    zones.push({
-      zoneCode, prefix: match[1], number: match[2], sheetName: sheet.name, rows: dataRows,
-      content: buildStocktakeOutput(employeeCode, zoneCode, dataRows, importedAt),
-      fileName: buildZoneFileName(zoneCode),
+    scan.unsupportedRows.forEach((item) => {
+      blockingIssues.push(
+        'Sheet "' + sheet.name + '", dòng header ' + item.rowNumber + ' chưa được hỗ trợ (' +
+        item.headers.join(' | ') + '). Hãy đổi tên cột mã hàng thành BARCODE/GOLDCODE và cột số liệu thành SỐ LƯỢNG/KẾT QUẢ THỰC TẾ, hoặc bỏ bảng không dùng.',
+      );
     });
+
+    const boundaries = [...scan.mappings.map((mapping) => mapping.rowNumber), ...scan.unsupportedRows.map((item) => item.rowNumber)]
+      .sort((a, b) => a - b);
+    for (const mapping of scan.mappings) {
+      const endRow = boundaries.find((rowNumber) => rowNumber > mapping.rowNumber) ?? Number.POSITIVE_INFINITY;
+      let zoneCode: string;
+      try {
+        zoneCode = resolveZoneCode(sheet.name, rows, mapping.rowNumber, mapping.zoneColumn, endRow);
+      } catch (cause) {
+        blockingIssues.push('Sheet "' + sheet.name + '", bảng bắt đầu tại dòng ' + mapping.rowNumber + ': ' +
+          (cause instanceof Error ? cause.message : 'Không xác định được vùng.'));
+        continue;
+      }
+
+      const dataRows: ImportedStocktakeRow[] = [];
+      let fallbackRepeatedValue = '';
+      let fallbackIsRepeated = true;
+      for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
+        if (rowNumber <= mapping.rowNumber || rowNumber >= endRow) continue;
+        const barcodeCell = mapping.barcodeColumn !== undefined ? cells.get(mapping.barcodeColumn) : undefined;
+        const goldCodeCell = mapping.goldCodeColumn !== undefined ? cells.get(mapping.goldCodeColumn) : undefined;
+        const fallbackCell = mapping.fallbackBarcodeColumn !== undefined ? cells.get(mapping.fallbackBarcodeColumn) : undefined;
+        const resolvedBarcode = resolveBarcode(barcodeCell, goldCodeCell, fallbackCell, styleMetadata.zeroPaddingWidths);
+        const barcode = resolvedBarcode.barcode;
+        const barcodeSource = resolvedBarcode.source;
+        const fallbackBarcode = fallbackCell ? formatBarcode(fallbackCell, styleMetadata.zeroPaddingWidths) : '';
+        const explicitBarcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
+        const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, styleMetadata.zeroPaddingWidths) : '';
+        const actualQuantityCell = cells.get(mapping.quantityColumn);
+        const quantityRaw = actualQuantityCell?.value.trim() ?? '';
+        if (!barcode && !quantityRaw) continue;
+
+        let quantity = quantityRaw;
+        let quantityParseIssue = '';
+        if (actualQuantityCell && quantityRaw) {
+          try {
+            quantity = parseQuantityCell(actualQuantityCell, styleMetadata);
+          } catch (cause) {
+            quantityParseIssue = cause instanceof Error ? cause.message : 'Không thể đọc định dạng số Excel.';
+          }
+        }
+        const issues = rowIssues(barcode, quantity);
+        if (quantityParseIssue) issues.push('Không thể diễn giải kết quả thực tế: ' + quantityParseIssue);
+        if (fallbackBarcode && !explicitBarcode && !goldCode) {
+          if (!fallbackRepeatedValue) fallbackRepeatedValue = fallbackBarcode;
+          else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
+        }
+        dataRows.push({
+          barcode, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, barcodeSource, issues,
+        });
+      }
+
+      if (mapping.fallbackBarcodeColumn !== undefined && mapping.barcodeColumn === undefined &&
+        mapping.goldCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
+        dataRows.forEach((row) => {
+          if (row.barcodeSource === 'MÃ VẠCH') {
+            row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE hoặc GOLDCODE.');
+          }
+        });
+      }
+      if (dataRows.length === 0) {
+        warnings.push('Sheet "' + sheet.name + '" tại dòng ' + mapping.rowNumber + ' không có dòng dữ liệu.');
+        continue;
+      }
+
+      const match = zoneCode.match(/^([A-Z]*)(\d+)$/);
+      if (!match) {
+        blockingIssues.push('Mã vùng "' + zoneCode + '" không thể tách thành tiền tố và số.');
+        continue;
+      }
+      const existing = zonesByCode.get(zoneCode);
+      if (existing) {
+        existing.rows.push(...dataRows);
+        existing.content = buildStocktakeOutput(employeeCode, zoneCode, existing.rows, importedAt);
+      } else {
+        zonesByCode.set(zoneCode, {
+          zoneCode, prefix: match[1], number: match[2], sheetName: sheet.name, rows: dataRows,
+          content: buildStocktakeOutput(employeeCode, zoneCode, dataRows, importedAt),
+          fileName: buildZoneFileName(zoneCode),
+        });
+      }
+    }
   }
+
+  const zones = [...zonesByCode.values()];
 
   if (zones.length === 0) {
     const diagnostics = [...blockingIssues, ...warnings];
