@@ -71,6 +71,34 @@ function getFrameDimensions(source: CanvasImageSource): FrameDimensions {
 
 type DecodeMiss = 'notFound' | 'checksum' | 'format';
 
+/**
+ * ZXing 0.23.0 logs expected NotFoundException reader misses as console.warn
+ * because they are not recognized as ReaderException instances. A continuous
+ * scanner intentionally produces many misses; suppress only that exact
+ * library diagnostic during the synchronous decode call and forward all
+ * unrelated warnings unchanged.
+ */
+function decodeWithExpectedMissSuppressed(
+  reader: MultiFormatReader,
+  bitmap: BinaryBitmap,
+) {
+  const originalWarn = console.warn;
+  console.warn = (...args: Parameters<typeof console.warn>) => {
+    const [message, error] = args;
+    if (message === 'MultiFormatReader: non-ReaderException from reader:'
+      && error instanceof Error
+      && error.name === 'NotFoundException') {
+      return;
+    }
+    originalWarn.apply(console, args);
+  };
+  try {
+    return reader.decodeWithState(bitmap);
+  } finally {
+    console.warn = originalWarn;
+  }
+}
+
 function classifyDecodeError(error: unknown): DecodeMiss | null {
   const detail = error instanceof Error
     ? `${error.name} ${error.constructor.name} ${error.message}`.toLowerCase()
@@ -364,7 +392,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         const bitmap = new BinaryBitmap(new Binarizer(luminance));
         // decode() resets the configured hints when no hints argument is passed.
         // Reuse the initialized retail-format whitelist across camera frames.
-        const result = this.reader.decodeWithState(bitmap);
+        const result = decodeWithExpectedMissSuppressed(this.reader, bitmap);
         const symbology = REVERSE_FORMAT_MAP.get(result.getBarcodeFormat());
         const value = result.getText();
         if (!symbology || !this.formats.includes(symbology) || value.length === 0) return null;
