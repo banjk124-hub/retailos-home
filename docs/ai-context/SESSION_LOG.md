@@ -435,4 +435,4 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Replaced full-frame and fixed-centered passes with direct ROI draw/decode. Missing/invalid geometry returns no result; no full-frame fallback.
 - Preserved camera/session lifecycle, 110 ms cadence, supported symbologies, validation/result delivery and Home/Stocktake business behavior.
 - Added strict ROI regression test and registered it in preflight; added SCAN-04 design, ADR-025, roadmap, implementation status, acceptance and handoff updates.
-- Pending: run local-equivalent/full CI, inspect final PR diff and obtain physical post-deploy iOS/Android barcode accuracy/performance evidence. No merge or deployment performed.
+- GitHub Actions run #317 passed full preflight/build on implementation head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54`; a docs-only synchronization follows that run. Physical post-deploy iOS/Android barcode accuracy/performance evidence remains pending. No merge or deployment performed.
