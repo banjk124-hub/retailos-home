@@ -2,8 +2,8 @@
 
 - PR #70 is deployed and user-accepted; PR #71 (multi-file sessions and output generation) is merged into main.
 - Current UX branch: `feat/stocktake-import-native-workspace`; draft PR #72: https://github.com/banjk124-hub/retailos-home/pull/72.
-- Base main: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`; code head at CI #524: `13ae9a96e270642d5349041f5d01bfd8a7a542f4`.
-- CI #524 passed the Stocktake import regression suite, existing scanner regression suite, TypeScript, production build, GitHub Pages build and diff checks.
+- Base main: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`; code head at CI #534: `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
+- CI #534 passed the Stocktake import regression suite, existing scanner regression suite, TypeScript, production build, GitHub Pages build and diff checks.
 - Preserve all import/session business rules: source parsing and numeric fidelity, code precedence, multi-file additive import, SHA-256 duplicate detection, explicit duplicate-zone merge/skip, row provenance, IndexedDB history and TXT/ZIP payload parity.
 - Replace the mutually exclusive Output/Editor layers with one continuous zone workspace: table as the primary review/edit surface, TXT Preview as an expandable secondary inspector.
 - Add explicit in-memory vs persisted state, action-specific loading feedback, semantic success/warning/info notices and separate error states.
