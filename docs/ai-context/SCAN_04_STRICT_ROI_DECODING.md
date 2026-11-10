@@ -1,6 +1,6 @@
 # SCAN-04 — Strict module-reticle ROI decoding
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; automated CI and physical post-deployment QA are pending.  
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #317 passed full preflight/build on head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54`. Physical post-deployment barcode QA is pending.  
 **Baseline:** SCAN-03 merge commit `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms successful iOS and Android geometry/flow verification.  
 **Objective:** Make the decoder consume the exact source-frame region published by each module-owned reticle, instead of decoding the full frame and then trying a fixed centered crop.
 
