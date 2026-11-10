@@ -670,7 +670,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                             {visibleRows.map((row, visibleIndex) => {
                               const rowIndex = page * PAGE_SIZE + visibleIndex;
                               return <tr key={(row.sourceFileName ?? '') + '-' + (row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex}
-                                className={getRowIssues(row).length ? 'has-error' : ''}>
+                                className={rowIssues.length ? 'has-error' : ''}>
                                 <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
                                   {row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}
                                   {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFileId ? ' · ' + row.sourceFileId.slice(0, 8) : ''}</small>}
@@ -684,8 +684,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                                       value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
                                   : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
                                 <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
-                                <td>{getRowIssues(row).length
-                                  ? <span className="stocktake-import-row-error" title={getRowIssues(row).join(' ')}>{getRowIssues(row).join(' ')}</span>
+                                <td>{rowIssues.length
+                                  ? <span className="stocktake-import-row-error" title={rowIssues.join(' ')}>{rowIssues.join(' ')}</span>
                                   : <span className="stocktake-import-row-ok">Hợp lệ</span>}</td>
                               </tr>;
                             })}
