@@ -23,17 +23,18 @@
 - [x] Combined 90°/270° normalization plus skew correction passes.
 - [x] Level, blank, invalid and >12° cases fail closed; pure service has no DOM/presentation dependency.
 - [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
-- [x] CI run #342 passed the full preflight and builds.
+- [x] final consolidated CI run #350 passed the full preflight and builds.
 - [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
 - [ ] Physical Android Chrome/PWA QA: same matrix.
 - [ ] Record latency, CPU and accuracy on low-end and high-end devices.
 
 ## Consolidated delivery
 - [x] SCAN-04 strict ROI baseline was merged/deployed by the user; normal operation confirmed.
-- [x] SCAN-05 and SCAN-06 source/tests are consolidated on PR #65.
+- [x] SCAN-05 and SCAN-06 source/tests are consolidated on final PR #66.
 - [x] Documentation and ADRs synchronized on the consolidated branch.
-- [ ] Final device QA and final source/docs diff audit.
-- [ ] Merge consolidated PR #65 after acceptance. PR #63/#64 are staged drafts included by #65 and should not be merged separately.
+- [x] Final source/docs diff audit completed on consolidated PR #66; no scope leakage found.
+- [ ] Physical device QA remains outstanding; do not merge until accepted.
+- [ ] Merge final consolidated PR #66 after device acceptance. PR #63/#64/#65 are closed as superseded and must not be merged separately.
 
 ---
 
