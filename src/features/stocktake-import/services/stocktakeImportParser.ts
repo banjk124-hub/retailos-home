@@ -511,6 +511,7 @@ export async function parseStocktakeWorkbook(
 
       const dataRows: ImportedStocktakeRow[] = [];
       let fallbackRepeatedValue = '';
+      let fallbackRowsCount = 0;
       let fallbackIsRepeated = true;
       for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
         if (rowNumber <= mapping.rowNumber || rowNumber >= endRow) continue;
@@ -542,6 +543,7 @@ export async function parseStocktakeWorkbook(
         const issues = rowIssues(barcode, quantity);
         if (quantityParseIssue) issues.push('Không thể diễn giải kết quả thực tế: ' + quantityParseIssue);
         if (fallbackBarcode && !explicitBarcode && !explicitCode && !goldCode && !tillCodeCell?.value.trim()) {
+          fallbackRowsCount += 1;
           if (!fallbackRepeatedValue) fallbackRepeatedValue = fallbackBarcode;
           else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
         }
@@ -550,7 +552,7 @@ export async function parseStocktakeWorkbook(
         });
       }
 
-      if (mapping.fallbackBarcodeColumn !== undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
+      if (mapping.fallbackBarcodeColumn !== undefined && fallbackIsRepeated && fallbackRepeatedValue && fallbackRowsCount > 1) {
         dataRows.forEach((row) => {
           if (row.barcodeSource === 'MÃ VẠCH') {
             row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE, CODE, GOLDCODE hoặc TILLCODE.');
