@@ -5,6 +5,7 @@ import ts from "typescript";
 const parser = readFileSync("src/features/stocktake-import/services/stocktakeImportParser.ts", "utf8");
 const component = readFileSync("src/features/stocktake-import/components/StocktakeImportModule.tsx", "utf8");
 const store = readFileSync("src/features/stocktake-import/services/stocktakeImportStore.ts", "utf8");
+const sessionService = readFileSync("src/features/stocktake-import/services/stocktakeImportSession.ts", "utf8");
 const registry = readFileSync("src/features/home/moduleRegistry.ts", "utf8");
 const snapshotService = readFileSync("src/features/data/moduleDataService.ts", "utf8");
 const styles = readFileSync("src/features/stocktake-import/components/stocktake-import.css", "utf8");
@@ -50,6 +51,19 @@ const runtimeSource =
   extractFunction("rowIssues", "parseStocktakeWorkbook") +
   "return { normalizeHeader, matchesHeader, findHeaders, expandDecimal, roundDecimal, generalPrecision, numberFormatPrecision, formatExcelNumber, parseTextQuantity, formatBarcode, resolveBarcode, resolveZoneCode, buildStocktakeOutput, buildZoneFileName, rowIssues };";
 const runtime = new Function(ts.transpile(runtimeSource, { target: ts.ScriptTarget.ES2022 }))();
+
+const sessionModule = { exports: {} };
+const sessionCode = ts.transpile(sessionService, {
+  target: ts.ScriptTarget.ES2022,
+  module: ts.ModuleKind.CommonJS,
+});
+new Function("require", "exports", "module", sessionCode)(
+  () => ({ buildStocktakeOutput: runtime.buildStocktakeOutput, buildZoneFileName: runtime.buildZoneFileName }),
+  sessionModule.exports,
+  sessionModule,
+);
+const sessionRuntime = sessionModule.exports;
+
 
 assert.equal(runtime.normalizeHeader("SỐ LƯỢNG THỰC TẾ"), "SO LUONG THUC TE");
 assert.equal(runtime.normalizeHeader("MÃ VẠCH"), "MA VACH");
@@ -132,6 +146,51 @@ const output = runtime.buildStocktakeOutput("E001", "BT01", [
 assert.match(output, /^NHAN VIEN,E001,2026\/11\/10,09:08:07\r\nADRESSE,BT,01\r\n/);
 assert.match(output, /ARTICLE,089686011036,19\.236/);
 
+const source = (name, fingerprint) => ({ name, fingerprint, size: 100, lastModified: 1 });
+const importedRow = (barcode, sourceFileName, sourceRow) => ({
+  barcode, quantity: "1", sourceRow, sourceSheet: "BT01", sourceFileName,
+  barcodeSource: "BARCODE", issues: [],
+});
+const zone = (zoneCode, rows) => ({
+  zoneCode, prefix: "BT", number: zoneCode.slice(2), sheetName: zoneCode,
+  rows, content: "", fileName: zoneCode + ".txt",
+});
+const sessionBase = {
+  sourceFileName: "base.xlsx", sourceFiles: [source("base.xlsx", "base-hash")],
+  importedAt: "2026-11-10T09:00:00.000Z",
+  zones: [zone("BT01", [importedRow("BASE", "base.xlsx", 1)])],
+  warnings: [], blockingIssues: [],
+};
+const sessionA = {
+  sourceFileName: "a.xlsx", sourceFiles: [source("a.xlsx", "a-hash")],
+  importedAt: "2026-11-10T10:00:00.000Z",
+  zones: [zone("BT01", [importedRow("A1", "a.xlsx", 2), importedRow("A2", "a.xlsx", 3)]),
+    zone("BT02", [importedRow("A3", "a.xlsx", 4)])],
+  warnings: [], blockingIssues: [],
+};
+const sessionB = {
+  sourceFileName: "b.xlsx", sourceFiles: [source("b.xlsx", "b-hash")],
+  importedAt: "2026-11-10T10:01:00.000Z",
+  zones: [zone("BT01", [importedRow("B1", "b.xlsx", 5)])],
+  warnings: [], blockingIssues: [],
+};
+assert.deepEqual(sessionRuntime.detectStocktakeImportConflicts(sessionBase, [sessionA, sessionB]), [
+  { zoneCode: "BT01", existingRows: 1, incomingRows: 3, duplicateWithinBatch: true },
+]);
+const mergedSession = sessionRuntime.mergeStocktakeImportSession(sessionBase, [sessionA, sessionB], "E001", true);
+assert.equal(mergedSession.importedAt, sessionBase.importedAt, "Appending files must preserve the session timestamp.");
+assert.deepEqual(mergedSession.zones.map((item) => item.zoneCode), ["BT01", "BT02"]);
+assert.deepEqual(mergedSession.zones[0].rows.map((row) => row.barcode), ["BASE", "A1", "A2", "B1"]);
+assert.equal(mergedSession.zones[0].rows.length, 4, "Merge must preserve every row and duplicate occurrence.");
+assert.equal(mergedSession.sourceFiles.length, 3);
+assert.ok(mergedSession.zones[0].content.includes("NHAN VIEN,E001,2026/11/10,09:00:00"));
+const skippedSession = sessionRuntime.mergeStocktakeImportSession(sessionBase, [sessionA, sessionB], "E001", false);
+assert.deepEqual(skippedSession.zones[0].rows.map((row) => row.barcode), ["BASE"]);
+assert.deepEqual(skippedSession.zones[1].rows.map((row) => row.barcode), ["A3"]);
+assert.match(skippedSession.warnings.join(" "), /Đã bỏ qua 2 dòng bổ sung của vùng BT01/);
+assert.match(skippedSession.warnings.join(" "), /Đã bỏ qua 1 dòng bổ sung của vùng BT01/);
+
+
 assert.match(parser, /xl\/workbook\.xml/);
 assert.match(parser, /xl\/_rels\/workbook\.xml\.rels/);
 assert.match(parser, /blockingIssues\.push/);
@@ -160,6 +219,8 @@ assert.doesNotMatch(component, /slice\(0,\s*80\)/);
 assert.match(store, /retailos-stocktake-import/);
 assert.match(store, /rows: zone\.rows/);
 assert.match(store, /sourceFiles/);
+assert.match(sessionService, /detectStocktakeImportConflicts/);
+assert.match(sessionService, /mergeStocktakeImportSession/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
 assert.doesNotMatch(store, /retailos-module-data|retailos-stocktake['"]/);
 assert.ok(registry.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
