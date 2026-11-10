@@ -418,7 +418,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         textarea.select();
         setNotice('Không thể sao chép tự động. Nội dung TXT đã được chọn riêng trong vùng này; nhấn Ctrl+C hoặc dùng Sao chép trên thiết bị.');
       } else {
-        setError('Không thể truy cập Clipboard. Hãy chọn nội dung trong vùng TXT và sao chép thủ công.');
+        setPreviewOpen(true);
+        setNotice('Clipboard tự động không khả dụng. Đã mở bản TXT để bạn chọn và sao chép thủ công.');
       }
     }
   };
@@ -690,7 +691,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     </span>
                   </div>
                   <div className="stocktake-import-table-wrap">
-                    <table className="stocktake-import-edit-table">
+                    <table className={'stocktake-import-edit-table' + (activeZoneHasProductNames ? ' has-product-name' : '')}>
                       <thead><tr><th>DÒNG NGUỒN</th><th>BARCODE / GOLDCODE</th>{activeZoneHasProductNames && <th>TÊN SẢN PHẨM</th>}<th>KẾT QUẢ THỰC TẾ</th><th>NGUỒN MÃ</th><th>KIỂM TRA</th></tr></thead>
                       <tbody>
                         {visibleRows.map((row, visibleIndex) => {
