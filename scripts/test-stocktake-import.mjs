@@ -53,7 +53,15 @@ assert.deepEqual(runtime.findHeader(new Map([[4, headerCells]])), {
   rowNumber: 4, barcodeColumn: 2, quantityColumn: 4, barcodeHeader: "BARCODE",
 });
 
-const zoneRows = new Map([[1, new Map([[0, { value: "540", type: "n", styleIndex: 0 }]])]]);
+const flexibleHeaderCells = new Map([
+  [1, { value: "BARCODE SẢN PHẨM", type: "s", styleIndex: 0 }],
+  [5, { value: "SỐ LƯỢNG (KG)", type: "s", styleIndex: 0 }],
+]);
+assert.deepEqual(runtime.findHeader(new Map([[7, flexibleHeaderCells]])), {
+  rowNumber: 7, barcodeColumn: 1, quantityColumn: 5, barcodeHeader: "BARCODE SAN PHAM",
+});
+
+const zoneRows = new Map([[1, new Map([[5, { value: "540", type: "n", styleIndex: 0 }]])]]);
 assert.equal(runtime.resolveZoneCode("Sheet1", zoneRows, 4), "540");
 assert.equal(runtime.resolveZoneCode("BT01", new Map(), 4), "BT01");
 
