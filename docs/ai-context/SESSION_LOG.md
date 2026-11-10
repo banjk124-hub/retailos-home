@@ -436,3 +436,15 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Preserved camera/session lifecycle, 110 ms cadence, supported symbologies, validation/result delivery and Home/Stocktake business behavior.
 - Added strict ROI regression test and registered it in preflight; added SCAN-04 design, ADR-025, roadmap, implementation status, acceptance and handoff updates.
 - GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; the subsequent status-only documentation update does not change executable code. Physical post-deploy iOS/Android barcode accuracy/performance evidence remains pending. No merge or deployment performed.
+
+
+### 2026-11-10 — SCAN-05/06 consolidated implementation and audit
+
+- Confirmed the existing 180° capability before adding new code: ZXing `OneDReader` reverses 1D scanlines under `TRY_HARDER`; EAN-8/EAN-13 inherit this path. Runtime baseline fixture covers Code 128 0°/180°; EAN inheritance is guarded separately.
+- PR #63 baseline CI run #337 passed.
+- SCAN-05 PR #64 adds a single clockwise 90° ROI transform every third valid ROI frame after upright miss. This normalizes 90°/270° input through the existing 180° scanline reversal. CI run #338 passed.
+- SCAN-06 PR #65 adds Sobel structure-tensor estimation and bounded 1.2°–12° deskew after upright/orthogonal misses. Synthetic Code 128 at ±5°/±8° and combined 90°/270° + skew passed.
+- Final recorded head `7bd77ffd7acd6a04e65b731b3ffa3a3e9546a7f1`; CI run #342 passed full preflight, TypeScript, production and Pages builds.
+- Scope audit: no camera/session/lifecycle, ROI geometry, cadence, UI/CSS, validation, Home lookup, Stocktake save/persistence, dependency or deployment changes.
+- Consolidated PR #65 is Draft/open; PR #63/#64 remain staged drafts and are included in #65. No merge/deploy performed.
+- Remaining acceptance: physical iOS Safari/PWA and Android Chrome/PWA tests for 0°/90°/180°/270° and ±5°/±8°, plus latency/CPU comparison on weak devices. CI is not device QA.
