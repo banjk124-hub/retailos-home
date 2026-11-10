@@ -25,6 +25,7 @@ export type StocktakeImportResult = {
 
 type CellValue = { value: string; type: string; styleIndex: number };
 type ParsedSheet = { name: string; path: string };
+type StyleMetadata = { percentageStyles: Set<number>; zeroPaddingWidths: Map<number, number> };
 
 const RELATIONSHIP_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13', 'EAN8', 'UPC', 'GTIN'];
@@ -96,7 +97,7 @@ function readSharedStrings(zip: JSZip): Promise<string[]> {
   }) ?? Promise.resolve([]);
 }
 
-function readStyles(zip: JSZip): Promise<Set<number>> {
+function readStyles(zip: JSZip): Promise<StyleMetadata> {
   return zip.file('xl/styles.xml')?.async('string').then((xml) => {
     const document = parseXml(xml, 'styles.xml');
     const customFormats = new Map<number, string>();
@@ -105,16 +106,18 @@ function readStyles(zip: JSZip): Promise<Set<number>> {
     });
     const xfs = descendants(document.documentElement, 'cellXfs')[0];
     const percentageStyles = new Set<number>();
-    if (!xfs) return percentageStyles;
+    const zeroPaddingWidths = new Map<number, number>();
+    if (!xfs) return { percentageStyles, zeroPaddingWidths };
     descendants(xfs, 'xf').forEach((xf, index) => {
       const formatId = Number(xf.getAttribute('numFmtId') ?? 0);
-      const custom = customFormats.get(formatId) ?? '';
-      if (formatId === 9 || formatId === 10 || custom.includes('%')) percentageStyles.add(index);
+      const formatCode = customFormats.get(formatId) ?? '';
+      if (formatId === 9 || formatId === 10 || formatCode.includes('%')) percentageStyles.add(index);
+      const positiveFormat = (formatCode.split(';')[0] ?? '').replace(/"[^"]*"/g, '').trim();
+      if (/^0{6,}$/.test(positiveFormat)) zeroPaddingWidths.set(index, positiveFormat.length);
     });
-    return percentageStyles;
-  }) ?? Promise.resolve(new Set<number>());
+    return { percentageStyles, zeroPaddingWidths };
+  }) ?? Promise.resolve({ percentageStyles: new Set<number>(), zeroPaddingWidths: new Map<number, number>() });
 }
-
 function readWorkbookSheets(zip: JSZip): Promise<ParsedSheet[]> {
   return Promise.all([
     zip.file('xl/workbook.xml')?.async('string'),
@@ -214,6 +217,15 @@ function parseQuantity(value: string, type: string, percentageStyle: boolean): s
   if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?$/.test(normalized)) return normalized;
   throw new Error('Số lượng không hợp lệ hoặc có dấu phân cách mơ hồ: ' + trimmed);
 }
+function formatBarcode(cell: CellValue, zeroPaddingWidths: Map<number, number>): string {
+  const value = cell.value.trim();
+  const width = zeroPaddingWidths.get(cell.styleIndex);
+  if (cell.type === 'n' && width && /^\d+(?:\.0+)?$/.test(value)) {
+    return value.split('.')[0].padStart(width, '0');
+  }
+  return value;
+}
+
 function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellValue>>, headerRow: number): string {
   const normalizedSheet = sheetName.trim().toUpperCase();
   if (!/^SHEET\s*\d*$/i.test(normalizedSheet) && /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(normalizedSheet)) {
@@ -262,7 +274,7 @@ export async function parseStocktakeWorkbook(
 ): Promise<StocktakeImportResult> {
   if (!/\.xlsx$/i.test(file.name)) throw new Error('Hiện chỉ hỗ trợ workbook .xlsx. File .xls cũ chưa được hỗ trợ.');
   const zip = await JSZip.loadAsync(file);
-  const [sharedStrings, percentageStyles, sheets] = await Promise.all([
+  const [sharedStrings, styleMetadata, sheets] = await Promise.all([
     readSharedStrings(zip), readStyles(zip), readWorkbookSheets(zip),
   ]);
   if (sheets.length === 0) throw new Error('Workbook không có sheet dữ liệu.');
@@ -296,7 +308,7 @@ export async function parseStocktakeWorkbook(
       if (rowNumber <= header.rowNumber) continue;
       const barcodeCell = cells.get(header.barcodeColumn);
       const quantityCell = cells.get(header.quantityColumn);
-      const barcode = barcodeCell?.value.trim() ?? '';
+      const barcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
       const quantityValue = quantityCell?.value.trim() ?? '';
       if (!barcode && !quantityValue) continue;
       if (!barcode) {
@@ -312,7 +324,7 @@ export async function parseStocktakeWorkbook(
         continue;
       }
       try {
-        const quantity = parseQuantity(quantityValue, quantityCell.type, percentageStyles.has(quantityCell.styleIndex));
+        const quantity = parseQuantity(quantityValue, quantityCell.type, styleMetadata.percentageStyles.has(quantityCell.styleIndex));
         dataRows.push({ barcode, quantity, sourceRow: rowNumber });
       } catch (error) {
         errors.push(`Dòng ${rowNumber}: ${error instanceof Error ? error.message : 'Số lượng không hợp lệ.'}`);
