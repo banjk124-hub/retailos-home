@@ -118,6 +118,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     [result],
   );
   const invalidCount = activeZone?.rows.filter((row) => row.issues.length > 0).length ?? 0;
+  const outputReady = Boolean(activeZone && result && invalidCount === 0 &&
+    !editingZone && !dirtyZones.includes(activeZone.zoneCode) && result.blockingIssues.length === 0);
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
@@ -360,7 +362,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const copyOutput = async () => {
     if (!activeZone) return;
-    if (editingZone || dirtyZones.includes(activeZone.zoneCode) || invalidCount > 0 || result?.blockingIssues.length) {
+    if (!outputReady) {
       setNotice('Output chưa sẵn sàng. Hãy sửa lỗi và lưu vùng trước khi sao chép.');
       return;
     }
@@ -615,6 +617,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                               setNotice('Hãy lưu hoặc hủy chỉnh sửa trước khi quay lại TXT Output.');
                               return;
                             }
+                            setEditingZone(false);
+                            setEditBaseline(null);
                             setZoneLayer('output');
                           }}><ArrowLeft size={15} /> Quay lại Output</button>
                       </>}
@@ -634,11 +638,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                         <strong>{activeZone.fileName}</strong>
                         <span>{activeZone.rows.length} dòng · TXT UTF-8</span>
                       </div>
-                      <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
-                        aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
-                        readOnly spellCheck={false} wrap="off" />
-                      {(invalidCount > 0 || dirtyZones.includes(activeZone.zoneCode) || result.blockingIssues.length > 0) &&
-                        <p className="stocktake-import-warning">Output chưa thể sao chép hoặc tải xuống. Hãy xử lý lỗi và lưu dữ liệu trước.</p>}
+                      {outputReady
+                        ? <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
+                            aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
+                            readOnly spellCheck={false} wrap="off" />
+                        : <div className="stocktake-import-output-unavailable" role="status">
+                            Output chưa sẵn sàng. Hãy mở kiểm kê, xử lý lỗi và lưu vùng trước khi sao chép hoặc tải xuống.
+                          </div>}
                     </div>
                   </div>
                   <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'editor' ? 'is-active' : 'is-inactive')}
