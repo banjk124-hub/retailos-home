@@ -1,21 +1,22 @@
-# Current task — Stocktake import follow-up (2026-11-10)
+# Current task — Xuất file: output layers and additive import sessions (2026-11-10)
 
-**Merged baseline:** PR #69, main commit `853f79607f770000a506f7c1836f1131133497b6`.
-**Follow-up branch:** `feat/stocktake-import-desktop-editor`.
-**Status:** PR #70 open; implementation CI run #461 passed before the latest governance/name update. Latest head CI run #463 is pending. Not merged/deployed.
+**Accepted baseline:** PR #70 merged and deployed; main commit `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
+**Baseline CI:** RetailOS CI run #466 passed; Build and deploy PWA run #85 succeeded. User confirmed operational testing.
+**Follow-up branch:** `feat/stocktake-import-session-output` (based on the accepted main commit).
+**Follow-up status:** implementation in progress; do not merge/deploy until explicit user approval.
 **Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
-**Display name:** Xuất file. Stable ID remains `stocktake-import`; do not rename the ID or IndexedDB database.
+**Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`.
 
-- Zone-only TXT filenames and ZIP name; preserve date/time in the existing `NHAN VIEN` content line pending compatibility confirmation.
-- Exact decimal string formatter based on Excel number formats; no JS floating-point round-trip.
-- BARCODE → GOLDCODE row fallback, with missing rows retained for manual correction.
-- Detect different table layouts across sheets and multiple table blocks within a sheet; aggregate same-zone data; block partial exports when unsupported blocks exist.
-- Per-zone edit/save, persisted row-level history, and export guard for unsaved/invalid rows.
-- Decouple business module IDs from snapshot IDs; keep import IndexedDB separate.
-- Wide desktop workspace, mobile stacked layout, light motion and reduced-motion support.
+- Preserve the current module shell, zone navigator, editor, save, history, individual download and ZIP behavior.
+- Inside the selected zone frame only, make TXT Output the front/default layer and the existing review/editor table the back layer. Switch only the zone content component; do not change the outer module UI.
+- Output layer uses readonly textarea, scoped Ctrl+A and Copy component fallback. Preview, Copy, individual Download and ZIP must share the same exact output payload.
+- Code source order: BARCODE → CODE → GOLDCODE → TILLCODE; legacy MÃ VẠCH is final compatibility fallback only.
+- Support multiple `.xlsx` files per selection and additive imports into the active session.
+- Detect identical files by local SHA-256 fingerprint; show same-name/different-content and duplicate-zone conflicts for explicit confirmation. Stage first; never mutate the active session before confirmation.
+- Preserve source file/sheet/row provenance and backward compatibility for existing IndexedDB history.
+- Keep the original `NHAN VIEN` date/time line stable for the full session. Filenames remain date-free.
 
-See `modules/EXPORT_FILE.md` for current state/resume instructions, `STOCKTAKE_FILE_IMPORT.md` for the detailed data contract, and ADR-029/ADR-030 in `ARCHITECTURE.md`.
-
+Protected: Scanner Engine, camera lifecycle, existing Stocktake workflow and IndexedDB, snapshot/cache IDs, auth, service worker and deployment configuration.
 ---
 
 # Current task — Stocktake offline file import (2026-11-10)
