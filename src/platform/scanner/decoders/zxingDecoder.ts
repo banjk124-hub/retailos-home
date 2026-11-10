@@ -319,7 +319,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         const symbology = REVERSE_FORMAT_MAP.get(result.getBarcodeFormat());
         const value = result.getText();
         if (!symbology || !this.formats.includes(symbology) || value.length === 0) return null;
-        return { value, symbology, timestamp, decoder: { id: this.id, version: orientation } };
+        return { value, symbology, timestamp, decoder: { id: this.id } };
       } catch (error) {
         const miss = classifyDecodeError(error);
         if (!miss) {
