@@ -7,7 +7,7 @@
 - User-reported failures after the earlier deployment: sideways barcodes are missed, intermediate angles are not sufficiently covered, and recognition feels slow/insensitive.
 - User clarified that ultra-low-end CPU conservation is not a hard constraint. Prioritize accuracy and responsiveness; higher processing cost is acceptable if the application remains stable.
 - Source audit found the old quarter-turn ran every third valid ROI frame after upright miss; deskew was limited to 1.2°–12° and estimated one global dominant edge direction; session cadence was 110 ms.
-- Corrective direction: continuous orientation histogram, full signed half-turn normalization, both original/quarter-turned candidates, both ZXing binarizers, and per-frame extended processing after an upright miss.
+- Corrective implementation: continuous orientation histogram, full signed half-turn normalization, percentile-based contrast stretch for compressed ROI ranges, both original/quarter-turned candidates, both ZXing binarizers, and per-frame extended processing after an upright miss.
 - Session minimum decode interval is changed to 70 ms. Calls remain serialized and ROI-only.
 - No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior is in scope.
 - Device QA remains mandatory. CI cannot establish real-world barcode accuracy, iOS camera orientation behavior, focus quality or CPU responsiveness.
