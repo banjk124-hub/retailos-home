@@ -436,6 +436,7 @@
   box-shadow: 0 5px 18px rgba(38,91,130,.07);
 }
 .stocktake-import-output-details summary {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -574,10 +575,6 @@
   .stocktake-import-preview-actions button { flex: 1; min-height: 35px; }
   .stocktake-import-output-textarea { min-height: 190px; max-height: 34dvh; }
   .stocktake-import-export-footer { gap: 10px; padding: 11px; }
-}
-@media (prefers-reduced-motion: reduce), (max-width: 640px) and (prefers-reduced-motion: no-preference) {
-  .stocktake-import-zone-workspace,
-  .stocktake-import-output-textarea { animation-duration: 180ms; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stocktake-import-zone-workspace,
