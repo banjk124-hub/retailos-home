@@ -6,7 +6,8 @@
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
 **Current status:** PR #70 and PR #71 merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #524 passed on head `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; physical-device QA remains pending.  
-**Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
+**PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
+**Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
 **PR #71 merge:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
 **Current UX branch:** `feat/stocktake-import-native-workspace`  
