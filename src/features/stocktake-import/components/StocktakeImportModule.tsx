@@ -667,12 +667,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 </div>
                 <details className="stocktake-import-output-details">
                   <summary>
-                    <span><strong>TXT Preview</strong><small>{activeZone.fileName} · {activeZone.rows.length} dòng</small></span>
-                    <span className="stocktake-import-preview-actions">
-                      <button type="button" disabled={!outputReady} onClick={(event) => { event.preventDefault(); void copyOutput(); }}><Copy size={14} /> Sao chép</button>
-                      <button type="button" disabled={!outputReady} onClick={(event) => { event.preventDefault(); exportZone(selectedZone); }}><Download size={14} /> Tải TXT</button>
-                    </span>
+                    <span><strong>Xem trước TXT</strong><small>{activeZone.fileName} · {activeZone.rows.length} dòng</small></span>
+
                   </summary>
+                  <div className="stocktake-import-preview-actions">
+                    <button type="button" disabled={!outputReady} onClick={() => void copyOutput()}><Copy size={14} /> Sao chép</button>
+                    <button type="button" disabled={!outputReady} onClick={() => exportZone(selectedZone)}><Download size={14} /> Tải TXT</button>
+                  </div>
                   {outputReady
                     ? <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
                         aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
