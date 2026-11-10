@@ -1,8 +1,7 @@
 # SCAN-05/06 implementation status — orthogonal rotation and bounded deskew (2026-11-10)
 
 **Status:** Implemented on `feat/scan-05-06-final-consolidation`; final PR #66 is Draft/open and not merged/deployed.  
-**Final recorded head:** `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`.  
-**CI:** final consolidated run #350 passed the complete preflight, TypeScript, production build and GitHub Pages build.
+**CI:** final consolidated PR #66 run #360 passed the complete preflight, TypeScript, production build and GitHub Pages build.
 
 - SCAN-04 was merged/deployed by the user; the user confirms normal scanner operation after deployment.
 - ZXing baseline: `TRY_HARDER` supports 180° reversal for 1D readers. The runtime fixture verifies Code 128 at 0°/180°; EAN-8/EAN-13 inheritance is source-guarded, not separately runtime-fixture tested.
