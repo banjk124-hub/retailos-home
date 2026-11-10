@@ -1,8 +1,11 @@
-# Nạp file kiểm kê — implementation contract
+# Xuất file — implementation contract
 
-**Status:** PR #69 merged and deployed to main (2026-11-10). Follow-up hardening is in a separate feature branch; not yet merged.
-**Base:** `main` at `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
-**Feature branch:** `feat/stocktake-file-import`.
+**Display name:** Xuất file.
+**Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
+**Status:** PR #70 open; implementation and CI complete, pending final audit and user approval. Not merged or deployed.
+**Base:** `main` at `853f79607f770000a506f7c1836f1131133497b6`.
+**Feature branch:** `feat/stocktake-import-desktop-editor`.
+**Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
 

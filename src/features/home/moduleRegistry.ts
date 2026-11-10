@@ -23,8 +23,10 @@ export type RetailModule = {
   group: string;
   /** Data snapshot support is separate from whether a complete workflow UI exists. */
   dataSource: 'snapshot' | 'local';
-  /** Current UI status; do not present planned modules as working workflows. */
+  /** Current UI availability; independent from engineering progress. */
   availability: 'integrating' | 'ready';
+  /** Informational lifecycle marker for parallel work and safe handoff; never gates runtime. */
+  workStatus?: 'planned' | 'in-progress' | 'paused' | 'operational' | 'maintenance';
 };
 
 export type ModuleLibraryDefinition = {
@@ -44,7 +46,7 @@ export const MODULE_REGISTRY: RetailModule[] = [
   { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', tone: 'green', group: 'Doanh số', dataSource: 'snapshot', availability: 'integrating' },
   { id: 'product-dates', title: 'Date sản phẩm', description: 'Hạn sử dụng và lô hàng', tone: 'amber', group: 'Date sản phẩm', dataSource: 'snapshot', availability: 'integrating' },
   { id: 'stocktake', title: 'Kiểm kê', description: 'Quét, rà soát và xuất file theo vùng', tone: 'green', group: 'Kiểm kê', dataSource: 'snapshot', availability: 'ready' },
-  { id: 'stocktake-import', title: 'Nạp file kiểm kê', description: 'Đọc, xem trước và xuất file theo vùng', tone: 'blue', group: 'Kiểm kê', dataSource: 'local', availability: 'ready' },
+  { id: 'stocktake-import', title: 'Xuất file', description: 'Chuẩn hóa dữ liệu và xuất TXT theo vùng', tone: 'blue', group: 'Kiểm kê', dataSource: 'local', availability: 'ready', workStatus: 'in-progress' },
 ];
 
 export const MODULE_LIBRARIES: ModuleLibraryDefinition[] = [
@@ -52,7 +54,7 @@ export const MODULE_LIBRARIES: ModuleLibraryDefinition[] = [
   { id: 'goods-processing', title: 'Xử lý hàng hóa', description: 'Nhập, xuất và điều chuyển', tone: 'amber', moduleIds: ['orders', 'delivery'] },
   { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', tone: 'green', moduleIds: ['sales'] },
   { id: 'product-dates', title: 'Date sản phẩm', description: 'Theo dõi hạn sử dụng', tone: 'rose', moduleIds: ['product-dates'] },
-  { id: 'stocktake', title: 'Kiểm kê', description: 'Kiểm kê trực tiếp và nạp file đầu vào', tone: 'violet', moduleIds: ['stocktake', 'stocktake-import'] },
+  { id: 'stocktake', title: 'Kiểm kê', description: 'Kiểm kê trực tiếp và xuất file theo vùng', tone: 'violet', moduleIds: ['stocktake', 'stocktake-import'] },
 ];
 
 export function getModulesForLibrary(

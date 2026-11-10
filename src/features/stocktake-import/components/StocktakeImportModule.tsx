@@ -305,7 +305,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setDirtyZones([]);
       setEditingZone(false);
       setShowClearConfirm(false);
-      setNotice('Đã xóa lịch sử và bộ nhớ đệm riêng của Nạp file kiểm kê.');
+      setNotice('Đã xóa lịch sử và bộ nhớ đệm riêng của Xuất file.');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể xóa lịch sử.');
     } finally {
@@ -358,7 +358,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
           </button>
           <div>
             <span className="stocktake-import-eyebrow">RETAILOS · KIỂM KÊ</span>
-            <h2 id="stocktake-import-title">{view === 'history' ? 'Lịch sử nạp file' : 'Nạp file kiểm kê'}</h2>
+            <h2 id="stocktake-import-title">{view === 'history' ? 'Lịch sử xuất file' : 'Xuất file'}</h2>
           </div>
           <button className="stocktake-import-icon-button" type="button"
             onClick={() => {
@@ -499,7 +499,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             <button type="button" disabled={busy || history.length === 0} onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa</button>
           </div>
           {historyBusy ? <p className="stocktake-import-muted">Đang đọc lịch sử…</p> :
-            history.length === 0 ? <p className="stocktake-import-muted">Chưa có lịch sử nạp file.</p> :
+            history.length === 0 ? <p className="stocktake-import-muted">Chưa có lịch sử xuất file.</p> :
               <div className="stocktake-import-history-list">
                 {history.map((item) => <article key={item.id}>
                   <FileSpreadsheet size={19} />
@@ -515,13 +515,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               </div>}
         </>}
 
-        <footer className="stocktake-import-footer"><span>Dữ liệu xử lý được lưu riêng với module Nạp file kiểm kê</span><span>RetailOS</span></footer>
+        <footer className="stocktake-import-footer"><span>Dữ liệu xử lý được lưu riêng với module Xuất file</span><span>RetailOS</span></footer>
       </section>
 
       {showClearConfirm && <div className="stocktake-import-confirm-backdrop">
         <section className="stocktake-import-confirm" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-import-clear-title">
           <h3 id="stocktake-import-clear-title">Xóa lịch sử và bộ nhớ đệm?</h3>
-          <p>Thao tác chỉ xóa lịch sử file kết quả của Nạp file kiểm kê trên thiết bị. Không ảnh hưởng dữ liệu, lịch sử hoặc file đã xuất của module Kiểm kê.</p>
+          <p>Thao tác chỉ xóa lịch sử file kết quả của Xuất file trên thiết bị. Không ảnh hưởng dữ liệu, lịch sử hoặc file đã xuất của module Kiểm kê.</p>
           <div><button type="button" onClick={() => setShowClearConfirm(false)}>Giữ lại</button><button type="button" onClick={() => void clearHistory()}>Xóa lịch sử</button></div>
         </section>
       </div>}

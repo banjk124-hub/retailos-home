@@ -656,7 +656,7 @@ The Home module registry currently typed every workflow ID as `ModuleDataId`. Th
 - a business workflow that can be opened by an employee;
 - a server-provided snapshot dataset that can be synchronized and cached.
 
-The new `Nạp file kiểm kê` workflow is local-only. It reads a workbook from the device and does not require a server snapshot. Adding it to `MODULE_DATA_IDS` would incorrectly make it part of the Apps Script manifest and snapshot synchronization contract.
+The new `Xuất file` workflow is local-only. It reads a workbook from the device and does not require a server snapshot. Adding it to `MODULE_DATA_IDS` would incorrectly make it part of the Apps Script manifest and snapshot synchronization contract.
 
 ### Decision
 
@@ -687,7 +687,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`. Required checks include full `np
 
 ## ADR-029 — Stocktake import accuracy, layout tolerance and editable zone review (2026-11-10)
 
-**Status:** Proposed implementation in `feat/stocktake-import-desktop-editor`; not merged.
+**Status:** Implemented on PR #70 (`feat/stocktake-import-desktop-editor`); open and not merged/deployed. See `docs/ai-context/modules/EXPORT_FILE.md` for lifecycle, isolation and resume protocol.
 
 ### Context
 
@@ -706,3 +706,23 @@ After PR #69 was merged and deployed, practical use exposed four correctness/usa
 ### Acceptance
 
 Validate Excel display parity for integer, fixed-decimal, General and percent formats; GOLDCODE fallback; missing-code correction; multiple layouts/tables in one workbook; aggregation of same-zone tables; save/restore; and file downloads on desktop, iOS and Android. Confirm whether the date/time content record remains required.
+
+
+## ADR-030 — Independent module work lifecycle and handoff (2026-11-10)
+
+**Status:** Implemented in PR #70; pending merge.
+
+### Decision
+
+- Keep business workflow availability (`availability`) separate from engineering progress (`workStatus`). A module can be usable while still receiving follow-up development, or be paused without changing runtime behavior.
+- `workStatus` is optional registry metadata with values `planned`, `in-progress`, `paused`, `operational` and `maintenance`. It is informational only; it must not gate rendering, routing, data loading, permissions or module execution.
+- Each independently developed module owns a dedicated status/contract document recording its stable ID, current branch/PR/base/head, implementation state, verified evidence, pending acceptance, owned files, protected boundaries and exact resume procedure.
+- Parallel module/engine work uses separate branches and PRs. Module-owned files and isolated storage may be changed only within their scope. Shared contracts require explicit cross-module design and regression coverage.
+- Pausing a module is a documentation/metadata state change, not teardown/reset. Never clear local data, alter stable IDs or rewrite history as a side effect.
+
+### Protected boundary for Xuất file
+
+- Stable runtime ID: `stocktake-import`; dedicated storage: `retailos-stocktake-import`.
+- No dependency on Stocktake local store, scanner engine, camera lifecycle, shared snapshot cache, snapshot IDs, authentication semantics or deployment configuration.
+- Keep implementation under `src/features/stocktake-import/`; shared registry metadata is the only intended shared integration point.
+- Resume by reading the dedicated module record, checking branch/PR head against GitHub, auditing the current diff and changed files, then rerunning full preflight. Never resume from stale notes alone.

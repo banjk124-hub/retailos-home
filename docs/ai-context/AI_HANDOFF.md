@@ -2,7 +2,9 @@
 
 **Merged baseline:** PR #69, main commit `853f79607f770000a506f7c1836f1131133497b6`.
 **Follow-up branch:** `feat/stocktake-import-desktop-editor`.
-**Status:** implementation in progress; do not merge/deploy until CI and business QA pass.
+**Status:** PR #70 open; implementation and CI pass recorded, final module-isolation audit and user approval pending. Not merged/deployed.
+**Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
+**Display name:** Xuất file. Stable ID remains `stocktake-import`; do not rename the ID or IndexedDB database.
 
 - Zone-only TXT filenames and ZIP name; preserve date/time in the existing `NHAN VIEN` content line pending compatibility confirmation.
 - Exact decimal string formatter based on Excel number formats; no JS floating-point round-trip.
@@ -12,7 +14,7 @@
 - Decouple business module IDs from snapshot IDs; keep import IndexedDB separate.
 - Wide desktop workspace, mobile stacked layout, light motion and reduced-motion support.
 
-See `STOCKTAKE_FILE_IMPORT.md` and ADR-029 in `ARCHITECTURE.md`.
+See `modules/EXPORT_FILE.md` for current state/resume instructions, `STOCKTAKE_FILE_IMPORT.md` for the detailed data contract, and ADR-029/ADR-030 in `ARCHITECTURE.md`.
 
 ---
 
@@ -25,7 +27,7 @@ See `STOCKTAKE_FILE_IMPORT.md` and ADR-029 in `ARCHITECTURE.md`.
 
 ## Current implementation
 
-- `Nạp file kiểm kê` is a separate local-only workflow inside the existing Kiểm kê library.
+- `Xuất file` is a separate local-only workflow inside the existing Kiểm kê library.
 - `RetailModuleId` is separate from `ModuleDataId`; importer does not enter snapshot sync.
 - `.xlsx` parsing is local using JSZip and browser XML APIs; no source workbook upload or network fetch.
 - Detects sheet list, header row, BARCODE, SỐ LƯỢNG and an explicit VÙNG/ZONE column when present; validates the zone against sheet metadata and preserves duplicates/source order.
