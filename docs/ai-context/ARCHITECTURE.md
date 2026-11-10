@@ -771,9 +771,10 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 - Supersede ADR-031's mutually exclusive Output/Editor layer presentation. Keep one continuous selected-zone workspace.
 - The review/edit table is the primary work surface. Read-only review and inline edit share the same table; editing changes the row controls in place. Cancel restores the captured edit baseline; save persists the updated zone.
 - TXT Preview is an expandable secondary inspector below the table. It is not a separate mode or independent data model. Preview, Clipboard copy, individual TXT download and ZIP all consume the same generated zone payload.
-- Keep interactive Copy/Download controls outside the disclosure summary trigger. The summary only opens/closes the inspector.
+- Keep TXT Preview as a read-only inspector. Copy and per-zone Download are primary operator actions in the selected-zone heading beside Edit; they must not require scrolling to the preview.
 - Separate in-memory session state from IndexedDB persistence. A failed history write cannot be represented as persisted; keep the in-memory data recoverable while showing the unsaved persistence state.
-- Provide action-specific progress feedback for import, zone save, ZIP generation, history clear and history re-export. Notices distinguish success, warning and information; errors remain separate alert states. Do not show success before an operation completes.
+- Provide action-specific progress feedback for import, zone save, ZIP generation, history clear and history re-export. Success/warning/info notices use a centered, non-blocking popup that auto-dismisses after approximately 2.6 seconds; errors remain separate visible alert states. Never show success before an operation completes.
+- Keep Add file and New session side by side when a session exists; initial file selection remains full-width. The all-zone ZIP footer must remain compact and responsive.
 - Preserve validation and export invariants: dirty or invalid zones and workbook-level blocking issues prevent the corresponding export; all-zone ZIP requires every zone to be valid and saved.
 - Use semantic visual hierarchy rather than a uniform treatment: red for primary actions, blue for TXT/technical inspection, green for valid/persisted state, amber for pending/unsaved state and red for errors. Compact containers to their content and use empty space only for useful metadata or actions.
 - Use restrained transform/opacity motion and shared motion tokens where available. Respect prefers-reduced-motion and the app's power-conserve mode. Avoid continuous decorative animation, unnecessary remounts and expensive sticky-header blur on mobile.
@@ -787,6 +788,6 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 ### Acceptance
 
 - CI #534 passed the unified-workspace assertions, full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite.
-- Still required: manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA QA; real workbook verification for multi-file merge/skip, persistence/history restore, Clipboard fallback and TXT/ZIP payload parity.
+- PR #73 applies the operator-QA layout and feedback refinements. CI #540 passed on `1f41319fa7c14d4d7b6a4577e576e6fc70cb3eb2`. Still required: manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA QA; real workbook verification for multi-file merge/skip, persistence/history restore, Clipboard fallback and TXT/ZIP payload parity.
 - Do not merge or deploy until the user explicitly approves.
 
