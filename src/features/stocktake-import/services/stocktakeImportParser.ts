@@ -440,7 +440,7 @@ function rowIssues(barcode: string, quantity: string): string[] {
   const issues: string[] = [];
   const code = barcode.trim();
   const amount = quantity.trim();
-  if (!code) issues.push('Thiếu BARCODE/GOLDCODE.');
+  if (!code) issues.push('Thiếu BARCODE/CODE/GOLDCODE/TILLCODE.');
   else if (/[\r\n,]/.test(code)) issues.push('Mã hàng chứa dấu phẩy hoặc ký tự xuống dòng.');
   if (!amount) issues.push('Thiếu kết quả thực tế.');
   else if (!/^[+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?%?$/.test(amount)) {
@@ -492,7 +492,7 @@ export async function parseStocktakeWorkbook(
     scan.unsupportedRows.forEach((item) => {
       blockingIssues.push(
         'Sheet "' + sheet.name + '", dòng header ' + item.rowNumber + ' chưa được hỗ trợ (' +
-        item.headers.join(' | ') + '). Hãy đổi tên cột mã hàng thành BARCODE/GOLDCODE và cột số liệu thành SỐ LƯỢNG/KẾT QUẢ THỰC TẾ, hoặc bỏ bảng không dùng.',
+        item.headers.join(' | ') + '). Hãy đổi tên cột mã hàng thành BARCODE/CODE/GOLDCODE/TILLCODE và cột số liệu thành SỐ LƯỢNG/KẾT QUẢ THỰC TẾ, hoặc bỏ bảng không dùng.',
       );
     });
 
