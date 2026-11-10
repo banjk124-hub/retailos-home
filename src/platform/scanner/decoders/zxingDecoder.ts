@@ -16,7 +16,7 @@ import type {
   ScannerDecoderAdapter,
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
-import { rotateLuminance90Clockwise, shouldAttemptExtendedDecode } from '../scannerRotation';
+import { rotateLuminance90Clockwise } from '../scannerRotation';
 import { deskewLuminanceFrame } from '../scannerDeskew';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
@@ -88,8 +88,8 @@ function classifyDecodeError(error: unknown): DecodeMiss | null {
  * Each decode is cropped directly from the source frame using the latest
  * module-owned reticle region. There is no full-frame pass and no centered
  * fallback: absent/invalid geometry produces a decode miss. The ROI is
- * upscaled without changing its aspect ratio; the more expensive
- * GlobalHistogramBinarizer runs every third ROI pass to bound mobile CPU use.
+ * upscaled without changing its aspect ratio. Each orientation candidate is
+ * checked with Hybrid and GlobalHistogram binarization before being rejected.
  * Camera ownership and frame scheduling remain in UniversalScannerSession.
  */
 export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
@@ -103,7 +103,6 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastUnexpectedErrorLogAt = 0;
   private diagnosticStartedAt = Date.now();
   private diagnosticFrames = 0;
-  private frameSequence = 0;
   private diagnosticDecoded = 0;
   private diagnosticNotFound = 0;
   private diagnosticChecksum = 0;
@@ -114,6 +113,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticRotationAttempts = 0;
   private diagnosticRotationHits = 0;
   private diagnosticDeskewAttempts = 0;
+  private diagnosticDeskewEstimateMisses = 0;
   private diagnosticDeskewHits = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
@@ -165,7 +165,6 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       }
 
       this.diagnosticFrames += 1;
-      this.frameSequence += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
       const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
@@ -190,11 +189,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       );
       this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
 
-      // Processing cadence must never depend on the diagnostics reporting window.
-      const tryExtendedDecode = shouldAttemptExtendedDecode(this.frameSequence);
-      const includeGlobalHistogram = tryExtendedDecode;
-      const tryRotated = tryExtendedDecode;
-      const output = this.decodeCurrentCanvas(timestamp, includeGlobalHistogram, tryRotated);
+      const output = this.decodeCurrentCanvas(timestamp);
       if (output) {
         this.diagnosticDecoded += 1;
         this.diagnosticRoiHits += 1;
@@ -250,11 +245,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.stageCosts[stage] = current;
   }
 
-  private decodeCurrentCanvas(
-    timestamp: number,
-    includeGlobalHistogram: boolean,
-    tryRotated: boolean,
-  ): DecoderOutput | null {
+  private decodeCurrentCanvas(timestamp: number): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -267,20 +258,22 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     );
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
 
+    // Run both production binarizers on each candidate. The additional CPU
+    // cost is intentional: a missed first threshold must not suppress a valid
+    // retail barcode on the same camera frame.
     const uprightOutput = this.decodeLuminance(
       grayscale,
       this.canvas.width,
       this.canvas.height,
       timestamp,
-      includeGlobalHistogram,
+      true,
       'upright',
     );
-    if (uprightOutput || !tryRotated) return uprightOutput;
+    if (uprightOutput) return uprightOutput;
 
-    // One clockwise quarter-turn is sufficient for both 90° and 270° input:
-    // the opposite direction becomes 180°, which OneDReader already handles
-    // through TRY_HARDER scanline reversal. Run this extra ROI pass every third
-    // frame to bound CPU cost on lower-end mobile devices.
+    // Keep a cheap exact quarter-turn candidate for the common sideways case.
+    // SCAN-06 then estimates a continuous orientation, including intermediate
+    // angles, rather than relying on a fixed list of rotations.
     const rotationStartedAt = performance.now();
     const rotated = rotateLuminance90Clockwise(
       grayscale,
@@ -288,49 +281,67 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height,
     );
     this.recordStageCost('rotation_90_clockwise', performance.now() - rotationStartedAt);
-    if (!rotated) return null;
-
-    this.diagnosticRotationAttempts += 1;
-    const rotatedOutput = this.decodeLuminance(
-      rotated.luminance,
-      rotated.width,
-      rotated.height,
-      timestamp,
-      includeGlobalHistogram,
-      'rotated_90',
-    );
-    if (rotatedOutput) {
-      this.diagnosticRotationHits += 1;
-      return rotatedOutput;
+    if (rotated) {
+      this.diagnosticRotationAttempts += 1;
+      const rotatedOutput = this.decodeLuminance(
+        rotated.luminance,
+        rotated.width,
+        rotated.height,
+        timestamp,
+        true,
+        'rotated_90',
+      );
+      if (rotatedOutput) {
+        this.diagnosticRotationHits += 1;
+        return rotatedOutput;
+      }
     }
 
-    // Deskew only after both orthogonal orientations miss, and only on the
-    // scheduled rotation frame. Prefer the upright ROI; if its dominant edge
-    // direction is not a small barcode roll, inspect the normalized 90° ROI.
+    // Estimate both source axes. Choosing the smaller correction angle avoids
+    // unnecessarily large resampling (for example, 70° becomes a 20° residual
+    // after the quarter-turn candidate). Both candidates are decoded because
+    // interpolation and ROI bounds can make one representation more legible.
     const deskewStartedAt = performance.now();
+    this.diagnosticDeskewAttempts += 1;
     const uprightDeskew = deskewLuminanceFrame(
       grayscale,
       this.canvas.width,
       this.canvas.height,
     );
-    const deskewed = uprightDeskew ?? (rotated
-      ? deskewLuminanceFrame(rotated.luminance, rotated.width, rotated.height)
-      : null);
-    this.recordStageCost('deskew_estimate_and_rotate', performance.now() - deskewStartedAt);
-    if (!deskewed) return null;
+    if (!uprightDeskew) this.diagnosticDeskewEstimateMisses += 1;
 
-    this.diagnosticDeskewAttempts += 1;
-    this.diagnosticLastDeskewAngleDegrees = deskewed.angleDegrees;
-    const deskewOutput = this.decodeLuminance(
-      deskewed.luminance,
-      deskewed.width,
-      deskewed.height,
-      timestamp,
-      false,
-      'deskew',
-    );
-    if (deskewOutput) this.diagnosticDeskewHits += 1;
-    return deskewOutput;
+    let rotatedDeskew: ReturnType<typeof deskewLuminanceFrame> = null;
+    if (rotated) {
+      this.diagnosticDeskewAttempts += 1;
+      rotatedDeskew = deskewLuminanceFrame(
+        rotated.luminance,
+        rotated.width,
+        rotated.height,
+      );
+      if (!rotatedDeskew) this.diagnosticDeskewEstimateMisses += 1;
+    }
+    this.recordStageCost('deskew_estimate_and_rotate', performance.now() - deskewStartedAt);
+
+    const candidates = [uprightDeskew, rotatedDeskew]
+      .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
+      .sort((a, b) => Math.abs(a.angleDegrees) - Math.abs(b.angleDegrees));
+
+    for (const candidate of candidates) {
+      this.diagnosticLastDeskewAngleDegrees = candidate.angleDegrees;
+      const deskewOutput = this.decodeLuminance(
+        candidate.luminance,
+        candidate.width,
+        candidate.height,
+        timestamp,
+        true,
+        'deskew',
+      );
+      if (deskewOutput) {
+        this.diagnosticDeskewHits += 1;
+        return deskewOutput;
+      }
+    }
+    return null;
   }
 
   private decodeLuminance(
@@ -397,6 +408,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       rotationAttempts: this.diagnosticRotationAttempts,
       rotationHits: this.diagnosticRotationHits,
       deskewAttempts: this.diagnosticDeskewAttempts,
+      deskewEstimateMisses: this.diagnosticDeskewEstimateMisses,
       deskewHits: this.diagnosticDeskewHits,
       lastDeskewAngleDegrees: Number(this.diagnosticLastDeskewAngleDegrees.toFixed(2)),
       notFound: this.diagnosticNotFound,
@@ -421,6 +433,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticRotationAttempts = 0;
     this.diagnosticRotationHits = 0;
     this.diagnosticDeskewAttempts = 0;
+    this.diagnosticDeskewEstimateMisses = 0;
     this.diagnosticDeskewHits = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
   }
