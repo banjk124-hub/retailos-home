@@ -151,7 +151,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         zones.push({ ...incomingZone, rows: [...incomingZone.rows] });
       }
     }
-    const sourceFiles = [...(base?.sourceFiles ?? []), ...incoming.flatMap((item) => item.sourceFiles ?? [])]
+    const baseSources = base?.sourceFiles?.length
+      ? base.sourceFiles
+      : base ? [{ name: base.sourceFileName, fingerprint: 'legacy:' + base.sourceFileName, size: 0, lastModified: 0 }] : [];
+    const sourceFiles = [...baseSources, ...incoming.flatMap((item) => item.sourceFiles ?? [])]
       .filter((source, index, all) => all.findIndex((candidate) => candidate.fingerprint === source.fingerprint) === index);
     const nextResult: StocktakeImportResult = {
       sourceFileName: sourceFiles.length === 1 ? sourceFiles[0].name : sourceFiles.length + ' file nguồn',
