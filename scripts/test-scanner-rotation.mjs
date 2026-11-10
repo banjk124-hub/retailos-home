@@ -16,7 +16,17 @@ const compiled = ts.transpileModule(rotationSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { rotateLuminance90Clockwise } = await import(moduleUrl);
+const { rotateLuminance90Clockwise, shouldAttemptExtendedDecode } = await import(moduleUrl);
+
+assert.deepEqual(
+  Array.from({ length: 9 }, (_, index) => shouldAttemptExtendedDecode(index + 1)),
+  [false, false, true, false, false, true, false, false, true],
+  'extended decode must run on every third valid ROI sequence number',
+);
+for (const invalid of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+  assert.equal(shouldAttemptExtendedDecode(invalid), false,
+    'invalid sequence values must not schedule extended decode');
+}
 
 const matrix = new Uint8ClampedArray([1, 2, 3, 4, 5, 6]);
 const rotatedMatrix = rotateLuminance90Clockwise(matrix, 3, 2);
@@ -104,8 +114,12 @@ const decoderSource = await readFile(
   'utf8',
 );
 assert.match(decoderSource, /rotateLuminance90Clockwise\(/, 'decoder must consume the pure rotation helper');
-assert.match(decoderSource, /this\.diagnosticFrames % 3 === 0/,
-  'extra rotation pass must remain bounded to every third frame');
+assert.match(decoderSource, /this\.frameSequence\s*\+=\s*1/,
+  'valid ROI frames must advance a dedicated processing sequence');
+assert.match(decoderSource, /shouldAttemptExtendedDecode\(this\.frameSequence\)/,
+  'extended decode scheduling must use the dedicated frame sequence');
+assert.doesNotMatch(decoderSource, /diagnosticFrames\s*%\s*3/,
+  'diagnostics counters must not control decode cadence');
 assert.match(decoderSource, /if \(uprightOutput \|\| !tryRotated\) return uprightOutput/,
   'upright decode must be attempted first and rotation must be skipped on success');
 assert.match(decoderSource, /rotationAttempts:/, 'rotation attempt diagnostics must be exposed');
