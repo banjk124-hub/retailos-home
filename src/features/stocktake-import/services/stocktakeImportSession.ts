@@ -71,10 +71,7 @@ export function mergeStocktakeImportSession(
             'Đã gộp ' + incomingZone.rows.length + ' dòng bổ sung vào vùng ' +
             incomingZone.zoneCode + (sourceNames.length ? ' từ ' + sourceNames.join(', ') : '') + ' sau xác nhận.',
           );
-          zones[existingIndex] = {
-            ...zones[existingIndex],
-            rows: [...zones[existingIndex].rows, ...incomingZone.rows],
-          };
+          for (const row of incomingZone.rows) zones[existingIndex].rows.push(row);
         } else {
           const sourceNames = [...new Set(incomingZone.rows.map((row) => row.sourceFileName).filter(Boolean))];
           skippedZoneWarnings.push(
@@ -97,9 +94,13 @@ export function mergeStocktakeImportSession(
       size: 0,
       lastModified: 0,
     }] : [];
+  const seenFingerprints = new Set<string>();
   const sourceFiles = [...baseSources, ...incoming.flatMap((item) => item.sourceFiles ?? [])]
-    .filter((source, index, all) =>
-      all.findIndex((candidate) => candidate.fingerprint === source.fingerprint) === index);
+    .filter((source) => {
+      if (seenFingerprints.has(source.fingerprint)) return false;
+      seenFingerprints.add(source.fingerprint);
+      return true;
+    });
 
   return {
     sourceFileName: sourceFiles.length === 1 ? sourceFiles[0].name : sourceFiles.length + ' file nguồn',
