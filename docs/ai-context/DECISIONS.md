@@ -129,7 +129,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 
 ## ADR-026 — Bounded orthogonal ROI rotation (2026-11-10)
-**Status:** Implemented on final consolidated PR #66; CI run #350 passed on head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`. Physical QA pending.
+**Status:** Implemented on final consolidated PR #66; final consolidated PR #66 CI run #360 passed. Physical QA pending.
 
 - ZXing's existing `TRY_HARDER` path owns 180° 1D scanline reversal.
 - One clockwise 90° ROI transform after an upright miss covers both 90° and 270° source orientations when combined with that reversal.
