@@ -1,20 +1,20 @@
-# SCAN-05/06 execution update — rotation baseline, orthogonal rotation and bounded deskew (2026-11-10)
+# SCAN-05/06 corrective execution — continuous orientation recovery (2026-11-10)
 
-**Final consolidated branch:** `feat/scan-05-06-final-consolidation`  
-**Final consolidated PR:** #66 — https://github.com/banjk124-hub/retailos-home/pull/66 (Draft, open, not merged/deployed).  
-**Staged PRs:** #63 baseline, #64 SCAN-05 and #65 SCAN-06 were closed without merging as superseded by final PR #66.
+**Baseline:** `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66 merged).  
+**Corrective branch:** `fix/scan-05-06-continuous-orientation`.  
+**Status:** source/test correction in progress; CI and physical device acceptance pending.
 
-- SCAN-04 strict ROI decoding was merged/deployed by the user; the user confirms the deployed scanner runs normally. No detailed optical stress matrix was supplied.
-- Baseline audit: ZXing `TRY_HARDER` already supplies 180° scanline reversal for 1D readers. EAN-8/EAN-13 inherit `OneDReader`; RetailOS `RGBLuminanceSource` does not support bitmap rotation.
-- PR #63 added a runtime Code 128 0°/180° baseline fixture and EAN inheritance guards. CI run #337 passed.
-- SCAN-05 adds one clockwise 90° ROI transform every third valid ROI frame after upright decode misses. Combined with the built-in 180° reversal, this handles both 90° and 270° source orientations. CI run #338 passed.
-- SCAN-06 adds bounded in-plane deskew (1.2°–12°) using a sampled Sobel structure tensor, one inverse-angle ROI transform and one HybridBinarizer decode after upright and orthogonal paths miss.
-- PR #66 CI run #395 passed full preflight, TypeScript, production and Pages builds, including production-adapter upright/rotation/deskew integration. The PR's latest checks remain the release source of truth.
-- No SCAN-05/06 merge or deployment has occurred. Physical iOS Safari/PWA and Android Chrome/PWA accuracy/latency/CPU QA remains required.
+- User-reported failures after the earlier deployment: sideways barcodes are missed, intermediate angles are not sufficiently covered, and recognition feels slow/insensitive.
+- User clarified that ultra-low-end CPU conservation is not a hard constraint. Prioritize accuracy and responsiveness; higher processing cost is acceptable if the application remains stable.
+- Source audit found the old quarter-turn ran every third valid ROI frame after upright miss; deskew was limited to 1.2°–12° and estimated one global dominant edge direction; session cadence was 110 ms.
+- Corrective direction: continuous orientation histogram, full signed half-turn normalization, both original/quarter-turned candidates, both ZXing binarizers, and per-frame extended processing after an upright miss.
+- Session minimum decode interval is changed to 70 ms. Calls remain serialized and ROI-only.
+- No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior is in scope.
+- Device QA remains mandatory. CI cannot establish real-world barcode accuracy, iOS camera orientation behavior, focus quality or CPU responsiveness.
 
-**Protected invariants:** strict reticle ROI only; no full-frame fallback; existing 110 ms session cadence; camera lease/lifecycle/readiness/recovery; supported symbologies; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save; independent Home/Stocktake presentation.
+**Next:** complete source/test review, run full CI, inspect failures and revise as required; then physical iOS Safari/PWA and Android Chrome/PWA testing in both Home and Stocktake. Merge/deploy only after explicit user approval.
 
-**Next:** physical QA of the consolidated build on iOS and Android, inspect rotation/deskew diagnostics and low-end latency, and merge only after acceptance.
+
 ---
 
 ---
