@@ -3,7 +3,7 @@
 **Accepted baseline:** PR #70 merged and deployed; main commit `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 **Baseline CI:** RetailOS CI run #466 passed; Build and deploy PWA run #85 succeeded. User confirmed operational testing.
 **Follow-up branch:** `feat/stocktake-import-session-output` (based on the accepted main commit).
-**Follow-up status:** implementation in progress; do not merge/deploy until explicit user approval.
+**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft). **Follow-up status:** implementation in progress; do not merge/deploy until explicit user approval.
 **Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
 **Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`.
 
