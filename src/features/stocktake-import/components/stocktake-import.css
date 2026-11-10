@@ -136,6 +136,20 @@
 .stocktake-import-output-textarea:focus { border-color:#3c8bd7; box-shadow:0 0 0 3px rgba(60,139,215,.13); }
 .stocktake-import-editor-layer { min-width:0; }
 @keyframes stocktake-import-layer-in { from { opacity:.45; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+.stocktake-import-secondary { min-height:34px; margin-top:7px; padding:0 11px; border:1px solid var(--border-subtle,#e5e9f0); border-radius:10px; color:var(--text-secondary,#687386); background:var(--surface-secondary,#f7f8fb); font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
+.stocktake-import-secondary:disabled { opacity:.45; cursor:not-allowed; }
+.stocktake-import-review-backdrop { position:fixed; inset:0; z-index:4; display:grid; place-items:center; padding:16px; background:rgba(5,10,20,.5); animation:stocktake-import-fade-in 130ms ease-out both; }
+.stocktake-import-review-dialog { display:grid; gap:11px; width:min(100%,480px); max-height:min(82dvh,680px); overflow:auto; padding:18px; border:1px solid var(--border-subtle,#e5e9f0); border-radius:18px; color:var(--text-primary,#172033); background:var(--surface-elevated,#fff); box-shadow:0 20px 60px rgba(0,0,0,.24); animation:stocktake-import-panel-in 150ms ease-out both; }
+.stocktake-import-review-dialog h3 { margin:0; font-size:17px; }
+.stocktake-import-review-dialog > p { margin:0; color:var(--text-secondary,#687386); font-size:12px; line-height:1.5; }
+.stocktake-import-review-group { display:grid; gap:5px; padding:10px; border:1px solid var(--border-subtle,#e5e9f0); border-radius:11px; background:var(--surface-secondary,#f7f8fb); }
+.stocktake-import-review-group strong { font-size:11px; }
+.stocktake-import-review-group small { color:var(--text-secondary,#687386); font-size:10px; overflow-wrap:anywhere; }
+.stocktake-import-review-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; padding-top:3px; }
+.stocktake-import-review-actions button { min-height:36px; padding:0 10px; border:1px solid var(--border-subtle,#e5e9f0); border-radius:10px; color:inherit; background:var(--surface-secondary,#f7f8fb); font:inherit; font-size:11px; font-weight:700; cursor:pointer; }
+.stocktake-import-review-actions button:last-child { border-color:#c82b39; color:#fff; background:#c82b39; }
+.stocktake-import-review-actions button:disabled { opacity:.45; cursor:not-allowed; }
 @media (max-width:900px) {
   .stocktake-import-panel { width:min(100%,860px); }
   .stocktake-import-workspace { grid-template-columns:170px minmax(0,1fr); }
@@ -167,7 +181,7 @@
   .stocktake-import-backdrop,.stocktake-import-panel,.stocktake-import-workspace,
   .stocktake-import-zone-workspace,.stocktake-import-zone-layer,.stocktake-import-notice,.stocktake-import-error,
   .stocktake-import-warning,.stocktake-import-unsaved,.stocktake-import-confirm-backdrop,
-  .stocktake-import-confirm { animation:none !important; }
+  .stocktake-import-confirm,.stocktake-import-review-backdrop,.stocktake-import-review-dialog { animation:none !important; }
   .stocktake-import-panel *,.stocktake-import-panel *::before,.stocktake-import-panel *::after {
     scroll-behavior:auto !important;
     transition-duration:.01ms !important;
