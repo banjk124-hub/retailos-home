@@ -5,7 +5,7 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** PR #70 and PR #71 merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #524 passed on head `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; physical-device QA remains pending.  
+**Current status:** PR #70 and PR #71 merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #534 passed on head `2dc003ad4b1a17556fd18188b30206ae3bf06670`; physical-device QA remains pending.  
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
 **Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
@@ -80,7 +80,7 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 - [ ] Compare Excel displayed quantity values with exported TXT, including `19,236` and fixed-decimal/General formats.
 - [x] PR #70 acceptance and operational testing confirmed by the user.
 - [x] PR #71 TypeScript, production/Pages builds and full preflight passed on code commit `37b5f69d8dedcd36ed8a9273131eb60b78bd0f13` (GitHub Actions run #509).
-- [x] PR #72 unified-workspace, action-feedback, TypeScript, production/Pages builds and full preflight passed on `13ae9a96e270642d5349041f5d01bfd8a7a542f4` (GitHub Actions run #524).
+- [x] PR #72 unified-workspace, action-feedback, TypeScript, production/Pages builds and full preflight passed on `2dc003ad4b1a17556fd18188b30206ae3bf06670` (GitHub Actions run #534).
 - [ ] Manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA acceptance.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
 - [ ] Verify per-zone correction, save, history restore, individual TXT and ZIP.
@@ -105,7 +105,7 @@ When the user says “tiếp tục Xuất file” or asks to resume this module:
 **Branch:** `feat/stocktake-import-native-workspace`  
 **PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft)  
 **Base:** main commit `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
-**Head at CI #524:** `13ae9a96e270642d5349041f5d01bfd8a7a542f4`
+**Head at CI #534:** `2dc003ad4b1a17556fd18188b30206ae3bf06670`
 
 - Replace the previous output-first/editor-second mutually exclusive layers with one continuous zone workspace.
 - Keep the data table as the primary work surface. Read-only review and inline edit share the same table; cancel restores the edit baseline and save persists the corrected zone.
@@ -120,7 +120,7 @@ When the user says “tiếp tục Xuất file” or asks to resume this module:
 ### Verification and remaining acceptance
 
 - [x] Stocktake import regression suite, including unified-workspace and state assertions.
-- [x] Full preflight, TypeScript, production build and GitHub Pages build (CI #524).
+- [x] Full preflight, TypeScript, production build and GitHub Pages build (CI #534).
 - [x] Existing scanner regression suite in CI #524.
 - [ ] Manual desktop Chrome/Edge visual and functional QA.
 - [ ] Manual iOS Safari/PWA and Android Chrome/PWA QA.
