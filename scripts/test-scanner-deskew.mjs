@@ -157,4 +157,20 @@ assert.match(decoderSource, /false,\s*'deskew'/,
   'deskew decode must use the bounded HybridBinarizer-only pass');
 assert.match(decoderSource, /lastDeskewAngleDegrees:/, 'measured skew angle must be observable');
 
+
+const scan05Doc = await readFile(
+  new URL('../docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md', import.meta.url),
+  'utf8',
+);
+const scan06Doc = await readFile(
+  new URL('../docs/ai-context/SCAN_06_BOUNDED_DESKEW.md', import.meta.url),
+  'utf8',
+);
+assert.match(scan05Doc, /One clockwise quarter-turn/);
+assert.match(scan05Doc, /180°/);
+assert.match(scan06Doc, /Sobel structure tensor/);
+assert.match(scan06Doc, /1\.2°/);
+assert.match(scan06Doc, /12°/);
+assert.match(scan06Doc, /perspective/);
+
 console.log('Scanner bounded deskew tests passed: ±5°/±8°, 90°/270° normalization path, and fail-closed bounds.');
