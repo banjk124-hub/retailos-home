@@ -5,7 +5,7 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** PR #70 and PR #71 merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #534 passed on head `2dc003ad4b1a17556fd18188b30206ae3bf06670`; physical-device QA remains pending.  
+**Current status:** PR #70, #71 and #72 merged. Operator-action refinement is in draft PR #73; not merged/deployed. CI #540 passed on head `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`; physical-device QA remains pending.  
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
 **Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
@@ -27,6 +27,7 @@ Current PR #70 includes:
 - Follow-up UX: one continuous zone workspace with the review/edit table as the primary surface and TXT Preview as an expandable inspector below it. The previous mutually exclusive Output/Editor layers have been removed. Readonly TXT textarea scopes Ctrl+A to output content; Copy uses Clipboard API with manual-selection fallback.
 - Follow-up: multi-file `.xlsx` selection and additive import sessions. SHA-256 source fingerprints detect identical files; duplicate zones across separate source files are staged for explicit merge/skip confirmation. Source file provenance is retained per row and in session history.
 - Follow-up UX: action-specific loading feedback, success/warning/info notices, and explicit distinction between in-memory changes and IndexedDB-persisted history. Motion uses transform/opacity, reduced-motion and power-conserve guards; mobile sticky header avoids backdrop blur.
+- Operator QA refinement (PR #73): remove the persistent notice banner in favor of a centered transient confirmation; move Copy and per-zone TXT Download beside Edit; place Add file and New session side by side; tighten the ZIP action footer. Errors remain persistent alerts.
 
 ## 2. Lifecycle metadata
 
@@ -80,7 +81,8 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 - [ ] Compare Excel displayed quantity values with exported TXT, including `19,236` and fixed-decimal/General formats.
 - [x] PR #70 acceptance and operational testing confirmed by the user.
 - [x] PR #71 TypeScript, production/Pages builds and full preflight passed on code commit `37b5f69d8dedcd36ed8a9273131eb60b78bd0f13` (GitHub Actions run #509).
-- [x] PR #72 unified-workspace, action-feedback, TypeScript, production/Pages builds and full preflight passed on `2dc003ad4b1a17556fd18188b30206ae3bf06670` (GitHub Actions run #534).
+- [x] PR #72 unified-workspace and state implementation passed CI #534.
+- [x] PR #73 operator-action layout and transient feedback passed TypeScript, production build and full preflight on `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2` (GitHub Actions run #540).
 - [ ] Manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA acceptance.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
 - [ ] Verify per-zone correction, save, history restore, individual TXT and ZIP.
@@ -105,14 +107,16 @@ When the user says “tiếp tục Xuất file” or asks to resume this module:
 **Branch:** `feat/stocktake-import-native-workspace`  
 **PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft)  
 **Base:** main commit `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
-**Head at CI #534:** `2dc003ad4b1a17556fd18188b30206ae3bf06670`
+**PR #72 merged head:** `bd15b43f77aeee5d33d81a9daa9bd9bca2ac92b2`  
+**Current PR #73 branch:** `fix/stocktake-import-operator-actions`  
+**Head at CI #540:** `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`
 
 - Replace the previous output-first/editor-second mutually exclusive layers with one continuous zone workspace.
 - Keep the data table as the primary work surface. Read-only review and inline edit share the same table; cancel restores the edit baseline and save persists the corrected zone.
-- Keep TXT Preview as an expandable secondary inspector. Copy and Download controls live inside the expanded inspector but outside its summary disclosure trigger.
+- Keep TXT Preview as an expandable secondary inspector. Operator Copy and per-zone Download controls sit beside Edit in the zone heading and remain accessible without scrolling to the preview.
 - Keep the generated zone content as the single payload for preview, Clipboard copy, individual TXT download and ZIP.
 - Distinguish in-memory session changes from IndexedDB persistence. A failed history write must remain visibly unsaved and must not be presented as persisted.
-- Provide action-specific loading feedback for import, zone save, ZIP generation, history clear and history re-export. Use semantic success/warning/info notices and separate error alerts.
+- Provide action-specific loading feedback for import, zone save, ZIP generation, history clear and history re-export. Use centered, non-blocking, auto-dismissing feedback for notices and separate persistent error alerts. Save/copy confirmation appears only after successful completion.
 - Refine visual hierarchy, compact text containers, semantic color, responsive zone navigation and restrained motion. Respect reduced-motion and power-conserve modes; avoid expensive sticky-header blur on mobile.
 - Preserve parser precision, code source precedence, duplicate rows, source fingerprints, additive session merge/skip, provenance, history compatibility, NHAN VIEN timestamp and output filenames.
 - No intended changes to the existing Stocktake scanner, Scanner Engine, camera lifecycle, snapshot/cache, auth, service worker or deployment configuration.

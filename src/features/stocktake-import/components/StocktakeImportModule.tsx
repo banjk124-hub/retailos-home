@@ -147,6 +147,12 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   useEffect(() => { void refreshHistory(); }, []);
 
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timeoutId = window.setTimeout(() => setNotice(''), 2600);
+    return () => window.clearTimeout(timeoutId);
+  }, [notice]);
+
   const commitIncoming = async (
     incoming: StocktakeImportResult[],
     mergeConflicts: boolean,
@@ -513,7 +519,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         </header>
 
         {error && <p className="stocktake-import-error" role="alert">{error}</p>}
-        {notice && <p className={'stocktake-import-notice is-' + noticeTone} role="status">{noticeTone === 'warning' ? <AlertTriangle size={16} /> : noticeTone === 'info' ? <Info size={16} /> : <CheckCircle2 size={16} />}{notice}</p>}
+
 
         {view === 'import' && <>
           {pendingImport && <div className="stocktake-import-review-backdrop">
@@ -562,17 +568,19 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             multiple
             onChange={(event) => void handleFiles(Array.from(event.target.files ?? []))} />
-          <button className="stocktake-import-primary" type="button" disabled={busy}
-            onClick={() => {
-              if (hasDirtyZones) { setNotice('Vùng hiện tại có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy trước khi nạp workbook khác.'); return; }
-              inputRef.current?.click();
-            }}>
-            {busyAction === 'import' ? <LoaderCircle className="stocktake-import-spin" size={18} /> : <Upload size={18} />}
-            {busyAction === 'import' ? 'Đang xử lý workbook…' : result ? 'Thêm file vào phiên' : 'Chọn file Excel'}
-          </button>
+          <div className={'stocktake-import-import-actions' + (result ? ' has-session' : '')}>
+            <button className="stocktake-import-primary stocktake-import-add-file" type="button" disabled={busy}
+              onClick={() => {
+                if (hasDirtyZones) { setNotice('Vùng hiện tại có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy trước khi nạp workbook khác.'); return; }
+                inputRef.current?.click();
+              }}>
+              {busyAction === 'import' ? <LoaderCircle className="stocktake-import-spin" size={18} /> : <Upload size={18} />}
+              {busyAction === 'import' ? 'Đang xử lý workbook…' : result ? 'Thêm file vào phiên' : 'Chọn file Excel'}
+            </button>
+            {result && <button className="stocktake-import-secondary stocktake-import-new-session" type="button" disabled={busy || hasDirtyZones}
+              onClick={() => setShowNewSessionConfirm(true)}>Tạo phiên mới</button>}
+          </div>
           <p className="stocktake-import-hint">Hỗ trợ chọn nhiều workbook .xlsx cùng lúc. Có thể thêm file vào phiên đang xử lý; dữ liệu chỉ được cộng dồn sau khi kiểm tra và xác nhận trùng file hoặc trùng vùng.</p>
-          {result && <button className="stocktake-import-secondary" type="button" disabled={busy || hasDirtyZones}
-            onClick={() => setShowNewSessionConfirm(true)}>Tạo phiên mới</button>}
 
           {result && <>
             <div className="stocktake-import-summary">
@@ -611,14 +619,17 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     <p>{activeZone.rows.length} dòng · {invalidCount} dòng cần xử lý</p></div>
                   <div className="stocktake-import-zone-actions">
                     {!editingZone
-                      ? <button type="button" onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
+                      ? <>
+                        <button type="button" disabled={!outputReady} onClick={() => void copyOutput()}><Copy size={15} /> Sao chép</button>
+                        <button type="button" disabled={!outputReady} onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
+                        <button type="button" onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
+                      </>
                       : <>
                         <button type="button" disabled={busy} onClick={cancelEdit}><X size={15} /> Hủy</button>
                         <button type="button" className="is-save" disabled={busy || !dirtyZones.includes(activeZone.zoneCode)} onClick={() => void saveActiveZone()}>
                           {busyAction === 'save' ? <LoaderCircle className="stocktake-import-spin" size={15} /> : <Save size={15} />} {busyAction === 'save' ? 'Đang lưu…' : 'Lưu thay đổi'}
                         </button>
                       </>}
-
                   </div>
                 </header>
 
@@ -682,10 +693,6 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     <span><strong>Xem trước TXT</strong><small>{activeZone.fileName} · {activeZone.rows.length} dòng</small></span>
 
                   </summary>
-                  <div className="stocktake-import-preview-actions">
-                    <button type="button" disabled={!outputReady} onClick={() => void copyOutput()}><Copy size={14} /> Sao chép</button>
-                    <button type="button" disabled={!outputReady} onClick={() => exportZone(selectedZone)}><Download size={14} /> Tải TXT</button>
-                  </div>
                   {outputReady
                     ? <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
                         aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
@@ -747,6 +754,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
         <footer className="stocktake-import-footer"><span>Dữ liệu xử lý được lưu riêng với module Xuất file</span><span>RetailOS</span></footer>
       </section>
+
+      {notice && <div className={'stocktake-import-feedback is-' + noticeTone} role="status" aria-live="polite">
+        <span className="stocktake-import-feedback-icon">
+          {noticeTone === 'warning' ? <AlertTriangle size={22} /> : noticeTone === 'info' ? <Info size={22} /> : <CheckCircle2 size={22} />}
+        </span>
+        <strong>{notice}</strong>
+      </div>}
 
       {showClearConfirm && <div className="stocktake-import-confirm-backdrop">
         <section className="stocktake-import-confirm" role="alertdialog" aria-modal="true" aria-labelledby="stocktake-import-clear-title">

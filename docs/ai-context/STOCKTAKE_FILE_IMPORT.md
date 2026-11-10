@@ -2,7 +2,7 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70 and PR #71 are merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #534 passed on head `2dc003ad4b1a17556fd18188b30206ae3bf06670`; physical-device QA remains pending.
+**Status:** PR #70, #71 and #72 are merged. Operator-action refinement is in draft PR #73; not merged/deployed. CI #540 passed on head `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`; physical-device QA remains pending.
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 **Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
 **Business/session implementation:** PR #71 merged at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
@@ -137,7 +137,7 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - Use one continuous zone workspace. The review/edit table is the primary surface; there is no separate Output/Editor mode and no mutually exclusive `zoneLayer` state.
 - Read-only review and edit mode share the same table. Entering edit mode changes the row controls in place; cancel restores the edit baseline; save persists the corrected zone.
 - Generated TXT is a secondary, expandable inspector (`details`) below the table. It is not a second workspace. It uses the same `activeZone.content` payload as Copy, per-zone Download and ZIP generation.
-- Keep interactive Copy/Download controls outside the `summary` disclosure trigger for valid keyboard and assistive-technology semantics.
+- Keep TXT Preview as a read-only inspector. Operator Copy and per-zone Download controls are in the active zone heading beside Edit, so no scroll to the preview is required.
 - TXT preview/copy/download are unavailable while the active zone is invalid, editing, dirty/unsaved, or the workbook has blocking issues. ZIP remains guarded across all zones.
 - Keep the zone navigator stable while editing. A dirty zone cannot be abandoned, replaced by another import, or exported until the operator saves or cancels.
 - Keep the table paginated at 100 rows. Preserve source filename, fingerprint prefix, sheet and source-row provenance.
@@ -147,6 +147,9 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - Preserve the business sequence: Import → Review → Edit (optional) → Confirm/save → Export. A preview is an inspection surface, not a separate workflow state.
 - Separate in-memory data changes from IndexedDB persistence. A failed history write must never be presented as saved; the active in-memory session may remain available but is explicitly marked as not persisted.
 - Keep action-level loading feedback for workbook import, zone save, ZIP generation, history clear and history re-export. Do not report success until the operation completes.
+- Notices use a centered, non-blocking popup and auto-dismiss after approximately 2.6 seconds. Save and Copy show success only after successful completion; errors remain visible as alert states.
+- With an active session, Add file and New session are aligned in one compact action row. Without a session, the file-picker action occupies the available width.
+- The all-zone ZIP action footer uses a responsive grid: explanatory status remains readable and the export control stays within the workspace width.
 - Notices have semantic success, warning and information treatments. Errors remain separate alert states. Loading, disabled, invalid, dirty, saved and completed states must not be represented by the same visual treatment.
 - Keep `outputReady`, row validation, dirty-zone checks and workbook blocking diagnostics as the source of truth for export guards.
 
@@ -182,7 +185,8 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 
 - [x] Unified editor/preview workspace static regression assertions.
 - [x] Semantic notice states, IndexedDB-persisted status and action-specific loading feedback covered by source assertions.
-- [x] TypeScript, production build, GitHub Pages build and full preflight passed in CI #534 on `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
+- [x] Unified workspace and state implementation passed CI #534.
+- [x] Operator-action placement and transient feedback passed full preflight, TypeScript and production build in CI #540 on `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`.
 - [x] Existing scanner regression suite passed in the same preflight; no scanner source files were changed.
 - [ ] Desktop Chrome/Edge visual and functional QA.
 - [ ] iOS Safari/PWA QA: viewport behavior, disclosure interaction, file picker, Clipboard fallback, downloads and history restore.
