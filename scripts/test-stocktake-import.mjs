@@ -171,7 +171,7 @@ const sessionA = {
 const sessionB = {
   sourceFileName: "b.xlsx", sourceFiles: [source("b.xlsx", "b-hash")],
   importedAt: "2026-11-10T10:01:00.000Z",
-  zones: [zone("BT01", [importedRow("B1", "b.xlsx", 5)])],
+  zones: [zone("BT01", [importedRow("A1", "b.xlsx", 5)])],
   warnings: [], blockingIssues: [],
 };
 assert.deepEqual(sessionRuntime.detectStocktakeImportConflicts(sessionBase, [sessionA, sessionB]), [
@@ -180,7 +180,9 @@ assert.deepEqual(sessionRuntime.detectStocktakeImportConflicts(sessionBase, [ses
 const mergedSession = sessionRuntime.mergeStocktakeImportSession(sessionBase, [sessionA, sessionB], "E001", true);
 assert.equal(mergedSession.importedAt, sessionBase.importedAt, "Appending files must preserve the session timestamp.");
 assert.deepEqual(mergedSession.zones.map((item) => item.zoneCode), ["BT01", "BT02"]);
-assert.deepEqual(mergedSession.zones[0].rows.map((row) => row.barcode), ["BASE", "A1", "A2", "B1"]);
+assert.deepEqual(mergedSession.zones[0].rows.map((row) => row.barcode), ["BASE", "A1", "A2", "A1"]);
+assert.equal(mergedSession.zones[0].rows[1].sourceFileName, "a.xlsx");
+assert.equal(mergedSession.zones[0].rows[3].sourceFileName, "b.xlsx");
 assert.equal(mergedSession.zones[0].rows.length, 4, "Merge must preserve every row and duplicate occurrence.");
 assert.equal(mergedSession.sourceFiles.length, 3);
 assert.ok(mergedSession.zones[0].content.includes("NHAN VIEN,E001,2026/11/10,09:00:00"));
@@ -222,6 +224,7 @@ assert.match(store, /sourceFiles/);
 assert.match(sessionService, /detectStocktakeImportConflicts/);
 assert.match(sessionService, /mergeStocktakeImportSession/);
 assert.match(sessionService, /skippedZoneWarnings/);
+assert.match(sessionService, /sourceFileName: sourceFiles.length/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
 assert.doesNotMatch(store, /retailos-module-data|retailos-stocktake['"]/);
 assert.ok(registry.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
