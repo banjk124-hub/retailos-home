@@ -24,6 +24,7 @@ const runtimeSource =
   extractFunction("parseQuantity", "resolveZoneCode") +
   extractFunction("resolveZoneCode", "splitZoneCode") +
   extractFunction("splitZoneCode", "pad") +
+  extractFunction("pad", "buildOutput") +
   extractFunction("buildOutput", "safeFilePart") +
   "return { normalizeHeader, findHeader, shiftDecimal, parseQuantity, resolveZoneCode, splitZoneCode, buildOutput };";
 const runtime = new Function(ts.transpile(runtimeSource, { target: ts.ScriptTarget.ES2022 }))();
