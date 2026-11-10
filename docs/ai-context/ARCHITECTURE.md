@@ -648,7 +648,7 @@ See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew
 
 ## ADR-028 — Separate business workflow identity from snapshot identity and add local Stocktake import (2026-11-10)
 
-**Status:** Draft implementation in PR #69; not merged or deployed.
+**Status:** Implementation in PR #69; CI run #448 passed; not merged or deployed.
 
 ### Context
 
