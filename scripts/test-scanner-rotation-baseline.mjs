@@ -123,7 +123,7 @@ function decode(frame, format) {
   }
 }
 
-for (const fixture of [encodeCode128B(), encodeEan13('400638133393'), encodeEan8('9638507')]) {
+for (const fixture of [encodeEan8('9638507'), encodeCode128B(), encodeEan13('400638133393')]) {
   console.log('Checking rotation baseline format:', fixture.format);
   const uprightResult = decode(rasterize(fixture.bits), fixture.format);
   assert.equal(uprightResult.getText(), fixture.value, '0-degree barcode must decode');
