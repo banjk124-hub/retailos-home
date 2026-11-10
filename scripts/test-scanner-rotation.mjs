@@ -77,10 +77,35 @@ function makeCode128() {
 function rotateClockwise(frame) {
   return rotateLuminance90Clockwise(frame.luminance, frame.width, frame.height);
 }
-function decode(frame) {
+const EAN_L = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
+const EAN_G = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
+const EAN_FIRST_PARITY = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
+function makeEanFrame(value, format) {
+  const digits = [...value].map(Number);
+  assert.ok((format === BarcodeFormat.EAN_13 && digits.length === 13) || (format === BarcodeFormat.EAN_8 && digits.length === 8));
+  let bits = '0'.repeat(10) + '101';
+  if (format === BarcodeFormat.EAN_13) {
+    const parity = EAN_FIRST_PARITY[digits[0]];
+    for (let i = 0; i < 6; i++) bits += parity[i] === 'L' ? EAN_L[digits[i + 1]] : EAN_G[digits[i + 1]];
+    bits += '01010';
+    for (let i = 7; i < 13; i++) bits += EAN_L[digits[i]].replace(/./g, bit => bit === '0' ? '1' : '0');
+  } else {
+    for (let i = 0; i < 4; i++) bits += EAN_L[digits[i]];
+    bits += '01010';
+    for (let i = 4; i < 8; i++) bits += EAN_L[digits[i]].replace(/./g, bit => bit === '0' ? '1' : '0');
+  }
+  bits += '101' + '0'.repeat(10);
+  const width = bits.length * 3, height = 84;
+  const luminance = new Uint8ClampedArray(width * height);
+  for (let y = 0; y < height; y++) for (let x = 0; x < bits.length; x++)
+    luminance.fill(bits[x] === '1' ? 0 : 255, y * width + x * 3, y * width + (x + 1) * 3);
+  return { luminance, width, height };
+}
+
+function decode(frame, format = BarcodeFormat.CODE_128) {
   const reader = new MultiFormatReader();
   reader.setHints(new Map([
-    [DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128]],
+    [DecodeHintType.POSSIBLE_FORMATS, [format]],
     [DecodeHintType.TRY_HARDER, true],
     [DecodeHintType.CHARACTER_SET, 'UTF-8'],
   ]));
@@ -108,6 +133,14 @@ assert.equal(
   180,
   '90-degree clockwise input normalizes to 180 degrees and uses the existing OneDReader reversal',
 );
+
+for (const [format, value] of [[BarcodeFormat.EAN_8, '96385074'], [BarcodeFormat.EAN_13, '5901234123457']]) {
+  const ean = makeEanFrame(value, format);
+  const source90 = rotateClockwise(ean);
+  const source270 = rotateClockwise(rotateClockwise(rotateClockwise(ean)));
+  assert.equal(decode(rotateClockwise(source90), format).getText(), value, 'EAN 90-degree normalization must decode');
+  assert.equal(decode(rotateClockwise(source270), format).getText(), value, 'EAN 270-degree normalization must decode');
+}
 
 const decoderSource = await readFile(
   new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
