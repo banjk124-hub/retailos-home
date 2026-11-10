@@ -1,19 +1,21 @@
-# SCAN-05/06 corrective execution — continuous orientation recovery (2026-11-10)
+# SCAN-05/06 — corrective execution closed (2026-11-10)
 
-**Baseline:** `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66 merged).
-**Corrective branch:** `fix/scan-05-06-continuous-orientation`.
-**Status:** source/test correction implemented; CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical device acceptance pending.
+**Status:** Complete, merged, deployed and user-validated.
+**PR:** [#67 — Continuous barcode orientation recovery](https://github.com/banjk124-hub/retailos-home/pull/67).
+**Merge commit / current main:** 9406ac30d53bc9984912bd1928a32fd78157cf60.
+**Final PR-head CI:** run #432 passed on c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
 
-- User-reported failures after the earlier deployment: sideways barcodes are missed, intermediate angles are not sufficiently covered, and recognition feels slow/insensitive.
-- User clarified that ultra-low-end CPU conservation is not a hard constraint. Prioritize accuracy and responsiveness; higher processing cost is acceptable if the application remains stable.
-- Source audit found the old quarter-turn ran every third valid ROI frame after upright miss; deskew was limited to 1.2°–12° and estimated one global dominant edge direction; session cadence was 110 ms.
-- Corrective implementation: continuous orientation histogram, full signed half-turn normalization, percentile-based contrast stretch for compressed ROI ranges, both original/quarter-turned candidates, both ZXing binarizers, and per-frame extended processing after an upright miss.
-- Session minimum decode interval is changed to 70 ms. Calls remain serialized and ROI-only.
-- No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior is in scope.
-- Device QA remains mandatory. CI cannot establish real-world barcode accuracy, iOS camera orientation behavior, focus quality or CPU responsiveness.
+- Original failure reports: sideways barcodes missed, intermediate orientations were not covered, and recognition felt slow/insensitive.
+- Updated priority: recognition accuracy and responsiveness take precedence over an ultra-low-end CPU budget; additional processing is accepted while the app remains stable.
+- Corrective implementation: continuous 180-bin orientation estimate, confidence gates, signed ±90° normalization, 90° fast path, both ROI axes evaluated, percentile contrast normalization for compressed ROI ranges and both ZXing binarizers per candidate.
+- Session minimum decode interval is 70 ms. Decoder calls remain serialized and strict-ROI-only.
+- Automated preflight passed in CI #425 on the executable source head and CI #432 on the final PR head.
+- User confirms merge, deployment and successful real-world operation with sensitive multi-stage recognition.
+- No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior was intentionally changed by this slice.
 
-**Next:** physical iOS Safari/PWA and Android Chrome/PWA testing in both Home and Stocktake, including measured decode latency and UI responsiveness. Merge/deploy only after explicit user approval.
+**Evidence boundary:** detailed device/browser/module/symbology matrix and quantitative latency/CPU/success-rate measurements were not supplied. The user's functional acceptance is recorded; do not invent numerical performance claims.
 
+**Next:** SCAN-05/06 has no outstanding corrective task. Continue only with the next separately agreed roadmap scope; do not add perspective correction, curved-surface dewarping or unrelated scanner changes by implication.
 
 ---
 
