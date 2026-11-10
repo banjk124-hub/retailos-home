@@ -9,8 +9,8 @@
 - [x] ZXing decodes only the measured reticle ROI; full-frame-first and fixed centered fallback passes are removed.
 - [x] Missing/invalid ROI fails closed; no silent full-frame fallback.
 - [x] Regression suite is registered in `npm run preflight`.
-- [ ] Full TypeScript, production/Pages builds and preflight pass on final PR head.
-- [ ] GitHub Actions CI passes on final PR head.
+- [x] GitHub Actions run #317 passed TypeScript, production/Pages builds and full preflight on implementation head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54` (before final documentation status synchronization).
+- [ ] Final documentation-synchronized PR head must pass CI.
 - [ ] Physical iOS Safari/PWA tests barcode placement at center and reticle edges; verify accuracy and latency.
 - [ ] Physical Android Chrome/PWA tests barcode placement at center and reticle edges; verify accuracy and latency.
 - [ ] Verify low-light, reflective labels, small/far barcodes and both Home/Stocktake flows after deployment.
