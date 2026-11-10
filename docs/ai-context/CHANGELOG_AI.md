@@ -12,6 +12,16 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Unverified:
 - Risks / rollback:
 
+## 2026-11-10 — SCAN-05/06 corrective continuous orientation recovery
+
+- Intent: correct the missed sideways and intermediate-angle barcode cases reported after the earlier consolidated delivery; prioritize accuracy and responsiveness over a strict ultra-low-end CPU budget.
+- Baseline: PR #66 was merged to `main` at `8571db7ea75f558397abe618e88fb2d0e1395616`; corrective work is isolated on Draft PR #67, branch `fix/scan-05-06-continuous-orientation`.
+- Files: `scannerDeskew.ts`, `scannerRotation.ts`, `zxingDecoder.ts`, `universalScannerSession.ts`, scanner rotation/deskew/production-adapter tests, SCAN-05/06 specs, ADRs, handoff, roadmap and acceptance records.
+- Behavior: replace the single global structure tensor with a 180-bin Sobel gradient-orientation histogram and confidence gates; normalize continuous in-plane angles across ±90°; run upright, quarter-turn and deskew candidates on each valid ROI miss; use Hybrid and GlobalHistogram binarizers; reduce minimum session decode interval to 70 ms while keeping decode serialized; expose estimator misses; suppress only expected ZXing 0.23.0 NotFoundException warnings.
+- Checks: CI run #411 passed full preflight, continuous angle sweep through ±75°, 90°/270°, combined quarter-turn+skew, Code 128, EAN-8/EAN-13, medium-low contrast, ambiguous texture, strict ROI/no-fallback, TypeScript, production build, GitHub Pages build and diff checks. Expected ZXing miss warning count was zero.
+- Unverified: physical iOS Safari/PWA and Android Chrome/PWA optical accuracy, first-result latency, CPU cost and UI responsiveness in Home and Stocktake.
+- Risks / rollback: revert PR #67 if device QA reveals incorrect orientation estimation, unacceptable latency or regressions; do not merge/deploy before physical QA and explicit user approval.
+
 ## 2026-10-21 — Governance pack initialized
 - Intent: establish durable instructions/context so future coding agents use the same project constraints.
 - Files: `AGENTS.md`, `.github/copilot-instructions.md`, `.github/skills/retailos-implementation/SKILL.md`, `docs/ai-context/*`.
