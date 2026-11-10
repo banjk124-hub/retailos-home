@@ -77,6 +77,24 @@ function decode(frame) {
 }
 
 const original = makeCode128();
+const lowContrastLuminance = Uint8ClampedArray.from(
+  original.luminance,
+  (value) => value < 128 ? 108 : 148,
+);
+const lowContrastSkew = rotateLuminanceByAngle(
+  lowContrastLuminance, original.width, original.height, 27,
+);
+assert.ok(lowContrastSkew, 'low-contrast orientation fixture must be generated');
+const lowContrastEstimate = estimateScannerSkewAngle(
+  lowContrastSkew.luminance, lowContrastSkew.width, lowContrastSkew.height,
+);
+assert.ok(lowContrastEstimate, 'continuous estimator must retain a low-contrast barcode direction');
+const lowContrastCorrected = deskewLuminanceFrame(
+  lowContrastSkew.luminance, lowContrastSkew.width, lowContrastSkew.height,
+);
+assert.ok(lowContrastCorrected, 'low-contrast barcode must receive a safe orientation correction');
+assert.equal(decode(lowContrastCorrected).getText(), '12345',
+  'low-contrast barcode must decode after continuous orientation correction');
 assert.equal(estimateScannerSkewAngle(original.luminance, original.width, original.height), null,
   'a level barcode must not trigger deskew');
 assert.equal(estimateScannerSkewAngle(original.luminance, 0, original.height), null,
