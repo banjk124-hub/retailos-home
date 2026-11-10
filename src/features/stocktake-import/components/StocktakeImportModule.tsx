@@ -41,8 +41,8 @@ function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): s
 }
 
 function normalizeEditableQuantity(value: string): string {
-  const normalized = value.trim().replace(/\\s/g, '');
-  return /^[+-]?\\d+,\\d+(?:[eE][+-]?\\d+)?%?$/.test(normalized) ? normalized.replace(',', '.') : value.trim();
+  const normalized = value.trim().replace(/\s/g, '');
+  return /^[+-]?\d+,\d+(?:[eE][+-]?\d+)?%?$/.test(normalized) ? normalized.replace(',', '.') : value.trim();
 }
 
 function downloadBlob(fileName: string, blob: Blob): void {
@@ -223,8 +223,9 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     const normalizedRows = activeZone.rows.map((row) => {
       const quantity = normalizeEditableQuantity(row.quantity);
       const updated = { ...row, quantity };
-      return { ...updated, issues: [...new Set([...validateRow(updated), ...row.issues.filter((issue) =>
-        /barcode|goldcode|mã hàng|mã vạch|diễn giải/i.test(issue) && issue.includes('MÃ VẠCH'))])] };
+      const retainedIssues = row.issues.filter((issue) =>
+        issue.startsWith('Cột MÃ VẠCH') || issue.startsWith('Không thể diễn giải kết quả thực tế:'));
+      return { ...updated, issues: [...new Set([...validateRow(updated), ...retainedIssues])] };
     });
     const invalid = normalizedRows.filter((row) => row.issues.length > 0 || validateRow(row).length > 0);
     if (invalid.length > 0) {
