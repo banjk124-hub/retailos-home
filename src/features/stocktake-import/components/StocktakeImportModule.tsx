@@ -198,7 +198,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         }
         batchFingerprints.set(source.fingerprint, file.name);
         const sameNameFingerprint = knownNames.get(file.name);
-        if (sameNameFingerprint && sameNameFingerprint !== source.fingerprint) sameNameDifferentContent.push(file.name);
+        if (sameNameFingerprint && sameNameFingerprint !== source.fingerprint) sameNameDifferentContent.push(file.name + ' (SHA ' + source.fingerprint.slice(0, 8) + ')');
         knownNames.set(file.name, source.fingerprint);
         parsed.zones.forEach((zone) => zone.rows.forEach((row) => { row.sourceFileName = file.name; }));
         incoming.push(parsed);
@@ -565,7 +565,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             </div>
             {result.sourceFiles && result.sourceFiles.length > 1 && <details className="stocktake-import-source-list">
               <summary>{result.sourceFiles.length} file nguồn trong phiên</summary>
-              {result.sourceFiles.map((source) => <small key={source.fingerprint}>{source.name}</small>)}
+              {result.sourceFiles.map((source) => <small key={source.fingerprint}>{source.name} · {source.fingerprint.slice(0, 8)}</small>)}
             </details>}
             {result.blockingIssues.map((issue) => <p className="stocktake-import-error" role="alert" key={issue}>{issue}</p>)}
             {result.warnings.map((warning) => <p className="stocktake-import-warning" key={warning}>{warning}</p>)}
@@ -669,7 +669,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                                 className={row.issues.length ? 'has-error' : ''}>
                                 <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
                                   {row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}
-                                  {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}</small>}
+                                  {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFingerprint ? ' · ' + row.sourceFingerprint.slice(0, 8) : ''}</small>}
                                 </td>
                                 <td>{editingZone
                                   ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
