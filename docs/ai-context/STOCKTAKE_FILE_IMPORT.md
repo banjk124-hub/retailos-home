@@ -2,10 +2,11 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70 merged, deployed and manually accepted by the user. Follow-up implementation is in progress on `feat/stocktake-import-session-output`; not yet merged/deployed.
+**Status:** PR #70 and PR #71 are merged. UX/workspace refinement is in draft PR #72; not merged/deployed. CI #524 passed on head `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; physical-device QA remains pending.
 **Main baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
-**Follow-up branch:** `feat/stocktake-import-session-output`.
-**Follow-up PR:** https://github.com/banjk124-hub/retailos-home/pull/71 (draft; CI #509 passed on code head `37b5f69d`; physical device QA pending).
+**Business/session implementation:** PR #71 merged at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
+**Current UX branch:** `feat/stocktake-import-native-workspace`.
+**Current UX PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft; CI #524 passed on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; manual desktop/iOS/Android QA pending).
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
@@ -122,23 +123,40 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 **Contract reconciliation (2026-11-10):** The original PR #69 parser limitations above have been superseded where noted by PR #70. In particular, header scanning is no longer limited to the first 40 rows; table blocks are detected independently; same-zone blocks across sheets are aggregated; BARCODE falls back to same-row GOLDCODE; and history stores editable row-level data. The remaining one-zone-per-block limitation and lack of an interactive mapping wizard are intentional and documented.
 
 
-## 9. Follow-up — output layers and additive multi-file sessions
+## 9. Follow-up — unified workspace, interaction states and additive multi-file sessions
 
-**Branch:** `feat/stocktake-import-session-output`  
-**Base:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`
+**Business/session implementation:** PR #71 merged into main at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
+**Current UX branch:** `feat/stocktake-import-native-workspace`.
+**Current UX PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft).
+**Current CI:** RetailOS CI run #524 passed on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`. This includes the full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite. Physical-device QA is not implied by CI.
 
-### Zone workspace layer contract
+### Unified workspace contract
 
-- Keep the existing outer module UI, import area, zone navigator and selected-zone workspace frame unchanged.
-- The selected zone workspace has two mutually exclusive layers in the same component frame:
-  - Front/default layer: generated TXT output, a scoped `textarea readOnly`, Copy TXT and Download TXT.
-  - Back layer: the existing review table with source row, resolved code, actual quantity, code source, validation and the existing edit/save workflow.
-- The user explicitly moves between layers. Do not show the two layers side-by-side, as tabs, or as permanently visible cards. Keep the editor layer mounted to preserve its scroll position; mount the TXT textarea only while the output layer is active.
-- Layer transition affects only the zone content region. It must not remount the module, reset the zone list, alter the selected zone or change session data.
-- Copy writes the exact zone output payload via Clipboard API. If unavailable or denied, focus/select only the readonly output textarea and instruct manual copy. Ctrl+A is explicitly intercepted only when the textarea has focus; it selects that textarea value and stops propagation. Never select the document or PWA root.
-- Copy and Download are blocked while the zone is invalid, dirty/unsaved, or the workbook has blocking issues.
-- The output payload remains the single source for Preview, Copy and Download. The ZIP uses the same per-zone payloads.
-- Keep transitions short and transform/opacity-only; respect `prefers-reduced-motion`.
+- Keep the existing module shell, import area, zone navigator, selected-zone identity and business data. The UX redesign must not alter parser or session semantics.
+- Use one continuous zone workspace. The review/edit table is the primary surface; there is no separate Output/Editor mode and no mutually exclusive `zoneLayer` state.
+- Read-only review and edit mode share the same table. Entering edit mode changes the row controls in place; cancel restores the edit baseline; save persists the corrected zone.
+- Generated TXT is a secondary, expandable inspector (`details`) below the table. It is not a second workspace. It uses the same `activeZone.content` payload as Copy, per-zone Download and ZIP generation.
+- Keep interactive Copy/Download controls outside the `summary` disclosure trigger for valid keyboard and assistive-technology semantics.
+- TXT preview/copy/download are unavailable while the active zone is invalid, editing, dirty/unsaved, or the workbook has blocking issues. ZIP remains guarded across all zones.
+- Keep the zone navigator stable while editing. A dirty zone cannot be abandoned, replaced by another import, or exported until the operator saves or cancels.
+- Keep the table paginated at 100 rows. Preserve source filename, fingerprint prefix, sheet and source-row provenance.
+
+### Workflow and state contract
+
+- Preserve the business sequence: Import → Review → Edit (optional) → Confirm/save → Export. A preview is an inspection surface, not a separate workflow state.
+- Separate in-memory data changes from IndexedDB persistence. A failed history write must never be presented as saved; the active in-memory session may remain available but is explicitly marked as not persisted.
+- Keep action-level loading feedback for workbook import, zone save, ZIP generation, history clear and history re-export. Do not report success until the operation completes.
+- Notices have semantic success, warning and information treatments. Errors remain separate alert states. Loading, disabled, invalid, dirty, saved and completed states must not be represented by the same visual treatment.
+- Keep `outputReady`, row validation, dirty-zone checks and workbook blocking diagnostics as the source of truth for export guards.
+
+### Visual and motion contract
+
+- Use the shared RetailOS motion tokens where available. Prefer transform/opacity transitions; avoid layout-thrashing animation, continuous decorative motion and unnecessary remounts.
+- Use restrained 260–360 ms spatial transitions for workspace reveal and disclosure content, with clear pressed/active feedback on buttons and icon-bearing controls.
+- Respect `prefers-reduced-motion` and `data-power-mode="conserve"`. On narrow/mobile layouts, avoid expensive sticky-header backdrop blur.
+- Maintain visual hierarchy by purpose: red for primary workflow actions, blue for technical/TXT inspection, green for persisted/valid states, amber for pending/unsaved states and red error treatment for invalid data.
+- Compact text containers to their content. Avoid wide empty cards around short labels; use unused space only when it provides useful status, metadata or an actionable control.
+- Desktop uses a zone navigator beside the workspace. Mobile stacks the navigator and workspace, keeps zone navigation horizontally accessible, and preserves table horizontal scrolling.
 
 ### Code-source precedence
 
@@ -161,11 +179,13 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 
 ### Follow-up verification gates
 
-- [x] TypeScript, production build, Pages build and full preflight passed on code head `37b5f69d` (run #509). Later documentation-only updates do not change runtime code.
-
-- [x] Source precedence unit tests for BARCODE, CODE, GOLDCODE, TILLCODE and legacy fallback passed in preflight run #509.
-- [ ] One-file, multi-file, repeated exact file, same-name/different-content, repeated zone and additive second-batch scenarios.
-- [x] Merge/skip behavior and row-level source provenance unit tests passed in preflight run #509.
-- [ ] Full IndexedDB session save/history restore and duplicate-file end-to-end QA.
-- [ ] Output layer transition, scoped Ctrl+A, Clipboard success/fallback, download parity and ZIP parity.
-- [ ] Desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA manual QA.
+- [x] Unified editor/preview workspace static regression assertions.
+- [x] Semantic notice states, IndexedDB-persisted status and action-specific loading feedback covered by source assertions.
+- [x] TypeScript, production build, GitHub Pages build and full preflight passed in CI #524 on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`.
+- [x] Existing scanner regression suite passed in the same preflight; no scanner source files were changed.
+- [ ] Desktop Chrome/Edge visual and functional QA.
+- [ ] iOS Safari/PWA QA: viewport behavior, disclosure interaction, file picker, Clipboard fallback, downloads and history restore.
+- [ ] Android Chrome/PWA QA: low/mid-tier performance, file picker, Clipboard, download and history restore.
+- [ ] Full IndexedDB session save/history restore and duplicate-file/duplicate-zone end-to-end QA.
+- [ ] Confirm TXT preview/copy/download/ZIP payload parity with real workbooks.
+- [ ] Audit final diff and obtain explicit approval before merge/deploy.
