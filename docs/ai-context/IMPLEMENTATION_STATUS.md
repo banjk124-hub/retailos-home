@@ -1,18 +1,19 @@
 # SCAN-05/06 implementation status — orthogonal rotation and bounded deskew (2026-11-10)
 
-**Status:** Implemented on `feat/scan-05-06-final-consolidation`; final PR #66 is Draft/open and not merged/deployed.  
-**CI:** final consolidated PR #66 run #360 passed the complete preflight, TypeScript, production build and GitHub Pages build.
+**Status:** Implementation and automated follow-up are on `feat/scan-05-06-final-consolidation`; PR #66 remains Draft/open and not merged/deployed. Physical device acceptance remains outstanding.  
+**CI:** PR #66 run #368 passed the complete preflight, TypeScript, production build and GitHub Pages build on the pre-audit-fix head. A fresh CI run is required for the latest follow-up commits.
 
 - SCAN-04 was merged/deployed by the user; the user confirms normal scanner operation after deployment.
 - ZXing baseline: `TRY_HARDER` supports 180° reversal for 1D readers. The runtime fixture verifies Code 128 at 0°/180°; EAN-8/EAN-13 inheritance is source-guarded, not separately runtime-fixture tested.
 - SCAN-05: pure clockwise 90° luminance transform, upright-first decode, one extra ROI pass every third frame after a miss. 90° normalizes to 180° and 270° normalizes to 0°.
 - SCAN-06: Sobel structure-tensor skew estimate, confidence gate, bounded 1.2°–12° inverse-angle bilinear correction, expanded ROI bounds, white fill and 4M-pixel allocation cap. One HybridBinarizer deskew pass follows failed upright/orthogonal paths.
-- Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
-- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code) and #350 (final consolidated PR #66) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
+- Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, EAN-8/EAN-13 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
+- Audit follow-up decouples processing cadence from diagnostics sampling using a dedicated valid-ROI frame sequence; deterministic regression tests cover cadence and invalid sequence values.
+- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code) and #368 (pre-audit-fix consolidated PR #66 head) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
 - No camera/session/lifecycle, ROI mapping, UI/CSS, barcode validation, business flow, dependency or deployment changes.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA remains pending. CI does not prove physical optical accuracy, device CPU cost or latency.
 
-**Next gate:** complete device matrix and low-end performance comparison, then perform final consolidated diff/docs audit before merge.
+**Next gate:** obtain a fresh green CI result for the audit follow-up, complete the device matrix and low-end performance comparison, then perform final consolidated diff/docs audit before merge.
 ---
 
 ---
