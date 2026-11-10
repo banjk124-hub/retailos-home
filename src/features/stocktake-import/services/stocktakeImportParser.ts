@@ -5,7 +5,8 @@ export type ImportedStocktakeRow = {
   quantity: string;
   sourceRow: number;
   sourceSheet?: string;
-  barcodeSource: 'BARCODE' | 'GOLDCODE' | 'MÃ VẠCH' | 'manual';
+  sourceFileName?: string;
+  barcodeSource: 'BARCODE' | 'CODE' | 'GOLDCODE' | 'TILLCODE' | 'MÃ VẠCH' | 'manual';
   issues: string[];
 };
 
@@ -21,6 +22,7 @@ export type ImportedStocktakeZone = {
 
 export type StocktakeImportResult = {
   sourceFileName: string;
+  sourceFiles?: Array<{ name: string; fingerprint: string; size: number; lastModified: number }>;
   importedAt: string;
   zones: ImportedStocktakeZone[];
   warnings: string[];
@@ -38,7 +40,9 @@ type HeaderMapping = {
   rowNumber: number;
   quantityColumn: number;
   barcodeColumn?: number;
+  codeColumn?: number;
   goldCodeColumn?: number;
+  tillCodeColumn?: number;
   fallbackBarcodeColumn?: number;
   barcodeHeader: string;
   zoneColumn?: number;
@@ -47,7 +51,9 @@ type HeaderScan = { mappings: HeaderMapping[]; unsupportedRows: Array<{ rowNumbe
 
 const RELATIONSHIP_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13', 'EAN8', 'UPC', 'GTIN', 'MÃ BARCODE'];
+const CODE_HEADERS = ['CODE', 'ITEM CODE', 'PRODUCT CODE', 'MATERIAL CODE'];
 const GOLD_CODE_HEADERS = ['GOLDCODE', 'GOLD CODE', 'GOLD_CODE', 'GOLD PRODUCT CODE'];
+const TILL_CODE_HEADERS = ['TILLCODE', 'TILL CODE', 'TILL_CODE'];
 const FALLBACK_BARCODE_HEADERS = ['MA VACH', 'MA VACH HANG'];
 const QUANTITY_HEADERS = [
   'SO LUONG', 'QUANTITY', 'QTY', 'SL', 'SO LUONG KIEM KE', 'SO LUONG THUC TE',
@@ -200,23 +206,27 @@ function findHeaders(rows: Map<number, Map<number, CellValue>>): HeaderScan {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
     const quantity = [...headers.entries()].find(([, value]) => matchesHeader(value, QUANTITY_HEADERS));
     const barcode = [...headers.entries()].find(([, value]) => matchesHeader(value, BARCODE_HEADERS));
+    const code = [...headers.entries()].find(([, value]) => matchesHeader(value, CODE_HEADERS));
     const goldCode = [...headers.entries()].find(([, value]) => matchesHeader(value, GOLD_CODE_HEADERS));
+    const tillCode = [...headers.entries()].find(([, value]) => matchesHeader(value, TILL_CODE_HEADERS));
     const fallback = [...headers.entries()].find(([, value]) => matchesHeader(value, FALLBACK_BARCODE_HEADERS));
     const zone = [...headers.entries()].find(([, value]) => matchesHeader(value, ZONE_HEADERS));
-    const looksLikeHeader = Boolean(quantity || barcode || goldCode || fallback);
+    const looksLikeHeader = Boolean(quantity || barcode || code || goldCode || tillCode || fallback);
     if (!looksLikeHeader) {
       if (diagnosticRows.length < 3 && [...headers.values()].filter(Boolean).length >= 2) {
         diagnosticRows.push('Dòng ' + rowNumber + ': ' + [...headers.values()].filter(Boolean).join(' | '));
       }
       continue;
     }
-    if (quantity && (barcode || goldCode || fallback)) {
-      const chosen = barcode ?? goldCode ?? fallback!;
+    if (quantity && (barcode || code || goldCode || tillCode || fallback)) {
+      const chosen = barcode ?? code ?? goldCode ?? tillCode ?? fallback!;
       mappings.push({
         rowNumber,
         quantityColumn: quantity[0],
         ...(barcode ? { barcodeColumn: barcode[0] } : {}),
+        ...(code ? { codeColumn: code[0] } : {}),
         ...(goldCode ? { goldCodeColumn: goldCode[0] } : {}),
+        ...(tillCode ? { tillCodeColumn: tillCode[0] } : {}),
         ...(fallback ? { fallbackBarcodeColumn: fallback[0] } : {}),
         barcodeHeader: chosen[1],
         ...(zone ? { zoneColumn: zone[0] } : {}),
@@ -230,7 +240,7 @@ function findHeaders(rows: Map<number, Map<number, CellValue>>): HeaderScan {
       ? ' Header chưa đủ cột tại: ' + unsupportedRows.map((item) => 'dòng ' + item.rowNumber + ' (' + item.headers.join(' | ') + ')').join('; ') + '.'
       : diagnosticRows.length ? ' Các dòng gần nhất: ' + diagnosticRows.join(' / ') + '.' : '';
     throw new Error(
-      'Không nhận diện được cặp cột mã hàng (BARCODE/GOLDCODE) và kết quả thực tế (SỐ LƯỢNG/QUANTITY/KHỐI LƯỢNG...).' +
+      'Không nhận diện được cặp cột mã hàng (BARCODE/CODE/GOLDCODE/TILLCODE) và kết quả thực tế (SỐ LƯỢNG/QUANTITY/KHỐI LƯỢNG...).' +
       details + ' Hãy kiểm tra hoặc đổi tên header tương ứng rồi nạp lại. Mỗi bảng trong workbook có thể dùng thứ tự cột và cấu trúc riêng.',
     );
   }
@@ -348,14 +358,20 @@ function formatBarcode(cell: CellValue, zeroPaddingWidths: Map<number, number>):
 
 function resolveBarcode(
   barcodeCell: CellValue | undefined,
+  codeCell: CellValue | undefined,
   goldCodeCell: CellValue | undefined,
+  tillCodeCell: CellValue | undefined,
   fallbackCell: CellValue | undefined,
   zeroPaddingWidths: Map<number, number>,
 ): { barcode: string; source: ImportedStocktakeRow['barcodeSource'] } {
   const barcode = barcodeCell ? formatBarcode(barcodeCell, zeroPaddingWidths) : '';
   if (barcode) return { barcode, source: 'BARCODE' };
+  const code = codeCell ? formatBarcode(codeCell, zeroPaddingWidths) : '';
+  if (code) return { barcode: code, source: 'CODE' };
   const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, zeroPaddingWidths) : '';
   if (goldCode) return { barcode: goldCode, source: 'GOLDCODE' };
+  const tillCode = tillCodeCell ? formatBarcode(tillCodeCell, zeroPaddingWidths) : '';
+  if (tillCode) return { barcode: tillCode, source: 'TILLCODE' };
   const fallback = fallbackCell ? formatBarcode(fallbackCell, zeroPaddingWidths) : '';
   if (fallback) return { barcode: fallback, source: 'MÃ VẠCH' };
   return { barcode: '', source: 'manual' };
@@ -439,7 +455,11 @@ export async function parseStocktakeWorkbook(
   importedAt = new Date(),
 ): Promise<StocktakeImportResult> {
   if (!/\.xlsx$/i.test(file.name)) throw new Error('Hiện chỉ hỗ trợ workbook .xlsx. File .xls cũ chưa được hỗ trợ.');
-  const zip = await JSZip.loadAsync(file);
+  const fileBuffer = await file.arrayBuffer();
+  if (!globalThis.crypto?.subtle) throw new Error('Trình duyệt không hỗ trợ SHA-256 để nhận diện file trùng. Hãy dùng phiên bản trình duyệt mới.');
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', fileBuffer);
+  const fingerprint = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
+  const zip = await JSZip.loadAsync(fileBuffer);
   const [sharedStrings, styleMetadata, sheets] = await Promise.all([
     readSharedStrings(zip), readStyles(zip), readWorkbookSheets(zip),
   ]);
@@ -495,13 +515,16 @@ export async function parseStocktakeWorkbook(
       for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
         if (rowNumber <= mapping.rowNumber || rowNumber >= endRow) continue;
         const barcodeCell = mapping.barcodeColumn !== undefined ? cells.get(mapping.barcodeColumn) : undefined;
+        const codeCell = mapping.codeColumn !== undefined ? cells.get(mapping.codeColumn) : undefined;
         const goldCodeCell = mapping.goldCodeColumn !== undefined ? cells.get(mapping.goldCodeColumn) : undefined;
+        const tillCodeCell = mapping.tillCodeColumn !== undefined ? cells.get(mapping.tillCodeColumn) : undefined;
         const fallbackCell = mapping.fallbackBarcodeColumn !== undefined ? cells.get(mapping.fallbackBarcodeColumn) : undefined;
-        const resolvedBarcode = resolveBarcode(barcodeCell, goldCodeCell, fallbackCell, styleMetadata.zeroPaddingWidths);
+        const resolvedBarcode = resolveBarcode(barcodeCell, codeCell, goldCodeCell, tillCodeCell, fallbackCell, styleMetadata.zeroPaddingWidths);
         const barcode = resolvedBarcode.barcode;
         const barcodeSource = resolvedBarcode.source;
         const fallbackBarcode = fallbackCell ? formatBarcode(fallbackCell, styleMetadata.zeroPaddingWidths) : '';
         const explicitBarcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
+        const explicitCode = codeCell ? formatBarcode(codeCell, styleMetadata.zeroPaddingWidths) : '';
         const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, styleMetadata.zeroPaddingWidths) : '';
         const actualQuantityCell = cells.get(mapping.quantityColumn);
         const quantityRaw = actualQuantityCell?.value.trim() ?? '';
@@ -518,17 +541,17 @@ export async function parseStocktakeWorkbook(
         }
         const issues = rowIssues(barcode, quantity);
         if (quantityParseIssue) issues.push('Không thể diễn giải kết quả thực tế: ' + quantityParseIssue);
-        if (fallbackBarcode && !explicitBarcode && !goldCode) {
+        if (fallbackBarcode && !explicitBarcode && !explicitCode && !goldCode && !tillCodeCell?.value.trim()) {
           if (!fallbackRepeatedValue) fallbackRepeatedValue = fallbackBarcode;
           else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
         }
         dataRows.push({
-          barcode, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, barcodeSource, issues,
+          barcode, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, sourceFileName: file.name, barcodeSource, issues,
         });
       }
 
       if (mapping.fallbackBarcodeColumn !== undefined && mapping.barcodeColumn === undefined &&
-        mapping.goldCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
+        mapping.codeColumn === undefined && mapping.goldCodeColumn === undefined && mapping.tillCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
         dataRows.forEach((row) => {
           if (row.barcodeSource === 'MÃ VẠCH') {
             row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE hoặc GOLDCODE.');
@@ -565,5 +588,9 @@ export async function parseStocktakeWorkbook(
     const diagnostics = [...blockingIssues, ...warnings];
     throw new Error(diagnostics.length ? diagnostics.join('\n\n') : 'Không tìm thấy sheet nào có dữ liệu kiểm kê hợp lệ.');
   }
-  return { sourceFileName: file.name, importedAt: importedAt.toISOString(), zones, warnings, blockingIssues };
+  return {
+    sourceFileName: file.name,
+    sourceFiles: [{ name: file.name, fingerprint, size: file.size, lastModified: file.lastModified }],
+    importedAt: importedAt.toISOString(), zones, warnings, blockingIssues,
+  };
 }
