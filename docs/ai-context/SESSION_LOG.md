@@ -1,3 +1,12 @@
+### 2026-11-10 — SCAN-05/06 corrective validation update
+
+- CI run #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`: scanner preflight suites, production adapter integration, continuous ±5°–±75° angle sweep, 90°/270° and combined skew, medium-low contrast fixture, EAN-8/EAN-13, ambiguous texture, strict ROI, TypeScript, production build, GitHub Pages build and diff checks.
+- Expected ZXing 0.23.0 `MultiFormatReader` `NotFoundException` console warnings are narrowly suppressed during synchronous decode attempts; unrelated warnings are forwarded. CI log contains zero such warning lines and the integration test asserts quiet expected misses.
+- A 40-level synthetic contrast fixture failed production decoding; increasing to 80 still failed. The fixture was corrected to avoid the artificial white border introduced by the rotation helper while retaining the 80-level source contrast; the final production adapter test passed. This is a synthetic validation fixture, not a measured optical sensitivity threshold.
+- Corrective source and automated tests are green. Physical iOS Safari/PWA and Android Chrome/PWA QA remains mandatory before merge/deploy.
+
+---
+
 ### 2026-11-10 — SCAN-05/06 corrective audit and continuous orientation implementation
 
 - Verified current `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616`; PR #66 had been merged after the earlier handoff snapshot.
