@@ -130,7 +130,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Continuous ROI orientation recovery (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #411 passed. Physical iOS/Android QA remains pending.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical iOS/Android QA remains pending.
 
 - ZXing's existing `TRY_HARDER` path retains 180° 1D scanline reversal.
 - Keep an exact clockwise 90° ROI transform as a fast path after an upright miss; run it on the current valid ROI frame, not every third frame.
@@ -142,7 +142,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #411 passed. Physical optical QA remains pending.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical optical QA remains pending.
 
 - Estimate the dominant ROI gradient orientation using a 180-bin Sobel histogram, directional-energy concentration and local coherence.
 - Normalize the estimate modulo 180° into a signed ±90° range; ignore estimates below 0.65° and reject low-confidence/ambiguous textures.
