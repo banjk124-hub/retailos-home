@@ -3,7 +3,7 @@
 **Baseline:** merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66).  
 **Corrective branch:** `fix/scan-05-06-continuous-orientation`.  
 **PR #66:** merged; its earlier automated checks did not complete physical device acceptance.  
-**Corrective CI/device status:** pending. Do not merge/deploy this corrective branch until CI, source review and physical iOS/Android acceptance pass.
+**Corrective CI:** run #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b` (full preflight, TypeScript, production build, Pages build and diff checks). **Physical device QA:** pending. Do not merge/deploy until device acceptance passes.
 
 ## Audit findings
 
@@ -21,7 +21,8 @@
 - Evaluate both the original and quarter-turned ROI for the smaller correction first, then try the alternate representation if ZXing still misses.
 - Increase minimum session decode sampling from 110 ms to 70 ms. Decode remains serialized; no overlapping ZXing calls or unbounded work queue.
 - Correct diagnostics so estimator invocations, rejected estimates and successful decode hits are distinguishable.
-- Expand pure and production-adapter tests to continuous positive/negative angles, combined quarter-turn plus residual skew, strict ROI and fail-closed cases.
+- Expand pure and production-adapter tests to continuous positive/negative angles, medium-low contrast, EAN-8/EAN-13, combined quarter-turn plus residual skew, ambiguous texture, strict ROI and fail-closed cases.
+- Suppress only ZXing 0.23.0's expected `NotFoundException` console warning during synchronous decode misses; unrelated warnings are forwarded. CI run #411 confirms the integration test remains quiet.
 
 ## Protected invariants
 
@@ -29,9 +30,9 @@ Strict module-owned ROI/no full-frame fallback; camera acquisition and lease own
 
 ## Acceptance gate
 
-- [ ] Run full preflight, TypeScript, production build and GitHub Pages build on the corrective head.
-- [ ] Review full source diff and verify estimator → transform → production ZXing decoder call order.
-- [ ] Verify continuous-angle and combined-angle tests through the actual adapter.
+- [x] Run full preflight, TypeScript, production build and GitHub Pages build on the corrective code head (CI #411).
+- [x] Review full source diff and verify estimator → transform → production ZXing decoder call order.
+- [x] Verify continuous-angle, medium-low contrast and combined-angle tests through the actual adapter.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA tests in Home and Stocktake.
 - [ ] Record accuracy, first-result latency, per-stage duration and UI responsiveness on representative devices.
 - [ ] User explicitly approves merge/deploy after reviewing evidence.
