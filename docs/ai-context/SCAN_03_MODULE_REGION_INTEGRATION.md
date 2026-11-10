@@ -1,7 +1,7 @@
 # SCAN-03 — Module-owned preview region integration
 
-**Status:** Implemented on `feat/scan-03-module-region-integration`; GitHub Actions run #309 passed full preflight/build. PR #61 remains Draft and depends on PR #60.  
-**Base:** SCAN-02 merged main `891a3a6c8c85442d0b4a253c1fca43b36b590f1c` plus the SCAN-02 audit/test correction branch.  
+**Status:** Merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms deployment and successful iOS/Android verification.  
+**Base:** SCAN-02 plus audit follow-up merged; SCAN-03 merge commit `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`.  
 **Scope:** Measure Home and Stocktake's existing reticles independently, map each to source-frame coordinates, and publish the result into the active session without restarting it.
 
 ## 1. Purpose
@@ -53,5 +53,5 @@ Unsupported object-position syntax or unsupported video transforms fail closed b
 - Automated geometry-adapter tests cover Home and Stocktake reticles, visible-content clipping, mirror inversion, invalid dimensions, unsupported CSS positions/transforms and in-place session updates.
 - Full preflight, TypeScript, production build and GitHub Pages build pass.
 - Source diff confirms no decoder, camera, lifecycle, cadence, CSS or business-flow changes.
-- After deployment, physically verify reticle-to-source alignment and barcode behavior on iOS Safari/PWA and Android Chrome/PWA.
-- SCAN-04 remains blocked until both modules have valid source regions and device QA evidence.
+- User confirms the merged deployment was checked on iOS and Android with no detected geometry or existing-flow regression.
+- SCAN-03 is accepted; SCAN-04 may consume the mapped region in the decoder.
