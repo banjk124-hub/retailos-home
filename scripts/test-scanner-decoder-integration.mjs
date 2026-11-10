@@ -212,10 +212,14 @@ try {
       (value) => value < 128 ? 88 : 168,
     ),
   };
-  const lowContrastAngled = rotateLuminanceByAngle(
+  const lowContrastRotated = rotateLuminanceByAngle(
     lowContrastFrame.luminance, lowContrastFrame.width, lowContrastFrame.height, -31,
   );
-  assert.ok(lowContrastAngled, 'low-contrast adapter fixture must be generated');
+  assert.ok(lowContrastRotated, 'low-contrast adapter fixture must be generated');
+  const lowContrastAngled = {
+    ...lowContrastRotated,
+    luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 168)),
+  };
   const lowContrastDecoder = await createDecoder();
   const lowContrastResult = await decodeOnce(lowContrastDecoder, toSource(lowContrastAngled));
   assert.equal(lowContrastResult[0]?.value, '12345',
