@@ -35,7 +35,9 @@ function isValidFrame(
 /**
  * Estimate the dominant vertical-bar edge tilt from a sampled Sobel structure
  * tensor. It is intended for 1D barcode ROIs after orthogonal orientation
- * normalization, not for perspective or curved-label correction.
+ * normalization, not for perspective or curved-label correction. The angle
+ * describes the dominant edge-normal tilt in image coordinates; the caller
+ * applies its inverse to deskew the ROI.
  */
 export function estimateScannerSkewAngle(
   luminance: Uint8ClampedArray,
