@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet,
+  AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet, Info,
   History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
 } from 'lucide-react';
 import JSZip from 'jszip';
@@ -100,6 +100,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const [history, setHistory] = useState<StocktakeImportHistoryItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [historyBusy, setHistoryBusy] = useState(true);
+  const [historyPersisted, setHistoryPersisted] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -125,6 +126,9 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
+  const noticeTone = /không|chưa|lỗi|cần xác nhận|cần bổ sung|bị bỏ qua|không được/i.test(notice)
+    ? 'warning'
+    : /đang|khôi phục|phiên mới/i.test(notice) ? 'info' : 'success';
   const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [];
   const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
@@ -150,6 +154,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     const nextResult = mergeStocktakeImportSession(result, incoming, employeeCode, mergeConflicts, reviewMeta);
     const preservedZoneCode = activeZone?.zoneCode;
     setResult(nextResult);
+    setHistoryPersisted(false);
     setSelectedZone(Math.max(0, nextResult.zones.findIndex((zone) => zone.zoneCode === preservedZoneCode)));
     setEditingZone(false);
     setEditBaseline(null);
@@ -158,6 +163,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     try {
       const id = await stocktakeImportStore.saveResult(nextResult, historyId);
       setHistoryId(id);
+      setHistoryPersisted(true);
       await refreshHistory();
       setNotice('Đã cập nhật phiên xử lý với ' + incoming.length + ' file nguồn. ' +
         nextResult.zones.length + ' vùng · ' +
@@ -242,6 +248,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const resetActiveSession = () => {
     setResult(null);
+    setHistoryPersisted(false);
     setHistoryId(undefined);
     setSelectedZone(0);
     setEditingZone(false);
@@ -344,6 +351,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       const id = await stocktakeImportStore.saveResult(updatedResult, historyId);
       setResult(updatedResult);
       setHistoryId(id);
+      setHistoryPersisted(true);
       setDirtyZones((current) => current.filter((code) => code !== activeZone.zoneCode));
       setEditingZone(false);
       setEditBaseline(null);
@@ -457,6 +465,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       }),
     });
     setHistoryId(item.id);
+    setHistoryPersisted(true);
     setDirtyZones([]);
     setEditingZone(false);
     setEditBaseline(null);
@@ -492,7 +501,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         </header>
 
         {error && <p className="stocktake-import-error" role="alert">{error}</p>}
-        {notice && <p className="stocktake-import-notice" role="status"><CheckCircle2 size={16} />{notice}</p>}
+        {notice && <p className={'stocktake-import-notice is-' + noticeTone} role="status">{noticeTone === 'warning' ? <AlertTriangle size={16} /> : noticeTone === 'info' ? <Info size={16} /> : <CheckCircle2 size={16} />}{notice}</p>}
 
         {view === 'import' && <>
           {pendingImport && <div className="stocktake-import-review-backdrop">
@@ -621,8 +630,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                       <strong>{editingZone ? 'Đang chỉnh sửa dữ liệu' : 'Bảng dữ liệu kiểm kê'}</strong>
                       <span>{editingZone ? 'Thay đổi sẽ được lưu vào lịch sử trên thiết bị.' : 'Chọn Chỉnh sửa để cập nhật mã hàng hoặc kết quả thực tế.'}</span>
                     </div>
-                    <span className={dirtyZones.includes(activeZone.zoneCode) ? 'stocktake-import-state is-dirty' : invalidCount ? 'stocktake-import-state is-warning' : 'stocktake-import-state is-ready'}>
-                      {dirtyZones.includes(activeZone.zoneCode) ? 'Chưa lưu' : invalidCount ? invalidCount + ' dòng lỗi' : 'Dữ liệu hợp lệ'}
+                    <span className={dirtyZones.includes(activeZone.zoneCode) || !historyPersisted ? 'stocktake-import-state is-dirty' : invalidCount ? 'stocktake-import-state is-warning' : 'stocktake-import-state is-ready'}>
+                      {dirtyZones.includes(activeZone.zoneCode) ? 'Chưa lưu thay đổi' : invalidCount ? invalidCount + ' dòng lỗi' : historyPersisted ? 'Đã lưu trên thiết bị' : 'Chưa lưu lịch sử'}
                     </span>
                   </div>
                   <div className="stocktake-import-table-wrap">
