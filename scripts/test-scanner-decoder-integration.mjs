@@ -204,6 +204,24 @@ try {
     await decoder.dispose();
   }
 
+  const lowContrastFrame = {
+    width: upright.width,
+    height: upright.height,
+    luminance: Uint8ClampedArray.from(
+      upright.luminance,
+      (value) => value < 128 ? 108 : 148,
+    ),
+  };
+  const lowContrastAngled = rotateLuminanceByAngle(
+    lowContrastFrame.luminance, lowContrastFrame.width, lowContrastFrame.height, -31,
+  );
+  assert.ok(lowContrastAngled, 'low-contrast adapter fixture must be generated');
+  const lowContrastDecoder = await createDecoder();
+  const lowContrastResult = await decodeOnce(lowContrastDecoder, toSource(lowContrastAngled));
+  assert.equal(lowContrastResult[0]?.value, '12345',
+    'production adapter must recover a low-contrast barcode at an intermediate angle');
+  await lowContrastDecoder.dispose();
+
   for (const [format, value, angle] of [
     ['EAN_8', '96385074', 27],
     ['EAN_13', '5901234123457', -38],
