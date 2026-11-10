@@ -6,7 +6,7 @@ export type ImportedStocktakeRow = {
   sourceRow: number;
   sourceSheet?: string;
   sourceFileName?: string;
-  sourceFingerprint?: string;
+  sourceFileId?: string;
   barcodeSource: 'BARCODE' | 'CODE' | 'GOLDCODE' | 'TILLCODE' | 'MÃ VẠCH' | 'manual';
   issues: string[];
 };
@@ -549,7 +549,7 @@ export async function parseStocktakeWorkbook(
           else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
         }
         dataRows.push({
-          barcode, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, sourceFileName: file.name, sourceFingerprint: fingerprint, barcodeSource, issues,
+          barcode, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, sourceFileName: file.name, sourceFileId: fingerprint.slice(0, 16), barcodeSource, issues,
         });
       }
 
