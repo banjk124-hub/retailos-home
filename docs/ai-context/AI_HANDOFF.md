@@ -1,20 +1,19 @@
-# Current AI handoff — consolidated SCAN-05/06 rotation and deskew (2026-11-10)
+# Current AI handoff — SCAN-05/06 finalization (2026-11-10)
 
 - Repository: `banjk124-hub/retailos-home`.
-- Current branch: `feat/scan-06-bounded-deskew`.
-- Current consolidated Draft PR: #65 — https://github.com/banjk124-hub/retailos-home/pull/65.
-- GitHub Actions run #360 passed the full preflight and both builds on the consolidated PR #66 branch.
-- Earlier staged PRs #63 (baseline), #64 (SCAN-05) and #65 (SCAN-06) are closed without merging as superseded by final PR #66.
-- SCAN-04 was merged/deployed by the user; user confirms normal scanner operation.
-- Existing ZXing 1D support already handles 180° through `TRY_HARDER` scanline reversal. Code 128 runtime fixture confirms 0°/180°; EAN-8/EAN-13 retain the shared OneDReader inheritance path.
-- SCAN-05 adds one clockwise quarter-turn ROI pass every third frame after upright decode misses. This handles 90° and 270° using the existing 180° reversal.
-- SCAN-06 estimates small in-plane roll and applies one bounded inverse-angle ROI transform (1.2°–12°) only after upright and orthogonal passes miss.
-- New canonical designs: `SCAN_05_ORTHOGONAL_ROTATION.md` and `SCAN_06_BOUNDED_DESKEW.md`.
-- Protected: strict reticle ROI/no full-frame fallback, 110 ms cadence, camera/session/lifecycle contracts, Home/Stocktake independent UI and business flows.
-- Physical iOS Safari/PWA and Android Chrome/PWA QA is still required for 0°/90°/180°/270°, ±5°/±8°, latency and CPU impact on low-end devices.
-- Next: complete physical QA, final consolidated source and documentation audit, then merge PR #66 only after acceptance. Do not claim device QA from CI.
-
----
+- Active branch: `feat/scan-05-06-final-consolidation`.
+- Active pull request: Draft PR #66 — https://github.com/banjk124-hub/retailos-home/pull/66.
+- PR #66 is the sole consolidated delivery for SCAN baseline, SCAN-05 and SCAN-06. Staged PRs #63/#64/#65 were closed without merging and must not be reopened or merged separately.
+- SCAN-04 is merged/deployed; the user confirms normal scanner operation after deployment.
+- Existing 180° 1D reversal is supplied by ZXing `TRY_HARDER` / `OneDReader`. Code 128 has a runtime 0°/180° fixture; EAN-8/EAN-13 dependency inheritance is separately guarded.
+- SCAN-05: strict ROI, upright-first decode, one clockwise 90° ROI transform on every third valid ROI frame after a miss. The existing 180° reversal covers the opposite normalized orientation.
+- SCAN-06: sampled Sobel structure-tensor estimate; confidence-gated 1.2°–12° inverse-angle bilinear correction; one HybridBinarizer pass after upright and orthogonal misses. Perspective and curved-label correction are out of scope.
+- Follow-up audit correction: processing cadence uses a dedicated valid-ROI `frameSequence` and `shouldAttemptExtendedDecode()`; diagnostics window counters no longer influence rotation or global-histogram scheduling.
+- Regression coverage includes transform pixel mapping, bounded schedule values, Code 128 rotation/deskew fixtures, combined orthogonal+skew paths, fail-closed inputs and source wiring checks. EAN-8/EAN-13 remain inheritance-guarded rather than individually runtime-fixture tested.
+- GitHub Actions run #368 passed the previous PR head before the audit follow-up commits. The follow-up changes require a fresh CI run; do not describe #368 as validating those new commits.
+- Preserve strict reticle ROI/no full-frame fallback, 110 ms session cadence, camera/session/lifecycle, module-owned presentation, validation/result delivery, Home lookup and Stocktake form/save.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remains a release gate: Home + Stocktake, symbology/orientation/skew matrix, latency and CPU comparison on low-end/high-end devices.
+- Next: review the new CI result, complete physical device QA, then request acceptance. Do not merge or deploy until the user explicitly approves after QA.
 
 ---
 
