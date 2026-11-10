@@ -1,6 +1,6 @@
 # SCAN-06 — Bounded in-plane barcode deskew
 
-**Status:** Implemented on the consolidated SCAN-05/06 branch. Consolidated PR #65 CI run #342 passed the full preflight. Physical iOS/Android accuracy and performance QA remains pending.
+**Status:** Implemented on final consolidated PR #66. Final CI run #350 passed the full preflight on head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`. Physical iOS/Android accuracy and performance QA remains pending.
 
 ## Scope
 
