@@ -79,6 +79,8 @@ function decode(frame) {
 const original = makeCode128();
 assert.equal(estimateScannerSkewAngle(original.luminance, original.width, original.height), null,
   'a level barcode must not trigger deskew');
+assert.equal(estimateScannerSkewAngle(original.luminance, 0, original.height), null,
+  'invalid dimensions must fail closed');
 assert.equal(estimateScannerSkewAngle(new Uint8ClampedArray(100 * 100).fill(255), 100, 100), null,
   'a blank ROI must not produce a skew estimate');
 assert.equal(rotateLuminanceByAngle(original.luminance, original.width, original.height, 13), null,
@@ -133,6 +135,15 @@ assert.equal(estimateScannerSkewAngle(
   eighteenDegrees.luminance, eighteenDegrees.width, eighteenDegrees.height,
 ), null, 'skew beyond the 12-degree correction window must be rejected');
 
+const deskewSource = await readFile(
+  new URL('../src/platform/scanner/scannerDeskew.ts', import.meta.url),
+  'utf8',
+);
+assert.doesNotMatch(deskewSource, /\\b(?:window|document)\\s*(?:\\.|\\?\\.)|HTMLCanvasElement/,
+  'deskew processing must remain pure and independent of browser presentation');
+assert.match(deskewSource, /MAX_SKEW_DEGREES = 12/,
+  'deskew angle must remain explicitly bounded');
+
 const decoderSource = await readFile(
   new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
   'utf8',
@@ -142,6 +153,8 @@ assert.match(decoderSource, /uprightDeskew \?\? \(rotated/,
   'deskew must select the upright or normalized orthogonal ROI, not the full frame');
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
+assert.match(decoderSource, /false,\\s*'deskew'/,
+  'deskew decode must use the bounded HybridBinarizer-only pass');
 assert.match(decoderSource, /lastDeskewAngleDegrees:/, 'measured skew angle must be observable');
 
 console.log('Scanner bounded deskew tests passed: ±5°/±8°, 90°/270° normalization path, and fail-closed bounds.');
