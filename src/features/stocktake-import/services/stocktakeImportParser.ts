@@ -4,6 +4,8 @@ export type ImportedStocktakeRow = {
   barcode: string;
   quantity: string;
   sourceRow: number;
+  barcodeSource: 'BARCODE' | 'GOLDCODE' | 'MÃ VẠCH' | 'manual';
+  issues: string[];
 };
 
 export type ImportedStocktakeZone = {
@@ -25,18 +27,35 @@ export type StocktakeImportResult = {
 
 type CellValue = { value: string; type: string; styleIndex: number };
 type ParsedSheet = { name: string; path: string };
-type StyleMetadata = { percentageStyles: Set<number>; zeroPaddingWidths: Map<number, number> };
+type StyleMetadata = {
+  percentageStyles: Set<number>;
+  zeroPaddingWidths: Map<number, number>;
+  numberFormats: Map<number, string>;
+};
+type HeaderMapping = {
+  rowNumber: number;
+  barcodeColumn?: number;
+  goldCodeColumn?: number;
+  fallbackBarcodeColumn?: number;
+  barcodeHeader: string;
+  zoneColumn?: number;
+};
 
 const RELATIONSHIP_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
-const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13', 'EAN8', 'UPC', 'GTIN'];
+const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13', 'EAN8', 'UPC', 'GTIN', 'MÃ BARCODE'];
+const GOLD_CODE_HEADERS = ['GOLDCODE', 'GOLD CODE', 'GOLD_CODE', 'GOLD PRODUCT CODE'];
 const FALLBACK_BARCODE_HEADERS = ['MA VACH', 'MA VACH HANG'];
-const QUANTITY_HEADERS = ['SO LUONG', 'QUANTITY', 'QTY', 'SL', 'SO LUONG KIEM KE'];
+const QUANTITY_HEADERS = [
+  'SO LUONG', 'QUANTITY', 'QTY', 'SL', 'SO LUONG KIEM KE', 'SO LUONG THUC TE',
+  'KET QUA THUC TE', 'KET QUA KIEM KE', 'THUC TE', 'ACTUAL QTY', 'ACTUAL QUANTITY',
+  'COUNTED QTY', 'COUNTED QUANTITY', 'COUNT', 'RESULT', 'WEIGHT', 'MASS', 'KHOI LUONG',
+];
 const ZONE_HEADERS = ['VUNG', 'ZONE', 'MA VUNG', 'ZONE CODE', 'KHU VUC'];
 
 function parseXml(source: string, label: string): Document {
   const document = new DOMParser().parseFromString(source, 'application/xml');
   if (document.getElementsByTagName('parsererror').length > 0) {
-    throw new Error(`Không đọc được cấu trúc XML trong ${label}.`);
+    throw new Error('Không đọc được cấu trúc XML trong ' + label + '.');
   }
   return document;
 }
@@ -56,7 +75,7 @@ function normalizePath(path: string): string {
 }
 
 function resolveWorksheetPath(target: string): string {
-  return normalizePath(target.startsWith('/') ? target : `xl/${target}`);
+  return normalizePath(target.startsWith('/') ? target : 'xl/' + target);
 }
 
 function readText(element: Element): string {
@@ -72,7 +91,7 @@ function columnIndex(reference: string): number {
 
 function normalizeHeader(value: string): string {
   return value.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
-    .replace(/[._-]+/g, ' ').replace(/\s+/g, ' ');
+    .replace(/[._-]+/g, ' ').replace(/[()[\]:]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function decodeCell(cell: Element, sharedStrings: string[]): CellValue {
@@ -80,11 +99,7 @@ function decodeCell(cell: Element, sharedStrings: string[]): CellValue {
   const styleIndex = Number(cell.getAttribute('s') ?? 0);
   const valueNode = descendants(cell, 'v')[0];
   const raw = valueNode?.textContent ?? '';
-
-  if (type === 's') {
-    const index = Number(raw);
-    return { value: sharedStrings[index] ?? '', type, styleIndex };
-  }
+  if (type === 's') return { value: sharedStrings[Number(raw)] ?? '', type, styleIndex };
   if (type === 'inlineStr') return { value: readText(cell), type, styleIndex };
   if (type === 'b') return { value: raw === '1' ? 'TRUE' : 'FALSE', type, styleIndex };
   if (type === 'str' || type === 'e') return { value: raw, type, styleIndex };
@@ -99,6 +114,10 @@ function readSharedStrings(zip: JSZip): Promise<string[]> {
 }
 
 function readStyles(zip: JSZip): Promise<StyleMetadata> {
+  const builtInFormats = new Map<number, string>([
+    [0, 'General'], [1, '0'], [2, '0.00'], [3, '#,##0'], [4, '#,##0.00'],
+    [9, '0%'], [10, '0.00%'], [11, '0.00E+00'], [49, '@'],
+  ]);
   return zip.file('xl/styles.xml')?.async('string').then((xml) => {
     const document = parseXml(xml, 'styles.xml');
     const customFormats = new Map<number, string>();
@@ -108,17 +127,22 @@ function readStyles(zip: JSZip): Promise<StyleMetadata> {
     const xfs = descendants(document.documentElement, 'cellXfs')[0];
     const percentageStyles = new Set<number>();
     const zeroPaddingWidths = new Map<number, number>();
-    if (!xfs) return { percentageStyles, zeroPaddingWidths };
+    const numberFormats = new Map<number, string>();
+    if (!xfs) return { percentageStyles, zeroPaddingWidths, numberFormats };
     descendants(xfs, 'xf').forEach((xf, index) => {
       const formatId = Number(xf.getAttribute('numFmtId') ?? 0);
-      const formatCode = customFormats.get(formatId) ?? '';
+      const formatCode = customFormats.get(formatId) ?? builtInFormats.get(formatId) ?? 'General';
+      numberFormats.set(index, formatCode);
       if (formatId === 9 || formatId === 10 || formatCode.includes('%')) percentageStyles.add(index);
-      const positiveFormat = (formatCode.split(';')[0] ?? '').replace(/"[^"]*"/g, '').trim();
+      const positiveFormat = formatCode.split(';')[0].replace(/"[^"]*"/g, '').trim();
       if (/^0{6,}$/.test(positiveFormat)) zeroPaddingWidths.set(index, positiveFormat.length);
     });
-    return { percentageStyles, zeroPaddingWidths };
-  }) ?? Promise.resolve({ percentageStyles: new Set<number>(), zeroPaddingWidths: new Map<number, number>() });
+    return { percentageStyles, zeroPaddingWidths, numberFormats };
+  }) ?? Promise.resolve({
+    percentageStyles: new Set<number>(), zeroPaddingWidths: new Map<number, number>(), numberFormats: new Map<number, string>(),
+  });
 }
+
 function readWorkbookSheets(zip: JSZip): Promise<ParsedSheet[]> {
   return Promise.all([
     zip.file('xl/workbook.xml')?.async('string'),
@@ -159,66 +183,142 @@ function readRows(xml: string, sharedStrings: string[]): Map<number, Map<number,
   return rows;
 }
 
-function findHeader(rows: Map<number, Map<number, CellValue>>): {
-  rowNumber: number; barcodeColumn: number; quantityColumn: number; barcodeHeader: string; zoneColumn?: number;
-} {
-  const candidates = [...rows.entries()].filter(([rowNumber]) => rowNumber <= 40);
-  for (const [rowNumber, cells] of candidates) {
-    const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
-    const barcode = [...headers.entries()].find(([, value]) => BARCODE_HEADERS.includes(value) || value.startsWith('BARCODE '));
-    const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value) || value.startsWith('SO LUONG '));
-    const zone = [...headers.entries()].find(([, value]) => ZONE_HEADERS.includes(value));
-    if (barcode && quantity) {
-      return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1], ...(zone ? { zoneColumn: zone[0] } : {}) };
-    }
-  }
-  for (const [rowNumber, cells] of candidates) {
-    const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
-    const barcode = [...headers.entries()].find(([, value]) => FALLBACK_BARCODE_HEADERS.includes(value) || value.startsWith('MA VACH '));
-    const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value) || value.startsWith('SO LUONG '));
-    const zone = [...headers.entries()].find(([, value]) => ZONE_HEADERS.includes(value));
-    if (barcode && quantity) {
-      return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1], ...(zone ? { zoneColumn: zone[0] } : {}) };
-    }
-  }
-  throw new Error('Không nhận diện được cột BARCODE và SỐ LƯỢNG. Không có dữ liệu nào được xuất.');
-}
-function shiftDecimal(value: string, places: number): string {
-  const match = value.match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
-  if (!match) throw new Error('Giá trị phần trăm không hợp lệ.');
-  const sign = match[1];
-  const digits = match[2] + (match[3] ?? '');
-  const decimalPosition = match[2].length + Number(match[4] ?? 0) + places;
-  const padded = digits.padEnd(Math.max(digits.length, decimalPosition), '0');
-  const normalized = decimalPosition <= 0
-    ? '0.' + '0'.repeat(-decimalPosition) + padded
-    : decimalPosition >= padded.length
-      ? padded + '0'.repeat(decimalPosition - padded.length)
-      : padded.slice(0, decimalPosition) + '.' + padded.slice(decimalPosition);
-  const parts = normalized.split('.');
-  const integer = parts[0].replace(/^0+(?=\d)/, '');
-  const fraction = (parts[1] ?? '').replace(/0+$/, '');
-  return sign + integer + (fraction ? '.' + fraction : '');
+function matchesHeader(value: string, aliases: string[]): boolean {
+  return aliases.some((alias) => value === alias || value.startsWith(alias + ' '));
 }
 
-function parseQuantity(value: string, type: string, percentageStyle: boolean): string {
-  const trimmed = value.trim();
-  if (!trimmed) throw new Error('Thiếu số lượng.');
-  if (type === 'n') {
-    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) {
-      throw new Error('Số lượng không hợp lệ: ' + trimmed);
+function findHeader(rows: Map<number, Map<number, CellValue>>): HeaderMapping {
+  const candidates = [...rows.entries()].sort((a, b) => a[0] - b[0]);
+  const availableHeaders: string[] = [];
+  for (const [rowNumber, cells] of candidates) {
+    const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
+    const quantity = [...headers.entries()].find(([, value]) => matchesHeader(value, QUANTITY_HEADERS));
+    if (!quantity) continue;
+    const barcode = [...headers.entries()].find(([, value]) => matchesHeader(value, BARCODE_HEADERS));
+    const goldCode = [...headers.entries()].find(([, value]) => matchesHeader(value, GOLD_CODE_HEADERS));
+    const fallback = [...headers.entries()].find(([, value]) => matchesHeader(value, FALLBACK_BARCODE_HEADERS));
+    const zone = [...headers.entries()].find(([, value]) => matchesHeader(value, ZONE_HEADERS));
+    if (barcode || goldCode || fallback) {
+      const chosen = barcode ?? goldCode ?? fallback!;
+      return {
+        rowNumber,
+        ...(barcode ? { barcodeColumn: barcode[0] } : {}),
+        ...(goldCode ? { goldCodeColumn: goldCode[0] } : {}),
+        ...(fallback ? { fallbackBarcodeColumn: fallback[0] } : {}),
+        barcodeHeader: chosen[1],
+        ...(zone ? { zoneColumn: zone[0] } : {}),
+      };
     }
-    // Excel stores percentage-formatted values as fractions; restore the displayed percent.
-    if (percentageStyle) return shiftDecimal(trimmed, 2) + '%';
-    // Keep the raw OOXML numeric token to avoid Number precision loss.
-    return trimmed;
+    if (availableHeaders.length < 3) availableHeaders.push('Dòng ' + rowNumber + ': ' + [...headers.values()].filter(Boolean).join(' | '));
   }
-  const normalized = trimmed.replace(/\s/g, '');
-  const decimalComma = /^[+-]?\d+,\d+(?:[eE][+-]?\d+)?%?$/.test(normalized);
-  if (decimalComma) return normalized.replace(',', '.');
-  if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?$/.test(normalized)) return normalized;
-  throw new Error('Số lượng không hợp lệ hoặc có dấu phân cách mơ hồ: ' + trimmed);
+  const details = availableHeaders.length ? ' Các header gần nhất: ' + availableHeaders.join(' / ') + '.' : '';
+  throw new Error(
+    'Không nhận diện được cột mã hàng (BARCODE hoặc GOLDCODE) và cột kết quả thực tế (SỐ LƯỢNG, QUANTITY, KHỐI LƯỢNG...).' +
+    details + ' Hãy kiểm tra tên cột, hoặc đổi tên header tương ứng rồi nạp lại file. Mỗi sheet có thể dùng thứ tự cột và cấu trúc riêng.',
+  );
 }
+
+function expandDecimal(value: string): { sign: string; integer: string; fraction: string } {
+  const match = value.trim().match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
+  if (!match) throw new Error('Giá trị số không hợp lệ: ' + value);
+  const sign = match[1] === '-' ? '-' : '';
+  const digits = match[2] + (match[3] ?? '');
+  const point = match[2].length + Number(match[4] ?? 0);
+  if (point <= 0) return { sign, integer: '0', fraction: '0'.repeat(-point) + digits };
+  if (point >= digits.length) return { sign, integer: digits + '0'.repeat(point - digits.length), fraction: '' };
+  return { sign, integer: digits.slice(0, point), fraction: digits.slice(point) };
+}
+
+function incrementDigits(value: string): string {
+  const digits = value.split('');
+  for (let index = digits.length - 1; index >= 0; index -= 1) {
+    if (digits[index] !== '9') {
+      digits[index] = String(Number(digits[index]) + 1);
+      return digits.join('');
+    }
+    digits[index] = '0';
+  }
+  return '1' + digits.join('');
+}
+
+function roundDecimal(value: string, scale: number, minScale = 0): string {
+  const expanded = expandDecimal(value);
+  const precision = Math.max(0, Math.min(30, scale));
+  let integer = expanded.integer.replace(/^0+(?=\d)/, '') || '0';
+  let fraction = expanded.fraction;
+  const kept = fraction.padEnd(precision + 1, '0').slice(0, precision);
+  const nextDigit = fraction[precision] ?? '0';
+  let combined = integer + kept;
+  if (nextDigit >= '5') combined = incrementDigits(combined);
+  if (precision > 0) {
+    combined = combined.padStart(precision + 1, '0');
+    integer = combined.slice(0, -precision).replace(/^0+(?=\d)/, '') || '0';
+    fraction = combined.slice(-precision);
+  } else {
+    integer = combined.replace(/^0+(?=\d)/, '') || '0';
+    fraction = '';
+  }
+  const minimum = Math.max(0, Math.min(precision, minScale));
+  while (fraction.length > minimum && fraction.endsWith('0')) fraction = fraction.slice(0, -1);
+  return (expanded.sign && (integer !== '0' || fraction !== '') ? expanded.sign : '') + integer + (fraction ? '.' + fraction : '');
+}
+
+function generalPrecision(value: string): number {
+  const expanded = expandDecimal(value);
+  const integer = expanded.integer.replace(/^0+/, '');
+  if (integer) return Math.max(0, Math.min(30, 14 - (integer.length - 1)));
+  const firstNonZero = expanded.fraction.search(/[1-9]/);
+  if (firstNonZero < 0) return 0;
+  return Math.max(0, Math.min(30, 14 + firstNonZero + 1));
+}
+
+function numberFormatPrecision(formatCode: string): { max: number; min: number } | null {
+  const section = (formatCode.split(';')[0] ?? 'General')
+    .replace(/"[^"]*"/g, '')
+    .replace(/\\./g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/_.|\*./g, '');
+  if (/^General$/i.test(section.trim())) return null;
+  const match = section.match(/[0#?][0#?,]*(?:\.([0#?]+))?/);
+  if (!match) return null;
+  const decimalPattern = match[1] ?? '';
+  return { max: decimalPattern.length, min: (decimalPattern.match(/0/g) ?? []).length };
+}
+
+function formatExcelNumber(value: string, formatCode: string): string {
+  const percent = formatCode.includes('%');
+  const source = percent ? shiftDecimal(value, 2) : value;
+  const precision = numberFormatPrecision(formatCode);
+  const scale = precision?.max ?? generalPrecision(source);
+  const min = precision?.min ?? 0;
+  return roundDecimal(source, scale, min) + (percent ? '%' : '');
+}
+
+function shiftDecimal(value: string, places: number): string {
+  const expanded = expandDecimal(value);
+  const digits = expanded.integer + expanded.fraction;
+  const point = expanded.integer.length + places;
+  if (point <= 0) return expanded.sign + '0.' + '0'.repeat(-point) + digits;
+  if (point >= digits.length) return expanded.sign + digits + '0'.repeat(point - digits.length);
+  return expanded.sign + digits.slice(0, point) + '.' + digits.slice(point);
+}
+
+function parseTextQuantity(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) throw new Error('Thiếu kết quả thực tế.');
+  const normalized = trimmed.replace(/\s/g, '');
+  if (/^[+-]?\d+,\d+(?:[eE][+-]?\d+)?%?$/.test(normalized)) return normalized.replace(',', '.');
+  if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?$/.test(normalized)) return normalized;
+  throw new Error('Giá trị không hợp lệ hoặc có dấu phân cách mơ hồ: ' + trimmed);
+}
+
+function parseQuantityCell(cell: CellValue, styles: StyleMetadata): string {
+  if (!cell.value.trim()) throw new Error('Thiếu kết quả thực tế.');
+  if (cell.type !== 'n') return parseTextQuantity(cell.value);
+  const formatCode = styles.numberFormats.get(cell.styleIndex) ?? 'General';
+  return formatExcelNumber(cell.value, formatCode);
+}
+
 function formatBarcode(cell: CellValue, zeroPaddingWidths: Map<number, number>): string {
   const value = cell.value.trim();
   const width = zeroPaddingWidths.get(cell.styleIndex);
@@ -228,7 +328,12 @@ function formatBarcode(cell: CellValue, zeroPaddingWidths: Map<number, number>):
   return value;
 }
 
-function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellValue>>, headerRow: number, zoneColumn?: number): string {
+function resolveZoneCode(
+  sheetName: string,
+  rows: Map<number, Map<number, CellValue>>,
+  headerRow: number,
+  zoneColumn?: number,
+): string {
   const normalizedSheet = sheetName.trim().toUpperCase();
   if (zoneColumn !== undefined) {
     const zoneValues = new Set([...rows.entries()]
@@ -244,42 +349,50 @@ function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellVa
       return columnZone;
     }
   }
-  if (!/^SHEET\s*\d*$/i.test(normalizedSheet) && /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(normalizedSheet)) {
-    return normalizedSheet;
-  }
+  if (!/^SHEET\s*\d*$/i.test(normalizedSheet) && /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(normalizedSheet)) return normalizedSheet;
   for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
     if (rowNumber >= headerRow || rowNumber > 12) continue;
     for (const [, cell] of [...cells.entries()].sort((a, b) => a[0] - b[0])) {
       const value = cell.value.trim().toUpperCase();
-      if (!value) continue;
       if (/^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(value)) return value;
     }
   }
-  throw new Error('Không xác định được mã vùng cho sheet ' + sheetName + '.');
+  throw new Error('Không xác định được mã vùng cho sheet ' + sheetName + '. Hãy đặt tên sheet theo mã vùng hoặc bổ sung cột VÙNG.');
 }
-function splitZoneCode(zoneCode: string): { prefix: string; number: string } {
+
+export function buildStocktakeOutput(
+  employeeCode: string,
+  zoneCode: string,
+  rows: ImportedStocktakeRow[],
+  importedAt: Date,
+): string {
   const match = zoneCode.match(/^([A-Z]*)(\d+)$/);
-  if (!match) throw new Error(`Mã vùng "${zoneCode}" không đúng định dạng chữ + số.`);
-  return { prefix: match[1], number: match[2] };
-}
-
-function pad(value: number): string {
-  return String(value).padStart(2, '0');
-}
-
-function buildOutput(employeeCode: string, zoneCode: string, rows: ImportedStocktakeRow[], now: Date): string {
-  const { prefix, number } = splitZoneCode(zoneCode);
-  const date = `${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())}`;
-  const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  if (!match) throw new Error('Mã vùng "' + zoneCode + '" không đúng định dạng chữ + số.');
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const date = importedAt.getFullYear() + '/' + pad(importedAt.getMonth() + 1) + '/' + pad(importedAt.getDate());
+  const time = pad(importedAt.getHours()) + ':' + pad(importedAt.getMinutes()) + ':' + pad(importedAt.getSeconds());
   return [
-    `NHAN VIEN,${employeeCode},${date},${time}`,
-    `ADRESSE,${prefix},${number}`,
-    ...rows.map((row) => `ARTICLE,${row.barcode},${row.quantity}`),
+    'NHAN VIEN,' + employeeCode + ',' + date + ',' + time,
+    'ADRESSE,' + match[1] + ',' + match[2],
+    ...rows.map((row) => 'ARTICLE,' + row.barcode + ',' + row.quantity),
   ].join('\r\n') + '\r\n';
 }
 
 function safeFilePart(value: string): string {
   return value.replace(/[^A-Z0-9_-]/gi, '_').slice(0, 48) || 'ZONE';
+}
+
+function rowIssues(barcode: string, quantity: string): string[] {
+  const issues: string[] = [];
+  const code = barcode.trim();
+  const amount = quantity.trim();
+  if (!code) issues.push('Thiếu BARCODE/GOLDCODE.');
+  else if (/[\r\n,]/.test(code)) issues.push('Mã hàng chứa dấu phẩy hoặc ký tự xuống dòng.');
+  if (!amount) issues.push('Thiếu kết quả thực tế.');
+  else if (!/^[+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?%?$/.test(amount)) {
+    issues.push('Kết quả thực tế không phải số hợp lệ.');
+  }
+  return issues;
 }
 
 export async function parseStocktakeWorkbook(
@@ -301,68 +414,90 @@ export async function parseStocktakeWorkbook(
   for (const sheet of sheets) {
     const worksheet = zip.file(sheet.path);
     if (!worksheet) {
-      warnings.push(`Sheet "${sheet.name}" không có dữ liệu worksheet và đã bị bỏ qua.`);
+      warnings.push('Sheet "' + sheet.name + '" không có worksheet data; đã bỏ qua.');
       continue;
     }
-    const xml = await worksheet.async('string');
-    const rows = readRows(xml, sharedStrings);
-    let header: ReturnType<typeof findHeader>;
+    const rows = readRows(await worksheet.async('string'), sharedStrings);
+    let header: HeaderMapping;
     try {
       header = findHeader(rows);
-    } catch {
-      warnings.push(`Sheet "${sheet.name}" không có cặp cột BARCODE và SỐ LƯỢNG; đã bỏ qua.`);
+    } catch (cause) {
+      warnings.push('Không hỗ trợ sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không nhận diện được cấu trúc.'));
       continue;
     }
-    const zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber, header.zoneColumn);
-    if (seenZones.has(zoneCode)) throw new Error(`Có nhiều sheet cùng mã vùng "${zoneCode}". Không thể xuất tách biệt an toàn.`);
+    let zoneCode: string;
+    try {
+      zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber, header.zoneColumn);
+    } catch (cause) {
+      warnings.push('Sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không xác định được vùng.'));
+      continue;
+    }
+    if (seenZones.has(zoneCode)) throw new Error('Có nhiều sheet cùng mã vùng "' + zoneCode + '". Không thể xuất tách biệt an toàn.');
     seenZones.add(zoneCode);
 
     const dataRows: ImportedStocktakeRow[] = [];
-    const errors: string[] = [];
+    let fallbackRepeatedValue = '';
+    let fallbackIsRepeated = true;
     for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
       if (rowNumber <= header.rowNumber) continue;
-      const barcodeCell = cells.get(header.barcodeColumn);
-      const quantityCell = cells.get(header.quantityColumn);
-      const barcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
-      const quantityValue = quantityCell?.value.trim() ?? '';
-      if (!barcode && !quantityValue) continue;
-      if (!barcode) {
-        errors.push(`Dòng ${rowNumber}: có số lượng nhưng thiếu barcode.`);
-        continue;
+      const barcodeCell = header.barcodeColumn !== undefined ? cells.get(header.barcodeColumn) : undefined;
+      const goldCodeCell = header.goldCodeColumn !== undefined ? cells.get(header.goldCodeColumn) : undefined;
+      const fallbackCell = header.fallbackBarcodeColumn !== undefined ? cells.get(header.fallbackBarcodeColumn) : undefined;
+      const explicitBarcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
+      const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, styleMetadata.zeroPaddingWidths) : '';
+      const fallbackBarcode = fallbackCell ? formatBarcode(fallbackCell, styleMetadata.zeroPaddingWidths) : '';
+      const barcode = explicitBarcode || goldCode || fallbackBarcode;
+      const barcodeSource: ImportedStocktakeRow['barcodeSource'] = explicitBarcode
+        ? 'BARCODE' : goldCode ? 'GOLDCODE' : fallbackBarcode ? 'MÃ VẠCH' : 'manual';
+      const quantityCell = cells.get([...rows.get(header.rowNumber)!.entries()].find(([column]) => column === -1)?.[0] ?? -1);
+      const quantityColumn = [...rows.get(header.rowNumber)!.entries()]
+        .find(([, cell]) => matchesHeader(normalizeHeader(cell.value), QUANTITY_HEADERS))?.[0];
+      const actualQuantityCell = quantityColumn !== undefined ? cells.get(quantityColumn) : undefined;
+      const quantityRaw = actualQuantityCell?.value.trim() ?? '';
+      if (!barcode && !quantityRaw) continue;
+      let quantity = quantityRaw;
+      if (actualQuantityCell && quantityRaw) {
+        try {
+          quantity = parseQuantityCell(actualQuantityCell, styleMetadata);
+        } catch {
+          // Keep the exact source text so the user can correct it in the review step.
+        }
       }
-      if (/[\r\n,]/.test(barcode)) {
-        errors.push(`Dòng ${rowNumber}: barcode chứa dấu phẩy hoặc ký tự xuống dòng.`);
-        continue;
+      const issues = rowIssues(barcode, quantity);
+      if (actualQuantityCell && quantityRaw && actualQuantityCell.type === 'n') {
+        const format = styleMetadata.numberFormats.get(actualQuantityCell.styleIndex) ?? 'General';
+        if (!format && !quantity) issues.push('Không xác định được định dạng số Excel.');
       }
-      if (!quantityCell || !quantityValue) {
-        errors.push(`Dòng ${rowNumber}: barcode ${barcode} chưa có số lượng.`);
-        continue;
+      if (fallbackBarcode && !explicitBarcode && !goldCode) {
+        if (!fallbackRepeatedValue) fallbackRepeatedValue = fallbackBarcode;
+        else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
       }
-      try {
-        const quantity = parseQuantity(quantityValue, quantityCell.type, styleMetadata.percentageStyles.has(quantityCell.styleIndex));
-        dataRows.push({ barcode, quantity, sourceRow: rowNumber });
-      } catch (error) {
-        errors.push(`Dòng ${rowNumber}: ${error instanceof Error ? error.message : 'Số lượng không hợp lệ.'}`);
-      }
+      dataRows.push({ barcode, quantity, sourceRow: rowNumber, barcodeSource, issues });
     }
-    if (header.barcodeHeader === 'MA VACH' && dataRows.length > 1 && new Set(dataRows.map((row) => row.barcode)).size === 1) {
-      errors.push('Cột MÃ VẠCH có cùng một giá trị ở tất cả dòng; có thể đây là mã vùng thay vì barcode sản phẩm. Hãy dùng cột BARCODE.');
-    }
-    if (errors.length > 0) {
-      throw new Error(`Sheet "${sheet.name}" có ${errors.length} lỗi dữ liệu:\n${errors.slice(0, 12).join('\n')}${errors.length > 12 ? '\n…' : ''}`);
+    if (header.fallbackBarcodeColumn !== undefined && header.barcodeColumn === undefined &&
+      header.goldCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
+      dataRows.forEach((row) => {
+        if (row.barcodeSource === 'MÃ VẠCH') row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE hoặc GOLDCODE.');
+      });
     }
     if (dataRows.length === 0) {
-      warnings.push(`Sheet "${sheet.name}" không có dòng dữ liệu hợp lệ.`);
+      warnings.push('Sheet "' + sheet.name + '" đã nhận diện header nhưng không có dòng dữ liệu.');
       continue;
     }
-    const { prefix, number } = splitZoneCode(zoneCode);
+    const match = zoneCode.match(/^([A-Z]*)(\d+)$/);
+    if (!match) {
+      warnings.push('Mã vùng "' + zoneCode + '" không thể tách thành tiền tố và số.');
+      continue;
+    }
     zones.push({
-      zoneCode, prefix, number, sheetName: sheet.name, rows: dataRows,
-      content: buildOutput(employeeCode, zoneCode, dataRows, importedAt),
-      fileName: `${safeFilePart(zoneCode)}_${importedAt.getFullYear()}${pad(importedAt.getMonth() + 1)}${pad(importedAt.getDate())}.txt`,
+      zoneCode, prefix: match[1], number: match[2], sheetName: sheet.name, rows: dataRows,
+      content: buildStocktakeOutput(employeeCode, zoneCode, dataRows, importedAt),
+      fileName: safeFilePart(zoneCode) + '.txt',
     });
   }
 
-  if (zones.length === 0) throw new Error('Không tìm thấy sheet nào có dữ liệu kiểm kê hợp lệ.');
+  if (zones.length === 0) {
+    throw new Error(warnings.length ? warnings.join('\n\n') : 'Không tìm thấy sheet nào có dữ liệu kiểm kê hợp lệ.');
+  }
   return { sourceFileName: file.name, importedAt: importedAt.toISOString(), zones, warnings };
 }
