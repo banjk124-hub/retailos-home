@@ -1,6 +1,6 @@
 # SCAN-06 — Continuous barcode orientation estimation and deskew
 
-**Status:** Corrective implementation is on Draft PR #67 (`fix/scan-05-06-continuous-orientation`). CI #425 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical iOS/Android optical QA remains pending.
+**Status:** Merged to `main` by PR #67 at `9406ac30d53bc9984912bd1928a32fd78157cf60`. Final PR-head CI #432 passed on `c9794a5422aa2d6ace16480c2948c1bae3e0d06b`; user confirms the merged/deployed scanner works well with sensitive multi-stage recognition.
 
 ## Problem found in the previous implementation
 
@@ -44,6 +44,12 @@ This is in-plane orientation recovery. It does not claim perspective/keystone co
 ## Performance policy
 
 Correctness and recognition coverage take priority over a strict ultra-low-end CPU budget. The session minimum decode interval is 70 ms, and all supported binarizer/orientation candidates can run after a miss. Decode calls remain serialized; there is no unbounded queue or concurrent use of one ZXing reader. Measure actual decode duration, stage maxima, first-result latency and UI responsiveness on representative devices. Do not claim the CPU cost is acceptable until device measurements are recorded.
+
+## Post-merge validation and remaining evidence
+
+- [x] User confirms the merged/deployed scanner is working well and recognizes barcodes sensitively across multiple processing paths.
+- [x] The production correction is exercised by the CI integration path, not only isolated helper tests.
+- [ ] No calibrated optical threshold, per-device decode-success percentage, first-result latency or CPU measurement has been recorded. The synthetic 40/255 fixture is a regression case, not a real-world sensitivity specification.
 
 ## Out of scope
 
