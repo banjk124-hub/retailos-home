@@ -205,7 +205,11 @@ assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
 assert.match(component, /saveActiveZone/);
 assert.match(component, /multiple/);
+assert.match(component, /knownFingerprints/);
+assert.match(component, /batchFingerprints/);
 assert.match(component, /readOnly/);
+assert.match(component, /setSelectionRange/);
+assert.match(component, /stopPropagation/);
 assert.match(component, /navigator\.clipboard/);
 assert.match(component, /disabled={!outputReady}/);
 assert.match(component, /textarea ref={outputTextareaRef}/);
@@ -249,4 +253,4 @@ assert.match(styles, /is-inactive/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
 
-console.log("Stocktake import accuracy, GoldCode fallback, multi-layout parsing, editor and responsive UI tests passed.");
+console.log("Stocktake import accuracy, code-source precedence, additive multi-file sessions, conflict review, output-layer and responsive UI tests passed.");
