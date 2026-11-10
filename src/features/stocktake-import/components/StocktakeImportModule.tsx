@@ -731,26 +731,6 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     </div>
                   </div>}
                 </div>
-                <details className="stocktake-import-output-details">
-                  <summary>
-                    <span><strong>Xem trước TXT</strong><small>{activeZone.fileName} · {activeZone.rows.length} dòng</small></span>
-
-                  </summary>
-                  {outputReady
-                    ? <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
-                        aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
-                        readOnly spellCheck={false} wrap="off"
-                        onKeyDown={(event) => {
-                          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            event.currentTarget.setSelectionRange(0, event.currentTarget.value.length);
-                          }
-                        }} />
-                    : <div className="stocktake-import-output-unavailable" role="status">
-                        Output chưa sẵn sàng. Hãy xử lý lỗi và lưu thay đổi trước khi sao chép hoặc tải xuống.
-                      </div>}
-                </details>
                 </>}
               </section>}
             </div>
