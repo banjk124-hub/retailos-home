@@ -9,7 +9,7 @@
 - Missing/invalid/out-of-bounds ROI returns no result and increments `roiUnavailable`; no full-frame or centered fallback exists.
 - Preserved camera acquisition/lease, first-frame readiness, recovery, 110 ms decode cadence, supported symbologies, validation, result delivery, Home lookup and Stocktake form/save workflows.
 - Added `scripts/test-scanner-roi-decoder.mjs` to preflight for normalized-to-pixel mapping, edge rounding, invalid geometry and runtime wiring.
-- Automated CI and real-device iOS/Android barcode accuracy/performance validation remain pending.
+- GitHub Actions run #317 passed full preflight/build on the implementation head; final documentation-synchronized CI run #323 is in progress. Real-device iOS/Android barcode accuracy/performance validation remains pending.
 
 ---
 
