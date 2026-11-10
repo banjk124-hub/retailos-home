@@ -107,7 +107,7 @@ See `docs/ai-context/SCAN_03_MODULE_REGION_INTEGRATION.md`.
 
 ## ADR-025 — Strict decoder consumption of module-owned source ROI (2026-11-10)
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
+**Status:** Merged/deployed by the user; normal scanner operation confirmed. Detailed optical stress scenarios were not individually recorded.
 
 ### Context
 SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the active session. The previous ZXing adapter still decoded the full frame first and then tried a hard-coded centered crop, so the actual module scan intent did not constrain decoder work.
@@ -126,3 +126,22 @@ SCAN-03 publishes a mapped `source-frame-normalized` reticle region into the act
 
 ### Acceptance
 See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-roi-decoder.mjs`.
+
+
+## ADR-026 — Bounded orthogonal ROI rotation (2026-11-10)
+**Status:** Implemented on final consolidated PR #66; CI run #395 passed the audit follow-up and production-adapter upright/rotation/deskew integration. Physical QA pending.
+
+- ZXing's existing `TRY_HARDER` path owns 180° 1D scanline reversal.
+- One clockwise 90° ROI transform after an upright miss covers both 90° and 270° source orientations when combined with that reversal.
+- The extra transform is scheduled every third valid ROI frame; the unrotated ROI remains first.
+- Preserve strict ROI/no-fallback, 110 ms session cadence, camera/session and feature contracts.
+- See `SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-rotation.mjs`.
+
+## ADR-027 — Bounded ROI in-plane deskew (2026-11-10)
+**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #368 passed before the audit follow-up commits. Fresh CI and physical QA pending.
+
+- Estimate small-angle roll from a sampled Sobel structure tensor on the ROI luminance frame.
+- Accept only coherent 1.2°–12° estimates; apply one inverse-angle bilinear transform with expanded bounds and white fill.
+- Attempt one HybridBinarizer deskew decode only after upright and orthogonal decode misses on the scheduled extended frame.
+- Fail closed for blank/invalid/low-confidence/out-of-range inputs. Perspective and curved-label correction remain out of scope.
+- See `SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.

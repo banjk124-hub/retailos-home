@@ -436,3 +436,49 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Preserved camera/session lifecycle, 110 ms cadence, supported symbologies, validation/result delivery and Home/Stocktake business behavior.
 - Added strict ROI regression test and registered it in preflight; added SCAN-04 design, ADR-025, roadmap, implementation status, acceptance and handoff updates.
 - GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; the subsequent status-only documentation update does not change executable code. Physical post-deploy iOS/Android barcode accuracy/performance evidence remains pending. No merge or deployment performed.
+
+
+### 2026-11-10 — SCAN-05/06 consolidated implementation and audit
+
+- Confirmed the existing 180° capability before adding new code: ZXing `OneDReader` reverses 1D scanlines under `TRY_HARDER`; EAN-8/EAN-13 inherit this path. Runtime baseline fixture covers Code 128 0°/180°; EAN inheritance is guarded separately.
+- PR #63 baseline CI run #337 passed.
+- SCAN-05 PR #64 adds a single clockwise 90° ROI transform every third valid ROI frame after upright miss. This normalizes 90°/270° input through the existing 180° scanline reversal. CI run #338 passed.
+- SCAN-06 PR #65 adds Sobel structure-tensor estimation and bounded 1.2°–12° deskew after upright/orthogonal misses. Synthetic Code 128 at ±5°/±8° and combined 90°/270° + skew passed.
+- Final recorded head `7bd77ffd7acd6a04e65b731b3ffa3a3e9546a7f1`; CI run #342 passed full preflight, TypeScript, production and Pages builds.
+- Scope audit: no camera/session/lifecycle, ROI geometry, cadence, UI/CSS, validation, Home lookup, Stocktake save/persistence, dependency or deployment changes.
+- Consolidated PR #65 is Draft/open; PR #63/#64 remain staged drafts and are included in #65. No merge/deploy performed.
+- Remaining acceptance: physical iOS Safari/PWA and Android Chrome/PWA tests for 0°/90°/180°/270° and ±5°/±8°, plus latency/CPU comparison on weak devices. CI is not device QA.
+
+
+### 2026-11-10 — Final consolidated SCAN-05/06 review
+
+- Rebased the full SCAN-05/06 source, tests and synchronized technical documentation onto the current `main` tree in final branch `feat/scan-05-06-final-consolidation`.
+- Final consolidated PR #66 is Draft/open, mergeable and not merged/deployed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
+- Final head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`; CI run #350 passed the complete preflight, TypeScript, production and Pages builds. Logs confirm the 0°/180° baseline, 90°/270° rotation and ±5°/±8° deskew suites passed.
+- Scope audit found no changes to camera/session/lifecycle, strict ROI geometry, 110 ms cadence, UI/CSS, barcode validation, Home lookup, Stocktake save/persistence, dependencies or deployment settings.
+- Repository hygiene incident: two SCAN-05/06 design Markdown files were briefly created on `main` by the GitHub file-creation action despite the intended branch target. Both files were immediately deleted from `main` in two revert commits. Comparing the current `main` tree against the pre-incident baseline `34c5a1da03df50f6e9da9827ffb580e753661251` returns no changed files; no source code or production behavior was changed on `main`. The design files are present on the final PR branch.
+- Remaining acceptance: physical iOS Safari/PWA and Android Chrome/PWA matrix (Home + Stocktake, 0°/90°/180°/270°, ±5°/±8°) and low-end latency/CPU measurements. Do not merge/deploy before device acceptance.
+
+- After rebasing the final branch and closing staged PRs, consolidated PR #66 CI run #360 passed the full preflight on its current head. PR #66 remains Draft/open pending physical iOS/Android QA; no merge/deploy was performed.
+
+### 2026-11-10 — SCAN-05/06 audit follow-up on consolidated PR #66
+
+- Re-opened the current PR #66 head and audited runtime decoder scheduling, regression tests, current handoff, acceptance checklist and SCAN-05/06 technical documents.
+- Found that the processing cadence used `diagnosticFrames`, which is reset by the five-second diagnostics reporting window. This coupled algorithm scheduling to observability.
+- Added a dedicated valid-ROI `frameSequence` and pure `shouldAttemptExtendedDecode()` helper. Both the extra orientation/deskew pass and the global-histogram schedule now use that stable processing sequence; diagnostics counters remain reporting-only.
+- Added deterministic tests for every-third-frame cadence and invalid sequence inputs.
+- Extended the SCAN-05 runtime fixtures to include EAN-8 and EAN-13 at 90° and 270°, in addition to the existing Code 128 fixtures.
+- Corrected the current AI handoff to identify branch `feat/scan-05-06-final-consolidation` and PR #66; removed stale current-status references to branch `feat/scan-06-bounded-deskew` and PR #65.
+- Updated SCAN-05/06 designs, ADRs, Roadmap, Implementation Status and Acceptance Checklist. CI #368 is explicitly recorded as pre-follow-up validation; a new CI run is required for the latest commits.
+- Protected strict ROI/no full-frame fallback, 110 ms cadence, camera/session/lifecycle, Home/Stocktake presentation and business flows. No merge or deployment performed.
+- Remaining release gates: fresh CI, physical iOS Safari/PWA and Android Chrome/PWA matrix, and low-end/high-end latency/CPU evidence. These cannot be inferred from automated CI.
+
+- Added `scripts/test-scanner-decoder-integration.mjs` to execute the production `ZXingDecoderAdapter` with a mocked canvas and real ZXing decode path. It verifies upright decode, no early rotation before the scheduled third valid ROI frame, 90°/270° recovery, module-owned strict crop, and no full-frame fallback for outside/missing ROI. Registered the integration suite in `scripts/preflight.mjs`; fresh CI validation is pending.
+
+- GitHub Actions run #387 completed successfully: full preflight, including the production adapter integration suite, TypeScript, production build, GitHub Pages build and diff checks. The suite confirms actual `ZXingDecoderAdapter` upright decoding, scheduled 90°/270° recovery, strict module-owned ROI cropping and fail-closed behavior when the ROI is absent or excludes the barcode. A subsequent documentation-only reconciliation updated the EAN runtime-fixture acceptance record; the final branch head requires its own CI confirmation.
+
+- Final documentation reconciliation after run #387: synchronized AI Handoff, Implementation Status, SCAN-05/06 design notes, Architecture ADR-026/027, Decisions, Roadmap and Acceptance Checklist to the verified CI result. No executable code changed after the implementation head validated by run #387; physical iOS/Android QA remains the only release acceptance gate outside source/CI verification.
+
+- Extended the production decoder integration suite to exercise the actual scheduled SCAN-06 deskew path as well as upright and orthogonal decode. It now verifies that a synthetic +5° Code 128 ROI is not deskewed on frames one/two and is corrected/decoded on the third valid ROI frame. Fresh CI is required for this final test extension.
+
+- GitHub Actions run #395 passed the final implementation head: all preflight suites, including production adapter upright decode, scheduled 90°/270° rotation, scheduled +5° deskew, strict ROI/no-fallback assertions, TypeScript, production build, GitHub Pages build and diff checks. The remaining release gate is physical iOS Safari/PWA and Android Chrome/PWA QA with real devices and low-end performance measurements.

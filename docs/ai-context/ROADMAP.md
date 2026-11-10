@@ -1,11 +1,21 @@
-# SCAN-04 execution update — strict module-reticle ROI decoding (2026-11-10)
+# SCAN-05/06 execution update — rotation baseline, orthogonal rotation and bounded deskew (2026-11-10)
 
-- Baseline: SCAN-03 merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms successful iOS and Android geometry/flow verification.
-- Replace the decoder's full-frame-first pass and fixed centered `82% × 66%` crop with the source-frame ROI published by each module's reticle.
-- `ScannerSession.getScanRegion()` is passed to the decoder on every scheduled frame; the decoder maps normalized coordinates to source pixels and draws only that crop.
-- Missing, malformed or out-of-bounds geometry fails closed: no decode and no full-frame fallback.
-- Preserve ZXing formats, 110 ms session cadence, camera constraints, binarizer strategy (Global Histogram only every third ROI pass), barcode validation and result delivery.
-- SCAN-04 branch: `feat/scan-04-strict-reticle-roi-decoding`. GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; physical post-deploy barcode QA remains required on iOS and Android.
+**Final consolidated branch:** `feat/scan-05-06-final-consolidation`  
+**Final consolidated PR:** #66 — https://github.com/banjk124-hub/retailos-home/pull/66 (Draft, open, not merged/deployed).  
+**Staged PRs:** #63 baseline, #64 SCAN-05 and #65 SCAN-06 were closed without merging as superseded by final PR #66.
+
+- SCAN-04 strict ROI decoding was merged/deployed by the user; the user confirms the deployed scanner runs normally. No detailed optical stress matrix was supplied.
+- Baseline audit: ZXing `TRY_HARDER` already supplies 180° scanline reversal for 1D readers. EAN-8/EAN-13 inherit `OneDReader`; RetailOS `RGBLuminanceSource` does not support bitmap rotation.
+- PR #63 added a runtime Code 128 0°/180° baseline fixture and EAN inheritance guards. CI run #337 passed.
+- SCAN-05 adds one clockwise 90° ROI transform every third valid ROI frame after upright decode misses. Combined with the built-in 180° reversal, this handles both 90° and 270° source orientations. CI run #338 passed.
+- SCAN-06 adds bounded in-plane deskew (1.2°–12°) using a sampled Sobel structure tensor, one inverse-angle ROI transform and one HybridBinarizer decode after upright and orthogonal paths miss.
+- PR #66 CI run #395 passed full preflight, TypeScript, production and Pages builds, including production-adapter upright/rotation/deskew integration. The PR's latest checks remain the release source of truth.
+- No SCAN-05/06 merge or deployment has occurred. Physical iOS Safari/PWA and Android Chrome/PWA accuracy/latency/CPU QA remains required.
+
+**Protected invariants:** strict reticle ROI only; no full-frame fallback; existing 110 ms session cadence; camera lease/lifecycle/readiness/recovery; supported symbologies; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save; independent Home/Stocktake presentation.
+
+**Next:** physical QA of the consolidated build on iOS and Android, inspect rotation/deskew diagnostics and low-end latency, and merge only after acceptance.
+---
 
 ---
 
@@ -302,7 +312,7 @@ Workstreams:
 - Presentation independence: Home and Stocktake retain distinct UI surfaces; the engine exposes states/events, not layout.
 - Integrate the scanner-first device profile as a policy input without allowing it to weaken correctness or accuracy invariants.
 - Privacy-safe observability and deterministic tests for pending permission, cancel-before-claim, duplicate claim, rapid open-close-open, stale completions, concurrent leases, track-ended recovery, decoder/callback failures and feature contracts.
-- Optional rotation/perspective/deskew recovery may be evaluated as a bounded sub-capability only after normal-path accuracy/latency baselines exist; it is not the whole phase.
+- SCAN-05 orthogonal rotation and SCAN-06 bounded in-plane deskew are implemented on the consolidated branch; physical device QA is pending. Perspective correction and curved-label dewarping remain separate future capabilities.
 
 Acceptance:
 - Home and Stocktake use the same camera/decoder lifecycle engine without duplicating ownership logic.

@@ -1,3 +1,50 @@
+# SCAN-05/06 acceptance — consolidated rotation and bounded deskew (2026-11-10)
+
+## Baseline rotation
+- [x] Confirm ZXing `TRY_HARDER` retains the existing 180° scanline reversal for 1D readers.
+- [x] Runtime Code 128 fixture decodes at 0° and 180° and reports orientation 180°.
+- [x] EAN-8/EAN-13 inheritance path is guarded through the shared `OneDReader` hierarchy.
+- [x] Baseline test is registered in preflight; CI run #337 passed.
+
+## SCAN-05 — 90°/270° orthogonal rotation
+- [x] Pure ROI luminance transform swaps dimensions and validates input.
+- [x] Code 128 runtime fixture passes after normalization of both 90° and 270° input.
+- [x] EAN-8 and EAN-13 runtime fixtures pass after normalization of both 90° and 270° input.
+- [x] Unrotated ROI is attempted first; extra quarter-turn is bounded to every third valid ROI frame after a miss.
+- [x] Rotation diagnostics and stage timings are present.
+- [x] Extended decode cadence is driven by a dedicated valid-ROI sequence, not diagnostics-window counters; deterministic schedule tests cover valid and invalid sequence values.
+- [x] CI run #338 passed; consolidated CI run #342 passed.
+- [ ] Physical iOS Safari/PWA QA: Home and Stocktake, 0°/90°/180°/270°.
+- [ ] Physical Android Chrome/PWA QA: same matrix.
+- [ ] Compare decode latency/CPU on lower-end devices.
+
+## SCAN-06 — bounded in-plane deskew
+- [x] Sobel structure-tensor estimate is confidence-gated and bounded to 1.2°–12°.
+- [x] Bilinear inverse-angle transform expands ROI bounds, fills uncovered pixels white and enforces a 4M-pixel allocation cap.
+- [x] Synthetic Code 128 at ±5°/±8° decodes after correction.
+- [x] Combined 90°/270° normalization plus skew correction passes.
+- [x] Level, blank, invalid and >12° cases fail closed; pure service has no DOM/presentation dependency.
+- [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
+- [x] Final consolidated PR #66 CI run #395 passed full preflight, production adapter integration, TypeScript, production/Pages builds and diff checks.
+- [x] Follow-up separates processing cadence from diagnostics sampling and adds deterministic cadence regression coverage.
+- [x] Production decoder integration test is registered in preflight: upright decode, scheduled 90°/270° recovery and deskew, strict ROI crop and no-fallback behavior.
+- [x] Fresh CI run #395 passed the audit follow-up, including production upright/rotation/deskew decoder integration.
+- [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
+- [ ] Physical Android Chrome/PWA QA: same matrix.
+- [ ] Record latency, CPU and accuracy on low-end and high-end devices.
+
+## Consolidated delivery
+- [x] SCAN-04 strict ROI baseline was merged/deployed by the user; normal operation confirmed.
+- [x] SCAN-05 and SCAN-06 source/tests are consolidated on final PR #66.
+- [x] Documentation and ADRs synchronized on the consolidated branch; AI handoff points to PR #66 and the active final branch.
+- [x] Current PR and CI references corrected; stale PR #65/branch references removed from the current handoff.
+- [x] Final source/docs diff audit completed on consolidated PR #66; no scope leakage found.
+- [ ] Physical device QA remains outstanding; do not merge until accepted.
+- [x] Add individual EAN-8/EAN-13 runtime image fixtures for 90°/270° rotated input.
+- [ ] Merge final consolidated PR #66 after device acceptance. PR #63/#64/#65 are closed as superseded and must not be merged separately.
+
+---
+
 # SCAN-04 acceptance — strict module-reticle ROI decoding (2026-11-10)
 
 - [x] SCAN-03 merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`.
@@ -10,9 +57,8 @@
 - [x] Missing/invalid ROI fails closed; no silent full-frame fallback.
 - [x] Regression suite is registered in `npm run preflight`.
 - [x] GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`.
-- [ ] Physical iOS Safari/PWA tests barcode placement at center and reticle edges; verify accuracy and latency.
-- [ ] Physical Android Chrome/PWA tests barcode placement at center and reticle edges; verify accuracy and latency.
-- [ ] Verify low-light, reflective labels, small/far barcodes and both Home/Stocktake flows after deployment.
+- [x] User confirms SCAN-04 was merged, deployed and the scanner runs normally.
+- [ ] Detailed optical matrix (center/reticle edges, low-light, reflective, small/far labels) recorded separately on iOS and Android.
 - [ ] Review decode-duration/ROI-unavailable diagnostics on representative devices; compare against the pre-SCAN-04 baseline.
 
 ---

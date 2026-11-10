@@ -16,6 +16,8 @@ import type {
   ScannerDecoderAdapter,
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
+import { rotateLuminance90Clockwise, shouldAttemptExtendedDecode } from '../scannerRotation';
+import { deskewLuminanceFrame } from '../scannerDeskew';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -101,6 +103,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastUnexpectedErrorLogAt = 0;
   private diagnosticStartedAt = Date.now();
   private diagnosticFrames = 0;
+  private frameSequence = 0;
   private diagnosticDecoded = 0;
   private diagnosticNotFound = 0;
   private diagnosticChecksum = 0;
@@ -108,6 +111,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticUnexpected = 0;
   private diagnosticRoiHits = 0;
   private diagnosticRoiUnavailable = 0;
+  private diagnosticRotationAttempts = 0;
+  private diagnosticRotationHits = 0;
+  private diagnosticDeskewAttempts = 0;
+  private diagnosticDeskewHits = 0;
+  private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
@@ -157,6 +165,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       }
 
       this.diagnosticFrames += 1;
+      this.frameSequence += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
       const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
@@ -181,7 +190,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       );
       this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
 
-      const output = this.decodeCurrentCanvas(timestamp, this.diagnosticFrames % 3 === 0);
+      // Processing cadence must never depend on the diagnostics reporting window.
+      const tryExtendedDecode = shouldAttemptExtendedDecode(this.frameSequence);
+      const includeGlobalHistogram = tryExtendedDecode;
+      const tryRotated = tryExtendedDecode;
+      const output = this.decodeCurrentCanvas(timestamp, includeGlobalHistogram, tryRotated);
       if (output) {
         this.diagnosticDecoded += 1;
         this.diagnosticRoiHits += 1;
@@ -237,7 +250,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.stageCosts[stage] = current;
   }
 
-  private decodeCurrentCanvas(timestamp: number, includeGlobalHistogram: boolean): DecoderOutput | null {
+  private decodeCurrentCanvas(
+    timestamp: number,
+    includeGlobalHistogram: boolean,
+    tryRotated: boolean,
+  ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -248,12 +265,84 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.width,
       this.canvas.height,
     );
-    const luminance = new RGBLuminanceSource(
+    this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+
+    const uprightOutput = this.decodeLuminance(
+      grayscale,
+      this.canvas.width,
+      this.canvas.height,
+      timestamp,
+      includeGlobalHistogram,
+      'upright',
+    );
+    if (uprightOutput || !tryRotated) return uprightOutput;
+
+    // One clockwise quarter-turn is sufficient for both 90° and 270° input:
+    // the opposite direction becomes 180°, which OneDReader already handles
+    // through TRY_HARDER scanline reversal. Run this extra ROI pass every third
+    // frame to bound CPU cost on lower-end mobile devices.
+    const rotationStartedAt = performance.now();
+    const rotated = rotateLuminance90Clockwise(
       grayscale,
       this.canvas.width,
       this.canvas.height,
     );
-    this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+    this.recordStageCost('rotation_90_clockwise', performance.now() - rotationStartedAt);
+    if (!rotated) return null;
+
+    this.diagnosticRotationAttempts += 1;
+    const rotatedOutput = this.decodeLuminance(
+      rotated.luminance,
+      rotated.width,
+      rotated.height,
+      timestamp,
+      includeGlobalHistogram,
+      'rotated_90',
+    );
+    if (rotatedOutput) {
+      this.diagnosticRotationHits += 1;
+      return rotatedOutput;
+    }
+
+    // Deskew only after both orthogonal orientations miss, and only on the
+    // scheduled rotation frame. Prefer the upright ROI; if its dominant edge
+    // direction is not a small barcode roll, inspect the normalized 90° ROI.
+    const deskewStartedAt = performance.now();
+    const uprightDeskew = deskewLuminanceFrame(
+      grayscale,
+      this.canvas.width,
+      this.canvas.height,
+    );
+    const deskewed = uprightDeskew ?? (rotated
+      ? deskewLuminanceFrame(rotated.luminance, rotated.width, rotated.height)
+      : null);
+    this.recordStageCost('deskew_estimate_and_rotate', performance.now() - deskewStartedAt);
+    if (!deskewed) return null;
+
+    this.diagnosticDeskewAttempts += 1;
+    this.diagnosticLastDeskewAngleDegrees = deskewed.angleDegrees;
+    const deskewOutput = this.decodeLuminance(
+      deskewed.luminance,
+      deskewed.width,
+      deskewed.height,
+      timestamp,
+      false,
+      'deskew',
+    );
+    if (deskewOutput) this.diagnosticDeskewHits += 1;
+    return deskewOutput;
+  }
+
+  private decodeLuminance(
+    grayscale: Uint8ClampedArray,
+    width: number,
+    height: number,
+    timestamp: number,
+    includeGlobalHistogram: boolean,
+    orientation: 'upright' | 'rotated_90' | 'deskew',
+  ): DecoderOutput | null {
+    if (!this.reader) return null;
+    const luminance = new RGBLuminanceSource(grayscale, width, height);
     const binarizers = includeGlobalHistogram
       ? [HybridBinarizer, GlobalHistogramBinarizer]
       : [HybridBinarizer];
@@ -284,7 +373,12 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         else if (miss === 'checksum') this.diagnosticChecksum += 1;
         else this.diagnosticFormat += 1;
       } finally {
-        this.recordStageCost('zxing_decode', performance.now() - zxingStartedAt);
+        this.recordStageCost(
+          orientation === 'upright'
+            ? 'zxing_decode'
+            : orientation === 'rotated_90' ? 'zxing_decode_rotated_90' : 'zxing_decode_deskew',
+          performance.now() - zxingStartedAt,
+        );
         this.reader.reset();
       }
     }
@@ -300,6 +394,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       decoded: this.diagnosticDecoded,
       roiHits: this.diagnosticRoiHits,
       roiUnavailable: this.diagnosticRoiUnavailable,
+      rotationAttempts: this.diagnosticRotationAttempts,
+      rotationHits: this.diagnosticRotationHits,
+      deskewAttempts: this.diagnosticDeskewAttempts,
+      deskewHits: this.diagnosticDeskewHits,
+      lastDeskewAngleDegrees: Number(this.diagnosticLastDeskewAngleDegrees.toFixed(2)),
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,
@@ -319,6 +418,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticUnexpected = 0;
     this.diagnosticRoiHits = 0;
     this.diagnosticRoiUnavailable = 0;
+    this.diagnosticRotationAttempts = 0;
+    this.diagnosticRotationHits = 0;
+    this.diagnosticDeskewAttempts = 0;
+    this.diagnosticDeskewHits = 0;
+    this.diagnosticLastDeskewAngleDegrees = 0;
   }
 
   dispose(): void {
