@@ -9,12 +9,12 @@
 - PR #63 added a runtime Code 128 0°/180° baseline fixture and EAN inheritance guards. CI run #337 passed.
 - SCAN-05 adds one clockwise 90° ROI transform every third valid ROI frame after upright decode misses. Combined with the built-in 180° reversal, this handles both 90° and 270° source orientations. CI run #338 passed.
 - SCAN-06 adds bounded in-plane deskew (1.2°–12°) using a sampled Sobel structure tensor, one inverse-angle ROI transform and one HybridBinarizer decode after upright and orthogonal paths miss.
-- PR #66 CI run #368 passed full preflight, TypeScript, production and Pages builds on the pre-audit-fix head. The latest audit follow-up requires a fresh CI run. The PR's latest checks remain the release source of truth.
+- PR #66 CI run #387 passed full preflight, TypeScript, production and Pages builds, including the production-adapter integration test. The PR's latest checks remain the release source of truth.
 - No SCAN-05/06 merge or deployment has occurred. Physical iOS Safari/PWA and Android Chrome/PWA accuracy/latency/CPU QA remains required.
 
 **Protected invariants:** strict reticle ROI only; no full-frame fallback; existing 110 ms session cadence; camera lease/lifecycle/readiness/recovery; supported symbologies; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save; independent Home/Stocktake presentation.
 
-**Next:** review fresh CI for the audit follow-up, then physical QA of the consolidated build on iOS and Android, inspect rotation/deskew diagnostics and low-end latency, and merge only after acceptance.
+**Next:** physical QA of the consolidated build on iOS and Android, inspect rotation/deskew diagnostics and low-end latency, and merge only after acceptance.
 ---
 
 ---
