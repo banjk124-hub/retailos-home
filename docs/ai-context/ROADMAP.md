@@ -15,19 +15,17 @@
 - SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; main CI run #299 passed full preflight and production/Pages builds.
 - User confirms deployment and normal operation of existing scanner flows.
 - Pure geometry mapper audit found no runtime calculation or architecture defect; a follow-up correction strengthens its DOM-boundary regression guard.
-- No runtime consumer is wired and ROI-only decoding is not active.
-- Next: SCAN-03 independently wires Home and Stocktake preview/reticle geometry and updates the source-region contract without restarting the session. Verify alignment on iOS and Android.
-- SCAN-04 enables strict ROI-only decode only after both module consumers pass geometry and device QA.
+- SCAN-03 subsequently wired Home and Stocktake independently; PR #61 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`, and the user confirms iOS/Android geometry and existing-flow checks found no issue.
+- SCAN-04 is now implementing strict ROI-only decoding using the verified source region.
 
 ---
 
 # SCAN-01 execution update — 2026-11-10
 
 - SCAN-01 defines `ScannerModuleConfig`, preview/source normalized region types and explicit camera request preferences.
-- Implementation branch: `feat/scanner-input-module-config-contract`; PR/CI status is pending until opened.
-- SCAN-01 is contract-only. No camera, lifecycle, decoder, Home or Stocktake runtime behavior changes.
-- SCAN-02 remains next: pure preview-to-source geometry mapping and tests for `cover`, `contain`, `object-position` and mirroring.
-- SCAN-03 then wires Home and Stocktake independently; SCAN-04 enables strict ROI-only decode after both consumers are valid.
+- SCAN-01 contract-only change merged by PR #58 at `47b991de8a0040aa44e500aa6228127f9e59f0f6`.
+- No camera, lifecycle, decoder, Home or Stocktake runtime behavior changed in SCAN-01.
+- SCAN-02 geometry mapping and SCAN-03 module integration are both merged; SCAN-04 consumes the verified source ROI.
 - The existing camera default remains environment / 1280×720 / 30 FPS ideal / 30 FPS max.
 
 ---
