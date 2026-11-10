@@ -73,6 +73,9 @@ try {
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
+  const { rotateLuminanceByAngle } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerDeskew.js'),
+  ).href);
 
   const CODE128_PATTERNS = new Map([
     [104, [2, 1, 1, 2, 1, 4]],
@@ -160,6 +163,21 @@ try {
     await decoder.dispose();
   }
 
+  const skewedFrame = rotateLuminanceByAngle(
+    upright.luminance, upright.width, upright.height, 5,
+  );
+  assert.ok(skewedFrame, 'integration skew fixture must be generated');
+  const deskewDecoder = await createDecoder();
+  const skewedSource = toSource(skewedFrame);
+  assert.deepEqual(await decodeOnce(deskewDecoder, skewedSource), [],
+    'skewed input must remain upright-first on frame one');
+  assert.deepEqual(await decodeOnce(deskewDecoder, skewedSource), [],
+    'skewed input must not deskew before the scheduled extended frame');
+  const deskewResult = await decodeOnce(deskewDecoder, skewedSource);
+  assert.equal(deskewResult[0]?.value, '12345',
+    'production adapter must deskew and decode the barcode on the scheduled extended frame');
+  await deskewDecoder.dispose();
+
   const roiSourceFrame = {
     width: upright.width * 2,
     height: upright.height,
@@ -194,7 +212,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: upright decode, scheduled 90°/270° recovery, strict ROI crop and fail-closed no-fallback.');
+  console.log('Production ZXing adapter integration passed: upright decode, scheduled 90°/270° recovery and deskew, strict ROI crop and fail-closed no-fallback.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });
