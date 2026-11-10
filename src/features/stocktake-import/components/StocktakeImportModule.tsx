@@ -624,58 +624,65 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 </p>}
                 {dirtyZones.includes(activeZone.zoneCode) && <p className="stocktake-import-unsaved" role="status">Có thay đổi chưa lưu. Hãy lưu vùng trước khi xuất.</p>}
 
-                <div className={'stocktake-import-zone-layer ' + (zoneLayer === 'output' ? 'is-output' : 'is-editor')}
-                  data-active-layer={zoneLayer} aria-live="polite">
-                  {zoneLayer === 'output'
-                    ? <div className="stocktake-import-output-layer">
-                        <div className="stocktake-import-output-meta">
-                          <strong>{activeZone.fileName}</strong>
-                          <span>{activeZone.rows.length} dòng · TXT UTF-8</span>
-                        </div>
-                        <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
-                          aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
-                          readOnly spellCheck={false} wrap="off" />
-                        {(invalidCount > 0 || dirtyZones.includes(activeZone.zoneCode) || result.blockingIssues.length > 0) &&
-                          <p className="stocktake-import-warning">Output chưa thể sao chép hoặc tải xuống. Hãy xử lý lỗi và lưu dữ liệu trước.</p>}
+                <div className="stocktake-import-zone-layer" data-active-layer={zoneLayer}>
+                  <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'output' ? 'is-active' : 'is-inactive')}
+                    aria-hidden={zoneLayer !== 'output'}>
+                    <div className="stocktake-import-output-layer">
+                      <div className="stocktake-import-output-meta">
+                        <strong>{activeZone.fileName}</strong>
+                        <span>{activeZone.rows.length} dòng · TXT UTF-8</span>
                       </div>
-                    : <div className="stocktake-import-editor-layer">
-                  <div className="stocktake-import-table-wrap">
-                    <table className="stocktake-import-edit-table">
-                      <thead><tr><th>DÒNG NGUỒN</th><th>BARCODE / GOLDCODE</th><th>KẾT QUẢ THỰC TẾ</th><th>NGUỒN MÃ</th><th>KIỂM TRA</th></tr></thead>
-                      <tbody>
-                        {visibleRows.map((row, visibleIndex) => {
-                          const rowIndex = page * PAGE_SIZE + visibleIndex;
-                          return <tr key={(row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex} className={row.issues.length ? 'has-error' : ''}>
-                            <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>{row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}{result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}</small>}</td>
-                            <td>{editingZone
-                              ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
-                                  onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
-                              : <span className="stocktake-import-cell-value">{row.barcode || '—'}</span>}</td>
-                            <td>{editingZone
-                              ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} inputMode="decimal"
-                                  value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
-                              : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
-                            <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
-                            <td>{row.issues.length
-                              ? <span className="stocktake-import-row-error" title={row.issues.join(' ')}>{row.issues.join(' ')}</span>
-                              : <span className="stocktake-import-row-ok">Hợp lệ</span>}</td>
-                          </tr>;
-                        })}
-                      </tbody>
-                    </table>
-                    {activeZone.rows.length === 0 && <p className="stocktake-import-muted">Không có dòng dữ liệu.</p>}
-                  </div>
-                  {activeZone.rows.length > PAGE_SIZE && <div className="stocktake-import-pagination">
-                    <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activeZone.rows.length)} / {activeZone.rows.length} dòng</span>
-                    <div>
-                      <button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
-                      <strong>{page + 1}/{pageCount}</strong>
-                      <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
+                      <textarea ref={outputTextareaRef} className="stocktake-import-output-textarea"
+                        aria-label={'Nội dung TXT ' + activeZone.zoneCode} value={activeZone.content}
+                        readOnly spellCheck={false} wrap="off" />
+                      {(invalidCount > 0 || dirtyZones.includes(activeZone.zoneCode) || result.blockingIssues.length > 0) &&
+                        <p className="stocktake-import-warning">Output chưa thể sao chép hoặc tải xuống. Hãy xử lý lỗi và lưu dữ liệu trước.</p>}
                     </div>
-                  </div>}
+                  </div>
+                  <div className={'stocktake-import-zone-layer-panel ' + (zoneLayer === 'editor' ? 'is-active' : 'is-inactive')}
+                    aria-hidden={zoneLayer !== 'editor'}>
+                    <div className="stocktake-import-editor-layer">
+                      <div className="stocktake-import-table-wrap">
+                        <table className="stocktake-import-edit-table">
+                          <thead><tr><th>DÒNG NGUỒN</th><th>BARCODE / GOLDCODE</th><th>KẾT QUẢ THỰC TẾ</th><th>NGUỒN MÃ</th><th>KIỂM TRA</th></tr></thead>
+                          <tbody>
+                            {visibleRows.map((row, visibleIndex) => {
+                              const rowIndex = page * PAGE_SIZE + visibleIndex;
+                              return <tr key={(row.sourceFileName ?? '') + '-' + (row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex}
+                                className={row.issues.length ? 'has-error' : ''}>
+                                <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
+                                  {row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}
+                                  {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}</small>}
+                                </td>
+                                <td>{editingZone
+                                  ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
+                                      onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
+                                  : <span className="stocktake-import-cell-value">{row.barcode || '—'}</span>}</td>
+                                <td>{editingZone
+                                  ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} inputMode="decimal"
+                                      value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
+                                  : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
+                                <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
+                                <td>{row.issues.length
+                                  ? <span className="stocktake-import-row-error" title={row.issues.join(' ')}>{row.issues.join(' ')}</span>
+                                  : <span className="stocktake-import-row-ok">Hợp lệ</span>}</td>
+                              </tr>;
+                            })}
+                          </tbody>
+                        </table>
+                        {activeZone.rows.length === 0 && <p className="stocktake-import-muted">Không có dòng dữ liệu.</p>}
+                      </div>
+                      {activeZone.rows.length > PAGE_SIZE && <div className="stocktake-import-pagination">
+                        <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activeZone.rows.length)} / {activeZone.rows.length} dòng</span>
+                        <div>
+                          <button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
+                          <strong>{page + 1}/{pageCount}</strong>
+                          <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
+                        </div>
                       </div>}
-                </div>
-              </section>}
+                    </div>
+                  </div>
+                </div>              </section>}
             </div>
 
             <div className="stocktake-import-export-footer">
