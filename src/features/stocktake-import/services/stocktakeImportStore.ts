@@ -1,4 +1,4 @@
-import type { StocktakeImportResult } from './stocktakeImportParser';
+import type { ImportedStocktakeRow, StocktakeImportResult } from './stocktakeImportParser';
 
 const DATABASE_NAME = 'retailos-stocktake-import';
 const DATABASE_VERSION = 1;
@@ -10,10 +10,18 @@ export type StocktakeImportHistoryItem = {
   importedAt: string;
   zoneCount: number;
   rowCount: number;
-  files: Array<{ zoneCode: string; fileName: string; content: string; rowCount: number }>;
+  files: Array<{
+    zoneCode: string;
+    fileName: string;
+    content: string;
+    rowCount: number;
+    rows?: ImportedStocktakeRow[];
+  }>;
 };
 
 function openDatabase(): Promise<IDBDatabase> {
+  if (!('indexedDB' in window)) return Promise.reject(new Error('Trình duyệt không hỗ trợ bộ nhớ cục bộ IndexedDB.'));
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
     request.onupgradeneeded = () => {
@@ -48,21 +56,33 @@ async function withHistoryStore<T>(
   }
 }
 
+function createHistoryId(): string {
+  return 'import_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
+}
+
 export const stocktakeImportStore = {
   getHistory: () => withHistoryStore<StocktakeImportHistoryItem[]>('readonly', (store) => store.getAll())
     .then((items) => items.sort((a, b) => b.importedAt.localeCompare(a.importedAt))),
-  saveResult: (result: StocktakeImportResult) => {
+
+  saveResult: async (result: StocktakeImportResult, existingId?: string): Promise<string> => {
+    const id = existingId ?? createHistoryId();
     const item: StocktakeImportHistoryItem = {
-      id: `import_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`,
+      id,
       sourceFileName: result.sourceFileName,
       importedAt: result.importedAt,
       zoneCount: result.zones.length,
       rowCount: result.zones.reduce((total, zone) => total + zone.rows.length, 0),
       files: result.zones.map((zone) => ({
-        zoneCode: zone.zoneCode, fileName: zone.fileName, content: zone.content, rowCount: zone.rows.length,
+        zoneCode: zone.zoneCode,
+        fileName: zone.fileName,
+        content: zone.content,
+        rowCount: zone.rows.length,
+        rows: zone.rows.map((row) => ({ ...row, issues: [...row.issues] })),
       })),
     };
-    return withHistoryStore<IDBValidKey>('readwrite', (store) => store.put(item));
+    await withHistoryStore<IDBValidKey>('readwrite', (store) => store.put(item));
+    return id;
   },
+
   clearHistory: () => withHistoryStore<undefined>('readwrite', (store) => store.clear()).then(() => undefined),
 };
