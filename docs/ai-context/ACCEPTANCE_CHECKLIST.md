@@ -40,7 +40,7 @@
 - [x] Current PR and CI references corrected; stale PR #65/branch references removed from the current handoff.
 - [x] Final source/docs diff audit completed on consolidated PR #66; no scope leakage found.
 - [ ] Physical device QA remains outstanding; do not merge until accepted.
-- [ ] Add individual EAN-8/EAN-13 runtime image fixtures for rotated input; current evidence is dependency-inheritance guards plus Code 128 runtime fixtures.
+- [x] Add individual EAN-8/EAN-13 runtime image fixtures for 90°/270° rotated input.
 - [ ] Merge final consolidated PR #66 after device acceptance. PR #63/#64/#65 are closed as superseded and must not be merged separately.
 
 ---
