@@ -5,13 +5,13 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** PR #70, #71 and #72 merged. Operator-action refinement is in draft PR #73; not merged/deployed. CI #540 passed on head `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`; physical-device QA remains pending.  
+**Current status:** PR #70–#73 merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI pending. Physical-device QA for PR #74 remains pending.  
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
-**Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
+**Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`  
 **PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
 **PR #71 merge:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
-**Current UX branch:** `feat/stocktake-import-native-workspace`  
-**Current UX PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft; CI #524 passed on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; physical device QA pending)
+**Current workspace v2 branch:** `feat/stocktake-import-workspace-v2`  
+**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; CI pending; physical desktop/iOS/Android QA pending)
 
 ## 1. Purpose and current capability
 
@@ -24,10 +24,11 @@ Current PR #70 includes:
 - Per-zone edit/save, isolated import history, invalid/unsaved export guards and history restore.
 - Zone-only TXT filenames and fixed ZIP filename. Confirmed by user: remove date/time only from filenames; retain the existing date/time fields in the `NHAN VIEN` content line unchanged.
 - Desktop two-column workspace, mobile stacked layout, lightweight motion and reduced-motion support.
-- Follow-up UX: one continuous zone workspace with the review/edit table as the primary surface and TXT Preview as an expandable inspector below it. The previous mutually exclusive Output/Editor layers have been removed. Readonly TXT textarea scopes Ctrl+A to output content; Copy uses Clipboard API with manual-selection fallback.
+- Follow-up UX: one continuous zone workspace with the review/edit table as the primary surface. TXT Preview opens as a dedicated view inside the selected-zone workspace; it is no longer an inline disclosure below the table. Readonly TXT textarea scopes Ctrl+A to output content.
 - Follow-up: multi-file `.xlsx` selection and additive import sessions. SHA-256 source fingerprints detect identical files; duplicate zones across separate source files are staged for explicit merge/skip confirmation. Source file provenance is retained per row and in session history.
 - Follow-up UX: action-specific loading feedback, success/warning/info notices, and explicit distinction between in-memory changes and IndexedDB-persisted history. Motion uses transform/opacity, reduced-motion and power-conserve guards; mobile sticky header avoids backdrop blur.
-- Operator QA refinement (PR #73): remove the persistent notice banner in favor of a centered transient confirmation; move Copy and per-zone TXT Download beside Edit; place Add file and New session side by side; tighten the ZIP action footer. Errors remain persistent alerts.
+- Operator QA refinement (PR #73): remove the persistent notice banner in favor of centered transient confirmation; move Copy and per-zone TXT Download beside Edit; align Add file and New session; place ZIP near the zone list heading only for multi-zone sessions.
+- Workspace v2 (PR #74 draft): unique product-code metrics (session-wide and per zone), optional product-name column, per-zone action status, dedicated TXT preview view, compact contextual ZIP action, fixed-height desktop workspace with independent scrolling and compact mobile layout.
 
 ## 2. Lifecycle metadata
 
@@ -82,7 +83,8 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 - [x] PR #70 acceptance and operational testing confirmed by the user.
 - [x] PR #71 TypeScript, production/Pages builds and full preflight passed on code commit `37b5f69d8dedcd36ed8a9273131eb60b78bd0f13` (GitHub Actions run #509).
 - [x] PR #72 unified-workspace and state implementation passed CI #534.
-- [x] PR #73 operator-action layout and transient feedback passed TypeScript, production build and full preflight on `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2` (GitHub Actions run #540).
+- [x] PR #73 operator-action layout and transient feedback passed CI #540 on `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`; user confirms merge and deployment.
+- [ ] PR #74 parser, unique-code metrics, preview view, responsive workspace and regression suite CI.
 - [ ] Manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA acceptance.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
 - [ ] Verify per-zone correction, save, history restore, individual TXT and ZIP.
@@ -93,8 +95,8 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 
 When the user says “tiếp tục Xuất file” or asks to resume this module:
 
-1. Read this document first, then `STOCKTAKE_FILE_IMPORT.md`, ADR-029/ADR-030 and the current top of `AI_HANDOFF.md`.
-2. Query GitHub for PR #72 and branch `feat/stocktake-import-native-workspace`; verify actual state, base SHA, head SHA, changed files and CI. Treat recorded SHAs as historical checkpoints, not assumed current state.
+1. Read this document first, then `STOCKTAKE_FILE_IMPORT.md`, ADR-029/ADR-030/ADR-033 and the current top of `AI_HANDOFF.md`.
+2. Query GitHub for PR #74 and branch `feat/stocktake-import-workspace-v2`; verify actual state, base SHA, head SHA, changed files and CI. Treat recorded SHAs as historical checkpoints, not assumed current state.
 3. Audit current `main` and PR diff. Confirm no unexpected changes to scanner, Stocktake core, snapshot/cache, auth or deployment.
 4. Inspect the actual parser, store, module component, registry entry and regression tests. Do not rely solely on this summary.
 5. Reconcile user-reported changes or newly merged PRs before editing. Do not overwrite newer work with this document.
@@ -104,20 +106,21 @@ When the user says “tiếp tục Xuất file” or asks to resume this module:
 
 ## 7. Current follow-up implementation
 
-**Branch:** `feat/stocktake-import-native-workspace`  
-**PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft)  
-**Base:** main commit `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
-**PR #72 merged head:** `bd15b43f77aeee5d33d81a9daa9bd9bca2ac92b2`  
-**Current PR #73 branch:** `fix/stocktake-import-operator-actions`  
-**Head at CI #540:** `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`
+**PR #74 branch:** `feat/stocktake-import-workspace-v2`  
+**PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft)  
+**Base main:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`  
+**Current code head:** `1ef449e4663ee00837aebebada6e9fa8ae0f9b3e` (documentation/test synchronization may advance it)
 
 - Replace the previous output-first/editor-second mutually exclusive layers with one continuous zone workspace.
 - Keep the data table as the primary work surface. Read-only review and inline edit share the same table; cancel restores the edit baseline and save persists the corrected zone.
-- Keep TXT Preview as an expandable secondary inspector. Operator Copy and per-zone Download controls sit beside Edit in the zone heading and remain accessible without scrolling to the preview.
+- Keep TXT Preview as a dedicated selected-zone view with an explicit return-to-table action. Operator Copy and per-zone Download remain beside Edit in the zone heading.
 - Keep the generated zone content as the single payload for preview, Clipboard copy, individual TXT download and ZIP.
 - Distinguish in-memory session changes from IndexedDB persistence. A failed history write must remain visibly unsaved and must not be presented as persisted.
 - Provide action-specific loading feedback for import, zone save, ZIP generation, history clear and history re-export. Use centered, non-blocking, auto-dismissing feedback for notices and separate persistent error alerts. Save/copy confirmation appears only after successful completion.
-- Refine visual hierarchy, compact text containers, semantic color, responsive zone navigation and restrained motion. Respect reduced-motion and power-conserve modes; avoid expensive sticky-header blur on mobile.
+- Refine visual hierarchy, compact text containers, semantic color, responsive zone navigation and restrained motion. ZIP is a compact action beside the zone-list heading and is hidden for single-zone sessions. Respect reduced-motion and power-conserve modes; avoid expensive sticky-header blur on mobile.
+- Count unique mapped product codes by normalized barcode value, not row count. Duplicates across zones count once globally; blank codes do not count. Each zone displays its own unique-code count.
+- Parse optional product names from `TÊN SẢN PHẨM`, `SẢN PHẨM`, `TÊN` and supported English headers. Display the column between code and actual quantity only when present; do not add product names to the downstream TXT format.
+- Keep the application frame fixed to the viewport; the content area, zone list and table own bounded scroll regions. Desktop is the primary wide workspace; mobile remains compact and touch-operable.
 - Preserve parser precision, code source precedence, duplicate rows, source fingerprints, additive session merge/skip, provenance, history compatibility, NHAN VIEN timestamp and output filenames.
 - No intended changes to the existing Stocktake scanner, Scanner Engine, camera lifecycle, snapshot/cache, auth, service worker or deployment configuration.
 
