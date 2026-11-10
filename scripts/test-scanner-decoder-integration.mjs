@@ -209,7 +209,7 @@ try {
     height: upright.height,
     luminance: Uint8ClampedArray.from(
       upright.luminance,
-      (value) => value < 128 ? 108 : 148,
+      (value) => value < 128 ? 88 : 168,
     ),
   };
   const lowContrastAngled = rotateLuminanceByAngle(
