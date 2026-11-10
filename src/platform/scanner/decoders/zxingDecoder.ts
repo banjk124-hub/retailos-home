@@ -37,7 +37,7 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   MICRO_QR_CODE: BarcodeFormat.MICRO_QR_CODE,
 };
 
-const MAX_ROI_WIDTH = 1280;
+const MAX_FRAME_WIDTH = 1280;
 const ROI_UPSCALE = 1.5;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
@@ -159,7 +159,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.diagnosticFrames += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
-      const scale = Math.min(1, MAX_ROI_WIDTH / crop.width);
+      const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
       const baseWidth = Math.max(1, Math.round(crop.width * scale));
       const baseHeight = Math.max(1, Math.round(crop.height * scale));
       const roiWidth = Math.max(1, Math.round(baseWidth * ROI_UPSCALE));
