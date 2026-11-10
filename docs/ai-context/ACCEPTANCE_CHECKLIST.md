@@ -30,7 +30,7 @@
 - [x] Geometry regression script is registered in `npm run preflight`.
 - [x] Geometry regression, TypeScript production build and full preflight pass on merged main commit `891a3a6c8c85442d0b4a253c1fca43b36b590f1c` (GitHub Actions run #299).
 - [x] GitHub Actions main CI run #299 passed.
-- [ ] Home and Stocktake real-device geometry alignment QA — required after SCAN-03 integration; not claimed by the SCAN-02 deployment smoke test.
+- [x] Home and Stocktake real-device geometry alignment QA — user confirms both iOS and Android checks completed after SCAN-03 deployment without detected issues.
 
 ---
 
