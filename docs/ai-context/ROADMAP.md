@@ -12,7 +12,7 @@
 - No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior is in scope.
 - Device QA remains mandatory. CI cannot establish real-world barcode accuracy, iOS camera orientation behavior, focus quality or CPU responsiveness.
 
-**Next:** complete source/test review, run full CI, inspect failures and revise as required; then physical iOS Safari/PWA and Android Chrome/PWA testing in both Home and Stocktake. Merge/deploy only after explicit user approval.
+**Next:** physical iOS Safari/PWA and Android Chrome/PWA testing in both Home and Stocktake, including measured decode latency and UI responsiveness. Merge/deploy only after explicit user approval.
 
 
 ---
@@ -260,7 +260,7 @@ Acceptance criteria:
 > Status: planned. This section records the agreed next phases; it does not claim implementation or device verification.
 
 ### Source-aligned corrections
-- Current `UniversalScannerSession` source uses a 110 ms minimum decode interval. Older Phase 1.2F notes below that say 70 ms are historical and must not be used as the current runtime specification.
+- Historical note: before the SCAN-05/06 correction, `UniversalScannerSession` used a 110 ms minimum decode interval. The corrective branch changes this to 70 ms; the current specification is recorded in the SCAN-05/06 section at the top of this roadmap.
 - P0 camera lease serialization is merged to `main` in commit `0ece0c95523a3846f1f2e06ac9d732c3e5a2f2d8`. CI passed for PR #24. Physical-device QA remains outstanding; deployment state must be checked independently.
 
 ### 1.2G — Rendering, motion and interaction performance
