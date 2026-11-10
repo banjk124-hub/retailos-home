@@ -81,10 +81,16 @@ const lowContrastLuminance = Uint8ClampedArray.from(
   original.luminance,
   (value) => value < 128 ? 88 : 168,
 );
-const lowContrastSkew = rotateLuminanceByAngle(
+const lowContrastRotated = rotateLuminanceByAngle(
   lowContrastLuminance, original.width, original.height, 27,
 );
-assert.ok(lowContrastSkew, 'low-contrast orientation fixture must be generated');
+assert.ok(lowContrastRotated, 'low-contrast orientation fixture must be generated');
+const lowContrastSkew = {
+  ...lowContrastRotated,
+  // Keep the transformed ROI background at the source's off-white level;
+  // the synthetic rotation's default white fill is not part of the barcode.
+  luminance: Uint8ClampedArray.from(lowContrastRotated.luminance, value => Math.min(value, 168)),
+};
 const lowContrastEstimate = estimateScannerSkewAngle(
   lowContrastSkew.luminance, lowContrastSkew.width, lowContrastSkew.height,
 );
