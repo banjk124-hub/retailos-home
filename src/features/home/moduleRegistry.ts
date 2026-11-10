@@ -1,5 +1,3 @@
-import type { ModuleDataId } from '../data/moduleDataService';
-
 export const MODULE_LIBRARY_IDS = [
   'goods-control',
   'goods-processing',
@@ -10,8 +8,12 @@ export const MODULE_LIBRARY_IDS = [
 
 export type ModuleLibraryId = typeof MODULE_LIBRARY_IDS[number];
 
-/** Business workflow identity is independent from server snapshot identity. */
-export type RetailModuleId = ModuleDataId | 'stocktake-import';
+/** Workflow IDs belong to the business UI domain and must not inherit snapshot/cache IDs. */
+export const RETAIL_MODULE_IDS = [
+  'inventory', 'price', 'orders', 'sales', 'products', 'delivery', 'product-dates', 'stocktake', 'stocktake-import',
+] as const;
+
+export type RetailModuleId = typeof RETAIL_MODULE_IDS[number];
 
 export type RetailModule = {
   id: RetailModuleId;
