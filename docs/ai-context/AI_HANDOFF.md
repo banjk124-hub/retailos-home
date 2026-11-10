@@ -1,3 +1,18 @@
+# Current AI handoff — SCAN-04 strict module-reticle ROI decoding (2026-11-10)
+
+- Repository: `banjk124-hub/retailos-home`.
+- Baseline: SCAN-03 merge commit `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms iOS and Android geometry/flow verification passed without detected issues.
+- Current branch: `feat/scan-04-strict-reticle-roi-decoding`.
+- SCAN-04 replaces full-frame-first ZXing decode plus fixed centered crop with a source-frame ROI derived from the current Home/Stocktake reticle region.
+- Decoder API now accepts `{ timestamp, scanRegion }`; the session passes a fresh defensive snapshot on each scheduled frame.
+- `resolveScannerRoiCrop()` validates source-normalized geometry and converts it to integer pixel bounds. Invalid/missing regions fail closed; no full-frame or centered fallback.
+- Preserve 110 ms cadence, camera request/lease, lifecycle/recovery, ZXing format allowlist, validation, result delivery, Home lookup and Stocktake form/save.
+- New regression suite: `scripts/test-scanner-roi-decoder.mjs`, registered in preflight. New technical design/QA contract: `SCAN_04_STRICT_ROI_DECODING.md`.
+- Current work is implemented on the branch; run full preflight/CI and audit the exact final diff before opening/accepting the PR. Physical post-deploy iOS and Android barcode accuracy/performance QA remains mandatory.
+- Do not merge or deploy without explicit user approval.
+
+---
+
 # Current scanner handoff — SCAN-03 module-owned preview regions (2026-11-10)
 
 - SCAN-01 merged by PR #58; SCAN-02 merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`.
