@@ -1,6 +1,6 @@
 # Nạp file kiểm kê — implementation contract
 
-**Status:** Implementation in PR #69; RetailOS CI run #454 passed; not merged or deployed.
+**Status:** PR #69 merged and deployed to main (2026-11-10). Follow-up hardening is in a separate feature branch; not yet merged.
 **Base:** `main` at `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
 **Feature branch:** `feat/stocktake-file-import`.
 
@@ -84,3 +84,18 @@ Each zone becomes its own UTF-8 TXT file. Multi-zone export downloads a ZIP arch
 The feature adds `scripts/test-stocktake-import.mjs` to `npm run preflight`. The test covers pure header/zone/quantity/output rules and static offline/isolation guards. Full CI must also pass TypeScript, production build, GitHub Pages build and all existing scanner regression tests.
 
 CI is not a substitute for physical-device file-picker/download QA or downstream acceptance of the TXT output.
+
+
+## Follow-up hardening — desktop, decimal fidelity and editable review (2026-11-10)
+
+**Implementation branch:** `feat/stocktake-import-desktop-editor`; PR pending.
+
+- Output filenames now identify the zone only: `BT01.txt`, `540.txt`; ZIP name is `KIEM_KE_IMPORT.zip`. The `NHAN VIEN` date/time record inside TXT is retained for compatibility with the existing Stocktake file contract; confirm separately if that record should also change.
+- Excel numeric cells are formatted from their exact OOXML decimal token using the cell's number format. The formatter rounds to the displayed decimal precision without converting the quantity through JavaScript `Number`; General format follows Excel's 15-significant-digit behavior.
+- `BARCODE` is preferred; if blank, the same row's `GOLDCODE` is used. If neither is present, the row is retained with an actionable validation issue so an operator can correct it.
+- Header detection recognizes more operational aliases, scans all worksheet rows, supports different layouts across sheets and multiple table blocks within one sheet, and aggregates tables for the same zone into one TXT. Unsupported header blocks are reported with sheet, row and suggested column names; partial workbook export is blocked to prevent silent omissions.
+- A per-zone edit/save workflow persists row-level changes in the module's isolated IndexedDB history. Export is blocked for unsaved or invalid rows.
+- Workflow IDs are now defined independently of snapshot IDs. Import history remains in `retailos-stocktake-import`, isolated from the shared snapshot database and Stocktake's own local data.
+- Desktop uses a wide two-column zone/workspace layout; mobile retains a stacked layout. Lightweight transitions and `prefers-reduced-motion` support are included. The table is paginated at 100 rows per page.
+
+**Acceptance still required:** verify decimal examples against the original Excel display, material GOLDCODE rows, mixed-layout/multi-table workbook, same-zone aggregation, edit/save/restore, and desktop browser download behavior. Also confirm whether date/time should remain inside the `NHAN VIEN` line.
