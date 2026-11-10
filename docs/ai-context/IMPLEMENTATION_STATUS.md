@@ -1,8 +1,8 @@
 # SCAN-05/06 corrective implementation status — continuous orientation recovery (2026-11-10)
 
-**Baseline:** merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66).  
-**Corrective branch:** `fix/scan-05-06-continuous-orientation`.  
-**PR #66:** merged; its earlier automated checks did not complete physical device acceptance.  
+**Baseline:** merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66).
+**Corrective branch:** `fix/scan-05-06-continuous-orientation`.
+**PR #66:** merged; its earlier automated checks did not complete physical device acceptance.
 **Corrective CI:** run #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b` (full preflight, TypeScript, production build, Pages build and diff checks). **Physical device QA:** pending. Do not merge/deploy until device acceptance passes.
 
 ## Audit findings
@@ -594,8 +594,8 @@ First synchronize and review this documentation-only branch, run repository CI/p
 
 # PR B — Scanner lifecycle contract foundation (2026-11-08)
 
-**Branch:** `feat/scanner-lifecycle-contract`  
-**Base:** `fa0d007d42bf480799e29b6003aeea2b2cd52112` (main at task start).  
+**Branch:** `feat/scanner-lifecycle-contract`
+**Base:** `fa0d007d42bf480799e29b6003aeea2b2cd52112` (main at task start).
 **Status:** Implementation authored; verification pending; unmerged and undeployed.
 
 - Added lifecycle event types and optional adapter injection to the platform scanner contract.
