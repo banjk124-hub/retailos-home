@@ -10,7 +10,7 @@
 - `Nạp file kiểm kê` is a separate local-only workflow inside the existing Kiểm kê library.
 - `RetailModuleId` is separate from `ModuleDataId`; importer does not enter snapshot sync.
 - `.xlsx` parsing is local using JSZip and browser XML APIs; no source workbook upload or network fetch.
-- Detects sheet list, header row, BARCODE and SỐ LƯỢNG; preserves duplicates and source order.
+- Detects sheet list, header row, BARCODE, SỐ LƯỢNG and an explicit VÙNG/ZONE column when present; validates the zone against sheet metadata and preserves duplicates/source order.
 - Supports decimal quantities, decimal-comma text values and percentage-formatted numeric cells.
 - Resolves alphabetic+numeric and numeric-only zone codes; numeric-only output currently uses `ADRESSE,,540`.
 - Preview output before download; ZIP contains one TXT file per zone; individual zone download is available.
