@@ -1,3 +1,21 @@
+# Current task — Stocktake import follow-up (2026-11-10)
+
+**Merged baseline:** PR #69, main commit `853f79607f770000a506f7c1836f1131133497b6`.
+**Follow-up branch:** `feat/stocktake-import-desktop-editor`.
+**Status:** implementation in progress; do not merge/deploy until CI and business QA pass.
+
+- Zone-only TXT filenames and ZIP name; preserve date/time in the existing `NHAN VIEN` content line pending compatibility confirmation.
+- Exact decimal string formatter based on Excel number formats; no JS floating-point round-trip.
+- BARCODE → GOLDCODE row fallback, with missing rows retained for manual correction.
+- Detect different table layouts across sheets and multiple table blocks within a sheet; aggregate same-zone data; block partial exports when unsupported blocks exist.
+- Per-zone edit/save, persisted row-level history, and export guard for unsaved/invalid rows.
+- Decouple business module IDs from snapshot IDs; keep import IndexedDB separate.
+- Wide desktop workspace, mobile stacked layout, light motion and reduced-motion support.
+
+See `STOCKTAKE_FILE_IMPORT.md` and ADR-029 in `ARCHITECTURE.md`.
+
+---
+
 # Current task — Stocktake offline file import (2026-11-10)
 
 **PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
