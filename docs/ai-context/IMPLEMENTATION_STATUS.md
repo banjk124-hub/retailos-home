@@ -1,16 +1,16 @@
 # SCAN-05/06 implementation status — orthogonal rotation and bounded deskew (2026-11-10)
 
 **Status:** Implementation and automated follow-up are on `feat/scan-05-06-final-consolidation`; PR #66 remains Draft/open and not merged/deployed. Physical device acceptance remains outstanding.  
-**CI:** PR #66 run #387 passed full preflight (including production decoder integration), TypeScript, production build, GitHub Pages build and diff checks on the implementation head. The subsequent session-log update was documentation-only.
+**CI:** PR #66 run #395 passed full preflight (including production decoder upright/rotation/deskew integration), TypeScript, production build, GitHub Pages build and diff checks on the implementation head. Subsequent changes are documentation-only.
 
 - SCAN-04 was merged/deployed by the user; the user confirms normal scanner operation after deployment.
 - ZXing baseline: `TRY_HARDER` supports 180° reversal for 1D readers. The runtime fixture verifies Code 128 at 0°/180°; EAN-8/EAN-13 inheritance is source-guarded, not separately runtime-fixture tested.
 - SCAN-05: pure clockwise 90° luminance transform, upright-first decode, one extra ROI pass every third frame after a miss. 90° normalizes to 180° and 270° normalizes to 0°.
 - SCAN-06: Sobel structure-tensor skew estimate, confidence gate, bounded 1.2°–12° inverse-angle bilinear correction, expanded ROI bounds, white fill and 4M-pixel allocation cap. One HybridBinarizer deskew pass follows failed upright/orthogonal paths.
 - Tests cover pixel mapping, invalid bounds, Code 128 at 90°/270°, EAN-8/EAN-13 at 90°/270°, synthetic ±5°/±8° skew, combined orthogonal rotation + deskew, level/blank/out-of-range inputs and DOM independence.
-- Added a production `ZXingDecoderAdapter` integration suite: actual adapter upright decode, scheduled 90°/270° recovery and deskew on the third valid ROI frame, strict reticle crop and no full-frame fallback; registered in preflight.
+- Added a production `ZXingDecoderAdapter` integration suite: actual adapter upright decode, scheduled 90°/270° recovery and +5° deskew on the third valid ROI frame, strict reticle crop and no full-frame fallback; registered in preflight.
 - Audit follow-up decouples processing cadence from diagnostics sampling using a dedicated valid-ROI frame sequence; deterministic regression tests cover cadence and invalid sequence values.
-- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code), #368 (pre-audit-fix consolidated head) and #387 (audit follow-up with production-adapter integration) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
+- CI runs #337 (baseline), #338 (SCAN-05), #342 (SCAN-06 code), #368 (pre-audit-fix consolidated head), #387 (adapter integration) and #395 (adapter deskew integration) passed. Staged PRs #63/#64/#65 were closed without merging as superseded by #66.
 - No camera/session/lifecycle, ROI mapping, UI/CSS, barcode validation, business flow, dependency or deployment changes.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA remains pending. CI does not prove physical optical accuracy, device CPU cost or latency.
 
