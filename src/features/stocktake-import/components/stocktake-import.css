@@ -383,6 +383,7 @@
 }
 .stocktake-import-state.is-ready { color: #16734f; border-color: #ccebdd; background: #effaf4; }
 .stocktake-import-state.is-warning { color: #946018; border-color: #f0dfbd; background: #fff8e9; }
+.stocktake-import-state.is-invalid { color: #a92333; border-color: #f1c9ce; background: #fff0f2; }
 .stocktake-import-state.is-dirty { color: #a45b13; border-color: #f1d8b5; background: #fff5e7; }
 .stocktake-import-table-wrap {
   max-height: min(56vh, 650px);
@@ -577,3 +578,24 @@
 :root[data-power-mode="conserve"] .stocktake-import-output-textarea {
   animation: none !important;
 }
+
+.stocktake-import-zone-actions button svg,
+.stocktake-import-preview-actions button svg,
+.stocktake-import-pagination button svg,
+.stocktake-import-history-list article button svg {
+  transform-origin: center;
+  transition: transform 260ms var(--motion-ease-spatial, ease), color 200ms ease;
+}
+.stocktake-import-zone-actions button:hover:not(:disabled) svg,
+.stocktake-import-preview-actions button:hover:not(:disabled) svg,
+.stocktake-import-pagination button:hover:not(:disabled) svg,
+.stocktake-import-history-list article button:hover:not(:disabled) svg {
+  transform: translateY(-1px) scale(1.07);
+}
+.stocktake-import-zone-actions button:active:not(:disabled) svg,
+.stocktake-import-preview-actions button:active:not(:disabled) svg,
+.stocktake-import-pagination button:active:not(:disabled) svg,
+.stocktake-import-history-list article button:active:not(:disabled) svg {
+  transform: scale(.9);
+}
+.stocktake-import-history-list article button:disabled svg { opacity: .45; }
