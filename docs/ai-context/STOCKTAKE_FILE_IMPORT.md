@@ -35,7 +35,7 @@ Column detection:
 - If fallback `MÃ VẠCH` is identical on every data row, fail closed because it may be a zone label rather than a product barcode.
 
 Data rules:
-- Preserve barcode strings and leading zeroes when present in the workbook cell value.
+- Preserve barcode strings and leading zeroes when present in the workbook cell value; for numeric barcode cells, honor simple Excel zero-padding formats (e.g. `0000000000000`) when present.
 - Preserve every source row, including duplicate barcodes. No deduplication or aggregation.
 - Preserve raw numeric XML quantity tokens to avoid JavaScript floating-point conversion.
 - Convert text decimal comma to decimal point. Ambiguous mixed separators are rejected.
