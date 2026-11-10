@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
-import {
+import ZXing from '@zxing/library';
+
+const {
   BarcodeFormat, BinaryBitmap, DecodeHintType, HybridBinarizer,
   MultiFormatReader, RGBLuminanceSource, ResultMetadataType,
-} from '@zxing/library';
+} = ZXing;
 
 const L = [
   '0001101', '0011001', '0010011', '0111101', '0100011',
