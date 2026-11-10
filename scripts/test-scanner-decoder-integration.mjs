@@ -70,6 +70,13 @@ try {
     },
   };
 
+  const sessionSource = await readFile(
+    path.join(root, 'src/platform/scanner/universalScannerSession.ts'),
+    'utf8',
+  );
+  assert.match(sessionSource, /const minDecodeIntervalMs = 70/,
+    'the shared session must use the approved higher decode sampling cadence');
+
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
