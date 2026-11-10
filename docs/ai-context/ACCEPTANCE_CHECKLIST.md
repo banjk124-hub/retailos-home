@@ -1,22 +1,22 @@
 # SCAN-05/06 corrective acceptance — continuous orientation recovery (2026-11-10)
 
 ## Source and pipeline
-- [ ] Current baseline is verified as merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616`.
-- [ ] Continuous orientation estimator is called from the production ZXing adapter after upright and quarter-turn misses.
-- [ ] Angle sign, modulo-180 normalization and inverse rotation are verified.
-- [ ] Both original and quarter-turned ROI candidates are evaluated in correction order.
-- [ ] HybridBinarizer and GlobalHistogramBinarizer are attempted for each candidate.
-- [ ] Strict module-owned ROI remains enforced; no full-frame or centered fallback.
-- [ ] Estimator attempt, confidence rejection and successful decode diagnostics are distinct.
-- [ ] Session minimum decode interval is 70 ms; decoder calls remain serialized.
+- [x] Current baseline is verified as merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616`.
+- [x] Continuous orientation estimator is called from the production ZXing adapter after upright and quarter-turn misses.
+- [x] Angle sign, modulo-180 normalization and inverse rotation are verified.
+- [x] Both original and quarter-turned ROI candidates are evaluated in correction order.
+- [x] HybridBinarizer and GlobalHistogramBinarizer are attempted for each candidate.
+- [x] Strict module-owned ROI remains enforced; no full-frame or centered fallback.
+- [x] Estimator attempt, confidence rejection and successful decode diagnostics are distinct.
+- [x] Session minimum decode interval is 70 ms; decoder calls remain serialized.
 
 ## Automated regression
-- [ ] Code 128, EAN-8 and EAN-13 baseline and orthogonal fixtures pass.
-- [ ] Continuous positive/negative angle sweep passes through the production adapter.
-- [ ] Combined 90°/270° plus residual skew passes through the production adapter.
-- [ ] Blank, low-texture, ambiguous-orientation and invalid-buffer cases fail closed.
-- [ ] ROI exclusion and missing-region cases do not decode outside the reticle.
-- [ ] Full preflight, TypeScript, production build and GitHub Pages build pass on the final corrective head.
+- [x] Code 128, EAN-8 and EAN-13 baseline and orthogonal fixtures pass.
+- [x] Continuous positive/negative angle sweep passes through the production adapter.
+- [x] Combined 90°/270° plus residual skew passes through the production adapter.
+- [x] Blank, low-texture, ambiguous-orientation and invalid-buffer cases fail closed.
+- [x] ROI exclusion and missing-region cases do not decode outside the reticle.
+- [x] Full preflight, TypeScript, production build and GitHub Pages build pass on the final corrective head.
 
 ## Physical device acceptance
 - [ ] iOS Safari/PWA: Home and Stocktake; rotate device and barcode independently; test cardinal and intermediate orientations.
@@ -26,7 +26,7 @@
 - [ ] Confirm Home lookup and Stocktake form-fill, duplicate rows and explicit save remain unchanged.
 - [ ] User explicitly approves merge and deployment after reviewing source, CI and device evidence.
 
-**Acceptance is not complete until physical iOS and Android evidence is recorded.**
+**Automated acceptance:** CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`. **Release acceptance is not complete until physical iOS and Android evidence is recorded.**
 
 
 ---
