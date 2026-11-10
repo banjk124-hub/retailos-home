@@ -48,6 +48,10 @@ const checks = [
     command: process.execPath,
     args: ["scripts/test-scanner-preview-region.mjs"],
   },
+    name: "Scanner 0°/180° rotation baseline tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-rotation-baseline.mjs"],
+  },
   {
     name: "Scanner strict reticle ROI decoder regression tests",
     command: process.execPath,
