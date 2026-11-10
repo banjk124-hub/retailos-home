@@ -4,6 +4,7 @@ export type ImportedStocktakeRow = {
   barcode: string;
   quantity: string;
   sourceRow: number;
+  sourceSheet?: string;
   barcodeSource: 'BARCODE' | 'GOLDCODE' | 'MÃ VẠCH' | 'manual';
   issues: string[];
 };
@@ -42,6 +43,7 @@ type HeaderMapping = {
   barcodeHeader: string;
   zoneColumn?: number;
 };
+type HeaderScan = { mappings: HeaderMapping[]; unsupportedRows: Array<{ rowNumber: number; headers: string[] }> };
 
 const RELATIONSHIP_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13', 'EAN8', 'UPC', 'GTIN', 'MÃ BARCODE'];
@@ -189,9 +191,11 @@ function matchesHeader(value: string, aliases: string[]): boolean {
   return aliases.some((alias) => value === alias || value.startsWith(alias + ' '));
 }
 
-function findHeader(rows: Map<number, Map<number, CellValue>>): HeaderMapping {
+function findHeaders(rows: Map<number, Map<number, CellValue>>): HeaderScan {
   const candidates = [...rows.entries()].sort((a, b) => a[0] - b[0]);
-  const availableHeaders: string[] = [];
+  const mappings: HeaderMapping[] = [];
+  const unsupportedRows: HeaderScan['unsupportedRows'] = [];
+  const diagnosticRows: string[] = [];
   for (const [rowNumber, cells] of candidates) {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
     const quantity = [...headers.entries()].find(([, value]) => matchesHeader(value, QUANTITY_HEADERS));
@@ -199,9 +203,16 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): HeaderMapping {
     const goldCode = [...headers.entries()].find(([, value]) => matchesHeader(value, GOLD_CODE_HEADERS));
     const fallback = [...headers.entries()].find(([, value]) => matchesHeader(value, FALLBACK_BARCODE_HEADERS));
     const zone = [...headers.entries()].find(([, value]) => matchesHeader(value, ZONE_HEADERS));
+    const looksLikeHeader = Boolean(quantity || barcode || goldCode || fallback);
+    if (!looksLikeHeader) {
+      if (diagnosticRows.length < 3 && [...headers.values()].filter(Boolean).length >= 2) {
+        diagnosticRows.push('Dòng ' + rowNumber + ': ' + [...headers.values()].filter(Boolean).join(' | '));
+      }
+      continue;
+    }
     if (quantity && (barcode || goldCode || fallback)) {
       const chosen = barcode ?? goldCode ?? fallback!;
-      return {
+      mappings.push({
         rowNumber,
         quantityColumn: quantity[0],
         ...(barcode ? { barcodeColumn: barcode[0] } : {}),
@@ -209,17 +220,22 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): HeaderMapping {
         ...(fallback ? { fallbackBarcodeColumn: fallback[0] } : {}),
         barcodeHeader: chosen[1],
         ...(zone ? { zoneColumn: zone[0] } : {}),
-      };
+      });
+      continue;
     }
-    if (availableHeaders.length < 3 && [...headers.values()].some(Boolean)) availableHeaders.push('Dòng ' + rowNumber + ': ' + [...headers.values()].filter(Boolean).join(' | '));
+    unsupportedRows.push({ rowNumber, headers: [...headers.values()].filter(Boolean) });
   }
-  const details = availableHeaders.length ? ' Các header gần nhất: ' + availableHeaders.join(' / ') + '.' : '';
-  throw new Error(
-    'Không nhận diện được cột mã hàng (BARCODE hoặc GOLDCODE) và cột kết quả thực tế (SỐ LƯỢNG, QUANTITY, KHỐI LƯỢNG...).' +
-    details + ' Hãy kiểm tra tên cột, hoặc đổi tên header tương ứng rồi nạp lại file. Mỗi sheet có thể dùng thứ tự cột và cấu trúc riêng.',
-  );
+  if (mappings.length === 0) {
+    const details = unsupportedRows.length
+      ? ' Header chưa đủ cột tại: ' + unsupportedRows.map((item) => 'dòng ' + item.rowNumber + ' (' + item.headers.join(' | ') + ')').join('; ') + '.'
+      : diagnosticRows.length ? ' Các dòng gần nhất: ' + diagnosticRows.join(' / ') + '.' : '';
+    throw new Error(
+      'Không nhận diện được cặp cột mã hàng (BARCODE/GOLDCODE) và kết quả thực tế (SỐ LƯỢNG/QUANTITY/KHỐI LƯỢNG...).' +
+      details + ' Hãy kiểm tra hoặc đổi tên header tương ứng rồi nạp lại. Mỗi bảng trong workbook có thể dùng thứ tự cột và cấu trúc riêng.',
+    );
+  }
+  return { mappings, unsupportedRows };
 }
-
 function expandDecimal(value: string): { sign: string; integer: string; fraction: string } {
   const match = value.trim().match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
   if (!match) throw new Error('Giá trị số không hợp lệ: ' + value);
