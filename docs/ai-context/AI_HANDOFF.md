@@ -3,8 +3,8 @@
 **Accepted baseline:** PR #70 deployed and user-accepted; PR #71 merged. Current main baseline: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
 **Current branch:** `feat/stocktake-import-native-workspace`.
 **Current PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft, open; not merged/deployed).
-**Current head:** `13ae9a96e270642d5349041f5d01bfd8a7a542f4`.
-**CI:** RetailOS CI run #524 passed: Stocktake import regression suite, all scanner regression tests, TypeScript, production build, GitHub Pages build and diff checks.
+**Current head:** `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
+**CI:** RetailOS CI run #534 passed: Stocktake import regression suite, all scanner regression tests, TypeScript, production build, GitHub Pages build and diff checks.
 **Physical QA:** Desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA remain pending.
 **Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
 **Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`.
