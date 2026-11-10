@@ -516,7 +516,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 {pendingImport.zoneConflicts.map((zone) => <small key={zone.zoneCode}>{zone.zoneCode}: phiên hiện tại {zone.existingRows} dòng · nguồn bổ sung {zone.incomingRows} dòng{zone.duplicateWithinBatch ? ' · xuất hiện ở nhiều file trong lượt này' : ''}</small>)}
               </div>}
               <div className="stocktake-import-review-actions">
-                <button type="button" disabled={busy} onClick={() => setPendingImport(null)}>Hủy bổ sung</button>
+                <button type="button" disabled={busy} onClick={() => { setPendingImport(null); setNotice('Đã hủy nhập bổ sung. Phiên hiện tại không thay đổi.'); }}>Hủy bổ sung</button>
                 {pendingImport.zoneConflicts.length > 0
                   ? <>
                     <button type="button" disabled={busy} onClick={() => void confirmPendingImport(false)}>Bỏ qua vùng trùng</button>
