@@ -262,6 +262,7 @@ assert.match(styles, /stocktake-import-output-textarea/);
 assert.match(styles, /stocktake-import-preview-actions/);
 assert.match(styles, /stocktake-import-workspace-enter/);
 assert.match(styles, /stocktake-import-state/);
+assert.match(styles, /stocktake-import-state\.is-invalid/);
 assert.doesNotMatch(styles, /stocktake-import-zone-layer-panel|stocktake-import-output-layer/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
