@@ -163,8 +163,9 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 
 - [x] TypeScript, production build, Pages build and full preflight passed on code head `37b5f69d` (run #509). Later documentation-only updates do not change runtime code.
 
-- [ ] Source precedence tests for BARCODE, CODE, GOLDCODE, TILLCODE and legacy fallback.
+- [x] Source precedence unit tests for BARCODE, CODE, GOLDCODE, TILLCODE and legacy fallback passed in preflight run #509.
 - [ ] One-file, multi-file, repeated exact file, same-name/different-content, repeated zone and additive second-batch scenarios.
-- [ ] Merge/skip behavior, source provenance, session save and history restore.
+- [x] Merge/skip behavior and row-level source provenance unit tests passed in preflight run #509.
+- [ ] Full IndexedDB session save/history restore and duplicate-file end-to-end QA.
 - [ ] Output layer transition, scoped Ctrl+A, Clipboard success/fallback, download parity and ZIP parity.
 - [ ] Desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA manual QA.
