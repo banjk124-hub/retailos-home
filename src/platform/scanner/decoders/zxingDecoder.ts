@@ -83,19 +83,28 @@ function decodeWithExpectedMissSuppressed(
   bitmap: BinaryBitmap,
 ) {
   const originalWarn = console.warn;
-  console.warn = (...args: Parameters<typeof console.warn>) => {
-    const [message, error] = args;
-    if (message === 'MultiFormatReader: non-ReaderException from reader:'
-      && error instanceof Error
-      && error.name === 'NotFoundException') {
-      return;
-    }
-    originalWarn.apply(console, args);
-  };
+  let patched = false;
+  try {
+    console.warn = (...args: Parameters<typeof console.warn>) => {
+      const [message, error] = args;
+      if (message === 'MultiFormatReader: non-ReaderException from reader:'
+        && error instanceof Error
+        && error.name === 'NotFoundException') {
+        return;
+      }
+      originalWarn.apply(console, args);
+    };
+    patched = true;
+  } catch {
+    // Some embedded browsers may expose a non-writable console method.
+    // Decode must remain functional even when this diagnostic cannot be muted.
+    return reader.decodeWithState(bitmap);
+  }
+
   try {
     return reader.decodeWithState(bitmap);
   } finally {
-    console.warn = originalWarn;
+    if (patched) console.warn = originalWarn;
   }
 }
 
