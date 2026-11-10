@@ -190,7 +190,10 @@ function shiftDecimal(value: string, places: number): string {
     : decimalPosition >= padded.length
       ? padded + '0'.repeat(decimalPosition - padded.length)
       : padded.slice(0, decimalPosition) + '.' + padded.slice(decimalPosition);
-  return sign + normalized.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  const parts = normalized.split('.');
+  const integer = parts[0].replace(/^0+(?=\d)/, '');
+  const fraction = (parts[1] ?? '').replace(/0+$/, '');
+  return sign + integer + (fraction ? '.' + fraction : '');
 }
 
 function parseQuantity(value: string, type: string, percentageStyle: boolean): string {
