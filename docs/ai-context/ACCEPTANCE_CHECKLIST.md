@@ -25,10 +25,10 @@
 - [x] Combined 90°/270° normalization plus skew correction passes.
 - [x] Level, blank, invalid and >12° cases fail closed; pure service has no DOM/presentation dependency.
 - [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
-- [x] Previous consolidated PR #66 head passed full preflight and builds in CI run #368 (before the audit follow-up commits).
+- [x] Final consolidated PR #66 CI run #387 passed full preflight, TypeScript, production/Pages builds and diff checks.
 - [x] Follow-up separates processing cadence from diagnostics sampling and adds deterministic cadence regression coverage.
 - [x] Production decoder integration test is registered in preflight: upright decode, scheduled 90°/270° recovery, strict ROI crop and no-fallback behavior.
-- [ ] Fresh CI run for the latest audit follow-up commits must pass before merge.
+- [x] Fresh CI run #387 passed the audit follow-up, including production decoder integration.
 - [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
 - [ ] Physical Android Chrome/PWA QA: same matrix.
 - [ ] Record latency, CPU and accuracy on low-end and high-end devices.
