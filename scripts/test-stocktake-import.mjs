@@ -221,6 +221,7 @@ assert.match(store, /rows: zone\.rows/);
 assert.match(store, /sourceFiles/);
 assert.match(sessionService, /detectStocktakeImportConflicts/);
 assert.match(sessionService, /mergeStocktakeImportSession/);
+assert.match(sessionService, /skippedZoneWarnings/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
 assert.doesNotMatch(store, /retailos-module-data|retailos-stocktake['"]/);
 assert.ok(registry.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
@@ -231,7 +232,8 @@ assert.doesNotMatch(registry, /ModuleDataId/, "Workflow identity must not depend
 assert.equal(snapshotService.includes("stocktake-import"), false, "The local workflow must not enter snapshot synchronization.");
 assert.match(styles, /grid-template-columns:210px minmax\(0,1fr\)/);
 assert.match(styles, /stocktake-import-output-textarea/);
-assert.match(styles, /stocktake-import-layer-in/);
+assert.match(styles, /stocktake-import-zone-layer-panel/);
+assert.match(styles, /is-inactive/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
 
