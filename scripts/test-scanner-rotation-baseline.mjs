@@ -132,4 +132,4 @@ for (const fixture of [encodeEan13('893850597001'), encodeEan8('9638507'), encod
     'ZXing must report the upside-down 180-degree orientation',
   );
 }
-console.log('Scanner rotation baseline passed: EAN-13 and EAN-8 at 0° and 180°.');
+console.log('Scanner rotation baseline passed: EAN-13, EAN-8 and CODE-128 at 0° and 180°.');
