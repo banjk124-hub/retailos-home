@@ -23,7 +23,7 @@
 - [x] Combined 90°/270° normalization plus skew correction passes.
 - [x] Level, blank, invalid and >12° cases fail closed; pure service has no DOM/presentation dependency.
 - [x] Deskew is attempted only after upright and orthogonal decode misses and uses one HybridBinarizer pass.
-- [x] final consolidated CI run #350 passed the full preflight and builds.
+- [x] final consolidated Final consolidated PR #66 CI run #360 passed the full preflight and builds.
 - [ ] Physical iOS Safari/PWA QA: ±5°/±8° with Home and Stocktake.
 - [ ] Physical Android Chrome/PWA QA: same matrix.
 - [ ] Record latency, CPU and accuracy on low-end and high-end devices.
