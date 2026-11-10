@@ -13,6 +13,7 @@
 ## Automated regression
 - [x] Code 128, EAN-8 and EAN-13 baseline and orthogonal fixtures pass.
 - [x] Continuous positive/negative angle sweep passes through the production adapter.
+- [x] Low-contrast Code 128 fixture (40/255) passes through the production adapter after bounded percentile contrast normalization.
 - [x] Combined 90°/270° plus residual skew passes through the production adapter.
 - [x] Blank, low-texture, ambiguous-orientation and invalid-buffer cases fail closed.
 - [x] ROI exclusion and missing-region cases do not decode outside the reticle.
