@@ -186,21 +186,22 @@ function shiftDecimal(value: string, places: number): string {
   const decimalPosition = match[2].length + Number(match[4] ?? 0) + places;
   const padded = digits.padEnd(Math.max(digits.length, decimalPosition), '0');
   const normalized = decimalPosition <= 0
-    ? \`0.\${'0'.repeat(-decimalPosition)}\${padded}\`
+    ? '0.' + '0'.repeat(-decimalPosition) + padded
     : decimalPosition >= padded.length
       ? padded + '0'.repeat(decimalPosition - padded.length)
-      : \`\${padded.slice(0, decimalPosition)}.\${padded.slice(decimalPosition)}\`;
+      : padded.slice(0, decimalPosition) + '.' + padded.slice(decimalPosition);
   return sign + normalized.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
 }
+
 function parseQuantity(value: string, type: string, percentageStyle: boolean): string {
   const trimmed = value.trim();
   if (!trimmed) throw new Error('Thiếu số lượng.');
   if (type === 'n') {
     if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(trimmed)) {
-      throw new Error(\`Số lượng không hợp lệ: \${trimmed}\`);
+      throw new Error('Số lượng không hợp lệ: ' + trimmed);
     }
     // Excel stores percentage-formatted values as fractions; restore the displayed percent.
-    if (percentageStyle) return \`\${shiftDecimal(trimmed, 2)}%\`;
+    if (percentageStyle) return shiftDecimal(trimmed, 2) + '%';
     // Keep the raw OOXML numeric token to avoid Number precision loss.
     return trimmed;
   }
@@ -208,7 +209,7 @@ function parseQuantity(value: string, type: string, percentageStyle: boolean): s
   const decimalComma = /^[+-]?\d+,\d+(?:[eE][+-]?\d+)?%?$/.test(normalized);
   if (decimalComma) return normalized.replace(',', '.');
   if (/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?%?$/.test(normalized)) return normalized;
-  throw new Error(\`Số lượng không hợp lệ hoặc có dấu phân cách mơ hồ: \${trimmed}\`);
+  throw new Error('Số lượng không hợp lệ hoặc có dấu phân cách mơ hồ: ' + trimmed);
 }
 function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellValue>>, headerRow: number): string {
   const normalizedSheet = sheetName.trim().toUpperCase();
