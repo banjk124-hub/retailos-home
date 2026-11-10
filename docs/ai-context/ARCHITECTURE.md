@@ -600,7 +600,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 ## ADR-026 — Continuous ROI orientation recovery (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #411 passed. Physical iOS/Android QA remains pending.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical iOS/Android QA remains pending.
 
 ### Context
 The prior orthogonal-only extension ran every third valid ROI frame and did not cover intermediate in-plane angles. Device testing reported missed sideways barcodes, blind angles and slow recognition. The user clarified that accuracy and sensitivity take priority over a strict ultra-low-end CPU budget.
@@ -624,7 +624,7 @@ See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-r
 
 ## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
-**Status:** Corrective implementation on Draft PR #67; CI run #411 passed. Physical optical QA remains pending.
+**Status:** Corrective implementation on Draft PR #67; CI run #425 passed. Physical optical QA remains pending.
 
 ### Context
 The previous estimator used one global Sobel structure tensor and accepted only 1.2°–12°. This left large intermediate angles unsupported and could be dominated by packaging text, borders or graphics. A continuous estimate must be validated by the production decoder, not accepted as a barcode result by itself.
