@@ -28,6 +28,7 @@ This is in-plane orientation recovery. It does not claim perspective/keystone co
 - `deskewHits` counts candidates that produce a ZXing result.
 - `lastDeskewAngleDegrees` records the latest accepted orientation estimate.
 - Stage timings separate ROI draw, image read, grayscale conversion, quarter-turn, estimator/rotation and ZXing candidate decode.
+- Suppress only ZXing 0.23.0's expected `MultiFormatReader` `NotFoundException` warning during synchronous decode misses; unrelated console warnings remain visible.
 - Diagnostics must not include barcode payload, employee identity, camera device ID or persistent device identifier.
 
 ## Regression coverage
