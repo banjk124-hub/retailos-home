@@ -169,9 +169,9 @@ const scan06Doc = await readFile(
 );
 assert.match(scan05Doc, /One clockwise quarter-turn/);
 assert.match(scan05Doc, /180°/);
-assert.match(scan06Doc, /Sobel structure tensor/);
+assert.match(scan06Doc, /180-bin Sobel gradient-orientation histogram/);
 assert.match(scan06Doc, /1\.2°/);
-assert.match(scan06Doc, /12°/);
+assert.match(scan06Doc, /90°/);
 assert.match(scan06Doc, /perspective/);
 
 console.log('Scanner continuous orientation tests passed: angle sweep through ±75°, 90°/270° normalization path, and fail-closed bounds.');
