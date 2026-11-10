@@ -1,6 +1,6 @@
 # SCAN-04 implementation update — strict module-reticle ROI decoding (2026-11-10)
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; CI and physical post-deployment barcode QA are pending.
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #317 passed full preflight/build on implementation head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54`. Physical post-deployment barcode QA remains pending.
 
 - SCAN-03 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms both iOS and Android geometry/flow checks passed without detected issues.
 - Decoder now receives the current `source-frame-normalized` region from the active session on every decode call.
