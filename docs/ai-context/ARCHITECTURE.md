@@ -730,7 +730,7 @@ Validate Excel display parity for integer, fixed-decimal, General and percent fo
 
 ## ADR-031 — Output layer transition and additive multi-file import sessions (2026-11-10)
 
-**Status:** Implemented on follow-up branch `feat/stocktake-import-session-output`, draft PR #71; CI #509 passed on code head `37b5f69d`; physical device acceptance pending.
+**Status:** PR #71 business/session implementation merged. The two-layer presentation decision below is historical and is superseded by ADR-032. Additive multi-file, provenance, timestamp and output-payload decisions remain active.
 
 ### Context
 
@@ -757,3 +757,36 @@ No changes to the existing Stocktake module, scanner engine, camera lifecycle, s
 ### Acceptance
 
 Run full preflight and test all source precedence, multi-file, duplicate-file, duplicate-zone merge/skip, history restore, output payload parity, scoped textarea selection and Clipboard fallback cases. Perform manual QA on desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA before release.
+
+## ADR-032 — Unified Stocktake Import workspace and interaction state (2026-11-10)
+
+**Status:** Implemented in draft PR #72 (feat/stocktake-import-native-workspace). RetailOS CI #524 passed on head 13ae9a96e270642d5349041f5d01bfd8a7a542f4; physical-device acceptance remains pending.
+
+### Context
+
+The Output and Editor layers in ADR-031 represented two views of the same zone data, but switching between them split one continuous task into separate work modes. The module also needed clearer feedback for asynchronous actions, persistence, validation and completion, with a more expressive but lightweight visual and motion system.
+
+### Decisions
+
+- Supersede ADR-031's mutually exclusive Output/Editor layer presentation. Keep one continuous selected-zone workspace.
+- The review/edit table is the primary work surface. Read-only review and inline edit share the same table; editing changes the row controls in place. Cancel restores the captured edit baseline; save persists the updated zone.
+- TXT Preview is an expandable secondary inspector below the table. It is not a separate mode or independent data model. Preview, Clipboard copy, individual TXT download and ZIP all consume the same generated zone payload.
+- Keep interactive Copy/Download controls outside the disclosure summary trigger. The summary only opens/closes the inspector.
+- Separate in-memory session state from IndexedDB persistence. A failed history write cannot be represented as persisted; keep the in-memory data recoverable while showing the unsaved persistence state.
+- Provide action-specific progress feedback for import, zone save, ZIP generation, history clear and history re-export. Notices distinguish success, warning and information; errors remain separate alert states. Do not show success before an operation completes.
+- Preserve validation and export invariants: dirty or invalid zones and workbook-level blocking issues prevent the corresponding export; all-zone ZIP requires every zone to be valid and saved.
+- Use semantic visual hierarchy rather than a uniform treatment: red for primary actions, blue for TXT/technical inspection, green for valid/persisted state, amber for pending/unsaved state and red for errors. Compact containers to their content and use empty space only for useful metadata or actions.
+- Use restrained transform/opacity motion and shared motion tokens where available. Respect prefers-reduced-motion and the app's power-conserve mode. Avoid continuous decorative animation, unnecessary remounts and expensive sticky-header blur on mobile.
+- Keep the desktop zone-navigation/workspace relationship and adapt the navigation/workspace for narrow screens without changing the data workflow.
+
+### Preserved business and platform boundaries
+
+- No change to workbook parsing, Excel decimal precision, header/zone resolution, code-source precedence, duplicate preservation, SHA-256 fingerprinting, multi-file staging, merge/skip semantics, source provenance, IndexedDB schema/history compatibility, session timestamp or TXT/ZIP output payload.
+- No change to the existing Stocktake scanner, Scanner Engine, camera lifecycle, snapshot/cache, authentication, service worker or deployment configuration.
+
+### Acceptance
+
+- CI #524 passed the unified-workspace assertions, full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite.
+- Still required: manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA QA; real workbook verification for multi-file merge/skip, persistence/history restore, Clipboard fallback and TXT/ZIP payload parity.
+- Do not merge or deploy until the user explicitly approves.
+
