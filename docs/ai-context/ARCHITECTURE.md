@@ -786,7 +786,7 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 
 ### Acceptance
 
-- CI #524 passed the unified-workspace assertions, full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite.
+- CI #534 passed the unified-workspace assertions, full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite.
 - Still required: manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA QA; real workbook verification for multi-file merge/skip, persistence/history restore, Clipboard fallback and TXT/ZIP payload parity.
 - Do not merge or deploy until the user explicitly approves.
 
