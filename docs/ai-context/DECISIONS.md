@@ -146,7 +146,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 - Estimate the dominant ROI gradient orientation using a 180-bin Sobel histogram, directional-energy concentration and local coherence.
 - Normalize the estimate modulo 180° into a signed ±90° range; ignore estimates below 0.65° and reject low-confidence/ambiguous textures.
-- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–220 luminance levels), then inverse-angle bilinear correction with expanded bounds and a 6,000,000-pixel allocation ceiling.
+- Apply a percentile-based contrast stretch only for compressed 1st–99th percentile ROI ranges (24–219 luminance levels), then inverse-angle bilinear correction with expanded bounds and a 6,000,000-pixel allocation ceiling.
 - Evaluate the original and quarter-turned ROI representations; attempt correction candidates in ascending absolute angle.
 - Use HybridBinarizer and GlobalHistogramBinarizer as successive decode strategies for each candidate. ZXing's valid format/checksum result remains the only accepted output.
 - Count estimator invocations, confidence/angle-gate misses and decode hits separately.
