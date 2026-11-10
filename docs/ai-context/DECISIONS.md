@@ -47,7 +47,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gate
 
 
 ## ADR-022 — Separate module scan intent from source-frame processing geometry (2026-11-10)
-**Status:** Accepted as the SCAN-01 source contract; runtime wiring is deferred to SCAN-02/03.
+**Status:** SCAN-01 contract merged by PR #58; geometry mapping and Home/Stocktake wiring were completed in SCAN-02/03. SCAN-04 consumes the mapped source region.
 
 ### Decision
 - Feature modules own a `ScannerModuleConfig` containing a `preview-content-normalized` scan region and a `ScannerCameraRequest`.
@@ -68,7 +68,7 @@ See `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 
 
 ## ADR-023 — Pure preview-to-source scanner geometry mapping (2026-11-10)
-**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; runtime consumers remain unwired until SCAN-03.
+**Status:** Merged by PR #59 at `891a3a6c8c85442d0b4a253c1fca43b36b590f1c`; Home and Stocktake runtime consumers were wired in merged SCAN-03 (PR #61).
 
 ### Decision
 - Add a pure mapper from `preview-content-normalized` to `source-frame-normalized` coordinates.
