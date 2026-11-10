@@ -52,6 +52,10 @@ function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): s
   return issues;
 }
 
+function getRowIssues(row: ImportedStocktakeRow): string[] {
+  return [...new Set([...(row.issues ?? []), ...validateRow(row)])];
+}
+
 function normalizeEditableQuantity(value: string): string {
   const normalized = value.trim().replace(/\s/g, '');
   return /^[+-]?\d+,\d+(?:[eE][+-]?\d+)?%?$/.test(normalized) ? normalized.replace(',', '.') : value.trim();
@@ -116,13 +120,13 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     () => result?.zones.reduce((total, zone) => total + zone.rows.length, 0) ?? 0,
     [result],
   );
-  const invalidCount = activeZone?.rows.filter((row) => row.issues.length > 0).length ?? 0;
+  const invalidCount = activeZone?.rows.filter((row) => getRowIssues(row).length > 0).length ?? 0;
   const outputReady = Boolean(activeZone && result && invalidCount === 0 &&
     !editingZone && !dirtyZones.includes(activeZone.zoneCode) && result.blockingIssues.length === 0);
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
-  const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => row.issues.length > 0)) ?? [];
+  const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [];
   const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
   const refreshHistory = async () => {
@@ -388,7 +392,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       setError('Workbook còn sheet chưa được nhận diện. Hãy xem hướng dẫn lỗi trước khi xuất để tránh bỏ sót dữ liệu.');
       return;
     }
-    if (dirtyZones.includes(zone.zoneCode) || zone.rows.some((row) => row.issues.length > 0)) {
+    if (dirtyZones.includes(zone.zoneCode) || zone.rows.some((row) => getRowIssues(row).length > 0)) {
       setError('Vùng ' + zone.zoneCode + ' còn chỉnh sửa chưa lưu hoặc dữ liệu chưa hợp lệ.');
       return;
     }
@@ -574,7 +578,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <aside className="stocktake-import-zone-nav" aria-label="Danh sách vùng">
                 <div className="stocktake-import-zone-nav-heading">CÁC VÙNG</div>
                 {result.zones.map((zone, index) => {
-                  const rowErrors = zone.rows.filter((row) => row.issues.length > 0).length;
+                  const rowErrors = zone.rows.filter((row) => getRowIssues(row).length > 0).length;
                   const isDirty = dirtyZones.includes(zone.zoneCode);
                   return <button key={zone.zoneCode} type="button"
                     className={selectedZone === index ? 'is-active' : ''}
@@ -666,7 +670,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                             {visibleRows.map((row, visibleIndex) => {
                               const rowIndex = page * PAGE_SIZE + visibleIndex;
                               return <tr key={(row.sourceFileName ?? '') + '-' + (row.sourceSheet ?? '') + '-' + row.sourceRow + '-' + rowIndex}
-                                className={row.issues.length ? 'has-error' : ''}>
+                                className={getRowIssues(row).length ? 'has-error' : ''}>
                                 <td className="stocktake-import-source-row" title={[row.sourceFileName, row.sourceSheet].filter(Boolean).join(' · ')}>
                                   {row.sourceSheet ? row.sourceSheet + ' · ' + row.sourceRow : row.sourceRow}
                                   {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFileId ? ' · ' + row.sourceFileId.slice(0, 8) : ''}</small>}
@@ -680,8 +684,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                                       value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
                                   : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
                                 <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
-                                <td>{row.issues.length
-                                  ? <span className="stocktake-import-row-error" title={row.issues.join(' ')}>{row.issues.join(' ')}</span>
+                                <td>{getRowIssues(row).length
+                                  ? <span className="stocktake-import-row-error" title={getRowIssues(row).join(' ')}>{getRowIssues(row).join(' ')}</span>
                                   : <span className="stocktake-import-row-ok">Hợp lệ</span>}</td>
                               </tr>;
                             })}
