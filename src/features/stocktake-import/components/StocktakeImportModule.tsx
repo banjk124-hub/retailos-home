@@ -508,7 +508,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 {pendingImport.duplicateFiles.map((name, index) => <small key={name + index}>{name}</small>)}
               </div>}
               {pendingImport.sameNameDifferentContent.length > 0 && <div className="stocktake-import-review-group">
-                <strong>Cùng tên nhưng nội dung khác · cần xác nhận</strong>
+                <strong>Cùng tên nhưng nội dung khác hoặc chưa đối chiếu được · cần xác nhận</strong>
                 {pendingImport.sameNameDifferentContent.map((name, index) => <small key={name + index}>{name}</small>)}
               </div>}
               {pendingImport.zoneConflicts.length > 0 && <div className="stocktake-import-review-group">
