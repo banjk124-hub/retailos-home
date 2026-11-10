@@ -1,6 +1,6 @@
 # SCAN-05 — Orthogonal ROI rotation decoding
 
-**Status:** Implemented on final consolidated PR #66. Staged PR #64 CI run #338 and final consolidated CI run #350 passed. Physical iOS/Android QA remains pending.
+**Status:** Implemented on final consolidated PR #66. Staged PR #64 CI run #338 and final consolidated PR #66 CI run #360 passed. Physical iOS/Android QA remains pending.
 
 ## Verified baseline
 
