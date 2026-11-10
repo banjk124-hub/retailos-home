@@ -1,19 +1,26 @@
-# Current AI handoff — SCAN-05/06 finalization (2026-11-10)
+# Current AI handoff — SCAN-05/06 corrective completion (2026-11-10)
 
 - Repository: `banjk124-hub/retailos-home`.
-- Active branch: `feat/scan-05-06-final-consolidation`.
-- Active pull request: Draft PR #66 — https://github.com/banjk124-hub/retailos-home/pull/66.
-- PR #66 is the sole consolidated delivery for SCAN baseline, SCAN-05 and SCAN-06. Staged PRs #63/#64/#65 were closed without merging and must not be reopened or merged separately.
-- SCAN-04 is merged/deployed; the user confirms normal scanner operation after deployment.
-- Existing 180° 1D reversal is supplied by ZXing `TRY_HARDER` / `OneDReader`. Code 128 has a runtime 0°/180° fixture; EAN-8/EAN-13 dependency inheritance is separately guarded.
-- SCAN-05: strict ROI, upright-first decode, one clockwise 90° ROI transform on every third valid ROI frame after a miss. The existing 180° reversal covers the opposite normalized orientation.
-- SCAN-06: sampled Sobel structure-tensor estimate; confidence-gated 1.2°–12° inverse-angle bilinear correction; one HybridBinarizer pass after upright and orthogonal misses. Perspective and curved-label correction are out of scope.
-- Follow-up audit correction: processing cadence uses a dedicated valid-ROI `frameSequence` and `shouldAttemptExtendedDecode()`; diagnostics window counters no longer influence rotation or global-histogram scheduling.
-- Regression coverage includes transform pixel mapping, bounded schedule values, Code 128 and EAN-8/EAN-13 runtime rotation fixtures, synthetic deskew/combined orthogonal+skew paths, and a production-adapter integration test for upright decode, scheduled 90°/270° recovery and +5° deskew, strict ROI crop and no-fallback behavior.
-- GitHub Actions run #395 passed the full preflight, including production-adapter upright, orthogonal and deskew integration, TypeScript, production build, GitHub Pages build and diff checks on the implementation head. Subsequent changes are documentation-only.
-- Preserve strict reticle ROI/no full-frame fallback, 110 ms session cadence, camera/session/lifecycle, module-owned presentation, validation/result delivery, Home lookup and Stocktake form/save.
-- Physical iOS Safari/PWA and Android Chrome/PWA QA remains a release gate: Home + Stocktake, symbology/orientation/skew matrix, latency and CPU comparison on low-end/high-end devices.
-- Next: review the new CI result, complete physical device QA, then request acceptance. Do not merge or deploy until the user explicitly approves after QA.
+- Verified baseline: `main` at merge commit `8571db7ea75f558397abe618e88fb2d0e1395616`; PR #66 is merged.
+- Corrective branch: `fix/scan-05-06-continuous-orientation`.
+- The prior PR #66 implementation is the baseline, not the acceptance endpoint. User device testing reported missed sideways barcodes, insufficient intermediate-angle coverage and slow/insensitive recognition.
+- Updated engineering priority: accuracy and sensitivity take priority over a strict ultra-low-end CPU budget. Higher CPU usage is acceptable if the app remains stable and responsive.
+- Audit found the old quarter-turn attempt ran only every third valid ROI frame after upright miss; old deskew used a global structure tensor and a 1.2°–12° range; session minimum decode interval was 110 ms.
+- Corrective source replaces the estimator with a continuous 180-bin gradient-orientation histogram, widens correction to the signed half-turn range, runs orientation candidates on each ROI miss, tries both ZXing binarizers and increases minimum sampling cadence to 70 ms.
+- Strict module-owned ROI/no full-frame fallback remains mandatory. The shared engine owns camera/session/decoder scheduling; Home and Stocktake own UI/presentation and business policy.
+- Do not change camera acquisition, autofocus, camera lease, lifecycle/recovery, module UI, validation, Home lookup or Stocktake form/save behavior as part of SCAN-05/06.
+- Automated tests are being expanded to cover continuous angle sweeps and combined orientation+skew through the production `ZXingDecoderAdapter`, not just isolated helpers.
+- Current corrective CI and physical-device acceptance are pending. Do not merge or deploy until the full diff, CI and iOS/Android evidence are reviewed and the user explicitly approves.
+
+## Immediate review checklist
+
+1. Confirm `estimateScannerSkewAngle()` selects barcode edge orientation rather than an arbitrary packaging edge in the test fixtures.
+2. Confirm angle sign and half-turn normalization match `rotateLuminanceByAngle()`.
+3. Confirm upright → quarter-turn → continuous correction order and both binarizers execute in the actual production adapter.
+4. Confirm diagnostics count estimator calls, no-estimate outcomes and decode hits separately.
+5. Confirm Home/Stocktake still supply their current source-frame ROI and invalid ROI never falls back to full frame.
+6. Review CI failures before changing code; do not weaken assertions to obtain a green build.
+
 
 ---
 
