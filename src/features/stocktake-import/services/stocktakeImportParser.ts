@@ -31,6 +31,7 @@ const RELATIONSHIP_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/r
 const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13', 'EAN8', 'UPC', 'GTIN'];
 const FALLBACK_BARCODE_HEADERS = ['MA VACH', 'MA VACH HANG'];
 const QUANTITY_HEADERS = ['SO LUONG', 'QUANTITY', 'QTY', 'SL', 'SO LUONG KIEM KE'];
+const ZONE_HEADERS = ['VUNG', 'ZONE', 'MA VUNG', 'ZONE CODE', 'KHU VUC'];
 
 function parseXml(source: string, label: string): Document {
   const document = new DOMParser().parseFromString(source, 'application/xml');
@@ -159,28 +160,29 @@ function readRows(xml: string, sharedStrings: string[]): Map<number, Map<number,
 }
 
 function findHeader(rows: Map<number, Map<number, CellValue>>): {
-  rowNumber: number; barcodeColumn: number; quantityColumn: number; barcodeHeader: string;
+  rowNumber: number; barcodeColumn: number; quantityColumn: number; barcodeHeader: string; zoneColumn?: number;
 } {
   const candidates = [...rows.entries()].filter(([rowNumber]) => rowNumber <= 40);
   for (const [rowNumber, cells] of candidates) {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
     const barcode = [...headers.entries()].find(([, value]) => BARCODE_HEADERS.includes(value) || value.startsWith('BARCODE '));
     const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value) || value.startsWith('SO LUONG '));
+    const zone = [...headers.entries()].find(([, value]) => ZONE_HEADERS.includes(value));
     if (barcode && quantity) {
-      return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1] };
+      return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1], ...(zone ? { zoneColumn: zone[0] } : {}) };
     }
   }
   for (const [rowNumber, cells] of candidates) {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
     const barcode = [...headers.entries()].find(([, value]) => FALLBACK_BARCODE_HEADERS.includes(value) || value.startsWith('MA VACH '));
     const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value) || value.startsWith('SO LUONG '));
+    const zone = [...headers.entries()].find(([, value]) => ZONE_HEADERS.includes(value));
     if (barcode && quantity) {
-      return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1] };
+      return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1], ...(zone ? { zoneColumn: zone[0] } : {}) };
     }
   }
   throw new Error('Không nhận diện được cột BARCODE và SỐ LƯỢNG. Không có dữ liệu nào được xuất.');
 }
-
 function shiftDecimal(value: string, places: number): string {
   const match = value.match(/^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/);
   if (!match) throw new Error('Giá trị phần trăm không hợp lệ.');
@@ -226,22 +228,35 @@ function formatBarcode(cell: CellValue, zeroPaddingWidths: Map<number, number>):
   return value;
 }
 
-function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellValue>>, headerRow: number): string {
+function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellValue>>, headerRow: number, zoneColumn?: number): string {
   const normalizedSheet = sheetName.trim().toUpperCase();
+  if (zoneColumn !== undefined) {
+    const zoneValues = new Set([...rows.entries()]
+      .filter(([rowNumber]) => rowNumber > headerRow)
+      .map(([, cells]) => cells.get(zoneColumn)?.value.trim().toUpperCase() ?? '')
+      .filter((value) => /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(value)));
+    if (zoneValues.size > 1) throw new Error('Một sheet có nhiều mã vùng trong cột VÙNG. Hãy tách mỗi vùng thành một sheet riêng.');
+    if (zoneValues.size === 1) {
+      const columnZone = [...zoneValues][0];
+      if (!/^SHEET\s*\d*$/i.test(normalizedSheet) && /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(normalizedSheet) && normalizedSheet !== columnZone) {
+        throw new Error('Tên sheet ' + sheetName + ' không khớp với mã vùng ' + columnZone + ' trong cột VÙNG.');
+      }
+      return columnZone;
+    }
+  }
   if (!/^SHEET\s*\d*$/i.test(normalizedSheet) && /^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(normalizedSheet)) {
     return normalizedSheet;
   }
   for (const [rowNumber, cells] of [...rows.entries()].sort((a, b) => a[0] - b[0])) {
     if (rowNumber >= headerRow || rowNumber > 12) continue;
-    for (const [column, cell] of [...cells.entries()].sort((a, b) => a[0] - b[0])) {
+    for (const [, cell] of [...cells.entries()].sort((a, b) => a[0] - b[0])) {
       const value = cell.value.trim().toUpperCase();
       if (!value) continue;
       if (/^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(value)) return value;
     }
   }
-  throw new Error(`Không xác định được mã vùng cho sheet "${sheetName}".`);
+  throw new Error('Không xác định được mã vùng cho sheet ' + sheetName + '.');
 }
-
 function splitZoneCode(zoneCode: string): { prefix: string; number: string } {
   const match = zoneCode.match(/^([A-Z]*)(\d+)$/);
   if (!match) throw new Error(`Mã vùng "${zoneCode}" không đúng định dạng chữ + số.`);
@@ -298,7 +313,7 @@ export async function parseStocktakeWorkbook(
       warnings.push(`Sheet "${sheet.name}" không có cặp cột BARCODE và SỐ LƯỢNG; đã bỏ qua.`);
       continue;
     }
-    const zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber);
+    const zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber, header.zoneColumn);
     if (seenZones.has(zoneCode)) throw new Error(`Có nhiều sheet cùng mã vùng "${zoneCode}". Không thể xuất tách biệt an toàn.`);
     seenZones.add(zoneCode);
 
