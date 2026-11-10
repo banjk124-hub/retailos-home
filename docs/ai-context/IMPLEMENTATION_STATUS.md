@@ -1,6 +1,6 @@
 # SCAN-04 implementation update — strict module-reticle ROI decoding (2026-11-10)
 
-**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #317 passed full preflight/build on implementation head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54`. Physical post-deployment barcode QA remains pending.
+**Status:** Implemented on `feat/scan-04-strict-reticle-roi-decoding`; GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`. Physical post-deployment barcode QA remains pending.
 
 - SCAN-03 is merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms both iOS and Android geometry/flow checks passed without detected issues.
 - Decoder now receives the current `source-frame-normalized` region from the active session on every decode call.
@@ -9,7 +9,7 @@
 - Missing/invalid/out-of-bounds ROI returns no result and increments `roiUnavailable`; no full-frame or centered fallback exists.
 - Preserved camera acquisition/lease, first-frame readiness, recovery, 110 ms decode cadence, supported symbologies, validation, result delivery, Home lookup and Stocktake form/save workflows.
 - Added `scripts/test-scanner-roi-decoder.mjs` to preflight for normalized-to-pixel mapping, edge rounding, invalid geometry and runtime wiring.
-- GitHub Actions run #317 passed full preflight/build on the implementation head; final documentation-synchronized CI run #323 is in progress. Real-device iOS/Android barcode accuracy/performance validation remains pending.
+- GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; the subsequent status-only documentation update does not change executable code. Real-device iOS/Android barcode accuracy/performance validation remains pending.
 
 ---
 
