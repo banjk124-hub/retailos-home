@@ -129,7 +129,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 
 
 ## ADR-026 — Bounded orthogonal ROI rotation (2026-11-10)
-**Status:** Implemented on final consolidated PR #66; final consolidated PR #66 CI run #360 passed. Physical QA pending.
+**Status:** Implemented on final consolidated PR #66; CI run #368 passed before the audit follow-up commits. Fresh CI and physical QA pending.
 
 - ZXing's existing `TRY_HARDER` path owns 180° 1D scanline reversal.
 - One clockwise 90° ROI transform after an upright miss covers both 90° and 270° source orientations when combined with that reversal.
@@ -138,7 +138,7 @@ See `docs/ai-context/SCAN_04_STRICT_ROI_DECODING.md` and `scripts/test-scanner-r
 - See `SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-rotation.mjs`.
 
 ## ADR-027 — Bounded ROI in-plane deskew (2026-11-10)
-**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #342 passed. Physical QA pending.
+**Status:** Implemented on the consolidated SCAN-05/06 branch; CI run #368 passed before the audit follow-up commits. Fresh CI and physical QA pending.
 
 - Estimate small-angle roll from a sampled Sobel structure tensor on the ROI luminance frame.
 - Accept only coherent 1.2°–12° estimates; apply one inverse-angle bilinear transform with expanded bounds and white fill.
