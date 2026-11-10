@@ -2,7 +2,7 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70–#73 are merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest head `f96dc58e6ea78f993a76ca1f581a150742ea5313` awaits rerun. Desktop/iOS/Android physical QA remains pending.
+**Status:** PR #70–#73 are merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc` awaits rerun. Desktop/iOS/Android physical QA remains pending.
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
 **Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`.
 **Business/session implementation:** PR #71 merged at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
@@ -226,7 +226,7 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 
 - [x] Header detection and unique-code helper regression tests added.
 - [x] CI #544 full preflight, TypeScript, production and Pages builds passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`.
-- [ ] Rerun CI on latest head `f96dc58e6ea78f993a76ca1f581a150742ea5313`.
+- [ ] Rerun CI on latest code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.
 - [ ] Real workbook tests with product-name headers and workbooks without product names.
 - [ ] Validate global unique count across zones, including repeated BARCODE/CODE/GOLDCODE/TILLCODE values and leading-zero identifiers.
 - [ ] Desktop Chrome/Edge viewport and nested-scroll QA; iOS Safari/PWA and Android Chrome/PWA compact layout, touch and download QA.
