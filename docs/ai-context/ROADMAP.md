@@ -2,7 +2,7 @@
 
 **Baseline:** `main` merge commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66 merged).  
 **Corrective branch:** `fix/scan-05-06-continuous-orientation`.  
-**Status:** source/test correction in progress; CI and physical device acceptance pending.
+**Status:** source/test correction implemented; CI #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`; physical device acceptance pending.
 
 - User-reported failures after the earlier deployment: sideways barcodes are missed, intermediate angles are not sufficiently covered, and recognition feels slow/insensitive.
 - User clarified that ultra-low-end CPU conservation is not a hard constraint. Prioritize accuracy and responsiveness; higher processing cost is acceptable if the application remains stable.
