@@ -8,7 +8,7 @@
 **Current status:** In progress — PR #70 open, not merged or deployed  
 **Branch:** `feat/stocktake-import-desktop-editor`  
 **Base:** `main` at `853f79607f770000a506f7c1836f1131133497b6`  
-**Last verified PR head:** `bfb9172082d72abbb3eeb6add74b9df63088c222` (governance/name update; check GitHub for any later head)  
+**Last verified PR head:** `7e2570fcb7df160651e7ba8ccf861e4507e2d13a` (documentation contract reconciliation; check GitHub for any later head)  
 **PR:** https://github.com/banjk124-hub/retailos-home/pull/70
 
 ## 1. Purpose and current capability
@@ -20,7 +20,7 @@ Current PR #70 includes:
 - BARCODE preference with same-row GOLDCODE fallback; unresolved rows remain visible for correction.
 - Variable header aliases, different table layouts across sheets, multiple blocks per sheet, same-zone aggregation and blocking diagnostics for unsupported blocks.
 - Per-zone edit/save, isolated import history, invalid/unsaved export guards and history restore.
-- Zone-only TXT filenames and fixed ZIP filename. Date/time remains in the `NHAN VIEN` content line pending downstream compatibility confirmation.
+- Zone-only TXT filenames and fixed ZIP filename. Confirmed by user: remove date/time only from filenames; retain the existing date/time fields in the `NHAN VIEN` content line unchanged.
 - Desktop two-column workspace, mobile stacked layout, lightweight motion and reduced-motion support.
 
 ## 2. Lifecycle metadata
@@ -71,7 +71,7 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 
 - [x] PR #70 TypeScript, production build, Pages build and full preflight passed on code commit `55c49995875ba4e8d9a605e60ba1a58c8cff3080` (run #461); later recorded head change was documentation-only.
 - [ ] Re-run CI after the current module-governance/name update.
-- [ ] Confirm whether date/time remains in the `NHAN VIEN` line. Until confirmed, preserve it.
+- [x] User confirmed: remove date/time only from filenames; preserve date/time in the `NHAN VIEN` content line.
 - [ ] Compare Excel displayed quantity values with exported TXT, including `19,236` and fixed-decimal/General formats.
 - [ ] Verify BARCODE-empty/GOLDCODE-present material rows.
 - [ ] Verify variable header positions, multiple blocks and same-zone aggregation; confirm unsupported blocks block export.
@@ -94,4 +94,4 @@ When the user says “tiếp tục Xuất file” or asks to resume this module:
 
 ## 7. Next technical step
 
-Complete the remaining audit and CI after the current PR update. Resolve the outstanding TXT date/time question before changing the downstream content contract. Then present the final acceptance checklist and wait for approval to merge/deploy.
+Complete the remaining audit and CI after the current PR update. Date/time output decision is resolved: filenames only are date-free; preserve the `NHAN VIEN` content line. Continue final audit and acceptance, then wait for explicit approval to merge/deploy.
