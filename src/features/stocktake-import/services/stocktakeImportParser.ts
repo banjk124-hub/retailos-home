@@ -514,7 +514,8 @@ export async function parseStocktakeWorkbook(
   }
 
   if (zones.length === 0) {
-    throw new Error(warnings.length ? warnings.join('\n\n') : 'Không tìm thấy sheet nào có dữ liệu kiểm kê hợp lệ.');
+    const diagnostics = [...blockingIssues, ...warnings];
+    throw new Error(diagnostics.length ? diagnostics.join('\n\n') : 'Không tìm thấy sheet nào có dữ liệu kiểm kê hợp lệ.');
   }
   return { sourceFileName: file.name, importedAt: importedAt.toISOString(), zones, warnings, blockingIssues };
 }
