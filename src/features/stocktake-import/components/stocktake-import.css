@@ -127,6 +127,15 @@
 @keyframes stocktake-import-panel-in { from { opacity:0; transform:translateY(9px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
 @keyframes stocktake-import-notice-in { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 @keyframes stocktake-import-zone-in { from { opacity:.5; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+.stocktake-import-zone-layer { min-width:0; animation:stocktake-import-layer-in 150ms cubic-bezier(.2,.7,.2,1) both; }
+.stocktake-import-output-layer { display:grid; gap:9px; min-width:0; }
+.stocktake-import-output-meta { display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--text-secondary,#687386); font-size:11px; }
+.stocktake-import-output-meta strong { color:var(--text-primary,#172033); font-size:12px; }
+.stocktake-import-output-textarea { display:block; width:100%; min-height:290px; max-height:min(54vh,610px); resize:vertical; overflow:auto; padding:13px; border:1px solid var(--border-subtle,#dce2eb); border-radius:12px; outline:none; color:#e8eef9; background:#101827; font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre; tab-size:2; -webkit-user-select:text; user-select:text; }
+.stocktake-import-output-textarea:focus { border-color:#3c8bd7; box-shadow:0 0 0 3px rgba(60,139,215,.13); }
+.stocktake-import-editor-layer { min-width:0; }
+@keyframes stocktake-import-layer-in { from { opacity:.45; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
 @media (max-width:900px) {
   .stocktake-import-panel { width:min(100%,860px); }
   .stocktake-import-workspace { grid-template-columns:170px minmax(0,1fr); }
@@ -156,7 +165,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .stocktake-import-backdrop,.stocktake-import-panel,.stocktake-import-workspace,
-  .stocktake-import-zone-workspace,.stocktake-import-notice,.stocktake-import-error,
+  .stocktake-import-zone-workspace,.stocktake-import-zone-layer,.stocktake-import-notice,.stocktake-import-error,
   .stocktake-import-warning,.stocktake-import-unsaved,.stocktake-import-confirm-backdrop,
   .stocktake-import-confirm { animation:none !important; }
   .stocktake-import-panel *,.stocktake-import-panel *::before,.stocktake-import-panel *::after {
