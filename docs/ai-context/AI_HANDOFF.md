@@ -5,7 +5,7 @@
 **Current branch:** `feat/stocktake-import-workspace-v2`.  
 **Current PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; not merged/deployed).  
 **Current PR #74 code head:** `c61746272f2b31cd8be222cc4012e38de1ce3ddc` (latest docs synchronization may advance the PR head).  
-**CI:** run #544 passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`; latest status-guard/test commit awaits CI rerun.  
+**CI:** run #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.  
 **Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).  
 **Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`; architecture decision ADR-033.
 
