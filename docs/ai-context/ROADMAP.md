@@ -1,11 +1,11 @@
-# SCAN-03 execution update — module-owned preview region integration (2026-11-10)
+# SCAN-04 execution update — strict module-reticle ROI decoding (2026-11-10)
 
-- Implementation branch: `feat/scan-03-module-region-integration`, based on the SCAN-02 audit follow-up branch.
-- Wire Home and Stocktake's existing independent reticles to source-frame geometry through a feature-level measurement adapter.
-- Publish source regions to the current session in place; no camera/session/decoder/frame-loop restart.
-- Keep the decoder full-frame. SCAN-03 does not activate ROI-only decoding.
-- Automated geometry/session-update tests, TypeScript, production build, GitHub Pages build and full preflight passed in GitHub Actions run #309. Physical iOS Safari/PWA and Android Chrome/PWA alignment QA remains required after deployment.
-- SCAN-04 remains gated until both module geometries are verified.
+- Baseline: SCAN-03 merged by PR #61 at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`; user confirms successful iOS and Android geometry/flow verification.
+- Replace the decoder's full-frame-first pass and fixed centered `82% × 66%` crop with the source-frame ROI published by each module's reticle.
+- `ScannerSession.getScanRegion()` is passed to the decoder on every scheduled frame; the decoder maps normalized coordinates to source pixels and draws only that crop.
+- Missing, malformed or out-of-bounds geometry fails closed: no decode and no full-frame fallback.
+- Preserve ZXing formats, 110 ms session cadence, camera constraints, binarizer strategy (Global Histogram only every third ROI pass), barcode validation and result delivery.
+- SCAN-04 branch: `feat/scan-04-strict-reticle-roi-decoding`. Automated regression and full CI are pending on the branch; physical post-deploy barcode QA remains required on iOS and Android.
 
 ---
 
@@ -34,7 +34,7 @@
 
 # RetailOS — Engineering Roadmap
 
-Last reviewed: 2026-11-09
+Last reviewed: 2026-11-10
 Status: active working plan.
 
 ## Current execution order — scanner Torch investigation closed
