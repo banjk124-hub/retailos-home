@@ -87,6 +87,15 @@ assert.deepEqual(scanned.mappings[1], {
 });
 assert.equal(scanned.unsupportedRows.length, 0);
 
+const codeAndTillScan = runtime.findHeaders(new Map([[22, new Map([
+  [1, { value: "CODE", type: "s", styleIndex: 0 }],
+  [2, { value: "TILLCODE", type: "s", styleIndex: 0 }],
+  [4, { value: "KẾT QUẢ THỰC TẾ", type: "s", styleIndex: 0 }],
+])]]));
+assert.equal(codeAndTillScan.mappings[0].codeColumn, 1);
+assert.equal(codeAndTillScan.mappings[0].tillCodeColumn, 2);
+
+
 assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
   [1, { value: "MÃ HÀNG NỘI BỘ", type: "s", styleIndex: 0 }],
   [3, { value: "THỰC TẾ (KG)", type: "s", styleIndex: 0 }],
@@ -126,6 +135,8 @@ assert.match(output, /ARTICLE,089686011036,19\.236/);
 assert.match(parser, /xl\/workbook\.xml/);
 assert.match(parser, /xl\/_rels\/workbook\.xml\.rels/);
 assert.match(parser, /blockingIssues\.push/);
+assert.match(parser, /crypto\.subtle\.digest/);
+assert.match(parser, /sourceFileName: file\.name/);
 assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
@@ -136,6 +147,9 @@ assert.match(component, /navigator\.clipboard/);
 assert.match(component, /stocktake-import-zone-layer/);
 assert.match(component, /handleFiles/);
 assert.match(component, /confirmPendingImport/);
+assert.match(component, /sameNameDifferentContent/);
+assert.match(component, /zoneConflicts/);
+assert.match(component, /Tạo phiên mới/);
 assert.match(component, /sourceFileName/);
 assert.match(component, /updateRow/);
 assert.match(component, /Chỉnh sửa/);
@@ -155,6 +169,8 @@ assert.ok(registry.includes("workStatus?: 'planned' | 'in-progress' | 'paused' |
 assert.doesNotMatch(registry, /ModuleDataId/, "Workflow identity must not depend on snapshot identity.");
 assert.equal(snapshotService.includes("stocktake-import"), false, "The local workflow must not enter snapshot synchronization.");
 assert.match(styles, /grid-template-columns:210px minmax\(0,1fr\)/);
+assert.match(styles, /stocktake-import-output-textarea/);
+assert.match(styles, /stocktake-import-layer-in/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
 
