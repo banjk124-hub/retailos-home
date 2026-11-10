@@ -1,6 +1,6 @@
 # SCAN-06 — Bounded in-plane barcode deskew
 
-**Status:** Implemented on final consolidated PR #66. Final consolidated PR #66 CI run #387 passed the full preflight, including the production-adapter integration suite. Physical iOS/Android accuracy and performance QA remains pending.
+**Status:** Implemented on final consolidated PR #66. Final consolidated PR #66 CI run #395 passed the full preflight, including production-adapter deskew integration. Physical iOS/Android accuracy and performance QA remains pending.
 
 ## Scope
 
@@ -43,7 +43,7 @@ Deskew runs only on the scheduled extended frame after normal orientation paths 
 - deskew has no DOM/presentation dependency;
 - decoder wiring runs deskew only after upright and orthogonal paths miss and uses one HybridBinarizer pass.
 
-The suite is registered in preflight. CI #342 and #387 passed; #387 includes the production-adapter integration suite.
+The suite is registered in preflight. CI #342 and #395 passed; #395 includes production-adapter deskew integration.
 
 ## Performance and device acceptance
 
