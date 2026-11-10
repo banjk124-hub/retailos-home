@@ -164,16 +164,16 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): {
   const candidates = [...rows.entries()].filter(([rowNumber]) => rowNumber <= 40);
   for (const [rowNumber, cells] of candidates) {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
-    const barcode = [...headers.entries()].find(([, value]) => BARCODE_HEADERS.includes(value));
-    const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value));
+    const barcode = [...headers.entries()].find(([, value]) => BARCODE_HEADERS.includes(value) || value.startsWith('BARCODE '));
+    const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value) || value.startsWith('SO LUONG '));
     if (barcode && quantity) {
       return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1] };
     }
   }
   for (const [rowNumber, cells] of candidates) {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
-    const barcode = [...headers.entries()].find(([, value]) => FALLBACK_BARCODE_HEADERS.includes(value));
-    const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value));
+    const barcode = [...headers.entries()].find(([, value]) => FALLBACK_BARCODE_HEADERS.includes(value) || value.startsWith('MA VACH '));
+    const quantity = [...headers.entries()].find(([, value]) => QUANTITY_HEADERS.includes(value) || value.startsWith('SO LUONG '));
     if (barcode && quantity) {
       return { rowNumber, barcodeColumn: barcode[0], quantityColumn: quantity[0], barcodeHeader: barcode[1] };
     }
@@ -235,7 +235,7 @@ function resolveZoneCode(sheetName: string, rows: Map<number, Map<number, CellVa
     if (rowNumber >= headerRow || rowNumber > 12) continue;
     for (const [column, cell] of [...cells.entries()].sort((a, b) => a[0] - b[0])) {
       const value = cell.value.trim().toUpperCase();
-      if (!value || (rowNumber === 1 && column > 2)) continue;
+      if (!value) continue;
       if (/^(?:[A-Z]{1,8}\d{1,6}|\d{1,8})$/.test(value)) return value;
     }
   }
