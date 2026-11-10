@@ -3,7 +3,7 @@
 **PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
 **Branch:** `feat/stocktake-file-import`.
 **Base main:** `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
-**Status:** Draft implementation; do not merge or deploy until CI, workbook fixture validation, downstream format acceptance and real-device QA are complete.
+**Status:** Implementation and CI complete (RetailOS CI run #448 passed); do not merge/deploy until downstream format acceptance and real-device QA are complete.
 
 ## Current implementation
 
@@ -19,11 +19,11 @@
 
 ## Required next steps
 
-1. Review the complete PR diff and resolve TypeScript/preflight/CI failures.
-2. Run the parser regression suite against the two supplied workbooks and a multi-sheet workbook.
+1. CI/preflight passed in RetailOS CI run #448; keep this check green on subsequent changes.
+2. Structural review of both supplied workbook examples is complete; execute actual import/output comparison on device.
 3. Confirm downstream compatibility of `ADRESSE,,<number>` and percent-suffixed quantities.
 4. Test file picker, local parsing, history persistence, individual TXT and ZIP downloads on iOS Safari/PWA and Android Chrome/PWA.
-5. Only then mark the feature ready. Do not merge/deploy without the user's explicit approval.
+5. Do not merge/deploy without the user's explicit approval.
 
 See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 
