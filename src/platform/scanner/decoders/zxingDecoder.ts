@@ -16,7 +16,7 @@ import type {
   ScannerDecoderAdapter,
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
-import { rotateLuminance90Clockwise } from '../scannerRotation';
+import { rotateLuminance90Clockwise, shouldAttemptExtendedDecode } from '../scannerRotation';
 import { deskewLuminanceFrame } from '../scannerDeskew';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
@@ -103,6 +103,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastUnexpectedErrorLogAt = 0;
   private diagnosticStartedAt = Date.now();
   private diagnosticFrames = 0;
+  private frameSequence = 0;
   private diagnosticDecoded = 0;
   private diagnosticNotFound = 0;
   private diagnosticChecksum = 0;
@@ -164,6 +165,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       }
 
       this.diagnosticFrames += 1;
+      this.frameSequence += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
       const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
@@ -188,8 +190,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       );
       this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
 
-      const includeGlobalHistogram = this.diagnosticFrames % 3 === 0;
-      const tryRotated = this.diagnosticFrames % 3 === 0;
+      // Processing cadence must never depend on the diagnostics reporting window.
+      const tryExtendedDecode = shouldAttemptExtendedDecode(this.frameSequence);
+      const includeGlobalHistogram = tryExtendedDecode;
+      const tryRotated = tryExtendedDecode;
       const output = this.decodeCurrentCanvas(timestamp, includeGlobalHistogram, tryRotated);
       if (output) {
         this.diagnosticDecoded += 1;
