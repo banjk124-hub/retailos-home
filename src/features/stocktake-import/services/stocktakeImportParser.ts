@@ -34,6 +34,7 @@ type StyleMetadata = {
 };
 type HeaderMapping = {
   rowNumber: number;
+  quantityColumn: number;
   barcodeColumn?: number;
   goldCodeColumn?: number;
   fallbackBarcodeColumn?: number;
@@ -193,15 +194,15 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): HeaderMapping {
   for (const [rowNumber, cells] of candidates) {
     const headers = new Map([...cells.entries()].map(([column, cell]) => [column, normalizeHeader(cell.value)]));
     const quantity = [...headers.entries()].find(([, value]) => matchesHeader(value, QUANTITY_HEADERS));
-    if (!quantity) continue;
     const barcode = [...headers.entries()].find(([, value]) => matchesHeader(value, BARCODE_HEADERS));
     const goldCode = [...headers.entries()].find(([, value]) => matchesHeader(value, GOLD_CODE_HEADERS));
     const fallback = [...headers.entries()].find(([, value]) => matchesHeader(value, FALLBACK_BARCODE_HEADERS));
     const zone = [...headers.entries()].find(([, value]) => matchesHeader(value, ZONE_HEADERS));
-    if (barcode || goldCode || fallback) {
+    if (quantity && (barcode || goldCode || fallback)) {
       const chosen = barcode ?? goldCode ?? fallback!;
       return {
         rowNumber,
+        quantityColumn: quantity[0],
         ...(barcode ? { barcodeColumn: barcode[0] } : {}),
         ...(goldCode ? { goldCodeColumn: goldCode[0] } : {}),
         ...(fallback ? { fallbackBarcodeColumn: fallback[0] } : {}),
@@ -209,7 +210,7 @@ function findHeader(rows: Map<number, Map<number, CellValue>>): HeaderMapping {
         ...(zone ? { zoneColumn: zone[0] } : {}),
       };
     }
-    if (availableHeaders.length < 3) availableHeaders.push('Dòng ' + rowNumber + ': ' + [...headers.values()].filter(Boolean).join(' | '));
+    if (availableHeaders.length < 3 && [...headers.values()].some(Boolean)) availableHeaders.push('Dòng ' + rowNumber + ': ' + [...headers.values()].filter(Boolean).join(' | '));
   }
   const details = availableHeaders.length ? ' Các header gần nhất: ' + availableHeaders.join(' / ') + '.' : '';
   throw new Error(
@@ -449,10 +450,7 @@ export async function parseStocktakeWorkbook(
       const barcode = explicitBarcode || goldCode || fallbackBarcode;
       const barcodeSource: ImportedStocktakeRow['barcodeSource'] = explicitBarcode
         ? 'BARCODE' : goldCode ? 'GOLDCODE' : fallbackBarcode ? 'MÃ VẠCH' : 'manual';
-      const quantityCell = cells.get([...rows.get(header.rowNumber)!.entries()].find(([column]) => column === -1)?.[0] ?? -1);
-      const quantityColumn = [...rows.get(header.rowNumber)!.entries()]
-        .find(([, cell]) => matchesHeader(normalizeHeader(cell.value), QUANTITY_HEADERS))?.[0];
-      const actualQuantityCell = quantityColumn !== undefined ? cells.get(quantityColumn) : undefined;
+      const actualQuantityCell = cells.get(header.quantityColumn);
       const quantityRaw = actualQuantityCell?.value.trim() ?? '';
       if (!barcode && !quantityRaw) continue;
       let quantity = quantityRaw;
