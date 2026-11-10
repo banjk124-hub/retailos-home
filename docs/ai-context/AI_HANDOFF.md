@@ -1,3 +1,23 @@
+# Current task — Stocktake import follow-up (2026-11-10)
+
+**Merged baseline:** PR #69, main commit `853f79607f770000a506f7c1836f1131133497b6`.
+**Follow-up branch:** `feat/stocktake-import-desktop-editor`.
+**Status:** PR #70 open; implementation CI run #461 passed before the latest governance/name update. Latest head CI run #463 is pending. Not merged/deployed.
+**Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
+**Display name:** Xuất file. Stable ID remains `stocktake-import`; do not rename the ID or IndexedDB database.
+
+- Zone-only TXT filenames and ZIP name; preserve date/time in the existing `NHAN VIEN` content line pending compatibility confirmation.
+- Exact decimal string formatter based on Excel number formats; no JS floating-point round-trip.
+- BARCODE → GOLDCODE row fallback, with missing rows retained for manual correction.
+- Detect different table layouts across sheets and multiple table blocks within a sheet; aggregate same-zone data; block partial exports when unsupported blocks exist.
+- Per-zone edit/save, persisted row-level history, and export guard for unsaved/invalid rows.
+- Decouple business module IDs from snapshot IDs; keep import IndexedDB separate.
+- Wide desktop workspace, mobile stacked layout, light motion and reduced-motion support.
+
+See `modules/EXPORT_FILE.md` for current state/resume instructions, `STOCKTAKE_FILE_IMPORT.md` for the detailed data contract, and ADR-029/ADR-030 in `ARCHITECTURE.md`.
+
+---
+
 # Current task — Stocktake offline file import (2026-11-10)
 
 **PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
@@ -7,7 +27,7 @@
 
 ## Current implementation
 
-- `Nạp file kiểm kê` is a separate local-only workflow inside the existing Kiểm kê library.
+- `Xuất file` is a separate local-only workflow inside the existing Kiểm kê library.
 - `RetailModuleId` is separate from `ModuleDataId`; importer does not enter snapshot sync.
 - `.xlsx` parsing is local using JSZip and browser XML APIs; no source workbook upload or network fetch.
 - Detects sheet list, header row, BARCODE, SỐ LƯỢNG and an explicit VÙNG/ZONE column when present; validates the zone against sheet metadata and preserves duplicates/source order.

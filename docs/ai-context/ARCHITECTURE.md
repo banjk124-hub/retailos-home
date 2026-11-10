@@ -656,7 +656,7 @@ The Home module registry currently typed every workflow ID as `ModuleDataId`. Th
 - a business workflow that can be opened by an employee;
 - a server-provided snapshot dataset that can be synchronized and cached.
 
-The new `Nạp file kiểm kê` workflow is local-only. It reads a workbook from the device and does not require a server snapshot. Adding it to `MODULE_DATA_IDS` would incorrectly make it part of the Apps Script manifest and snapshot synchronization contract.
+The new `Xuất file` workflow is local-only. It reads a workbook from the device and does not require a server snapshot. Adding it to `MODULE_DATA_IDS` would incorrectly make it part of the Apps Script manifest and snapshot synchronization contract.
 
 ### Decision
 
@@ -683,3 +683,46 @@ No changes to Scanner Engine, camera/session/lifecycle contracts, Stocktake scan
 ### Acceptance
 
 See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`. Required checks include full `npm run preflight`, both supplied workbook fixtures, multi-sheet/multi-zone coverage, iOS Safari/PWA and Android Chrome/PWA file-picker/download QA, and confirmation that the downstream system accepts numeric-only zone and percentage representations.
+
+
+## ADR-029 — Stocktake import accuracy, layout tolerance and editable zone review (2026-11-10)
+
+**Status:** Implemented on PR #70 (`feat/stocktake-import-desktop-editor`); open and not merged/deployed. See `docs/ai-context/modules/EXPORT_FILE.md` for lifecycle, isolation and resume protocol.
+
+### Context
+
+After PR #69 was merged and deployed, practical use exposed four correctness/usability gaps: Excel decimal display values were not preserved, material rows could lack a sales barcode but have GOLDCODE, workbooks could contain varying table layouts, and there was no saved manual correction step. Desktop use also needs a wider working surface.
+
+### Decision
+
+- Keep the importer a standalone business workflow. `RetailModuleId` must be defined independently from `ModuleDataId`; importer history stays in its own IndexedDB database.
+- Treat OOXML numeric values as decimal strings. Apply the cell's Excel number format and precision using string-based decimal rounding; never round-trip the quantity through JavaScript floating-point numbers.
+- Resolve row code in this order: non-empty BARCODE, then non-empty GOLDCODE, then the legacy MÃ VẠCH fallback. Missing code/quantity rows remain visible and editable; they are not silently discarded.
+- Detect table headers independently across each sheet and each table block. Merge all recognized blocks that resolve to the same zone while preserving row order and duplicates. If a block is unsupported or zone resolution is ambiguous, show a diagnostic and block all exports rather than silently exporting a partial workbook.
+- Require explicit per-zone save before export. Persist edited rows and diagnostics with the import history record.
+- Use zone-only filenames and ZIP names. Keep the existing date/time in the `NHAN VIEN` content record until downstream format compatibility is confirmed.
+- Provide a wide desktop workspace, a stacked mobile layout, short opacity/transform transitions, and reduced-motion support.
+
+### Acceptance
+
+Validate Excel display parity for integer, fixed-decimal, General and percent formats; GOLDCODE fallback; missing-code correction; multiple layouts/tables in one workbook; aggregation of same-zone tables; save/restore; and file downloads on desktop, iOS and Android. Confirm whether the date/time content record remains required.
+
+
+## ADR-030 — Independent module work lifecycle and handoff (2026-11-10)
+
+**Status:** Implemented in PR #70; pending merge.
+
+### Decision
+
+- Keep business workflow availability (`availability`) separate from engineering progress (`workStatus`). A module can be usable while still receiving follow-up development, or be paused without changing runtime behavior.
+- `workStatus` is optional registry metadata with values `planned`, `in-progress`, `paused`, `operational` and `maintenance`. It is informational only; it must not gate rendering, routing, data loading, permissions or module execution.
+- Each independently developed module owns a dedicated status/contract document recording its stable ID, current branch/PR/base/head, implementation state, verified evidence, pending acceptance, owned files, protected boundaries and exact resume procedure.
+- Parallel module/engine work uses separate branches and PRs. Module-owned files and isolated storage may be changed only within their scope. Shared contracts require explicit cross-module design and regression coverage.
+- Pausing a module is a documentation/metadata state change, not teardown/reset. Never clear local data, alter stable IDs or rewrite history as a side effect.
+
+### Protected boundary for Xuất file
+
+- Stable runtime ID: `stocktake-import`; dedicated storage: `retailos-stocktake-import`.
+- No dependency on Stocktake local store, scanner engine, camera lifecycle, shared snapshot cache, snapshot IDs, authentication semantics or deployment configuration.
+- Keep implementation under `src/features/stocktake-import/`; shared registry metadata is the only intended shared integration point.
+- Resume by reading the dedicated module record, checking branch/PR head against GitHub, auditing the current diff and changed files, then rerunning full preflight. Never resume from stale notes alone.

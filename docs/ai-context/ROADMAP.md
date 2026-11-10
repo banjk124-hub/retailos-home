@@ -1,10 +1,19 @@
+# Current work — Xuất file module follow-up (2026-11-10)
+
+- PR #69 has merged and deployed. Follow-up branch `feat/stocktake-import-desktop-editor` addresses decimal fidelity, GOLDCODE fallback, variable/multiple workbook table layouts, manual per-zone correction and desktop UX.
+- Keep the importer isolated from snapshot IDs/cache and the existing Stocktake workflow.
+- Required before release: CI/preflight, source-workbook comparison, multiple-layout tests, edit/save/restore, desktop download QA, iOS/Android regression and confirmation of the date/time line in TXT.
+- Module state and resume point: `modules/EXPORT_FILE.md`. Full contract: `STOCKTAKE_FILE_IMPORT.md`; decisions: ADR-029 and ADR-030.
+
+---
+
 # Current work — Stocktake offline file import (2026-11-10)
 
 **PR #69:** [Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
 **Branch:** `feat/stocktake-file-import`.
 **Status:** Draft implementation; not merged/deployed.
 
-- Add a separate local-only `Nạp file kiểm kê` workflow inside the existing Kiểm kê library.
+- Add a separate local-only `Xuất file` workflow inside the existing Kiểm kê library.
 - Decouple business `RetailModuleId` from server snapshot `ModuleDataId`.
 - Read `.xlsx` locally, detect each sheet/header/zone, extract BARCODE + SỐ LƯỢNG, preserve duplicates and decimals, preview Stocktake-compatible TXT output, and export one file per zone.
 - Import history/cache is isolated in `retailos-stocktake-import`; clear-history must not affect the existing `retailos-stocktake` database.

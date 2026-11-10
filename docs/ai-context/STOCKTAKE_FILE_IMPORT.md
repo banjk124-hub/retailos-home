@@ -1,8 +1,11 @@
-# Nạp file kiểm kê — implementation contract
+# Xuất file — implementation contract
 
-**Status:** Implementation in PR #69; RetailOS CI run #454 passed; not merged or deployed.
-**Base:** `main` at `16e296cc5d1074a15a179f186b5db7c2b37c2131`.
-**Feature branch:** `feat/stocktake-file-import`.
+**Display name:** Xuất file.
+**Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
+**Status:** PR #70 open; implementation and CI complete, pending final audit and user approval. Not merged or deployed.
+**Base:** `main` at `853f79607f770000a506f7c1836f1131133497b6`.
+**Feature branch:** `feat/stocktake-import-desktop-editor`.
+**Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
 
@@ -25,20 +28,22 @@ Current reader accepts OOXML `.xlsx` workbooks. It reads:
 - `xl/workbook.xml` and workbook relationships to enumerate sheets.
 - Shared strings, inline strings and worksheet cell values.
 - Cell style IDs to identify percentage-formatted numeric values.
-- Header rows in the first 40 rows of each sheet.
+- Scan worksheet rows for header-like table blocks without a fixed row cutoff; resolve each block independently.
 
 Column detection:
-- Prefer explicit `BARCODE`, `BAR CODE`, `PRODUCT BARCODE`, `EAN`, `UPC` or `GTIN`.
-- Only fall back to `MÃ VẠCH` when an explicit barcode column is absent.
-- Quantity candidates include `SỐ LƯỢNG`, `QUANTITY`, `QTY` and `SL`.
+- Prefer a non-empty `BARCODE` value for each row.
+- If that row's BARCODE is blank, use its non-empty `GOLDCODE` value.
+- Use legacy `MÃ VẠCH` only when neither BARCODE nor GOLDCODE is available in the detected layout.
+- Recognize common Vietnamese/English aliases and detect each table block's columns independently.
+- Quantity candidates include operational Vietnamese/English aliases for counted, actual-result and quantity fields.
 - The parser does not map `CODE` into `BARCODE`.
-- If fallback `MÃ VẠCH` is identical on every data row, fail closed because it may be a zone label rather than a product barcode.
+- A row with no usable code is retained with a validation issue for manual correction; it is never silently dropped.
 
 Data rules:
 - Preserve barcode strings and leading zeroes when present in the workbook cell value; for numeric barcode cells, honor simple Excel zero-padding formats (e.g. `0000000000000`) when present.
 - Preserve every source row, including duplicate barcodes. No deduplication or aggregation.
-- Preserve raw numeric XML quantity tokens to avoid JavaScript floating-point conversion.
-- Convert text decimal comma to decimal point. Ambiguous mixed separators are rejected.
+- Preserve raw numeric XML quantity tokens and apply Excel number-format precision using decimal-string arithmetic; do not round-trip through JavaScript floating-point numbers.
+- For General format, follow Excel's 15-significant-digit behavior. Convert unambiguous decimal-comma edits to decimal-point output on save; ambiguous or incomplete input is rejected.
 - For percentage-formatted numeric cells, convert Excel's stored fraction to its displayed percentage value and append `%` (e.g. `0.125` → `12.5%`).
 - Missing barcode/quantity and invalid quantity values are reported with source row numbers; malformed rows are never silently dropped.
 
@@ -47,9 +52,9 @@ Data rules:
 - Prefer a consistent explicit `VÙNG` / `ZONE` column when present; if a recognizable sheet name also exists, it must match the column value.
 - Otherwise use a recognizable sheet name such as `BT01` or `540`.
 - As a final fallback, inspect non-header metadata near the top of the sheet for a recognizable zone token.
-- One sheet must resolve to exactly one zone. Multiple distinct values in one zone column fail safely; separate zones should be represented by separate sheets.
+- Each detected table block must resolve to exactly one zone. If one block contains multiple distinct zone values, report a blocking diagnostic; represent those zones as separate blocks.
+- Multiple recognized blocks in the same sheet are supported. Blocks resolving to the same zone across sheets are aggregated into one zone output while preserving source order and duplicates.
 - Generic names such as `Sheet1` are not treated as zone codes.
-- Duplicate zone codes across sheets fail closed rather than overwrite/merge files.
 - Alphabetic-plus-numeric codes split into prefix and number (e.g. `BT01` → `BT`, `01`).
 - Numeric-only codes are currently serialized as `ADRESSE,,540`. This is a compatibility assumption requiring business confirmation.
 
@@ -65,7 +70,7 @@ Each zone becomes its own UTF-8 TXT file. Multi-zone export downloads a ZIP arch
 ## 6. Preview, history and cache
 
 - Preview displays the generated output and extracted barcode/quantity rows before export.
-- Import history stores generated output only; the source workbook itself is not retained.
+- Import history stores the generated output, row-level source data, correction state and workbook diagnostics; the source workbook itself is not retained.
 - History can restore and re-download previous output.
 - Clear-history affects only `retailos-stocktake-import`.
 - If IndexedDB history persistence fails, the parsed preview must remain available for immediate export.
@@ -75,7 +80,9 @@ Each zone becomes its own UTF-8 TXT file. Multi-zone export downloads a ZIP arch
 - Legacy binary `.xls` is not supported by the current reader.
 - Numeric-only zone output `ADRESSE,,540` needs confirmation against the downstream import system.
 - Percentage output includes a literal `%`; confirm that downstream parser accepts this representation.
-- Header detection is bounded to the first 40 rows; zone metadata lookup is bounded to the first 12 rows before the header.
+- A single detected table block must resolve to one zone. Multiple zone values inside one block are not auto-split.
+- No interactive column-mapping wizard exists yet; unsupported blocks provide sheet/row/column guidance so the operator can rename source headers and re-import.
+- Unsupported populated blocks block the entire workbook export to prevent silent partial output.
 - Real-device QA is required for iOS Safari/PWA and Android Chrome/PWA: local file picker, workbook memory use, IndexedDB, Blob downloads and ZIP downloads.
 - Validate both supplied workbook examples and a multi-sheet workbook with multiple zones before release.
 
@@ -84,3 +91,31 @@ Each zone becomes its own UTF-8 TXT file. Multi-zone export downloads a ZIP arch
 The feature adds `scripts/test-stocktake-import.mjs` to `npm run preflight`. The test covers pure header/zone/quantity/output rules and static offline/isolation guards. Full CI must also pass TypeScript, production build, GitHub Pages build and all existing scanner regression tests.
 
 CI is not a substitute for physical-device file-picker/download QA or downstream acceptance of the TXT output.
+
+
+## Follow-up hardening — desktop, decimal fidelity and editable review (2026-11-10)
+
+**Implementation branch:** `feat/stocktake-import-desktop-editor`; PR pending.
+
+- Output filenames now identify the zone only: `BT01.txt`, `540.txt`; ZIP name is `KIEM_KE_IMPORT.zip`. The `NHAN VIEN` date/time record inside TXT is retained for compatibility with the existing Stocktake file contract; confirm separately if that record should also change.
+- Excel numeric cells are formatted from their exact OOXML decimal token using the cell's number format. The formatter rounds to the displayed decimal precision without converting the quantity through JavaScript `Number`; General format follows Excel's 15-significant-digit behavior.
+- `BARCODE` is preferred; if blank, the same row's `GOLDCODE` is used. If neither is present, the row is retained with an actionable validation issue so an operator can correct it.
+- Header detection recognizes more operational aliases, scans all worksheet rows, supports different layouts across sheets and multiple table blocks within one sheet, and aggregates tables for the same zone into one TXT. Unsupported header blocks are reported with sheet, row and suggested column names; partial workbook export is blocked to prevent silent omissions.
+- A per-zone edit/save workflow persists row-level changes in the module's isolated IndexedDB history. Export is blocked for unsaved or invalid rows.
+- Workflow IDs are now defined independently of snapshot IDs. Import history remains in `retailos-stocktake-import`, isolated from the shared snapshot database and Stocktake's own local data.
+- Desktop uses a wide two-column zone/workspace layout; mobile retains a stacked layout. Lightweight transitions and `prefers-reduced-motion` support are included. The table is paginated at 100 rows per page.
+
+**Acceptance still required:** verify decimal examples against the original Excel display, material GOLDCODE rows, mixed-layout/multi-table workbook, same-zone aggregation, edit/save/restore, and desktop browser download behavior. Also confirm whether date/time should remain inside the `NHAN VIEN` line.
+
+
+## Operational review additions
+
+- A zone can contain several recognized table blocks in one sheet, and the same zone can be assembled from different sheets. The parser preserves source sheet and row references in the review table.
+- Each detected table block is resolved independently. If a workbook contains a header-like block that cannot be mapped, the parser reports its sheet and row and blocks export of the workbook to prevent partial output.
+- Manual correction is scoped to one zone at a time. Unsaved edits prevent changing zones, replacing the workbook, opening history or closing the module. Save writes corrected row values into the import-only history record.
+- Decimal-comma values typed during correction are normalized to decimal-point output on save. An incomplete decimal such as `19,` is rejected.
+- Zone-only naming applies to current exports and history re-downloads. The date/time in the `NHAN VIEN` content line is intentionally retained until the downstream consumer is confirmed not to require it.
+- Desktop layout uses a two-column zone navigator and editor workspace. Mobile uses a stacked layout; row review is paginated to keep large workbooks responsive.
+
+
+**Contract reconciliation (2026-11-10):** The original PR #69 parser limitations above have been superseded where noted by PR #70. In particular, header scanning is no longer limited to the first 40 rows; table blocks are detected independently; same-zone blocks across sheets are aggregated; BARCODE falls back to same-row GOLDCODE; and history stores editable row-level data. The remaining one-zone-per-block limitation and lack of an interactive mapping wizard are intentional and documented.
