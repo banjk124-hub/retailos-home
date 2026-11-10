@@ -105,7 +105,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
   const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => row.issues.length > 0)) ?? [];
-  const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy);
+  const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
   const refreshHistory = async () => {
     setHistoryBusy(true);
@@ -273,7 +273,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const exportAll = async () => {
     if (!result || result.zones.length === 0) return;
-    if (hasDirtyZones || invalidZones.length > 0) {
+    if (editingZone || hasDirtyZones || invalidZones.length > 0) {
       setError('Chưa thể xuất ZIP. Hãy xử lý lỗi và lưu chỉnh sửa cho tất cả vùng trước.');
       return;
     }
@@ -349,7 +349,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         aria-labelledby="stocktake-import-title" aria-busy={busy}>
         <header className="stocktake-import-header">
           <button className="stocktake-import-icon-button" type="button"
-            onClick={view === 'history' ? () => setView('import') : onClose}
+            onClick={view === 'history' ? () => setView('import') : () => {
+              if (hasDirtyZones) { setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi đóng module.'); return; }
+              onClose();
+            }}
             aria-label={view === 'history' ? 'Quay lại' : 'Đóng'}>
             {view === 'history' ? <ArrowLeft size={20} /> : <X size={20} />}
           </button>
@@ -358,7 +361,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             <h2 id="stocktake-import-title">{view === 'history' ? 'Lịch sử nạp file' : 'Nạp file kiểm kê'}</h2>
           </div>
           <button className="stocktake-import-icon-button" type="button"
-            onClick={() => { setView('history'); setError(''); }}
+            onClick={() => {
+              if (hasDirtyZones) { setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi mở lịch sử.'); return; }
+              setView('history'); setError('');
+            }}
             aria-label="Lịch sử"><History size={19} /></button>
         </header>
 
@@ -408,7 +414,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 })}
               </aside>
 
-              {activeZone && <section className="stocktake-import-zone-workspace" aria-label={'Dữ liệu vùng ' + activeZone.zoneCode}>
+              {activeZone && <section key={activeZone.zoneCode} className="stocktake-import-zone-workspace" aria-label={'Dữ liệu vùng ' + activeZone.zoneCode}>
                 <header className="stocktake-import-zone-heading">
                   <div><span className="stocktake-import-eyebrow">VÙNG KIỂM KÊ</span><h3>{activeZone.zoneCode}</h3>
                     <p>{activeZone.rows.length} dòng · {invalidCount} dòng cần xử lý</p></div>
