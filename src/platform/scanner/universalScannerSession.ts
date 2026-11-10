@@ -429,7 +429,7 @@ export class UniversalScannerSession implements ScannerSession {
       this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, timestamp - this.lastFrameCallbackAt);
     }
     this.lastFrameCallbackAt = timestamp;
-    const minDecodeIntervalMs = 110;
+    const minDecodeIntervalMs = 70;
     if (this.decoding || !this.decoder || this.video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA
       || timestamp - this.lastDecodeAt < minDecodeIntervalMs) {
       this.scheduleNextFrame(generation);
