@@ -508,3 +508,21 @@ Acceptance:
 - PR #54 tested a manual ON/OFF constraint pulse. Both requests were accepted by the API, but the physical LED did not illuminate.
 - The result does not justify a production bypass or a native camera migration. Android devices that expose Torch will continue to receive the normal capability-gated Flash control.
 - The cleanup branch removes the temporary diagnostic sampler, probe, UI and runbook. The production camera path and iOS behavior remain unchanged.
+
+
+## Stocktake Import — Workspace v2 (2026-11-10)
+
+**Deployed baseline:** PR #70–#73 merged; PR #73 merge commit `629c31c28e808cd5c3181c42b7d29e611a8ad890` is user-confirmed deployed.  
+**Current proposal:** PR #74 — https://github.com/banjk124-hub/retailos-home/pull/74 (draft, not merged/deployed).  
+**Branch:** `feat/stocktake-import-workspace-v2`.
+
+Implementation order:
+1. **Data contract:** optional product-name parsing and normalized unique product counts across zones/per zone.
+2. **Interaction contract:** per-zone Ready/Saved/Copied/TXT downloaded/ZIP exported/Dirty/Invalid state, with stale output confirmations cleared on edit.
+3. **Workspace layout:** contextual ZIP action beside zone list, dedicated TXT preview view, fixed viewport modal and bounded independent scroll regions.
+4. **Responsive refinement:** desktop-first wide table workspace, compact mobile zone navigator and touch-safe actions; reduced-motion/power-conserve support.
+5. **Verification:** parser/unit regression, full CI/preflight, real workbooks, desktop viewport matrix, iOS Safari/PWA and Android Chrome/PWA.
+
+Protected: TXT payload, Excel decimal precision, code precedence, duplicate preservation, multi-file staging/merge/skip, source fingerprints/provenance, IndexedDB schema/history, existing Stocktake workflow, Scanner Engine, camera lifecycle, auth, snapshot/cache, service worker and deployment configuration.
+
+Do not merge/deploy until CI, manual QA and explicit user approval are complete.

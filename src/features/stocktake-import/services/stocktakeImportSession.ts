@@ -4,6 +4,15 @@ import {
   type StocktakeImportResult,
 } from './stocktakeImportParser';
 
+export function countUniqueProductCodes(rows: Array<{ barcode: string }>): number {
+  const unique = new Set<string>();
+  for (const row of rows) {
+    const code = row.barcode.normalize('NFKC').trim().toLocaleUpperCase('en-US');
+    if (code) unique.add(code);
+  }
+  return unique.size;
+}
+
 export type ZoneConflict = {
   zoneCode: string;
   existingRows: number;

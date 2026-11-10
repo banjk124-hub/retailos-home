@@ -27,7 +27,7 @@ const runtimeSource =
   "const BARCODE_HEADERS = ['BARCODE','BAR CODE','PRODUCT BARCODE','EAN','EAN13','EAN8','UPC','GTIN','MA BARCODE'];" +
   "const CODE_HEADERS = ['CODE','ITEM CODE','PRODUCT CODE','MATERIAL CODE'];" +
   "const GOLD_CODE_HEADERS = ['GOLDCODE','GOLD CODE','GOLD_CODE','GOLD PRODUCT CODE'];" +
-  "const TILL_CODE_HEADERS = ['TILLCODE','TILL CODE','TILL_CODE'];" +
+  "const TILL_CODE_HEADERS = ['TILLCODE','TILL CODE','TILL_CODE'];const PRODUCT_NAME_HEADERS = ['TEN SAN PHAM','SAN PHAM','PRODUCT NAME','ITEM NAME','DESCRIPTION','TEN HANG','TEN'];" +
   "const FALLBACK_BARCODE_HEADERS = ['MA VACH','MA VACH HANG'];" +
   "const QUANTITY_HEADERS = ['SO LUONG','QUANTITY','QTY','SL','SO LUONG KIEM KE','SO LUONG THUC TE','KET QUA THUC TE','KET QUA KIEM KE','THUC TE','ACTUAL QTY','ACTUAL QUANTITY','COUNTED QTY','COUNTED QUANTITY','COUNTED','COUNT','RESULT','KET QUA','ACTUAL','WEIGHT','NET WEIGHT','MASS','KHOI LUONG','TRONG LUONG','SO CAN','KL','THUC DEM'];" +
   "const ZONE_HEADERS = ['VUNG','ZONE','MA VUNG','ZONE CODE','KHU VUC'];" +
@@ -63,6 +63,9 @@ new Function("require", "exports", "module", sessionCode)(
   sessionModule,
 );
 const sessionRuntime = sessionModule.exports;
+assert.equal(sessionRuntime.countUniqueProductCodes([
+  { barcode: '8936001' }, { barcode: '8936001' }, { barcode: ' gold-02 ' }, { barcode: 'GOLD-02' }, { barcode: '' },
+]), 2, 'Unique product counts are normalized, cross-zone-safe and ignore blank codes.');
 
 
 assert.equal(runtime.normalizeHeader("SỐ LƯỢNG THỰC TẾ"), "SO LUONG THUC TE");
@@ -83,6 +86,7 @@ assert.throws(() => runtime.parseTextQuantity("1,234.56"), /mơ hồ/);
 // Multiple tables in one sheet can use different column positions and aliases.
 const table1 = new Map([
   [1, { value: "GOLDCODE", type: "s", styleIndex: 0 }],
+  [2, { value: "TÊN SẢN PHẨM", type: "s", styleIndex: 0 }],
   [3, { value: "KẾT QUẢ THỰC TẾ (KG)", type: "s", styleIndex: 0 }],
   [5, { value: "VÙNG", type: "s", styleIndex: 0 }],
 ]);
@@ -94,7 +98,7 @@ const table2 = new Map([
 const scanned = runtime.findHeaders(new Map([[4, table1], [16, table2]]));
 assert.equal(scanned.mappings.length, 2);
 assert.deepEqual(scanned.mappings[0], {
-  rowNumber: 4, quantityColumn: 3, goldCodeColumn: 1, barcodeHeader: "GOLDCODE", zoneColumn: 5,
+  rowNumber: 4, quantityColumn: 3, goldCodeColumn: 1, productNameColumn: 2, barcodeHeader: "GOLDCODE", zoneColumn: 5,
 });
 assert.deepEqual(scanned.mappings[1], {
   rowNumber: 16, quantityColumn: 4, barcodeColumn: 2, barcodeHeader: "BARCODE", zoneColumn: 6,
@@ -108,6 +112,13 @@ const codeAndTillScan = runtime.findHeaders(new Map([[22, new Map([
 ])]]));
 assert.equal(codeAndTillScan.mappings[0].codeColumn, 1);
 assert.equal(codeAndTillScan.mappings[0].tillCodeColumn, 2);
+
+const productNameScan = runtime.findHeaders(new Map([[30, new Map([
+  [0, { value: 'BARCODE', type: 's', styleIndex: 0 }],
+  [1, { value: 'TEN', type: 's', styleIndex: 0 }],
+  [2, { value: 'QUANTITY', type: 's', styleIndex: 0 }],
+])]]));
+assert.equal(productNameScan.mappings[0].productNameColumn, 1, 'Optional TEN column must be recognized.');
 
 
 assert.throws(() => runtime.findHeaders(new Map([[8, new Map([
@@ -145,6 +156,7 @@ const output = runtime.buildStocktakeOutput("E001", "BT01", [
 ], new Date(2026, 10, 10, 9, 8, 7));
 assert.match(output, /^NHAN VIEN,E001,2026\/11\/10,09:08:07\r\nADRESSE,BT,01\r\n/);
 assert.match(output, /ARTICLE,089686011036,19\.236/);
+assert.doesNotMatch(output, /productName|TÊN SẢN PHẨM/, 'Product names must never alter the Stocktake TXT payload.');
 
 const source = (name, fingerprint) => ({ name, fingerprint, size: 100, lastModified: 1 });
 const importedRow = (barcode, sourceFileName, sourceRow) => ({
@@ -202,6 +214,8 @@ assert.match(parser, /blockingIssues\.push/);
 assert.match(parser, /crypto\.subtle\.digest/);
 assert.match(parser, /sourceFileName: file\.name/);
 assert.match(parser, /sourceFileId: fingerprint\.slice\(0, 16\)/);
+assert.match(parser, /productNameColumn/);
+assert.match(parser, /productName, quantity/);
 assert.match(parser, /zonesByCode\.get\(zoneCode\)/);
 assert.match(parser, /fileName: buildZoneFileName\(zoneCode\)/);
 assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
@@ -222,7 +236,8 @@ assert.match(component, /downloadText\(zone\.fileName, zone\.content\)/);
 assert.match(component, /zip\.file\(zone\.fileName, zone\.content\)/);
 assert.doesNotMatch(component, /document\.getSelection|selectAll/);
 assert.match(component, /stocktake-import-editor-layer/);
-assert.match(component, /stocktake-import-output-details/);
+assert.match(component, /stocktake-import-preview-screen/);
+assert.doesNotMatch(component, /stocktake-import-output-details/, "TXT preview must be a dedicated view, not an inline disclosure.");
 assert.match(component, /stocktake-import-table-toolbar/);
 assert.match(component, /historyPersisted/);
 assert.match(component, /noticeTone/);
@@ -235,7 +250,7 @@ assert.match(component, /onClick=\{\(\) => void copyOutput\(\)\}/);
 assert.match(component, /onClick=\{\(\) => exportZone\(selectedZone\)\}/);
 assert.doesNotMatch(component, /stocktake-import-notice is-/);
 assert.match(component, /busyAction/);
-assert.match(component, /Xem trước TXT/);
+assert.match(component, /Xem TXT/);
 assert.doesNotMatch(component, /zoneLayer|setZoneLayer/, "Editor and TXT preview must share one workspace instead of switching layers.");
 assert.match(component, /handleFiles/);
 assert.match(component, /confirmPendingImport/);
@@ -247,6 +262,17 @@ assert.match(component, /sourceFileId/);
 assert.match(component, /updateRow/);
 assert.match(component, /Chỉnh sửa/);
 assert.match(component, /Lưu thay đổi/);
+assert.match(component, /countUniqueProductCodes/);
+assert.match(component, /activeZoneHasProductNames/);
+assert.match(component, /stocktake-import-zip-compact/);
+assert.match(component, /stocktake-import-content/);
+assert.match(component, /zoneActionStates/);
+assert.match(component, /hadUnsavedChanges/);
+assert.match(component, /result\.blockingIssues\.length > 0/);
+assert.match(component, /isDirty \|\| !historyPersisted/);
+assert.match(component, /Đã sao chép/);
+assert.match(component, /Đã tải TXT/);
+assert.match(component, /Đã xuất ZIP/);
 assert.match(component, /PAGE_SIZE = 100/);
 assert.match(component, /blockingIssues\.length/);
 assert.doesNotMatch(component, /slice\(0,\s*80\)/);
@@ -255,6 +281,7 @@ assert.match(store, /rows: zone\.rows/);
 assert.match(store, /sourceFiles/);
 assert.match(sessionService, /detectStocktakeImportConflicts/);
 assert.match(sessionService, /mergeStocktakeImportSession/);
+assert.match(sessionService, /countUniqueProductCodes/);
 assert.match(sessionService, /skippedZoneWarnings/);
 assert.match(sessionService, /sourceFileName: sourceFiles.length/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
@@ -268,6 +295,10 @@ assert.equal(snapshotService.includes("stocktake-import"), false, "The local wor
 assert.match(styles, /grid-template-columns:210px minmax\(0,1fr\)/);
 assert.match(styles, /stocktake-import-output-textarea/);
 assert.match(styles, /stocktake-import-preview-actions/);
+assert.match(styles, /stocktake-import-preview-screen/);
+assert.match(styles, /stocktake-import-zip-compact/);
+assert.match(styles, /stocktake-import-metric-unit/);
+assert.match(styles, /height: min\(96dvh, 1120px\)/);
 assert.match(styles, /stocktake-import-workspace-enter/);
 assert.match(styles, /stocktake-import-state/);
 assert.match(styles, /stocktake-import-state\.is-invalid/);

@@ -1,34 +1,54 @@
-# Current task — Xuất file: unified workspace and interaction system (2026-11-10)
+# Current task — Xuất file: workspace v2, product metrics and action states (2026-11-10)
 
-**Accepted baseline:** PR #70 deployed and user-accepted; PR #71 merged. Current main baseline: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
-**Current branch:** `feat/stocktake-import-native-workspace`.
-**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft, open; not merged/deployed).
-**Current head:** `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
-**CI:** RetailOS CI run #534 passed: Stocktake import regression suite, all scanner regression tests, TypeScript, production build, GitHub Pages build and diff checks.
-**Physical QA:** Desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA remain pending.
-**Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).
-**Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`.
+**Deployed baseline:** PR #70–#73 merged; user confirms PR #73 is merged and deployed.  
+**Current main:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`.  
+**Current branch:** `feat/stocktake-import-workspace-v2`.  
+**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; not merged/deployed).  
+**Current PR #74 code head:** `c61746272f2b31cd8be222cc4012e38de1ce3ddc` (latest docs synchronization may advance the PR head).  
+**CI:** run #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.  
+**Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).  
+**Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`; architecture decision ADR-033.
 
-## Current UX contract
+## User requirements being implemented
 
-- Preserve the full business flow and data rules: local workbook import, header/zone detection, code-source precedence, validation, multi-file staging, duplicate-file detection, duplicate-zone merge/skip, source provenance, local history, per-zone TXT and ZIP output.
-- Use one continuous selected-zone workspace. The table is the primary review/edit surface; there is no longer a separate mutually exclusive Output/Editor layer.
-- Read-only review and inline edit share the same table. Save persists to the module-owned IndexedDB; cancel restores the edit baseline.
-- TXT Preview is a secondary expandable inspector below the table. Preview, Copy, individual Download and ZIP must use the same output payload.
-- Distinguish in-memory state from IndexedDB persistence. A failed persistence operation must never be shown as saved.
-- Provide action-specific loading feedback for import, save, ZIP generation, history clear and history re-export. Notices distinguish success, warning and information; errors remain separate.
-- Motion should feel native and deliberate but remain lightweight: transform/opacity, short spatial transitions, clear icon/control feedback, reduced-motion and power-conserve support. No continuous decorative motion or unnecessary backdrop blur on mobile.
-- Keep text containers compact and purposeful. Use color, weight, numbers and contrast to establish hierarchy by information role rather than flattening every surface into one style.
+1. Move ZIP to a compact control beside “CÁC VÙNG”; render only when session has multiple zones.
+2. Per-zone action status: Ready, Saved, Copied, TXT downloaded, ZIP exported, Dirty, Invalid.
+3. TXT preview becomes a dedicated view in the selected-zone workspace, with return-to-table action.
+4. Four summary metrics: compact source-file card, zone count, total row count and unique product-code count.
+5. Each zone displays both row count and unique product-code count.
+6. Optional product-name column parsed from `TÊN SẢN PHẨM`, `SẢN PHẨM`, exact `TÊN` and supported English aliases. Display between code and actual quantity only when present; never add it to TXT output.
+7. Desktop-first fixed viewport frame with independent content, zone-list and table scrolling; wider workspace and no overlapping controls.
+8. Mobile remains compact, touch-operable and suitable for quick review.
 
-Protected: Scanner Engine, camera lifecycle, existing Stocktake scanner/workflow and IndexedDB, snapshot/cache IDs, auth, service worker and deployment configuration.
+## Implementation and data contract
+
+- Unique product identity is the resolved `barcode` value for all source types. Normalize Unicode NFKC, trim, compare case-insensitively; preserve punctuation and leading zeroes; exclude blank values.
+- Global unique count is across all zones; duplicate codes across zones count once globally. Per-zone unique counts remain independent. Row count and duplicate rows are preserved.
+- Product name is optional row metadata carried through session merge and IndexedDB history. No IndexedDB version bump; old records without this field remain valid.
+- The TXT payload, employee/date line, zone format, file names, Excel decimal precision, code precedence, multi-file merge/skip, fingerprints/provenance and output validation remain unchanged.
+- No changes to Stocktake scanner, Scanner Engine, camera lifecycle, authentication, snapshot/cache, service worker or deployment configuration.
+
+## Current changed files
+
+- `src/features/stocktake-import/services/stocktakeImportParser.ts`
+- `src/features/stocktake-import/services/stocktakeImportSession.ts`
+- `src/features/stocktake-import/components/StocktakeImportModule.tsx`
+- `src/features/stocktake-import/components/stocktake-import.css`
+- `scripts/test-stocktake-import.mjs`
+- `docs/ai-context/ARCHITECTURE.md`
+- `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`
+- `docs/ai-context/modules/EXPORT_FILE.md`
+- This handoff.
 
 ## Remaining gates
 
-1. Review final PR diff and confirm only the three intended module/test files plus technical docs are changed.
-2. Manual desktop Chrome/Edge QA.
-3. Manual iOS Safari/PWA and Android Chrome/PWA QA, including file picker, scroll/layout, disclosure, clipboard fallback, download and history restore.
-4. Run real workbook end-to-end checks for multi-file conflict review, merge/skip, persistence and TXT/ZIP parity.
-5. Update this handoff with exact QA evidence; do not merge or deploy without explicit user approval.
+1. Confirm PR #74 head and CI: full preflight, TypeScript, production build, Pages build and scanner regression suite.
+2. Review PR diff for parser edge cases, per-zone state reset, ZIP visibility, preview navigation and nested scroll.
+3. Test real workbooks with/without product-name columns; verify global unique counts and unchanged TXT output.
+4. Manual desktop Chrome/Edge QA at multiple window sizes and viewport heights.
+5. Manual iOS Safari/PWA and Android Chrome/PWA QA: compact navigation, table scrolling, preview, touch, file picker, clipboard and downloads.
+6. Update exact CI/device evidence in this handoff and module record.
+7. Do not merge or deploy without explicit user approval.
 
 ---
 

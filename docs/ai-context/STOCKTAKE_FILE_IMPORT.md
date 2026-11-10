@@ -2,12 +2,12 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70, #71 and #72 are merged. Operator-action refinement is in draft PR #73; not merged/deployed. CI #540 passed on head `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`; physical-device QA remains pending.
+**Status:** PR #70–#73 are merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`. Desktop/iOS/Android physical QA remains pending.
 **PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
-**Current main after PR #71:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
+**Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`.
 **Business/session implementation:** PR #71 merged at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
-**Current UX branch:** `feat/stocktake-import-native-workspace`.
-**Current UX PR:** https://github.com/banjk124-hub/retailos-home/pull/72 (draft; CI #524 passed on `13ae9a96e270642d5349041f5d01bfd8a7a542f4`; manual desktop/iOS/Android QA pending).
+**Current workspace v2 branch:** `feat/stocktake-import-workspace-v2`.
+**Current workspace v2 PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; CI pending; manual desktop/iOS/Android QA pending).
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
@@ -149,9 +149,11 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - Keep action-level loading feedback for workbook import, zone save, ZIP generation, history clear and history re-export. Do not report success until the operation completes.
 - Notices use a centered, non-blocking popup and auto-dismiss after approximately 2.6 seconds. Save and Copy show success only after successful completion; errors remain visible as alert states.
 - With an active session, Add file and New session are aligned in one compact action row. Without a session, the file-picker action occupies the available width.
-- The all-zone ZIP action footer uses a responsive grid: explanatory status remains readable and the export control stays within the workspace width.
+- The all-zone ZIP action is placed beside the zone-list heading and is rendered only when the active session contains more than one zone.
+- The application frame is fixed to the viewport. The main content, zone list and data table use independent bounded scrolling; the wide desktop workspace is prioritized while mobile keeps a compact stacked zone navigator and touch-friendly controls.
 - Notices have semantic success, warning and information treatments. Errors remain separate alert states. Loading, disabled, invalid, dirty, saved and completed states must not be represented by the same visual treatment.
 - Keep `outputReady`, row validation, dirty-zone checks and workbook blocking diagnostics as the source of truth for export guards.
+- Track each zone's latest action state independently: ready, saved, copied, TXT downloaded, ZIP exported, dirty or invalid. A data edit invalidates the prior output state; a restored history session is marked saved.
 
 ### Visual and motion contract
 
@@ -186,7 +188,8 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - [x] Unified editor/preview workspace static regression assertions.
 - [x] Semantic notice states, IndexedDB-persisted status and action-specific loading feedback covered by source assertions.
 - [x] Unified workspace and state implementation passed CI #534.
-- [x] Operator-action placement and transient feedback passed full preflight, TypeScript and production build in CI #540 on `1f41319fa7c14d4b7d6a4577e576e6fc70cb3eb2`.
+- [x] Operator-action placement and transient feedback passed CI #540; PR #73 merged/deployed by user.
+- [ ] Workspace v2 PR #74: verify unique product counts, optional product-name headers, dedicated preview view, compact multi-zone ZIP action and fixed-frame responsive layout in CI and on devices.
 - [x] Existing scanner regression suite passed in the same preflight; no scanner source files were changed.
 - [ ] Desktop Chrome/Edge visual and functional QA.
 - [ ] iOS Safari/PWA QA: viewport behavior, disclosure interaction, file picker, Clipboard fallback, downloads and history restore.
@@ -194,3 +197,37 @@ CI is not a substitute for physical-device file-picker/download QA or downstream
 - [ ] Full IndexedDB session save/history restore and duplicate-file/duplicate-zone end-to-end QA.
 - [ ] Confirm TXT preview/copy/download/ZIP payload parity with real workbooks.
 - [ ] Audit final diff and obtain explicit approval before merge/deploy.
+
+
+## 10. Workspace v2 — unique product metrics, action states and dedicated preview (2026-11-10)
+
+**Branch:** `feat/stocktake-import-workspace-v2`  
+**PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft)  
+**Base main:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`
+
+### Data and counting contract
+
+- A row's product identity is its resolved `barcode` field, regardless of whether the source was BARCODE, CODE, GOLDCODE, TILLCODE, legacy MÃ VẠCH or manual correction.
+- Unique product count normalizes Unicode (NFKC), trims surrounding whitespace and compares case-insensitively. It does not remove punctuation or leading zeroes. Blank codes are excluded.
+- Session-wide count is computed across every zone, so the same code appearing in multiple zones contributes exactly one to the global count. Each zone also displays its own unique count.
+- Keep total row count separate from unique product count. Duplicated source rows are preserved and remain part of row count and TXT output.
+- Optional product-name headers include `TÊN SẢN PHẨM`, `SẢN PHẨM`, exact `TÊN`, `TÊN HÀNG`, `PRODUCT NAME`, `ITEM NAME` and `DESCRIPTION`. The parser carries `productName` through merge and IndexedDB history. The review table renders the column between code and actual quantity only when at least one row in that zone has a product name.
+- Product name is informational and is not inserted into the downstream Stocktake TXT `ARTICLE` record.
+
+### Interaction and workspace contract
+
+- Zone-list status is action-specific: Ready, Saved, Copied, TXT downloaded, ZIP exported, Dirty or Invalid. Editing invalidates prior action confirmation; cancel returns the unchanged baseline to Ready; restore history returns zones to Saved.
+- ZIP is a compact action beside the zone-list heading and appears only when the current session contains more than one zone. Existing validation/dirty guards and one-file-per-zone ZIP payload remain unchanged.
+- TXT Preview is a dedicated view in the selected-zone workspace, with a clear return-to-table action. The zone navigator remains available and selection context is preserved.
+- The modal frame fits the viewport. The content region, zone list and table have independent bounded scroll behavior. Desktop receives a wider two-column workspace; mobile uses a compact stacked navigator and preserves horizontal table access.
+- No IndexedDB version bump is required: `productName` is an optional additive row field, so older records without it remain readable.
+
+### Verification gates
+
+- [x] Header detection and unique-code helper regression tests added.
+- [x] CI #544 full preflight, TypeScript, production and Pages builds passed on prior head `f3ca833b91eda77b9c4be298ae0be634a2394c97`.
+- [ ] Rerun CI on latest code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.
+- [ ] Real workbook tests with product-name headers and workbooks without product names.
+- [ ] Validate global unique count across zones, including repeated BARCODE/CODE/GOLDCODE/TILLCODE values and leading-zero identifiers.
+- [ ] Desktop Chrome/Edge viewport and nested-scroll QA; iOS Safari/PWA and Android Chrome/PWA compact layout, touch and download QA.
+- [ ] Confirm TXT payload remains byte-compatible and product names are not emitted in `ARTICLE` rows.
