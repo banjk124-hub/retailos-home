@@ -23,6 +23,7 @@ export type StocktakeImportResult = {
   importedAt: string;
   zones: ImportedStocktakeZone[];
   warnings: string[];
+  blockingIssues: string[];
 };
 
 type CellValue = { value: string; type: string; styleIndex: number };
@@ -244,7 +245,7 @@ function incrementDigits(value: string): string {
 
 function roundDecimal(value: string, scale: number, minScale = 0): string {
   const expanded = expandDecimal(value);
-  const precision = Math.max(0, Math.min(30, scale));
+  const precision = Math.max(0, Math.min(100, scale));
   let integer = expanded.integer.replace(/^0+(?=\d)/, '') || '0';
   let fraction = expanded.fraction;
   const kept = fraction.padEnd(precision + 1, '0').slice(0, precision);
@@ -267,10 +268,10 @@ function roundDecimal(value: string, scale: number, minScale = 0): string {
 function generalPrecision(value: string): number {
   const expanded = expandDecimal(value);
   const integer = expanded.integer.replace(/^0+/, '');
-  if (integer) return Math.max(0, Math.min(30, 14 - (integer.length - 1)));
+  if (integer) return Math.max(0, Math.min(100, 14 - (integer.length - 1)));
   const firstNonZero = expanded.fraction.search(/[1-9]/);
   if (firstNonZero < 0) return 0;
-  return Math.max(0, Math.min(30, 14 + firstNonZero + 1));
+  return Math.max(0, Math.min(100, 14 + firstNonZero + 1));
 }
 
 function numberFormatPrecision(formatCode: string): { max: number; min: number } | null {
@@ -329,6 +330,21 @@ function formatBarcode(cell: CellValue, zeroPaddingWidths: Map<number, number>):
   return value;
 }
 
+function resolveBarcode(
+  barcodeCell: CellValue | undefined,
+  goldCodeCell: CellValue | undefined,
+  fallbackCell: CellValue | undefined,
+  zeroPaddingWidths: Map<number, number>,
+): { barcode: string; source: ImportedStocktakeRow['barcodeSource'] } {
+  const barcode = barcodeCell ? formatBarcode(barcodeCell, zeroPaddingWidths) : '';
+  if (barcode) return { barcode, source: 'BARCODE' };
+  const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, zeroPaddingWidths) : '';
+  if (goldCode) return { barcode: goldCode, source: 'GOLDCODE' };
+  const fallback = fallbackCell ? formatBarcode(fallbackCell, zeroPaddingWidths) : '';
+  if (fallback) return { barcode: fallback, source: 'MÃ VẠCH' };
+  return { barcode: '', source: 'manual' };
+}
+
 function resolveZoneCode(
   sheetName: string,
   rows: Map<number, Map<number, CellValue>>,
@@ -383,6 +399,10 @@ function safeFilePart(value: string): string {
   return value.replace(/[^A-Z0-9_-]/gi, '_').slice(0, 48) || 'ZONE';
 }
 
+export function buildZoneFileName(zoneCode: string): string {
+  return safeFilePart(zoneCode) + '.txt';
+}
+
 function rowIssues(barcode: string, quantity: string): string[] {
   const issues: string[] = [];
   const code = barcode.trim();
@@ -410,6 +430,7 @@ export async function parseStocktakeWorkbook(
 
   const zones: ImportedStocktakeZone[] = [];
   const warnings: string[] = [];
+  const blockingIssues: string[] = [];
   const seenZones = new Set<string>();
 
   for (const sheet of sheets) {
@@ -423,14 +444,14 @@ export async function parseStocktakeWorkbook(
     try {
       header = findHeader(rows);
     } catch (cause) {
-      warnings.push('Không hỗ trợ sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không nhận diện được cấu trúc.'));
+      blockingIssues.push('Không hỗ trợ sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không nhận diện được cấu trúc.'));
       continue;
     }
     let zoneCode: string;
     try {
       zoneCode = resolveZoneCode(sheet.name, rows, header.rowNumber, header.zoneColumn);
     } catch (cause) {
-      warnings.push('Sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không xác định được vùng.'));
+      blockingIssues.push('Sheet "' + sheet.name + '": ' + (cause instanceof Error ? cause.message : 'Không xác định được vùng.'));
       continue;
     }
     if (seenZones.has(zoneCode)) throw new Error('Có nhiều sheet cùng mã vùng "' + zoneCode + '". Không thể xuất tách biệt an toàn.');
@@ -444,28 +465,26 @@ export async function parseStocktakeWorkbook(
       const barcodeCell = header.barcodeColumn !== undefined ? cells.get(header.barcodeColumn) : undefined;
       const goldCodeCell = header.goldCodeColumn !== undefined ? cells.get(header.goldCodeColumn) : undefined;
       const fallbackCell = header.fallbackBarcodeColumn !== undefined ? cells.get(header.fallbackBarcodeColumn) : undefined;
+      const resolvedBarcode = resolveBarcode(barcodeCell, goldCodeCell, fallbackCell, styleMetadata.zeroPaddingWidths);
+      const barcode = resolvedBarcode.barcode;
+      const barcodeSource = resolvedBarcode.source;
+      const fallbackBarcode = fallbackCell ? formatBarcode(fallbackCell, styleMetadata.zeroPaddingWidths) : '';
       const explicitBarcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
       const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, styleMetadata.zeroPaddingWidths) : '';
-      const fallbackBarcode = fallbackCell ? formatBarcode(fallbackCell, styleMetadata.zeroPaddingWidths) : '';
-      const barcode = explicitBarcode || goldCode || fallbackBarcode;
-      const barcodeSource: ImportedStocktakeRow['barcodeSource'] = explicitBarcode
-        ? 'BARCODE' : goldCode ? 'GOLDCODE' : fallbackBarcode ? 'MÃ VẠCH' : 'manual';
       const actualQuantityCell = cells.get(header.quantityColumn);
       const quantityRaw = actualQuantityCell?.value.trim() ?? '';
       if (!barcode && !quantityRaw) continue;
       let quantity = quantityRaw;
+      let quantityParseIssue = '';
       if (actualQuantityCell && quantityRaw) {
         try {
           quantity = parseQuantityCell(actualQuantityCell, styleMetadata);
-        } catch {
-          // Keep the exact source text so the user can correct it in the review step.
+        } catch (cause) {
+          quantityParseIssue = cause instanceof Error ? cause.message : 'Không thể đọc định dạng số Excel.';
         }
       }
       const issues = rowIssues(barcode, quantity);
-      if (actualQuantityCell && quantityRaw && actualQuantityCell.type === 'n') {
-        const format = styleMetadata.numberFormats.get(actualQuantityCell.styleIndex) ?? 'General';
-        if (!format && !quantity) issues.push('Không xác định được định dạng số Excel.');
-      }
+      if (quantityParseIssue) issues.push('Không thể diễn giải kết quả thực tế: ' + quantityParseIssue);
       if (fallbackBarcode && !explicitBarcode && !goldCode) {
         if (!fallbackRepeatedValue) fallbackRepeatedValue = fallbackBarcode;
         else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
@@ -490,12 +509,12 @@ export async function parseStocktakeWorkbook(
     zones.push({
       zoneCode, prefix: match[1], number: match[2], sheetName: sheet.name, rows: dataRows,
       content: buildStocktakeOutput(employeeCode, zoneCode, dataRows, importedAt),
-      fileName: safeFilePart(zoneCode) + '.txt',
+      fileName: buildZoneFileName(zoneCode),
     });
   }
 
   if (zones.length === 0) {
     throw new Error(warnings.length ? warnings.join('\n\n') : 'Không tìm thấy sheet nào có dữ liệu kiểm kê hợp lệ.');
   }
-  return { sourceFileName: file.name, importedAt: importedAt.toISOString(), zones, warnings };
+  return { sourceFileName: file.name, importedAt: importedAt.toISOString(), zones, warnings, blockingIssues };
 }
