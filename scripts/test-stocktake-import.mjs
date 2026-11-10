@@ -226,6 +226,8 @@ assert.match(component, /stocktake-import-output-details/);
 assert.match(component, /stocktake-import-table-toolbar/);
 assert.match(component, /historyPersisted/);
 assert.match(component, /noticeTone/);
+assert.match(component, /busyAction/);
+assert.match(component, /Xem trước TXT/);
 assert.doesNotMatch(component, /zoneLayer|setZoneLayer/, "Editor and TXT preview must share one workspace instead of switching layers.");
 assert.match(component, /handleFiles/);
 assert.match(component, /confirmPendingImport/);
@@ -260,7 +262,8 @@ assert.match(styles, /stocktake-import-output-textarea/);
 assert.match(styles, /stocktake-import-preview-actions/);
 assert.match(styles, /stocktake-import-workspace-enter/);
 assert.match(styles, /stocktake-import-state/);
+assert.doesNotMatch(styles, /stocktake-import-zone-layer-panel|stocktake-import-output-layer/);
 assert.match(styles, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(styles, /@media \(max-width:640px\)/);
 
-console.log("Stocktake import accuracy, code-source precedence, additive multi-file sessions, conflict review, output-layer and responsive UI tests passed.");
+console.log("Stocktake import accuracy, code-source precedence, additive multi-file sessions, conflict review, unified workspace and responsive UI tests passed.");
