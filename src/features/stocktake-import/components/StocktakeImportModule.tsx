@@ -73,10 +73,14 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     try {
       if (!employeeCode) throw new Error('Không xác định được mã nhân viên để tạo file theo định dạng Kiểm kê.');
       const parsed = await parseStocktakeWorkbook(file, employeeCode);
-      await stocktakeImportStore.saveResult(parsed);
       setResult(parsed);
       setNotice(`Đã phân tích ${parsed.zones.length} vùng với ${parsed.zones.reduce((sum, zone) => sum + zone.rows.length, 0)} dòng dữ liệu.`);
-      await refreshHistory();
+      try {
+        await stocktakeImportStore.saveResult(parsed);
+        await refreshHistory();
+      } catch (storageError) {
+        setNotice('Đã phân tích và tạo preview thành công, nhưng không thể lưu lịch sử trên thiết bị: ' + (storageError instanceof Error ? storageError.message : 'lỗi bộ nhớ cục bộ.'));
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể đọc file kiểm kê.');
     } finally {
@@ -127,9 +131,14 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       warnings: [],
       zones: item.files.map((file) => {
         const match = file.zoneCode.match(/^([A-Z]*)(\d+)$/);
+        const rows = file.content.split(/\r?\n/).filter((line) => line.startsWith('ARTICLE,'))
+          .map((line, index) => {
+            const parts = line.split(',');
+            return { barcode: parts[1] ?? '', quantity: parts.slice(2).join(','), sourceRow: index + 1 };
+          });
         return {
           zoneCode: file.zoneCode, prefix: match?.[1] ?? '', number: match?.[2] ?? file.zoneCode,
-          sheetName: file.zoneCode, rows: [], content: file.content, fileName: file.fileName,
+          sheetName: file.zoneCode, rows, content: file.content, fileName: file.fileName,
         };
       }),
     });
