@@ -1,16 +1,20 @@
-# SCAN-03 acceptance — module-owned preview region integration (2026-11-10)
+# SCAN-04 acceptance — strict module-reticle ROI decoding (2026-11-10)
 
-- [x] Home retains its own video element and reticle; only a ref is attached for measurement.
-- [x] Stocktake retains its own video element and reticle; only a ref is attached for measurement.
-- [x] Measurement adapter clips the reticle to visible image content and maps to source-frame normalized coordinates.
-- [x] Active session stores region updates in place; no session/camera/decoder/frame-loop restart is requested.
-- [x] SCAN-03 leaves decoder input full-frame; strict ROI decode remains deferred to SCAN-04.
-- [x] New preview-region and in-place update regression tests pass in full preflight (GitHub Actions run #309).
-- [x] TypeScript, production build and GitHub Pages build pass on final PR head (run #309).
-- [x] GitHub Actions CI run #309 passes.
-- [ ] Physical iOS Safari/PWA reticle alignment QA.
-- [ ] Physical Android Chrome/PWA reticle alignment QA.
-- [ ] Existing Home lookup and Stocktake form-fill/explicit-save flows are rechecked after deployment.
+- [x] SCAN-03 merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`.
+- [x] User confirms iOS and Android reticle geometry and existing scanner flows were checked without detected issues.
+- [x] Decoder contract requires a `source-frame-normalized` scan-region snapshot.
+- [x] Session passes the current defensive region snapshot to each decoder invocation.
+- [x] Pure pixel crop resolver validates coordinate space, finite values, normalized bounds and source dimensions.
+- [x] Crop bounds floor leading and ceil trailing edges; source edges are clamped.
+- [x] ZXing decodes only the measured reticle ROI; full-frame-first and fixed centered fallback passes are removed.
+- [x] Missing/invalid ROI fails closed; no silent full-frame fallback.
+- [x] Regression suite is registered in `npm run preflight`.
+- [ ] Full TypeScript, production/Pages builds and preflight pass on final PR head.
+- [ ] GitHub Actions CI passes on final PR head.
+- [ ] Physical iOS Safari/PWA tests barcode placement at center and reticle edges; verify accuracy and latency.
+- [ ] Physical Android Chrome/PWA tests barcode placement at center and reticle edges; verify accuracy and latency.
+- [ ] Verify low-light, reflective labels, small/far barcodes and both Home/Stocktake flows after deployment.
+- [ ] Review decode-duration/ROI-unavailable diagnostics on representative devices; compare against the pre-SCAN-04 baseline.
 
 ---
 
