@@ -185,6 +185,8 @@ assert.equal(mergedSession.zones[0].rows[1].sourceFileName, "a.xlsx");
 assert.equal(mergedSession.zones[0].rows[3].sourceFileName, "b.xlsx");
 assert.equal(mergedSession.zones[0].rows.length, 4, "Merge must preserve every row and duplicate occurrence.");
 assert.equal(mergedSession.sourceFiles.length, 3);
+assert.match(mergedSession.warnings.join(" "), /Đã gộp 2 dòng bổ sung vào vùng BT01/);
+assert.match(mergedSession.warnings.join(" "), /Đã gộp 1 dòng bổ sung vào vùng BT01/);
 assert.ok(mergedSession.zones[0].content.includes("NHAN VIEN,E001,2026/11/10,09:00:00"));
 const skippedSession = sessionRuntime.mergeStocktakeImportSession(sessionBase, [sessionA, sessionB], "E001", false);
 assert.deepEqual(skippedSession.zones[0].rows.map((row) => row.barcode), ["BASE"]);
