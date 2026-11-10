@@ -1,3 +1,13 @@
+### 2026-11-10 — SCAN-06 low-contrast correction and CI #425
+
+- A 40/255 contrast Code 128 fixture decoded upright but failed after an intermediate-angle correction, even after removing the synthetic rotation's white border. A direct corrected-pixel test isolated the loss to the transformed candidate, not the orientation estimate.
+- Nearest-neighbor resampling was evaluated and rejected: it regressed the 15° production-adapter angle test. Bilinear sampling was restored.
+- Added a bounded percentile contrast stretch before deskew: compute 1st/99th percentile luminance bounds and stretch only when the range is 24–220 levels. Orientation confidence remains computed from the original ROI pixels; this prevents contrast normalization from inventing an orientation.
+- CI run #425 passed the full preflight and production-adapter integration, including the 40/255 low-contrast fixture, continuous angle sweep, EAN-8/EAN-13, combined rotation+skew, strict ROI, TypeScript, production/Pages builds and diff checks. Expected ZXing miss warning count remains zero.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA is still outstanding; synthetic contrast is not a calibrated real-world optical threshold.
+
+---
+
 ### 2026-11-10 — SCAN-05/06 corrective validation update
 
 - CI run #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b`: scanner preflight suites, production adapter integration, continuous ±5°–±75° angle sweep, 90°/270° and combined skew, medium-low contrast fixture, EAN-8/EAN-13, ambiguous texture, strict ROI, TypeScript, production build, GitHub Pages build and diff checks.
