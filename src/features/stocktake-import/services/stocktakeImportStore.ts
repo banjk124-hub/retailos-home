@@ -10,6 +10,8 @@ export type StocktakeImportHistoryItem = {
   importedAt: string;
   zoneCount: number;
   rowCount: number;
+  warnings?: string[];
+  blockingIssues?: string[];
   files: Array<{
     zoneCode: string;
     fileName: string;
@@ -72,6 +74,8 @@ export const stocktakeImportStore = {
       importedAt: result.importedAt,
       zoneCount: result.zones.length,
       rowCount: result.zones.reduce((total, zone) => total + zone.rows.length, 0),
+      warnings: [...result.warnings],
+      blockingIssues: [...result.blockingIssues],
       files: result.zones.map((zone) => ({
         zoneCode: zone.zoneCode,
         fileName: zone.fileName,
