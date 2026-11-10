@@ -178,22 +178,24 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     try {
       if (!employeeCode) throw new Error('Không xác định được mã nhân viên để tạo file theo định dạng Kiểm kê.');
       const knownSources = result?.sourceFiles ?? [];
-      const knownFingerprints = new Set(knownSources.map((source) => source.fingerprint));
+      const knownFingerprints = new Map(knownSources.map((source) => [source.fingerprint, source.name]));
       const knownNames = new Map(knownSources.map((source) => [source.name, source.fingerprint]));
       if (result && knownSources.length === 0) knownNames.set(result.sourceFileName, 'legacy-unknown');
       const incoming: StocktakeImportResult[] = [];
       const duplicateFiles: string[] = [];
       const sameNameDifferentContent: string[] = [];
-      const batchFingerprints = new Set<string>();
+      const batchFingerprints = new Map<string, string>();
       for (const file of files) {
         const parsed = await parseStocktakeWorkbook(file, employeeCode, result ? new Date(result.importedAt) : new Date());
         const source = parsed.sourceFiles?.[0];
         if (!source) throw new Error('Không tạo được định danh cho file ' + file.name + '.');
-        if (knownFingerprints.has(source.fingerprint) || batchFingerprints.has(source.fingerprint)) {
-          duplicateFiles.push(file.name);
+        const knownDuplicateName = knownFingerprints.get(source.fingerprint);
+        const batchDuplicateName = batchFingerprints.get(source.fingerprint);
+        if (knownDuplicateName || batchDuplicateName) {
+          duplicateFiles.push(file.name + ' (trùng nội dung với ' + (knownDuplicateName ?? batchDuplicateName) + ')');
           continue;
         }
-        batchFingerprints.add(source.fingerprint);
+        batchFingerprints.set(source.fingerprint, file.name);
         const sameNameFingerprint = knownNames.get(file.name);
         if (sameNameFingerprint && sameNameFingerprint !== source.fingerprint) sameNameDifferentContent.push(file.name);
         knownNames.set(file.name, source.fingerprint);
