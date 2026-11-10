@@ -687,7 +687,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     : <div className="stocktake-import-output-unavailable" role="status">
                         Output chưa sẵn sàng. Hãy xử lý lỗi và lưu thay đổi trước khi sao chép hoặc tải xuống.
                       </div>}
-                </details>}
+                </details></section>}
             </div>
 
             <div className="stocktake-import-export-footer">
