@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 
 export type ImportedStocktakeRow = {
   barcode: string;
+  productName?: string;
   quantity: string;
   sourceRow: number;
   sourceSheet?: string;
@@ -44,6 +45,7 @@ type HeaderMapping = {
   codeColumn?: number;
   goldCodeColumn?: number;
   tillCodeColumn?: number;
+  productNameColumn?: number;
   fallbackBarcodeColumn?: number;
   barcodeHeader: string;
   zoneColumn?: number;
@@ -55,6 +57,7 @@ const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13
 const CODE_HEADERS = ['CODE', 'ITEM CODE', 'PRODUCT CODE', 'MATERIAL CODE'];
 const GOLD_CODE_HEADERS = ['GOLDCODE', 'GOLD CODE', 'GOLD_CODE', 'GOLD PRODUCT CODE'];
 const TILL_CODE_HEADERS = ['TILLCODE', 'TILL CODE', 'TILL_CODE'];
+const PRODUCT_NAME_HEADERS = ['TEN SAN PHAM', 'PRODUCT NAME', 'ITEM NAME', 'DESCRIPTION', 'TEN HANG', 'TEN'];
 const FALLBACK_BARCODE_HEADERS = ['MA VACH', 'MA VACH HANG'];
 const QUANTITY_HEADERS = [
   'SO LUONG', 'QUANTITY', 'QTY', 'SL', 'SO LUONG KIEM KE', 'SO LUONG THUC TE',
@@ -210,6 +213,7 @@ function findHeaders(rows: Map<number, Map<number, CellValue>>): HeaderScan {
     const code = [...headers.entries()].find(([, value]) => matchesHeader(value, CODE_HEADERS));
     const goldCode = [...headers.entries()].find(([, value]) => matchesHeader(value, GOLD_CODE_HEADERS));
     const tillCode = [...headers.entries()].find(([, value]) => matchesHeader(value, TILL_CODE_HEADERS));
+    const productName = [...headers.entries()].find(([, value]) => matchesHeader(value, PRODUCT_NAME_HEADERS));
     const fallback = [...headers.entries()].find(([, value]) => matchesHeader(value, FALLBACK_BARCODE_HEADERS));
     const zone = [...headers.entries()].find(([, value]) => matchesHeader(value, ZONE_HEADERS));
     const looksLikeHeader = Boolean(quantity || barcode || code || goldCode || tillCode || fallback);
@@ -228,6 +232,7 @@ function findHeaders(rows: Map<number, Map<number, CellValue>>): HeaderScan {
         ...(code ? { codeColumn: code[0] } : {}),
         ...(goldCode ? { goldCodeColumn: goldCode[0] } : {}),
         ...(tillCode ? { tillCodeColumn: tillCode[0] } : {}),
+        ...(productName ? { productNameColumn: productName[0] } : {}),
         ...(fallback ? { fallbackBarcodeColumn: fallback[0] } : {}),
         barcodeHeader: chosen[1],
         ...(zone ? { zoneColumn: zone[0] } : {}),
@@ -528,6 +533,7 @@ export async function parseStocktakeWorkbook(
         const explicitBarcode = barcodeCell ? formatBarcode(barcodeCell, styleMetadata.zeroPaddingWidths) : '';
         const explicitCode = codeCell ? formatBarcode(codeCell, styleMetadata.zeroPaddingWidths) : '';
         const goldCode = goldCodeCell ? formatBarcode(goldCodeCell, styleMetadata.zeroPaddingWidths) : '';
+        const productName = mapping.productNameColumn !== undefined ? (cells.get(mapping.productNameColumn)?.value.trim() ?? '') : '';
         const actualQuantityCell = cells.get(mapping.quantityColumn);
         const quantityRaw = actualQuantityCell?.value.trim() ?? '';
         if (!barcode && !quantityRaw) continue;
@@ -549,7 +555,7 @@ export async function parseStocktakeWorkbook(
           else if (fallbackBarcode !== fallbackRepeatedValue) fallbackIsRepeated = false;
         }
         dataRows.push({
-          barcode, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, sourceFileName: file.name, sourceFileId: fingerprint.slice(0, 16), barcodeSource, issues,
+          barcode, productName, quantity, sourceRow: rowNumber, sourceSheet: sheet.name, sourceFileName: file.name, sourceFileId: fingerprint.slice(0, 16), barcodeSource, issues,
         });
       }
 
