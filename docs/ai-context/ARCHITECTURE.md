@@ -788,7 +788,8 @@ The Output and Editor layers in ADR-031 represented two views of the same zone d
 ### Acceptance
 
 - CI #534 passed the unified-workspace assertions, full preflight, TypeScript, production build, GitHub Pages build and existing scanner regression suite.
-- PR #73 applies the operator-QA layout and feedback refinements. CI #540 passed on `1f41319fa7c14d4d7b6a4577e576e6fc70cb3eb2`. Still required: manual desktop Chrome/Edge, iOS Safari/PWA and Android Chrome/PWA QA; real workbook verification for multi-file merge/skip, persistence/history restore, Clipboard fallback and TXT/ZIP payload parity.
+- PR #73 operator-QA layout and feedback refinements passed CI #540 and were merged/deployed by the user at `629c31c28e808cd5c3181c42b7d29e611a8ad890`.
+- PR #74 proposes workspace v2: unique product metrics, optional product names, per-zone action state, dedicated TXT preview and viewport-owned scrolling. CI and physical-device QA remain pending.
 - Do not merge or deploy until the user explicitly approves.
 
 
