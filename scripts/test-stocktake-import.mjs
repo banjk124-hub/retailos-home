@@ -7,10 +7,10 @@ const component = readFileSync("src/features/stocktake-import/components/Stockta
 const store = readFileSync("src/features/stocktake-import/services/stocktakeImportStore.ts", "utf8");
 
 function extractFunction(name, nextName) {
-  const start = parser.indexOf(\`function \${name}(\`);
-  const end = parser.indexOf(\`\\nfunction \${nextName}(\`, start);
-  assert.notEqual(start, -1, \`Missing function \${name}\`);
-  assert.notEqual(end, -1, \`Missing next function \${nextName}\`);
+  const start = parser.indexOf("function " + name + "(");
+  const end = parser.indexOf("\nfunction " + nextName + "(", start);
+  assert.notEqual(start, -1, "Missing function " + name);
+  assert.notEqual(end, -1, "Missing next function " + nextName);
   return parser.slice(start, end);
 }
 
@@ -25,8 +25,8 @@ const runtimeSource =
   extractFunction("resolveZoneCode", "splitZoneCode") +
   extractFunction("splitZoneCode", "pad") +
   extractFunction("buildOutput", "safeFilePart") +
-  "return { normalizeHeader, findHeader, shiftDecimal, parseQuantity, resolveZoneCode, splitZoneCode, buildOutput };"
-)();
+  "return { normalizeHeader, findHeader, shiftDecimal, parseQuantity, resolveZoneCode, splitZoneCode, buildOutput };";
+const runtime = new Function(ts.transpile(runtimeSource, { target: ts.ScriptTarget.ES2022 }))();
 
 assert.equal(runtime.normalizeHeader("SỐ LƯỢNG"), "SO LUONG");
 assert.equal(runtime.normalizeHeader("MÃ VẠCH"), "MA VACH");
@@ -58,15 +58,15 @@ const output = runtime.buildOutput("E001", "BT01", [
   { barcode: "089686011036", quantity: "1.25" },
   { barcode: "089686011037", quantity: "12.5%" },
 ], new Date(2026, 10, 10, 9, 8, 7));
-assert.match(output, /^NHAN VIEN,E001,2026\\/11\\/10,09:08:07\\r\\nADRESSE,BT,01\\r\\n/);
-assert.match(output, /ARTICLE,089686011036,1\\.25/);
-assert.match(output, /ARTICLE,089686011037,12\\.5%/);
+assert.match(output, /^NHAN VIEN,E001,2026\/11\/10,09:08:07\r\nADRESSE,BT,01\r\n/);
+assert.match(output, /ARTICLE,089686011036,1\.25/);
+assert.match(output, /ARTICLE,089686011037,12\.5%/);
 
-assert.match(parser, /xl\\/workbook\\.xml/);
-assert.match(parser, /xl\\/_rels\\/workbook\\.xml\\.rels/);
-assert.match(parser, /dataRows\\.push\\(\\{ barcode, quantity, sourceRow: rowNumber \\}\\)/);
-assert.doesNotMatch(parser, /fetch\\s*\\(/, "The offline parser must not make network requests.");
-assert.match(component, /accept="\\.xlsx/);
+assert.match(parser, /xl\/workbook\.xml/);
+assert.match(parser, /xl\/_rels\/workbook\.xml\.rels/);
+assert.match(parser, /dataRows\.push\(\{ barcode, quantity, sourceRow: rowNumber \}\)/);
+assert.doesNotMatch(parser, /fetch\s*\(/, "The offline parser must not make network requests.");
+assert.match(component, /accept="\.xlsx/);
 assert.match(component, /parseStocktakeWorkbook/);
 assert.match(component, /PREVIEW OUTPUT/);
 assert.match(component, /Xuất tất cả vùng thành ZIP/);
