@@ -57,7 +57,7 @@ const BARCODE_HEADERS = ['BARCODE', 'BAR CODE', 'PRODUCT BARCODE', 'EAN', 'EAN13
 const CODE_HEADERS = ['CODE', 'ITEM CODE', 'PRODUCT CODE', 'MATERIAL CODE'];
 const GOLD_CODE_HEADERS = ['GOLDCODE', 'GOLD CODE', 'GOLD_CODE', 'GOLD PRODUCT CODE'];
 const TILL_CODE_HEADERS = ['TILLCODE', 'TILL CODE', 'TILL_CODE'];
-const PRODUCT_NAME_HEADERS = ['TEN SAN PHAM', 'PRODUCT NAME', 'ITEM NAME', 'DESCRIPTION', 'TEN HANG', 'TEN'];
+const PRODUCT_NAME_HEADERS = ['TEN SAN PHAM', 'SAN PHAM', 'PRODUCT NAME', 'ITEM NAME', 'DESCRIPTION', 'TEN HANG', 'TEN'];
 const FALLBACK_BARCODE_HEADERS = ['MA VACH', 'MA VACH HANG'];
 const QUANTITY_HEADERS = [
   'SO LUONG', 'QUANTITY', 'QTY', 'SL', 'SO LUONG KIEM KE', 'SO LUONG THUC TE',
@@ -213,7 +213,7 @@ function findHeaders(rows: Map<number, Map<number, CellValue>>): HeaderScan {
     const code = [...headers.entries()].find(([, value]) => matchesHeader(value, CODE_HEADERS));
     const goldCode = [...headers.entries()].find(([, value]) => matchesHeader(value, GOLD_CODE_HEADERS));
     const tillCode = [...headers.entries()].find(([, value]) => matchesHeader(value, TILL_CODE_HEADERS));
-    const productName = [...headers.entries()].find(([, value]) => matchesHeader(value, PRODUCT_NAME_HEADERS));
+    const productName = [...headers.entries()].find(([, value]) => PRODUCT_NAME_HEADERS.some((alias) => alias === 'TEN' ? value === alias : matchesHeader(value, [alias])));
     const fallback = [...headers.entries()].find(([, value]) => matchesHeader(value, FALLBACK_BARCODE_HEADERS));
     const zone = [...headers.entries()].find(([, value]) => matchesHeader(value, ZONE_HEADERS));
     const looksLikeHeader = Boolean(quantity || barcode || code || goldCode || tillCode || fallback);
