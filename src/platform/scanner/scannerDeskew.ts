@@ -158,13 +158,15 @@ export function estimateScannerSkewAngle(
 /**
  * Rotate a grayscale ROI by a continuous in-plane angle (positive = clockwise).
  * The output bounds expand to contain the full rotated input. Bilinear
- * sampling softens resampling artifacts; uncovered pixels are white.
+ * sampling is selectable: bilinear for general image transforms, nearest-neighbor
+ * for barcode deskew to preserve narrow high-contrast bar transitions. Uncovered pixels are white.
  */
 export function rotateLuminanceByAngle(
   luminance: Uint8ClampedArray,
   width: number,
   height: number,
   angleDegrees: number,
+  samplingMode: 'bilinear' | 'nearest' = 'bilinear',
 ): ScannerLuminanceFrame | null {
   if (!isValidFrame(luminance, width, height)
     || !Number.isFinite(angleDegrees)
@@ -201,6 +203,13 @@ export function rotateLuminanceByAngle(
       const sourceY = -sine * destinationX + cosine * destinationY + sourceCenterY;
       if (sourceX < 0 || sourceY < 0 || sourceX > width - 1 || sourceY > height - 1) continue;
 
+      if (samplingMode === 'nearest') {
+        const nearestX = Math.round(sourceX);
+        const nearestY = Math.round(sourceY);
+        rotated[y * rotatedWidth + x] = luminance[nearestY * width + nearestX];
+        continue;
+      }
+
       const x0 = Math.floor(sourceX);
       const y0 = Math.floor(sourceY);
       const x1 = Math.min(width - 1, x0 + 1);
@@ -231,6 +240,7 @@ export function deskewLuminanceFrame(
     width,
     height,
     -estimate.angleDegrees,
+    'nearest',
   );
   return corrected ? { ...corrected, ...estimate } : null;
 }
