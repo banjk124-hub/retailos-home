@@ -550,8 +550,7 @@ export async function parseStocktakeWorkbook(
         });
       }
 
-      if (mapping.fallbackBarcodeColumn !== undefined && mapping.barcodeColumn === undefined &&
-        mapping.codeColumn === undefined && mapping.goldCodeColumn === undefined && mapping.tillCodeColumn === undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
+      if (mapping.fallbackBarcodeColumn !== undefined && fallbackIsRepeated && fallbackRepeatedValue && dataRows.length > 1) {
         dataRows.forEach((row) => {
           if (row.barcodeSource === 'MÃ VẠCH') {
             row.issues.push('Cột MÃ VẠCH lặp lại cùng một giá trị; có thể đây là mã vùng, không phải mã hàng. Hãy bổ sung BARCODE, CODE, GOLDCODE hoặc TILLCODE.');
