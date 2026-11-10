@@ -1,15 +1,15 @@
 # SCAN-05/06 execution update — rotation baseline, orthogonal rotation and bounded deskew (2026-11-10)
 
-**Current consolidated branch:** `feat/scan-06-bounded-deskew`  
-**Consolidated PR:** #65 — https://github.com/banjk124-hub/retailos-home/pull/65 (Draft, open, not merged/deployed).  
-**Staged PRs:** #63 baseline and #64 SCAN-05 are also Draft/open; their changes are included in PR #65 for final consolidation.
+**Final consolidated branch:** `feat/scan-05-06-final-consolidation`  
+**Final consolidated PR:** #66 — https://github.com/banjk124-hub/retailos-home/pull/66 (Draft, open, not merged/deployed).  
+**Staged PRs:** #63 baseline, #64 SCAN-05 and #65 SCAN-06 were closed without merging as superseded by final PR #66.
 
 - SCAN-04 strict ROI decoding was merged/deployed by the user; the user confirms the deployed scanner runs normally. No detailed optical stress matrix was supplied.
 - Baseline audit: ZXing `TRY_HARDER` already supplies 180° scanline reversal for 1D readers. EAN-8/EAN-13 inherit `OneDReader`; RetailOS `RGBLuminanceSource` does not support bitmap rotation.
 - PR #63 added a runtime Code 128 0°/180° baseline fixture and EAN inheritance guards. CI run #337 passed.
 - SCAN-05 adds one clockwise 90° ROI transform every third valid ROI frame after upright decode misses. Combined with the built-in 180° reversal, this handles both 90° and 270° source orientations. CI run #338 passed.
 - SCAN-06 adds bounded in-plane deskew (1.2°–12°) using a sampled Sobel structure tensor, one inverse-angle ROI transform and one HybridBinarizer decode after upright and orthogonal paths miss.
-- Consolidated CI run #342 passed the full preflight on final recorded head `7bd77ffd7acd6a04e65b731b3ffa3a3e9546a7f1`.
+- Final consolidated CI run #350 passed full preflight on head `98796b1cb8d8a4bd30c9eb59a975c7f4515bece6`.
 - No SCAN-05/06 merge or deployment has occurred. Physical iOS Safari/PWA and Android Chrome/PWA accuracy/latency/CPU QA remains required.
 
 **Protected invariants:** strict reticle ROI only; no full-frame fallback; existing 110 ms session cadence; camera lease/lifecycle/readiness/recovery; supported symbologies; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save; independent Home/Stocktake presentation.
