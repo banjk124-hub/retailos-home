@@ -323,7 +323,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.recordStageCost('deskew_estimate_and_rotate', performance.now() - deskewStartedAt);
 
     const candidates = [uprightDeskew, rotatedDeskew]
-      .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
+      .filter((candidate): candidate is NonNullable<ReturnType<typeof deskewLuminanceFrame>> => candidate !== null)
       .sort((a, b) => Math.abs(a.angleDegrees) - Math.abs(b.angleDegrees));
 
     for (const candidate of candidates) {
