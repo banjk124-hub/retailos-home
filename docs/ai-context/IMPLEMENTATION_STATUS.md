@@ -3,7 +3,7 @@
 **Baseline:** merged `main` commit `8571db7ea75f558397abe618e88fb2d0e1395616` (PR #66).
 **Corrective branch:** `fix/scan-05-06-continuous-orientation`.
 **PR #66:** merged; its earlier automated checks did not complete physical device acceptance.
-**Corrective CI:** run #411 passed on code head `46db3280e5271e0a1cd08647ee7ef045828b008b` (full preflight, TypeScript, production build, Pages build and diff checks). **Physical device QA:** pending. Do not merge/deploy until device acceptance passes.
+**Corrective CI:** run #425 passed on code head `e0b28787f40db8c811bc7fde912bae2558289198` (full preflight, TypeScript, production build, Pages build and diff checks). **Physical device QA:** pending. Do not merge/deploy until device acceptance passes.
 
 ## Audit findings
 
@@ -21,7 +21,8 @@
 - Evaluate both the original and quarter-turned ROI for the smaller correction first, then try the alternate representation if ZXing still misses.
 - Increased minimum session decode sampling from 110 ms to 70 ms. Decode remains serialized; no overlapping ZXing calls or unbounded work queue.
 - Corrected diagnostics so estimator invocations, rejected estimates and successful decode hits are distinguishable.
-- Expanded pure and production-adapter tests to continuous positive/negative angles, medium-low contrast, EAN-8/EAN-13, combined quarter-turn plus residual skew, ambiguous texture, strict ROI and fail-closed cases.
+- Added percentile-based contrast normalization before rotation only when the ROI's 1st–99th percentile luminance range is compressed (24–220 levels); orientation confidence remains based on original pixels.
+- Expanded pure and production-adapter tests to continuous positive/negative angles, low-contrast Code 128 (40/255), EAN-8/EAN-13, combined quarter-turn plus residual skew, ambiguous texture, strict ROI and fail-closed cases.
 - Suppress only ZXing 0.23.0's expected `NotFoundException` console warning during synchronous decode misses; unrelated warnings are forwarded. CI run #411 confirms the integration test remains quiet.
 
 ## Protected invariants
