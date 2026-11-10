@@ -115,6 +115,31 @@ try {
     }
     return { luminance, width, height };
   }
+  const EAN_L = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
+  const EAN_G = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
+  const EAN_FIRST_PARITY = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
+  function makeEanFrame(value, format) {
+    const digits = [...value].map(Number);
+    assert.ok((format === 'EAN_13' && digits.length === 13) || (format === 'EAN_8' && digits.length === 8));
+    let bits = '0'.repeat(10) + '101';
+    if (format === 'EAN_13') {
+      const parity = EAN_FIRST_PARITY[digits[0]];
+      for (let i = 0; i < 6; i++) bits += parity[i] === 'L' ? EAN_L[digits[i + 1]] : EAN_G[digits[i + 1]];
+      bits += '01010';
+      for (let i = 7; i < 13; i++) bits += EAN_L[digits[i]].replace(/./g, bit => bit === '0' ? '1' : '0');
+    } else {
+      for (let i = 0; i < 4; i++) bits += EAN_L[digits[i]];
+      bits += '01010';
+      for (let i = 4; i < 8; i++) bits += EAN_L[digits[i]].replace(/./g, bit => bit === '0' ? '1' : '0');
+    }
+    bits += '101' + '0'.repeat(10);
+    const width = bits.length * 3, height = 84;
+    const luminance = new Uint8ClampedArray(width * height);
+    for (let y = 0; y < height; y++) for (let x = 0; x < bits.length; x++) {
+      luminance.fill(bits[x] === '1' ? 0 : 255, y * width + x * 3, y * width + (x + 1) * 3);
+    }
+    return { luminance, width, height };
+  }
   function rotateCW(frame) {
     const luminance = new Uint8ClampedArray(frame.luminance.length);
     const width = frame.height, height = frame.width;
@@ -138,9 +163,9 @@ try {
     coordinateSpace: 'source-frame-normalized',
     rect: { x: 0, y: 0, width: 1, height: 1 },
   };
-  async function createDecoder() {
+  async function createDecoder(format = 'CODE_128') {
     const decoder = new ZXingDecoderAdapter();
-    await decoder.initialize({ formats: ['CODE_128'] });
+    await decoder.initialize({ formats: [format] });
     return decoder;
   }
   async function decodeOnce(decoder, source, scanRegion = fullRegion) {
@@ -176,6 +201,20 @@ try {
     const result = await decodeOnce(decoder, toSource(angled));
     assert.equal(result[0]?.value, '12345',
       `production adapter must normalize and decode ${angle}-degree barcode orientation`);
+    await decoder.dispose();
+  }
+
+  for (const [format, value, angle] of [
+    ['EAN_8', '96385074', 27],
+    ['EAN_13', '5901234123457', -38],
+  ]) {
+    const ean = makeEanFrame(value, format);
+    const angled = rotateLuminanceByAngle(ean.luminance, ean.width, ean.height, angle);
+    assert.ok(angled, `${format} integration fixture must be generated`);
+    const decoder = await createDecoder(format);
+    const result = await decodeOnce(decoder, toSource(angled));
+    assert.equal(result[0]?.value, value,
+      `production adapter must recover ${format} at ${angle} degrees`);
     await decoder.dispose();
   }
 
