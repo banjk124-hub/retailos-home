@@ -5,7 +5,7 @@
 - `ScannerSession.getScanRegion()` is passed to the decoder on every scheduled frame; the decoder maps normalized coordinates to source pixels and draws only that crop.
 - Missing, malformed or out-of-bounds geometry fails closed: no decode and no full-frame fallback.
 - Preserve ZXing formats, 110 ms session cadence, camera constraints, binarizer strategy (Global Histogram only every third ROI pass), barcode validation and result delivery.
-- SCAN-04 branch: `feat/scan-04-strict-reticle-roi-decoding`. GitHub Actions run #317 passed full preflight/build on head `6d685d5c7ad9c78b7e6015cb2ba1f85d2e34ea54`; physical post-deploy barcode QA remains required on iOS and Android.
+- SCAN-04 branch: `feat/scan-04-strict-reticle-roi-decoding`. GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`; physical post-deploy barcode QA remains required on iOS and Android.
 
 ---
 
