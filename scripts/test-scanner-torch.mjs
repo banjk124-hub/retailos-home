@@ -2,10 +2,22 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
+const sharedConstraintsSource = await readFile(
+  new URL('../src/shared/services/mediaTrackConstraints.ts', import.meta.url),
+  'utf8',
+);
+const sharedConstraintsCompiled = ts.transpileModule(sharedConstraintsSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const sharedConstraintsUrl = 'data:text/javascript;base64,' + Buffer.from(sharedConstraintsCompiled).toString('base64');
+
 const helperSource = await readFile(new URL('../src/platform/scanner/scannerTorch.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(helperSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
+}).outputText.replace(
+  "from '../../shared/services/mediaTrackConstraints';",
+  `from '${sharedConstraintsUrl}';`,
+);
 const helperUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
 const { readScannerTorchState, applyScannerTorch } = await import(helperUrl);
 
