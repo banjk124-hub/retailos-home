@@ -30,7 +30,7 @@
 
 ## SCAN-07 — active integration work
 - PR #78 is merged; this corrective branch removes the post-preview focus request and automatic focus re-arm, then synchronizes tests, diagnostics and documentation.
-- Automated regression must verify optional initial focus negotiation, no post-preview focus writes, passive blur diagnostics, Torch preservation, ROI bounds and orientation estimate reuse.
+- GitHub Actions run #684 passed on final corrective head `d2a6dd5df99827e9d71a3156eba854988e22e808`: full preflight, TypeScript, production build and Pages build. Automated regression covers optional initial focus negotiation, no post-preview focus writes, passive blur diagnostics, Torch preservation, ROI bounds and orientation estimate reuse.
 - Physical-device verification remains pending on iOS Safari/PWA and Android Chrome/PWA, in both Home and Stocktake.
 - No outward reticle padding: current modules have not published a wider authorized capture envelope.
 - No claims about exact minimum barcode size, maximum distance or overall scanner response time until real-device measurements exist.
