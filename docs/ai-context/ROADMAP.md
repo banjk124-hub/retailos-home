@@ -20,7 +20,7 @@
 
 ## SCAN-07 — Adaptive ROI, multi-scale and synchronized native camera behavior
 
-**Status:** Active; PR #78 is merged. This corrective branch removes post-preview focus commands and synchronizes diagnostics/tests/docs. Physical-device acceptance remains pending.
+**Status:** Active; PR #78 is merged. Corrective PR #79 final-head CI #684 passed; post-preview focus commands are removed. Physical-device acceptance remains pending.
 
 - Preserve SCAN-02/03 mapping and SCAN-04 strict ROI. No outward padding is enabled because Home/Stocktake have not published an authorized capture envelope.
 - Preserve native sensor pixels by bounding the ROI itself rather than scaling the entire frame to 1280 px.
