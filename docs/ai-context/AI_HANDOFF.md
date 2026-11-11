@@ -4,7 +4,7 @@
 **Current main baseline:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
 **Active branch:** `feat/scanner-camera-request-bridge`.  
 **Branch base:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`.  
-**PR / CI:** pending. No merge or deployment has occurred for this branch.
+**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. CI verification pending; no merge or deployment has occurred for this branch.
 
 ## Current task
 Complete the runtime camera request bridge: pass the module's camera intent through the initiating tap-time lease, resolve shared-stream compatibility from actual track settings, preserve compatible reference-counted sharing, reject incompatible active-stream requests safely, and retain the original intent through foreground recovery.
@@ -22,7 +22,7 @@ Run full preflight and review CI; then physical iOS Safari/PWA and Android Chrom
 
 ---
 
-## Current branch scope
+## Historical branch scope — PR #75 (merged)
 - Enable Code 39 in the existing ZXing adapter path, explicit supported-format allowlist and payload validation. ZXing's Code 39 enum/mapping existed before this branch; production activation did not.
 - Add Code 39 validation tests and production-adapter upright/180-degree integration fixtures.
 - Retain rotation/deskew diagnostics through the privacy allowlist and surface them in QA Monitor / CSV export.
