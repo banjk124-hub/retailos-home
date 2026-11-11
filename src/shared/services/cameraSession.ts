@@ -211,7 +211,8 @@ async function acquireSharedStream(
 export async function acquireCameraLease(
   cameraRequest: ScannerCameraRequest = DEFAULT_SCANNER_CAMERA_REQUEST,
 ): Promise<CameraStreamLease> {
-  const { stream, generation } = await acquireSharedStream(cameraRequest);
+  const requestSnapshot = Object.freeze({ ...cameraRequest });
+  const { stream, generation } = await acquireSharedStream(requestSnapshot);
   if (generation !== requestGeneration || activeStream !== stream) {
     throw new DOMException('Camera request was superseded.', 'AbortError');
   }
