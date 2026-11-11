@@ -69,7 +69,7 @@ No changes are intended to camera permission UX, autofocus policy, page lifecycl
 - Do not change camera lease, camera request defaults, autofocus, lifecycle/recovery, decode cadence, strict ROI, Home/Stocktake presentation or business workflows.
 - Historical baseline before this branch: `ScannerModuleConfig.cameraRequest` was declarative only. Current implementation is tracked in the task section at the top of this file.
 - Benchmark corpus and generalized conditional recovery orchestration remain future work, not implied by this remediation.
-- PR #75 is open as Draft. Final CI #577 passed on head `8f558511297596be0819baea01d49ed0993b86fb`; no merge/deploy has occurred.
+- Historical outcome: PR #75 was subsequently merged into `main`; current main baseline is recorded at the top of this file. The current follow-up is PR #76.
 
 **Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; angled Code 39 optical performance remains unverified.
 
