@@ -4,8 +4,6 @@
 **PR #76:** merged. CI #610 passed on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`; later commits through the merge were documentation synchronization. Physical-device evidence must be recorded separately from CI.
 **PR #77 device feedback:** small/far barcode recognition improved modestly and reticle-edge reads work, but range and precision remain insufficient. This is qualitative feedback, not a measured minimum size/distance.
 
-> **Historical snapshot notice:** older phase sections below preserve prior implementation states. Where they mention 1280×720 camera defaults or older decode intervals, those values are historical and superseded by the current SCAN-07 section above.
-
 ## Implemented
 - SCAN-01: platform-neutral module/input contracts.
 - SCAN-02: preview-to-source geometry mapping including object-fit, object-position, visible content and mirror handling.
@@ -49,6 +47,8 @@ Complete PR #78, verify CI, then test both Home and Stocktake on iOS/Android. Do
 ---
 
 ---
+
+> **Historical snapshot notice:** older phase sections below preserve prior implementation states. Where they mention 1280×720 camera defaults or older decode intervals, those values are historical and superseded by the current SCAN-07 section above.
 
 # Historical reconciliation — Scanner Engine remediation and Code 39 (2026-11-11)
 
