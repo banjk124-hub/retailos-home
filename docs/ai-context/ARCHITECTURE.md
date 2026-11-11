@@ -969,7 +969,7 @@ PR #77 delivered bounded 1.5×/1×/2× sampling inside the strict module-owned R
 - Automated regression covers native ROI pixel bounds, scale ordering/caps, focus sharpness vs blur, motion filtering, bounded recovery cadence, constraint preservation and serialized focus/Torch updates.
 - CI must pass on the final PR head.
 - Device QA must test both modules on iOS Safari/PWA and Android Chrome/PWA. Record actual source dimensions, barcode module/pixel height, physical distance, lighting, angle, movement, glare, decode correctness and false positives.
-- Do not use end-to-end scanner latency as a SCAN-07-specific metric. Decoder stage costs and camera/focus diagnostics may be recorded separately.
+- Do not use overall scanner response time as a SCAN-07-specific metric. Decoder stage costs and camera/focus diagnostics may be recorded separately.
 - Do not claim an absolute minimum barcode size or maximum distance until measured on real labels/devices.
 
 ### Rollback
