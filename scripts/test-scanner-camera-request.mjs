@@ -85,9 +85,11 @@ let currentStream = null;
 let deferredGetUserMedia = null;
 const makeStream = (settings) => {
   let stopCount = 0;
+  let focusApplyCount = 0;
   const track = {
     readyState: 'live',
     getSettings: () => ({ ...settings }),
+    applyConstraints: async () => { focusApplyCount += 1; },
     addEventListener: () => undefined,
     stop: () => { stopCount += 1; track.readyState = 'ended'; },
   };
@@ -95,6 +97,7 @@ const makeStream = (settings) => {
     getTracks: () => [track],
     getVideoTracks: () => [track],
     get stopCount() { return stopCount; },
+    get focusApplyCount() { return focusApplyCount; },
   };
 };
 const installMedia = (getUserMedia) => {
@@ -116,6 +119,7 @@ try {
   assert.equal(mediaCalls[0].video.facingMode.ideal, 'environment');
   assert.equal(mediaCalls[0].video.width.ideal, 1920);
   assert.deepEqual(mediaCalls[0].video.advanced[0], { focusMode: 'continuous' }, 'continuous autofocus is an optional getUserMedia preference, not a post-preview applyConstraints call');
+  assert.equal(currentStream.focusApplyCount, 0, 'initial acquisition never performs a later track-level focus write');
   sharedA.release();
   assert.equal(currentStream.stopCount, 0, 'releasing one shared lease does not stop the stream');
   sharedB.release();
