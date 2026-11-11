@@ -910,3 +910,27 @@ The merged scanner pipeline already includes module-owned preview geometry, stri
 
 ### Acceptance
 A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, first-result latency, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
+
+
+## ADR-037 — Bounded multi-scale sampling inside strict module ROI (2026-11-11)
+
+**Status:** Implemented on PR #77 branch; CI and physical-device acceptance pending.
+
+### Context
+The production decoder used one fixed 1.5× ROI sampling scale. The Home and Stocktake modules publish only their visible reticle region in source-frame-normalized coordinates. They do not publish a wider capture envelope.
+
+### Decision
+- Preserve the existing 1.5× ROI sampling path exactly as the first candidate.
+- After the complete existing orientation/deskew and Hybrid + GlobalHistogram pipeline misses, try 1× and 2× sampling of the same source crop.
+- Limit each frame to three scales total. Deduplicate candidates by integer output dimensions and cap each additional candidate at 6 MP.
+- Preserve the 1280 px source-width cap, 70 ms session interval, serialized decoder access, ZXing validation and all module/session contracts.
+- Do not expand outside the reticle. Outward padding requires a separate module-owned capture-envelope contract; the current modules have not authorized one.
+- Keep all scales on the existing adapter path. No new dependency, worker, camera/session/lifecycle or UI behavior is introduced.
+
+### Acceptance and verification boundary
+- Automated regression covers scale ordering, baseline dimensions, unique candidates, fallback allocation cap and production-adapter strict crop behavior.
+- Full preflight/CI and physical iOS/Android small/far-label checks are required before merge/deploy.
+- Synthetic fixtures do not establish real-world optical improvement. Record decode success, false positives, first-result latency, stage costs and UI responsiveness separately.
+
+### Rollback
+Revert the SCAN-07 scale planner and adapter loop together. The original 1.5× path remains candidate zero and can be restored without changing camera acquisition, geometry mapping, session lifecycle, presentation or retail workflows.
