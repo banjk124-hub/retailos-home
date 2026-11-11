@@ -21,7 +21,7 @@ No camera acquisition/lease, constraints/autofocus, lifecycle/recovery, decode c
 ## Known deferred architecture item
 `ScannerModuleConfig.cameraRequest` remains declarative and is not consumed by the runtime. The shared camera lease currently uses a fixed environment / 1280×720 / 30 FPS request. Per-module camera requests must not be wired until shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together.
 
-**Current CI:** GitHub Actions run #571 passed on final head `e7cf527932490c41926f1e8fe108d108fc9ad438`: full preflight, Code 39 validation + production adapter upright/180° tests, diagnostic privacy/export tests, TypeScript, production build and Pages build. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified and no deskew algorithm change was made.
+**Current CI:** GitHub Actions run #577 passed on final head `8f558511297596be0819baea01d49ed0993b86fb`: full preflight, Code 39 validation + production adapter upright/180° tests, diagnostic privacy/export tests, TypeScript, production build and Pages build. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified and no deskew algorithm change was made.
 
 ## Required verification
 1. Run Code 39 payload validation and production ZXing adapter integration (upright and 180-degree reversal).
