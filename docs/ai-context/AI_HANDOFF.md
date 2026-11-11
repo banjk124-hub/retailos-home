@@ -1,15 +1,36 @@
-# Current task — Xuất file: workspace v2, product metrics and action states (2026-11-10)
+# Current task — Scanner Engine remediation and Code 39 enablement (2026-11-11)
 
-**Deployed baseline:** PR #70–#73 merged; user confirms PR #73 is merged and deployed.  
-**Current main:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`.  
-**Current branch:** `feat/stocktake-import-workspace-v2`.  
-**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; not merged/deployed).  
-**Current PR #74 code head:** `c61746272f2b31cd8be222cc4012e38de1ce3ddc` (latest docs synchronization may advance the PR head).  
-**CI:** run #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.  
-**Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).  
-**Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`; architecture decision ADR-033.
+**Repository:** banjk124-hub/retailos-home  
+**Current main baseline:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit).  
+**Active branch:** `fix/scanner-engine-remediation-code39`.  
+**Branch base:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.  
+**PR:** not created yet; branch is isolated and unmerged.  
+**Deployment:** no changes from this branch have been deployed.
 
-## User requirements being implemented
+## Current branch scope
+- Enable Code 39 in the existing ZXing adapter path, explicit supported-format allowlist and payload validation. ZXing's Code 39 enum/mapping existed before this branch; production activation did not.
+- Add Code 39 validation tests and production-adapter upright/deskew integration fixtures.
+- Retain rotation/deskew diagnostics through the privacy allowlist and surface them in QA Monitor / CSV export.
+- Add a privacy regression test for diagnostic collection/export.
+- Correct stale audio gain documentation/comment: 50% = 0.30, 100% = 0.60, tone duration approximately 140 ms.
+- Synchronize scanner architecture, acceptance and roadmap records.
+
+## Protected invariants
+No camera acquisition/lease, constraints/autofocus, lifecycle/recovery, decode cadence, strict ROI/no-fallback, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, snapshot/cache, service worker or deployment configuration changes.
+
+## Known deferred architecture item
+`ScannerModuleConfig.cameraRequest` remains declarative and is not consumed by the runtime. The shared camera lease currently uses a fixed environment / 1280×720 / 30 FPS request. Per-module camera requests must not be wired until shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together.
+
+## Required verification
+1. Run Code 39 payload validation and production ZXing adapter integration (upright and deskew).
+2. Run diagnostic collector privacy/allowlist tests and verify QA Monitor / CSV fields.
+3. Run full `npm run preflight`, TypeScript, production build and GitHub Pages build.
+4. Review the entire diff against the exact branch base.
+5. Keep PR unmerged and undeployed pending review and explicit user approval.
+
+---
+
+## PR #74 — delivered Stocktake Import requirements (historical)
 
 1. Move ZIP to a compact control beside “CÁC VÙNG”; render only when session has multiple zones.
 2. Per-zone action status: Ready, Saved, Copied, TXT downloaded, ZIP exported, Dirty, Invalid.
