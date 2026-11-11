@@ -58,11 +58,11 @@ const settingsOnlyTrack = {
   applyConstraints: async (constraints) => { fallbackConstraints = constraints; },
 };
 await applyScannerTorch(settingsOnlyTrack, true);
-assert.deepEqual(fallbackConstraints.width, { exact: 1280 }, 'settings fallback preserves active width');
-assert.deepEqual(fallbackConstraints.height, { exact: 720 }, 'settings fallback preserves active height');
-assert.deepEqual(fallbackConstraints.frameRate, { exact: 30 }, 'settings fallback preserves active frame rate');
-assert.deepEqual(fallbackConstraints.facingMode, { exact: 'environment' }, 'settings fallback preserves the active rear-camera facing mode');
-assert.deepEqual(fallbackConstraints.deviceId, { exact: 'rear-camera-1' }, 'settings fallback preserves the active camera device');
+assert.deepEqual(fallbackConstraints.width, { ideal: 1280 }, 'settings fallback preserves active width');
+assert.deepEqual(fallbackConstraints.height, { ideal: 720 }, 'settings fallback preserves active height');
+assert.deepEqual(fallbackConstraints.frameRate, { ideal: 30, max: 30 }, 'settings fallback preserves active frame rate');
+assert.deepEqual(fallbackConstraints.facingMode, { ideal: 'environment' }, 'settings fallback preserves the active rear-camera facing mode');
+assert.deepEqual(fallbackConstraints.deviceId, { ideal: 'rear-camera-1' }, 'settings fallback preserves the active camera device');
 
 let unsupportedApplyCount = 0;
 const unsupportedTrack = {
