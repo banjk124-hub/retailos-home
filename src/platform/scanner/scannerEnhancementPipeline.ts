@@ -135,8 +135,6 @@ export function executeScannerEnhancementPipeline<T>(
         candidatesAttempted,
         imageCandidatesAttempted,
         geometryCandidatesAttempted,
-      imageCandidatesAttempted,
-      geometryCandidatesAttempted,
       };
     }
   }
@@ -217,8 +215,6 @@ export function executeScannerEnhancementPipeline<T>(
         candidatesAttempted,
         imageCandidatesAttempted,
         geometryCandidatesAttempted,
-      imageCandidatesAttempted,
-      geometryCandidatesAttempted,
       };
     }
   }
