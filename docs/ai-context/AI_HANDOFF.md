@@ -4,7 +4,7 @@
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
 **Active branch:** `feat/scanner-unified-enhancement-pipeline`.
 **Current task:** PR A+B combined — centralize existing SCAN-05/06 candidate orchestration while preserving SCAN-07 bounded sampling and all production contracts.
-**Status:** implementation authored; CI and device QA pending. No merge or deployment has been performed.
+**Status:** CI #690 passed full preflight/builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; later `8f6e0ae` is docs-only. Physical-device QA pending. No merge or deployment has been performed.
 
 ## Read first
 
