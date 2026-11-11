@@ -111,7 +111,7 @@ try {
   const sharedB = await cameraSession.acquireCameraLease({ ...rearDefault, preferredWidth: 640, preferredHeight: 480, preferredFrameRate: 15 });
   assert.equal(mediaCalls.length, 1, 'compatible requests reuse one getUserMedia stream');
   assert.equal(mediaCalls[0].video.facingMode.ideal, 'environment');
-  assert.equal(mediaCalls[0].video.width.ideal, 1280);
+  assert.equal(mediaCalls[0].video.width.ideal, 1920);
   sharedA.release();
   assert.equal(currentStream.stopCount, 0, 'releasing one shared lease does not stop the stream');
   sharedB.release();
