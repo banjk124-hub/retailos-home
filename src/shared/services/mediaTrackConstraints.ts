@@ -1,9 +1,9 @@
 /**
  * Preserve the active MediaStreamTrack configuration when applying an
- * Image Capture extension such as continuous focus or torch.
+ * Image Capture extensions such as Torch.
  *
  * applyConstraints() replaces the previous custom constraint set. Reapplying
- * only an advanced focus/torch value can therefore release the camera's
+ * only an advanced Torch value can therefore release the camera's
  * negotiated width, height, frame rate or facing-mode constraints.
  */
 export function buildTrackConstraintsWithAdvanced(
@@ -55,7 +55,7 @@ export function buildTrackConstraintsWithAdvanced(
 const trackConstraintQueues = new WeakMap<MediaStreamTrack, Promise<void>>();
 
 /**
- * Serialize track-level camera tuning. Autofocus recovery and Torch share the
+ * Serialize track-level camera tuning. Torch ON/OFF operations share the
  * same MediaStreamTrack; concurrent applyConstraints() calls could otherwise
  * overwrite each other's advanced settings.
  */
