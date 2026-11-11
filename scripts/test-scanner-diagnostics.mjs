@@ -22,6 +22,7 @@ try {
     roiUnavailable: 2,
     roiWidth: 340,
     roiHeight: 180,
+    roiSourceScale: 0.75,
     rotationAttempts: 20,
     rotationHits: 3,
     deskewAttempts: 34,
@@ -49,6 +50,7 @@ try {
     roiUnavailable: 2,
     roiWidth: 340,
     roiHeight: 180,
+    roiSourceScale: 0.75,
     rotationAttempts: 20,
     rotationHits: 3,
     deskewAttempts: 34,
@@ -78,6 +80,7 @@ try {
   assert.equal(exported.events[0].metrics.scaleAttempts, 3);
   assert.equal(exported.events[0].metrics.scaleHits, 1);
   assert.equal(exported.events[0].metrics.lastScaleFactor, 2);
+  assert.equal(exported.events[0].metrics.roiSourceScale, 0.75);
   assert.equal(exported.events[0].metrics.focusSharpness, 21.5);
   assert.equal(exported.events[0].metrics.focusMotionScore, 2.5);
   assert.equal(exported.events[0].metrics.focusRecoveryRequests, 1);
@@ -92,7 +95,7 @@ try {
 
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
-  'roiUnavailable', 'roiWidth', 'roiHeight', 'rotationAttempts', 'rotationHits',
+  'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits',
   'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusRecoveryRequests', 'focusRecoveryStatus', 'focusControlEnabled', 'lastDeskewAngleDegrees',
 ]) {
   assert.ok(qaMonitor.includes(key), `QA Monitor displays/exports ${key}`);
