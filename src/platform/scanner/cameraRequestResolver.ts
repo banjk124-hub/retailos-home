@@ -27,6 +27,10 @@ export function buildCameraVideoConstraints(
         : Math.min(request.preferredFrameRate, request.maxFrameRate),
       ...(request.maxFrameRate === undefined ? {} : { max: request.maxFrameRate }),
     },
+    // Optional Image Capture constraint: request the camera's native continuous
+    // autofocus as part of initial stream negotiation. Advanced constraints are
+    // best-effort and are ignored when the device/browser does not support them.
+    advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
   };
 }
 
