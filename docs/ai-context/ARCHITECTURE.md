@@ -230,9 +230,9 @@ Do not collapse these into a single boolean such as `available`.
 
 
 ## Scanner invariants (Phase 1.2)
-- Supported store symbologies: EAN-13, EAN-8 and CODE-128. The decoder must whitelist these explicitly; verify the installed ZXing API before importing types or adding dependencies.
+- Supported store symbologies: EAN-13, EAN-8, CODE-128 and CODE-39. The decoder must whitelist these explicitly; verify the installed ZXing API before importing types or adding dependencies.
 - One active decoder per scanner session. Start, pause, resume and close must be idempotent; stale asynchronous work must not attach a stream or deliver callbacks after cancellation.
-- Validate decoded format and payload before invoking feature callbacks. EAN values are format-specific; CODE-128 remains an opaque string and must not be coerced to numeric.
+- Validate decoded format and payload before invoking feature callbacks. EAN values are format-specific; CODE-128 remains opaque text; CODE-39 preserves its standard uppercase alphabet and spaces without numeric coercion.
 - Scanner layer must not require catalog existence. Unknown barcodes remain valid operational input where the consuming workflow permits them.
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save semantics, duplicate Stocktake rows, and manual entry.
 - Do not tune resolution/decode interval until actual device settings and scan latency are measured.
@@ -250,8 +250,8 @@ Status: Accepted.
 
 ### ADR-002 — Explicit store barcode symbologies
 Status: Accepted.
-- The scanner accepts EAN-13, EAN-8 and CODE-128 only.
-- EAN payloads must match their symbology's numeric length. CODE-128 is preserved as an opaque string and is not coerced to a number.
+- The scanner accepts EAN-13, EAN-8, CODE-128 and CODE-39 (enabled by ADR-034).
+- EAN payloads must match their symbology's numeric length/check digit. CODE-128 is preserved as opaque text. CODE-39 preserves the standard A–Z, 0–9, space and `-.$/+%` alphabet; optional Mod-43 enforcement is not enabled.
 - Do not add a product lookup at scanner-engine level.
 
 ### ADR-003 — One decoder per active session
