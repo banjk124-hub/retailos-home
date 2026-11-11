@@ -15,9 +15,9 @@ const { measureScannerFocusQuality, ScannerFocusWatchdog } = await import(url);
 const width = 320;
 const height = 160;
 const sharp = new Uint8ClampedArray(width * height).fill(245);
-for (let x = 24; x < width - 24; x += 12) {
+for (let x = 26; x < width - 24; x += 16) {
   for (let y = 12; y < height - 12; y += 1) {
-    if (x % 24 < 6) sharp[y * width + x] = 10;
+    sharp.fill(10, y * width + x, y * width + x + 8);
   }
 }
 function boxBlur(input, radius = 2) {
