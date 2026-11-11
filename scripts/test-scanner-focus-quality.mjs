@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const url = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { measureScannerFocusQuality, ScannerFocusWatchdog } = await import(url);
+const { measureScannerFocusQuality, ScannerFocusQualityMonitor } = await import(url);
 
 const width = 320;
 const height = 160;
@@ -67,13 +67,13 @@ assert.equal(watchdog.observe(blurredSample, 3000), false);
 assert.equal(watchdog.observe(blurredSample, 3500), false);
 assert.equal(watchdog.observe(blurredSample, 4000), false);
 assert.equal(watchdog.observe(blurredSample, 4500), true,
-  'four sustained low-sharpness samples trigger one autofocus re-arm');
+  'four sustained low-sharpness samples are reported as a passive blur event');
 assert.equal(watchdog.observe(blurredSample, 5000), false,
   'the watchdog does not repeatedly re-arm during its cooldown');
 assert.equal(watchdog.observe(blurredSample, 13500), false);
 assert.equal(watchdog.observe(blurredSample, 14000), false);
 assert.equal(watchdog.observe(blurredSample, 14500), true,
-  'a later sustained defocus can re-arm after the cooldown');
+  'a later sustained blur can be reported again after the diagnostic cooldown');
 
 const adapter = await readFile(
   new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
@@ -87,15 +87,13 @@ assert.match(adapter, /measureScannerFocusQuality/,
   'the decoder measures sharpness from its existing grayscale ROI readback');
 assert.match(adapter, /candidate\.baseline \? onFocusQuality : undefined/,
   'focus quality is sampled only from the baseline scale, not every fallback');
-const frameReadyIndex = session.indexOf('await waitForVideoFrameReady(this.video)');
-const focusSetupIndex = session.indexOf('void lease.prepareForScanning()');
-assert.ok(frameReadyIndex >= 0 && focusSetupIndex > frameReadyIndex,
-  'continuous autofocus setup must happen after the first fresh video frame');
-assert.doesNotMatch(session, /await lease\.prepareForScanning\(\)/,
-  'focus setup must not block preview readiness or decoder initialization');
-assert.match(session, /onFocusQuality: \(sample\) => this\.handleFocusQuality/,
-  'the shared session consumes decoder quality telemetry');
-assert.match(session, /reapplyContinuousAutofocus\(\)/,
-  'the shared session can re-arm continuous focus after sustained blur');
+assert.doesNotMatch(session, /prepareForScanning|reapplyContinuousAutofocus/,
+  'the session must never issue focus commands after preview readiness');
+assert.match(session, /focusQualityMonitor\.observe\(sample, timestamp\)/,
+  'the shared session observes focus quality passively');
+assert.match(session, /cameraControlChanged: false/,
+  'sustained blur diagnostics explicitly confirm that camera controls were not changed');
+assert.doesNotMatch(session, /focusRecoveryRequests|focusRecoveryPending|focusControlEnabled/,
+  'the old automatic focus-recovery state is removed');
 
 console.log('Scanner focus quality and bounded autofocus recovery tests passed.');
