@@ -137,8 +137,8 @@ const decoderSource = await readFile(
   'utf8',
 );
 assert.match(decoderSource, /rotateLuminance90Clockwise\(/, 'decoder must consume the pure rotation helper');
-assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(timestamp\)/,
-  'every valid ROI frame must enter the complete production decode pipeline');
+assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(timestamp, candidate\.baseline \? onFocusQuality : undefined\)/,
+  'every valid ROI frame must enter the complete production decode pipeline, with focus sampling limited to the baseline');
 assert.match(decoderSource, /if \(uprightOutput\) return uprightOutput/,
   'upright decode must be attempted first');
 assert.match(decoderSource, /deskewLuminanceFrame\(/,
