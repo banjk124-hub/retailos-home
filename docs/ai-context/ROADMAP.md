@@ -11,7 +11,7 @@
 1. Home/Stocktake owns the preview, reticle and preview-to-source geometry mapping.
 2. `ScannerSession` publishes a defensive source-frame-normalized ROI snapshot on each scheduled frame.
 3. `resolveScannerRoiCrop()` converts that strict region to integer source pixels; invalid/missing ROI fails closed.
-4. The decoder crops directly from the camera frame. Frames wider than 1280 px are proportionally scaled before the ROI is enlarged 1.5×.
+4. The decoder crops directly from the camera frame. Frames wider than 1280 px are proportionally scaled; the strict ROI is sampled at the unchanged 1.5× baseline first, then 1×/2× only after a full baseline miss.
 5. RGBA is converted to luminance.
 6. Decode candidates run in order: upright; exact 90° clockwise; continuous deskew of original and quarter-turned ROI, ordered by smallest correction angle.
 7. Each candidate is tested with HybridBinarizer and GlobalHistogramBinarizer. ZXing result validation remains authoritative.
