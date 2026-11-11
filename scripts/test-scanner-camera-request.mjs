@@ -55,3 +55,105 @@ assert.ok(hookSource.includes('replaceVideoSurface()'), 'recovery continues to c
 assert.ok(hookSource.includes('disposeForRecovery()'), 'recovery continues to retire the previous session');
 
 console.log('Scanner camera request constraints, compatibility, lease and recovery intent tests passed.');
+
+
+// Exercise the production camera lease service with mocked browser media APIs.
+const cameraSessionSource = await readFile(new URL('../src/shared/services/cameraSession.ts', import.meta.url), 'utf8');
+const contractsSource = await readFile(new URL('../src/platform/scanner/contracts.ts', import.meta.url), 'utf8');
+const contractsJs = ts.transpileModule(contractsSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const contractsUrl = 'data:text/javascript;base64,' + Buffer.from(contractsJs).toString('base64');
+const resolverUrl = moduleUrl;
+const diagnosticsJs = 'export function getSafeCameraSettings(){return {}}; export async function requestContinuousAutofocus(){return {status:"unavailable",supportedModes:[],durationMs:0}};';
+const diagnosticsUrl = 'data:text/javascript;base64,' + Buffer.from(diagnosticsJs).toString('base64');
+const cameraSessionJs = cameraSessionSource
+  .replace("from './cameraDiagnostics';", `from '${diagnosticsUrl}';`)
+  .replace("from '../../platform/scanner/contracts';", `from '${contractsUrl}';`)
+  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${resolverUrl}';`);
+const cameraSessionUrl = 'data:text/javascript;base64,' + Buffer.from(ts.transpileModule(cameraSessionJs, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText).toString('base64');
+const cameraSession = await import(cameraSessionUrl);
+
+const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+let mediaCalls = [];
+let currentStream = null;
+let deferredGetUserMedia = null;
+const makeStream = (settings) => {
+  let stopCount = 0;
+  const track = {
+    readyState: 'live',
+    getSettings: () => ({ ...settings }),
+    addEventListener: () => undefined,
+    stop: () => { stopCount += 1; track.readyState = 'ended'; },
+  };
+  return {
+    getTracks: () => [track],
+    getVideoTracks: () => [track],
+    get stopCount() { return stopCount; },
+  };
+};
+const installMedia = (getUserMedia) => {
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: { isSecureContext: true } });
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: { mediaDevices: { getUserMedia } },
+  });
+};
+try {
+  mediaCalls = [];
+  currentStream = makeStream({ facingMode: 'environment', frameRate: 30, width: 1280, height: 720 });
+  installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
+  const sharedA = await cameraSession.acquireCameraLease(rearDefault);
+  const sharedB = await cameraSession.acquireCameraLease(rearDefault);
+  assert.equal(mediaCalls.length, 1, 'compatible requests reuse one getUserMedia stream');
+  assert.equal(mediaCalls[0].video.facingMode.ideal, 'environment');
+  assert.equal(mediaCalls[0].video.width.ideal, 1280);
+  sharedA.release();
+  assert.equal(currentStream.stopCount, 0, 'releasing one shared lease does not stop the stream');
+  sharedB.release();
+  assert.equal(currentStream.stopCount, 1, 'the final shared lease stops the stream');
+
+  mediaCalls = [];
+  currentStream = makeStream({ facingMode: 'environment', frameRate: 30 });
+  installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
+  const rearLease = await cameraSession.acquireCameraLease(rearDefault);
+  await assert.rejects(cameraSession.acquireCameraLease({ ...rearDefault, facingMode: 'user' }),
+    (error) => error?.name === 'OverconstrainedError',
+    'an incompatible request is rejected while the active stream has a lease');
+  assert.equal(mediaCalls.length, 1, 'an incompatible request does not start a competing camera acquisition');
+  rearLease.release();
+
+  mediaCalls = [];
+  let resolvePending;
+  const pendingStream = makeStream({ facingMode: 'environment', frameRate: 30 });
+  installMedia((constraints) => {
+    mediaCalls.push(constraints);
+    return new Promise((resolve) => { resolvePending = () => resolve(pendingStream); });
+  });
+  const pendingRear = cameraSession.acquireCameraLease(rearDefault);
+  const pendingFront = cameraSession.acquireCameraLease({ ...rearDefault, facingMode: 'user' });
+  assert.equal(mediaCalls.length, 1, 'in-flight acquisitions are coalesced before actual settings are known');
+  resolvePending();
+  const pendingRearLease = await pendingRear;
+  await assert.rejects(pendingFront, (error) => error?.name === 'OverconstrainedError',
+    'a pending stream is checked against every waiting caller after settings resolve');
+  pendingRearLease.release();
+
+  mediaCalls = [];
+  currentStream = makeStream({ facingMode: 'environment', frameRate: 30 });
+  installMedia(async () => currentStream);
+  const unclaimed = cameraSession.requestCameraLease(rearDefault);
+  unclaimed.cancel();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(currentStream.stopCount, 1, 'cancelling an unclaimed tap request releases its eventual lease');
+} finally {
+  if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
+  else delete globalThis.window;
+  if (originalNavigator) Object.defineProperty(globalThis, 'navigator', originalNavigator);
+  else delete globalThis.navigator;
+}
+
+console.log('Production camera lease sharing, conflict, pending acquisition and cancellation tests passed.');
