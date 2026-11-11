@@ -2,7 +2,7 @@
 
 **Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 (Code 39 + recovery diagnostics) is merged.  
 **Working branch:** `feat/scanner-camera-request-bridge`, based on that main commit.  
-**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. CI is running; no merge or deployment has occurred for this branch.
+**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. GitHub Actions run #610 passed on head `b954b8a784efd6826588097d6d170d94c80964dc`; physical-device QA remains pending. No merge or deployment has occurred.
 
 ## Scope and protected behavior
 - Wire the existing `ScannerCameraRequest` into the actual tap-origin camera lease and `getUserMedia()` constraints.
@@ -24,10 +24,10 @@ No changes are intended to camera permission UX, autofocus policy, page lifecycl
 - Compatible requests share the active stream. An incompatible request cannot replace a stream with active leases. A pending acquisition is checked against each caller after actual settings become available.
 
 ## Verification gates
-- [ ] Resolver tests: ideal constraints, frame-rate ceiling, facing mismatch, missing settings.
-- [ ] Lease tests: compatible sharing, incompatible active lease rejection, pending acquisition compatibility, cancellation and reference-count integrity.
-- [ ] Recovery test: fresh session + fresh video surface + original camera intent.
-- [ ] Full preflight, TypeScript, production and Pages builds.
+- [x] Resolver tests: ideal constraints, frame-rate ceiling, facing mismatch, missing settings.
+- [x] Lease tests: compatible sharing, incompatible active lease rejection, pending acquisition compatibility, cancellation, immutable intent and reference-count integrity.
+- [x] Recovery source-contract regression: fresh session + fresh video surface + original camera intent.
+- [x] Full preflight, TypeScript, production and Pages builds — GitHub Actions run #610 passed.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA.
 - [ ] Explicit user approval before merge/deploy.
 
