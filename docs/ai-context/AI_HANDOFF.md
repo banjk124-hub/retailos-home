@@ -4,7 +4,7 @@
 **Current main baseline:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit).  
 **Active branch:** `fix/scanner-engine-remediation-code39`.  
 **Branch base:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.  
-**PR:** not created yet; branch is isolated and unmerged.  
+**PR:** [#75 — Scanner remediation and Code 39](https://github.com/banjk124-hub/retailos-home/pull/75), open Draft; branch remains unmerged.  
 **Deployment:** no changes from this branch have been deployed.
 
 ## Current branch scope
@@ -21,7 +21,7 @@ No camera acquisition/lease, constraints/autofocus, lifecycle/recovery, decode c
 ## Known deferred architecture item
 `ScannerModuleConfig.cameraRequest` remains declarative and is not consumed by the runtime. The shared camera lease currently uses a fixed environment / 1280×720 / 30 FPS request. Per-module camera requests must not be wired until shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together.
 
-**Current CI:** GitHub Actions run #566 passed on final head `4e5cf076f5054a53af7ca08f053c28d776e46eab`: full preflight, Code 39 validation + production adapter upright/180° tests, diagnostic privacy/export tests, TypeScript, production build and Pages build. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified and no deskew algorithm change was made.
+**Current CI:** GitHub Actions run #571 passed on final head `e7cf527932490c41926f1e8fe108d108fc9ad438`: full preflight, Code 39 validation + production adapter upright/180° tests, diagnostic privacy/export tests, TypeScript, production build and Pages build. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified and no deskew algorithm change was made.
 
 ## Required verification
 1. Run Code 39 payload validation and production ZXing adapter integration (upright and 180-degree reversal).
