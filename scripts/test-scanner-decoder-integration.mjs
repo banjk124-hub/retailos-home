@@ -130,11 +130,11 @@ try {
     '$': 0x0a8, '/': 0x0a2, '+': 0x08a, '%': 0x02a, '*': 0x094,
   };
   function makeCode39Frame(value) {
-    const framed = \`*\${value}*\`;
+    const framed = '*' + value + '*';
     let modules = '0'.repeat(12);
     for (let characterIndex = 0; characterIndex < framed.length; characterIndex += 1) {
       const encoding = CODE39_ENCODINGS[framed[characterIndex]];
-      assert.notEqual(encoding, undefined, \`Code 39 fixture supports \${framed[characterIndex]}\`);
+      assert.notEqual(encoding, undefined, 'Code 39 fixture supports ' + framed[characterIndex]);
       for (let element = 0; element < 9; element += 1) {
         const wide = (encoding & (1 << (8 - element))) !== 0;
         const black = element % 2 === 0;
