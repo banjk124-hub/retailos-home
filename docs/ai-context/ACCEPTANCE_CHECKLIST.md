@@ -134,6 +134,24 @@ These additional measurements are not required to describe the user's functional
 
 ---
 
+# SCAN-07 — Adaptive ROI & multi-scale (PR #77 branch)
+
+- [x] Existing module-owned source-frame ROI remains authoritative; no outward padding or fallback.
+- [x] Existing 1.5× candidate remains first with unchanged baseline dimensions.
+- [x] 1× and 2× fallback scales run only after the full 1.5× orientation/deskew/binarizer pipeline misses.
+- [x] Candidate count is bounded to three total; additional candidates are deduplicated and capped at 6 MP each.
+- [x] Existing 1280 px source-width cap, serialized decoder, 70 ms session interval and result validation remain unchanged.
+- [x] Scale attempt/hit diagnostics added without barcode payloads.
+- [x] Scale planner regression script added to preflight; production adapter integration test extended for strict ROI crop invariance.
+- [ ] GitHub Actions full preflight, TypeScript, production build and Pages build pass on latest PR #77 head.
+- [ ] iOS Safari/PWA and Android Chrome/PWA small/far real-label comparison; low/high capability devices.
+- [ ] Confirm reticle-edge and outside-reticle negative controls; verify Home and Stocktake workflows remain unchanged.
+- [ ] Record decode success, false positives, first-result latency, processing cost and UI responsiveness. No unsupported accuracy/performance claims.
+
+**Padding decision:** outward padding is deferred. Current modules publish the reticle only; an expanded capture envelope requires an explicit module-owned contract and separate geometry tests.
+
+---
+
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
 ## Shared Scanner settings — PR #56 (merged to main)
