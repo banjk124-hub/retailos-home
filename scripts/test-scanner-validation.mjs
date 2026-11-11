@@ -281,6 +281,7 @@ const cameraLease = await Promise.race([
 assert.equal(cameraLease.stream, delayedFocusStream, "camera lease resolves while autofocus is still pending");
 assert.equal(typeof resolvePendingFocus, "undefined", "autofocus must not be applied before the video has produced its first frame");
 const focusPreparation = cameraLease.prepareForScanning();
+await new Promise((resolve) => setImmediate(resolve));
 assert.equal(typeof resolvePendingFocus, "function", "focus setup starts only after the scanner session declares the preview ready");
 assert.deepEqual(appliedCameraFocusConstraints.width, { ideal: 1280 }, "focus setup preserves the original ideal width constraint");
 assert.deepEqual(appliedCameraFocusConstraints.height, { ideal: 720 }, "focus setup preserves the original ideal height constraint");
