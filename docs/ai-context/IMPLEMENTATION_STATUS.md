@@ -18,7 +18,7 @@
 # SCAN-05/06 — merged, deployed and user-validated (2026-11-10)
 
 **Repository:** banjk124-hub/retailos-home
-**Current main:** 9406ac30d53bc9984912bd1928a32fd78157cf60 (PR #67 merge commit).
+**PR #67 merge baseline:** 9406ac30d53bc9984912bd1928a32fd78157cf60. Current repository main advanced to PR #74 merge commit `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.
 **PR:** [#67 — Continuous barcode orientation recovery](https://github.com/banjk124-hub/retailos-home/pull/67), merged 2026-11-10.
 **Final PR head:** c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
 **CI:** run #432 passed full preflight on the final PR head. CI #425 passed the executable source head e0b28787f40db8c811bc7fde912bae2558289198; the 13 commits between those heads were documentation-only.
