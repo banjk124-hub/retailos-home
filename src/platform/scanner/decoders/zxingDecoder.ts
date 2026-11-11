@@ -18,7 +18,7 @@ import type {
 import { rgbaToLuminance } from './rgbaToLuminance';
 import { rotateLuminance90Clockwise } from '../scannerRotation';
 import { deskewLuminanceFrame } from '../scannerDeskew';
-import { resolveScannerRoiScaleCandidates } from '../scannerScale';
+import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -40,7 +40,6 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   MICRO_QR_CODE: BarcodeFormat.MICRO_QR_CODE,
 };
 
-const MAX_FRAME_WIDTH = 1280;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
     format,
@@ -207,14 +206,22 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.diagnosticFrames += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
-      const sourceScale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
-      const baseWidth = Math.max(1, Math.round(crop.width * sourceScale));
-      const baseHeight = Math.max(1, Math.round(crop.height * sourceScale));
-      const scaleCandidates = resolveScannerRoiScaleCandidates(baseWidth, baseHeight);
+      // Preserve native sensor detail inside the strict crop. Bound ROI
+      // dimensions/pixels rather than downscaling the entire frame by width.
+      const baseDimensions = resolveScannerRoiBaseDimensions(crop.width, crop.height);
+      if (!baseDimensions) {
+        this.diagnosticRoiUnavailable += 1;
+        this.emitDiagnostics();
+        return [];
+      }
+      const scaleCandidates = resolveScannerRoiScaleCandidates(
+        baseDimensions.width,
+        baseDimensions.height,
+      );
 
-      // Preserve the exact deployed 1.5x candidate and its complete orientation/
-      // deskew pipeline as candidate zero. Alternate scales run only after it
-      // misses, and always redraw the same strict module-owned source crop.
+      // Preserve the deployed 1.5x candidate as candidate zero. The crop is
+      // now sampled from the native ROI up to a bounded pixel budget; alternate
+      // scales run only after the full baseline misses and never expand the crop.
       for (const candidate of scaleCandidates) {
         this.canvas.width = candidate.width;
         this.canvas.height = candidate.height;
