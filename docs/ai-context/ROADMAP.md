@@ -1,3 +1,31 @@
+# Current Main baseline and Scanner Engine remediation — 2026-11-11
+
+**Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). PR #74 is merged; deployment is not asserted here.
+
+**Scanner remediation branch:** `fix/scanner-engine-remediation-code39`, based on that Main commit. PR is not yet created.
+
+## Completed on this branch
+- Recovery diagnostics: allowlist now retains ROI availability/dimensions, rotation attempts/hits, deskew attempts/confidence misses/hits and last deskew angle. QA Monitor displays these fields and CSV export includes them.
+- Privacy regression: diagnostic test verifies barcode-like payload fields and camera identifiers are rejected from collected/exported metrics.
+- Code 39: ZXing 0.23.0 already provides `BarcodeFormat.CODE_39` and the adapter mapping existed. RetailOS had not enabled it in the explicit allowlist or payload validator. This branch enables it and adds payload + production-adapter tests.
+- Corrected stale scanner audio gain comment; current source maps 50% to 0.30 and 100% to 0.60, with approximately 140 ms beep duration.
+- Updated ADR-020, added ADR-034, and clarified SCAN-01's actual implementation boundary.
+
+## Explicitly deferred
+- The aggregate `ScannerModuleConfig` is not a runtime input yet. Its `cameraRequest` field is declarative; current shared camera lease uses the fixed environment / 1280×720 / 30 FPS request. Per-module camera requests require a separate design for shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition. Do not bypass the lease path.
+- Benchmark corpus, measured device baselines and generalized recovery orchestration remain follow-up work. Existing rotation/deskew remains intact; no speculative new image transforms are added here.
+- No camera constraints, autofocus, camera lease/lifecycle, frame cadence, ROI, Home/Stocktake UI or business workflows are changed by this branch.
+
+## Acceptance gates
+- [ ] Code 39 payload validation and production decoder integration pass.
+- [ ] Recovery metrics survive collector filtering and appear in QA Monitor / JSON / CSV.
+- [ ] Privacy regression passes.
+- [ ] Existing EAN-8, EAN-13 and Code 128 scanner suites remain green.
+- [ ] Full `npm run preflight`, TypeScript, production and GitHub Pages builds pass.
+- [ ] Review exact diff; no merge/deploy until explicit user approval.
+
+---
+
 # Current work — Xuất file: unified workspace and interaction system (2026-11-10)
 
 - PR #70 is deployed and user-accepted; PR #71 (multi-file sessions and output generation) is merged into main.
