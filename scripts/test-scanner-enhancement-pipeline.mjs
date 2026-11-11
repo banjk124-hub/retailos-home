@@ -36,6 +36,38 @@ try {
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
   ).href);
 
+  const { measureScannerImageQuality, createScannerImageEnhancements } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerImageEnhancement.js'),
+  ).href);
+  const { createScannerGeometryCandidates } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
+  ).href);
+
+  // SCAN-08: the baseline stays immutable and low-contrast imagery can
+  // produce an optional enhanced representation without format-specific code.
+  const lowContrastPixels = new Uint8ClampedArray(240 * 96).fill(165);
+  for (let y = 8; y < 88; y++) {
+    for (let x = 20; x < 220; x++) {
+      if (Math.floor((x - 20) / 6) % 2 === 0) lowContrastPixels[y * 240 + x] = 116;
+    }
+  }
+  const lowContrastSource = { luminance: lowContrastPixels, width: 240, height: 96 };
+  const lowContrastCopy = new Uint8ClampedArray(lowContrastPixels);
+  const lowContrastQuality = measureScannerImageQuality(lowContrastSource);
+  assert.ok(lowContrastQuality, 'low-contrast quality metrics must be measurable');
+  const enhanced = createScannerImageEnhancements(lowContrastSource, lowContrastQuality);
+  assert.ok(enhanced.some(candidate => candidate.kind === 'contrast'),
+    'compressed contrast must yield a bounded enhancement candidate');
+  assert.deepEqual(lowContrastPixels, lowContrastCopy,
+    'enhancement must never modify the original ROI pixels');
+  assert.ok(enhanced.length <= 2, 'enhancement candidate count must remain bounded');
+
+  // SCAN-09: never infer perspective/curvature from a uniform image or
+  // manufacture a barcode outside the supplied source ROI.
+  const empty = { luminance: new Uint8ClampedArray(240 * 96).fill(255), width: 240, height: 96 };
+  assert.deepEqual(createScannerGeometryCandidates(empty), [],
+    'uniform ROI must not trigger speculative geometric reconstruction');
+
   const width = 240, height = 96;
   const source = new Uint8ClampedArray(width * height).fill(255);
   const modules = [2, 1, 3, 1, 1, 2, 2, 1, 3, 1, 2, 1, 1, 3, 2, 1];
