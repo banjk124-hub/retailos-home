@@ -40,9 +40,13 @@ function boxBlur(input, radius = 2) {
 }
 
 const sharpSample = measureScannerFocusQuality(sharp, width, height);
-const blurredSample = measureScannerFocusQuality(boxBlur(sharp), width, height);
+const blurredPixels = boxBlur(sharp);
+const blurredSample = measureScannerFocusQuality(blurredPixels, width, height);
+const movingBlurSample = measureScannerFocusQuality(blurredPixels, width, height, sharpSample.sampledPixels);
 assert.equal(sharpSample.valid, true, 'textured barcode-like ROI produces a valid focus sample');
 assert.equal(blurredSample.valid, true, 'blurred but textured ROI remains measurable');
+assert.ok(movingBlurSample.motionScore > 14,
+  'a changing ROI must be distinguished from stable optical defocus');
 assert.ok(sharpSample.sharpness > blurredSample.sharpness * 1.5,
   'Laplacian focus score must distinguish a sharp barcode from a blurred one');
 assert.equal(measureScannerFocusQuality(new Uint8ClampedArray(width * height).fill(255), width, height).valid, false,
@@ -51,21 +55,23 @@ assert.equal(measureScannerFocusQuality(new Uint8ClampedArray(width * height).fi
 const watchdog = new ScannerFocusWatchdog();
 assert.equal(watchdog.observe(sharpSample, 1000), false,
   'the first sharp sample establishes a reference and never requests recovery');
-assert.equal(watchdog.observe(blurredSample, 1500), false,
-  'one blurred frame is ignored');
-assert.equal(watchdog.observe(sharpSample, 2000), false,
+assert.equal(watchdog.observe(movingBlurSample, 1500), false,
+  'motion blur or a changing scene must not trigger autofocus reconfiguration');
+assert.equal(watchdog.observe(blurredSample, 2000), false,
+  'one stable blurred frame is ignored');
+assert.equal(watchdog.observe(sharpSample, 2500), false,
   'a recovered sharp frame clears the consecutive-blur streak');
-assert.equal(watchdog.observe(blurredSample, 2500), false);
 assert.equal(watchdog.observe(blurredSample, 3000), false);
 assert.equal(watchdog.observe(blurredSample, 3500), false);
-assert.equal(watchdog.observe(blurredSample, 4000), true,
+assert.equal(watchdog.observe(blurredSample, 4000), false);
+assert.equal(watchdog.observe(blurredSample, 4500), true,
   'four sustained low-sharpness samples trigger one autofocus re-arm');
-assert.equal(watchdog.observe(blurredSample, 4500), false,
+assert.equal(watchdog.observe(blurredSample, 5000), false,
   'the watchdog does not repeatedly re-arm during its cooldown');
-assert.equal(watchdog.observe(blurredSample, 13000), false);
 assert.equal(watchdog.observe(blurredSample, 13500), false);
 assert.equal(watchdog.observe(blurredSample, 14000), false);
-assert.equal(watchdog.observe(blurredSample, 14500), true,
+assert.equal(watchdog.observe(blurredSample, 14500), false);
+assert.equal(watchdog.observe(blurredSample, 15000), true,
   'a later sustained defocus can re-arm after the cooldown');
 
 const adapter = await readFile(
