@@ -26,6 +26,16 @@
 - Do not attribute end-to-end scanner latency to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
 - Current user feedback: operationally relatively stable.
 
+## Current PR #78 verification priorities
+1. Run final-head CI and inspect every failing preflight test before changing source further.
+2. Confirm the 1920×1080 ideal request is negotiated safely; inspect actual settings on low/mid/high devices.
+3. Verify post-first-frame focus request is non-blocking and does not change active resolution/frame rate.
+4. Verify focus and Torch track updates serialize and preserve both advanced settings.
+5. Verify focus quality ignores blank/moving scenes and only re-arms after sustained stable blur.
+6. Test both Home and Stocktake on iOS Safari/PWA and Android Chrome/PWA.
+7. Record barcode source pixel height and physical distance. Do not report end-to-end latency as SCAN-07 performance.
+8. Keep SCAN-08/09 blocked until SCAN-07 is accepted.
+
 ## Protected invariants
 No silent expansion beyond module-authorized ROI; no full-frame/centered fallback; no replacement of geometry mapping; no decoder concurrency; no unbounded candidate queue; no changes to camera lease/lifecycle/recovery, preview presentation, barcode validation/result delivery, Home lookup or Stocktake form-fill/explicit-save without a separate approved scope.
 
