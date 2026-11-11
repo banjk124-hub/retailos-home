@@ -1,12 +1,12 @@
-# Current scanner state — remediation in progress (2026-11-11)
+# Current scanner state — unified recognition pipeline (2026-11-11)
 
-- Current main is `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`, PR #74 merge commit. PR #74 is merged; deployment is not asserted here.
-- SCAN-05/06 remains merged, deployed and user-validated at the earlier PR #67 baseline; its 70 ms serialized cadence and strict module-owned ROI are preserved.
-- Code 39 existed in the generic symbology union and ZXing mapping, but was not enabled in the retail allowlist or payload validator. Branch `fix/scanner-engine-remediation-code39` enables it and adds validation + production decoder tests.
-- Recovery diagnostics emitted by the decoder were previously dropped by the collector allowlist. The remediation branch retains them and exposes them in QA Monitor / CSV.
-- Audio source is 50% gain 0.30, maximum gain 0.60, approximately 140 ms tone. Older 0.24/0.48 notes refer to pre-PR #57 behavior.
-- `ScannerModuleConfig.cameraRequest` is still declarative. Current camera lease uses fixed environment / 1280×720 / 30 FPS. Per-module request support is deferred until shared stream/lease semantics are designed.
-- No quantitative real-device latency, CPU or recognition-success matrix is claimed. No changes to camera lifecycle, strict ROI, Home or Stocktake workflows are included in the remediation branch.
+- Main baseline: PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
+- Active branch: `feat/scanner-unified-enhancement-pipeline`; PR A+B combined into one review.
+- Current work extracts SCAN-05/06 candidate ordering into `scannerEnhancementPipeline.ts`, preserving the existing ZXing, SCAN-07 scale, strict ROI and validation behavior.
+- The recognition pipeline is independent of the carrier (A4/A3/A5 paper, shelf label, package or screen) and symbology. New formats must be explicitly registered and validated; image transforms must not be duplicated per format.
+- Next stages: SCAN-08 optional image enhancement, SCAN-09 perspective/curved-label correction, SCAN-10 measured adaptive budgets, SCAN-11 cross-platform/real-label acceptance.
+- No merge/deploy or physical-device acceptance is claimed for the active branch. CI and device QA are pending.
+- Protected: camera lease/lifecycle/recovery, native focus ownership, Torch, strict ROI, module-owned presentation, Home lookup, Stocktake form-fill/explicit-save, auth, storage and deployment.
 
 ---
 ## Current project focus — scanner Torch investigation closed (2026-11-09)
