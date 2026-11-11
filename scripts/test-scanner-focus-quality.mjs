@@ -54,25 +54,25 @@ assert.ok(sharpSample.sharpness > blurredSample.sharpness * 1.5,
 assert.equal(measureScannerFocusQuality(new Uint8ClampedArray(width * height).fill(255), width, height).valid, false,
   'blank low-texture frames must not be treated as defocus');
 
-const watchdog = new ScannerFocusQualityMonitor();
-assert.equal(watchdog.observe(sharpSample, 1000), false,
+const monitor = new ScannerFocusQualityMonitor();
+assert.equal(monitor.observe(sharpSample, 1000), false,
   'the first sharp sample establishes a reference and never requests recovery');
-assert.equal(watchdog.observe(movingBlurSample, 1500), false,
+assert.equal(monitor.observe(movingBlurSample, 1500), false,
   'motion blur or a changing scene must not trigger autofocus reconfiguration');
-assert.equal(watchdog.observe(blurredSample, 2000), false,
+assert.equal(monitor.observe(blurredSample, 2000), false,
   'one stable blurred frame is ignored');
-assert.equal(watchdog.observe(sharpSample, 2500), false,
+assert.equal(monitor.observe(sharpSample, 2500), false,
   'a recovered sharp frame clears the consecutive-blur streak');
-assert.equal(watchdog.observe(blurredSample, 3000), false);
-assert.equal(watchdog.observe(blurredSample, 3500), false);
-assert.equal(watchdog.observe(blurredSample, 4000), false);
-assert.equal(watchdog.observe(blurredSample, 4500), true,
+assert.equal(monitor.observe(blurredSample, 3000), false);
+assert.equal(monitor.observe(blurredSample, 3500), false);
+assert.equal(monitor.observe(blurredSample, 4000), false);
+assert.equal(monitor.observe(blurredSample, 4500), true,
   'four sustained low-sharpness samples are reported as a passive blur event');
-assert.equal(watchdog.observe(blurredSample, 5000), false,
-  'the watchdog does not repeatedly re-arm during its cooldown');
-assert.equal(watchdog.observe(blurredSample, 13500), false);
-assert.equal(watchdog.observe(blurredSample, 14000), false);
-assert.equal(watchdog.observe(blurredSample, 14500), true,
+assert.equal(monitor.observe(blurredSample, 5000), false,
+  'the monitor rate-limits repeated blur diagnostics');
+assert.equal(monitor.observe(blurredSample, 13500), false);
+assert.equal(monitor.observe(blurredSample, 14000), false);
+assert.equal(monitor.observe(blurredSample, 14500), true,
   'a later sustained blur can be reported again after the diagnostic cooldown');
 
 const adapter = await readFile(
