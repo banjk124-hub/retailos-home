@@ -60,8 +60,9 @@ function now(): number {
  * 2. Exact 90-degree clockwise representation.
  * 3. Confidence-gated continuous deskew candidates, smallest correction first.
  *
- * SCAN-08 image enhancement and SCAN-09 geometric correction can be added as
- * later stages here without duplicating orchestration in the ZXing adapter.
+ * SCAN-08 image enhancement and SCAN-09 conservative geometry candidates
+ * are bounded fallback stages after the existing orientation path misses.
+ * No candidate may enlarge the module-owned capture ROI.
  */
 export function executeScannerEnhancementPipeline<T>(
   source: ScannerLuminanceFrame,
