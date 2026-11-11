@@ -20,6 +20,7 @@
 - Orientation transform: `scannerRotation.ts`; continuous orientation/contrast/deskew: `scannerDeskew.ts`.
 - Camera/session: `cameraSession.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`.
 - Both Home and Stocktake consume the same `useScannerEngine` and default camera request; each owns its reticle and business workflow.
+- Existing `ScannerProfileName` is not currently an adaptive policy: `useScannerEngine` passes `HIGH` unconditionally and `UniversalScannerSession` does not consume the profile. PR #78 does not claim low/mid/high adaptation; a measured device-budget policy remains an explicit SCAN-07 closure item.
 - Current main after PR #77: 1.5× baseline followed by bounded 1×/2× strict-ROI fallbacks; SCAN-05/06 orientation/deskew and both binarizers remain active per candidate.
 - PR #78 branch preserves native source ROI pixels up to 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled. Each fallback candidate remains capped at 6 MP.
 - PR #78 branch changes preferred camera request to 1920×1080, 30 FPS maximum. Browser-negotiated actual settings remain authoritative; weak devices may return a lower resolution.
