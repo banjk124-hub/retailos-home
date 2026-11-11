@@ -2,7 +2,7 @@
 
 **Current main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c` (PR #76 merge commit).
 **Completed:** SCAN-01 through SCAN-06; PR #76 Camera Request Bridge merged. SCAN-05/06 user-confirmed operationally stable after deployment.
-**Next work:** SCAN-07 is implemented on the current PR #77 branch; CI and device acceptance are pending. SCAN-08 through SCAN-11 remain separately gated.
+**Next work:** SCAN-07 is implemented on PR #77; run #634 passed on its code/test head and final documentation-sync CI is in progress. Physical-device acceptance remains pending. SCAN-08 through SCAN-11 remain separately gated.
 **Current source baseline:** ZXing 0.23.0 adapter, strict module-owned ROI, 1.5× baseline followed on miss by bounded 1×/2× ROI scale candidates, continuous orientation/deskew candidates per scale, bounded percentile contrast stretch, two ZXing binarizers, serialized decode at 70 ms minimum session interval.
 **Protected contracts:** SCAN-02/03 preview-to-source mapping; SCAN-04 strict ROI/no-full-frame-fallback; SCAN-05/06 orientation and deskew; scanner session/camera lease/lifecycle/recovery; module-owned video surface/reticle/presentation; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save.
 **Working rule:** add measured candidate paths alongside the current path; preserve a baseline candidate and existing ordering until comparative evidence justifies a change. No unconditional replacement, no weakening strict ROI, no full-frame or centered fallback.
