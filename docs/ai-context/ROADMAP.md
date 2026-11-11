@@ -3,7 +3,7 @@
 **Main:** PR #77 merged at `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`; current branch work is additive and unmerged.
 **PR #77 device outcome:** user confirms modest improvement for small/far barcodes and successful reads near reticle edges, but recognition range and precision are not yet sufficient.
 **Current work:** PR #78 is focused on completing SCAN-07 through native ROI detail preservation, coordinated camera focus recovery, and shared decoder/camera tuning. Do not advance to SCAN-08/09 until this gate is accepted.
-**User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner latency to SCAN-07; total response depends on camera startup, focus, frame delivery, decoding, session and module result handling.
+**User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner overall scanner response time to SCAN-07; total response depends on camera startup, focus, frame delivery, decoding, session and module result handling.
 
 ## Current shared scanner pipeline
 
@@ -43,7 +43,7 @@
 - [ ] Home and Stocktake both pass normal, rotated, small/far, reticle-edge and outside-reticle negative tests.
 - [ ] iOS Safari/PWA and Android Chrome/PWA testing covers near/far transitions, camera movement, blur recovery, low light and foreground/background recovery.
 - [ ] Real labels are recorded by symbology, physical distance, barcode module/bar width where measurable, source ROI pixel height, orientation, lighting, glare, module, device/browser/build, decode outcome and false positives.
-- [ ] No unsupported performance/accuracy claims; do not attribute end-to-end latency to SCAN-07.
+- [ ] No unsupported performance/accuracy claims; do not attribute end-to-end overall scanner response time to SCAN-07.
 
 ## SCAN-08 — Image enhancement
 **Status:** Planned — candidate evaluation, not unconditional preprocessing.
@@ -71,7 +71,7 @@
 ## SCAN-11 — Cross-platform hardening
 **Status:** Planned — continuous acceptance lane across all phases, final release gate.
 - iOS Safari/PWA and Android Chrome/PWA; low/mid/high capability devices.
-- Validate camera lifecycle, background/foreground, permission and recovery, Home and Stocktake flows, barcode accuracy and latency.
+- Validate camera lifecycle, background/foreground, permission and recovery, Home and Stocktake flows, barcode accuracy and overall scanner response time.
 - Include real retail labels: small/far, low light, reflective/saturated, curved and perspective-distorted, reticle edges.
 - Record device/browser/build, module, symbology, lighting, distance/pixel-height, orientation, attempts, decode correctness, false positives, per-stage processing cost and UI responsiveness. Do not invent missing measurements.
 
@@ -201,7 +201,7 @@ No changes are intended to camera permission UX, autofocus policy, page lifecycl
 - User confirms merge, deployment and successful real-world operation with sensitive multi-stage recognition.
 - No camera, lifecycle, presentation, validation, Home lookup or Stocktake persistence behavior was intentionally changed by this slice.
 
-**Evidence boundary:** detailed device/browser/module/symbology matrix and quantitative latency/CPU/success-rate measurements were not supplied. The user's functional acceptance is recorded; do not invent numerical performance claims.
+**Evidence boundary:** detailed device/browser/module/symbology matrix and quantitative overall scanner response time/CPU/success-rate measurements were not supplied. The user's functional acceptance is recorded; do not invent numerical performance claims.
 
 **Next:** SCAN-05/06 has no outstanding corrective task. Continue only with the next separately agreed roadmap scope; do not add perspective correction, curved-surface dewarping or unrelated scanner changes by implication.
 
@@ -337,14 +337,14 @@ Acceptance criteria:
 **Goal:** optimize based on measured device behavior, not assumed camera constraints.
 
 Scope:
-- Record camera acquisition duration, video readiness, decoder attach, first valid result, resume latency, actual track settings, and failure category.
+- Record camera acquisition duration, video readiness, decoder attach, first valid result, resume overall scanner response time, actual track settings, and failure category.
 - Add low-overhead diagnostics with no personal/product data leakage.
 - Compare actual device behavior at 960×540 and 1280×720; test decode intervals around 100/120/150 ms.
 - Measure and optimize performance separately from the lifecycle recovery slice. Unexpected ended-track recovery is implemented in Phase 1.2F and remains subject to device QA.
 
 Acceptance criteria:
 - Measurements available for representative Android Chrome and iOS Safari devices.
-- Resolution/interval chosen from measured scan success and latency, not ideal constraints alone.
+- Resolution/interval chosen from measured scan success and overall scanner response time, not ideal constraints alone.
 - No regression in battery/thermal behavior or camera startup.
 
 ### 1.2C — Audio and continuous scan policy
@@ -459,7 +459,7 @@ Acceptance criteria:
 **Goal:** remove perceived stutter, flicker and jank during rapid scanner open/close and Home/Stocktake transitions by identifying the actual bottleneck across rendering, motion, UI state and lifecycle.
 
 Slices:
-- **1.2G-A — Performance instrumentation:** measure camera request/acquisition, video readiness, decoder readiness, first accepted result, release/resume, decode latency, Canvas/ImageData work, React commits, long tasks and frame drops. Do not log barcode payloads or unnecessary device identifiers.
+- **1.2G-A — Performance instrumentation:** measure camera request/acquisition, video readiness, decoder readiness, first accepted result, release/resume, decode overall scanner response time, Canvas/ImageData work, React commits, long tasks and frame drops. Do not log barcode payloads or unnecessary device identifiers.
 - **1.2G-B — Motion/rendering audit:** inspect scanner open/close, overlays/modals, Home/Stocktake transitions, layout shifts, expensive blur/shadow/backdrop effects and animation overlap.
 - **1.2G-C — Lifecycle/interaction audit:** exercise rapid open-close-open, scan-close-reopen, module switching, background/foreground, repeated taps and pending startup cancellation; identify stale tasks that outlive UI state.
 - **1.2G-D — State transition alignment:** define and enforce explicit UI states (IDLE, OPENING, READY, SCANNING, CLOSING, ERROR/SUSPENDED). UI must not claim SCANNING until the preview and decoder are actually ready. Keep camera release independent from animation completion.
@@ -487,9 +487,9 @@ Acceptance criteria:
 ### 1.2H — Decoder performance optimization
 **Goal:** reduce CPU/memory pressure only after Phase 1.2G and device measurements identify decoder/image processing as a material bottleneck.
 
-Scope: profile RGBA-to-grayscale conversion, Canvas/ImageData allocation and copies; optimize full-frame/ROI strategy and cadence based on measured scan success, latency, CPU/thermal impact. Do not tune resolution or cadence by guesswork.
+Scope: profile RGBA-to-grayscale conversion, Canvas/ImageData allocation and copies; optimize full-frame/ROI strategy and cadence based on measured scan success, overall scanner response time, CPU/thermal impact. Do not tune resolution or cadence by guesswork.
 
-Acceptance: measurable improvement without material regression in scan success, first-result latency, preview smoothness, battery/thermal behavior or supported symbologies.
+Acceptance: measurable improvement without material regression in scan success, overall scanner response time, preview smoothness, battery/thermal behavior or supported symbologies.
 
 ### 1.2I — Shared Scanner Engine Completion (supersedes the earlier decoder-capability-only definition)
 **Goal:** complete the reusable scanner runtime contract shared by Home, Stocktake and future features.
