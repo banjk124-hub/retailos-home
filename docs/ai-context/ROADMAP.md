@@ -39,6 +39,7 @@
 - [ ] Continuous focus is configured after fresh-frame readiness without delaying preview readiness.
 - [ ] Autofocus and Torch constraints preserve each other and remain serialized.
 - [ ] Focus watchdog ignores blank/low-texture and moving frames; sustained stable blur causes at most one bounded re-arm per cooldown.
+- [ ] Replace the currently inert `profile: HIGH` handoff with a measured, conservative device-budget policy based on actual track settings and observed processing cost; unknown devices must fall back safely.
 - [ ] Decoder still tries the baseline first and never starves validation or module result delivery.
 - [ ] Home and Stocktake both pass normal, rotated, small/far, reticle-edge and outside-reticle negative tests.
 - [ ] iOS Safari/PWA and Android Chrome/PWA testing covers near/far transitions, camera movement, blur recovery, low light and foreground/background recovery.
