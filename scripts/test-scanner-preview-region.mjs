@@ -168,7 +168,7 @@ assert.doesNotMatch(setter[0], /startInternal|createDecoder|scheduleNextFrame|su
 const makeDataModule = (source) => 'data:text/javascript;base64,' + Buffer.from(source).toString('base64');
 const stubs = {
   './contracts': makeDataModule(
-    'export const DEFAULT_SCANNER_CAMERA_REQUEST = { facingMode: "environment", preferredWidth: 1280, preferredHeight: 720, preferredFrameRate: 30, maxFrameRate: 30 };',
+    'export const DEFAULT_SCANNER_CAMERA_REQUEST = { facingMode: "environment", preferredWidth: 1920, preferredHeight: 1080, preferredFrameRate: 30, maxFrameRate: 30 };',
   ),
   '../../shared/services/cameraSession': makeDataModule(
     'export async function acquireCameraLease() { throw new Error("not expected"); } export function subscribeCameraTrackEnded() { return () => {}; }',
