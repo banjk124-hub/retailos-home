@@ -11,6 +11,7 @@ import { createStocktakeFile, downloadStocktakeText } from '../services/stocktak
 import { unlockScannerAudio } from '../../scanner/services/scannerAudio';
 import { useScannerViewportStyle } from '../../scanner/hooks/useScannerViewportStyle';
 import { requestCameraLease, type CameraLeaseRequest } from '../../../shared/services/cameraSession';
+import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../../platform/scanner/contracts';
 import { getMotionOrigin, type MotionOrigin } from '../../../shared/motion';
 import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
 import './stocktake.css';
@@ -366,7 +367,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
         {screen === 'scan' && currentZone && <>
           <div className="stocktake-zone-banner"><div><small>VÙNG ĐANG KIỂM KÊ</small><strong>{currentZone.zoneCode}</strong></div><span>REV {currentZone.revision}</span></div>
           <div className="stocktake-count"><strong>{currentEntries.length}</strong><span>dòng đã ghi nhận</span></div>
-          {isScannerSupportedDevice() && <button className="stocktake-primary stocktake-scan-button" type="button" onClick={(event) => { if (scannerOpen) return; cameraLeaseRequestRef.current = requestCameraLease(); setScannerMotionOrigin(getMotionOrigin(event.currentTarget)); void unlockScannerAudio(); setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>}
+          {isScannerSupportedDevice() && <button className="stocktake-primary stocktake-scan-button" type="button" onClick={(event) => { if (scannerOpen) return; cameraLeaseRequestRef.current = requestCameraLease(DEFAULT_SCANNER_CAMERA_REQUEST); setScannerMotionOrigin(getMotionOrigin(event.currentTarget)); void unlockScannerAudio(); setScannerOpen(true); if (session) void logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'SCANNER_OPENED', details: `Mở máy quét tại vùng ${currentZone.zoneCode}.` }); }}><Camera size={18} /> Mở máy quét</button>}
           <div className="stocktake-entry-form">
             <label htmlFor="stocktake-barcode">Barcode vừa quét / nhập thủ công</label>
             <input id="stocktake-barcode" inputMode="numeric" value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Quét mã hoặc nhập barcode" />
