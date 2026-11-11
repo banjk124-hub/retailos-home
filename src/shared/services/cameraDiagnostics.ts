@@ -19,15 +19,25 @@ type FocusCapabilities = MediaTrackCapabilities & {
  * the device retains its own native autofocus behavior.
  */
 export function getSafeCameraSettings(track: MediaStreamTrack): SafeCameraSettings {
+  let settings: MediaTrackSettings & {
+    focusMode?: string;
+    exposureMode?: string;
+    whiteBalanceMode?: string;
+  } = {};
+  let capabilities: FocusCapabilities | undefined;
   try {
-    const settings = track.getSettings() as MediaTrackSettings & {
-      focusMode?: string;
-      exposureMode?: string;
-      whiteBalanceMode?: string;
-    };
-    const capabilities = typeof track.getCapabilities === 'function'
+    settings = track.getSettings() as typeof settings;
+  } catch {
+    settings = {};
+  }
+  try {
+    capabilities = typeof track.getCapabilities === 'function'
       ? track.getCapabilities() as FocusCapabilities
       : undefined;
+  } catch {
+    capabilities = undefined;
+  }
+  try {
     const safeSettings: SafeCameraSettings = {};
     if (typeof settings.width === 'number') safeSettings.width = settings.width;
     if (typeof settings.height === 'number') safeSettings.height = settings.height;
