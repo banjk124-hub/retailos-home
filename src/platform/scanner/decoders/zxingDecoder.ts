@@ -156,6 +156,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticScaleHits = 0;
   private diagnosticLastScaleFactor = 0;
   private lastFocusQualitySampleAt = 0;
+  private lastFocusQualityPixels: Uint8Array | null = null;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
@@ -321,11 +322,14 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
     if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
       this.lastFocusQualitySampleAt = timestamp;
-      onFocusQuality(measureScannerFocusQuality(
+      const focusSample = measureScannerFocusQuality(
         grayscale,
         this.canvas.width,
         this.canvas.height,
-      ));
+        this.lastFocusQualityPixels,
+      );
+      this.lastFocusQualityPixels = focusSample.sampledPixels;
+      onFocusQuality(focusSample);
     }
 
     // Run both production binarizers on each candidate. The additional CPU
@@ -512,6 +516,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticScaleHits = 0;
     this.diagnosticLastScaleFactor = 0;
     this.lastFocusQualitySampleAt = 0;
+    this.lastFocusQualityPixels = null;
     this.diagnosticLastDeskewAngleDegrees = 0;
   }
 
