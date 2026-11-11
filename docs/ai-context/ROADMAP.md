@@ -5,6 +5,8 @@
 **Current work:** PR #78 is focused on completing SCAN-07 through native ROI detail preservation, coordinated camera focus recovery, and shared decoder/camera tuning. Do not advance to SCAN-08/09 until this gate is accepted.
 **User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner overall scanner response time to SCAN-07; total response depends on camera startup, focus, frame delivery, decoding, session and module result handling.
 
+> **Historical records below:** older phase plans and decisions are retained for traceability. Their camera resolution, decoder cadence and profile values are snapshots from earlier baselines; the current authoritative SCAN-07 behavior is defined above and in `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`.
+
 ## Current shared scanner pipeline
 
 1. Home and Stocktake each own their video element, visible reticle and feature workflow.
