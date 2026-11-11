@@ -17,6 +17,28 @@ assert.deepEqual(validateBarcodePayload("4006381333932", "EAN_13"), {
   reason: "invalid-check-digit",
 });
 assert.equal(validateBarcodePayload("ABC 123", "CODE_128").valid, true, "CODE-128 remains opaque text");
+assert.equal(validateBarcodePayload("RETAIL-39", "CODE_39").valid, true,
+  "valid uppercase Code 39 payload is accepted");
+assert.equal(validateBarcodePayload("STORE 01/$+%", "CODE_39").valid, true,
+  "Code 39 preserves its supported punctuation and space characters");
+assert.equal(validateBarcodePayload("A B", "CODE_39").valid, true,
+  "Code 39 preserves embedded spaces as payload characters");
+assert.deepEqual(validateBarcodePayload("retail39", "CODE_39"), {
+  valid: false,
+  reason: "invalid-character",
+}, "Code 39 rejects lowercase characters outside its standard alphabet");
+assert.deepEqual(validateBarcodePayload("ABC*123", "CODE_39"), {
+  valid: false,
+  reason: "invalid-character",
+}, "Code 39 start/stop asterisk is not accepted as payload data");
+assert.deepEqual(validateBarcodePayload("ABC\\u0000", "CODE_39"), {
+  valid: false,
+  reason: "control-character",
+}, "Code 39 rejects control characters");
+assert.deepEqual(validateBarcodePayload("", "CODE_39"), {
+  valid: false,
+  reason: "empty",
+}, "Code 39 rejects empty payloads");
 assert.deepEqual(validateBarcodePayload("ABC\u0000 123", "CODE_128"), {
   valid: false,
   reason: "control-character",
