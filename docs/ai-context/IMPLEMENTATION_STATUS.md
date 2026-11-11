@@ -1,7 +1,7 @@
 # Current Main reconciliation — Scanner Camera Request Bridge (2026-11-11)
 
 **Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
-**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR #76 is open Draft; CI verification pending. No merge/deploy.
+**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR #76 is open Draft; CI run #610 passed. Physical iOS/Android QA pending. No merge/deploy.
 
 ## Current implementation on branch
 - `ScannerCameraRequest` is now carried by the one-shot `CameraLeaseRequest` and passed into the live `getUserMedia()` request.
@@ -15,10 +15,10 @@
 No intended changes to permission UX, autofocus behavior, page lifecycle coordinator, teardown order, video readiness, decoder/cadence, strict ROI, Torch, callback semantics, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, storage, backend or deployment configuration.
 
 ## Verification status
-- [ ] Camera request resolver and compatibility regression suite.
-- [ ] Lease sharing/conflict, pending request, cancellation and ref-count regression coverage.
-- [ ] Recovery fresh-session/fresh-surface/original-intent regression coverage.
-- [ ] Full preflight, TypeScript, production and Pages builds.
+- [x] Camera request resolver and compatibility regression suite.
+- [x] Lease sharing/conflict, pending request, cancellation and ref-count regression coverage.
+- [x] Recovery source-contract guards for fresh session/fresh surface/original intent.
+- [x] Full preflight, TypeScript, production and Pages builds — run #610 passed.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA.
 - [ ] Explicit approval before merge/deploy.
 
