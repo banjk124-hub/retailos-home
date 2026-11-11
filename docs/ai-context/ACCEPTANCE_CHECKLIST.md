@@ -143,7 +143,7 @@ These additional measurements are not required to describe the user's functional
 - [x] Existing 1280 px source-width cap, serialized decoder, 70 ms session interval and result validation remain unchanged.
 - [x] Scale attempt/hit diagnostics added without barcode payloads.
 - [x] Scale planner regression script added to preflight; production adapter integration test extended for strict ROI crop invariance.
-- [ ] GitHub Actions full preflight, TypeScript, production build and Pages build pass on latest PR #77 head.
+- [x] GitHub Actions run #634 passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`; final documentation sync must also pass CI.
 - [ ] iOS Safari/PWA and Android Chrome/PWA small/far real-label comparison; low/high capability devices.
 - [ ] Confirm reticle-edge and outside-reticle negative controls; verify Home and Stocktake workflows remain unchanged.
 - [ ] Record decode success, false positives, first-result latency, processing cost and UI responsiveness. No unsupported accuracy/performance claims.
