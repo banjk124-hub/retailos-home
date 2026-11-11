@@ -889,3 +889,24 @@ Operator testing after PR #73 identified that the ZIP action could overlap the e
 - Integration regression tests cover lease sharing/conflict, one-claim handoff, cancellation, reference counts, and recovery intent preservation.
 - Full preflight, TypeScript, production and Pages builds pass.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA confirm no change to the existing Home and Stocktake flows.
+
+
+## ADR-036 — Additive optical recovery roadmap, SCAN-07 to SCAN-11 (2026-11-11)
+
+**Status:** Proposed engineering policy; documentation-only. No runtime algorithm is authorized by this decision.
+
+### Context
+The merged scanner pipeline already includes module-owned preview geometry, strict ROI decoding, exact quarter-turn rotation, continuous in-plane orientation estimation/deskew, bounded percentile contrast normalization, two ZXing binarizers, serialized frame processing and a 70 ms minimum session interval. The user reports relatively stable operational behavior. The next work must improve small/far, low-light, reflective, perspective and curved-label cases without regressing existing Home/Stocktake flows.
+
+### Decision
+- Keep the current production pipeline as the reference candidate and preserve its result semantics.
+- Introduce new optical transforms as bounded, conditionally selected candidates, not unconditional preprocessing or wholesale decoder replacement.
+- SCAN-07 may add only an explicit module-authorized ROI envelope. The source-frame-normalized reticle region remains authoritative; no full-frame/centered fallback.
+- SCAN-08 must retain original luminance as the first candidate. Enhancement is condition-gated; clipped highlights are recorded as information loss, not reconstructed.
+- SCAN-09 distinguishes in-plane deskew from perspective and curved-surface deformation. Rectification is confidence-gated and retains the unwarped candidate.
+- SCAN-10 adapts bounded candidate budget using measured runtime performance; it must not rely on user-agent/model-name heuristics or create decoder concurrency/unbounded queues.
+- SCAN-11 is a cross-platform acceptance lane spanning iOS Safari/PWA, Android Chrome/PWA, Home/Stocktake and low/high capability devices.
+- Each phase is separately branched and reviewed. The current 70 ms cadence, camera/lifecycle contracts, module presentation and retail workflows remain protected until separate evidence supports a change.
+
+### Acceptance
+A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, first-result latency, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
