@@ -82,7 +82,7 @@ No claim of universal optical success, minimum size or maximum distance is made 
 
 Strict module-owned ROI; SCAN-02/03 geometry mapping; camera lease and lifecycle/recovery; native focus ownership; module-owned video presentation; serialized decoder calls; 70 ms session cadence; barcode validation; Home lookup; Stocktake form-fill and explicit save; no changes to authentication, storage, backend or deployment.
 
-## Verification record
+## 9. Verification record
 
 GitHub Actions RetailOS CI run #690 (`43031795026`) passed the complete `npm run preflight` on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`, including scanner regression suites, TypeScript, production build and GitHub Pages build. The subsequent commit `8f6e0ae128bf8bc9b552f8b04b3eb2cd65e84620` changed documentation only. Physical-device QA remains pending.
 
