@@ -1,3 +1,17 @@
+### 2026-11-11 — Scanner Camera Request Bridge implementation
+
+- Audited current `main` at `9b84339fd25b2d3502ddccc3aa80c022ccedd827`; PR #75 is closed/merged. Created isolated branch `feat/scanner-camera-request-bridge` from that baseline.
+- Confirmed the earlier audit findings: the camera request contract existed but the shared camera service still used fixed constraints; active stream reuse did not validate the next caller's intent; the one-shot tap request was consumed before foreground recovery could reuse its intent.
+- Wired immutable camera intent through `requestCameraLease()`, `getUserMedia()`, the shared lease compatibility check, `UniversalScannerSession` and `useScannerEngine`.
+- Kept Home and Stocktake tap-origin acquisition in their existing handlers and explicitly passed the current default request. No new acquisition was moved into a React effect.
+- Added pure compatibility rules: preferred dimensions remain soft ideals; known facing mismatch and frame rate above a hard max are incompatible; unavailable browser settings are treated as unknown.
+- Preserved compatible stream sharing and reference counting. Conflicting requests cannot replace a stream while active leases exist. Pending acquisitions are checked against each caller's actual resolved stream.
+- Preserved the deliberate iOS recovery design: retire old session, create a fresh video surface and fresh session, reacquire with the original module intent.
+- Added resolver/recovery source regression tests and wired them into preflight. CI and physical iOS/Android verification remain pending.
+- No merge or deployment was performed. Presentation, lifecycle orchestration, autofocus policy, decoder/cadence, ROI, Torch and retail workflows were not intentionally changed.
+
+---
+
 ### 2026-11-10 — SCAN-05/06 post-merge documentation audit
 
 - Confirmed PR #67 is merged/closed at 9406ac30d53bc9984912bd1928a32fd78157cf60; main compares identical to the merge commit.
