@@ -34,7 +34,7 @@
 - Do not change camera lease, camera request defaults, autofocus, lifecycle/recovery, decode cadence, strict ROI, Home/Stocktake presentation or business workflows.
 - `ScannerModuleConfig.cameraRequest` is declarative only. Per-module camera request support is deferred until shared-stream/lease semantics and tap-origin acquisition/recovery are designed.
 - Benchmark corpus and generalized conditional recovery orchestration remain future work, not implied by this remediation.
-- PR #75 is open as Draft. Final CI #571 passed on head `e7cf527932490c41926f1e8fe108d108fc9ad438`; no merge/deploy has occurred.
+- PR #75 is open as Draft. Final CI #577 passed on head `8f558511297596be0819baea01d49ed0993b86fb`; no merge/deploy has occurred.
 
 **Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; angled Code 39 optical performance remains unverified.
 
@@ -43,7 +43,7 @@
 - [x] Recovery metrics survive collector allowlisting and appear in QA Monitor / CSV (CI #566).
 - [ ] Privacy regression passes.
 - [ ] Existing EAN-8, EAN-13 and Code 128 behavior remains green.
-- [x] Full preflight, TypeScript, production and Pages builds pass (final CI #571).
+- [x] Full preflight, TypeScript, production and Pages builds pass (final CI #577).
 - [x] Diff review confirms no camera/lifecycle/feature behavior or dependencies changed.
 - [ ] Explicit user approval before merge/deploy.
 
