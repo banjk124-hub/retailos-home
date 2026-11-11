@@ -185,6 +185,9 @@ const stubs = {
   './scannerTorch': makeDataModule(
     'export async function applyScannerTorch(track, enabled) { return { supported: true, enabled, pending: false }; } export function readScannerTorchState() { return { supported: false, enabled: false, pending: false }; }',
   ),
+  './scannerFocusQuality': makeDataModule(
+    'export class ScannerFocusWatchdog { observe() { return false; } reset() {} } export function measureScannerFocusQuality() { return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, sampledPixels: new Uint8Array(), valid: false }; }',
+  ),
 };
 let sessionJs = compileModule(sessionSource);
 for (const [specifier, stubUrl] of Object.entries(stubs)) {
