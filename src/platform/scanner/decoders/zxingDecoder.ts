@@ -157,6 +157,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticLastScaleFactor = 0;
   private lastFocusQualitySampleAt = 0;
   private lastFocusQualityPixels: Uint8Array | null = null;
+  private lastFocusQualityWidth = 0;
+  private lastFocusQualityHeight = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
@@ -322,13 +324,17 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
     if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
       this.lastFocusQualitySampleAt = timestamp;
+      const sameFocusGeometry = this.lastFocusQualityWidth === this.canvas.width
+        && this.lastFocusQualityHeight === this.canvas.height;
       const focusSample = measureScannerFocusQuality(
         grayscale,
         this.canvas.width,
         this.canvas.height,
-        this.lastFocusQualityPixels,
+        sameFocusGeometry ? this.lastFocusQualityPixels : null,
       );
       this.lastFocusQualityPixels = focusSample.sampledPixels;
+      this.lastFocusQualityWidth = this.canvas.width;
+      this.lastFocusQualityHeight = this.canvas.height;
       onFocusQuality(focusSample);
     }
 
@@ -517,6 +523,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticLastScaleFactor = 0;
     this.lastFocusQualitySampleAt = 0;
     this.lastFocusQualityPixels = null;
+    this.lastFocusQualityWidth = 0;
+    this.lastFocusQualityHeight = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
   }
 
