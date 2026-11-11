@@ -15,6 +15,7 @@ import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
 import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
+import { ScannerFocusWatchdog, type ScannerFocusQualitySample } from './scannerFocusQuality';
 
 type VideoReadiness = {
   readyState: number;
@@ -147,6 +148,15 @@ export class UniversalScannerSession implements ScannerSession {
   private torchTrack: MediaStreamTrack | null = null;
   private torchState: ScannerTorchState = { supported: false, enabled: false, pending: false };
   private torchCommand: Promise<ScannerTorchState> | null = null;
+  private readonly focusWatchdog = new ScannerFocusWatchdog();
+  private focusControlEnabled = false;
+  private focusRecoveryPending = false;
+  private focusQualityStartedAt = Date.now();
+  private focusQualitySamples = 0;
+  private focusQualitySharpnessTotal = 0;
+  private focusQualitySharpnessMin = Number.POSITIVE_INFINITY;
+  private focusQualityEdgeCoverageTotal = 0;
+  private focusRecoveryRequests = 0;
   private decoder: ScannerDecoderAdapter | null = null;
   private frameHandle: number | null = null;
   private frameKind: 'video' | 'raf' | null = null;
@@ -387,6 +397,8 @@ export class UniversalScannerSession implements ScannerSession {
             stage: 'optional_autofocus_ms',
             durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
           });
+          this.focusControlEnabled = focusResult.status === 'continuous-requested';
+          this.focusWatchdog.reset();
           console.info('[RetailOS Scanner] Camera focus', {
             focusStatus: focusResult.status,
             focusModes: focusResult.supportedModes.join(','),
@@ -478,6 +490,7 @@ export class UniversalScannerSession implements ScannerSession {
       const results = await this.decoder.decode(this.video, {
         timestamp,
         scanRegion: this.getScanRegion(),
+        onFocusQuality: (sample) => this.handleFocusQuality(sample, timestamp, generation),
       });
       const decodeDurationMs = performance.now() - decodeStartedAt;
       this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
@@ -532,6 +545,76 @@ export class UniversalScannerSession implements ScannerSession {
       this.decoding = false;
       this.scheduleNextFrame(generation);
     }
+  }
+
+  private handleFocusQuality(
+    sample: ScannerFocusQualitySample,
+    timestamp: number,
+    generation: number,
+  ): void {
+    if (!sample.valid || generation !== this.generation || this.disposed) return;
+
+    this.focusQualitySamples += 1;
+    this.focusQualitySharpnessTotal += sample.sharpness;
+    this.focusQualitySharpnessMin = Math.min(this.focusQualitySharpnessMin, sample.sharpness);
+    this.focusQualityEdgeCoverageTotal += sample.edgeCoverage;
+
+    if (this.focusControlEnabled && !this.focusRecoveryPending
+      && this.focusWatchdog.observe(sample, timestamp)) {
+      const lease = this.cameraLease;
+      const track = this.stream?.getVideoTracks()[0] ?? null;
+      if (lease && track?.readyState === 'live') {
+        this.focusRecoveryPending = true;
+        this.focusRecoveryRequests += 1;
+        console.warn('[RetailOS Scanner] Camera focus recovery', {
+          focusRecoveryStatus: 'requested',
+          focusSharpness: sample.sharpness,
+          focusEdgeCoverage: sample.edgeCoverage,
+          focusRecoveryRequests: this.focusRecoveryRequests,
+        });
+        void lease.reapplyContinuousAutofocus()
+          .then((results) => {
+            if (generation !== this.generation || this.stream !== track?.getSettings && false) return;
+            const result = results[0];
+            console.info('[RetailOS Scanner] Camera focus recovery', {
+              focusRecoveryStatus: result?.status ?? 'unavailable',
+              focusMode: result?.actualMode,
+              focusModes: result?.supportedModes.join(',') ?? '',
+              focusRequestMs: result?.durationMs ?? 0,
+              focusErrorName: result?.errorName,
+              focusSharpness: sample.sharpness,
+              focusEdgeCoverage: sample.edgeCoverage,
+              focusRecoveryRequests: this.focusRecoveryRequests,
+            });
+          })
+          .catch((error: unknown) => {
+            console.warn('[RetailOS Scanner] Camera focus recovery failed', {
+              focusRecoveryStatus: 'failed',
+              focusErrorName: error instanceof Error ? error.name : 'UnknownError',
+              focusRecoveryRequests: this.focusRecoveryRequests,
+            });
+          })
+          .finally(() => {
+            if (generation === this.generation) this.focusRecoveryPending = false;
+          });
+      }
+    }
+
+    const now = Date.now();
+    if (now - this.focusQualityStartedAt < 5_000) return;
+    console.info('[RetailOS Scanner] Camera focus quality', {
+      focusQualitySamples: this.focusQualitySamples,
+      focusSharpness: Number((this.focusQualitySharpnessTotal / this.focusQualitySamples).toFixed(2)),
+      focusSharpnessMin: Number(this.focusQualitySharpnessMin.toFixed(2)),
+      focusEdgeCoverage: Number((this.focusQualityEdgeCoverageTotal / this.focusQualitySamples).toFixed(4)),
+      focusRecoveryRequests: this.focusRecoveryRequests,
+      focusControlEnabled: this.focusControlEnabled,
+    });
+    this.focusQualityStartedAt = now;
+    this.focusQualitySamples = 0;
+    this.focusQualitySharpnessTotal = 0;
+    this.focusQualitySharpnessMin = Number.POSITIVE_INFINITY;
+    this.focusQualityEdgeCoverageTotal = 0;
   }
 
   private deliverResult(result: import('./decoders/decoderAdapter').DecoderOutput, value: string): void {
@@ -676,6 +759,9 @@ export class UniversalScannerSession implements ScannerSession {
     this.stream = null;
     this.torchTrack = null;
     this.torchCommand = null;
+    this.focusControlEnabled = false;
+    this.focusRecoveryPending = false;
+    this.focusWatchdog.reset();
     this.updateTorchState({ supported: false, enabled: false, pending: false });
     if (this.video.srcObject === stream) {
       try {
