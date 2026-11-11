@@ -91,9 +91,8 @@ Measure baseline decode success, false positives, first-result latency, decode/s
 - Keep functional user acceptance distinct from quantified performance acceptance.
 
 ## Proposed PR sequence
-1. Documentation/source reconciliation PR — no runtime changes.
-2. SCAN-07 design and fixture baseline PR, then separate implementation PR if design is accepted.
-3. SCAN-08 enhancement candidate PR.
+1. PR #77: documentation/source reconciliation plus additive SCAN-07 implementation on the same branch.
+2. SCAN-08 enhancement candidate PR after SCAN-07 acceptance.
 4. SCAN-09 perspective/curved research followed by an opt-in implementation PR only if validated.
 5. SCAN-10 adaptive budget PR after candidate costs are known.
 6. SCAN-11 device matrix, instrumentation gaps and targeted fixes.
