@@ -31,7 +31,7 @@ assert.deepEqual(validateBarcodePayload("ABC*123", "CODE_39"), {
   valid: false,
   reason: "invalid-character",
 }, "Code 39 start/stop asterisk is not accepted as payload data");
-assert.deepEqual(validateBarcodePayload("ABC\\u0000", "CODE_39"), {
+assert.deepEqual(validateBarcodePayload("ABC\u0000", "CODE_39"), {
   valid: false,
   reason: "control-character",
 }, "Code 39 rejects control characters");
