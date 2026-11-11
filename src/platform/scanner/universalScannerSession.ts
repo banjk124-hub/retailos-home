@@ -371,9 +371,35 @@ export class UniversalScannerSession implements ScannerSession {
       if (this.disposed || generation !== this.generation) return;
 
       // Chromium may expose camera capabilities only after the track is
-      // actively streaming. Discover Torch after playback has produced a
-      // fresh frame, not immediately after getUserMedia resolves.
+      // actively streaming. Discover Torch and request continuous autofocus
+      // only after playback has produced a fresh frame.
       this.bindTorchTrack(stream);
+      const autofocusStartedAt = performance.now();
+      void lease.prepareForScanning()
+        .then((focusResults) => {
+          if (generation !== this.generation || this.stream !== stream || this.disposed) return;
+          const focusResult = focusResults[0] ?? {
+            status: 'unavailable' as const,
+            supportedModes: [],
+            durationMs: 0,
+          };
+          console.info('[RetailOS Scanner] Performance stage', {
+            stage: 'optional_autofocus_ms',
+            durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
+          });
+          console.info('[RetailOS Scanner] Camera focus', {
+            focusStatus: focusResult.status,
+            focusModes: focusResult.supportedModes.join(','),
+            focusMode: focusResult.actualMode,
+            focusRequestMs: focusResult.durationMs,
+            focusErrorName: focusResult.errorName,
+          });
+        })
+        .catch((error: unknown) => {
+          console.warn('[RetailOS Scanner] Optional autofocus diagnostic failed:', {
+            errorName: error instanceof Error ? error.name : 'UnknownError',
+          });
+        });
       // Publish preview readiness before decoder initialization so the UI can
       // reveal the live camera as soon as the first real frame is available.
       this.options.onPreviewReady?.();
