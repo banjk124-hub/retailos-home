@@ -18,7 +18,7 @@
 8. Decoder calls are serialized; current session minimum interval is 70 ms. Stage/decode timing and ROI/orientation diagnostics exist.
 
 ## SCAN-07 — Adaptive ROI and multi-scale
-**Status:** Implemented on PR #77 branch; CI and physical-device acceptance pending.
+**Status:** Implemented on PR #77 branch; CI #634 passed on code/test head, physical-device acceptance pending.
 - Preserve SCAN-02/03 mapping and SCAN-04 strict reticle ROI; no crop expansion outside the module-published region.
 - Keep the exact 1.5× sampling path as candidate zero. On a complete baseline miss, try 1× then 2× sampling; no more than three scale candidates per frame.
 - Each additional scale is capped at 6 MP. Existing 1280 px source-width cap remains unchanged.
