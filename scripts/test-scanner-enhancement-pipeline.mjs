@@ -10,6 +10,8 @@ const modulePaths = [
   'src/platform/scanner/scannerRotation.ts',
   'src/platform/scanner/scannerDeskew.ts',
   'src/platform/scanner/scannerEnhancementPipeline.ts',
+  'src/platform/scanner/scannerImageEnhancement.ts',
+  'src/platform/scanner/scannerGeometryCorrection.ts',
 ];
 
 try {
