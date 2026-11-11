@@ -936,7 +936,7 @@ The production decoder used one fixed 1.5× ROI sampling scale. The Home and Sto
 Revert the SCAN-07 scale planner and adapter loop together. The original 1.5× path remains candidate zero and can be restored without changing camera acquisition, geometry mapping, session lifecycle, presentation or retail workflows.
 
 
-## ADR-038 — SCAN-07 native ROI detail and coordinated focus recovery (2026-11-11)
+## ADR-038 — SCAN-07 native ROI detail and coordinated focus recovery (2026-11-11, superseded for focus by ADR-039)
 
 **Status:** Implemented on PR #78 branch; CI and physical-device acceptance pending.
 
