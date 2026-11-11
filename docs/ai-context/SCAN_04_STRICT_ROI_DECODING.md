@@ -58,7 +58,17 @@ The scanner session continues to own the camera, decoder instance and frame loop
 - Barcode payload validation, duplicate/cooldown policy, single/continuous mode and result delivery are unchanged.
 - Diagnostics now report source dimensions, ROI dimensions, decoded ROI hits and unavailable-region counts.
 
-## 4. Explicitly out of scope
+## 4. SCAN-07 multi-scale extension (PR #77 branch)
+
+- The original strict crop remains the only source region. The decoder does not expand, pad outward, or recalculate the module reticle.
+- The existing 1.5× sampling dimensions remain candidate zero, including the existing source-width cap and rounding behavior.
+- Only after all current orientation/deskew and binarizer attempts at 1.5× miss does the adapter retry the same crop at 1× and 2× sampling.
+- Fallback candidates are deduplicated and bounded to at most two additional scales; each additional allocation is capped at 6 MP.
+- Every scale uses the same existing decode pipeline and ZXing result validation. Reader access remains serialized; session cadence remains 70 ms.
+- The decoder records scale attempts/hits and the last attempted scale without logging barcode payloads.
+- Outward padding is intentionally not enabled because Home/Stocktake currently publish only the reticle region. A future capture envelope requires an explicit module-owned contract and geometry regression coverage.
+
+## 5. Explicitly out of scope
 
 - Perspective correction and curved-label dewarping remain deferred to SCAN-09; rotation and in-plane deskew are now implemented by SCAN-05/06.
 - Adaptive exposure/brightness control, Torch policy, camera resolution/FPS or autofocus changes.
@@ -67,7 +77,7 @@ The scanner session continues to own the camera, decoder instance and frame loop
 - Home lookup, Stocktake form-fill/duplicate handling/explicit save/revision/export changes.
 - Any shared reticle or scanner presentation component.
 
-## 5. Regression coverage
+## 6. Regression coverage
 
 `scripts/test-scanner-roi-decoder.mjs` verifies:
 - normalized-to-pixel conversion using source dimensions;
@@ -76,9 +86,9 @@ The scanner session continues to own the camera, decoder instance and frame loop
 - session-to-decoder region forwarding;
 - strict crop wiring and removal of full-frame/fixed-centered decode paths.
 
-The suite is registered in `npm run preflight`. CI must also pass TypeScript, production build, GitHub Pages build and all existing scanner regressions.
+The suite is registered in `npm run preflight`. `scripts/test-scanner-scale.mjs` validates candidate ordering, dimensions, uniqueness and allocation bounds; `scripts/test-scanner-decoder-integration.mjs` verifies production adapter scale retries retain the exact source crop. The full preflight remains required. CI must also pass TypeScript, production build, GitHub Pages build and all existing scanner regressions.
 
-## 6. Device acceptance gates
+## 7. Device acceptance gates
 
 On both iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake independently:
 1. Barcode centered inside reticle.
@@ -91,6 +101,6 @@ On both iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake independe
 
 CI cannot prove optical accuracy or device performance. The user has confirmed normal post-deployment operation; detailed low-light/reflective/small/far barcode scenarios remain separately unrecorded. SCAN-05/06 have their own device acceptance gates.
 
-## 7. Rollback
+## 8. Rollback
 
 Revert the SCAN-04 decoder/contract changes as one unit if ROI-only decoding causes a material accuracy regression. SCAN-03's geometry publication can remain intact; reverting SCAN-04 restores the previous decoder behavior without changing camera lifecycle or feature presentation.
