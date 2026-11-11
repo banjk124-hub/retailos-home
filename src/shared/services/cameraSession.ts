@@ -81,7 +81,7 @@ function assertStreamCompatible(
     || (allowNegotiatedFacingMismatch && compatibility.reason === 'facing-mode-mismatch')) return;
 
   const error = new Error(
-    `Camera đang được phiên quét khác sử dụng với cấu hình không tương thích (${compatibility.reason}). Hãy đóng phiên đó trước khi mở camera theo yêu cầu mới.`,
+    `Camera hiện tại không đáp ứng yêu cầu của phiên quét (${compatibility.reason}). Hãy đóng phiên đang sử dụng camera hoặc thử lại với cấu hình phù hợp.`,
   );
   error.name = 'OverconstrainedError';
   throw error;
