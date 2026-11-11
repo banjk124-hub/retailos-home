@@ -1,3 +1,29 @@
+# Current Main reconciliation — Scanner Camera Request Bridge (2026-11-11)
+
+**Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
+**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR and CI pending; no merge/deploy.
+
+## Current implementation on branch
+- `ScannerCameraRequest` is now carried by the one-shot `CameraLeaseRequest` and passed into the live `getUserMedia()` request.
+- Camera constraints preserve the existing default: rear camera, ideal 1280×720, ideal 30 FPS and max 30 FPS.
+- Shared-stream compatibility checks actual track facing mode and frame rate. Resolution remains an ideal, not an exact gate; missing browser settings remain unknown.
+- Compatible requests continue to share the same stream and reference-counted lease. Incompatible requests cannot replace a stream while it has active leases.
+- The React bridge and platform session retain camera intent after the one-shot request is claimed. Foreground recovery still creates a fresh session and fresh video surface, then reacquires with the original intent.
+- Home and Stocktake retain their existing synchronous tap-origin acquisition path and current default camera behavior.
+
+## Protected scope
+No intended changes to permission UX, autofocus behavior, page lifecycle coordinator, teardown order, video readiness, decoder/cadence, strict ROI, Torch, callback semantics, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, storage, backend or deployment configuration.
+
+## Verification status
+- [ ] Camera request resolver and compatibility regression suite.
+- [ ] Lease sharing/conflict, pending request, cancellation and ref-count regression coverage.
+- [ ] Recovery fresh-session/fresh-surface/original-intent regression coverage.
+- [ ] Full preflight, TypeScript, production and Pages builds.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA.
+- [ ] Explicit approval before merge/deploy.
+
+---
+
 # Current Main reconciliation — Scanner Engine remediation (2026-11-11)
 
 **Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). The older `9406ac...` line below is the PR #67 historical scanner baseline, not current repository HEAD.
