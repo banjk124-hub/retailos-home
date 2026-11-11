@@ -3,7 +3,9 @@ import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../..
 import { buildCameraVideoConstraints, resolveCameraStreamCompatibility } from '../../platform/scanner/cameraRequestResolver';
 
 let activeStream: MediaStream | null = null;
+let activeCameraRequest: ScannerCameraRequest | null = null;
 let pendingRequest: Promise<MediaStream> | null = null;
+let pendingCameraRequest: ScannerCameraRequest | null = null;
 let requestGeneration = 0;
 let activeLeaseCount = 0;
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
@@ -58,6 +60,15 @@ export function requestCameraLease(
 }
 
 
+function sameCameraRequest(a: ScannerCameraRequest | null, b: ScannerCameraRequest): boolean {
+  return Boolean(a
+    && a.facingMode === b.facingMode
+    && a.preferredWidth === b.preferredWidth
+    && a.preferredHeight === b.preferredHeight
+    && a.preferredFrameRate === b.preferredFrameRate
+    && a.maxFrameRate === b.maxFrameRate);
+}
+
 function assertStreamCompatible(stream: MediaStream, cameraRequest: ScannerCameraRequest): void {
   const track = stream.getVideoTracks().find((candidate) => candidate.readyState === 'live');
   const actualSettings = track?.getSettings?.() ?? {};
@@ -76,12 +87,18 @@ async function acquireSharedStream(
 ): Promise<{ stream: MediaStream; generation: number }> {
   if (activeStream?.getTracks().some((track) => track.readyState === 'live')) {
     try {
-      assertStreamCompatible(activeStream, cameraRequest);
+      // The exact intent that created this stream is already satisfied to the
+      // browser's negotiated best effort. Different intents must be checked
+      // against actual track settings before they can share it.
+      if (!sameCameraRequest(activeCameraRequest, cameraRequest)) {
+        assertStreamCompatible(activeStream, cameraRequest);
+      }
       return { stream: activeStream, generation: requestGeneration };
     } catch (error) {
       if (activeLeaseCount > 0 || pendingRequest) throw error;
       const staleStream = activeStream;
       activeStream = null;
+      activeCameraRequest = null;
       staleStream.getTracks().forEach((track) => track.stop());
     }
   }
@@ -92,6 +109,7 @@ async function acquireSharedStream(
   const generation = requestGeneration;
   if (!pendingRequest) {
     const getUserMediaStartedAt = performance.now();
+    pendingCameraRequest = cameraRequest;
     const request = navigator.mediaDevices.getUserMedia({
       audio: false,
       video: buildCameraVideoConstraints(cameraRequest),
@@ -106,9 +124,11 @@ async function acquireSharedStream(
       }
 
       activeStream = stream;
+      activeCameraRequest = cameraRequest;
       const videoTracks = stream.getVideoTracks();
       if (!videoTracks.some((track) => track.readyState === 'live')) {
         activeStream = null;
+        activeCameraRequest = null;
         stream.getTracks().forEach((track) => track.stop());
         throw new DOMException('Camera track ended before startup completed.', 'NotReadableError');
       }
@@ -122,6 +142,7 @@ async function acquireSharedStream(
             .some((videoTrack) => videoTrack.readyState === 'live');
           if (hasLiveVideoTrack) return;
           activeStream = null;
+          activeCameraRequest = null;
           activeLeaseCount = 0;
           trackEndedListeners.forEach((listener) => listener(stream));
         }, { once: true });
@@ -160,18 +181,25 @@ async function acquireSharedStream(
 
       return stream;
     }).finally(() => {
-      if (pendingRequest === request) pendingRequest = null;
+      if (pendingRequest === request) {
+        pendingRequest = null;
+        pendingCameraRequest = null;
+      }
     });
     pendingRequest = request;
   }
 
-  const stream = await pendingRequest;
+  const sharedRequest = pendingRequest;
+  const sharedRequestIntent = pendingCameraRequest;
+  const stream = await sharedRequest;
   if (generation !== requestGeneration || activeStream !== stream) {
     throw new DOMException('Camera request was superseded.', 'AbortError');
   }
-  // A pending getUserMedia request may be shared only after its actual track
-  // settings prove compatible with this caller's intent.
-  assertStreamCompatible(stream, cameraRequest);
+  // The initiating caller accepts the browser's negotiated best-effort result.
+  // Other callers may share it only when actual settings satisfy their intent.
+  if (!sameCameraRequest(sharedRequestIntent, cameraRequest)) {
+    assertStreamCompatible(stream, cameraRequest);
+  }
   return { stream, generation };
 }
 
@@ -199,6 +227,7 @@ export async function acquireCameraLease(
       activeLeaseCount = Math.max(0, activeLeaseCount - 1);
       if (activeLeaseCount > 0) return;
       activeStream = null;
+      activeCameraRequest = null;
       stream.getTracks().forEach((track) => track.stop());
     },
   };
@@ -216,9 +245,11 @@ export function subscribeCameraTrackEnded(listener: (stream: MediaStream) => voi
 export function releaseCameraStream(): void {
   requestGeneration += 1;
   pendingRequest = null;
+  pendingCameraRequest = null;
   activeLeaseCount = 0;
   const stream = activeStream;
   activeStream = null;
+  activeCameraRequest = null;
   stream?.getTracks().forEach((track) => track.stop());
 }
 
