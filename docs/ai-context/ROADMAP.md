@@ -19,7 +19,7 @@
 ## Acceptance gates
 - [ ] Code 39 payload validation and production decoder integration pass.
 - [ ] Recovery metrics survive collector filtering and appear in QA Monitor / JSON / CSV.
-- [ ] Privacy regression passes.
+- [x] Privacy regression passes (CI #566).
 - [ ] Existing EAN-8, EAN-13 and Code 128 scanner suites remain green.
 - [ ] Full `npm run preflight`, TypeScript, production and GitHub Pages builds pass.
 - [ ] Review exact diff; no merge/deploy until explicit user approval.
@@ -28,7 +28,7 @@
 
 # Current work — Scanner Engine remediation and Stocktake Import workspace (2026-11-11)
 
-- PR #70–#73 were merged; PR #74 (Stocktake Import workspace v2) is now merged into main at `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`. Deployment of PR #74 is not asserted by this record.
+- PR #70–#73 were merged; PR #74 (Stocktake Import workspace v2) is merged into main at `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`; GitHub Pages deploy workflow #89 completed successfully. Manual device QA is not asserted by this record.
 - Current scanner remediation branch: `fix/scanner-engine-remediation-code39`, based on current main `6ac1eef...`.
 - Remediation scope: Code 39 enablement end-to-end; recovery diagnostics allowlist + QA Monitor/CSV; privacy regression; audio documentation reconciliation.
 - Do not change camera lease, camera request defaults, autofocus, lifecycle/recovery, decode cadence, strict ROI, Home/Stocktake presentation or business workflows.
@@ -36,13 +36,15 @@
 - Benchmark corpus and generalized conditional recovery orchestration remain future work, not implied by this remediation.
 - PR for the scanner remediation has not yet been created; all changes remain isolated on the branch and unmerged/undeployed.
 
+**Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; angled Code 39 optical performance remains unverified.
+
 ## Scanner remediation acceptance
-- [ ] Code 39 validation and production ZXing adapter tests pass.
-- [ ] Recovery metrics survive collector allowlisting and appear in QA Monitor / CSV.
+- [x] Code 39 validation and production ZXing adapter tests pass for upright and 180-degree reversal (CI #566).
+- [x] Recovery metrics survive collector allowlisting and appear in QA Monitor / CSV (CI #566).
 - [ ] Privacy regression passes.
 - [ ] Existing EAN-8, EAN-13 and Code 128 behavior remains green.
-- [ ] Full preflight, TypeScript, production and Pages builds pass.
-- [ ] Diff review confirms no protected camera/lifecycle/feature behavior changed.
+- [x] Full preflight, TypeScript, production and Pages builds pass (CI #566).
+- [x] Diff review confirms no camera/lifecycle/feature behavior or dependencies changed.
 - [ ] Explicit user approval before merge/deploy.
 
 ---
