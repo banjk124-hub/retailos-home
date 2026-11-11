@@ -20,6 +20,7 @@ No changes are intended to camera permission UX, autofocus policy, page lifecycl
 - A known facing-mode mismatch is incompatible.
 - If `maxFrameRate` is set, an actual track frame rate above that ceiling is incompatible. The preferred frame rate is clamped to that ceiling when building constraints.
 - Missing browser track settings are treated as unknown, not as a proven mismatch.
+- The request that initiated `getUserMedia()` accepts the browser's negotiated best-effort result for its ideal constraints; identical intents may share it. Different intents are checked against actual settings.
 - Compatible requests share the active stream. An incompatible request cannot replace a stream with active leases. A pending acquisition is checked against each caller after actual settings become available.
 
 ## Verification gates
