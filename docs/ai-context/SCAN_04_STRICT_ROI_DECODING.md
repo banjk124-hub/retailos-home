@@ -29,9 +29,12 @@ resolveScannerRoiCrop()
 drawImage(source, crop bounds, ROI canvas)
          │
          ▼
-RGBA → luminance → ZXing HybridBinarizer
+RGBA → luminance
          │
-         └─ GlobalHistogramBinarizer every third ROI pass
+         ▼
+SCAN-05/06 candidate flow: upright → 90° → continuous deskew
+         │
+         └─ HybridBinarizer + GlobalHistogramBinarizer per candidate
 ```
 
 The scanner session continues to own the camera, decoder instance and frame loop. The feature modules continue to own their independent video elements, reticles and presentation.
@@ -50,14 +53,14 @@ The scanner session continues to own the camera, decoder instance and frame loop
 - Supported barcode formats and format allowlist are unchanged.
 - The ROI is aspect-ratio-preserving; no horizontal/vertical stretching is introduced.
 - Preserve the existing source-frame downscale cap: frames wider than 1280 pixels are scaled proportionally before the ROI is enlarged 1.5×. The crop retains the source aspect ratio and does not increase decode pixel density merely because a device reports a higher-resolution camera stream.
-- Hybrid binarization remains the normal path. Global Histogram remains a bounded secondary binarizer every third ROI pass.
-- Session decode cadence remains 110 ms.
+- The historical every-third-frame binarizer schedule and 110 ms cadence are superseded by SCAN-05/06. Current runtime uses HybridBinarizer and GlobalHistogramBinarizer for each orientation candidate; session minimum decode interval is 70 ms and calls remain serialized.
+- SCAN-06 adds continuous in-plane deskew and bounded percentile contrast normalization. These do not alter the strict source-frame ROI contract.
 - Barcode payload validation, duplicate/cooldown policy, single/continuous mode and result delivery are unchanged.
 - Diagnostics now report source dimensions, ROI dimensions, decoded ROI hits and unavailable-region counts.
 
 ## 4. Explicitly out of scope
 
-- Rotation normalization, deskew, perspective correction or curved-label dewarping.
+- Perspective correction and curved-label dewarping remain deferred to SCAN-09; rotation and in-plane deskew are now implemented by SCAN-05/06.
 - Adaptive exposure/brightness control, Torch policy, camera resolution/FPS or autofocus changes.
 - Decode cadence changes, parallel decode, worker migration or decoder replacement.
 - Camera lease/refcount, startup/readiness, lifecycle/recovery, preview geometry or CSS changes.
