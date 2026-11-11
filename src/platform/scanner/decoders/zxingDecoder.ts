@@ -19,6 +19,7 @@ import { rgbaToLuminance } from './rgbaToLuminance';
 import { rotateLuminance90Clockwise } from '../scannerRotation';
 import { deskewLuminanceFrame } from '../scannerDeskew';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
+import { measureScannerFocusQuality } from '../scannerFocusQuality';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -154,6 +155,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticScaleAttempts = 0;
   private diagnosticScaleHits = 0;
   private diagnosticLastScaleFactor = 0;
+  private lastFocusQualitySampleAt = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
@@ -184,7 +186,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
 
   async decode(
     source: CanvasImageSource,
-    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion }: DecoderDecodeOptions,
+    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion, onFocusQuality }: DecoderDecodeOptions,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !this.canvas || !this.context) {
       throw new Error('ZXing adapter has not been initialized.');
@@ -244,7 +246,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         this.diagnosticScaleAttempts += 1;
         this.diagnosticLastScaleFactor = candidate.scale;
 
-        const output = this.decodeCurrentCanvas(timestamp);
+        const output = this.decodeCurrentCanvas(timestamp, candidate.baseline ? onFocusQuality : undefined);
         if (output) {
           this.diagnosticScaleHits += 1;
           this.diagnosticDecoded += 1;
@@ -302,7 +304,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.stageCosts[stage] = current;
   }
 
-  private decodeCurrentCanvas(timestamp: number): DecoderOutput | null {
+  private decodeCurrentCanvas(
+    timestamp: number,
+    onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
+  ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -314,6 +319,14 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height,
     );
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+    if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
+      this.lastFocusQualitySampleAt = timestamp;
+      onFocusQuality(measureScannerFocusQuality(
+        grayscale,
+        this.canvas.width,
+        this.canvas.height,
+      ));
+    }
 
     // Run both production binarizers on each candidate. The additional CPU
     // cost is intentional: a missed first threshold must not suppress a valid
@@ -498,6 +511,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticScaleAttempts = 0;
     this.diagnosticScaleHits = 0;
     this.diagnosticLastScaleFactor = 0;
+    this.lastFocusQualitySampleAt = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
   }
 
