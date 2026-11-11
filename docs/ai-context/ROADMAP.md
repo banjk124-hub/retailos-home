@@ -67,7 +67,7 @@
 
 **Status:** Complete, merged, deployed and user-validated.
 **PR:** [#67 — Continuous barcode orientation recovery](https://github.com/banjk124-hub/retailos-home/pull/67).
-**Merge commit / current main:** 9406ac30d53bc9984912bd1928a32fd78157cf60.
+**PR #67 merge baseline:** 9406ac30d53bc9984912bd1928a32fd78157cf60 (current main later advanced through PR #74).
 **Final PR-head CI:** run #432 passed on c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
 
 - Original failure reports: sideways barcodes missed, intermediate orientations were not covered, and recognition felt slow/insensitive.
@@ -128,10 +128,10 @@ Status: active working plan.
 
 **Base:** PR #56 merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
 **Branch:** `test/scanner-audio-runtime-and-doc-sync`
-**Status:** Runtime regression test and documentation synchronization authored; GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Draft PR #57 remains open and unmerged.
+**Status:** Merged by PR #57 at `09cd3b5117ea38a16dd991f74320835b67ea04b5`; full preflight passed on the final documented PR head. Deployment and physical acoustic acceptance are tracked separately.
 
 - PR #56 introduced the Settings Hub and one device-local feedback preference store shared by Home, Stocktake and future Scanner consumers.
-- Default haptics remain enabled; default beep level is 50%, preserving existing Web Audio gain 0.24. Slider steps are 0–100 in increments of 10; zero mutes and 100 maps to gain 0.48.
+- Default haptics remain enabled; default beep level is 50%, current Web Audio gain 0.30 at 50%. Slider steps are 0–100 in increments of 10; zero mutes and 100 maps to gain 0.60. The older PR #56 values 0.24/0.48 are superseded.
 - This follow-up adds executable AudioContext/GainNode tests to verify the actual gain ramp, gesture unlock, preview/current-setting synchronization and shared feedback behavior.
 - Production volume mapping remains unchanged until real-device A/B comparison demonstrates a justified alternative. A numeric gain difference is not a substitute for perceived-loudness testing.
 - Physical Android vibration/beep and iOS beep/unsupported-vibration validation remain open. CI cannot verify physical haptics or acoustic output.
