@@ -2,7 +2,7 @@
 
 **Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 (Code 39 + recovery diagnostics) is merged.  
 **Working branch:** `feat/scanner-camera-request-bridge`, based on that main commit.  
-**PR / CI:** pending creation and verification. No merge or deployment has occurred for this branch.
+**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. CI is running; no merge or deployment has occurred for this branch.
 
 ## Scope and protected behavior
 - Wire the existing `ScannerCameraRequest` into the actual tap-origin camera lease and `getUserMedia()` constraints.
