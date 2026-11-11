@@ -30,8 +30,11 @@ function dimensionsAtScale(
     ? Math.sqrt(pixelBudget / (baseWidth * baseHeight))
     : requestedScale;
   const scale = Math.min(requestedScale, budgetScale);
-  const width = Math.max(1, Math.round(baseWidth * scale));
-  const height = Math.max(1, Math.round(baseHeight * scale));
+  // Preserve the legacy round() result for 1.5x; floor fallback dimensions
+  // so integer rounding can never exceed the additional-candidate pixel cap.
+  const dimension = requestedScale === BASELINE_SCALE ? Math.round : Math.floor;
+  const width = Math.max(1, dimension(baseWidth * scale));
+  const height = Math.max(1, dimension(baseHeight * scale));
   if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)) return null;
 
   return { scale, width, height, baseline: requestedScale === BASELINE_SCALE };
