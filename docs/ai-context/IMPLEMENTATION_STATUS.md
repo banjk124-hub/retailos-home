@@ -25,14 +25,14 @@
 - PR #78 branch changes preferred camera request to 1920×1080, 30 FPS maximum. Browser-negotiated actual settings remain authoritative; weak devices may return a lower resolution.
 - Focus setup is moved from pre-playback acquisition to post-first-frame readiness. Focus and Torch share one constraint-preserving, per-track serialized applyConstraints queue.
 - Focus watchdog measures sharpness from the existing grayscale ROI readback every 500 ms. It filters low-texture and changing frames; after four stable blur samples it reasserts continuous autofocus only when the camera exposes/accepts that mode, with an 8-second cooldown.
-- Decoder calls remain serialized; session minimum decode interval remains 70 ms. No total scanner latency metric is assigned to SCAN-07.
+- Decoder calls remain serialized; session minimum decode interval remains 70 ms. No total scanner overall scanner response time metric is assigned to SCAN-07.
 
 ## SCAN-07 — active integration work
 - PR #77 is merged/deployed. User confirms modest improvement on small/far labels and reads near reticle edges, but current optical range/precision is insufficient.
 - PR #78 is implementing native ROI detail preservation, preferred 1080p acquisition, post-frame autofocus configuration, safe track constraint preservation/serialization, and bounded focus recovery.
 - Added automated tests for ROI sampling bounds, focus-vs-motion quality detection, bounded re-arm, and focus/Torch constraint serialization. CI and physical-device verification on the new branch are pending.
 - No outward reticle padding: current modules have not published a wider authorized capture envelope.
-- No claims about exact minimum barcode size, maximum distance or overall latency until real-device measurements exist.
+- No claims about exact minimum barcode size, maximum distance or overall overall scanner response time until real-device measurements exist.
 
 ## Not implemented yet
 - SCAN-07 physical-device acceptance and labelled small/far barcode size/distance evidence.
@@ -102,7 +102,7 @@ Complete PR #78, verify CI, then test both Home and Stocktake on iOS/Android. Do
 ## Evidence not quantified in this record
 
 - Detailed device/browser × Home/Stocktake × symbology matrix was not provided.
-- First-result latency, per-stage timing, CPU utilization, long-task frequency and decode success-rate percentages were not provided.
+- First-result per-stage processing cost, CPU utilization, long-task frequency and decode success-rate percentages were not provided.
 - The synthetic 40/255 fixture is a regression fixture only; it is not a calibrated real-world optical sensitivity threshold.
 - These are useful future performance/coverage measurements, not unresolved release blockers given the user's explicit post-deploy acceptance.
 
@@ -433,7 +433,7 @@ Last updated: 2026-11-04
 - Acceptance: branch builds; local regression checks; Android Chrome and iOS Safari camera QA; no duplicate decoder, stale callback, or duplicate single-mode callback.
 
 **1.2B Camera performance/diagnostics**
-- Measure acquisition, video readiness, decoder attach, first valid scan, resume latency and actual track settings.
+- Measure acquisition, video readiness, decoder attach, first valid scan, resume overall scanner response time and actual track settings.
 - Compare 960x540 and 1280x720 plus decode intervals around 100/120/150 ms on representative devices. Do not change current values based on assumption alone.
 
 **1.2C Audio and continuous scan**
@@ -593,7 +593,7 @@ First synchronize and review this documentation-only branch, run repository CI/p
   - `src/features/scanner/components/BarcodeScanner.tsx` and `src/features/stocktake/components/StocktakeScanner.tsx`: reveal video and dismiss startup placeholder when preview is ready.
   - `src/styles/home-ux.css` and `src/features/stocktake/components/stocktake.css`: visibility styles now follow preview readiness rather than decoder/scanning readiness.
 - GitHub Actions run #79 (`42388939459`): job “TypeScript and production builds” completed with conclusion `success`; steps included locked dependency install and “Run local-equivalent preflight”. This is CI evidence only.
-- Not verified: physical iOS Safari/PWA or Android Chrome/PWA camera startup/resume, perceived latency, blank/flicker behavior, and live Home/Stocktake interaction. No claim of device QA.
+- Not verified: physical iOS Safari/PWA or Android Chrome/PWA camera startup/resume, perceived overall scanner response time, blank/flicker behavior, and live Home/Stocktake interaction. No claim of device QA.
 - Scope exclusions preserved: autofocus, camera constraints/resolution, decoder/ROI/cadence, barcode validation, Phase 2 recognition conditions, business callbacks and persistence were not changed.
 - Next: synchronize this branch locally without disturbing existing untracked files; inspect the complete source+documentation diff; run local `npm run preflight`; then test first open and resume on iOS and Android. Keep PR #29 unmerged/undeployed until device evidence is reviewed and the user approves.
 
