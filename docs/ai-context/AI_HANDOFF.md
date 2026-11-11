@@ -14,11 +14,12 @@
 5. Separate algorithm accuracy, false-positive rate, latency, memory and device responsiveness in all reports.
 6. SCAN-07 is being delivered inside PR #77 as requested. SCAN-08–11 remain separately scoped. Do not batch them into one rewrite.
 
-## Current project state — SCAN-07 branch implementation pending verification
+## Current project state — SCAN-07 CI verified; device acceptance pending
 - SCAN-01 through SCAN-06 implemented; PR #67 confirmed merged/deployed by user.
 - PR #75 Code 39/diagnostic remediation merged.
 - PR #76 Camera Request Bridge merged to main at `20ce22e`; run #610 passed on code/test head `b954b8a`. Device QA evidence for PR #76 must not be assumed from CI.
 - Current PR #77 branch adds bounded 1×/2× strict-ROI fallback after the unchanged 1.5× baseline. At most three scales per frame; each additional scale is capped at 6 MP. Existing 1280 px source width cap, upright/90°/continuous deskew, percentile contrast stretch, Hybrid + GlobalHistogram, serialized decode and 70 ms minimum interval remain unchanged.
+- GitHub Actions run #634 passed full preflight, TypeScript, production and Pages builds on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`; verify any later final documentation-sync head again.
 - No padding outside reticle: a separate module-authorized capture envelope does not yet exist. Do not infer permission to expand the ROI.
 - Current user feedback: operationally relatively stable.
 
