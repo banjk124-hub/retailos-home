@@ -77,6 +77,12 @@ try {
   assert.match(sessionSource, /const minDecodeIntervalMs = 70/,
     'the shared session must use the approved higher decode sampling cadence');
 
+  const { SUPPORTED_BARCODE_FORMATS } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/contracts.js'),
+  ).href);
+  assert.ok(SUPPORTED_BARCODE_FORMATS.includes('CODE_39'),
+    'production retail allowlist must enable Code 39');
+
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
