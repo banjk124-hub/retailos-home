@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { BarcodeFormat, MultiFormatWriter } from '@zxing/library';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const tempRoot = await mkdtemp(path.join(root, '.scanner-decoder-integration-'));
@@ -119,6 +120,19 @@ try {
     }
     return { luminance, width, height };
   }
+  function makeCode39Frame(value) {
+    const matrix = new MultiFormatWriter().encode(value, BarcodeFormat.CODE_39, 0, 84);
+    const width = matrix.getWidth();
+    const height = matrix.getHeight();
+    const luminance = new Uint8ClampedArray(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        luminance[y * width + x] = matrix.get(x, y) ? 0 : 255;
+      }
+    }
+    return { luminance, width, height };
+  }
+
   const EAN_L = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
   const EAN_G = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
   const EAN_FIRST_PARITY = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
@@ -175,6 +189,25 @@ try {
   async function decodeOnce(decoder, source, scanRegion = fullRegion) {
     return decoder.decode(source, { timestamp: 1234, scanRegion });
   }
+
+  const code39Frame = makeCode39Frame('RETAIL-39');
+  const code39Decoder = await createDecoder('CODE_39');
+  const code39Result = await decodeOnce(code39Decoder, toSource(code39Frame));
+  assert.equal(code39Result[0]?.value, 'RETAIL-39',
+    'production adapter must decode a real Code 39 symbol through the strict ROI');
+  assert.equal(code39Result[0]?.symbology, 'CODE_39',
+    'production adapter must preserve Code 39 symbology in result delivery');
+  await code39Decoder.dispose();
+
+  const angledCode39Frame = rotateLuminanceByAngle(
+    code39Frame.luminance, code39Frame.width, code39Frame.height, 17,
+  );
+  assert.ok(angledCode39Frame, 'angled Code 39 integration fixture must be generated');
+  const angledCode39Decoder = await createDecoder('CODE_39');
+  const angledCode39Result = await decodeOnce(angledCode39Decoder, toSource(angledCode39Frame));
+  assert.equal(angledCode39Result[0]?.value, 'RETAIL-39',
+    'production adapter must decode Code 39 through the existing deskew recovery path');
+  await angledCode39Decoder.dispose();
 
   const upright = makeCode128();
   const uprightDecoder = await createDecoder();
@@ -341,7 +374,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: upright, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
+  console.log('Production ZXing adapter integration passed: Code 39 upright/deskew, Code 128, EAN, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });
