@@ -26,19 +26,19 @@ export function buildTrackConstraintsWithAdvanced(
 
   const constraints: MediaTrackConstraints = { ...existing };
   if (constraints.width === undefined && typeof settings.width === 'number') {
-    constraints.width = { exact: settings.width };
+    constraints.width = { ideal: settings.width };
   }
   if (constraints.height === undefined && typeof settings.height === 'number') {
-    constraints.height = { exact: settings.height };
+    constraints.height = { ideal: settings.height };
   }
   if (constraints.frameRate === undefined && typeof settings.frameRate === 'number') {
-    constraints.frameRate = { exact: settings.frameRate };
+    constraints.frameRate = { ideal: settings.frameRate, max: settings.frameRate };
   }
   if (constraints.facingMode === undefined && typeof settings.facingMode === 'string') {
-    constraints.facingMode = { exact: settings.facingMode };
+    constraints.facingMode = { ideal: settings.facingMode };
   }
   if (constraints.deviceId === undefined && typeof settings.deviceId === 'string' && settings.deviceId) {
-    constraints.deviceId = { exact: settings.deviceId };
+    constraints.deviceId = { ideal: settings.deviceId };
   }
 
   const preservedAdvanced = (constraints.advanced ?? []).filter(
