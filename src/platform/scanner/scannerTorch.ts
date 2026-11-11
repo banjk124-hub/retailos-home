@@ -1,5 +1,5 @@
 import type { ScannerTorchState } from './contracts';
-import { buildTrackConstraintsWithAdvanced } from '../../shared/services/mediaTrackConstraints';
+import { applyTrackAdvancedConstraint } from '../../shared/services/mediaTrackConstraints';
 
 type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
 type TorchSettings = MediaTrackSettings & { torch?: boolean };
@@ -33,8 +33,7 @@ export async function applyScannerTorch(
   if (!current.supported) return current;
 
   try {
-    const constraints = buildTrackConstraintsWithAdvanced(track, 'torch', enabled);
-    await track.applyConstraints(constraints);
+    await applyTrackAdvancedConstraint(track, 'torch', enabled);
     const after = readScannerTorchState(track);
     return {
       supported: true,
