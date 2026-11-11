@@ -9,12 +9,15 @@ let pendingCameraRequest: ScannerCameraRequest | null = null;
 let requestGeneration = 0;
 let activeLeaseCount = 0;
 const focusPreparationByTrack = new WeakMap<MediaStreamTrack, Promise<CameraFocusResult>>();
+const focusRecoveryByTrack = new WeakMap<MediaStreamTrack, Promise<CameraFocusResult>>();
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
 
 export type CameraStreamLease = {
   readonly stream: MediaStream;
   /** Apply optional camera tuning only after the owning video has a fresh frame. */
   prepareForScanning(): Promise<CameraFocusResult[]>;
+  /** Reassert continuous autofocus after the scanner detects sustained image defocus. */
+  reapplyContinuousAutofocus(): Promise<CameraFocusResult[]>;
   release(): void;
 };
 
@@ -224,6 +227,19 @@ export async function acquireCameraLease(
         if (existing) return existing;
         const pending = requestContinuousAutofocus(track);
         focusPreparationByTrack.set(track, pending);
+        return pending;
+      }));
+    },
+    reapplyContinuousAutofocus: async () => {
+      if (released || generation !== requestGeneration || activeStream !== stream) return [];
+      const tracks = stream.getVideoTracks().filter((track) => track.readyState === 'live');
+      return Promise.all(tracks.map((track) => {
+        const existing = focusRecoveryByTrack.get(track);
+        if (existing) return existing;
+        const pending = requestContinuousAutofocus(track).finally(() => {
+          if (focusRecoveryByTrack.get(track) === pending) focusRecoveryByTrack.delete(track);
+        });
+        focusRecoveryByTrack.set(track, pending);
         return pending;
       }));
     },
