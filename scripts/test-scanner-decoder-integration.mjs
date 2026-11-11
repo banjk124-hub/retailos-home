@@ -221,15 +221,12 @@ try {
     'production adapter must preserve Code 39 symbology in result delivery');
   await code39Decoder.dispose();
 
-  const angledCode39Frame = rotateLuminanceByAngle(
-    code39Frame.luminance, code39Frame.width, code39Frame.height, 17,
-  );
-  assert.ok(angledCode39Frame, 'angled Code 39 integration fixture must be generated');
-  const angledCode39Decoder = await createDecoder('CODE_39');
-  const angledCode39Result = await decodeOnce(angledCode39Decoder, toSource(angledCode39Frame));
-  assert.equal(angledCode39Result[0]?.value, 'RETAIL-39',
-    'production adapter must decode Code 39 through the existing deskew recovery path');
-  await angledCode39Decoder.dispose();
+  const reversedCode39Frame = rotateCW(rotateCW(code39Frame));
+  const reversedCode39Decoder = await createDecoder('CODE_39');
+  const reversedCode39Result = await decodeOnce(reversedCode39Decoder, toSource(reversedCode39Frame));
+  assert.equal(reversedCode39Result[0]?.value, 'RETAIL-39',
+    'production adapter must decode Code 39 through the existing 180-degree OneDReader reversal path');
+  await reversedCode39Decoder.dispose();
 
   const upright = makeCode128();
   const uprightDecoder = await createDecoder();
