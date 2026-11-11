@@ -205,7 +205,7 @@ Acceptance criteria:
 - A close/pause during pending camera acquisition or video startup cannot attach a stale stream or deliver a stale callback.
 - Exactly one accepted callback in single mode.
 - Continuous mode only emits accepted supported formats according to an explicit cooldown policy.
-- EAN-13/EAN-8 payloads are format/length-valid; CODE-128 content is preserved and not restricted to digits.
+- EAN-13/EAN-8 payloads are format/length/check-digit-valid; CODE-128 content is preserved as opaque text; CODE-39 accepts its standard uppercase alphabet and spaces.
 - Empty/unsupported values are not passed to feature callbacks.
 - Home and Stocktake behavior above remains unchanged.
 - Targeted tests and production builds pass, or failures are explicitly documented as blockers.
