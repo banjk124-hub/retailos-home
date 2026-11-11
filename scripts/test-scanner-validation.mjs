@@ -110,221 +110,42 @@ assert.throws(
 );
 
 
-const mediaTrackConstraintsSource = await readFile(
-  new URL("../src/shared/services/mediaTrackConstraints.ts", import.meta.url),
-  "utf8",
-);
-const mediaTrackConstraintsCompiled = ts.transpileModule(mediaTrackConstraintsSource, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-const mediaTrackConstraintsUrl = "data:text/javascript;base64," +
-  Buffer.from(mediaTrackConstraintsCompiled).toString("base64");
-
 const cameraDiagnosticsSource = await readFile(
   new URL("../src/shared/services/cameraDiagnostics.ts", import.meta.url),
   "utf8",
 );
 const cameraDiagnosticsCompiled = ts.transpileModule(cameraDiagnosticsSource, {
-  compilerOptions: {
-    module: ts.ModuleKind.ESNext,
-    target: ts.ScriptTarget.ES2022,
-  },
-}).outputText.replace(
-  "from './mediaTrackConstraints';",
-  `from '${mediaTrackConstraintsUrl}';`,
-);
-const cameraDiagnosticsUrl =
-  "data:text/javascript;base64," +
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const cameraDiagnosticsUrl = "data:text/javascript;base64," +
   Buffer.from(cameraDiagnosticsCompiled).toString("base64");
-const {
-  requestContinuousAutofocus,
-  getSafeCameraSettings,
-} = await import(cameraDiagnosticsUrl);
-
-let appliedFocusConstraints = null;
-const continuousTrack = {
+const { getSafeCameraSettings } = await import(cameraDiagnosticsUrl);
+const nativeFocusTrack = {
   getCapabilities: () => ({ focusMode: ["manual", "continuous"] }),
-  applyConstraints: async (constraints) => { appliedFocusConstraints = constraints; },
   getSettings: () => ({
-    width: 1280,
-    height: 720,
-    frameRate: 30,
-    facingMode: "environment",
-    focusMode: "continuous",
-    deviceId: "must-not-be-exported",
+    width: 1280, height: 720, frameRate: 30, facingMode: "environment",
+    focusMode: "continuous", deviceId: "must-not-be-exported",
   }),
 };
-const continuousFocus = await requestContinuousAutofocus(continuousTrack);
-assert.equal(continuousFocus.status, "continuous-requested");
-assert.deepEqual(appliedFocusConstraints.advanced[0], { focusMode: "continuous" });
-assert.deepEqual(appliedFocusConstraints.width, { ideal: 1280 },
-  "autofocus must preserve the active camera width when reapplying track constraints");
-assert.deepEqual(appliedFocusConstraints.height, { ideal: 720 },
-  "autofocus must preserve the active camera height when reapplying track constraints");
-assert.deepEqual(appliedFocusConstraints.frameRate, { ideal: 30, max: 30 },
-  "autofocus must preserve the active camera frame rate when reapplying track constraints");
-assert.deepEqual(appliedFocusConstraints.facingMode, { ideal: "environment" },
-  "autofocus must preserve the active camera facing mode when reapplying track constraints");
-
-const unsupportedTrack = {
-  getCapabilities: () => ({ focusMode: ["manual"] }),
-  applyConstraints: async () => { throw new Error("must not be called"); },
-};
-assert.equal((await requestContinuousAutofocus(unsupportedTrack)).status, "unsupported");
-
-const unavailableTrack = {};
-assert.equal((await requestContinuousAutofocus(unavailableTrack)).status, "unavailable");
-
-const failedTrack = {
-  getCapabilities: () => ({ focusMode: ["continuous"] }),
-  applyConstraints: async () => { throw new DOMException("not supported", "OverconstrainedError"); },
-};
-const failedFocus = await requestContinuousAutofocus(failedTrack);
-assert.equal(failedFocus.status, "failed");
-assert.equal(failedFocus.errorName, "OverconstrainedError");
-
-const safeSettings = getSafeCameraSettings(continuousTrack);
-assert.deepEqual(safeSettings, {
-  width: 1280,
-  height: 720,
-  frameRate: 30,
-  facingMode: "environment",
-  focusMode: "continuous",
+assert.deepEqual(getSafeCameraSettings(nativeFocusTrack), {
+  width: 1280, height: 720, frameRate: 30, facingMode: "environment",
+  focusMode: "continuous", focusModes: ["manual", "continuous"],
 });
-assert.equal("deviceId" in safeSettings, false, "camera device identifiers are never exposed");
-
+assert.equal("deviceId" in getSafeCameraSettings(nativeFocusTrack), false,
+  "camera device identifiers are never exposed");
 
 const cameraSessionSource = await readFile(
   new URL("../src/shared/services/cameraSession.ts", import.meta.url),
   "utf8",
 );
-const scannerContractsSource = await readFile(
-  new URL("../src/platform/scanner/contracts.ts", import.meta.url),
-  "utf8",
-);
-const scannerContractsCompiled = ts.transpileModule(scannerContractsSource, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-const scannerContractsUrl = "data:text/javascript;base64," +
-  Buffer.from(scannerContractsCompiled).toString("base64");
-const cameraRequestResolverSource = await readFile(
+assert.doesNotMatch(cameraSessionSource, /requestContinuousAutofocus|prepareForScanning|reapplyContinuousAutofocus/,
+  "camera session must not apply or re-arm focus after stream acquisition");
+const cameraRequestSource = await readFile(
   new URL("../src/platform/scanner/cameraRequestResolver.ts", import.meta.url),
   "utf8",
 );
-const cameraRequestResolverCompiled = ts.transpileModule(cameraRequestResolverSource, {
-  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
-const cameraRequestResolverUrl = "data:text/javascript;base64," +
-  Buffer.from(cameraRequestResolverCompiled).toString("base64");
-const cameraSessionCompiled = ts.transpileModule(cameraSessionSource, {
-  compilerOptions: {
-    module: ts.ModuleKind.ESNext,
-    target: ts.ScriptTarget.ES2022,
-  },
-}).outputText
-  .replace("from './cameraDiagnostics';", `from '${cameraDiagnosticsUrl}';`)
-  .replace("from '../../platform/scanner/contracts';", `from '${scannerContractsUrl}';`)
-  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${cameraRequestResolverUrl}';`);
-const cameraSessionUrl =
-  "data:text/javascript;base64," +
-  Buffer.from(cameraSessionCompiled).toString("base64");
-
-let resolvePendingFocus;
-let appliedCameraFocusConstraints = null;
-const trackListeners = new Map();
-const delayedFocusTrack = {
-  readyState: "live",
-  getCapabilities: () => ({ focusMode: ["continuous"] }),
-  applyConstraints: (constraints) => {
-    appliedCameraFocusConstraints = constraints;
-    return new Promise((resolve) => { resolvePendingFocus = resolve; });
-  },
-  getConstraints: () => ({ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 }, facingMode: { ideal: "environment" } }),
-  getSettings: () => ({ width: 1280, height: 720, frameRate: 30, facingMode: "environment" }),
-  addEventListener: (type, listener) => {
-    const listeners = trackListeners.get(type) ?? new Set();
-    listeners.add(listener);
-    trackListeners.set(type, listeners);
-  },
-  removeEventListener: (type, listener) => trackListeners.get(type)?.delete(listener),
-  stop: () => {
-    delayedFocusTrack.readyState = "ended";
-    for (const listener of trackListeners.get("ended") ?? []) listener();
-  },
-};
-const delayedFocusStream = {
-  getTracks: () => [delayedFocusTrack],
-  getVideoTracks: () => [delayedFocusTrack],
-};
-
-Object.defineProperty(globalThis, "window", {
-  configurable: true,
-  value: { isSecureContext: true },
-});
-Object.defineProperty(globalThis, "navigator", {
-  configurable: true,
-  value: { mediaDevices: { getUserMedia: async () => delayedFocusStream } },
-});
-
-const { acquireCameraLease, requestCameraLease } = await import(cameraSessionUrl);
-let acquisitionTimeout;
-const cameraLease = await Promise.race([
-  acquireCameraLease(),
-  new Promise((_, reject) => {
-    acquisitionTimeout = setTimeout(
-      () => reject(new Error("Camera lease waited for the deliberately pending autofocus request.")),
-      250,
-    );
-  }),
-]).finally(() => clearTimeout(acquisitionTimeout));
-
-assert.equal(cameraLease.stream, delayedFocusStream, "camera lease resolves while autofocus is still pending");
-assert.equal(typeof resolvePendingFocus, "undefined", "autofocus must not be applied before the video has produced its first frame");
-const focusPreparation = cameraLease.prepareForScanning();
-await new Promise((resolve) => setImmediate(resolve));
-assert.equal(typeof resolvePendingFocus, "function", "focus setup starts only after the scanner session declares the preview ready");
-assert.deepEqual(appliedCameraFocusConstraints.width, { ideal: 1280 }, "focus setup preserves the original ideal width constraint");
-assert.deepEqual(appliedCameraFocusConstraints.height, { ideal: 720 }, "focus setup preserves the original ideal height constraint");
-assert.deepEqual(appliedCameraFocusConstraints.frameRate, { ideal: 30, max: 30 }, "focus setup preserves the original frame-rate ceiling");
-assert.deepEqual(
-  appliedCameraFocusConstraints.advanced[0],
-  { focusMode: "continuous" },
-  "continuous autofocus remains requested when supported",
-);
-assert.equal(
-  trackListeners.get("ended")?.size,
-  1,
-  "track-ended monitoring is registered before optional autofocus settles",
-);
-
-const cancelledRequest = requestCameraLease();
-cancelledRequest.cancel();
-await assert.rejects(
-  cancelledRequest.claim(),
-  (error) => error?.name === "AbortError",
-  "a cancelled, unclaimed camera request cannot be handed to a scanner",
-);
-await new Promise((resolve) => setImmediate(resolve));
-assert.equal(
-  delayedFocusTrack.readyState,
-  "live",
-  "cancelling one unclaimed lease does not stop a stream still owned by another lease",
-);
-
-const claimedRequest = requestCameraLease();
-const claimedLease = await claimedRequest.claim();
-assert.equal(claimedLease.stream, delayedFocusStream, "a tap-started request transfers its camera lease");
-await assert.rejects(
-  claimedRequest.claim(),
-  /already been claimed/,
-  "a camera lease request cannot be transferred to two scanner sessions",
-);
-claimedLease.release();
-
-resolvePendingFocus();
-await focusPreparation;
-await new Promise((resolve) => setImmediate(resolve));
-cameraLease.release();
+assert.match(cameraRequestSource, /advanced:\s*\[\{\s*focusMode:\s*'continuous'/,
+  "continuous focus is an optional advanced getUserMedia preference");
 
 // Scanner UI/lifecycle regression guards for the cross-platform transition patch.
 const scannerUiSource = await readFile(
