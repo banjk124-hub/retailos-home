@@ -69,11 +69,16 @@ function sameCameraRequest(a: ScannerCameraRequest | null, b: ScannerCameraReque
     && a.maxFrameRate === b.maxFrameRate);
 }
 
-function assertStreamCompatible(stream: MediaStream, cameraRequest: ScannerCameraRequest): void {
+function assertStreamCompatible(
+  stream: MediaStream,
+  cameraRequest: ScannerCameraRequest,
+  allowNegotiatedFacingMismatch = false,
+): void {
   const track = stream.getVideoTracks().find((candidate) => candidate.readyState === 'live');
   const actualSettings = track?.getSettings?.() ?? {};
   const compatibility = resolveCameraStreamCompatibility(cameraRequest, actualSettings);
-  if (compatibility.compatible) return;
+  if (compatibility.compatible
+    || (allowNegotiatedFacingMismatch && compatibility.reason === 'facing-mode-mismatch')) return;
 
   const error = new Error(
     `Camera đang được phiên quét khác sử dụng với cấu hình không tương thích (${compatibility.reason}). Hãy đóng phiên đó trước khi mở camera theo yêu cầu mới.`,
@@ -87,12 +92,14 @@ async function acquireSharedStream(
 ): Promise<{ stream: MediaStream; generation: number }> {
   if (activeStream?.getTracks().some((track) => track.readyState === 'live')) {
     try {
-      // The exact intent that created this stream is already satisfied to the
-      // browser's negotiated best effort. Different intents must be checked
-      // against actual track settings before they can share it.
-      if (!sameCameraRequest(activeCameraRequest, cameraRequest)) {
-        assertStreamCompatible(activeStream, cameraRequest);
-      }
+      // The initiating intent may accept the browser's negotiated facing-mode
+      // best effort, but its hard frame-rate ceiling still applies. Different
+      // intents must satisfy actual settings before they can share the stream.
+      assertStreamCompatible(
+        activeStream,
+        cameraRequest,
+        sameCameraRequest(activeCameraRequest, cameraRequest),
+      );
       return { stream: activeStream, generation: requestGeneration };
     } catch (error) {
       if (activeLeaseCount > 0 || pendingRequest) throw error;
@@ -195,10 +202,21 @@ async function acquireSharedStream(
   if (generation !== requestGeneration || activeStream !== stream) {
     throw new DOMException('Camera request was superseded.', 'AbortError');
   }
-  // The initiating caller accepts the browser's negotiated best-effort result.
-  // Other callers may share it only when actual settings satisfy their intent.
-  if (!sameCameraRequest(sharedRequestIntent, cameraRequest)) {
-    assertStreamCompatible(stream, cameraRequest);
+  // The initiating caller accepts a negotiated facing-mode ideal, but every
+  // caller must respect its hard frame-rate ceiling. Other intents are checked
+  // against all known actual settings before sharing the pending stream.
+  const isInitiatingIntent = sameCameraRequest(sharedRequestIntent, cameraRequest);
+  try {
+    assertStreamCompatible(stream, cameraRequest, isInitiatingIntent);
+  } catch (error) {
+    // A failed hard constraint on the initiating acquisition must not leave an
+    // unleased, unusable stream cached for the next request.
+    if (isInitiatingIntent && activeStream === stream && activeLeaseCount === 0) {
+      activeStream = null;
+      activeCameraRequest = null;
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    throw error;
   }
   return { stream, generation };
 }
