@@ -1,3 +1,29 @@
+# Scanner Engine remediation — Code 39 and diagnostic integration (2026-11-11)
+
+## Code 39
+- [x] Confirmed `@zxing/library` 0.23.0 is already installed; no dependency change required.
+- [x] Confirmed `BarcodeFormat.CODE_39` and forward/reverse decoder mapping already existed.
+- [x] Added `CODE_39` to the production allowlist used by Home and Stocktake.
+- [x] Added payload validation for the standard uppercase Code 39 alphabet, preserving spaces and rejecting control/unsupported characters.
+- [x] Added validation fixtures for valid text, punctuation, spaces, empty payload, control characters and invalid characters.
+- [x] Added production ZXing adapter fixtures for upright and deskewed Code 39.
+- [ ] Full preflight and production/Pages builds pass on the remediation branch.
+- [ ] Manual real-label Code 39 verification on iOS Safari/PWA and Android Chrome/PWA.
+
+## Recovery diagnostics
+- [x] Collector allowlist retains ROI availability/dimensions, rotation and deskew counters/angle.
+- [x] QA Monitor event detail and CSV export include the recovery metrics.
+- [x] Privacy regression verifies payload-like keys and camera identifiers are excluded.
+- [ ] Full preflight passes on the remediation branch.
+- [ ] Verify a live diagnostic export from a device session contains the metrics after rotation/deskew activity.
+
+## Explicitly deferred
+- [ ] Complete runtime use of `ScannerModuleConfig.cameraRequest`; requires separate shared-camera lease compatibility design.
+- [ ] Labelled benchmark corpus and measured device baselines.
+- [ ] Generalized conditional recovery orchestration for future SCAN-08/09 capabilities.
+
+---
+
 # SCAN-05/06 acceptance — merged and user-validated (2026-11-10)
 
 ## Source and pipeline
