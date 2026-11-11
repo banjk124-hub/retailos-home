@@ -113,7 +113,7 @@ Record:
 - Correct payload/check digit, false positives, missed reads and UI/preview responsiveness.
 - Outside-reticle negative controls.
 
-Do not record total scanner latency as SCAN-07 performance. Record decoder-stage processing cost separately from camera/focus/session/module behavior.
+Do not record overall scanner response time as SCAN-07 performance. Record decoder-stage processing cost separately from camera/focus/session/module behavior.
 
 ## 7. Closure rule
 
