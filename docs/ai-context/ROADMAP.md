@@ -2,8 +2,8 @@
 
 **Current main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c` (PR #76 merge commit).
 **Completed:** SCAN-01 through SCAN-06; PR #76 Camera Request Bridge merged. SCAN-05/06 user-confirmed operationally stable after deployment.
-**Next work:** documentation reconciliation first, then separately scoped SCAN-07 through SCAN-11 PRs. No algorithm implementation is authorized by this roadmap update.
-**Current source baseline:** ZXing 0.23.0 adapter, strict module-owned ROI, fixed 1.5× ROI upscale, continuous orientation/deskew candidates, bounded percentile contrast stretch, two ZXing binarizers, serialized decode at 70 ms minimum session interval.
+**Next work:** SCAN-07 is implemented on the current PR #77 branch; CI and device acceptance are pending. SCAN-08 through SCAN-11 remain separately gated.
+**Current source baseline:** ZXing 0.23.0 adapter, strict module-owned ROI, 1.5× baseline followed on miss by bounded 1×/2× ROI scale candidates, continuous orientation/deskew candidates per scale, bounded percentile contrast stretch, two ZXing binarizers, serialized decode at 70 ms minimum session interval.
 **Protected contracts:** SCAN-02/03 preview-to-source mapping; SCAN-04 strict ROI/no-full-frame-fallback; SCAN-05/06 orientation and deskew; scanner session/camera lease/lifecycle/recovery; module-owned video surface/reticle/presentation; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save.
 **Working rule:** add measured candidate paths alongside the current path; preserve a baseline candidate and existing ordering until comparative evidence justifies a change. No unconditional replacement, no weakening strict ROI, no full-frame or centered fallback.
 
@@ -18,12 +18,13 @@
 8. Decoder calls are serialized; current session minimum interval is 70 ms. Stage/decode timing and ROI/orientation diagnostics exist.
 
 ## SCAN-07 — Adaptive ROI and multi-scale
-**Status:** Planned — source audit and design gate required.
-- Evaluate ROI crop/padding around the module-owned reticle without changing SCAN-02/03 coordinate mapping.
-- Keep the authoritative reticle ROI. Any padding must be explicitly bounded by a module-approved capture envelope; never silently expand to full frame or a centered fallback.
-- Compare a small, bounded set of ROI scales against the current 1.5× baseline; avoid multiplying every orientation × scale × binarizer combination.
-- Target small/far barcodes; evaluate crop edge clipping, source pixel density, memory and latency.
-- Gate: production-adapter fixtures at multiple barcode pixel heights, distances represented by source pixel size, reticle center/edges and outside-reticle negative controls.
+**Status:** Implemented on PR #77 branch; CI and physical-device acceptance pending.
+- Preserve SCAN-02/03 mapping and SCAN-04 strict reticle ROI; no crop expansion outside the module-published region.
+- Keep the exact 1.5× sampling path as candidate zero. On a complete baseline miss, try 1× then 2× sampling; no more than three scale candidates per frame.
+- Each additional scale is capped at 6 MP. Existing 1280 px source-width cap remains unchanged.
+- Each scale reuses the same orientation/deskew and Hybrid + GlobalHistogram pipeline; no Cartesian candidate fan-out and no parallel decoder access.
+- Padding outside the reticle is deliberately deferred until a module-owned capture-envelope contract is defined and adopted by Home/Stocktake. No silent expansion or fallback.
+- Automated production-adapter coverage verifies multi-scale crop boundaries and bounded candidate planning. Small/far real-label and iOS/Android device acceptance remain pending.
 
 ## SCAN-08 — Image enhancement
 **Status:** Planned — candidate evaluation, not unconditional preprocessing.
@@ -56,8 +57,8 @@
 - Record device/browser/build, module, symbology, lighting, distance/pixel-height, orientation, attempts, success, first-result latency and decode cost. Do not invent missing measurements.
 
 ## PR and rollout strategy
-- First PR: documentation/source reconciliation only; no runtime changes.
-- SCAN-07: separate implementation PR after audit/design and fixture baseline.
+- PR #77: documentation reconciliation plus SCAN-07 implementation on the same branch; no merge/deploy until CI and review.
+- SCAN-08: separate PR after SCAN-07 acceptance.
 - SCAN-08: separate PR, layered after SCAN-07 acceptance.
 - SCAN-09: separate research/implementation PR; keep opt-in candidate path.
 - SCAN-10: separate adaptive-budget PR only after measured candidate costs exist.
