@@ -130,7 +130,7 @@ function classifyDecodeError(error: unknown): DecodeMiss | null {
  * Camera ownership and frame scheduling remain in UniversalScannerSession.
  */
 export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
-  readonly id = 'zxing-retail-ean-code128-roi';
+  readonly id = 'zxing-retail-linear-roi';
   private reader: MultiFormatReader | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private context: CanvasRenderingContext2D | null = null;
