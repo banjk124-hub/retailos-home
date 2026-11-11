@@ -33,8 +33,8 @@ Run full preflight and review CI; then physical iOS Safari/PWA and Android Chrom
 ## Protected invariants
 No camera acquisition/lease, constraints/autofocus, lifecycle/recovery, decode cadence, strict ROI/no-fallback, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, snapshot/cache, service worker or deployment configuration changes.
 
-## Known deferred architecture item
-`ScannerModuleConfig.cameraRequest` remains declarative and is not consumed by the runtime. The shared camera lease currently uses a fixed environment / 1280×720 / 30 FPS request. Per-module camera requests must not be wired until shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together.
+## Historical deferred architecture item — superseded by PR #76
+At the PR #75 baseline, `ScannerModuleConfig.cameraRequest` was declarative and the shared camera lease used a fixed environment / 1280×720 / 30 FPS request. That deferral is superseded by the current Camera Request Bridge work tracked in PR #76, which wires intent through tap-origin acquisition, compatibility checks and recovery re-acquisition.
 
 **Current CI:** GitHub Actions run #577 passed on final head `8f558511297596be0819baea01d49ed0993b86fb`: full preflight, Code 39 validation + production adapter upright/180° tests, diagnostic privacy/export tests, TypeScript, production build and Pages build. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified and no deskew algorithm change was made.
 
