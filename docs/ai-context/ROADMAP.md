@@ -23,7 +23,7 @@
 - [x] Preserve SCAN-07 scale ordering, bounded candidate sizes and same-attempt orientation reuse.
 - [x] Add regression tests for baseline-first, orthogonal fallback, deskew, reuse and early exit.
 - [x] Define the extension boundary for SCAN-08/09 without prematurely implementing unvalidated transforms.
-- [ ] GitHub Actions full preflight, TypeScript, production build and Pages build pass on final PR head.
+- [x] GitHub Actions run #690 passed full preflight, TypeScript, production build and Pages build on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; subsequent `8f6e0ae` was documentation-only.
 - [ ] Review exact diff and verify no unrelated camera/session/module behavior changed.
 - [ ] iOS Safari/PWA and Android Chrome/PWA QA in both Home and Stocktake.
 
