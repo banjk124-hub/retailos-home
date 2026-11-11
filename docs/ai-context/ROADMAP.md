@@ -5,8 +5,6 @@
 **Current work:** PR #78 is focused on completing SCAN-07 through native ROI detail preservation, coordinated camera focus recovery, and shared decoder/camera tuning. Do not advance to SCAN-08/09 until this gate is accepted.
 **User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner overall scanner response time to SCAN-07; total response depends on camera startup, focus, frame delivery, decoding, session and module result handling.
 
-> **Historical records below:** older phase plans and decisions are retained for traceability. Their camera resolution, decoder cadence and profile values are snapshots from earlier baselines; the current authoritative SCAN-07 behavior is defined above and in `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`.
-
 ## Current shared scanner pipeline
 
 1. Home and Stocktake each own their video element, visible reticle and feature workflow.
@@ -86,6 +84,8 @@
 - SCAN-11: acceptance/diagnostics and targeted fixes, not a wholesale rewrite.
 - Every PR must include exact base/head, changed-file scope, protected invariants, automated regression, preflight/build, device evidence and rollback.
 - Never delete historical decision records. Mark superseded runtime statements explicitly and point to the current source/spec.
+
+> **Historical records below:** older phase plans and decisions are retained for traceability. Their camera resolution, decoder cadence and profile values are snapshots from earlier baselines; the current authoritative SCAN-07 behavior is defined above and in `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`.
 
 ## Legacy roadmap history
 The sections below are historical records. Their old branch names, pending states and pre-SCAN-05/06 cadence descriptions are not current status. Use this top section as the authoritative current plan; retain older records only as traceable decision history.
