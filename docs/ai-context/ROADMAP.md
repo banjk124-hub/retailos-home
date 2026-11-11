@@ -13,7 +13,7 @@
 4. The decoder crops only that source ROI. Native source detail is retained up to a bounded 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled.
 5. Both modules use the shared camera lease. Camera request now prefers 1920×1080 at 30 FPS maximum; browser-negotiated lower settings remain valid and must be recorded in device QA.
 6. Scale candidates remain ordered 1.5× baseline, then 1× and 2× only after the full baseline path misses. Additional candidates remain bounded to 6 MP each.
-7. SCAN-05/06 orientation recovery and both ZXing binarizers remain active within each scale. Result validation and module result handling remain authoritative.
+7. SCAN-05/06 orientation recovery and both ZXing binarizers remain active within each scale. Valid baseline orientation estimates are reused by fallback scales for the same frame; missing estimates are recalculated. Result validation and module result handling remain authoritative.
 8. Focus setup runs only after the video has produced a fresh frame. Track constraints are preserved and serialized across autofocus and Torch operations.
 9. The existing grayscale ROI readback provides low-rate sharpness/motion samples. Sustained stable sharpness loss can reassert continuous autofocus only when the camera exposes that mode. This is a recovery request, not proof that the lens has physically refocused.
 
