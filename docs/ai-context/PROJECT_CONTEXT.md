@@ -21,7 +21,7 @@
 ## Shared Scanner settings — current status (2026-11-09)
 
 - PR #56 is merged to `main` at `5eee1a6a565f6263907541dac6af6b4ba77b37be`; final PR head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full preflight in run #42575773839.
-- Device-local shared preferences: vibration enabled by default; beep volume 50% by default. The 50% level preserves gain 0.24; 0% mutes and 100% maps to 0.48.
+- Device-local shared preferences: vibration enabled by default; beep volume 50% by default. After PR #57, 50% maps to gain 0.30; 0% mutes and 100% maps to 0.60.
 - Settings Hub separates Scanner preferences from Scanner QA Monitor. Home and Stocktake use one shared accepted-result feedback service.
 - Deployment of PR #56 is not inferred from merge. Physical Android/iOS validation remains a separate gate.
 - Follow-up PR #57 adds mocked AudioContext/GainNode runtime assertions and synchronizes the current engineering records. Full preflight passed in GitHub Actions run #42648085229 on documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Production audio mapping and scanner/camera workflows remain unchanged pending physical A/B evidence.
