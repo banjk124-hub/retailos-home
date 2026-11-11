@@ -56,6 +56,13 @@ try {
     scaleAttempts: 3,
     scaleHits: 1,
     lastScaleFactor: 2,
+    focusSharpness: 21.5,
+    focusSharpnessMin: 8.25,
+    focusEdgeCoverage: 0.12,
+    focusQualitySamples: 10,
+    focusRecoveryRequests: 1,
+    focusRecoveryStatus: 'requested',
+    focusControlEnabled: true,
     lastDeskewAngleDegrees: -17.25,
   })) {
     assert.equal(event.metrics[key], expected, `diagnostic collector retains ${key}`);
