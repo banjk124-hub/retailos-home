@@ -2,7 +2,7 @@
 
 **Branch:** fix/scanner-scan07-focus-and-optical-pipeline
 **Base:** PR #77 merge commit 2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49
-**Status:** implementation in progress; CI and device QA pending.
+**Status:** implementation in progress; final-head CI #678 passed; device QA pending.
 **Scope lock:** SCAN-07 only. Do not start SCAN-08/09.
 
 ## 1. User-verified result from PR #77
@@ -96,7 +96,7 @@ This is a bounded re-arm request, not a guarantee of physical refocus. Motion, g
 - `test-scanner-torch.mjs`: Torch uses the shared serialized track helper.
 - All new tests are registered in `npm run preflight`.
 
-CI is pending on the final branch head. Do not claim these tests pass until GitHub Actions confirms it.
+GitHub Actions #677 passed the code/test head and final-head #678 passed full preflight, TypeScript, production build and Pages build. Physical-device QA remains pending.
 
 ## 6. Physical acceptance matrix
 
