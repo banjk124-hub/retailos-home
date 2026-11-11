@@ -36,6 +36,8 @@
 7. Record barcode source pixel height and physical distance. Do not report overall scanner response time as SCAN-07 performance.
 8. Keep SCAN-08/09 blocked until SCAN-07 is accepted.
 
+> **Historical handoff notes below:** preserve prior PR context only. Their camera-resolution and profile references are not current runtime settings; use the current project state and SCAN-07 system synchronization audit above.
+
 ## Protected invariants
 No silent expansion beyond module-authorized ROI; no full-frame/centered fallback; no replacement of geometry mapping; no decoder concurrency; no unbounded candidate queue; no changes to camera lease/lifecycle/recovery, preview presentation, barcode validation/result delivery, Home lookup or Stocktake form-fill/explicit-save without a separate approved scope.
 
