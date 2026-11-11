@@ -114,7 +114,7 @@ Required cases:
 - Outside-reticle negative controls.
 - Home lookup and Stocktake form-fill/explicit-save flows.
 
-Do not use end-to-end scanner latency as a SCAN-07-specific metric. Record decoder-stage processing cost separately from camera/focus/session/module response. Do not claim an absolute minimum barcode size or maximum distance until the matrix is measured.
+Do not use overall scanner response time as a SCAN-07-specific metric. Record decoder-stage processing cost separately from camera/focus/session/module behavior. Do not claim an absolute minimum barcode size or maximum distance until the matrix is measured.
 
 ## 9. Rollback
 
