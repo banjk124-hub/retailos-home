@@ -19,7 +19,7 @@
 
 ## SCAN-07 — Adaptive ROI, multi-scale and coordinated optical recovery
 
-**Status:** Active; PR #77 is merged/deployed. PR #78 implementation is in progress; CI and device acceptance are pending.
+**Status:** Active; PR #77 is merged/deployed. PR #78 implementation is in progress; final-head CI #678 passed; physical-device acceptance is pending.
 
 - Preserve SCAN-02/03 mapping and SCAN-04 strict ROI. No outward padding is enabled because Home/Stocktake have not published an authorized capture envelope.
 - Preserve more native sensor pixels by bounding the ROI itself rather than scaling the entire frame to 1280 px.
