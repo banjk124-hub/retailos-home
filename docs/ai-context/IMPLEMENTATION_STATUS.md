@@ -1,7 +1,6 @@
 # Scanner implementation status — current main (2026-11-11)
 
-**Main:** PR #77 merged at `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`.
-**PR #76:** merged. CI #610 passed on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`; later commits through the merge were documentation synchronization. Physical-device evidence must be recorded separately from CI.
+**Main:** PR #78 merged at `adee2b2815097a3d17714b2305fc144a240a3bac`. Corrective focus-policy work is isolated on `fix/scanner-native-autofocus-no-rearm`.
 **PR #77 device feedback:** small/far barcode recognition improved modestly and reticle-edge reads work, but range and precision remain insufficient. This is qualitative feedback, not a measured minimum size/distance.
 
 ## Implemented
@@ -13,38 +12,38 @@
 - SCAN-06: continuous Sobel orientation histogram, confidence gates, bounded bilinear deskew, original/quarter-turn candidates, bounded percentile contrast normalization, Hybrid + GlobalHistogram binarizers.
 - PR #75: Code 39 enabled through supported-format and payload-validation boundaries; privacy-safe recovery diagnostics retained in QA Monitor/export.
 - PR #76: camera intent wired through tap-origin lease, actual getUserMedia constraints, compatibility checks, reference-counted sharing and foreground recovery.
+- PR #78: native ROI detail preservation, preferred 1080p acquisition, bounded scale candidates, orientation estimate reuse, and camera constraint preservation.
 
 ## Current source facts
 - Decoder: `src/platform/scanner/decoders/zxingDecoder.ts`.
 - Geometry: `scannerGeometry.ts`; strict crop: `scannerRoi.ts`.
 - Orientation transform: `scannerRotation.ts`; continuous orientation/contrast/deskew: `scannerDeskew.ts`.
 - Camera/session: `cameraSession.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`.
-- Both Home and Stocktake consume the same `useScannerEngine` and default camera request; each owns its reticle and business workflow.
-- Existing `ScannerProfileName` is not currently an adaptive policy: `useScannerEngine` passes `HIGH` unconditionally and `UniversalScannerSession` does not consume the profile. PR #78 does not claim low/mid/high adaptation; a measured device-budget policy remains an explicit SCAN-07 closure item.
-- Current main after PR #77: 1.5× baseline followed by bounded 1×/2× strict-ROI fallbacks; SCAN-05/06 orientation/deskew and both binarizers remain active per candidate.
-- PR #78 branch preserves native source ROI pixels up to 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled. Each fallback candidate remains capped at 6 MP.
-- PR #78 branch changes preferred camera request to 1920×1080, 30 FPS maximum. Browser-negotiated actual settings remain authoritative; weak devices may return a lower resolution.
-- Focus setup is moved from pre-playback acquisition to post-first-frame readiness. Focus and Torch share one constraint-preserving, per-track serialized applyConstraints queue.
-- Focus watchdog measures sharpness from the existing grayscale ROI readback every 500 ms. It filters low-texture and changing frames; after four stable blur samples it reasserts continuous autofocus only when the camera exposes/accepts that mode, with an 8-second cooldown.
-- Decoder calls remain serialized; session minimum decode interval remains 70 ms. No total scanner overall scanner response time metric is assigned to SCAN-07.
+- Both Home and Stocktake consume the same `useScannerEngine`; each owns its reticle and business workflow.
+- `ScannerProfileName` is not currently an adaptive policy: `useScannerEngine` passes `HIGH` unconditionally and `UniversalScannerSession` does not consume the profile. A measured device-budget policy remains an explicit SCAN-07 closure item.
+- Native ROI pixels are preserved up to 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled. Each fallback candidate remains capped at 6 MP.
+- Camera request prefers 1920×1080, 30 FPS maximum. Browser-negotiated actual settings remain authoritative.
+- Continuous autofocus is now an optional advanced constraint in the initial `getUserMedia()` request. If unsupported or ignored, the device uses its native autofocus behavior.
+- The session does not call `applyConstraints()` for focus after preview readiness and does not automatically re-arm focus. Sharpness/motion sampling is passive telemetry only.
+- Torch remains capability-gated and uses the shared serialized constraint helper; Torch updates preserve the initial focus preference and active camera settings.
+- Decoder calls remain serialized; session minimum decode interval remains 70 ms. Overall scanner response time is not assigned to SCAN-07.
 
 ## SCAN-07 — active integration work
-- PR #77 is merged/deployed. User confirms modest improvement on small/far labels and reads near reticle edges, but current optical range/precision is insufficient.
-- PR #78 is implementing native ROI detail preservation, preferred 1080p acquisition, post-frame autofocus configuration, safe track constraint preservation/serialization, and bounded focus recovery.
-- Added automated tests for ROI sampling bounds, focus-vs-motion quality detection, bounded re-arm, focus/Torch constraint serialization and orientation estimate reuse. GitHub Actions #677 passed on code/test head `e3d745b1ce1a7fba87265769365d48667103b89b`; final-head #678 passed on `4728a8888c6ee6ab439af18ce8353661429d4195`. Physical-device verification remains pending.
+- PR #78 is merged; this corrective branch removes the post-preview focus request and automatic focus re-arm, then synchronizes tests, diagnostics and documentation.
+- Automated regression must verify optional initial focus negotiation, no post-preview focus writes, passive blur diagnostics, Torch preservation, ROI bounds and orientation estimate reuse.
+- Physical-device verification remains pending on iOS Safari/PWA and Android Chrome/PWA, in both Home and Stocktake.
 - No outward reticle padding: current modules have not published a wider authorized capture envelope.
-- No claims about exact minimum barcode size, maximum distance or overall overall scanner response time until real-device measurements exist.
+- No claims about exact minimum barcode size, maximum distance or overall scanner response time until real-device measurements exist.
 
 ## Not implemented yet
 - SCAN-07 physical-device acceptance and labelled small/far barcode size/distance evidence.
-- SCAN-08: optional gamma, adaptive threshold and denoise candidate paths. Existing percentile contrast stretch is not equivalent to this phase.
+- A measured conservative runtime device-budget policy; the current profile handoff is inert.
+- SCAN-08: optional gamma, adaptive threshold and denoise candidate paths.
 - SCAN-09: perspective detection/rectification and curved-label dewarping.
-- SCAN-10: runtime/device adaptive candidate budget and frame-time policy.
-- SCAN-11: completed cross-platform/device matrix and quantitative acceptance record.
+- Cross-platform/device matrix and quantitative acceptance record.
 
 ## Next gate
-Complete PR #78, verify CI, then test both Home and Stocktake on iOS/Android. Do not move to SCAN-08/09 until SCAN-07's source-pixel, focus-recovery, precision and module workflow gates are accepted.
-
+Complete the native autofocus correction, verify final-head CI, then test both Home and Stocktake on iOS/Android. Do not move to SCAN-08/09 until SCAN-07's source-pixel, native-focus stability, precision and module workflow gates are accepted.
 ---
 
 ---
