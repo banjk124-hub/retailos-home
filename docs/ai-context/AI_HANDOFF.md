@@ -17,8 +17,8 @@ Complete the runtime camera request bridge: pass the module's camera intent thro
 - Compatible streams remain shareable under the current reference-counted lease model. Do not introduce an exclusive-owner redesign.
 - Do not merge or deploy without explicit user approval.
 
-## Verification still required
-Run full preflight and review CI; then physical iOS Safari/PWA and Android Chrome/PWA tests. CI/source tests do not establish hardware behavior.
+## Verification status
+GitHub Actions run #610 passed the full local-equivalent preflight, including scanner regression tests, TypeScript, production build and Pages build. Remaining: physical iOS Safari/PWA and Android Chrome/PWA QA. CI/source tests do not establish hardware behavior.
 
 ---
 
