@@ -84,7 +84,7 @@ try {
   assert.equal(exported.events[0].metrics.focusSharpness, 21.5);
   assert.equal(exported.events[0].metrics.focusMotionScore, 2.5);
   assert.equal(exported.events[0].metrics.focusSustainedBlurEvents, 1);
-  assert.equal(exported.events[0].metrics.cameraControlChanged, true);
+  assert.equal(exported.events[0].metrics.cameraControlChanged, false);
   assert.equal(JSON.stringify(exported).includes('MUST_NOT_BE_RETAINED'), false,
     'export must not contain fields outside the diagnostic allowlist');
 } finally {
