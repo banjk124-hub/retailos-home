@@ -268,14 +268,24 @@ function normalizeLuminanceContrast(luminance: Uint8ClampedArray): Uint8ClampedA
   return normalized;
 }
 
-/** Estimate and correct a continuous in-plane barcode orientation; null means no safe estimate. */
-export function deskewLuminanceFrame(
+/**
+ * Apply an already validated orientation estimate to another scale of the same
+ * source ROI. The angle is scale-invariant, so SCAN-07 fallbacks can reuse the
+ * baseline Sobel histogram instead of recalculating orientation twice per scale.
+ */
+export function deskewLuminanceFrameWithEstimate(
   luminance: Uint8ClampedArray,
   width: number,
   height: number,
+  estimate: ScannerSkewEstimate,
 ): (ScannerLuminanceFrame & ScannerSkewEstimate) | null {
-  const estimate = estimateScannerSkewAngle(luminance, width, height);
-  if (!estimate) return null;
+  if (!isValidFrame(luminance, width, height)
+    || !Number.isFinite(estimate.angleDegrees)
+    || Math.abs(estimate.angleDegrees) < MIN_SKEW_DEGREES
+    || Math.abs(estimate.angleDegrees) > MAX_SKEW_DEGREES
+    || !Number.isFinite(estimate.confidence)
+    || estimate.confidence <= 0) return null;
+
   const contrastNormalized = normalizeLuminanceContrast(luminance);
   const corrected = rotateLuminanceByAngle(
     contrastNormalized,
@@ -284,4 +294,16 @@ export function deskewLuminanceFrame(
     -estimate.angleDegrees,
   );
   return corrected ? { ...corrected, ...estimate } : null;
+}
+
+/** Estimate and correct a continuous in-plane barcode orientation; null means no safe estimate. */
+export function deskewLuminanceFrame(
+  luminance: Uint8ClampedArray,
+  width: number,
+  height: number,
+): (ScannerLuminanceFrame & ScannerSkewEstimate) | null {
+  const estimate = estimateScannerSkewAngle(luminance, width, height);
+  return estimate
+    ? deskewLuminanceFrameWithEstimate(luminance, width, height, estimate)
+    : null;
 }
