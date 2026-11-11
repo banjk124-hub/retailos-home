@@ -68,6 +68,31 @@ try {
   assert.deepEqual(createScannerGeometryCandidates(empty), [],
     'uniform ROI must not trigger speculative geometric reconstruction');
 
+  // SCAN-09 positive geometry fixtures: repeated barcode bars with
+  // coherent row-wise width taper (keystone) and center bow (curved label).
+  const makeWarpedBars = (kind) => {
+    const width = 240, height = 96;
+    const pixels = new Uint8ClampedArray(width * height).fill(255);
+    for (let y = 0; y < height; y++) {
+      const t = y / (height - 1);
+      const span = kind === 'perspective' ? 150 + t * 26 : 160;
+      const center = kind === 'curved' ? 120 + 16 * (1 - (2 * t - 1) ** 2) : 120;
+      for (let x = 0; x < width; x++) {
+        const u = (x - center) / span + 0.5;
+        if (u >= 0 && u < 1 && Math.floor(u * 30) % 2 === 0) {
+          pixels[y * width + x] = 0;
+        }
+      }
+    }
+    return { luminance: pixels, width, height };
+  };
+  const perspectiveCandidates = createScannerGeometryCandidates(makeWarpedBars('perspective'));
+  assert.ok(perspectiveCandidates.some(candidate => candidate.kind === 'perspective'),
+    'coherent keystone distortion should yield a bounded perspective candidate');
+  const curvedCandidates = createScannerGeometryCandidates(makeWarpedBars('curved'));
+  assert.ok(curvedCandidates.some(candidate => candidate.kind === 'curved'),
+    'coherent curved-label bow should yield a bounded geometry candidate');
+
   const width = 240, height = 96;
   const source = new Uint8ClampedArray(width * height).fill(255);
   const modules = [2, 1, 3, 1, 1, 2, 2, 1, 3, 1, 2, 1, 1, 3, 2, 1];
