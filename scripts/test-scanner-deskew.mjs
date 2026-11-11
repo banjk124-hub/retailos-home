@@ -191,11 +191,20 @@ const decoderSource = await readFile(
   new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
   'utf8',
 );
-assert.match(decoderSource, /deskewLuminanceFrame\(/, 'decoder must consume the deskew service');
-assert.match(decoderSource, /deskewLuminanceFrameWithEstimate\(/, 'scale fallbacks must reuse baseline orientation estimates where valid');
-assert.match(decoderSource, /cachedOrientationHints/, 'orientation estimates must be scoped to the current source frame');
-assert.match(decoderSource, /const candidates = \[uprightDeskew, rotatedDeskew\]/,
-  'production decoder must consider both source axes for continuous orientation recovery');
+const pipelineSource = await readFile(
+  new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url),
+  'utf8',
+);
+assert.match(decoderSource, /executeScannerEnhancementPipeline/,
+  'production decoder must delegate candidate orchestration to the shared enhancement pipeline');
+assert.match(pipelineSource, /deskewLuminanceFrame\(/,
+  'the shared pipeline must consume the bounded deskew service');
+assert.match(pipelineSource, /deskewLuminanceFrameWithEstimate\(/,
+  'scale fallbacks must reuse previously validated orientation estimates');
+assert.match(pipelineSource, /cachedOrientationHints/,
+  'orientation estimates must be scoped to the same source ROI decode attempt');
+assert.match(pipelineSource, /sort\(\(a, b\) => Math\.abs\(a\.angleDegrees\) - Math\.abs\(b\.angleDegrees\)\)/,
+  'deskew candidates must be ordered by the smallest required correction');
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');
 assert.match(decoderSource, /deskewEstimateMisses:/, 'failed orientation estimates must be observable separately');
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
