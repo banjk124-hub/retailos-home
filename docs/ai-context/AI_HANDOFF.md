@@ -4,14 +4,14 @@
 **Current main:** PR #77 merge `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`; PR #77 is deployed and user-tested.
 **Current work branch:** `fix/scanner-scan07-focus-and-optical-pipeline`; PR #78 in progress.
 **Scope:** continue SCAN-07 only. Integrate native ROI detail, camera focus recovery, track constraint serialization and multi-scale decoder flow. Do not merge/deploy without explicit approval.
-**Operational note:** user reports scanner operation relatively stable; do not convert this into unsupported claims about measured accuracy, latency or device coverage.
+**Operational note:** user reports scanner operation relatively stable; do not convert this into unsupported claims about measured accuracy, overall scanner response time or device coverage.
 
 ## Resume instructions
 1. Read `docs/ai-context/SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` and `docs/ai-context/SCAN_07_ADAPTIVE_ROI_MULTISCALE.md` first.
 2. Read current source in `zxingDecoder.ts`, `scannerGeometry.ts`, `scannerRoi.ts`, `scannerRotation.ts`, `scannerDeskew.ts`, `universalScannerSession.ts` and the Home/Stocktake ROI bindings.
 3. Treat SCAN-02/03 mapping and SCAN-04 strict ROI as immutable contracts unless a separate compatibility design and regression evidence justify an additive extension.
 4. Preserve the current decode candidate as the baseline. New transforms are optional candidates after baseline misses; never replace the existing path without corpus evidence.
-5. Separate algorithm accuracy, false-positive rate, latency, memory and device responsiveness in all reports.
+5. Separate algorithm accuracy, false-positive rate, memory use and device responsiveness in all reports.
 6. Stay in SCAN-07 until PR #78 and both module/device acceptance gates are complete. Do not begin SCAN-08/09 yet.
 
 ## Current project state — SCAN-07 remains active
@@ -23,7 +23,7 @@
 - Focus is configured only after a fresh video frame. Shared helper preserves negotiated constraints and serializes autofocus/Torch updates. A low-rate ROI sharpness/motion watchdog can reassert continuous focus after sustained stable blur, only when supported.
 - This is an autofocus re-arm request, not proof of physical lens movement. Real iOS/Android behavior must be tested.
 - Outward padding remains disabled because modules publish only the reticle; no capture envelope contract exists.
-- Do not attribute end-to-end scanner latency to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
+- Do not attribute end-to-end scanner overall scanner response time to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
 - Current user feedback: operationally relatively stable.
 
 ## Current PR #78 verification priorities
@@ -152,7 +152,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 - The engine owns camera/session/decoder scheduling. Home and Stocktake continue to own their UI/presentation and business policy.
 - Accuracy and recognition responsiveness take priority over a strict ultra-low-end CPU budget. Do not reduce orientation candidates or cadence solely to optimize weak devices without evidence.
 - No camera acquisition/autofocus, camera lease, lifecycle/recovery, module UI, validation, Home lookup or Stocktake form/save changes were part of SCAN-05/06.
-- Detailed device matrix and quantitative latency/CPU/success-rate measurements were not supplied. Do not represent these as measured or as blockers to the user's functional acceptance.
+- Detailed device matrix and quantitative overall scanner response time/CPU/success-rate measurements were not supplied. Do not represent these as measured or as blockers to the user's functional acceptance.
 
 ## Current technical reference
 
