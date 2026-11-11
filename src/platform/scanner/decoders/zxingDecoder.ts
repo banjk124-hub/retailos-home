@@ -18,6 +18,7 @@ import type {
 import { rgbaToLuminance } from './rgbaToLuminance';
 import { rotateLuminance90Clockwise } from '../scannerRotation';
 import { deskewLuminanceFrame } from '../scannerDeskew';
+import { resolveScannerRoiScaleCandidates } from '../scannerScale';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -40,7 +41,6 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
 };
 
 const MAX_FRAME_WIDTH = 1280;
-const ROI_UPSCALE = 1.5;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
     format,
@@ -152,6 +152,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticDeskewAttempts = 0;
   private diagnosticDeskewEstimateMisses = 0;
   private diagnosticDeskewHits = 0;
+  private diagnosticScaleAttempts = 0;
+  private diagnosticScaleHits = 0;
+  private diagnosticLastScaleFactor = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
@@ -204,34 +207,44 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.diagnosticFrames += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
-      const scale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
-      const baseWidth = Math.max(1, Math.round(crop.width * scale));
-      const baseHeight = Math.max(1, Math.round(crop.height * scale));
-      const roiWidth = Math.max(1, Math.round(baseWidth * ROI_UPSCALE));
-      const roiHeight = Math.max(1, Math.round(baseHeight * ROI_UPSCALE));
-      this.canvas.width = roiWidth;
-      this.canvas.height = roiHeight;
+      const sourceScale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
+      const baseWidth = Math.max(1, Math.round(crop.width * sourceScale));
+      const baseHeight = Math.max(1, Math.round(crop.height * sourceScale));
+      const scaleCandidates = resolveScannerRoiScaleCandidates(baseWidth, baseHeight);
 
-      const roiDrawStartedAt = performance.now();
-      this.context.drawImage(
-        source,
-        crop.x,
-        crop.y,
-        crop.width,
-        crop.height,
-        0,
-        0,
-        roiWidth,
-        roiHeight,
-      );
-      this.recordStageCost('roi_draw', performance.now() - roiDrawStartedAt);
+      // Preserve the exact deployed 1.5x candidate and its complete orientation/
+      // deskew pipeline as candidate zero. Alternate scales run only after it
+      // misses, and always redraw the same strict module-owned source crop.
+      for (const candidate of scaleCandidates) {
+        this.canvas.width = candidate.width;
+        this.canvas.height = candidate.height;
+        const roiDrawStartedAt = performance.now();
+        this.context.drawImage(
+          source,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          0,
+          0,
+          candidate.width,
+          candidate.height,
+        );
+        this.recordStageCost(
+          candidate.baseline ? 'roi_draw_baseline_1_5x' : 'roi_draw_multiscale',
+          performance.now() - roiDrawStartedAt,
+        );
+        this.diagnosticScaleAttempts += 1;
+        this.diagnosticLastScaleFactor = candidate.scale;
 
-      const output = this.decodeCurrentCanvas(timestamp);
-      if (output) {
-        this.diagnosticDecoded += 1;
-        this.diagnosticRoiHits += 1;
-        this.emitDiagnostics();
-        return [output];
+        const output = this.decodeCurrentCanvas(timestamp);
+        if (output) {
+          this.diagnosticScaleHits += 1;
+          this.diagnosticDecoded += 1;
+          this.diagnosticRoiHits += 1;
+          this.emitDiagnostics();
+          return [output];
+        }
       }
       this.emitDiagnostics();
       return [];
@@ -447,6 +460,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       deskewAttempts: this.diagnosticDeskewAttempts,
       deskewEstimateMisses: this.diagnosticDeskewEstimateMisses,
       deskewHits: this.diagnosticDeskewHits,
+      scaleAttempts: this.diagnosticScaleAttempts,
+      scaleHits: this.diagnosticScaleHits,
+      lastScaleFactor: Number(this.diagnosticLastScaleFactor.toFixed(2)),
       lastDeskewAngleDegrees: Number(this.diagnosticLastDeskewAngleDegrees.toFixed(2)),
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
@@ -472,6 +488,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticDeskewAttempts = 0;
     this.diagnosticDeskewEstimateMisses = 0;
     this.diagnosticDeskewHits = 0;
+    this.diagnosticScaleAttempts = 0;
+    this.diagnosticScaleHits = 0;
+    this.diagnosticLastScaleFactor = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
   }
 
