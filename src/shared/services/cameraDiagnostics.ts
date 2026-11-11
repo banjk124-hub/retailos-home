@@ -1,3 +1,5 @@
+import { applyTrackAdvancedConstraint } from './mediaTrackConstraints';
+
 export type CameraFocusStatus =
   | 'continuous-requested'
   | 'unsupported'
