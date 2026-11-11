@@ -28,6 +28,7 @@ import StocktakeModule from '../stocktake/components/StocktakeModule';
 import StocktakeImportModule from '../stocktake-import/components/StocktakeImportModule';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
+import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import ScannerQaMonitor from './components/ScannerQaMonitor';
 import SettingsHub from './components/SettingsHub';
 import ScannerSettingsPanel from '../scanner/components/ScannerSettingsPanel';
@@ -553,7 +554,7 @@ export default function HomeScreen({
     if (isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
     // scanner will claim this lease as soon as its video element is available.
-    cameraLeaseRequestRef.current = requestCameraLease();
+    cameraLeaseRequestRef.current = requestCameraLease(DEFAULT_SCANNER_CAMERA_REQUEST);
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
