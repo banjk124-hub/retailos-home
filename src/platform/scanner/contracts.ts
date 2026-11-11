@@ -5,7 +5,7 @@
  * implementation, or feature presentation dependencies.
  */
 
-export const SUPPORTED_BARCODE_FORMATS = ['EAN_8', 'EAN_13', 'CODE_128'] as const;
+export const SUPPORTED_BARCODE_FORMATS = ['EAN_8', 'EAN_13', 'CODE_128', 'CODE_39'] as const;
 
 export type SupportedBarcodeSymbology = (typeof SUPPORTED_BARCODE_FORMATS)[number];
 
@@ -75,8 +75,9 @@ export type ScannerCameraRequest = {
 
 /**
  * Required module-owned input to the shared scanner.
- * SCAN-02 maps previewScanRegion to source-frame coordinates; SCAN-03 wires
- * this contract into Home and Stocktake without changing their presentations.
+ * Preview geometry is resolved by the feature-owned region binding. Camera
+ * request consumption remains a separate integration task; the production
+ * shared camera lease currently preserves DEFAULT_SCANNER_CAMERA_REQUEST.
  */
 export type ScannerModuleConfig = {
   previewScanRegion: ScannerPreviewScanRegion;
