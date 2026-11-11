@@ -99,6 +99,11 @@ const checks = [
     args: ["scripts/test-scanner-focus-quality.mjs"],
   },
   {
+    name: "Scanner shared camera track constraint serialization tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-track-constraints.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],
