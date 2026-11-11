@@ -974,3 +974,31 @@ PR #77 delivered bounded 1.5×/1×/2× sampling inside the strict module-owned R
 
 ### Rollback
 Revert the ROI sampling/camera request changes, focus lease API, shared track-constraint helper, watchdog and diagnostics together. The previous strict ROI and 1.5× baseline path remains the fallback; camera/session lifecycle and module workflows are not structurally replaced.
+
+
+## ADR-039 — Native autofocus ownership and passive scanner diagnostics (2026-11-11)
+
+**Status:** Adopted for SCAN-07 corrective work.
+
+### Context
+PR #78 moved a continuous-focus `applyConstraints()` request to after preview readiness and added a watchdog that could reapply focus after sustained blur. The user reported a substantial delay and visible focus hunting that were not present before SCAN-07. This conflicts with the established device-compatibility rule: cameras differ in whether they expose focus controls, and the scanner must not fight the camera's own autofocus.
+
+### Decision
+- Express continuous autofocus only as an optional advanced preference in the initial `getUserMedia()` constraints.
+- Advanced constraints are best-effort. If unsupported or ignored, leave the device's native autofocus behavior untouched.
+- Never call `applyConstraints()` to set or reassert focus after preview readiness.
+- Remove focus preparation and focus re-arm methods from `CameraStreamLease`.
+- Keep focus sharpness/motion measurement only as passive diagnostics; it cannot trigger camera changes.
+- Keep Torch constraint preservation/serialization. Torch updates preserve the initial focus preference and the active camera request.
+- Do not alter camera lease ownership, preview readiness, lifecycle/recovery, decoder cadence, ROI, barcode validation or Home/Stocktake business flows.
+
+### Acceptance
+- Initial camera request contains the optional focus preference.
+- Unsupported/unexposed focus capability does not fail camera acquisition or scanning.
+- No focus `applyConstraints()` path exists after preview readiness.
+- Passive sustained-blur diagnostics report `cameraControlChanged: false`.
+- Torch ON/OFF preserves the initial advanced focus preference.
+- Verify iOS Safari/PWA and Android Chrome/PWA on both Home and Stocktake before SCAN-07 closure.
+
+### Consequences
+The scanner no longer attempts to recover the physical lens. It trusts native camera autofocus and reports image-quality evidence only. If a device's native autofocus fails, the scanner will not repeatedly intervene; that behavior must be addressed through device/browser-specific evidence rather than a generic post-preview focus command.
