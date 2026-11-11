@@ -1,42 +1,39 @@
-# AI handoff — Scanner roadmap reconciliation (2026-11-11)
+# AI handoff — unified scanner recognition pipeline (2026-11-11)
 
 **Repository:** banjk124-hub/retailos-home
-**Current main:** PR #78 merged at `adee2b2815097a3d17714b2305fc144a240a3bac`.
-**Current corrective branch:** `fix/scanner-native-autofocus-no-rearm`.
-**Scope:** continue SCAN-07 only. Preserve native ROI detail and the SCAN-05/06 optical pipeline while removing post-preview autofocus intervention. Do not merge/deploy without explicit approval.
-**Operational note:** PR #77 modestly improved small/far barcode recognition and reticle-edge reads, but range/precision remain insufficient. User reports that the post-preview focus request and repeated focus re-arm caused substantial delay and visible focus disturbance.
+**Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
+**Active branch:** `feat/scanner-unified-enhancement-pipeline`.
+**Current task:** PR A+B combined — centralize existing SCAN-05/06 candidate orchestration while preserving SCAN-07 bounded sampling and all production contracts.
+**Status:** implementation authored; CI and device QA pending. No merge or deployment has been performed.
 
-## Resume instructions
-1. Read `docs/ai-context/SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md`, `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md` and `SCAN_07_SYSTEM_SYNCHRONIZATION_AUDIT.md`.
-2. Read current source in `zxingDecoder.ts`, `scannerGeometry.ts`, `scannerRoi.ts`, `scannerRotation.ts`, `scannerDeskew.ts`, `universalScannerSession.ts` and the Home/Stocktake ROI bindings.
-3. Treat SCAN-02/03 mapping and SCAN-04 strict ROI as immutable contracts unless a separate compatibility design and regression evidence justify an additive extension.
-4. Preserve the current decode candidate as the baseline. New transforms are optional candidates after baseline misses; never replace the existing path without corpus evidence.
-5. Separate algorithm accuracy, false-positive rate, memory use and device responsiveness in all reports.
-6. Stay in SCAN-07 until the focus correction and both module/device acceptance gates are complete. Do not begin SCAN-08/09 yet.
+## Read first
 
-## Current project state — SCAN-07 remains active
-- SCAN-01 through SCAN-06 implemented; PR #67 confirmed merged/deployed by user.
-- PR #75 Code 39/diagnostic remediation merged.
-- PR #76 Camera Request Bridge merged; device QA must be recorded separately from CI.
-- PR #77 merged/deployed; user confirms modest small/far improvement and reticle-edge reads, but not enough range/precision.
-- PR #78 merged. Native ROI preservation, 1920×1080 ideal / 30 FPS maximum camera request, bounded scale candidates and orientation reuse are now in main.
-- Focus correction: continuous focus is an optional advanced preference in the initial `getUserMedia()` request. Unsupported/unexposed controls are ignored and the camera retains its native autofocus.
-- The scanner session must not call `applyConstraints()` to set or reassert focus after preview starts. Focus quality sampling is passive and diagnostic only.
-- Torch may use the shared serialized track helper; its updates preserve the initial optional focus preference and negotiated camera settings.
-- `ScannerProfileName` remains inert. A conservative measured runtime budget is still a SCAN-07 closure item.
-- Outward padding remains disabled because modules have not published a wider authorized capture envelope.
-- Do not attribute overall scanner response time to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
+1. `docs/ai-context/SCANNER_RECOGNITION_PIPELINE.md` — authoritative recognition architecture and extension contract.
+2. `docs/ai-context/ROADMAP.md` — active sequence and next stages.
+3. `src/platform/scanner/scannerEnhancementPipeline.ts` and `src/platform/scanner/decoders/zxingDecoder.ts`.
+4. `scripts/test-scanner-enhancement-pipeline.mjs`, `test-scanner-decoder-integration.mjs`, `test-scanner-deskew.mjs` and `test-scanner-rotation.mjs`.
 
-## Corrective branch verification priorities
-1. GitHub Actions run #684 passed on final head `d2a6dd5df99827e9d71a3156eba854988e22e808` (full preflight, TypeScript, production and Pages builds). The lease/session expose no post-preview focus setup or re-arm API.
-2. Verify passive focus-quality telemetry never modifies camera controls.
-3. Verify Torch ON/OFF preserves initial focus preference and current width/height/frame-rate/facing constraints.
-4. Test both Home and Stocktake on iOS Safari/PWA and Android Chrome/PWA.
-5. Record barcode source pixel height and physical distance, along with lighting, glare, movement, curvature, orientation and decode outcome.
-6. Keep SCAN-08/09 blocked until SCAN-07 is accepted.
+## Non-negotiable invariants
 
-## Protected invariants
-No silent expansion beyond module-authorized ROI; no full-frame/centered fallback; no replacement of geometry mapping; no decoder concurrency; no unbounded candidate queue; no changes to camera lease/lifecycle/recovery, preview presentation, barcode validation/result delivery, Home lookup or Stocktake form-fill/explicit-save without a separate approved scope.
+- Home/Stocktake own their video element, reticle and business workflow.
+- SCAN-02/03 geometry mapping and SCAN-04 strict source ROI remain fail-closed. No full-frame, centered or inferred outward-padding fallback.
+- Candidate order remains original baseline → exact quarter-turn → confidence-gated continuous deskew.
+- SCAN-07 scale remains 1.5× first, then bounded 1×/2× fallbacks after full miss.
+- Hybrid and GlobalHistogram binarizers remain active; decoder access stays serialized; no stale-frame queue.
+- Camera lease, focus ownership, Torch, lifecycle/recovery, preview presentation and 70 ms session cadence are not changed by the recognition refactor.
+- Barcode payload validation remains downstream and authoritative.
+- Home lookup and Stocktake form-fill/explicit-save remain unchanged.
+- No paper-size-specific mode. A4/A3/A5 are carrier conditions, not symbologies.
+
+## Completion sequence
+
+1. Verify final-head GitHub Actions full preflight, TypeScript, production and Pages builds.
+2. Inspect the complete PR diff; correct any regression before marking the branch ready.
+3. Run iOS Safari/PWA and Android Chrome/PWA QA in both Home and Stocktake.
+4. Record real labels across symbologies, carriers, orientation, focus, light, glare, motion, distance and reticle positions; include false-positive controls.
+5. After this foundation is accepted, implement SCAN-08 optional image enhancement inside the same orchestrator, then SCAN-09 perspective/curved-label candidates, then measured SCAN-10 budgets.
+
+Do not restart the scanner platform, duplicate candidate logic in the decoder or feature modules, or add unbounded transform combinations. New symbologies belong in the explicit format/validation registry; the image pipeline remains symbology-agnostic.
 
 > **Historical handoff notes below:** preserve prior PR context only. Their camera-resolution and profile references are not current runtime settings; use the current project state and SCAN-07 system synchronization audit above.
 
