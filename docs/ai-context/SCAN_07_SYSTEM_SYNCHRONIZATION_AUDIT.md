@@ -12,7 +12,7 @@
 - Improvement is not sufficient for the required reading range or precision.
 - User observed focus becoming very soft, periodic focus hunting, and cases where autofocus did not recover until the scanner was closed and reopened.
 - No numerical minimum barcode size or maximum reading distance has been established.
-- End-to-end scanner latency is not a SCAN-07 metric; it includes camera startup, focus, frame delivery, decoder, session, module callback and close/release behavior.
+- Overall scanner response time is not a SCAN-07 metric; it includes camera startup, focus, frame delivery, decoder, session, module callback and close/release behavior.
 
 ## 2. Shared platform audit
 
