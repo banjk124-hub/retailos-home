@@ -79,7 +79,7 @@ async function acquireSharedStream(
       assertStreamCompatible(activeStream, cameraRequest);
       return { stream: activeStream, generation: requestGeneration };
     } catch (error) {
-      if (activeLeaseCount > 0) throw error;
+      if (activeLeaseCount > 0 || pendingRequest) throw error;
       const staleStream = activeStream;
       activeStream = null;
       staleStream.getTracks().forEach((track) => track.stop());
