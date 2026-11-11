@@ -35,6 +35,7 @@ The decoder downscaled the source crop based on the entire frame width exceeding
 - Sampling remains 1.5× baseline, then 1× and 2× only after a full baseline miss.
 - Each additional scale remains capped at 6 MP; at most three candidates per source frame.
 - All candidates use the same strict source crop and existing orientation/deskew/binarizer pipeline.
+- When the 1.5× baseline produces valid SCAN-06 orientation estimates, the 1×/2× fallbacks reuse those estimates for deskew instead of repeating both Sobel histograms. If the baseline estimate is absent, the fallback may estimate its own angle. Hints are reset for every new source frame.
 
 This increases the amount of source detail available to the decoder when the camera actually supplies higher-resolution frames. Upscaling alone does not create optical detail. Real device resolution and barcode pixel height must be recorded.
 
