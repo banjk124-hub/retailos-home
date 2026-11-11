@@ -858,7 +858,7 @@ Operator testing after PR #73 identified that the ZIP action could overlap the e
 
 ## ADR-035 — Runtime camera request intent, shared-stream compatibility and recovery preservation (2026-11-11)
 
-**Status:** Implemented on branch `feat/scanner-camera-request-bridge`; CI and physical-device acceptance pending.
+**Status:** Implemented on branch `feat/scanner-camera-request-bridge`; GitHub Actions run #610 passed full preflight/build checks. Physical-device acceptance pending.
 
 ### Context
 - `ScannerCameraRequest` and `ScannerModuleConfig.cameraRequest` existed as contracts, but the production camera service always requested environment / 1280×720 / 30 FPS.
