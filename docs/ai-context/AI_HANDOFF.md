@@ -33,7 +33,7 @@
 4. Verify focus and Torch track updates serialize and preserve both advanced settings.
 5. Verify focus quality ignores blank/moving scenes and only re-arms after sustained stable blur.
 6. Test both Home and Stocktake on iOS Safari/PWA and Android Chrome/PWA.
-7. Record barcode source pixel height and physical distance. Do not report end-to-end latency as SCAN-07 performance.
+7. Record barcode source pixel height and physical distance. Do not report overall scanner response time as SCAN-07 performance.
 8. Keep SCAN-08/09 blocked until SCAN-07 is accepted.
 
 ## Protected invariants
