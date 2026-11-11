@@ -110,4 +110,4 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Repaired diagnostic metric filtering so ROI/rotation/deskew counters reach QA Monitor and CSV export; added privacy tests for payload/device identifier exclusion.
 - Reconciled current audio values after PR #57 (50% gain 0.30, max gain 0.60, approximately 140 ms).
 - Corrected scanner handoff, roadmap, architecture and acceptance documentation; clarified that the aggregate camera request contract remains declarative.
-- PR #75 remains Draft/unmerged/undeployed pending review. CI #571 passed full preflight and builds. Code 39 upright/180° integration passes; a synthetic 17° deskew fixture did not decode, so angled Code 39 remains unverified. No camera/lifecycle/ROI/presentation/business-flow changes.
+- PR #75 remains Draft/unmerged/undeployed pending review. CI #577 passed full preflight and builds. Code 39 upright/180° integration passes; a synthetic 17° deskew fixture did not decode, so angled Code 39 remains unverified. No camera/lifecycle/ROI/presentation/business-flow changes.
