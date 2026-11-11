@@ -1,6 +1,6 @@
 # Unified Scanner Recognition & Enhancement Pipeline
 
-**Status:** PR A+B combined foundation — implementation in review, CI/device verification pending.
+**Status:** PR #80 — CI #690 passed on source/test head; physical-device QA pending.
 **Scope:** scanner recognition path only. No camera acquisition, session lifecycle, module presentation or retail workflow rewrite.
 
 ## 1. Design objective
@@ -82,7 +82,11 @@ No claim of universal optical success, minimum size or maximum distance is made 
 
 Strict module-owned ROI; SCAN-02/03 geometry mapping; camera lease and lifecycle/recovery; native focus ownership; module-owned video presentation; serialized decoder calls; 70 ms session cadence; barcode validation; Home lookup; Stocktake form-fill and explicit save; no changes to authentication, storage, backend or deployment.
 
-## 9. Next implementation sequence
+## Verification record
+
+GitHub Actions RetailOS CI run #690 (`43031795026`) passed the complete `npm run preflight` on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`, including scanner regression suites, TypeScript, production build and GitHub Pages build. The subsequent commit `8f6e0ae128bf8bc9b552f8b04b3eb2cd65e84620` changed documentation only. Physical-device QA remains pending.
+
+## 10. Next implementation sequence
 
 1. Complete this PR's CI and source-diff review; then run physical QA on iOS Safari/PWA and Android Chrome/PWA in Home and Stocktake.
 2. SCAN-08: add image-quality feature measurements and optional enhancement candidates behind the same orchestrator. Compare against original and measure false positives.
