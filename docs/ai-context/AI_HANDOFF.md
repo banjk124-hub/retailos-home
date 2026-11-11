@@ -1,24 +1,30 @@
-# Current task — Scanner Camera Request Bridge (2026-11-11)
+# AI handoff — Scanner roadmap reconciliation (2026-11-11)
 
-**Repository:** banjk124-hub/retailos-home  
-**Current main baseline:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
-**Active branch:** `feat/scanner-camera-request-bridge`.  
-**Branch base:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`.  
-**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. Current PR head: `bcd42604bb235e40a5b1112ad352bea0534168c6`. GitHub Actions run #610 passed on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`; subsequent commits through the current head are documentation-only synchronization. Physical iOS/Android QA remains pending; no merge or deployment has occurred for this branch.
+**Repository:** banjk124-hub/retailos-home
+**Current main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c` (PR #76 merge).
+**Current work branch:** `docs/scanner-roadmap-reconciliation-scan07-11`, based on current main.
+**Scope:** documentation and source audit only. No scanner runtime changes, no merge/deploy.
+**Operational note:** user reports scanner operation relatively stable; do not convert this into unsupported claims about measured accuracy, latency or device coverage.
 
-## Current task
-Complete the runtime camera request bridge: pass the module's camera intent through the initiating tap-time lease, resolve shared-stream compatibility from actual track settings, preserve compatible reference-counted sharing, reject incompatible active-stream requests safely, and retain the original intent through foreground recovery.
+## Resume instructions
+1. Read `docs/ai-context/SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` first.
+2. Read current source in `zxingDecoder.ts`, `scannerGeometry.ts`, `scannerRoi.ts`, `scannerRotation.ts`, `scannerDeskew.ts`, `universalScannerSession.ts` and the Home/Stocktake ROI bindings.
+3. Treat SCAN-02/03 mapping and SCAN-04 strict ROI as immutable contracts unless a separate compatibility design and regression evidence justify an additive extension.
+4. Preserve the current decode candidate as the baseline. New transforms are optional candidates after baseline misses; never replace the existing path without corpus evidence.
+5. Separate algorithm accuracy, false-positive rate, latency, memory and device responsiveness in all reports.
+6. Each phase gets its own branch/PR, tests, diagnostics and rollback plan. Do not batch SCAN-07–10 into one rewrite.
+
+## Current verified project state
+- SCAN-01 through SCAN-06 implemented; PR #67 confirmed merged/deployed by user.
+- PR #75 Code 39/diagnostic remediation merged.
+- PR #76 Camera Request Bridge merged to main at `20ce22e`; run #610 passed on code/test head `b954b8a`. Device QA evidence for PR #76 must not be assumed from CI.
+- Current runtime: strict ROI, 1.5× upscale, 1280 px source width cap, upright/90°/continuous deskew candidate flow, percentile contrast stretch, Hybrid + GlobalHistogram, serialized decode, 70 ms minimum interval.
+- Current user feedback: operationally relatively stable.
 
 ## Protected invariants
-- Home and Stocktake keep the existing tap-origin request before mounting scanner presentation.
-- Current camera behavior remains rear / ideal 1280×720 / 30 FPS unless a module explicitly supplies a different request.
-- Foreground recovery MUST continue to create a fresh session and fresh video surface. The replacement session reacquires using the original module camera intent; it does not reuse the retired session, old video element or released lease.
-- Keep the existing page lifecycle coordinator, teardown ordering, autofocus, preview readiness, decoder/cadence, strict ROI, Torch, module presentation and business workflows unchanged.
-- Compatible streams remain shareable under the current reference-counted lease model. Do not introduce an exclusive-owner redesign.
-- Do not merge or deploy without explicit user approval.
+No silent expansion beyond module-authorized ROI; no full-frame/centered fallback; no replacement of geometry mapping; no decoder concurrency; no unbounded candidate queue; no changes to camera lease/lifecycle/recovery, preview presentation, barcode validation/result delivery, Home lookup or Stocktake form-fill/explicit-save without a separate approved scope.
 
-## Verification status
-GitHub Actions run #610 passed the full local-equivalent preflight, including scanner regression tests, TypeScript, production build and Pages build. Remaining: physical iOS Safari/PWA and Android Chrome/PWA QA. CI/source tests do not establish hardware behavior.
+---
 
 ---
 
