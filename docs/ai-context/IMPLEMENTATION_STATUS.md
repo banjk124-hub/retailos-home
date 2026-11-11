@@ -1,7 +1,7 @@
 # Current Main reconciliation — Scanner Camera Request Bridge (2026-11-11)
 
 **Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
-**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR and CI pending; no merge/deploy.
+**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR #76 is open Draft; CI verification pending. No merge/deploy.
 
 ## Current implementation on branch
 - `ScannerCameraRequest` is now carried by the one-shot `CameraLeaseRequest` and passed into the live `getUserMedia()` request.
@@ -24,11 +24,11 @@ No intended changes to permission UX, autofocus behavior, page lifecycle coordin
 
 ---
 
-# Current Main reconciliation — Scanner Engine remediation (2026-11-11)
+# Historical reconciliation — Scanner Engine remediation and Code 39 (2026-11-11)
 
-**Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). The older `9406ac...` line below is the PR #67 historical scanner baseline, not current repository HEAD.
+**Historical base:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). This section records the PR #75 Code 39 remediation that is now merged into current main `9b84339fd25b2d3502ddccc3aa80c022ccedd827`.
 
-**Active remediation:** branch `fix/scanner-engine-remediation-code39`, based on current main. Not merged or deployed.
+**Historical branch:** `fix/scanner-engine-remediation-code39`; PR #75 is closed/merged.
 
 - Code 39 was present in the broad `ScannerSymbology` type and ZXing `FORMAT_MAP`, but absent from `SUPPORTED_BARCODE_FORMATS` and rejected by `validateBarcodePayload()`. This branch enables it end-to-end and adds production-adapter tests.
 - Rotation/deskew counters were emitted by `zxingDecoder.ts` but filtered out by `scannerDiagnosticCollector.ts`. This branch adds the missing safe keys and QA Monitor/CSV presentation.
@@ -37,7 +37,7 @@ No intended changes to permission UX, autofocus behavior, page lifecycle coordin
 - `ScannerModuleConfig.cameraRequest` is not a runtime input. The shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. This is explicitly deferred; do not bypass the shared lease.
 - No camera, lifecycle, cadence, ROI, presentation or business-flow behavior is changed by this remediation branch.
 
-**Next gate:** finish CI and diff review, then request approval. Do not merge/deploy automatically.
+**Historical outcome:** PR #75 is merged. Current follow-up work is tracked in the Camera Request Bridge section at the top of this file.
 
 ---
 
