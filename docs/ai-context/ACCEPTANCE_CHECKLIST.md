@@ -114,7 +114,7 @@ These additional measurements are not required to describe the user's functional
 - [x] Settings dock icon uses the gear-shaped Settings icon.
 - [x] Settings opens a hub with separate Scanner QA Monitor and Scanner preferences entries.
 - [x] Device-local versioned preferences default to vibration enabled and beep volume 50%.
-- [x] Beep volume slider has 11 levels; 50% preserves gain 0.24, 0% mutes, 100% maps to gain 0.48.
+- [x] Beep volume slider has 11 levels; current merged audio mapping is 50% gain 0.30, 0% mutes, 100% maps to gain 0.60 (PR #57).
 - [x] Shared feedback reads current preferences at accepted-result time; Home/Stocktake cannot override global settings.
 - [x] Unsupported vibration API is surfaced honestly and does not block barcode delivery.
 - [x] Regression test is included in preflight.
