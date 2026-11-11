@@ -107,7 +107,7 @@ try {
   currentStream = makeStream({ facingMode: 'environment', frameRate: 30, width: 1280, height: 720 });
   installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
   const sharedA = await cameraSession.acquireCameraLease(rearDefault);
-  const sharedB = await cameraSession.acquireCameraLease(rearDefault);
+  const sharedB = await cameraSession.acquireCameraLease({ ...rearDefault, preferredWidth: 640, preferredHeight: 480, preferredFrameRate: 15 });
   assert.equal(mediaCalls.length, 1, 'compatible requests reuse one getUserMedia stream');
   assert.equal(mediaCalls[0].video.facingMode.ideal, 'environment');
   assert.equal(mediaCalls[0].video.width.ideal, 1280);
@@ -136,6 +136,11 @@ try {
     'an incompatible request is rejected while the active stream has a lease');
   assert.equal(mediaCalls.length, 1, 'an incompatible request does not start a competing camera acquisition');
   rearLease.release();
+  currentStream = makeStream({ facingMode: 'user', frameRate: 30 });
+  const frontLease = await cameraSession.acquireCameraLease({ ...rearDefault, facingMode: 'user' });
+  assert.equal(mediaCalls.length, 2, 'a new intent acquires a replacement stream after the previous final lease releases');
+  assert.equal(mediaCalls[1].video.facingMode.ideal, 'user', 'the replacement acquisition uses the new module intent');
+  frontLease.release();
 
   mediaCalls = [];
   let resolvePending;
