@@ -1,4 +1,5 @@
 import type { ScannerGeometry, ScannerSourceScanRegion, ScannerSymbology } from '../contracts';
+import type { ScannerFocusQualitySample } from '../scannerFocusQuality';
 
 /** A decoded value before it is accepted by the shared scanner policy. */
 export type DecoderOutput = {
@@ -20,6 +21,8 @@ export type DecoderDecodeOptions = {
   timestamp?: number;
   /** Current feature-owned reticle mapped into unrotated source-frame coordinates. */
   scanRegion: ScannerSourceScanRegion | null;
+  /** Optional low-rate quality sample from the existing grayscale ROI readback. */
+  onFocusQuality?: (sample: ScannerFocusQualitySample) => void;
 };
 
 /**
