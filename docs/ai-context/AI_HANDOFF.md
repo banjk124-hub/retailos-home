@@ -9,7 +9,7 @@
 
 ## Current branch scope
 - Enable Code 39 in the existing ZXing adapter path, explicit supported-format allowlist and payload validation. ZXing's Code 39 enum/mapping existed before this branch; production activation did not.
-- Add Code 39 validation tests and production-adapter upright/deskew integration fixtures.
+- Add Code 39 validation tests and production-adapter upright/180-degree integration fixtures.
 - Retain rotation/deskew diagnostics through the privacy allowlist and surface them in QA Monitor / CSV export.
 - Add a privacy regression test for diagnostic collection/export.
 - Correct stale audio gain documentation/comment: 50% = 0.30, 100% = 0.60, tone duration approximately 140 ms.
@@ -22,7 +22,7 @@ No camera acquisition/lease, constraints/autofocus, lifecycle/recovery, decode c
 `ScannerModuleConfig.cameraRequest` remains declarative and is not consumed by the runtime. The shared camera lease currently uses a fixed environment / 1280×720 / 30 FPS request. Per-module camera requests must not be wired until shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together.
 
 ## Required verification
-1. Run Code 39 payload validation and production ZXing adapter integration (upright and deskew).
+1. Run Code 39 payload validation and production ZXing adapter integration (upright and 180-degree reversal).
 2. Run diagnostic collector privacy/allowlist tests and verify QA Monitor / CSV fields.
 3. Run full `npm run preflight`, TypeScript, production build and GitHub Pages build.
 4. Review the entire diff against the exact branch base.
