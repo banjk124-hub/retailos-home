@@ -236,7 +236,7 @@ Do not collapse these into a single boolean such as `available`.
 - Validate decoded format and payload before invoking feature callbacks. EAN values are format-specific; CODE-128 remains opaque text; CODE-39 preserves its standard uppercase alphabet and spaces without numeric coercion.
 - Scanner layer must not require catalog existence. Unknown barcodes remain valid operational input where the consuming workflow permits them.
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save semantics, duplicate Stocktake rows, and manual entry.
-- Do not tune resolution/decode interval until actual device settings and scan latency are measured.
+- Do not tune resolution/decode interval until actual device settings and scan overall scanner response time are measured.
 - See `ROADMAP.md` for phase acceptance criteria and `DECISIONS.md` for accepted decisions.
 
 
@@ -464,7 +464,7 @@ The scanner is already separated into feature-owned UI, `useScannerEngine`, `Uni
 - Resource adaptation may change optional visual/processing intensity only. Barcode correctness, accepted format/payload validation, session ownership, callback delivery, persistence and feature workflows are non-negotiable invariants.
 - Keep Home and Stocktake presentation independently owned while sharing the engine.
 - Treat direct battery/temperature data as unavailable unless a specific target browser exposes a reliable supported API. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
-- Never lower camera quality or decoder work merely because a device is classified Low. Any change to resolution, decode cadence, ROI or recovery tiers requires measured scan-accuracy and latency evidence.
+- Never lower camera quality or decoder work merely because a device is classified Low. Any change to resolution, decode cadence, ROI or recovery tiers requires measured scan-accuracy and overall scanner response time evidence.
 
 ### Required engine boundary
 The shared engine must own camera request/claim/cancel/release, session lifecycle, decoder lifecycle/scheduling, typed events/errors and diagnostics. Feature consumers own presentation and business policy. Explicit state transitions must distinguish camera request, preview readiness, decoder readiness/scanning, suspension, closing and disposal; a visible preview must not be represented as a ready decoder.
@@ -668,7 +668,7 @@ The previous estimator used one global Sobel structure tensor and accepted only 
 
 ### Constraints
 - No camera/session/lifecycle, ROI mapping, UI, validation or Home/Stocktake business-flow changes.
-- Measure physical accuracy, first-result latency, stage cost and UI responsiveness on iOS/Android before release acceptance.
+- Measure physical accuracy, overall scanner response time, stage cost and UI responsiveness on iOS/Android before release acceptance.
 
 ### Acceptance
 See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
@@ -909,7 +909,7 @@ The merged scanner pipeline already includes module-owned preview geometry, stri
 - Each phase is separately branched and reviewed. The current 70 ms cadence, camera/lifecycle contracts, module presentation and retail workflows remain protected until separate evidence supports a change.
 
 ### Acceptance
-A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, first-result latency, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
+A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, overall scanner response time, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
 
 
 ## ADR-037 — Bounded multi-scale sampling inside strict module ROI (2026-11-11)
@@ -930,7 +930,7 @@ The production decoder used one fixed 1.5× ROI sampling scale. The Home and Sto
 ### Acceptance and verification boundary
 - Automated regression covers scale ordering, baseline dimensions, unique candidates, fallback allocation cap and production-adapter strict crop behavior.
 - Full preflight/CI and physical iOS/Android small/far-label checks are required before merge/deploy.
-- Synthetic fixtures do not establish real-world optical improvement. Record decode success, false positives, first-result latency, stage costs and UI responsiveness separately.
+- Synthetic fixtures do not establish real-world optical improvement. Record decode success, false positives, overall scanner response time, stage costs and UI responsiveness separately.
 
 ### Rollback
 Revert the SCAN-07 scale planner and adapter loop together. The original 1.5× path remains candidate zero and can be restored without changing camera acquisition, geometry mapping, session lifecycle, presentation or retail workflows.
