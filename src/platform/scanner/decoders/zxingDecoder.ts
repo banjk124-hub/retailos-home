@@ -394,6 +394,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     // interpolation and ROI bounds can make one representation more legible.
     const deskewStartedAt = performance.now();
     const cachedHints = reuseOrientationHints ? this.cachedOrientationHints : null;
+    const reusedOrientation = Boolean(cachedHints?.upright || cachedHints?.rotated);
     this.diagnosticDeskewAttempts += 1;
     const uprightDeskew = cachedHints?.upright
       ? deskewLuminanceFrameWithEstimate(
@@ -426,18 +427,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         );
       if (!rotatedDeskew) this.diagnosticDeskewEstimateMisses += 1;
     }
-    if (!reuseOrientationHints) {
-      this.cachedOrientationHints = {
-        upright: uprightDeskew
-          ? { angleDegrees: uprightDeskew.angleDegrees, confidence: uprightDeskew.confidence }
-          : null,
-        rotated: rotatedDeskew
-          ? { angleDegrees: rotatedDeskew.angleDegrees, confidence: rotatedDeskew.confidence }
-          : null,
-      };
-    }
+    this.cachedOrientationHints = {
+      upright: uprightDeskew
+        ? { angleDegrees: uprightDeskew.angleDegrees, confidence: uprightDeskew.confidence }
+        : cachedHints?.upright ?? null,
+      rotated: rotatedDeskew
+        ? { angleDegrees: rotatedDeskew.angleDegrees, confidence: rotatedDeskew.confidence }
+        : cachedHints?.rotated ?? null,
+    };
     this.recordStageCost(
-      cachedHints ? 'deskew_reuse_orientation_and_rotate' : 'deskew_estimate_and_rotate',
+      reusedOrientation ? 'deskew_reuse_orientation_and_rotate' : 'deskew_estimate_and_rotate',
       performance.now() - deskewStartedAt,
     );
 
