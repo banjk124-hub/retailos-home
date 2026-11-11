@@ -164,6 +164,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
   private lastRoiHeight = 0;
+  private diagnosticRoiSourceScale = 1;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -219,6 +220,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         this.emitDiagnostics();
         return [];
       }
+      this.diagnosticRoiSourceScale = baseDimensions.sourceScale;
       const scaleCandidates = resolveScannerRoiScaleCandidates(
         baseDimensions.width,
         baseDimensions.height,
@@ -502,6 +504,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       sourceHeight: this.lastFrameHeight,
       roiWidth: this.lastRoiWidth,
       roiHeight: this.lastRoiHeight,
+      roiSourceScale: Number(this.diagnosticRoiSourceScale.toFixed(3)),
       averageDecodeMs: this.decodeCostCount ? Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)) : 0,
     });
     this.diagnosticStartedAt = now;
@@ -521,6 +524,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticScaleAttempts = 0;
     this.diagnosticScaleHits = 0;
     this.diagnosticLastScaleFactor = 0;
+    this.diagnosticRoiSourceScale = 1;
     this.lastFocusQualitySampleAt = 0;
     this.lastFocusQualityPixels = null;
     this.lastFocusQualityWidth = 0;
