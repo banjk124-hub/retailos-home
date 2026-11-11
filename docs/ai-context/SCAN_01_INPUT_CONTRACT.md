@@ -4,6 +4,8 @@
 **Original base:** `main` at `09cd3b5117ea38a16dd991f74320835b67ea04b5`.  
 **Scope:** platform-neutral TypeScript contracts only. No scanner runtime behavior is changed by this PR.
 
+**Current implementation clarification (2026-11-11):** SCAN-02/03 geometry is active through `useScannerPreviewRegionBinding` and `ScannerSession.setScanRegion()`. The aggregate `ScannerModuleConfig` is not currently consumed by Home/Stocktake; in particular, `cameraRequest` is declarative only. `cameraSession.ts` currently uses one shared camera stream with fixed environment / 1280×720 / 30 FPS preferences. Per-module camera requests are deferred until shared-stream compatibility, pending-request ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together. Do not wire per-module constraints by bypassing the existing lease path.
+
 ## 1. Purpose
 
 Establish an unambiguous boundary between feature-owned scan intent and shared scanner processing before geometry mapping or ROI decoding is implemented.
