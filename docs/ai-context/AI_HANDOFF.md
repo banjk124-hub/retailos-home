@@ -28,7 +28,7 @@
 - Do not attribute overall scanner response time to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
 
 ## Corrective branch verification priorities
-1. CI must verify optional initial focus negotiation and prove that the lease/session expose no post-preview focus setup or re-arm API.
+1. GitHub Actions run #684 passed on final head `d2a6dd5df99827e9d71a3156eba854988e22e808` (full preflight, TypeScript, production and Pages builds). The lease/session expose no post-preview focus setup or re-arm API.
 2. Verify passive focus-quality telemetry never modifies camera controls.
 3. Verify Torch ON/OFF preserves initial focus preference and current width/height/frame-rate/facing constraints.
 4. Test both Home and Stocktake on iOS Safari/PWA and Android Chrome/PWA.
