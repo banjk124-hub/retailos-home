@@ -85,11 +85,11 @@ export type ScannerModuleConfig = {
   cameraRequest: ScannerCameraRequest;
 };
 
-/** Current production camera request; preserve until measured and approved. */
+/** Prefer 1080p source detail for small/far retail labels; browsers may negotiate lower. */
 export const DEFAULT_SCANNER_CAMERA_REQUEST: ScannerCameraRequest = {
   facingMode: 'environment',
-  preferredWidth: 1280,
-  preferredHeight: 720,
+  preferredWidth: 1920,
+  preferredHeight: 1080,
   preferredFrameRate: 30,
   maxFrameRate: 30,
 };
