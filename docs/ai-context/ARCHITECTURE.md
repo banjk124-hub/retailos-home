@@ -69,25 +69,52 @@
 
 ---
 
-## ADR-020 — Runtime verification of shared Scanner audio feedback (2026-11-09)
+## ADR-020 — Runtime verification and iOS recovery for shared Scanner audio feedback (2026-11-09)
 
-**Status:** Implemented on `test/scanner-audio-runtime-and-doc-sync`; full preflight passed in GitHub Actions run #42648085229 on documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Draft PR #57 remains open and unmerged. Production audio mapping is intentionally unchanged pending physical-device comparison.
+**Status:** Merged by PR #57 at `09cd3b5117ea38a16dd991f74320835b67ea04b5`. The merged source includes best-effort foreground AudioContext resume, retry/recreation on the next direct user gesture, gain ceiling 0.60 and approximately 140 ms tone duration. Deployment and physical acoustic acceptance are not asserted by this record.
 
 ### Context
-- PR #56 centralizes Scanner feedback preferences and maps the 0–100 UI level linearly to Web Audio gain 0–0.48.
-- The existing settings regression test checked source text and store behavior, but did not execute the audio service against an AudioContext/GainNode implementation.
-- A subjective report that 50% and 100% sound similar cannot, by itself, establish a defect in the gain calculation or justify changing the curve.
+- PR #56 centralizes Scanner feedback preferences and maps the 0–100 UI level linearly to Web Audio gain.
+- iOS PWA background/lock-screen return could leave Scanner decoding while both accepted-result beep and Settings Test Beep were silent.
+- The prior source-level test did not exercise production audio against AudioContext/GainNode behavior.
 
 ### Decision
-- Add a deterministic mocked Web Audio runtime test that executes the production audio and feedback modules.
-- Assert that 0% creates no oscillator; 50% ramps to gain 0.24; 70% ramps to 0.336; and 100% ramps to 0.48.
-- Verify AudioContext gesture unlock, preview reads the latest shared setting, accepted-result feedback uses the same setting, vibration emits one 25 ms pulse when enabled, and absent Vibration API remains non-fatal.
-- Register the test in the repository preflight.
-- Do not alter the production gain mapping, tone frequency, envelope or duration until controlled A/B testing on representative iOS and Android devices supports a change. App gain is not a calibrated acoustic SPL measurement; device media volume, speaker response and browser audio processing affect perceived loudness.
+- Keep audio recovery independent from camera/session lifecycle. Never restart or reacquire the camera to restore sound.
+- On visibilitychange/pageshow, attempt best-effort resume of an existing non-running AudioContext. Browser policy may defer recovery.
+- Retry resume from the next direct Scanner-surface or Test Beep gesture; recreate a closed AudioContext only from that gesture.
+- Map the 0–100 preference linearly to gain 0–0.60: 50% = 0.30; 100% = 0.60; 0% remains muted.
+- Keep the sine waveform at 1760 Hz and oscillator duration at approximately 140 ms.
+- Audio failure remains non-fatal to barcode delivery.
+
+### Verification boundary
+- Mocked AudioContext/GainNode regression tests verify gain routing, duration and recovery paths.
+- Software tests do not establish physical speaker loudness or guarantee every iOS interruption path. Device-level acoustic QA must be recorded separately.
 
 ### Protected scope
-- No changes to camera acquisition/lease, camera constraints, autofocus, first-frame readiness, decoder, barcode validation/delivery, accepted-result gate, Torch, scanner lifecycle, Home lookup, Stocktake form-fill/explicit-save, auth, backend, storage architecture or PWA deployment.
-- CI proves deterministic software-level gain routing only. It does not prove physical loudness, speaker quality, vibration hardware behavior or platform support.
+No changes to camera acquisition/lease, camera constraints, autofocus, first-frame readiness, decoder, barcode validation/delivery, accepted-result gate, Torch, scanner lifecycle, Home lookup, Stocktake form-fill/explicit-save, auth, backend, storage architecture or PWA deployment.
+
+---
+
+## ADR-034 — Enable Code 39 as a supported retail barcode format (2026-11-11)
+
+**Status:** Implemented on branch `fix/scanner-engine-remediation-code39`; pending PR review and CI.
+
+### Context
+- `@zxing/library` 0.23.0 already exposes `BarcodeFormat.CODE_39`, and the adapter already had a forward/reverse format mapping.
+- RetailOS had not enabled Code 39 in `SUPPORTED_BARCODE_FORMATS`; decoder initialization rejected it and payload validation classified it as unsupported.
+
+### Decision
+- Add `CODE_39` to the explicit retail format allowlist. The existing ZXing mapping is reused; no new dependency is required.
+- Preserve the decoded Code 39 payload as text. Accept the standard data alphabet A–Z, 0–9, space, and `-.$/+%`; reject control characters, lowercase and the reserved start/stop asterisk as payload data.
+- Do not trim Code 39 payloads because an embedded or boundary space is a valid Code 39 symbol.
+- Do not impose Mod-43 check-digit enforcement: it is optional in Code 39 and the current retail input contract does not require it.
+- Keep strict module-owned ROI, orientation recovery, result delivery and downstream consumer behavior unchanged.
+
+### Acceptance
+- Payload validation covers valid alphabet, spaces, punctuation, empty values, control characters and invalid characters.
+- The production ZXing adapter decodes a generated Code 39 symbol upright and through the existing deskew path.
+- Existing EAN-8, EAN-13 and Code 128 tests remain green.
+- Full preflight, TypeScript, production build and GitHub Pages build pass.
 
 ---
 
