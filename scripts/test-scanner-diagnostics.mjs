@@ -27,6 +27,9 @@ try {
     deskewAttempts: 34,
     deskewEstimateMisses: 7,
     deskewHits: 4,
+    scaleAttempts: 3,
+    scaleHits: 1,
+    lastScaleFactor: 2,
     lastDeskewAngleDegrees: -17.25,
     barcodePayload: 'MUST_NOT_BE_RETAINED',
     deviceId: 'MUST_NOT_BE_RETAINED',
@@ -43,6 +46,9 @@ try {
     deskewAttempts: 34,
     deskewEstimateMisses: 7,
     deskewHits: 4,
+    scaleAttempts: 3,
+    scaleHits: 1,
+    lastScaleFactor: 2,
     lastDeskewAngleDegrees: -17.25,
   })) {
     assert.equal(event.metrics[key], expected, `diagnostic collector retains ${key}`);
@@ -54,6 +60,9 @@ try {
   assert.equal(exported.eventCount, 1);
   assert.equal(exported.events[0].metrics.rotationHits, 3);
   assert.equal(exported.events[0].metrics.deskewHits, 4);
+  assert.equal(exported.events[0].metrics.scaleAttempts, 3);
+  assert.equal(exported.events[0].metrics.scaleHits, 1);
+  assert.equal(exported.events[0].metrics.lastScaleFactor, 2);
   assert.equal(JSON.stringify(exported).includes('MUST_NOT_BE_RETAINED'), false,
     'export must not contain fields outside the diagnostic allowlist');
 } finally {
@@ -65,7 +74,7 @@ try {
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
   'roiUnavailable', 'roiWidth', 'roiHeight', 'rotationAttempts', 'rotationHits',
-  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'lastDeskewAngleDegrees',
+  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'lastDeskewAngleDegrees',
 ]) {
   assert.ok(qaMonitor.includes(key), `QA Monitor displays/exports ${key}`);
 }

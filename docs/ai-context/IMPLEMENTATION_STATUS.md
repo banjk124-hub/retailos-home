@@ -1,26 +1,50 @@
-# Current Main reconciliation — Scanner Camera Request Bridge (2026-11-11)
+# Scanner implementation status — current main (2026-11-11)
 
-**Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
-**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR #76 is open Draft; CI run #610 passed. Physical iOS/Android QA pending. No merge/deploy.
+**Main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
+**PR #76:** merged. CI #610 passed on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`; later commits through the merge were documentation synchronization. Physical-device evidence must be recorded separately from CI.
+**Operational status:** user reports scanner operation relatively stable. This is functional/operational feedback, not a quantified optical or performance benchmark.
 
-## Current implementation on branch
-- `ScannerCameraRequest` is now carried by the one-shot `CameraLeaseRequest` and passed into the live `getUserMedia()` request.
-- Camera constraints preserve the existing default: rear camera, ideal 1280×720, ideal 30 FPS and max 30 FPS.
-- Shared-stream compatibility checks actual track facing mode and frame rate for different intents. The initiating request accepts a negotiated facing mode because it is an ideal, but every caller must still satisfy the hard `maxFrameRate` ceiling. Identical intents may share the negotiated stream. Resolution remains an ideal, not an exact gate; missing browser settings remain unknown.
-- Compatible requests continue to share the same stream and reference-counted lease. Incompatible requests cannot replace a stream while it has active leases.
-- The React bridge and platform session retain camera intent after the one-shot request is claimed. Foreground recovery still creates a fresh session and fresh video surface, then reacquires with the original intent.
-- Home and Stocktake retain their existing synchronous tap-origin acquisition path and current default camera behavior.
+## Implemented
+- SCAN-01: platform-neutral module/input contracts.
+- SCAN-02: preview-to-source geometry mapping including object-fit, object-position, visible content and mirror handling.
+- SCAN-03: Home and Stocktake independently publish reticle regions; in-place session region update without session/camera/decoder restart.
+- SCAN-04: strict module-owned ROI crop; missing/invalid region fails closed; no full-frame or fixed-centered fallback.
+- SCAN-05: exact quarter-turn recovery integrated into the current per-frame miss path.
+- SCAN-06: continuous Sobel orientation histogram, confidence gates, bounded bilinear deskew, original/quarter-turn candidates, bounded percentile contrast normalization, Hybrid + GlobalHistogram binarizers.
+- PR #75: Code 39 enabled through supported-format and payload-validation boundaries; privacy-safe recovery diagnostics retained in QA Monitor/export.
+- PR #76: camera intent wired through tap-origin lease, actual getUserMedia constraints, compatibility checks, reference-counted sharing and foreground recovery.
 
-## Protected scope
-No intended changes to permission UX, autofocus behavior, page lifecycle coordinator, teardown order, video readiness, decoder/cadence, strict ROI, Torch, callback semantics, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, storage, backend or deployment configuration.
+## Current source facts
+- Decoder: `src/platform/scanner/decoders/zxingDecoder.ts`.
+- Geometry: `scannerGeometry.ts`; strict crop: `scannerRoi.ts`.
+- Orientation transform: `scannerRotation.ts`; continuous orientation/contrast/deskew: `scannerDeskew.ts`.
+- Camera/session: `cameraSession.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`.
+- SCAN-07 branch implementation: preserve the exact 1.5× baseline, then on a full baseline miss try 1× and 2× sampling within the same strict ROI; at most three candidates per frame.
+- Each additional scale is capped at 6 MP; frame-width cap remains 1280 px. The baseline 1.5× dimensions retain the existing rounding behavior.
+- Current candidate ordering: upright → exact 90° → deskew variants of original/rotated ROI, sorted by absolute correction angle.
+- Both HybridBinarizer and GlobalHistogramBinarizer are attempted per candidate.
+- Session minimum decode interval is 70 ms; decode calls remain serialized.
+- Existing metrics include decode duration/stage timing, ROI dimensions/availability, rotation and deskew attempts/misses/hits. SCAN-07 adds scale attempts/hits and last attempted scale. These are not yet a calibrated cross-device benchmark.
 
-## Verification status
-- [x] Camera request resolver and compatibility regression suite.
-- [x] Lease sharing/conflict, pending request, cancellation and ref-count regression coverage.
-- [x] Recovery source-contract guards for fresh session/fresh surface/original intent.
-- [x] Full preflight, TypeScript, production and Pages builds — run #610 passed.
-- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA.
-- [ ] Explicit approval before merge/deploy.
+## SCAN-07 branch implementation — CI verified; device acceptance pending
+- `scannerScale.ts` produces the fixed 1.5× baseline plus at most two unique fallback scales (1× and 2×); fallback allocations are capped at 6 MP each.
+- `zxingDecoder.ts` executes the complete existing orientation/deskew/binarizer pipeline at 1.5× first. Only after a miss does it redraw the exact same strict source ROI at fallback scales.
+- No reticle geometry, session cadence, camera lifecycle, decoder concurrency, validation or module workflow changes.
+- Padding outside the published reticle is not implemented: Home/Stocktake do not yet publish a separate authorized capture envelope. This is intentional to preserve SCAN-04.
+- Added scale-planner regression tests and extended production-adapter integration coverage, including a forced 1.5× baseline miss followed by a successful 1× fallback; preflight registration added.
+- GitHub Actions run #634 (`42970931657`) passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`. Any later documentation-only commit must pass CI on the final PR head.
+
+## Not implemented yet
+- SCAN-07 physical-device acceptance and labelled small/far barcode performance evidence.
+- SCAN-08: optional gamma, adaptive threshold and denoise candidate paths. Existing percentile contrast stretch is not equivalent to this phase.
+- SCAN-09: perspective detection/rectification and curved-label dewarping.
+- SCAN-10: runtime/device adaptive candidate budget and frame-time policy.
+- SCAN-11: completed cross-platform/device matrix and quantitative acceptance record.
+
+## Next gate
+Review and verify the SCAN-07 implementation on PR #77. Preserve the current 1.5× path as baseline; compare fallback candidates using a labelled fixture corpus. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows as part of optical algorithm work.
+
+---
 
 ---
 

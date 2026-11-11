@@ -1,28 +1,51 @@
-# Scanner Engine remediation — Code 39 and diagnostic integration (2026-11-11)
+# Scanner acceptance — current status and next-phase gates (2026-11-11)
 
-## Code 39
-- [x] Confirmed `@zxing/library` 0.23.0 is already installed; no dependency change required.
-- [x] Confirmed `BarcodeFormat.CODE_39` and forward/reverse decoder mapping already existed.
-- [x] Added `CODE_39` to the production allowlist used by Home and Stocktake.
-- [x] Added payload validation for the standard uppercase Code 39 alphabet, preserving spaces and rejecting control/unsupported characters.
-- [x] Added validation fixtures for valid text, punctuation, spaces, empty payload, control characters and invalid characters.
-- [x] Added production ZXing adapter fixtures for upright and 180-degree Code 39.
-- [x] Full preflight and production/Pages builds pass on final branch head `8f558511297596be0819baea01d49ed0993b86fb` (CI #577).
-- [ ] Manual real-label Code 39 verification on iOS Safari/PWA and Android Chrome/PWA.
+## Current merged baseline
+- [x] SCAN-01 through SCAN-06 implemented and merged.
+- [x] SCAN-05/06 production adapter regression suites and full preflight passed (PR #67 CI #432 final head).
+- [x] User confirms SCAN-05/06 deployed and operationally stable.
+- [x] PR #75 Code 39 enablement and recovery diagnostics merged.
+- [x] PR #76 Camera Request Bridge merged at main `20ce22e`; CI #610 passed on code/test head `b954b8a`.
+- [ ] Physical-device acceptance evidence for PR #76 recorded separately on iOS Safari/PWA and Android Chrome/PWA.
+- [ ] Quantified cross-device optical/performance baseline recorded.
 
-## Recovery diagnostics
-- [x] Collector allowlist retains ROI availability/dimensions, rotation and deskew counters/angle.
-- [x] QA Monitor event detail and CSV export include the recovery metrics.
-- [x] Privacy regression verifies payload-like keys and camera identifiers are excluded.
-- [ ] Full preflight passes on the remediation branch.
-- [ ] Verify a live diagnostic export from a device session contains the metrics after rotation/deskew activity.
+## SCAN-07 — Adaptive ROI and multi-scale gates
+- [ ] Source-frame and preview/source mapping contract unchanged by tests.
+- [ ] ROI padding bounded to an explicit module-authorized capture envelope; no full-frame/center fallback.
+- [ ] Current 1.5× path remains a comparison baseline.
+- [ ] Small/far barcode fixtures at multiple source pixel heights; reticle edge and outside-reticle negative controls.
+- [ ] Production adapter tests, preflight, TypeScript, production and Pages builds.
+- [ ] Device comparison on iOS/Android and low/high capability devices.
 
-**Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; Code 39 angled/optical performance remains unverified and must not be claimed from the upright/180° tests.
+## SCAN-08 — Image enhancement gates
+- [ ] Original luminance candidate remains first and available as fallback.
+- [ ] Gamma/contrast/adaptive threshold/denoise variants are bounded and triggered only when measurable input conditions justify them.
+- [ ] Normal-light, low-light, noise, low-contrast and saturated/glare fixtures.
+- [ ] False-positive rate and barcode checksum/format rejection measured; no claim of restoring clipped highlights.
+- [ ] Production adapter and cross-device performance checks.
 
-## Explicitly deferred
-- [ ] Complete runtime use of `ScannerModuleConfig.cameraRequest`; requires separate shared-camera lease compatibility design.
-- [ ] Labelled benchmark corpus and measured device baselines.
-- [ ] Generalized conditional recovery orchestration for future SCAN-08/09 capabilities.
+## SCAN-09 — Perspective and curved-label gates
+- [ ] Perspective and curved-surface cases are separated from in-plane deskew.
+- [ ] Detection confidence and geometric bounds gate optional rectification.
+- [ ] Original ROI candidate retained; no unconditional warp.
+- [ ] Planar perspective and curved-label fixtures plus negative controls.
+- [ ] Interpolation, memory, false-positive and latency costs measured.
+
+## SCAN-10 — Adaptive performance gates
+- [ ] Device capability uses observed runtime performance, not brittle UA/model names.
+- [ ] Candidate/scale budget is bounded and baseline decode is never starved.
+- [ ] Frame processing budget, serialized reader access and queue bounds verified.
+- [ ] Low/mid/high device profiles measured.
+- [ ] No cadence change without evidence and explicit acceptance.
+
+## SCAN-11 — Cross-platform hardening gates
+- [ ] iOS Safari/PWA and Android Chrome/PWA.
+- [ ] Home and Stocktake independent workflow checks.
+- [ ] Permission, open/close, background/foreground and recovery.
+- [ ] Real labels: small/far, low-light, reflective, curved, perspective and reticle-edge.
+- [ ] Build/browser/device identifiers, accuracy, first-result latency, per-stage timing and UI responsiveness recorded.
+
+---
 
 ---
 
@@ -104,9 +127,28 @@ These additional measurements are not required to describe the user's functional
 - [x] Module contract separates scan region from camera request.
 - [x] Camera request values are preferred constraints, independent of display aspect ratio.
 - [x] Default camera request remains environment / 1280×720 / 30 FPS ideal / 30 FPS maximum.
-- [x] Runtime call sites, camera lifecycle, decoder, validation and module business flows are untouched.
-- [ ] TypeScript production build and full `npm run preflight` pass on PR head.
-- [ ] GitHub Actions CI passes.
+- [x] Runtime call sites consume the module request through the tap-origin shared lease; PR #76 merged at main baseline `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
+- [x] Camera lease compatibility, immutable intent and recovery re-acquisition are covered by PR #76 regression tests.
+- [x] GitHub Actions run #610 passed full preflight, TypeScript, production and Pages builds on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA acceptance for the camera request bridge recorded separately.
+
+---
+
+# SCAN-07 — Adaptive ROI & multi-scale (PR #77 branch)
+
+- [x] Existing module-owned source-frame ROI remains authoritative; no outward padding or fallback.
+- [x] Existing 1.5× candidate remains first with unchanged baseline dimensions.
+- [x] 1× and 2× fallback scales run only after the full 1.5× orientation/deskew/binarizer pipeline misses.
+- [x] Candidate count is bounded to three total; additional candidates are deduplicated and capped at 6 MP each.
+- [x] Existing 1280 px source-width cap, serialized decoder, 70 ms session interval and result validation remain unchanged.
+- [x] Scale attempt/hit diagnostics added without barcode payloads.
+- [x] Scale planner regression script added to preflight; production adapter integration test extended for strict ROI crop invariance.
+- [x] GitHub Actions run #634 passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`; final documentation sync must also pass CI.
+- [ ] iOS Safari/PWA and Android Chrome/PWA small/far real-label comparison; low/high capability devices.
+- [ ] Confirm reticle-edge and outside-reticle negative controls; verify Home and Stocktake workflows remain unchanged.
+- [ ] Record decode success, false positives, first-result latency, processing cost and UI responsiveness. No unsupported accuracy/performance claims.
+
+**Padding decision:** outward padding is deferred. Current modules publish the reticle only; an expanded capture envelope requires an explicit module-owned contract and separate geometry tests.
 
 ---
 

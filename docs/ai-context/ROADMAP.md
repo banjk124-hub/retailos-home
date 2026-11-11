@@ -1,8 +1,75 @@
-# Current task — Scanner Camera Request Bridge (2026-11-11)
+# Scanner roadmap — current baseline and SCAN-07 to SCAN-11 (2026-11-11)
 
-**Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 (Code 39 + recovery diagnostics) is merged.  
-**Working branch:** `feat/scanner-camera-request-bridge`, based on that main commit.  
-**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. GitHub Actions run #610 passed on head `b954b8a784efd6826588097d6d170d94c80964dc`; physical-device QA remains pending. No merge or deployment has occurred.
+**Current main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c` (PR #76 merge commit).
+**Completed:** SCAN-01 through SCAN-06; PR #76 Camera Request Bridge merged. SCAN-05/06 user-confirmed operationally stable after deployment.
+**Next work:** SCAN-07 is implemented on PR #77; run #634 passed on its code/test head and final documentation-sync CI is in progress. Physical-device acceptance remains pending. SCAN-08 through SCAN-11 remain separately gated.
+**Current source baseline:** ZXing 0.23.0 adapter, strict module-owned ROI, 1.5× baseline followed on miss by bounded 1×/2× ROI scale candidates, continuous orientation/deskew candidates per scale, bounded percentile contrast stretch, two ZXing binarizers, serialized decode at 70 ms minimum session interval.
+**Protected contracts:** SCAN-02/03 preview-to-source mapping; SCAN-04 strict ROI/no-full-frame-fallback; SCAN-05/06 orientation and deskew; scanner session/camera lease/lifecycle/recovery; module-owned video surface/reticle/presentation; barcode validation/result delivery; Home lookup; Stocktake form-fill/explicit-save.
+**Working rule:** add measured candidate paths alongside the current path; preserve a baseline candidate and existing ordering until comparative evidence justifies a change. No unconditional replacement, no weakening strict ROI, no full-frame or centered fallback.
+
+## Current scanner pipeline — source-verified
+1. Home/Stocktake owns the preview, reticle and preview-to-source geometry mapping.
+2. `ScannerSession` publishes a defensive source-frame-normalized ROI snapshot on each scheduled frame.
+3. `resolveScannerRoiCrop()` converts that strict region to integer source pixels; invalid/missing ROI fails closed.
+4. The decoder crops directly from the camera frame. Frames wider than 1280 px are proportionally scaled; the strict ROI is sampled at the unchanged 1.5× baseline first, then 1×/2× only after a full baseline miss.
+5. RGBA is converted to luminance.
+6. Decode candidates run in order: upright; exact 90° clockwise; continuous deskew of original and quarter-turned ROI, ordered by smallest correction angle.
+7. Each candidate is tested with HybridBinarizer and GlobalHistogramBinarizer. ZXing result validation remains authoritative.
+8. Decoder calls are serialized; current session minimum interval is 70 ms. Stage/decode timing and ROI/orientation diagnostics exist.
+
+## SCAN-07 — Adaptive ROI and multi-scale
+**Status:** Implemented on PR #77 branch; CI #634 passed on code/test head, physical-device acceptance pending.
+- Preserve SCAN-02/03 mapping and SCAN-04 strict reticle ROI; no crop expansion outside the module-published region.
+- Keep the exact 1.5× sampling path as candidate zero. On a complete baseline miss, try 1× then 2× sampling; no more than three scale candidates per frame.
+- Each additional scale is capped at 6 MP. Existing 1280 px source-width cap remains unchanged.
+- Each scale reuses the same orientation/deskew and Hybrid + GlobalHistogram pipeline; no Cartesian candidate fan-out and no parallel decoder access.
+- Padding outside the reticle is deliberately deferred until a module-owned capture-envelope contract is defined and adopted by Home/Stocktake. No silent expansion or fallback.
+- Automated production-adapter coverage verifies multi-scale crop boundaries and bounded candidate planning. Small/far real-label and iOS/Android device acceptance remain pending.
+
+## SCAN-08 — Image enhancement
+**Status:** Planned — candidate evaluation, not unconditional preprocessing.
+- Current baseline already has RGBA-to-luminance conversion and bounded 1st/99th percentile contrast stretch within the deskew path when dynamic range is compressed.
+- Evaluate gamma/contrast variants, adaptive thresholding and denoising as optional candidates after baseline misses.
+- Preserve original luminance as the first candidate. Enhancement must not invent barcode edges or erase narrow bars.
+- Treat specular highlights separately: clipped/saturated pixels are information loss, not recoverable detail. Detect/measure saturation; do not claim glare restoration.
+- Gate: low-light, low-contrast, noisy, clipped/highlight and normal-light corpora; compare false positives as well as decode rate.
+
+## SCAN-09 — Perspective and curved barcode
+**Status:** Planned — feasibility research only until a validated detector exists.
+- Distinguish in-plane skew (already covered by SCAN-06) from perspective/keystone distortion and curved-label deformation.
+- Evaluate perspective detection and bounded rectification as optional candidates only when confidence indicates likely benefit.
+- Curved-surface dewarping is a separate, higher-risk problem; do not infer curvature from a weak perspective estimate.
+- Gate: planar perspective fixtures, curved-label fixtures, negative controls, geometry bounds, interpolation loss and latency measurements. Preserve original ROI candidate.
+
+## SCAN-10 — Adaptive performance
+**Status:** Planned — requires baseline measurements from SCAN-07/08/09.
+- Classify device/runtime capability from observed processing time, frame cadence, long tasks and memory pressure; avoid brittle user-agent/device-name heuristics.
+- Adapt bounded scale count, enhancement/perspective candidate budget and decode attempts while preserving the baseline candidate.
+- Enforce per-frame processing budget and prevent queues/concurrent access to the ZXing reader.
+- Do not change the current 70 ms session cadence until measurements and acceptance tests justify it.
+- Gate: low/mid/high device profiles, worst-case frame time, first-result latency, UI responsiveness and decode success.
+
+## SCAN-11 — Cross-platform hardening
+**Status:** Planned — continuous acceptance lane across all phases, final release gate.
+- iOS Safari/PWA and Android Chrome/PWA; low/mid/high capability devices.
+- Validate camera lifecycle, background/foreground, permission and recovery, Home and Stocktake flows, barcode accuracy and latency.
+- Include real retail labels: small/far, low light, reflective/saturated, curved and perspective-distorted, reticle edges.
+- Record device/browser/build, module, symbology, lighting, distance/pixel-height, orientation, attempts, success, first-result latency and decode cost. Do not invent missing measurements.
+
+## PR and rollout strategy
+- PR #77: documentation reconciliation plus SCAN-07 implementation on the same branch; no merge/deploy until CI and review.
+- SCAN-08: separate PR after SCAN-07 acceptance.
+- SCAN-08: separate PR, layered after SCAN-07 acceptance.
+- SCAN-09: separate research/implementation PR; keep opt-in candidate path.
+- SCAN-10: separate adaptive-budget PR only after measured candidate costs exist.
+- SCAN-11: acceptance/diagnostics and targeted fixes, not a wholesale rewrite.
+- Every PR must include exact base/head, changed-file scope, protected invariants, automated regression, preflight/build, device evidence and rollback.
+- Never delete historical decision records. Mark superseded runtime statements explicitly and point to the current source/spec.
+
+## Legacy roadmap history
+The sections below are historical records. Their old branch names, pending states and pre-SCAN-05/06 cadence descriptions are not current status. Use this top section as the authoritative current plan; retain older records only as traceable decision history.
+
+---
 
 ## Scope and protected behavior
 - Wire the existing `ScannerCameraRequest` into the actual tap-origin camera lease and `getUserMedia()` constraints.

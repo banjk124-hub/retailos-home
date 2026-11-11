@@ -11,6 +11,7 @@ const modulePaths = [
   'src/platform/scanner/scannerRoi.ts',
   'src/platform/scanner/scannerRotation.ts',
   'src/platform/scanner/scannerDeskew.ts',
+  'src/platform/scanner/scannerScale.ts',
   'src/platform/scanner/decoders/decoderAdapter.ts',
   'src/platform/scanner/decoders/rgbaToLuminance.ts',
   'src/platform/scanner/decoders/zxingDecoder.ts',
@@ -35,7 +36,7 @@ try {
     await writeFile(outputPath, compiled, 'utf8');
   }
 
-  const canvasStats = { created: 0, draws: 0, lastCrop: null };
+  const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false };
   globalThis.document = {
     createElement(tag) {
       assert.equal(tag, 'canvas');
@@ -47,6 +48,13 @@ try {
           canvasStats.draws += 1;
           canvasStats.lastCrop = { sx, sy, sw, sh, dw, dh };
           const output = new Uint8ClampedArray(dw * dh * 4);
+          if (canvasStats.forceBaselineMiss
+            && dw === Math.round(sw * 1.5)
+            && dh === Math.round(sh * 1.5)) {
+            output.fill(255);
+            this.pixels = output;
+            return;
+          }
           for (let y = 0; y < dh; y++) {
             const sourceY = Math.min(source.height - 1, Math.floor(sy + ((y + 0.5) / dh) * sh));
             for (let x = 0; x < dw; x++) {
@@ -86,6 +94,12 @@ try {
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
+  const { resolveScannerRoiScaleCandidates } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerScale.js'),
+  ).href);
+  assert.deepEqual(resolveScannerRoiScaleCandidates(400, 200).map(({ width, height }) => [width, height]), [
+    [600, 300], [400, 200], [800, 400],
+  ], 'production adapter scale planner must retain 1.5x first and add bounded 1x/2x fallbacks');
   const {
     estimateScannerSkewAngle,
     deskewLuminanceFrame,
@@ -385,11 +399,24 @@ try {
   };
   assert.deepEqual(await decodeOnce(roiDecoder, roiSource, outsideRegion), [],
     'barcode outside the module-owned ROI must not decode');
-  assert.equal(canvasStats.draws, drawsBefore + 1,
-    'strict ROI miss must perform only the requested crop, with no full-frame fallback');
+  assert.equal(canvasStats.draws, drawsBefore + 3,
+    'strict ROI miss may try three scales, but every draw must remain inside the requested crop');
   assert.equal(canvasStats.lastCrop.sx, upright.width,
-    'decoder must draw from the module-owned right-half ROI');
+    'decoder must draw from the module-owned right-half ROI at every scale');
+  assert.equal(canvasStats.lastCrop.sw, upright.width,
+    'multi-scale sampling must never widen the source crop beyond the module-owned ROI');
   await roiDecoder.dispose();
+
+  const fallbackDecoder = await createDecoder();
+  canvasStats.forceBaselineMiss = true;
+  const fallbackDrawsBefore = canvasStats.draws;
+  const fallbackResult = await decodeOnce(fallbackDecoder, toSource(upright));
+  assert.equal(fallbackResult[0]?.value, '12345',
+    'production adapter must recover a barcode when the preserved 1.5x baseline misses and 1x fallback succeeds');
+  assert.equal(canvasStats.draws, fallbackDrawsBefore + 2,
+    'successful 1x fallback must stop the candidate loop before attempting 2x');
+  canvasStats.forceBaselineMiss = false;
+  await fallbackDecoder.dispose();
 
   const invalidDecoder = await createDecoder();
   const invalidDrawsBefore = canvasStats.draws;

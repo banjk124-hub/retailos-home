@@ -89,6 +89,11 @@ const checks = [
     args: ["scripts/test-scanner-roi-decoder.mjs"],
   },
   {
+    name: "Scanner adaptive ROI multi-scale regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-scale.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],

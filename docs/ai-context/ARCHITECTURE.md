@@ -889,3 +889,48 @@ Operator testing after PR #73 identified that the ZIP action could overlap the e
 - Integration regression tests cover lease sharing/conflict, one-claim handoff, cancellation, reference counts, and recovery intent preservation.
 - Full preflight, TypeScript, production and Pages builds pass.
 - Physical iOS Safari/PWA and Android Chrome/PWA QA confirm no change to the existing Home and Stocktake flows.
+
+
+## ADR-036 — Additive optical recovery roadmap, SCAN-07 to SCAN-11 (2026-11-11)
+
+**Status:** Proposed engineering policy; documentation-only. No runtime algorithm is authorized by this decision.
+
+### Context
+The merged scanner pipeline already includes module-owned preview geometry, strict ROI decoding, exact quarter-turn rotation, continuous in-plane orientation estimation/deskew, bounded percentile contrast normalization, two ZXing binarizers, serialized frame processing and a 70 ms minimum session interval. The user reports relatively stable operational behavior. The next work must improve small/far, low-light, reflective, perspective and curved-label cases without regressing existing Home/Stocktake flows.
+
+### Decision
+- Keep the current production pipeline as the reference candidate and preserve its result semantics.
+- Introduce new optical transforms as bounded, conditionally selected candidates, not unconditional preprocessing or wholesale decoder replacement.
+- SCAN-07 may add only an explicit module-authorized ROI envelope. The source-frame-normalized reticle region remains authoritative; no full-frame/centered fallback.
+- SCAN-08 must retain original luminance as the first candidate. Enhancement is condition-gated; clipped highlights are recorded as information loss, not reconstructed.
+- SCAN-09 distinguishes in-plane deskew from perspective and curved-surface deformation. Rectification is confidence-gated and retains the unwarped candidate.
+- SCAN-10 adapts bounded candidate budget using measured runtime performance; it must not rely on user-agent/model-name heuristics or create decoder concurrency/unbounded queues.
+- SCAN-11 is a cross-platform acceptance lane spanning iOS Safari/PWA, Android Chrome/PWA, Home/Stocktake and low/high capability devices.
+- Each phase is separately branched and reviewed. The current 70 ms cadence, camera/lifecycle contracts, module presentation and retail workflows remain protected until separate evidence supports a change.
+
+### Acceptance
+A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, first-result latency, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
+
+
+## ADR-037 — Bounded multi-scale sampling inside strict module ROI (2026-11-11)
+
+**Status:** Implemented on PR #77 branch; CI and physical-device acceptance pending.
+
+### Context
+The production decoder used one fixed 1.5× ROI sampling scale. The Home and Stocktake modules publish only their visible reticle region in source-frame-normalized coordinates. They do not publish a wider capture envelope.
+
+### Decision
+- Preserve the existing 1.5× ROI sampling path exactly as the first candidate.
+- After the complete existing orientation/deskew and Hybrid + GlobalHistogram pipeline misses, try 1× and 2× sampling of the same source crop.
+- Limit each frame to three scales total. Deduplicate candidates by integer output dimensions and cap each additional candidate at 6 MP.
+- Preserve the 1280 px source-width cap, 70 ms session interval, serialized decoder access, ZXing validation and all module/session contracts.
+- Do not expand outside the reticle. Outward padding requires a separate module-owned capture-envelope contract; the current modules have not authorized one.
+- Keep all scales on the existing adapter path. No new dependency, worker, camera/session/lifecycle or UI behavior is introduced.
+
+### Acceptance and verification boundary
+- Automated regression covers scale ordering, baseline dimensions, unique candidates, fallback allocation cap and production-adapter strict crop behavior.
+- Full preflight/CI and physical iOS/Android small/far-label checks are required before merge/deploy.
+- Synthetic fixtures do not establish real-world optical improvement. Record decode success, false positives, first-result latency, stage costs and UI responsiveness separately.
+
+### Rollback
+Revert the SCAN-07 scale planner and adapter loop together. The original 1.5× path remains candidate zero and can be restored without changing camera acquisition, geometry mapping, session lifecycle, presentation or retail workflows.
