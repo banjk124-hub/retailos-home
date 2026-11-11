@@ -47,7 +47,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gate
 
 
 ## ADR-022 — Separate module scan intent from source-frame processing geometry (2026-11-10)
-**Status:** SCAN-01 contract merged by PR #58; geometry mapping and Home/Stocktake wiring were completed in SCAN-02/03. SCAN-04 consumes the mapped source region.
+**Status:** Contract merged by PR #58. Preview geometry is now mapped and published through the SCAN-02/03 feature-owned binding, and SCAN-04 consumes the resulting source ROI. The aggregate `ScannerModuleConfig` is not yet a runtime input: `cameraRequest` remains declarative while the shared camera lease uses the fixed production default. Do not claim the full aggregate bridge is complete.
 
 ### Decision
 - Feature modules own a `ScannerModuleConfig` containing a `preview-content-normalized` scan region and a `ScannerCameraRequest`.
