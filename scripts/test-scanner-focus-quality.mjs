@@ -20,7 +20,7 @@ for (let x = 26; x < width - 24; x += 16) {
     sharp.fill(10, y * width + x, y * width + x + 8);
   }
 }
-function boxBlur(input, radius = 2) {
+function boxBlur(input, radius = 6) {
   const output = new Uint8ClampedArray(input.length);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -44,7 +44,9 @@ const blurredPixels = boxBlur(sharp);
 const blurredSample = measureScannerFocusQuality(blurredPixels, width, height);
 const movingBlurSample = measureScannerFocusQuality(blurredPixels, width, height, sharpSample.sampledPixels);
 assert.equal(sharpSample.valid, true, 'textured barcode-like ROI produces a valid focus sample');
-assert.equal(blurredSample.valid, true, 'blurred but textured ROI remains measurable');
+assert.equal(blurredSample.valid, true, 'severely blurred but contrast-bearing ROI remains measurable');
+assert.equal(blurredSample.edgeCoverage, 0,
+  'the severe blur fixture removes high-frequency edges while retaining luminance structure');
 assert.ok(movingBlurSample.motionScore > 14,
   'a changing ROI must be distinguished from stable optical defocus');
 assert.ok(sharpSample.sharpness > blurredSample.sharpness * 1.5,
