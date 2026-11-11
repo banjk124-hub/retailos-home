@@ -107,7 +107,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 # Current AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
 
 - Repository: banjk124-hub/retailos-home; default branch: main.
-- Current main is 9406ac30d53bc9984912bd1928a32fd78157cf60, the merge commit for PR #67.
+- PR #67 merge baseline is 9406ac30d53bc9984912bd1928a32fd78157cf60; current main later advanced to PR #74 merge commit 6ac1eefad1c47d87d2c83f9002050c8a7d7802fe.
 - PR #67 is merged and closed. The user confirms deployment and successful real-world operation; scanner recognition is working well and feels sensitive across multiple processing paths.
 - Final PR-head CI #432 passed full preflight on c9794a5422aa2d6ace16480c2948c1bae3e0d06b. CI #425 passed on executable source head e0b28787f40db8c811bc7fde912bae2558289198; the subsequent 13 commits were documentation-only.
 - SCAN-05/06 is complete. Current source uses a 70 ms minimum decode interval, continuous orientation estimation, strict module-owned ROI and serialized decoder calls.
@@ -208,11 +208,11 @@ Canonical contract: `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 - PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 is merged into `main` at merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`. Do not describe it as Draft/open/unmerged. Deployment of this merge is not asserted here.
 - PR #56 final head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full preflight in GitHub Actions run #42575773839.
 - Settings Hub, independent Scanner QA Monitor and Scanner preferences entries, gear icon, device-local shared preference store and centralized feedback are present on main.
-- Defaults: vibration enabled and beep volume 50%; 50% maps to Web Audio gain 0.24, 0% mutes, 100% maps to 0.48. Slider steps are 10%.
+- Defaults: vibration enabled and beep volume 50%; after PR #57, 50% maps to Web Audio gain 0.30, 0% mutes, 100% maps to 0.60. Tone duration is approximately 140 ms. Slider steps are 10%.
 - Home and Stocktake consume the same feedback service. Feedback reads the latest setting when a barcode is accepted; no per-feature override remains.
 - iOS vibration remains unavailable where `navigator.vibrate` is absent. The UI reports unsupported capability and scanning remains non-fatal.
 - Physical Android/iOS QA remains an explicit acceptance gate. CI does not prove perceived loudness, actual device vibration or hardware output.
-- Current follow-up PR #57: https://github.com/banjk124-hub/retailos-home/pull/57 on branch `test/scanner-audio-runtime-and-doc-sync`. GitHub Actions run #42648085229 passed full preflight on the documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. It adds executable Web Audio gain/preview/vibration-policy tests and synchronizes current documentation. No camera, decoder, lifecycle or business workflow changes are included.
+- PR #57: https://github.com/banjk124-hub/retailos-home/pull/57 is merged at `09cd3b5117ea38a16dd991f74320835b67ea04b5`. It adds iOS AudioContext foreground recovery and executable Web Audio gain/preview/vibration-policy tests. Current mapping is 50%=0.30, 100%=0.60 and approximately 140 ms tone duration. Physical acoustic QA remains separate.
 - See Architecture ADR-019/ADR-020, `scripts/test-scanner-settings.mjs` and `scripts/test-scanner-audio-runtime.mjs`.
 
 ---
