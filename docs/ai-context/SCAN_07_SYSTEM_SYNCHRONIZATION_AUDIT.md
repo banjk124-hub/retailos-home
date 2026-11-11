@@ -82,7 +82,7 @@ This is a bounded re-arm request, not a guarantee of physical refocus. Motion, g
 - SCAN-01 camera request remains a module intent passed through the tap-origin camera lease.
 - SCAN-02/03 preview-to-source geometry and module-owned reticle remain unchanged.
 - SCAN-04 strict ROI remains fail-closed; no full-frame, centered or inferred outward-padding fallback.
-- SCAN-05 exact quarter-turn and SCAN-06 continuous orientation/deskew, percentile contrast and two binarizers remain in the same pipeline.
+- SCAN-05 exact quarter-turn and SCAN-06 continuous orientation/deskew, percentile contrast and two binarizers remain in the same pipeline. Valid baseline Sobel orientation estimates are reused across fallback scales for the same frame; missing estimates are recomputed, and hints reset every frame.
 - Camera lease ref-counting, session lifecycle, fresh-frame readiness, foreground recovery and teardown order remain intact.
 - Decoder calls remain serialized; the 70 ms session interval is unchanged.
 - Barcode validation and Home/Stocktake result semantics remain unchanged.
