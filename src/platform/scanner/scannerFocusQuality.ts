@@ -18,7 +18,7 @@ const MIN_LUMINANCE_STD_DEV = 6;
 const MIN_REFERENCE_SHARPNESS = 8;
 const BLUR_RATIO = 0.55;
 const REQUIRED_BLUR_SAMPLES = 4;
-const RECOVERY_COOLDOWN_MS = 8_000;
+const BLUR_REPORT_COOLDOWN_MS = 8_000;
 const MAX_STABLE_MOTION_SCORE = 14;
 
 /**
@@ -95,12 +95,12 @@ export function measureScannerFocusQuality(
 
 /**
  * Detect sustained relative sharpness loss after a previously sharp frame.
- * A single blurred/motion frame never triggers camera reconfiguration.
+ * This monitor is diagnostic only and never changes camera controls.
  */
-export class ScannerFocusWatchdog {
+export class ScannerFocusQualityMonitor {
   private referenceSharpness = 0;
   private consecutiveBlurSamples = 0;
-  private lastRecoveryAt = Number.NEGATIVE_INFINITY;
+  private lastBlurReportAt = Number.NEGATIVE_INFINITY;
 
   observe(sample: ScannerFocusQualitySample, timestamp: number): boolean {
     if (!sample.valid || !Number.isFinite(sample.sharpness) || !Number.isFinite(timestamp)) {
@@ -108,7 +108,7 @@ export class ScannerFocusWatchdog {
       return false;
     }
 
-    // Motion blur or a changing scene must settle before autofocus is re-armed.
+    // Motion blur or a changing scene must settle before sustained-blur diagnostics are reported.
     if (!Number.isFinite(sample.motionScore) || sample.motionScore > MAX_STABLE_MOTION_SCORE) {
       this.consecutiveBlurSamples = 0;
       return false;
@@ -135,9 +135,9 @@ export class ScannerFocusWatchdog {
     }
 
     if (this.consecutiveBlurSamples < REQUIRED_BLUR_SAMPLES
-      || timestamp - this.lastRecoveryAt < RECOVERY_COOLDOWN_MS) return false;
+      || timestamp - this.lastBlurReportAt < BLUR_REPORT_COOLDOWN_MS) return false;
 
-    this.lastRecoveryAt = timestamp;
+    this.lastBlurReportAt = timestamp;
     this.consecutiveBlurSamples = 0;
     return true;
   }
@@ -145,6 +145,6 @@ export class ScannerFocusWatchdog {
   reset(): void {
     this.referenceSharpness = 0;
     this.consecutiveBlurSamples = 0;
-    this.lastRecoveryAt = Number.NEGATIVE_INFINITY;
+    this.lastBlurReportAt = Number.NEGATIVE_INFINITY;
   }
 }
