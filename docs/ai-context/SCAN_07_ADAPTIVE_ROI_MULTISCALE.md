@@ -1,6 +1,6 @@
-# SCAN-07 — Adaptive ROI, multi-scale and coordinated focus recovery
+# SCAN-07 — Adaptive ROI, multi-scale and native autofocus behavior
 
-**Status:** Active implementation on PR #78 branch. Final-head CI #678 passed; physical-device acceptance pending.
+**Status:** PR #78 merged; native-autofocus corrective branch active. Physical-device acceptance pending.
 **User feedback on PR #77:** modest improvement for small/far barcodes and reads near reticle edges, but not sufficient range/precision.
 **Scope lock:** SCAN-07 remains active. Do not move to SCAN-08/09 yet.
 
@@ -75,9 +75,9 @@ No changes to:
 ## 7. Automated verification
 
 - `scripts/test-scanner-scale.mjs`: native ROI preservation and source-pixel bounds, baseline ordering, fallback ordering, unique candidates and scale allocation bounds.
-- `scripts/test-scanner-focus-quality.mjs`: sharp vs blurred ROI, motion filtering, sustained blur trigger and cooldown.
-- `scripts/test-scanner-track-constraints.mjs`: concurrent focus/Torch requests are serialized and both advanced constraints survive.
-- `scripts/test-scanner-validation.mjs`: focus is deferred until preview-ready and existing camera constraints survive autofocus.
+- `scripts/test-scanner-focus-quality.mjs`: sharp vs blurred ROI, motion filtering, passive sustained-blur reporting and diagnostic cooldown.
+- `scripts/test-scanner-track-constraints.mjs`: Torch ON/OFF operations serialize and preserve the initial optional focus preference.
+- `scripts/test-scanner-camera-request.mjs`: optional continuous focus is requested at initial stream negotiation; no post-preview focus API exists.
 - `scripts/test-scanner-torch.mjs`: Torch uses the same shared track constraint helper.
 - GitHub Actions #677 passed full preflight, TypeScript, production build and Pages build on code/test head `e3d745b1ce1a7fba87265769365d48667103b89b`; final-head #678 passed on `4728a8888c6ee6ab439af18ce8353661429d4195`.
 
