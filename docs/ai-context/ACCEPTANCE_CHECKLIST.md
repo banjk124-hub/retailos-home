@@ -5,7 +5,8 @@
 - [x] SCAN-05/06 production adapter regression suites and full preflight passed (PR #67 CI #432 final head).
 - [x] User confirms SCAN-05/06 deployed and operationally stable.
 - [x] PR #75 Code 39 enablement and recovery diagnostics merged.
-- [x] PR #76 Camera Request Bridge merged at main `20ce22e`; CI #610 passed on code/test head `b954b8a`.
+- [x] PR #76 Camera Request Bridge merged; CI #610 passed on code/test head `b954b8a`.
+- [x] PR #77 strict-ROI multi-scale merged/deployed; user reports modest improvement for small/far labels and reticle-edge reads, but range/precision remain insufficient.
 - [ ] Physical-device acceptance evidence for PR #76 recorded separately on iOS Safari/PWA and Android Chrome/PWA.
 - [ ] Quantified cross-device optical/performance baseline recorded.
 
