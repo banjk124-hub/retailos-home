@@ -93,8 +93,8 @@ Measure baseline decode success, false positives, first-result latency, decode/s
 ## Proposed PR sequence
 1. PR #77: documentation/source reconciliation plus additive SCAN-07 implementation on the same branch.
 2. SCAN-08 enhancement candidate PR after SCAN-07 acceptance.
-4. SCAN-09 perspective/curved research followed by an opt-in implementation PR only if validated.
-5. SCAN-10 adaptive budget PR after candidate costs are known.
-6. SCAN-11 device matrix, instrumentation gaps and targeted fixes.
+3. SCAN-09 perspective/curved research followed by an opt-in implementation PR only if validated.
+4. SCAN-10 adaptive budget PR after candidate costs are known.
+5. SCAN-11 device matrix, instrumentation gaps and targeted fixes.
 
 Every PR must identify exact base/head, code owners, changed files, test corpus, production-adapter regression, full preflight, device evidence and rollback path.
