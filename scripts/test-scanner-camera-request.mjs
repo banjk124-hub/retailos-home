@@ -116,6 +116,17 @@ try {
   sharedB.release();
   assert.equal(currentStream.stopCount, 1, 'the final shared lease stops the stream');
 
+  // The initiating request must accept the browser's negotiated best effort,
+  // even when an ideal facing mode is unavailable on that device.
+  mediaCalls = [];
+  currentStream = makeStream({ facingMode: 'user', frameRate: 30 });
+  installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
+  const bestEffortA = await cameraSession.acquireCameraLease(rearDefault);
+  const bestEffortB = await cameraSession.acquireCameraLease(rearDefault);
+  assert.equal(mediaCalls.length, 1, 'the same intent may share the stream negotiated by its own ideal request');
+  bestEffortA.release();
+  bestEffortB.release();
+
   mediaCalls = [];
   currentStream = makeStream({ facingMode: 'environment', frameRate: 30 });
   installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
