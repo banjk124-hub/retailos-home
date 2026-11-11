@@ -97,7 +97,7 @@ On both iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake independe
 4. Small and distant labels.
 5. Reflective packaging and low-light conditions.
 6. Orientation/viewport changes and background/foreground recovery.
-7. Confirm scan latency, accuracy and existing lookup/form-save workflows.
+7. Confirm decode correctness, focus stability and existing lookup/form-save workflows.
 
 CI cannot prove optical accuracy or device performance. The user has confirmed normal post-deployment operation; detailed low-light/reflective/small/far barcode scenarios remain separately unrecorded. SCAN-05/06 have their own device acceptance gates.
 
