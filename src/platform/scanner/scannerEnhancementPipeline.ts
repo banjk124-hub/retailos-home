@@ -5,19 +5,22 @@ import {
   type ScannerLuminanceFrame,
 } from './scannerDeskew';
 import { rotateLuminance90Clockwise } from './scannerRotation';
+import { measureScannerImageQuality, createScannerImageEnhancements } from './scannerImageEnhancement';
+import { createScannerGeometryCandidates } from './scannerGeometryCorrection';
 
 export type ScannerOrientationHints = {
   upright: ScannerSkewEstimate | null;
   rotated: ScannerSkewEstimate | null;
 };
 
-export type ScannerEnhancementStage = 'baseline' | 'orthogonal' | 'deskew';
+export type ScannerEnhancementStage = 'baseline' | 'orthogonal' | 'deskew' | 'image' | 'geometry';
 export type ScannerEnhancementOrientation = 'upright' | 'rotated_90' | 'deskew';
 
 export type ScannerEnhancementCandidate = ScannerLuminanceFrame & {
   stage: ScannerEnhancementStage;
   orientation: ScannerEnhancementOrientation;
   angleDegrees?: number;
+  transform?: string;
 };
 
 export type ScannerEnhancementPipelineOptions = {
@@ -37,6 +40,8 @@ export type ScannerEnhancementPipelineResult<T> = {
   deskewEstimateMisses: number;
   reusedOrientation: boolean;
   candidatesAttempted: number;
+  imageCandidatesAttempted: number;
+  geometryCandidatesAttempted: number;
 };
 
 type StageCostObserver = (stage: string, durationMs: number) => void;
@@ -55,8 +60,9 @@ function now(): number {
  * 2. Exact 90-degree clockwise representation.
  * 3. Confidence-gated continuous deskew candidates, smallest correction first.
  *
- * SCAN-08 image enhancement and SCAN-09 geometric correction can be added as
- * later stages here without duplicating orchestration in the ZXing adapter.
+ * SCAN-08 image enhancement and SCAN-09 conservative geometry candidates
+ * are bounded fallback stages after the existing orientation path misses.
+ * No candidate may enlarge the module-owned capture ROI.
  */
 export function executeScannerEnhancementPipeline<T>(
   source: ScannerLuminanceFrame,
@@ -65,6 +71,8 @@ export function executeScannerEnhancementPipeline<T>(
   onStageCost?: StageCostObserver,
 ): ScannerEnhancementPipelineResult<T> {
   let candidatesAttempted = 0;
+  let imageCandidatesAttempted = 0;
+  let geometryCandidatesAttempted = 0;
   let rotationAttempted = false;
   let deskewAttempts = 0;
   let deskewEstimateMisses = 0;
@@ -94,6 +102,8 @@ export function executeScannerEnhancementPipeline<T>(
       deskewEstimateMisses,
       reusedOrientation: false,
       candidatesAttempted,
+      imageCandidatesAttempted,
+      geometryCandidatesAttempted,
     };
   }
 
@@ -124,6 +134,8 @@ export function executeScannerEnhancementPipeline<T>(
         deskewEstimateMisses,
         reusedOrientation: false,
         candidatesAttempted,
+        imageCandidatesAttempted,
+        geometryCandidatesAttempted,
       };
     }
   }
@@ -202,6 +214,48 @@ export function executeScannerEnhancementPipeline<T>(
         deskewEstimateMisses,
         reusedOrientation,
         candidatesAttempted,
+        imageCandidatesAttempted,
+        geometryCandidatesAttempted,
+      };
+    }
+  }
+
+  // SCAN-08: only after all established orientation candidates miss.
+  // Feature-gated transforms are never applied to the original buffer.
+  const qualityStartedAt = now();
+  const quality = measureScannerImageQuality(source);
+  onStageCost?.('image_quality', now() - qualityStartedAt);
+  if (quality) {
+    const enhancementStartedAt = now();
+    const variants = createScannerImageEnhancements(source, quality);
+    onStageCost?.('image_enhancement', now() - enhancementStartedAt);
+    for (const variant of variants) {
+      imageCandidatesAttempted++;
+      const output = attempt({ ...variant, stage: 'image', orientation: 'upright', transform: variant.kind });
+      if (output !== null) {
+        return {
+          output, orientationHints, matchedStage: 'image', matchedAngleDegrees: null,
+          lastDeskewAngleDegrees, rotationAttempted, deskewAttempts,
+          deskewEstimateMisses, reusedOrientation, candidatesAttempted,
+          imageCandidatesAttempted, geometryCandidatesAttempted,
+        };
+      }
+    }
+  }
+
+  // SCAN-09: bounded geometric fallback, never a substitute for SCAN-04 ROI.
+  const geometryStartedAt = now();
+  const geometryVariants = createScannerGeometryCandidates(source);
+  onStageCost?.('geometry_detection_and_rectification', now() - geometryStartedAt);
+  for (const variant of geometryVariants) {
+    geometryCandidatesAttempted++;
+    const output = attempt({ ...variant, stage: 'geometry', orientation: 'upright', transform: variant.kind });
+    if (output !== null) {
+      return {
+        output, orientationHints, matchedStage: 'geometry', matchedAngleDegrees: null,
+        lastDeskewAngleDegrees, rotationAttempted, deskewAttempts,
+        deskewEstimateMisses, reusedOrientation, candidatesAttempted,
+        imageCandidatesAttempted, geometryCandidatesAttempted,
       };
     }
   }
@@ -217,5 +271,7 @@ export function executeScannerEnhancementPipeline<T>(
     deskewEstimateMisses,
     reusedOrientation,
     candidatesAttempted,
+    imageCandidatesAttempted,
+    geometryCandidatesAttempted,
   };
 }

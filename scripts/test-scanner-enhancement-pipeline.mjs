@@ -10,6 +10,8 @@ const modulePaths = [
   'src/platform/scanner/scannerRotation.ts',
   'src/platform/scanner/scannerDeskew.ts',
   'src/platform/scanner/scannerEnhancementPipeline.ts',
+  'src/platform/scanner/scannerImageEnhancement.ts',
+  'src/platform/scanner/scannerGeometryCorrection.ts',
 ];
 
 try {
@@ -33,6 +35,63 @@ try {
   const { executeScannerEnhancementPipeline } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
   ).href);
+
+  const { measureScannerImageQuality, createScannerImageEnhancements } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerImageEnhancement.js'),
+  ).href);
+  const { createScannerGeometryCandidates } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
+  ).href);
+
+  // SCAN-08: the baseline stays immutable and low-contrast imagery can
+  // produce an optional enhanced representation without format-specific code.
+  const lowContrastPixels = new Uint8ClampedArray(240 * 96).fill(165);
+  for (let y = 8; y < 88; y++) {
+    for (let x = 20; x < 220; x++) {
+      if (Math.floor((x - 20) / 6) % 2 === 0) lowContrastPixels[y * 240 + x] = 116;
+    }
+  }
+  const lowContrastSource = { luminance: lowContrastPixels, width: 240, height: 96 };
+  const lowContrastCopy = new Uint8ClampedArray(lowContrastPixels);
+  const lowContrastQuality = measureScannerImageQuality(lowContrastSource);
+  assert.ok(lowContrastQuality, 'low-contrast quality metrics must be measurable');
+  const enhanced = createScannerImageEnhancements(lowContrastSource, lowContrastQuality);
+  assert.ok(enhanced.some(candidate => candidate.kind === 'contrast'),
+    'compressed contrast must yield a bounded enhancement candidate');
+  assert.deepEqual(lowContrastPixels, lowContrastCopy,
+    'enhancement must never modify the original ROI pixels');
+  assert.ok(enhanced.length <= 2, 'enhancement candidate count must remain bounded');
+
+  // SCAN-09: never infer perspective/curvature from a uniform image or
+  // manufacture a barcode outside the supplied source ROI.
+  const empty = { luminance: new Uint8ClampedArray(240 * 96).fill(255), width: 240, height: 96 };
+  assert.deepEqual(createScannerGeometryCandidates(empty), [],
+    'uniform ROI must not trigger speculative geometric reconstruction');
+
+  // SCAN-09 positive geometry fixtures: repeated barcode bars with
+  // coherent row-wise width taper (keystone) and center bow (curved label).
+  const makeWarpedBars = (kind) => {
+    const width = 240, height = 96;
+    const pixels = new Uint8ClampedArray(width * height).fill(255);
+    for (let y = 0; y < height; y++) {
+      const t = y / (height - 1);
+      const span = kind === 'perspective' ? 150 + t * 26 : 160;
+      const center = kind === 'curved' ? 120 + 16 * (1 - (2 * t - 1) ** 2) : 120;
+      for (let x = 0; x < width; x++) {
+        const u = (x - center) / span + 0.5;
+        if (u >= 0 && u < 1 && Math.floor(u * 30) % 2 === 0) {
+          pixels[y * width + x] = 0;
+        }
+      }
+    }
+    return { luminance: pixels, width, height };
+  };
+  const perspectiveCandidates = createScannerGeometryCandidates(makeWarpedBars('perspective'));
+  assert.ok(perspectiveCandidates.some(candidate => candidate.kind === 'perspective'),
+    'coherent keystone distortion should yield a bounded perspective candidate');
+  const curvedCandidates = createScannerGeometryCandidates(makeWarpedBars('curved'));
+  assert.ok(curvedCandidates.some(candidate => candidate.kind === 'curved'),
+    'coherent curved-label bow should yield a bounded geometry candidate');
 
   const width = 240, height = 96;
   const source = new Uint8ClampedArray(width * height).fill(255);
