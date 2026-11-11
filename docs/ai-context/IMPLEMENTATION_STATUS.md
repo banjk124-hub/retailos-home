@@ -2,7 +2,7 @@
 
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
 **Active branch:** `feat/scanner-unified-enhancement-pipeline` — PR A+B combined.
-**Verification:** implementation authored; final-head CI and physical-device QA are pending. Do not treat the branch as production-ready until both gates are recorded.
+**Verification:** GitHub Actions run #690 passed full preflight, TypeScript, production and Pages builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; subsequent `8f6e0ae` changed documentation only. Physical-device QA remains pending; do not treat the branch as production-ready until device gates are recorded.
 
 ## Implemented in main
 
@@ -34,7 +34,7 @@
 
 ## Required verification
 
-1. Full `npm run preflight`, TypeScript, production build and Pages build on the final PR head.
+1. [x] Full `npm run preflight`, TypeScript, production build and Pages build passed in GitHub Actions run #690 on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`.
 2. Review PR diff and ensure no unrelated source paths changed.
 3. Physical QA: iOS Safari/PWA and Android Chrome/PWA, in Home and Stocktake.
 4. Real-label corpus: multiple symbologies, paper/carrier types, orientation, low contrast/light, motion, glare, distance and reticle-edge/negative controls.
