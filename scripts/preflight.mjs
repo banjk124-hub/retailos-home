@@ -94,6 +94,11 @@ const checks = [
     args: ["scripts/test-scanner-scale.mjs"],
   },
   {
+    name: "Scanner ROI focus quality and autofocus recovery tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-focus-quality.mjs"],
+  },
+  {
     name: "Production build (TypeScript + Vite)",
     command: process.execPath,
     args: [npmCli, "run", "build"],
