@@ -30,7 +30,7 @@ export function validateBarcodePayload(
   if (symbology === 'CODE_128') return { valid: true, reason: 'accepted' };
   if (symbology === 'CODE_39') {
     // Standard Code 39 data alphabet; '*' is reserved for start/stop framing.
-    if (!/^[A-Z0-9 .$\\x2F+%\-]+$/.test(normalized)) {
+    if (!/^[A-Z0-9 .$\x2F+%\-]+$/.test(normalized)) {
       return { valid: false, reason: 'invalid-character' };
     }
     return { valid: true, reason: 'accepted' };
