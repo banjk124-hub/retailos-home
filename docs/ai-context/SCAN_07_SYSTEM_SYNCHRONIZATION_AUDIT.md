@@ -1,8 +1,8 @@
 # SCAN-07 system synchronization audit — 2026-11-11
 
-**Branch:** fix/scanner-scan07-focus-and-optical-pipeline
-**Base:** PR #77 merge commit 2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49
-**Status:** implementation in progress; final-head CI #678 passed; device QA pending.
+**Merged baseline:** PR #78 merge commit adee2b2815097a3d17714b2305fc144a240a3bac
+**Corrective branch:** fix/scanner-native-autofocus-no-rearm
+**Status:** post-merge focus correction in progress; automated verification pending; device QA pending.
 **Scope lock:** SCAN-07 only. Do not start SCAN-08/09.
 
 ## 1. User-verified result from PR #77
@@ -21,7 +21,7 @@ Both Home and Stocktake consume:
 - `UniversalScannerSession`
 - Shared `cameraSession.ts` lease and reference-counted stream
 - Shared `ZXingDecoderAdapter`
-- Shared ROI, orientation, deskew, barcode validation and focus/Torch track controls
+- Shared ROI, orientation, deskew, barcode validation and Torch track controls
 
 Feature-owned differences remain:
 - Home result callback and lookup workflow.
@@ -92,9 +92,10 @@ This separates observation from control. Motion, glare, exposure, curved packagi
 ## 5. Automated regression added
 
 - `test-scanner-scale.mjs`: native ROI source-pixel preservation, source ROI bounds, 1.5× baseline ordering, 1×/2× fallback ordering, candidate uniqueness and pixel caps.
-- `test-scanner-focus-quality.mjs`: sharp/blur discrimination, low-texture rejection, motion filtering, four-sample re-arm and cooldown.
-- `test-scanner-track-constraints.mjs`: concurrent autofocus/Torch updates serialize and retain both advanced constraints.
-- `test-scanner-validation.mjs`: camera lease remains non-blocking, focus waits for session preview readiness, active camera settings survive focus.
+- `test-scanner-focus-quality.mjs`: sharp/blur discrimination, low-texture rejection, motion filtering, passive sustained-blur reporting and cooldown.
+- `test-scanner-track-constraints.mjs`: serialized Torch updates preserve the optional initial focus preference and active camera settings.
+- `test-scanner-camera-request.mjs`: optional focus is negotiated at initial getUserMedia request; lease exposes no post-preview focus API.
+- `test-scanner-validation.mjs`: safe focus diagnostics do not expose device identifiers.
 - `test-scanner-torch.mjs`: Torch uses the shared serialized track helper.
 - All new tests are registered in `npm run preflight`.
 
@@ -121,7 +122,7 @@ Do not record overall scanner response time as SCAN-07 performance. Record decod
 
 SCAN-07 is not complete until:
 - Native ROI detail shows repeatable improvement on measured small/far labels.
-- Focus recovery behaves correctly on supported devices and degrades honestly where the browser does not expose focus control.
+- Native autofocus remains smooth without scanner-issued post-preview focus commands; unsupported focus metadata falls back to device-native behavior.
 - Both Home and Stocktake pass the real-device matrix.
 - No strict ROI, camera lifecycle, Torch, decoder serialization or retail workflow regression is found.
 
