@@ -146,8 +146,8 @@ async function acquireSharedStream(
         throw new DOMException('Camera track ended before startup completed.', 'NotReadableError');
       }
 
-      // Register lifecycle monitoring before optional camera tuning. A track
-      // ending must be observable even while an autofocus request is pending.
+      // Register lifecycle monitoring immediately after acquisition. Focus tuning
+      // is deferred until the owning video has produced a fresh frame.
       videoTracks.forEach((track) => {
         track.addEventListener('ended', () => {
           if (activeStream !== stream) return;
