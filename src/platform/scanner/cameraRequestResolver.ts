@@ -46,7 +46,7 @@ export function resolveCameraStreamCompatibility(
   }
 
   if (request.maxFrameRate !== undefined && actual.frameRate !== undefined
-    && actual.frameRate > request.maxFrameRate + 0.5) {
+    && actual.frameRate > request.maxFrameRate + 0.01) {
     return { compatible: false, reason: 'frame-rate-exceeds-maximum' };
   }
 
