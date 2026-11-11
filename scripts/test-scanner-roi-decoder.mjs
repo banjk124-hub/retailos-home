@@ -79,7 +79,13 @@ assert.doesNotMatch(decoderSource, /ROI_WIDTH_RATIO|ROI_HEIGHT_RATIO/,
   'fixed centered ROI constants must be removed');
 assert.match(decoderSource, /this\.context\.drawImage\([\s\S]*?crop\.x,[\s\S]*?crop\.y,[\s\S]*?crop\.width,[\s\S]*?crop\.height/);
 assert.match(decoderSource, /diagnosticRoiUnavailable/);
-assert.match(decoderSource, /Math\.min\(1, MAX_FRAME_WIDTH \/ dimensions\.width\)/,
-  'ROI sampling must preserve the existing source-frame width cap before upscaling');
+assert.match(decoderSource, /resolveScannerRoiBaseDimensions\(crop\.width, crop\.height\)/,
+  'ROI sampling must preserve native pixels inside the strict crop and bound the ROI itself');
+const scaleSource = await readFile(
+  new URL('../src/platform/scanner/scannerScale.ts', import.meta.url),
+  'utf8',
+);
+assert.match(scaleSource, /MAX_ROI_SOURCE_WIDTH = 2048/);
+assert.match(scaleSource, /MAX_ROI_SOURCE_PIXELS = 1_500_000/);
 
 console.log('Scanner strict reticle ROI decoder regression tests passed.');

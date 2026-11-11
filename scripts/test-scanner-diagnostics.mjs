@@ -22,6 +22,7 @@ try {
     roiUnavailable: 2,
     roiWidth: 340,
     roiHeight: 180,
+    roiSourceScale: 0.75,
     rotationAttempts: 20,
     rotationHits: 3,
     deskewAttempts: 34,
@@ -30,6 +31,14 @@ try {
     scaleAttempts: 3,
     scaleHits: 1,
     lastScaleFactor: 2,
+    focusSharpness: 21.5,
+    focusSharpnessMin: 8.25,
+    focusEdgeCoverage: 0.12,
+    focusMotionScore: 2.5,
+    focusQualitySamples: 10,
+    focusRecoveryRequests: 1,
+    focusRecoveryStatus: 'requested',
+    focusControlEnabled: true,
     lastDeskewAngleDegrees: -17.25,
     barcodePayload: 'MUST_NOT_BE_RETAINED',
     deviceId: 'MUST_NOT_BE_RETAINED',
@@ -41,6 +50,7 @@ try {
     roiUnavailable: 2,
     roiWidth: 340,
     roiHeight: 180,
+    roiSourceScale: 0.75,
     rotationAttempts: 20,
     rotationHits: 3,
     deskewAttempts: 34,
@@ -49,6 +59,13 @@ try {
     scaleAttempts: 3,
     scaleHits: 1,
     lastScaleFactor: 2,
+    focusSharpness: 21.5,
+    focusSharpnessMin: 8.25,
+    focusEdgeCoverage: 0.12,
+    focusQualitySamples: 10,
+    focusRecoveryRequests: 1,
+    focusRecoveryStatus: 'requested',
+    focusControlEnabled: true,
     lastDeskewAngleDegrees: -17.25,
   })) {
     assert.equal(event.metrics[key], expected, `diagnostic collector retains ${key}`);
@@ -63,6 +80,11 @@ try {
   assert.equal(exported.events[0].metrics.scaleAttempts, 3);
   assert.equal(exported.events[0].metrics.scaleHits, 1);
   assert.equal(exported.events[0].metrics.lastScaleFactor, 2);
+  assert.equal(exported.events[0].metrics.roiSourceScale, 0.75);
+  assert.equal(exported.events[0].metrics.focusSharpness, 21.5);
+  assert.equal(exported.events[0].metrics.focusMotionScore, 2.5);
+  assert.equal(exported.events[0].metrics.focusRecoveryRequests, 1);
+  assert.equal(exported.events[0].metrics.focusControlEnabled, true);
   assert.equal(JSON.stringify(exported).includes('MUST_NOT_BE_RETAINED'), false,
     'export must not contain fields outside the diagnostic allowlist');
 } finally {
@@ -73,8 +95,8 @@ try {
 
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
-  'roiUnavailable', 'roiWidth', 'roiHeight', 'rotationAttempts', 'rotationHits',
-  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'lastDeskewAngleDegrees',
+  'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits',
+  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusRecoveryRequests', 'focusRecoveryStatus', 'focusControlEnabled', 'lastDeskewAngleDegrees',
 ]) {
   assert.ok(qaMonitor.includes(key), `QA Monitor displays/exports ${key}`);
 }

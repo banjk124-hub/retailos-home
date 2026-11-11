@@ -24,7 +24,7 @@ Use a canonical module registry, derive library groups and search results from i
 
 
 ## ADR-012 — Scanner-first adaptive resource profiles and shared engine completion
-**Status:** Proposed; documentation/architecture direction only (2026-11-08).
+**Status:** Proposed; documentation/architecture direction only (2026-11-08). **2026-11-11 update:** still not implemented. `useScannerEngine` passes `HIGH` unconditionally and the session does not consume the profile. This remains a SCAN-07 closure gap; do not claim adaptive Low/Mid/High support.
 
 ### Context
 The shared scanner is already separated into feature-owned UI, a React bridge, a platform session, camera leases and a decoder adapter. However, the hook currently passes `profile: 'HIGH'` unconditionally. The profile type currently exposes `COMPACT | STANDARD | HIGH`, not the requested Low/Mid/High policy. This is not adaptive device classification.
@@ -35,7 +35,7 @@ The shared scanner is already separated into feature-owned UI, a React bridge, a
 - Resource adaptation may change optional visual/processing intensity only. Barcode allowlist/validation, scan accuracy, session ownership, callback delivery, persistence and feature workflows are hard invariants.
 - Home and Stocktake presentation remain independently owned while sharing the engine.
 - Do not assume universal battery/temperature telemetry in iOS Safari or Android Chrome. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
-- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified Low. Such changes require measured scan-accuracy and latency evidence.
+- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified Low. Such changes require measured scan-accuracy and per-stage processing-cost evidence.
 
 ### Consequences
 - Profile selection is advisory and must degrade safely when capability data is missing.
@@ -53,7 +53,7 @@ See `SCANNER_SOURCE_AUDIT_2026-11-08.md` for source evidence and acceptance gate
 - Feature modules own a `ScannerModuleConfig` containing a `preview-content-normalized` scan region and a `ScannerCameraRequest`.
 - Shared scanner processing consumes a resolved `source-frame-normalized` region only after the pure mapping step in SCAN-02.
 - Rectangles use normalized fractions with a top-left origin and explicit coordinate-space discriminators.
-- Camera preferences are independent of preview aspect ratio. Preserve the current environment / 1280×720 / 30 FPS default.
+- Camera preferences are independent of preview aspect ratio. At the time of SCAN-01, the default was environment / 1280×720 / 30 FPS. **Superseded by SCAN-07 / ADR-038:** current preference is environment / 1920×1080 with a 30 FPS maximum; actual browser negotiation remains authoritative.
 - Home and Stocktake retain independent presentation and reticle ownership.
 
 ### Constraints

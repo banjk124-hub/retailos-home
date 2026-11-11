@@ -236,7 +236,7 @@ Do not collapse these into a single boolean such as `available`.
 - Validate decoded format and payload before invoking feature callbacks. EAN values are format-specific; CODE-128 remains opaque text; CODE-39 preserves its standard uppercase alphabet and spaces without numeric coercion.
 - Scanner layer must not require catalog existence. Unknown barcodes remain valid operational input where the consuming workflow permits them.
 - Preserve Home cached lookup, Stocktake form-fill/explicit-save semantics, duplicate Stocktake rows, and manual entry.
-- Do not tune resolution/decode interval until actual device settings and scan latency are measured.
+- Do not tune resolution/decode interval until actual device settings and scan overall scanner response time are measured.
 - See `ROADMAP.md` for phase acceptance criteria and `DECISIONS.md` for accepted decisions.
 
 
@@ -464,7 +464,7 @@ The scanner is already separated into feature-owned UI, `useScannerEngine`, `Uni
 - Resource adaptation may change optional visual/processing intensity only. Barcode correctness, accepted format/payload validation, session ownership, callback delivery, persistence and feature workflows are non-negotiable invariants.
 - Keep Home and Stocktake presentation independently owned while sharing the engine.
 - Treat direct battery/temperature data as unavailable unless a specific target browser exposes a reliable supported API. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
-- Never lower camera quality or decoder work merely because a device is classified Low. Any change to resolution, decode cadence, ROI or recovery tiers requires measured scan-accuracy and latency evidence.
+- Never lower camera quality or decoder work merely because a device is classified Low. Any change to resolution, decode cadence, ROI or recovery tiers requires measured scan-accuracy and overall scanner response time evidence.
 
 ### Required engine boundary
 The shared engine must own camera request/claim/cancel/release, session lifecycle, decoder lifecycle/scheduling, typed events/errors and diagnostics. Feature consumers own presentation and business policy. Explicit state transitions must distinguish camera request, preview readiness, decoder readiness/scanning, suspension, closing and disposal; a visible preview must not be represented as a ready decoder.
@@ -668,7 +668,7 @@ The previous estimator used one global Sobel structure tensor and accepted only 
 
 ### Constraints
 - No camera/session/lifecycle, ROI mapping, UI, validation or Home/Stocktake business-flow changes.
-- Measure physical accuracy, first-result latency, stage cost and UI responsiveness on iOS/Android before release acceptance.
+- Measure physical accuracy, overall scanner response time, stage cost and UI responsiveness on iOS/Android before release acceptance.
 
 ### Acceptance
 See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
@@ -909,7 +909,7 @@ The merged scanner pipeline already includes module-owned preview geometry, stri
 - Each phase is separately branched and reviewed. The current 70 ms cadence, camera/lifecycle contracts, module presentation and retail workflows remain protected until separate evidence supports a change.
 
 ### Acceptance
-A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, first-result latency, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
+A labelled image corpus and baseline measurements must exist before tuning. Each candidate must be evaluated for decode success, false positives, overall scanner response time, stage cost, memory and UI responsiveness. Automated tests must execute the production adapter, not only isolated helpers. Device evidence must be recorded separately from CI.
 
 
 ## ADR-037 — Bounded multi-scale sampling inside strict module ROI (2026-11-11)
@@ -930,7 +930,47 @@ The production decoder used one fixed 1.5× ROI sampling scale. The Home and Sto
 ### Acceptance and verification boundary
 - Automated regression covers scale ordering, baseline dimensions, unique candidates, fallback allocation cap and production-adapter strict crop behavior.
 - Full preflight/CI and physical iOS/Android small/far-label checks are required before merge/deploy.
-- Synthetic fixtures do not establish real-world optical improvement. Record decode success, false positives, first-result latency, stage costs and UI responsiveness separately.
+- Synthetic fixtures do not establish real-world optical improvement. Record decode success, false positives, overall scanner response time, stage costs and UI responsiveness separately.
 
 ### Rollback
 Revert the SCAN-07 scale planner and adapter loop together. The original 1.5× path remains candidate zero and can be restored without changing camera acquisition, geometry mapping, session lifecycle, presentation or retail workflows.
+
+
+## ADR-038 — SCAN-07 native ROI detail and coordinated focus recovery (2026-11-11)
+
+**Status:** Implemented on PR #78 branch; CI and physical-device acceptance pending.
+
+### Context
+PR #77 delivered bounded 1.5×/1×/2× sampling inside the strict module-owned ROI. User device testing confirmed modest improvement for small/far barcodes and reticle-edge reads, but not sufficient reading range or precision. A separate issue was observed where camera preview focus could become persistently soft or hunt for several seconds.
+
+### Source audit findings
+- The previous camera service requested continuous autofocus immediately after getUserMedia resolved, before the owning video element had played and produced a fresh frame.
+- The autofocus helper called applyConstraints() with only an advanced focusMode value. applyConstraints replaces the active custom constraint set, so omitting the active width/height/frameRate/facing/device constraints could reset negotiated camera settings.
+- Torch already applies track constraints after video readiness. Focus and Torch therefore needed one shared preservation and serialization mechanism to avoid racing/overwriting each other's advanced constraints.
+- The decoder previously downscaled any source frame wider than 1280 px before sampling the ROI, discarding native source detail even when the ROI itself was small enough to process safely.
+
+### Decision
+- Preserve native pixels in the strict source ROI up to 2048 px ROI width and 1.5 MP native ROI area. Downsample only oversized ROIs. Do not widen the module-published crop.
+- Prefer 1920×1080 camera input with a 30 FPS hard ceiling; browser-negotiated lower resolution remains compatible. Actual track settings are diagnostic evidence, not assumptions.
+- Keep the 1.5× decode baseline first, followed only after a complete baseline miss by bounded 1× and 2× candidates. Each additional candidate remains capped at 6 MP.
+- Move initial continuous-focus configuration to after video playback and first fresh-frame readiness. It remains non-blocking for preview/decoder initialization.
+- Preserve active track constraints when changing focus or Torch. Serialize per-track applyConstraints calls through one shared queue so focus and Torch advanced settings cannot overwrite each other.
+- Sample focus sharpness from the decoder's existing grayscale ROI readback at low frequency; do not create a second video readback path. Compare successive samples to filter moving/changing frames. Ignore low-texture frames.
+- Reassert continuous autofocus only after four consecutive stable samples show a large relative sharpness loss, and no more than once per 8-second cooldown. This is a bounded recovery request, not proof that hardware refocused.
+
+### Protected invariants
+- SCAN-02/03 preview-to-source mapping and module-owned reticle publication remain unchanged.
+- SCAN-04 strict ROI, fail-closed behavior, no full-frame/center fallback and no implicit outward padding remain unchanged.
+- SCAN-05/06 rotation, orientation, deskew, contrast normalization, both binarizers and ZXing validation remain active.
+- Camera lease ownership, session lifecycle, preview presentation, serialized decoder access, 70 ms session interval and Home/Stocktake business flows remain unchanged.
+- Both Home and Stocktake use the same scanner platform; their distinct presentation and business behavior remain feature-owned.
+
+### Verification boundary
+- Automated regression covers native ROI pixel bounds, scale ordering/caps, focus sharpness vs blur, motion filtering, bounded recovery cadence, constraint preservation and serialized focus/Torch updates.
+- CI must pass on the final PR head.
+- Device QA must test both modules on iOS Safari/PWA and Android Chrome/PWA. Record actual source dimensions, barcode module/pixel height, physical distance, lighting, angle, movement, glare, decode correctness and false positives.
+- Do not use overall scanner response time as a SCAN-07-specific metric. Decoder stage costs and camera/focus diagnostics may be recorded separately.
+- Do not claim an absolute minimum barcode size or maximum distance until measured on real labels/devices.
+
+### Rollback
+Revert the ROI sampling/camera request changes, focus lease API, shared track-constraint helper, watchdog and diagnostics together. The previous strict ROI and 1.5× baseline path remains the fallback; camera/session lifecycle and module workflows are not structurally replaced.

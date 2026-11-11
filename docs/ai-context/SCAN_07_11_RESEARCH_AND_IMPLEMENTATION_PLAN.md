@@ -9,7 +9,7 @@
 - `scannerGeometry.ts` maps module preview-content coordinates into source-frame-normalized coordinates, accounting for object-fit, object-position, visible content and horizontal mirroring.
 - `scannerRoi.ts` converts only the published source-frame ROI to integer pixels. It rejects absent, invalid or out-of-bounds geometry.
 - `zxingDecoder.ts` crops directly from the source frame; no full-frame decode and no centered fallback.
-- Current crop is proportionally scaled against a 1280 px source-width cap, then enlarged 1.5×. This is a fixed policy, not adaptive multi-scale.
+- Current PR #78 branch preserves native source pixels inside the strict ROI up to 2048 px ROI width and 1.5 MP native area, then applies the 1.5× baseline and bounded 1×/2× fallbacks. The old full-frame 1280 px width cap is removed.
 
 ### Image pipeline
 - Source ROI is drawn to canvas, read as RGBA and converted to luminance.
@@ -50,7 +50,7 @@ Build a versioned, privacy-safe labelled corpus with:
 - Blur/noise/compression and exposure clipping labels.
 - Device/browser capture samples kept separate from synthetic transformations.
 
-Measure baseline decode success, false positives, first-result latency, decode/stage time, peak candidate pixels, memory and UI responsiveness. Record sample counts and confidence intervals where feasible.
+Measure baseline decode success, false positives, overall scanner response time, decode/stage time, peak candidate pixels, memory and UI responsiveness. Record sample counts and confidence intervals where feasible.
 
 ## Phase gates
 
@@ -60,7 +60,7 @@ Measure baseline decode success, false positives, first-result latency, decode/s
 - Keep strict reticle ROI as candidate zero. Any additional padding must have a contract owner and hard bounds.
 - Evaluate bounded scales around current 1.5×; avoid upscaling beyond useful source detail.
 - Compare per-scale decode hit, false-positive, time and memory.
-- Do not ship adaptive selection until small/far fixtures improve without outside-reticle decodes or unacceptable latency.
+- Do not ship adaptive selection until small/far fixtures improve without outside-reticle decodes or unacceptable overall scanner response time.
 
 ### SCAN-08 — Image enhancement
 - Candidate zero is original luminance.
@@ -81,13 +81,13 @@ Measure baseline decode success, false positives, first-result latency, decode/s
 - Adapt scale/transform candidate budgets, not the core camera/session lifecycle.
 - Preserve at least one baseline decode attempt each eligible frame.
 - Keep the decoder serialized and queue bounded.
-- Change 70 ms cadence only through a separate measured proposal with latency/accuracy trade-offs.
+- Change 70 ms cadence only through a separate measured proposal with overall scanner response time/accuracy trade-offs.
 
 ### SCAN-11 — Cross-platform hardening
 - Matrix: iOS Safari/PWA and Android Chrome/PWA; Home and Stocktake; low/mid/high capability.
 - Cover first open, permission grant/deny/retry, rapid open/close, background/foreground, camera interruption and recovery.
 - Run real retail labels across orientation, small/far, low-light, reflective, curved/perspective and reticle-edge conditions.
-- Record browser/OS/device class, app build, symbology, lighting, label pixel height, attempts, outcome, first-result latency and stage costs.
+- Record browser/OS/device class, app build, symbology, lighting, label pixel height, attempts, outcome, overall scanner response time and stage costs.
 - Keep functional user acceptance distinct from quantified performance acceptance.
 
 ## Proposed PR sequence

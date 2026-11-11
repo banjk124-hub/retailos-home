@@ -2,10 +2,22 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
+const sharedConstraintsSource = await readFile(
+  new URL('../src/shared/services/mediaTrackConstraints.ts', import.meta.url),
+  'utf8',
+);
+const sharedConstraintsCompiled = ts.transpileModule(sharedConstraintsSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const sharedConstraintsUrl = 'data:text/javascript;base64,' + Buffer.from(sharedConstraintsCompiled).toString('base64');
+
 const helperSource = await readFile(new URL('../src/platform/scanner/scannerTorch.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(helperSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-}).outputText;
+}).outputText.replace(
+  "from '../../shared/services/mediaTrackConstraints';",
+  `from '${sharedConstraintsUrl}';`,
+);
 const helperUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
 const { readScannerTorchState, applyScannerTorch } = await import(helperUrl);
 
@@ -46,11 +58,11 @@ const settingsOnlyTrack = {
   applyConstraints: async (constraints) => { fallbackConstraints = constraints; },
 };
 await applyScannerTorch(settingsOnlyTrack, true);
-assert.deepEqual(fallbackConstraints.width, { exact: 1280 }, 'settings fallback preserves active width');
-assert.deepEqual(fallbackConstraints.height, { exact: 720 }, 'settings fallback preserves active height');
-assert.deepEqual(fallbackConstraints.frameRate, { exact: 30 }, 'settings fallback preserves active frame rate');
-assert.deepEqual(fallbackConstraints.facingMode, { exact: 'environment' }, 'settings fallback preserves the active rear-camera facing mode');
-assert.deepEqual(fallbackConstraints.deviceId, { exact: 'rear-camera-1' }, 'settings fallback preserves the active camera device');
+assert.deepEqual(fallbackConstraints.width, { ideal: 1280 }, 'settings fallback preserves active width');
+assert.deepEqual(fallbackConstraints.height, { ideal: 720 }, 'settings fallback preserves active height');
+assert.deepEqual(fallbackConstraints.frameRate, { ideal: 30, max: 30 }, 'settings fallback preserves active frame rate');
+assert.deepEqual(fallbackConstraints.facingMode, { ideal: 'environment' }, 'settings fallback preserves the active rear-camera facing mode');
+assert.deepEqual(fallbackConstraints.deviceId, { ideal: 'rear-camera-1' }, 'settings fallback preserves the active camera device');
 
 let unsupportedApplyCount = 0;
 const unsupportedTrack = {

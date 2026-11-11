@@ -52,7 +52,7 @@ The scanner session continues to own the camera, decoder instance and frame loop
 
 - Supported barcode formats and format allowlist are unchanged.
 - The ROI is aspect-ratio-preserving; no horizontal/vertical stretching is introduced.
-- Preserve the existing source-frame downscale cap: frames wider than 1280 pixels are scaled proportionally before the ROI is enlarged 1.5×. The crop retains the source aspect ratio and does not increase decode pixel density merely because a device reports a higher-resolution camera stream.
+- Current SCAN-07 policy bounds the strict ROI itself to 2048 px width and 1.5 MP native pixels. Native source detail is retained inside the crop; only oversized ROIs are proportionally downsampled. The camera request prefers 1920×1080 / 30 FPS maximum, subject to browser negotiation. This supersedes the former full-frame 1280 px width cap.
 - The historical every-third-frame binarizer schedule and 110 ms cadence are superseded by SCAN-05/06. Current runtime uses HybridBinarizer and GlobalHistogramBinarizer for each orientation candidate; session minimum decode interval is 70 ms and calls remain serialized.
 - SCAN-06 adds continuous in-plane deskew and bounded percentile contrast normalization. These do not alter the strict source-frame ROI contract.
 - Barcode payload validation, duplicate/cooldown policy, single/continuous mode and result delivery are unchanged.
@@ -97,7 +97,7 @@ On both iOS Safari/PWA and Android Chrome/PWA, test Home and Stocktake independe
 4. Small and distant labels.
 5. Reflective packaging and low-light conditions.
 6. Orientation/viewport changes and background/foreground recovery.
-7. Confirm scan latency, accuracy and existing lookup/form-save workflows.
+7. Confirm decode correctness, focus stability and existing lookup/form-save workflows.
 
 CI cannot prove optical accuracy or device performance. The user has confirmed normal post-deployment operation; detailed low-light/reflective/small/far barcode scenarios remain separately unrecorded. SCAN-05/06 have their own device acceptance gates.
 

@@ -5,7 +5,8 @@
 - [x] SCAN-05/06 production adapter regression suites and full preflight passed (PR #67 CI #432 final head).
 - [x] User confirms SCAN-05/06 deployed and operationally stable.
 - [x] PR #75 Code 39 enablement and recovery diagnostics merged.
-- [x] PR #76 Camera Request Bridge merged at main `20ce22e`; CI #610 passed on code/test head `b954b8a`.
+- [x] PR #76 Camera Request Bridge merged; CI #610 passed on code/test head `b954b8a`.
+- [x] PR #77 strict-ROI multi-scale merged/deployed; user reports modest improvement for small/far labels and reticle-edge reads, but range/precision remain insufficient.
 - [ ] Physical-device acceptance evidence for PR #76 recorded separately on iOS Safari/PWA and Android Chrome/PWA.
 - [ ] Quantified cross-device optical/performance baseline recorded.
 
@@ -29,7 +30,7 @@
 - [ ] Detection confidence and geometric bounds gate optional rectification.
 - [ ] Original ROI candidate retained; no unconditional warp.
 - [ ] Planar perspective and curved-label fixtures plus negative controls.
-- [ ] Interpolation, memory, false-positive and latency costs measured.
+- [ ] Interpolation, memory, false-positive and overall scanner response time costs measured.
 
 ## SCAN-10 — Adaptive performance gates
 - [ ] Device capability uses observed runtime performance, not brittle UA/model names.
@@ -43,7 +44,7 @@
 - [ ] Home and Stocktake independent workflow checks.
 - [ ] Permission, open/close, background/foreground and recovery.
 - [ ] Real labels: small/far, low-light, reflective, curved, perspective and reticle-edge.
-- [ ] Build/browser/device identifiers, accuracy, first-result latency, per-stage timing and UI responsiveness recorded.
+- [ ] Build/browser/device identifiers, accuracy, overall scanner response time, per-stage timing and UI responsiveness recorded.
 
 ---
 
@@ -79,7 +80,7 @@
 
 ## Additional evidence not yet recorded
 - [ ] Detailed iOS Safari/PWA and Android Chrome/PWA × Home/Stocktake × symbology/orientation matrix.
-- [ ] Quantitative first-result latency, stage timing, CPU/long-task responsiveness and decode success-rate measurements.
+- [ ] Quantitative overall scanner response time, stage timing, CPU/long-task responsiveness and decode success-rate measurements.
 - [ ] Separate optical tests for reflective packaging, small/far labels, low light and reticle-edge placement.
 
 These additional measurements are not required to describe the user's functional acceptance as complete. Do not mark them passed without evidence.
@@ -126,7 +127,7 @@ These additional measurements are not required to describe the user's functional
 - [x] Rectangles use normalized fractions and document top-left origin and bounds invariants.
 - [x] Module contract separates scan region from camera request.
 - [x] Camera request values are preferred constraints, independent of display aspect ratio.
-- [x] Default camera request remains environment / 1280×720 / 30 FPS ideal / 30 FPS maximum.
+- [x] Current camera request prefers environment / 1920×1080 / 30 FPS ideal / 30 FPS maximum; actual browser-negotiated settings are recorded.
 - [x] Runtime call sites consume the module request through the tap-origin shared lease; PR #76 merged at main baseline `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
 - [x] Camera lease compatibility, immutable intent and recovery re-acquisition are covered by PR #76 regression tests.
 - [x] GitHub Actions run #610 passed full preflight, TypeScript, production and Pages builds on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`.
@@ -134,21 +135,39 @@ These additional measurements are not required to describe the user's functional
 
 ---
 
-# SCAN-07 — Adaptive ROI & multi-scale (PR #77 branch)
+# SCAN-07 — Adaptive ROI, focus recovery and shared optical pipeline (PR #78)
 
-- [x] Existing module-owned source-frame ROI remains authoritative; no outward padding or fallback.
-- [x] Existing 1.5× candidate remains first with unchanged baseline dimensions.
-- [x] 1× and 2× fallback scales run only after the full 1.5× orientation/deskew/binarizer pipeline misses.
-- [x] Candidate count is bounded to three total; additional candidates are deduplicated and capped at 6 MP each.
-- [x] Existing 1280 px source-width cap, serialized decoder, 70 ms session interval and result validation remain unchanged.
-- [x] Scale attempt/hit diagnostics added without barcode payloads.
-- [x] Scale planner regression script added to preflight; production adapter integration test extended for strict ROI crop invariance.
-- [x] GitHub Actions run #634 passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`; final documentation sync must also pass CI.
-- [ ] iOS Safari/PWA and Android Chrome/PWA small/far real-label comparison; low/high capability devices.
-- [ ] Confirm reticle-edge and outside-reticle negative controls; verify Home and Stocktake workflows remain unchanged.
-- [ ] Record decode success, false positives, first-result latency, processing cost and UI responsiveness. No unsupported accuracy/performance claims.
+## Source/decoder
+- [x] SCAN-02/03 mapping and SCAN-04 strict module ROI remain unchanged.
+- [x] Native ROI sampling replaces the old full-frame 1280 px downscale; ROI bounded to 2048 px width / 1.5 MP native pixels.
+- [x] Camera request prefers 1920×1080, 30 FPS maximum; browser actual settings remain authoritative.
+- [x] 1.5× baseline remains first; 1× and 2× fallback only after a complete baseline miss.
+- [x] Candidate fan-out remains bounded; each additional scale remains capped at 6 MP.
+- [x] SCAN-05/06 orientation, deskew, contrast and both binarizers remain integrated in every scale path.
+- [ ] Final CI passes on PR #78 head.
+- [ ] Home and Stocktake both pass real-label accuracy checks.
 
-**Padding decision:** outward padding is deferred. Current modules publish the reticle only; an expanded capture envelope requires an explicit module-owned contract and separate geometry tests.
+## Camera focus / shared track controls
+- [x] Initial continuous-focus request moved to after first fresh video frame; it does not block preview readiness.
+- [x] Focus constraints preserve active width, height, frame rate, facing mode and device constraints.
+- [x] Autofocus and Torch use one shared serialized track-constraint queue.
+- [x] ROI sharpness is measured from existing grayscale readback, not a second camera readback.
+- [x] Low-texture and moving/changing frames are excluded from focus re-arm.
+- [x] Re-arm is bounded to four stable blur samples and an 8-second cooldown, only when continuous focus is supported.
+- [ ] CI validates focus/torch coexistence, recovery cooldown and no lifecycle regressions.
+- [ ] iOS Safari/PWA and Android Chrome/PWA verify that focus recovers from near/far changes without closing/reopening scanner.
+
+## Physical optical acceptance — both modules
+- [ ] Record actual camera width/height/frameRate/focus capability and mode per device/browser.
+- [ ] Record barcode type, printed X-dimension/bar width, source ROI pixel height and physical reading distance.
+- [ ] Test near-to-far and far-to-near transitions, rotated labels, moving camera, low light, glare, curved packaging and reticle edges.
+- [ ] Include outside-reticle negative controls; no decode outside module-owned region.
+- [ ] Verify correct payload/check digit, false positives and Home/Stocktake result workflows.
+- [ ] Confirm no camera lock, focus hunting loop, torch/focus constraint conflict, UI freeze or lifecycle regression.
+- [ ] Do not report end-to-end scanner overall scanner response time as a SCAN-07 metric. Decoder stage cost may be recorded separately.
+- [ ] Do not claim minimum barcode size or maximum distance until real measurements exist.
+
+**Scope lock:** remain in SCAN-07 until all above gates are accepted. SCAN-08/09 must not begin yet. No outward ROI padding without a module-owned capture-envelope contract.
 
 ---
 
@@ -311,7 +330,7 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [ ] Define resource budgets and allowed knobs; separate correctness invariants from tunable work.
 - [ ] Use sustained runtime proxies with hysteresis; do not promise universal battery/thermal APIs.
 - [ ] No unmeasured reduction in resolution, cadence, ROI or fallback decoding.
-- [ ] Verify scan success/accuracy, first-result latency, decode cost, UI responsiveness and battery/thermal proxies.
+- [ ] Verify scan success/accuracy, overall scanner response time, decode cost, UI responsiveness and battery/thermal proxies.
 
 ## Phase 1.2K — Cross-platform release gate
 - [ ] iOS Safari/PWA and Android Chrome/PWA evidence recorded.

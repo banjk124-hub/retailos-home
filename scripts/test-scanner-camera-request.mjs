@@ -11,15 +11,15 @@ const { buildCameraVideoConstraints, resolveCameraStreamCompatibility } = await 
 
 const rearDefault = {
   facingMode: 'environment',
-  preferredWidth: 1280,
-  preferredHeight: 720,
+  preferredWidth: 1920,
+  preferredHeight: 1080,
   preferredFrameRate: 30,
   maxFrameRate: 30,
 };
 const constraints = buildCameraVideoConstraints(rearDefault);
 assert.deepEqual(constraints.facingMode, { ideal: 'environment' });
-assert.deepEqual(constraints.width, { ideal: 1280 });
-assert.deepEqual(constraints.height, { ideal: 720 });
+assert.deepEqual(constraints.width, { ideal: 1920 });
+assert.deepEqual(constraints.height, { ideal: 1080 });
 assert.deepEqual(constraints.frameRate, { ideal: 30, max: 30 });
 assert.deepEqual(buildCameraVideoConstraints({ ...rearDefault, preferredFrameRate: 60, maxFrameRate: 24 }).frameRate,
   { ideal: 24, max: 24 }, 'a preferred frame rate above its hard ceiling is safely clamped');
@@ -111,7 +111,7 @@ try {
   const sharedB = await cameraSession.acquireCameraLease({ ...rearDefault, preferredWidth: 640, preferredHeight: 480, preferredFrameRate: 15 });
   assert.equal(mediaCalls.length, 1, 'compatible requests reuse one getUserMedia stream');
   assert.equal(mediaCalls[0].video.facingMode.ideal, 'environment');
-  assert.equal(mediaCalls[0].video.width.ideal, 1280);
+  assert.equal(mediaCalls[0].video.width.ideal, 1920);
   sharedA.release();
   assert.equal(currentStream.stopCount, 0, 'releasing one shared lease does not stop the stream');
   sharedB.release();

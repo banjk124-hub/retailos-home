@@ -1,3 +1,5 @@
+import { applyTrackAdvancedConstraint } from './mediaTrackConstraints';
+
 export type CameraFocusStatus =
   | 'continuous-requested'
   | 'unsupported'
@@ -8,6 +10,7 @@ export type CameraFocusResult = {
   status: CameraFocusStatus;
   supportedModes: string[];
   durationMs: number;
+  actualMode?: string;
   errorName?: string;
 };
 
@@ -24,6 +27,7 @@ export type SafeCameraSettings = {
 type FocusCapabilities = MediaTrackCapabilities & {
   focusMode?: string[];
 };
+type FocusSettings = MediaTrackSettings & { focusMode?: string };
 
 /**
  * Request continuous autofocus only when the browser explicitly exposes it.
@@ -57,20 +61,28 @@ export async function requestContinuousAutofocus(
       };
     }
 
-    await track.applyConstraints({
-      advanced: [{ focusMode: 'continuous' } as unknown as MediaTrackConstraintSet],
-    });
+    // applyConstraints replaces the active custom constraint set. Preserve
+    // the negotiated camera dimensions, frame rate, facing mode and device.
+    await applyTrackAdvancedConstraint(track, 'focusMode', 'continuous');
+    const settings = track.getSettings?.() as FocusSettings | undefined;
 
     return {
       status: 'continuous-requested',
       supportedModes,
       durationMs: Number((performance.now() - startedAt).toFixed(1)),
+      actualMode: typeof settings?.focusMode === 'string' ? settings.focusMode : undefined,
     };
   } catch (error) {
     return {
       status: 'failed',
       supportedModes,
       durationMs: Number((performance.now() - startedAt).toFixed(1)),
+      actualMode: (() => {
+        try {
+          const mode = (track.getSettings?.() as FocusSettings | undefined)?.focusMode;
+          return typeof mode === 'string' ? mode : undefined;
+        } catch { return undefined; }
+      })(),
       errorName: error instanceof DOMException || error instanceof Error ? error.name : 'UnknownError',
     };
   }

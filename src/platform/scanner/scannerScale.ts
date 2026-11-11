@@ -16,6 +16,38 @@ const BASELINE_SCALE = 1.5;
 const ALTERNATE_SCALES = [1, 2] as const;
 const MAX_ALTERNATE_CANDIDATE_PIXELS = 6_000_000;
 
+// Bound the source ROI, not the entire camera frame. The old full-frame width
+// cap discarded useful sensor pixels on 1080p/4K cameras before the decoder
+// ever saw the barcode. Keep a bounded native crop for mobile memory safety.
+export const MAX_ROI_SOURCE_WIDTH = 2048;
+export const MAX_ROI_SOURCE_PIXELS = 1_500_000;
+
+export type ScannerRoiBaseDimensions = {
+  width: number;
+  height: number;
+  sourceScale: number;
+};
+
+export function resolveScannerRoiBaseDimensions(
+  sourceWidth: number,
+  sourceHeight: number,
+): ScannerRoiBaseDimensions | null {
+  if (![sourceWidth, sourceHeight].every(Number.isFinite)
+    || !Number.isSafeInteger(sourceWidth)
+    || !Number.isSafeInteger(sourceHeight)
+    || sourceWidth < 1 || sourceHeight < 1) return null;
+
+  const widthScale = Math.min(1, MAX_ROI_SOURCE_WIDTH / sourceWidth);
+  const pixelScale = Math.min(1, Math.sqrt(MAX_ROI_SOURCE_PIXELS / (sourceWidth * sourceHeight)));
+  const sourceScale = Math.min(widthScale, pixelScale);
+  const width = Math.max(1, Math.floor(sourceWidth * sourceScale));
+  const height = Math.max(1, Math.floor(sourceHeight * sourceScale));
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)
+    || width > MAX_ROI_SOURCE_WIDTH || width * height > MAX_ROI_SOURCE_PIXELS) return null;
+
+  return { width, height, sourceScale };
+}
+
 function dimensionsAtScale(
   baseWidth: number,
   baseHeight: number,

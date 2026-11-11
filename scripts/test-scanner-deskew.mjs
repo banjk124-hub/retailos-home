@@ -20,6 +20,7 @@ const {
   estimateScannerSkewAngle,
   rotateLuminanceByAngle,
   deskewLuminanceFrame,
+  deskewLuminanceFrameWithEstimate,
 } = await loadTsModule('../src/platform/scanner/scannerDeskew.ts');
 const { rotateLuminance90Clockwise } = await loadTsModule('../src/platform/scanner/scannerRotation.ts');
 
@@ -95,6 +96,15 @@ const lowContrastEstimate = estimateScannerSkewAngle(
   lowContrastSkew.luminance, lowContrastSkew.width, lowContrastSkew.height,
 );
 assert.ok(lowContrastEstimate, 'continuous estimator must retain a low-contrast barcode direction');
+const lowContrastReused = deskewLuminanceFrameWithEstimate(
+  lowContrastSkew.luminance,
+  lowContrastSkew.width,
+  lowContrastSkew.height,
+  lowContrastEstimate,
+);
+assert.ok(lowContrastReused, 'a validated orientation estimate must be reusable for another ROI scale');
+assert.equal(decode(lowContrastReused).getText(), '12345',
+  'reusing a baseline orientation estimate must preserve barcode decode correctness');
 const lowContrastCorrected = deskewLuminanceFrame(
   lowContrastSkew.luminance, lowContrastSkew.width, lowContrastSkew.height,
 );
@@ -182,6 +192,8 @@ const decoderSource = await readFile(
   'utf8',
 );
 assert.match(decoderSource, /deskewLuminanceFrame\(/, 'decoder must consume the deskew service');
+assert.match(decoderSource, /deskewLuminanceFrameWithEstimate\(/, 'scale fallbacks must reuse baseline orientation estimates where valid');
+assert.match(decoderSource, /cachedOrientationHints/, 'orientation estimates must be scoped to the current source frame');
 assert.match(decoderSource, /const candidates = \[uprightDeskew, rotatedDeskew\]/,
   'production decoder must consider both source axes for continuous orientation recovery');
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');

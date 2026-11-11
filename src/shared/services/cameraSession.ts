@@ -1,4 +1,4 @@
-import { getSafeCameraSettings, requestContinuousAutofocus } from './cameraDiagnostics';
+import { getSafeCameraSettings, requestContinuousAutofocus, type CameraFocusResult } from './cameraDiagnostics';
 import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../platform/scanner/contracts';
 import { buildCameraVideoConstraints, resolveCameraStreamCompatibility } from '../../platform/scanner/cameraRequestResolver';
 
@@ -8,10 +8,16 @@ let pendingRequest: Promise<MediaStream> | null = null;
 let pendingCameraRequest: ScannerCameraRequest | null = null;
 let requestGeneration = 0;
 let activeLeaseCount = 0;
+const focusPreparationByTrack = new WeakMap<MediaStreamTrack, Promise<CameraFocusResult>>();
+const focusRecoveryByTrack = new WeakMap<MediaStreamTrack, Promise<CameraFocusResult>>();
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
 
 export type CameraStreamLease = {
   readonly stream: MediaStream;
+  /** Apply optional camera tuning only after the owning video has a fresh frame. */
+  prepareForScanning(): Promise<CameraFocusResult[]>;
+  /** Reassert continuous autofocus after the scanner detects sustained image defocus. */
+  reapplyContinuousAutofocus(): Promise<CameraFocusResult[]>;
   release(): void;
 };
 
@@ -140,8 +146,8 @@ async function acquireSharedStream(
         throw new DOMException('Camera track ended before startup completed.', 'NotReadableError');
       }
 
-      // Register lifecycle monitoring before optional camera tuning. A track
-      // ending must be observable even while an autofocus request is pending.
+      // Register lifecycle monitoring immediately after acquisition. Focus tuning
+      // is deferred until the owning video has produced a fresh frame.
       videoTracks.forEach((track) => {
         track.addEventListener('ended', () => {
           if (activeStream !== stream) return;
@@ -157,34 +163,8 @@ async function acquireSharedStream(
 
       console.info('[RetailOS Scanner] Camera settings', getSafeCameraSettings(videoTracks[0]));
 
-      // Autofocus is an optional enhancement, not part of camera acquisition.
-      // Start it in the background so a slow applyConstraints() cannot delay
-      // delivery of the live stream to the scanner preview.
-      const autofocusStartedAt = performance.now();
-      void Promise.all(videoTracks.map(requestContinuousAutofocus))
-        .then((focusResults) => {
-          if (generation !== requestGeneration || activeStream !== stream) return;
-          const focusResult = focusResults[0] ?? {
-            status: 'unavailable' as const,
-            supportedModes: [],
-            durationMs: 0,
-          };
-          console.info('[RetailOS Scanner] Performance stage', {
-            stage: 'optional_autofocus_ms',
-            durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
-          });
-          console.info('[RetailOS Scanner] Camera focus', {
-            focusStatus: focusResult.status,
-            focusModes: focusResult.supportedModes.join(','),
-            focusRequestMs: focusResult.durationMs,
-            focusErrorName: focusResult.errorName,
-          });
-        })
-        .catch((error: unknown) => {
-          // requestContinuousAutofocus already normalizes expected failures;
-          // this guard protects acquisition from any unexpected diagnostic fault.
-          console.warn('[RetailOS Scanner] Optional autofocus diagnostic failed:', error);
-        });
+      // Focus tuning is deferred until the owning video element is playing
+      // and has produced a fresh frame. Capabilities may not be complete earlier.
 
       return stream;
     }).finally(() => {
@@ -239,6 +219,30 @@ export async function acquireCameraLease(
   let released = false;
   return {
     stream,
+    prepareForScanning: async () => {
+      if (released || generation !== requestGeneration || activeStream !== stream) return [];
+      const tracks = stream.getVideoTracks().filter((track) => track.readyState === 'live');
+      return Promise.all(tracks.map((track) => {
+        const existing = focusPreparationByTrack.get(track);
+        if (existing) return existing;
+        const pending = requestContinuousAutofocus(track);
+        focusPreparationByTrack.set(track, pending);
+        return pending;
+      }));
+    },
+    reapplyContinuousAutofocus: async () => {
+      if (released || generation !== requestGeneration || activeStream !== stream) return [];
+      const tracks = stream.getVideoTracks().filter((track) => track.readyState === 'live');
+      return Promise.all(tracks.map((track) => {
+        const existing = focusRecoveryByTrack.get(track);
+        if (existing) return existing;
+        const pending = requestContinuousAutofocus(track).finally(() => {
+          if (focusRecoveryByTrack.get(track) === pending) focusRecoveryByTrack.delete(track);
+        });
+        focusRecoveryByTrack.set(track, pending);
+        return pending;
+      }));
+    },
     release: () => {
       if (released) return;
       released = true;

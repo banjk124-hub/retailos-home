@@ -1,8 +1,8 @@
 # Scanner implementation status — current main (2026-11-11)
 
-**Main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
+**Main:** PR #77 merged at `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`.
 **PR #76:** merged. CI #610 passed on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`; later commits through the merge were documentation synchronization. Physical-device evidence must be recorded separately from CI.
-**Operational status:** user reports scanner operation relatively stable. This is functional/operational feedback, not a quantified optical or performance benchmark.
+**PR #77 device feedback:** small/far barcode recognition improved modestly and reticle-edge reads work, but range and precision remain insufficient. This is qualitative feedback, not a measured minimum size/distance.
 
 ## Implemented
 - SCAN-01: platform-neutral module/input contracts.
@@ -19,34 +19,37 @@
 - Geometry: `scannerGeometry.ts`; strict crop: `scannerRoi.ts`.
 - Orientation transform: `scannerRotation.ts`; continuous orientation/contrast/deskew: `scannerDeskew.ts`.
 - Camera/session: `cameraSession.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`.
-- SCAN-07 branch implementation: preserve the exact 1.5× baseline, then on a full baseline miss try 1× and 2× sampling within the same strict ROI; at most three candidates per frame.
-- Each additional scale is capped at 6 MP; frame-width cap remains 1280 px. The baseline 1.5× dimensions retain the existing rounding behavior.
-- Current candidate ordering: upright → exact 90° → deskew variants of original/rotated ROI, sorted by absolute correction angle.
-- Both HybridBinarizer and GlobalHistogramBinarizer are attempted per candidate.
-- Session minimum decode interval is 70 ms; decode calls remain serialized.
-- Existing metrics include decode duration/stage timing, ROI dimensions/availability, rotation and deskew attempts/misses/hits. SCAN-07 adds scale attempts/hits and last attempted scale. These are not yet a calibrated cross-device benchmark.
+- Both Home and Stocktake consume the same `useScannerEngine` and default camera request; each owns its reticle and business workflow.
+- Existing `ScannerProfileName` is not currently an adaptive policy: `useScannerEngine` passes `HIGH` unconditionally and `UniversalScannerSession` does not consume the profile. PR #78 does not claim low/mid/high adaptation; a measured device-budget policy remains an explicit SCAN-07 closure item.
+- Current main after PR #77: 1.5× baseline followed by bounded 1×/2× strict-ROI fallbacks; SCAN-05/06 orientation/deskew and both binarizers remain active per candidate.
+- PR #78 branch preserves native source ROI pixels up to 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled. Each fallback candidate remains capped at 6 MP.
+- PR #78 branch changes preferred camera request to 1920×1080, 30 FPS maximum. Browser-negotiated actual settings remain authoritative; weak devices may return a lower resolution.
+- Focus setup is moved from pre-playback acquisition to post-first-frame readiness. Focus and Torch share one constraint-preserving, per-track serialized applyConstraints queue.
+- Focus watchdog measures sharpness from the existing grayscale ROI readback every 500 ms. It filters low-texture and changing frames; after four stable blur samples it reasserts continuous autofocus only when the camera exposes/accepts that mode, with an 8-second cooldown.
+- Decoder calls remain serialized; session minimum decode interval remains 70 ms. No total scanner overall scanner response time metric is assigned to SCAN-07.
 
-## SCAN-07 branch implementation — CI verified; device acceptance pending
-- `scannerScale.ts` produces the fixed 1.5× baseline plus at most two unique fallback scales (1× and 2×); fallback allocations are capped at 6 MP each.
-- `zxingDecoder.ts` executes the complete existing orientation/deskew/binarizer pipeline at 1.5× first. Only after a miss does it redraw the exact same strict source ROI at fallback scales.
-- No reticle geometry, session cadence, camera lifecycle, decoder concurrency, validation or module workflow changes.
-- Padding outside the published reticle is not implemented: Home/Stocktake do not yet publish a separate authorized capture envelope. This is intentional to preserve SCAN-04.
-- Added scale-planner regression tests and extended production-adapter integration coverage, including a forced 1.5× baseline miss followed by a successful 1× fallback; preflight registration added.
-- GitHub Actions run #634 (`42970931657`) passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`. Any later documentation-only commit must pass CI on the final PR head.
+## SCAN-07 — active integration work
+- PR #77 is merged/deployed. User confirms modest improvement on small/far labels and reads near reticle edges, but current optical range/precision is insufficient.
+- PR #78 is implementing native ROI detail preservation, preferred 1080p acquisition, post-frame autofocus configuration, safe track constraint preservation/serialization, and bounded focus recovery.
+- Added automated tests for ROI sampling bounds, focus-vs-motion quality detection, bounded re-arm, focus/Torch constraint serialization and orientation estimate reuse. GitHub Actions #677 passed on code/test head `e3d745b1ce1a7fba87265769365d48667103b89b`; final-head #678 passed on `4728a8888c6ee6ab439af18ce8353661429d4195`. Physical-device verification remains pending.
+- No outward reticle padding: current modules have not published a wider authorized capture envelope.
+- No claims about exact minimum barcode size, maximum distance or overall overall scanner response time until real-device measurements exist.
 
 ## Not implemented yet
-- SCAN-07 physical-device acceptance and labelled small/far barcode performance evidence.
+- SCAN-07 physical-device acceptance and labelled small/far barcode size/distance evidence.
 - SCAN-08: optional gamma, adaptive threshold and denoise candidate paths. Existing percentile contrast stretch is not equivalent to this phase.
 - SCAN-09: perspective detection/rectification and curved-label dewarping.
 - SCAN-10: runtime/device adaptive candidate budget and frame-time policy.
 - SCAN-11: completed cross-platform/device matrix and quantitative acceptance record.
 
 ## Next gate
-Review and verify the SCAN-07 implementation on PR #77. Preserve the current 1.5× path as baseline; compare fallback candidates using a labelled fixture corpus. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows as part of optical algorithm work.
+Complete PR #78, verify CI, then test both Home and Stocktake on iOS/Android. Do not move to SCAN-08/09 until SCAN-07's source-pixel, focus-recovery, precision and module workflow gates are accepted.
 
 ---
 
 ---
+
+> **Historical snapshot notice:** older phase sections below preserve prior implementation states. Where they mention 1280×720 camera defaults or older decode intervals, those values are historical and superseded by the current SCAN-07 section above.
 
 # Historical reconciliation — Scanner Engine remediation and Code 39 (2026-11-11)
 
@@ -102,7 +105,7 @@ Review and verify the SCAN-07 implementation on PR #77. Preserve the current 1.5
 ## Evidence not quantified in this record
 
 - Detailed device/browser × Home/Stocktake × symbology matrix was not provided.
-- First-result latency, per-stage timing, CPU utilization, long-task frequency and decode success-rate percentages were not provided.
+- First-result per-stage processing cost, CPU utilization, long-task frequency and decode success-rate percentages were not provided.
 - The synthetic 40/255 fixture is a regression fixture only; it is not a calibrated real-world optical sensitivity threshold.
 - These are useful future performance/coverage measurements, not unresolved release blockers given the user's explicit post-deploy acceptance.
 
@@ -433,7 +436,7 @@ Last updated: 2026-11-04
 - Acceptance: branch builds; local regression checks; Android Chrome and iOS Safari camera QA; no duplicate decoder, stale callback, or duplicate single-mode callback.
 
 **1.2B Camera performance/diagnostics**
-- Measure acquisition, video readiness, decoder attach, first valid scan, resume latency and actual track settings.
+- Measure acquisition, video readiness, decoder attach, first valid scan, resume overall scanner response time and actual track settings.
 - Compare 960x540 and 1280x720 plus decode intervals around 100/120/150 ms on representative devices. Do not change current values based on assumption alone.
 
 **1.2C Audio and continuous scan**
@@ -593,7 +596,7 @@ First synchronize and review this documentation-only branch, run repository CI/p
   - `src/features/scanner/components/BarcodeScanner.tsx` and `src/features/stocktake/components/StocktakeScanner.tsx`: reveal video and dismiss startup placeholder when preview is ready.
   - `src/styles/home-ux.css` and `src/features/stocktake/components/stocktake.css`: visibility styles now follow preview readiness rather than decoder/scanning readiness.
 - GitHub Actions run #79 (`42388939459`): job “TypeScript and production builds” completed with conclusion `success`; steps included locked dependency install and “Run local-equivalent preflight”. This is CI evidence only.
-- Not verified: physical iOS Safari/PWA or Android Chrome/PWA camera startup/resume, perceived latency, blank/flicker behavior, and live Home/Stocktake interaction. No claim of device QA.
+- Not verified: physical iOS Safari/PWA or Android Chrome/PWA camera startup/resume, perceived overall scanner response time, blank/flicker behavior, and live Home/Stocktake interaction. No claim of device QA.
 - Scope exclusions preserved: autofocus, camera constraints/resolution, decoder/ROI/cadence, barcode validation, Phase 2 recognition conditions, business callbacks and persistence were not changed.
 - Next: synchronize this branch locally without disturbing existing untracked files; inspect the complete source+documentation diff; run local `npm run preflight`; then test first open and resume on iOS and Android. Keep PR #29 unmerged/undeployed until device evidence is reviewed and the user approves.
 

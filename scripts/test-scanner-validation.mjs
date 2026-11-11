@@ -110,6 +110,16 @@ assert.throws(
 );
 
 
+const mediaTrackConstraintsSource = await readFile(
+  new URL("../src/shared/services/mediaTrackConstraints.ts", import.meta.url),
+  "utf8",
+);
+const mediaTrackConstraintsCompiled = ts.transpileModule(mediaTrackConstraintsSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const mediaTrackConstraintsUrl = "data:text/javascript;base64," +
+  Buffer.from(mediaTrackConstraintsCompiled).toString("base64");
+
 const cameraDiagnosticsSource = await readFile(
   new URL("../src/shared/services/cameraDiagnostics.ts", import.meta.url),
   "utf8",
@@ -119,7 +129,10 @@ const cameraDiagnosticsCompiled = ts.transpileModule(cameraDiagnosticsSource, {
     module: ts.ModuleKind.ESNext,
     target: ts.ScriptTarget.ES2022,
   },
-}).outputText;
+}).outputText.replace(
+  "from './mediaTrackConstraints';",
+  `from '${mediaTrackConstraintsUrl}';`,
+);
 const cameraDiagnosticsUrl =
   "data:text/javascript;base64," +
   Buffer.from(cameraDiagnosticsCompiled).toString("base64");
@@ -144,6 +157,14 @@ const continuousTrack = {
 const continuousFocus = await requestContinuousAutofocus(continuousTrack);
 assert.equal(continuousFocus.status, "continuous-requested");
 assert.deepEqual(appliedFocusConstraints.advanced[0], { focusMode: "continuous" });
+assert.deepEqual(appliedFocusConstraints.width, { ideal: 1280 },
+  "autofocus must preserve the active camera width when reapplying track constraints");
+assert.deepEqual(appliedFocusConstraints.height, { ideal: 720 },
+  "autofocus must preserve the active camera height when reapplying track constraints");
+assert.deepEqual(appliedFocusConstraints.frameRate, { ideal: 30, max: 30 },
+  "autofocus must preserve the active camera frame rate when reapplying track constraints");
+assert.deepEqual(appliedFocusConstraints.facingMode, { ideal: "environment" },
+  "autofocus must preserve the active camera facing mode when reapplying track constraints");
 
 const unsupportedTrack = {
   getCapabilities: () => ({ focusMode: ["manual"] }),
@@ -218,6 +239,7 @@ const delayedFocusTrack = {
     appliedCameraFocusConstraints = constraints;
     return new Promise((resolve) => { resolvePendingFocus = resolve; });
   },
+  getConstraints: () => ({ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 }, facingMode: { ideal: "environment" } }),
   getSettings: () => ({ width: 1280, height: 720, frameRate: 30, facingMode: "environment" }),
   addEventListener: (type, listener) => {
     const listeners = trackListeners.get(type) ?? new Set();
@@ -257,7 +279,13 @@ const cameraLease = await Promise.race([
 ]).finally(() => clearTimeout(acquisitionTimeout));
 
 assert.equal(cameraLease.stream, delayedFocusStream, "camera lease resolves while autofocus is still pending");
-assert.equal(typeof resolvePendingFocus, "function", "optional autofocus was started");
+assert.equal(typeof resolvePendingFocus, "undefined", "autofocus must not be applied before the video has produced its first frame");
+const focusPreparation = cameraLease.prepareForScanning();
+await new Promise((resolve) => setImmediate(resolve));
+assert.equal(typeof resolvePendingFocus, "function", "focus setup starts only after the scanner session declares the preview ready");
+assert.deepEqual(appliedCameraFocusConstraints.width, { ideal: 1280 }, "focus setup preserves the original ideal width constraint");
+assert.deepEqual(appliedCameraFocusConstraints.height, { ideal: 720 }, "focus setup preserves the original ideal height constraint");
+assert.deepEqual(appliedCameraFocusConstraints.frameRate, { ideal: 30, max: 30 }, "focus setup preserves the original frame-rate ceiling");
 assert.deepEqual(
   appliedCameraFocusConstraints.advanced[0],
   { focusMode: "continuous" },
@@ -294,6 +322,7 @@ await assert.rejects(
 claimedLease.release();
 
 resolvePendingFocus();
+await focusPreparation;
 await new Promise((resolve) => setImmediate(resolve));
 cameraLease.release();
 

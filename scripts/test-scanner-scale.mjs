@@ -10,7 +10,25 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const url = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { resolveScannerRoiScaleCandidates } = await import(url);
+const { resolveScannerRoiScaleCandidates, resolveScannerRoiBaseDimensions } = await import(url);
+
+const native1080Roi = resolveScannerRoiBaseDimensions(1152, 600);
+assert.deepEqual(native1080Roi, {
+  width: 1152,
+  height: 600,
+  sourceScale: 1,
+}, 'a normal 1080p camera ROI must retain every native source pixel');
+
+const highResolutionRoi = resolveScannerRoiBaseDimensions(2304, 1200);
+assert.ok(highResolutionRoi);
+assert.ok(highResolutionRoi.width <= 2048,
+  'large source crops must respect the bounded ROI width');
+assert.ok(highResolutionRoi.width * highResolutionRoi.height <= 1_500_000,
+  'large source crops must respect the bounded native ROI pixel budget');
+assert.ok(highResolutionRoi.sourceScale < 1,
+  'only oversized ROIs should be downsampled');
+assert.equal(resolveScannerRoiBaseDimensions(0, 100), null,
+  'invalid source ROI dimensions must fail closed');
 
 const normal = resolveScannerRoiScaleCandidates(400, 200);
 assert.deepEqual(normal.map(({ width, height }) => [width, height]), [

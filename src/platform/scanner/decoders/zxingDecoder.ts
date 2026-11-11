@@ -17,8 +17,9 @@ import type {
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
 import { rotateLuminance90Clockwise } from '../scannerRotation';
-import { deskewLuminanceFrame } from '../scannerDeskew';
-import { resolveScannerRoiScaleCandidates } from '../scannerScale';
+import { deskewLuminanceFrame, deskewLuminanceFrameWithEstimate, type ScannerSkewEstimate } from '../scannerDeskew';
+import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
+import { measureScannerFocusQuality } from '../scannerFocusQuality';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -40,7 +41,6 @@ const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   MICRO_QR_CODE: BarcodeFormat.MICRO_QR_CODE,
 };
 
-const MAX_FRAME_WIDTH = 1280;
 const REVERSE_FORMAT_MAP = new Map<BarcodeFormat, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([symbology, format]) => [
     format,
@@ -155,11 +155,20 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticScaleAttempts = 0;
   private diagnosticScaleHits = 0;
   private diagnosticLastScaleFactor = 0;
+  private lastFocusQualitySampleAt = 0;
+  private lastFocusQualityPixels: Uint8Array | null = null;
+  private lastFocusQualityWidth = 0;
+  private lastFocusQualityHeight = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
   private lastRoiHeight = 0;
+  private diagnosticRoiSourceScale = 1;
+  private cachedOrientationHints: {
+    upright: ScannerSkewEstimate | null;
+    rotated: ScannerSkewEstimate | null;
+  } | null = null;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -185,7 +194,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
 
   async decode(
     source: CanvasImageSource,
-    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion }: DecoderDecodeOptions,
+    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion, onFocusQuality }: DecoderDecodeOptions,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !this.canvas || !this.context) {
       throw new Error('ZXing adapter has not been initialized.');
@@ -207,14 +216,23 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.diagnosticFrames += 1;
       this.lastRoiWidth = crop.width;
       this.lastRoiHeight = crop.height;
-      const sourceScale = Math.min(1, MAX_FRAME_WIDTH / dimensions.width);
-      const baseWidth = Math.max(1, Math.round(crop.width * sourceScale));
-      const baseHeight = Math.max(1, Math.round(crop.height * sourceScale));
-      const scaleCandidates = resolveScannerRoiScaleCandidates(baseWidth, baseHeight);
+      // Preserve native sensor detail inside the strict crop. Bound ROI
+      // dimensions/pixels rather than downscaling the entire frame by width.
+      const baseDimensions = resolveScannerRoiBaseDimensions(crop.width, crop.height);
+      if (!baseDimensions) {
+        this.diagnosticRoiUnavailable += 1;
+        this.emitDiagnostics();
+        return [];
+      }
+      this.diagnosticRoiSourceScale = baseDimensions.sourceScale;
+      const scaleCandidates = resolveScannerRoiScaleCandidates(
+        baseDimensions.width,
+        baseDimensions.height,
+      );
 
-      // Preserve the exact deployed 1.5x candidate and its complete orientation/
-      // deskew pipeline as candidate zero. Alternate scales run only after it
-      // misses, and always redraw the same strict module-owned source crop.
+      // Preserve the deployed 1.5x candidate as candidate zero. The crop is
+      // now sampled from the native ROI up to a bounded pixel budget; alternate
+      // scales run only after the full baseline misses and never expand the crop.
       for (const candidate of scaleCandidates) {
         this.canvas.width = candidate.width;
         this.canvas.height = candidate.height;
@@ -237,7 +255,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         this.diagnosticScaleAttempts += 1;
         this.diagnosticLastScaleFactor = candidate.scale;
 
-        const output = this.decodeCurrentCanvas(timestamp);
+        const output = this.decodeCurrentCanvas(
+          timestamp,
+          candidate.baseline ? onFocusQuality : undefined,
+          !candidate.baseline,
+        );
         if (output) {
           this.diagnosticScaleHits += 1;
           this.diagnosticDecoded += 1;
@@ -295,7 +317,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.stageCosts[stage] = current;
   }
 
-  private decodeCurrentCanvas(timestamp: number): DecoderOutput | null {
+  private decodeCurrentCanvas(
+    timestamp: number,
+    onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
+    reuseOrientationHints = false,
+  ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
     const image = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -307,6 +333,21 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height,
     );
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+    if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
+      this.lastFocusQualitySampleAt = timestamp;
+      const sameFocusGeometry = this.lastFocusQualityWidth === this.canvas.width
+        && this.lastFocusQualityHeight === this.canvas.height;
+      const focusSample = measureScannerFocusQuality(
+        grayscale,
+        this.canvas.width,
+        this.canvas.height,
+        sameFocusGeometry ? this.lastFocusQualityPixels : null,
+      );
+      this.lastFocusQualityPixels = focusSample.sampledPixels;
+      this.lastFocusQualityWidth = this.canvas.width;
+      this.lastFocusQualityHeight = this.canvas.height;
+      onFocusQuality(focusSample);
+    }
 
     // Run both production binarizers on each candidate. The additional CPU
     // cost is intentional: a missed first threshold must not suppress a valid
@@ -352,25 +393,52 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     // after the quarter-turn candidate). Both candidates are decoded because
     // interpolation and ROI bounds can make one representation more legible.
     const deskewStartedAt = performance.now();
+    const cachedHints = reuseOrientationHints ? this.cachedOrientationHints : null;
+    const reusedOrientation = Boolean(cachedHints?.upright || cachedHints?.rotated);
     this.diagnosticDeskewAttempts += 1;
-    const uprightDeskew = deskewLuminanceFrame(
-      grayscale,
-      this.canvas.width,
-      this.canvas.height,
-    );
+    const uprightDeskew = cachedHints?.upright
+      ? deskewLuminanceFrameWithEstimate(
+        grayscale,
+        this.canvas.width,
+        this.canvas.height,
+        cachedHints.upright,
+      )
+      : deskewLuminanceFrame(
+        grayscale,
+        this.canvas.width,
+        this.canvas.height,
+      );
     if (!uprightDeskew) this.diagnosticDeskewEstimateMisses += 1;
 
     let rotatedDeskew: ReturnType<typeof deskewLuminanceFrame> = null;
     if (rotated) {
       this.diagnosticDeskewAttempts += 1;
-      rotatedDeskew = deskewLuminanceFrame(
-        rotated.luminance,
-        rotated.width,
-        rotated.height,
-      );
+      rotatedDeskew = cachedHints?.rotated
+        ? deskewLuminanceFrameWithEstimate(
+          rotated.luminance,
+          rotated.width,
+          rotated.height,
+          cachedHints.rotated,
+        )
+        : deskewLuminanceFrame(
+          rotated.luminance,
+          rotated.width,
+          rotated.height,
+        );
       if (!rotatedDeskew) this.diagnosticDeskewEstimateMisses += 1;
     }
-    this.recordStageCost('deskew_estimate_and_rotate', performance.now() - deskewStartedAt);
+    this.cachedOrientationHints = {
+      upright: uprightDeskew
+        ? { angleDegrees: uprightDeskew.angleDegrees, confidence: uprightDeskew.confidence }
+        : cachedHints?.upright ?? null,
+      rotated: rotatedDeskew
+        ? { angleDegrees: rotatedDeskew.angleDegrees, confidence: rotatedDeskew.confidence }
+        : cachedHints?.rotated ?? null,
+    };
+    this.recordStageCost(
+      reusedOrientation ? 'deskew_reuse_orientation_and_rotate' : 'deskew_estimate_and_rotate',
+      performance.now() - deskewStartedAt,
+    );
 
     const candidates = [uprightDeskew, rotatedDeskew]
       .filter((candidate): candidate is NonNullable<ReturnType<typeof deskewLuminanceFrame>> => candidate !== null)
@@ -472,6 +540,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       sourceHeight: this.lastFrameHeight,
       roiWidth: this.lastRoiWidth,
       roiHeight: this.lastRoiHeight,
+      roiSourceScale: Number(this.diagnosticRoiSourceScale.toFixed(3)),
       averageDecodeMs: this.decodeCostCount ? Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)) : 0,
     });
     this.diagnosticStartedAt = now;
@@ -491,6 +560,12 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticScaleAttempts = 0;
     this.diagnosticScaleHits = 0;
     this.diagnosticLastScaleFactor = 0;
+    this.diagnosticRoiSourceScale = 1;
+    this.cachedOrientationHints = null;
+    this.lastFocusQualitySampleAt = 0;
+    this.lastFocusQualityPixels = null;
+    this.lastFocusQualityWidth = 0;
+    this.lastFocusQualityHeight = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
   }
 
@@ -501,6 +576,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.context = null;
     this.canvas = null;
     this.formats = [];
+    this.cachedOrientationHints = null;
     this.decoding = false;
   }
 }
