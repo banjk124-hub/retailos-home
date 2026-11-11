@@ -44,8 +44,8 @@
 
 ### Decision
 - Add one versioned device-local preference store at `retailos.scannerSettings.v1`.
-- Defaults: vibration enabled and beep volume 50%. The 50% level maps to the existing gain 0.24, preserving current sound by default.
-- Beep volume uses 11 discrete steps (0–100 in 10-point increments); 0 mutes the app beep and 100 maps to gain 0.48.
+- Defaults: vibration enabled and beep volume 50%. PR #56 initially mapped 50% to gain 0.24; merged PR #57 superseded this with the current 0.30 mapping.
+- Beep volume uses 11 discrete steps (0–100 in 10-point increments); 0 mutes the app beep and 100 maps to gain 0.60 after PR #57.
 - The shared feedback service reads the current preferences at each accepted barcode event. Do not capture preferences into a camera session or require camera restart when preferences change.
 - Remove per-feature `audioFeedback`/`hapticFeedback` overrides from Home Scanner, Stocktake Scanner, the shared hook and the platform session contract.
 - Keep feedback outside `UniversalScannerSession`: it is application behavior, not camera/decoder lifecycle.
@@ -62,7 +62,7 @@
 
 ### Acceptance
 - Settings changes persist after reload and are immediately reflected by all Scanner consumers.
-- 50% default reproduces gain 0.24; 0% suppresses beep; 100% maps to gain 0.48.
+- Current post-PR #57 mapping: 50% default produces gain 0.30; 0% suppresses beep; 100% maps to gain 0.60.
 - Android with Vibration API support follows the toggle. Unsupported iOS/browser paths remain non-fatal and visibly identify the limitation.
 - Settings Hub exposes separate Scanner QA Monitor and Scanner settings entries.
 - Full preflight and physical iOS/Android QA pass before merge/deploy.
