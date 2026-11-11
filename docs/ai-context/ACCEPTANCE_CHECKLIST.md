@@ -30,7 +30,7 @@
 - [ ] Detection confidence and geometric bounds gate optional rectification.
 - [ ] Original ROI candidate retained; no unconditional warp.
 - [ ] Planar perspective and curved-label fixtures plus negative controls.
-- [ ] Interpolation, memory, false-positive and latency costs measured.
+- [ ] Interpolation, memory, false-positive and overall scanner response time costs measured.
 
 ## SCAN-10 — Adaptive performance gates
 - [ ] Device capability uses observed runtime performance, not brittle UA/model names.
@@ -44,7 +44,7 @@
 - [ ] Home and Stocktake independent workflow checks.
 - [ ] Permission, open/close, background/foreground and recovery.
 - [ ] Real labels: small/far, low-light, reflective, curved, perspective and reticle-edge.
-- [ ] Build/browser/device identifiers, accuracy, first-result latency, per-stage timing and UI responsiveness recorded.
+- [ ] Build/browser/device identifiers, accuracy, overall scanner response time, per-stage timing and UI responsiveness recorded.
 
 ---
 
@@ -80,7 +80,7 @@
 
 ## Additional evidence not yet recorded
 - [ ] Detailed iOS Safari/PWA and Android Chrome/PWA × Home/Stocktake × symbology/orientation matrix.
-- [ ] Quantitative first-result latency, stage timing, CPU/long-task responsiveness and decode success-rate measurements.
+- [ ] Quantitative overall scanner response time, stage timing, CPU/long-task responsiveness and decode success-rate measurements.
 - [ ] Separate optical tests for reflective packaging, small/far labels, low light and reticle-edge placement.
 
 These additional measurements are not required to describe the user's functional acceptance as complete. Do not mark them passed without evidence.
@@ -164,7 +164,7 @@ These additional measurements are not required to describe the user's functional
 - [ ] Include outside-reticle negative controls; no decode outside module-owned region.
 - [ ] Verify correct payload/check digit, false positives and Home/Stocktake result workflows.
 - [ ] Confirm no camera lock, focus hunting loop, torch/focus constraint conflict, UI freeze or lifecycle regression.
-- [ ] Do not report end-to-end scanner latency as a SCAN-07 metric. Decoder stage cost may be recorded separately.
+- [ ] Do not report end-to-end scanner overall scanner response time as a SCAN-07 metric. Decoder stage cost may be recorded separately.
 - [ ] Do not claim minimum barcode size or maximum distance until real measurements exist.
 
 **Scope lock:** remain in SCAN-07 until all above gates are accepted. SCAN-08/09 must not begin yet. No outward ROI padding without a module-owned capture-envelope contract.
@@ -330,7 +330,7 @@ Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8
 - [ ] Define resource budgets and allowed knobs; separate correctness invariants from tunable work.
 - [ ] Use sustained runtime proxies with hysteresis; do not promise universal battery/thermal APIs.
 - [ ] No unmeasured reduction in resolution, cadence, ROI or fallback decoding.
-- [ ] Verify scan success/accuracy, first-result latency, decode cost, UI responsiveness and battery/thermal proxies.
+- [ ] Verify scan success/accuracy, overall scanner response time, decode cost, UI responsiveness and battery/thermal proxies.
 
 ## Phase 1.2K — Cross-platform release gate
 - [ ] iOS Safari/PWA and Android Chrome/PWA evidence recorded.
