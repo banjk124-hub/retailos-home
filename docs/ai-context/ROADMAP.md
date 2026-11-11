@@ -30,7 +30,7 @@
 - Use ROI sharpness plus frame-to-frame motion filtering to detect sustained defocus; only reassert continuous focus after four stable low-sharpness samples, with an 8-second recovery cooldown. Motion/changing scenes and low-texture frames must not trigger refocus.
 - Test Home and Stocktake independently on iOS Safari/PWA and Android Chrome/PWA, with the same scanner platform behavior.
 - Do not claim a minimum barcode size or maximum reading distance until the source pixel-height/distance matrix has been measured on real devices.
-- Do not use total scanner latency as a SCAN-07 success metric. Record decoder-stage cost and camera/focus state separately where needed.
+- Do not use overall scanner response time as a SCAN-07 success metric. Record decoder-stage processing cost and camera/focus state separately where needed.
 
 ## SCAN-07 closure gates
 
