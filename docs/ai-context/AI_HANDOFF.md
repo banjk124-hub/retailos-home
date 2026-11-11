@@ -28,7 +28,7 @@
 - Current user feedback: operationally relatively stable.
 
 ## Current PR #78 verification priorities
-1. Run final-head CI and inspect every failing preflight test before changing source further.
+1. CI #678 passed on final PR head `4728a8888c6ee6ab439af18ce8353661429d4195`; continue with physical-device QA and review.
 2. Confirm the 1920×1080 ideal request is negotiated safely; inspect actual settings on low/mid/high devices.
 3. Verify post-first-frame focus request is non-blocking and does not change active resolution/frame rate.
 4. Verify focus and Torch track updates serialize and preserve both advanced settings.
