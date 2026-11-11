@@ -79,6 +79,14 @@ A successful optional focus preference does not prove that the physical lens has
 
 This separates observation from control. Motion, glare, exposure, curved packaging and changing barcode texture can still affect sharpness; passive telemetry is not a guarantee of focus recovery.
 
+### 3.5 Corrective implementation verification
+
+- PR #79 Draft: `fix/scanner-native-autofocus-no-rearm`.
+- Final corrective head: `d2a6dd5df99827e9d71a3156eba854988e22e808`.
+- GitHub Actions run #684 passed full preflight, TypeScript, production build and Pages build.
+- Run #683 exposed a stale test-only mock still exporting `ScannerFocusWatchdog`; the preview-region fixture was updated to `ScannerFocusQualityMonitor` before run #684.
+- CI success is not physical-device acceptance. iOS Safari/PWA and Android Chrome/PWA, Home and Stocktake remain required.
+
 ## 4. Protected SCAN-01 to SCAN-06 contracts
 
 - SCAN-01 camera request remains a module intent passed through the tap-origin camera lease.
