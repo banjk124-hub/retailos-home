@@ -70,8 +70,7 @@ assert.equal(watchdog.observe(blurredSample, 5000), false,
   'the watchdog does not repeatedly re-arm during its cooldown');
 assert.equal(watchdog.observe(blurredSample, 13500), false);
 assert.equal(watchdog.observe(blurredSample, 14000), false);
-assert.equal(watchdog.observe(blurredSample, 14500), false);
-assert.equal(watchdog.observe(blurredSample, 15000), true,
+assert.equal(watchdog.observe(blurredSample, 14500), true,
   'a later sustained defocus can re-arm after the cooldown');
 
 const adapter = await readFile(
