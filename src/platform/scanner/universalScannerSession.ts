@@ -124,7 +124,7 @@ function waitForVideoFrameReady(video: HTMLVideoElement, timeoutMs = 3000): Prom
 }
 
 function scannerError(cause: unknown): ScannerError {
-  const name = cause instanceof Error ? cause.name : '';
+  const name = cause instanceof DOMException ? cause.name : cause instanceof Error ? cause.name : '';
   const message = cause instanceof Error ? cause.message : 'Không thể khởi động máy quét.';
   if (name === 'NotAllowedError' || name === 'SecurityError') {
     return { code: 'PERMISSION_DENIED', message: 'Quyền camera bị từ chối. Hãy cấp quyền camera trong trình duyệt rồi thử lại.', recoverable: true, cause };
