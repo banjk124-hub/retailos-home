@@ -22,7 +22,9 @@ export function buildCameraVideoConstraints(
     width: { ideal: request.preferredWidth },
     height: { ideal: request.preferredHeight },
     frameRate: {
-      ideal: request.preferredFrameRate,
+      ideal: request.maxFrameRate === undefined
+        ? request.preferredFrameRate
+        : Math.min(request.preferredFrameRate, request.maxFrameRate),
       ...(request.maxFrameRate === undefined ? {} : { max: request.maxFrameRate }),
     },
   };
