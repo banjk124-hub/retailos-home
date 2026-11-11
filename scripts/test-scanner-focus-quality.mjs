@@ -87,6 +87,12 @@ assert.match(adapter, /measureScannerFocusQuality/,
   'the decoder measures sharpness from its existing grayscale ROI readback');
 assert.match(adapter, /candidate\.baseline \? onFocusQuality : undefined/,
   'focus quality is sampled only from the baseline scale, not every fallback');
+const frameReadyIndex = session.indexOf('await waitForVideoFrameReady(this.video)');
+const focusSetupIndex = session.indexOf('void lease.prepareForScanning()');
+assert.ok(frameReadyIndex >= 0 && focusSetupIndex > frameReadyIndex,
+  'continuous autofocus setup must happen after the first fresh video frame');
+assert.doesNotMatch(session, /await lease\.prepareForScanning\(\)/,
+  'focus setup must not block preview readiness or decoder initialization');
 assert.match(session, /onFocusQuality: \(sample\) => this\.handleFocusQuality/,
   'the shared session consumes decoder quality telemetry');
 assert.match(session, /reapplyContinuousAutofocus\(\)/,
