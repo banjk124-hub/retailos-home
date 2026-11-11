@@ -1,11 +1,26 @@
-# Current task — Scanner Engine remediation and Code 39 enablement (2026-11-11)
+# Current task — Scanner Camera Request Bridge (2026-11-11)
 
 **Repository:** banjk124-hub/retailos-home  
-**Current main baseline:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit).  
-**Active branch:** `fix/scanner-engine-remediation-code39`.  
-**Branch base:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.  
-**PR:** [#75 — Scanner remediation and Code 39](https://github.com/banjk124-hub/retailos-home/pull/75), open Draft; branch remains unmerged.  
-**Deployment:** no changes from this branch have been deployed.
+**Current main baseline:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
+**Active branch:** `feat/scanner-camera-request-bridge`.  
+**Branch base:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`.  
+**PR / CI:** pending. No merge or deployment has occurred for this branch.
+
+## Current task
+Complete the runtime camera request bridge: pass the module's camera intent through the initiating tap-time lease, resolve shared-stream compatibility from actual track settings, preserve compatible reference-counted sharing, reject incompatible active-stream requests safely, and retain the original intent through foreground recovery.
+
+## Protected invariants
+- Home and Stocktake keep the existing tap-origin request before mounting scanner presentation.
+- Current camera behavior remains rear / ideal 1280×720 / 30 FPS unless a module explicitly supplies a different request.
+- Foreground recovery MUST continue to create a fresh session and fresh video surface. The replacement session reacquires using the original module camera intent; it does not reuse the retired session, old video element or released lease.
+- Keep the existing page lifecycle coordinator, teardown ordering, autofocus, preview readiness, decoder/cadence, strict ROI, Torch, module presentation and business workflows unchanged.
+- Compatible streams remain shareable under the current reference-counted lease model. Do not introduce an exclusive-owner redesign.
+- Do not merge or deploy without explicit user approval.
+
+## Verification still required
+Run full preflight and review CI; then physical iOS Safari/PWA and Android Chrome/PWA tests. CI/source tests do not establish hardware behavior.
+
+---
 
 ## Current branch scope
 - Enable Code 39 in the existing ZXing adapter path, explicit supported-format allowlist and payload validation. ZXing's Code 39 enum/mapping existed before this branch; production activation did not.
