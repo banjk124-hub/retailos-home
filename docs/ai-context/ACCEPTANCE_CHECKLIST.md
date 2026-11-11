@@ -1,50 +1,26 @@
-# Scanner acceptance — current status and next-phase gates (2026-11-11)
+# Scanner acceptance — unified recognition pipeline (2026-11-11)
 
-## Current merged baseline
-- [x] SCAN-01 through SCAN-06 implemented and merged.
-- [x] SCAN-05/06 production adapter regression suites and full preflight passed (PR #67 CI #432 final head).
-- [x] User confirms SCAN-05/06 deployed and operationally stable.
-- [x] PR #75 Code 39 enablement and recovery diagnostics merged.
-- [x] PR #76 Camera Request Bridge merged; CI #610 passed on code/test head `b954b8a`.
-- [x] PR #77 strict-ROI multi-scale merged/deployed; user reports modest improvement for small/far labels and reticle-edge reads, but range/precision remain insufficient.
-- [ ] Physical-device acceptance evidence for PR #76 recorded separately on iOS Safari/PWA and Android Chrome/PWA.
-- [ ] Quantified cross-device optical/performance baseline recorded.
+## PR A+B combined — candidate orchestration
+- [x] One shared enhancement pipeline owns baseline/orthogonal/deskew candidate order.
+- [x] Original ROI remains first; no candidate is allowed to widen or recenter the module-owned ROI.
+- [x] Quarter-turn is attempted only after baseline miss.
+- [x] Confidence-gated deskew runs only after baseline and quarter-turn miss.
+- [x] Scale fallback and orientation estimate reuse remain bounded and serialized.
+- [x] Hybrid and GlobalHistogram binarizers remain available for each candidate.
+- [x] Pipeline regression suite is registered in preflight.
+- [ ] Final-head full preflight, TypeScript, production and Pages builds pass.
+- [ ] Complete diff review confirms camera/session/UI/business behavior is unchanged.
+- [ ] iOS Safari/PWA + Android Chrome/PWA acceptance in Home and Stocktake.
 
-## SCAN-07 — Adaptive ROI and multi-scale gates
-- [ ] Source-frame and preview/source mapping contract unchanged by tests.
-- [ ] ROI padding bounded to an explicit module-authorized capture envelope; no full-frame/center fallback.
-- [ ] Current 1.5× path remains a comparison baseline.
-- [ ] Small/far barcode fixtures at multiple source pixel heights; reticle edge and outside-reticle negative controls.
-- [ ] Production adapter tests, preflight, TypeScript, production and Pages builds.
-- [ ] Device comparison on iOS/Android and low/high capability devices.
+## Recognition coverage — next gates
+- [ ] SCAN-08 optional enhancement candidates: normal, low contrast, low light, noise and clipped/glare fixtures.
+- [ ] SCAN-09 planar perspective and curved-label cases, with negative controls and bounded rectification.
+- [ ] SCAN-10 measured low/mid/high runtime budgets; baseline-first and serialized decode preserved.
+- [ ] Symbology registry tests cover every enabled format and payload validation rule.
+- [ ] Real carrier corpus includes A4/A3/A5 paper, shelf labels, packaging and screens without carrier-specific algorithm branches.
+- [ ] Correct payload, false positives, source-pixel module width, per-stage time, memory and UI responsiveness are recorded separately.
 
-## SCAN-08 — Image enhancement gates
-- [ ] Original luminance candidate remains first and available as fallback.
-- [ ] Gamma/contrast/adaptive threshold/denoise variants are bounded and triggered only when measurable input conditions justify them.
-- [ ] Normal-light, low-light, noise, low-contrast and saturated/glare fixtures.
-- [ ] False-positive rate and barcode checksum/format rejection measured; no claim of restoring clipped highlights.
-- [ ] Production adapter and cross-device performance checks.
-
-## SCAN-09 — Perspective and curved-label gates
-- [ ] Perspective and curved-surface cases are separated from in-plane deskew.
-- [ ] Detection confidence and geometric bounds gate optional rectification.
-- [ ] Original ROI candidate retained; no unconditional warp.
-- [ ] Planar perspective and curved-label fixtures plus negative controls.
-- [ ] Interpolation, memory, false-positive and overall scanner response time costs measured.
-
-## SCAN-10 — Adaptive performance gates
-- [ ] Device capability uses observed runtime performance, not brittle UA/model names.
-- [ ] Candidate/scale budget is bounded and baseline decode is never starved.
-- [ ] Frame processing budget, serialized reader access and queue bounds verified.
-- [ ] Low/mid/high device profiles measured.
-- [ ] No cadence change without evidence and explicit acceptance.
-
-## SCAN-11 — Cross-platform hardening gates
-- [ ] iOS Safari/PWA and Android Chrome/PWA.
-- [ ] Home and Stocktake independent workflow checks.
-- [ ] Permission, open/close, background/foreground and recovery.
-- [ ] Real labels: small/far, low-light, reflective, curved, perspective and reticle-edge.
-- [ ] Build/browser/device identifiers, accuracy, overall scanner response time, per-stage timing and UI responsiveness recorded.
+**Acceptance rule:** CI success is not device QA. A synthetic fixture is not a calibrated optical threshold. Do not claim universal optical success, minimum size or maximum distance without measured evidence.
 
 ---
 
