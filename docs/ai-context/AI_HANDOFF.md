@@ -4,7 +4,7 @@
 **Current main baseline:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
 **Active branch:** `feat/scanner-camera-request-bridge`.  
 **Branch base:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`.  
-**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. CI verification pending; no merge or deployment has occurred for this branch.
+**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. Current PR head: `bcd42604bb235e40a5b1112ad352bea0534168c6`. GitHub Actions run #610 passed on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`; subsequent commits through the current head are documentation-only synchronization. Physical iOS/Android QA remains pending; no merge or deployment has occurred for this branch.
 
 ## Current task
 Complete the runtime camera request bridge: pass the module's camera intent through the initiating tap-time lease, resolve shared-stream compatibility from actual track settings, preserve compatible reference-counted sharing, reject incompatible active-stream requests safely, and retain the original intent through foreground recovery.
