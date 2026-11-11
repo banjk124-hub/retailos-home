@@ -1,9 +1,9 @@
 # Scanner roadmap — SCAN-07 remains active (2026-11-11)
 
-**Main:** PR #77 merged at `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`; current branch work is additive and unmerged.
+**Main:** PR #78 is merged at `adee2b2815097a3d17714b2305fc144a240a3bac`; this corrective work remains isolated on `fix/scanner-native-autofocus-no-rearm`.
 **PR #77 device outcome:** user confirms modest improvement for small/far barcodes and successful reads near reticle edges, but recognition range and precision are not yet sufficient.
-**Current work:** PR #78 is focused on completing SCAN-07 through native ROI detail preservation, coordinated camera focus recovery, and shared decoder/camera tuning. Do not advance to SCAN-08/09 until this gate is accepted.
-**User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner overall scanner response time to SCAN-07; total response depends on camera startup, focus, frame delivery, decoding, session and module result handling.
+**Current work:** complete SCAN-07 by preserving native ROI detail, synchronizing orientation/decoder paths and camera behavior, and removing post-preview autofocus intervention that caused focus disturbance. Do not advance to SCAN-08/09 until this gate is accepted.
+**User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner response time to SCAN-07; total response depends on camera startup, frame delivery, decoding, session and module result handling.
 
 ## Current shared scanner pipeline
 
@@ -11,23 +11,25 @@
 2. Both modules map the visible reticle through SCAN-02/03 into the same source-frame-normalized ROI contract.
 3. SCAN-04 remains strict: missing/invalid ROI fails closed; no full-frame or centered fallback.
 4. The decoder crops only that source ROI. Native source detail is retained up to a bounded 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled.
-5. Both modules use the shared camera lease. Camera request now prefers 1920×1080 at 30 FPS maximum; browser-negotiated lower settings remain valid and must be recorded in device QA.
+5. Both modules use the shared camera lease. Camera request prefers 1920×1080 at 30 FPS maximum; browser-negotiated lower settings remain valid and must be recorded in device QA.
 6. Scale candidates remain ordered 1.5× baseline, then 1× and 2× only after the full baseline path misses. Additional candidates remain bounded to 6 MP each.
 7. SCAN-05/06 orientation recovery and both ZXing binarizers remain active within each scale. Valid baseline orientation estimates are reused by fallback scales for the same frame; missing estimates are recalculated. Result validation and module result handling remain authoritative.
-8. Focus setup runs only after the video has produced a fresh frame. Track constraints are preserved and serialized across autofocus and Torch operations.
-9. The existing grayscale ROI readback provides low-rate sharpness/motion samples. Sustained stable sharpness loss can reassert continuous autofocus only when the camera exposes that mode. This is a recovery request, not proof that the lens has physically refocused.
+8. Continuous autofocus is an optional advanced preference in the initial `getUserMedia()` request. Unsupported/unexposed focus controls are ignored; the camera retains its native autofocus behavior.
+9. No focus `applyConstraints()` call is made after preview readiness. The scanner never re-arms autofocus in response to image sharpness.
+10. Existing grayscale ROI readback may report passive sharpness/motion diagnostics; these observations never change camera settings.
 
-## SCAN-07 — Adaptive ROI, multi-scale and coordinated optical recovery
+## SCAN-07 — Adaptive ROI, multi-scale and synchronized native camera behavior
 
-**Status:** Active; PR #77 is merged/deployed. PR #78 implementation is in progress; final-head CI #678 passed; physical-device acceptance is pending.
+**Status:** Active; PR #78 is merged. This corrective branch removes post-preview focus commands and synchronizes diagnostics/tests/docs. Physical-device acceptance remains pending.
 
 - Preserve SCAN-02/03 mapping and SCAN-04 strict ROI. No outward padding is enabled because Home/Stocktake have not published an authorized capture envelope.
-- Preserve more native sensor pixels by bounding the ROI itself rather than scaling the entire frame to 1280 px.
+- Preserve native sensor pixels by bounding the ROI itself rather than scaling the entire frame to 1280 px.
 - Prefer 1080p camera input, while accepting browser-negotiated lower resolutions on weaker devices.
 - Keep the 1.5× baseline first, then bounded 1×/2× fallbacks after a complete baseline miss.
 - Keep SCAN-05/06 orientation, deskew, contrast and both binarizers connected to each scale. Do not run an unbounded Cartesian product or parallelize the ZXing reader.
-- Move continuous-focus configuration until after first-frame readiness. Preserve current camera constraints when applying focus or Torch changes, and serialize track-level updates so they cannot overwrite one another.
-- Use ROI sharpness plus frame-to-frame motion filtering to detect sustained defocus; only reassert continuous focus after four stable low-sharpness samples, with an 8-second recovery cooldown. Motion/changing scenes and low-texture frames must not trigger refocus.
+- Request continuous autofocus only as an optional advanced `getUserMedia()` preference during initial camera negotiation. If unsupported or ignored, use the camera's native default autofocus.
+- Never call `applyConstraints()` to set or reassert focus after preview starts. Focus quality monitoring is passive and diagnostic only.
+- Torch may still use the serialized track-constraint helper; Torch updates must preserve the original optional focus preference and active camera settings.
 - Test Home and Stocktake independently on iOS Safari/PWA and Android Chrome/PWA, with the same scanner platform behavior.
 - Do not claim a minimum barcode size or maximum reading distance until the source pixel-height/distance matrix has been measured on real devices.
 - Do not use overall scanner response time as a SCAN-07 success metric. Record decoder-stage processing cost and camera/focus state separately where needed.
@@ -35,16 +37,17 @@
 ## SCAN-07 closure gates
 
 - [ ] Native ROI pixel preservation improves small/far barcode recognition without weakening strict ROI.
-- [ ] Camera track reports actual negotiated width, height, frame rate and supported focus modes.
-- [ ] Continuous focus is configured after fresh-frame readiness without delaying preview readiness.
-- [ ] Autofocus and Torch constraints preserve each other and remain serialized.
-- [ ] Focus watchdog ignores blank/low-texture and moving frames; sustained stable blur causes at most one bounded re-arm per cooldown.
+- [ ] Camera track reports actual negotiated width, height, frame rate and supported focus modes where exposed.
+- [ ] Optional continuous-focus preference is present only in initial camera negotiation; unsupported devices retain native autofocus.
+- [ ] No focus `applyConstraints()`, post-preview focus request, watchdog re-arm or focus retry exists in the scanner session.
+- [ ] Torch ON/OFF preserves negotiated camera settings and does not overwrite the initial focus preference.
+- [ ] Passive focus diagnostics distinguish sustained blur from motion/low-texture frames and never modify camera controls.
 - [ ] Replace the currently inert `profile: HIGH` handoff with a measured, conservative device-budget policy based on actual track settings and observed processing cost; unknown devices must fall back safely.
 - [ ] Decoder still tries the baseline first and never starves validation or module result delivery.
 - [ ] Home and Stocktake both pass normal, rotated, small/far, reticle-edge and outside-reticle negative tests.
-- [ ] iOS Safari/PWA and Android Chrome/PWA testing covers near/far transitions, camera movement, blur recovery, low light and foreground/background recovery.
+- [ ] iOS Safari/PWA and Android Chrome/PWA testing covers near/far transitions, camera movement, focus behavior, low light and foreground/background recovery.
 - [ ] Real labels are recorded by symbology, physical distance, barcode module/bar width where measurable, source ROI pixel height, orientation, lighting, glare, module, device/browser/build, decode outcome and false positives.
-- [ ] No unsupported performance/accuracy claims; do not attribute end-to-end overall scanner response time to SCAN-07.
+- [ ] No unsupported performance/accuracy claims; do not attribute end-to-end scanner response time to SCAN-07.
 
 ## SCAN-08 — Image enhancement
 **Status:** Planned — candidate evaluation, not unconditional preprocessing.
