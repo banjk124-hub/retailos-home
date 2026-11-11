@@ -58,7 +58,7 @@
 - Distinguish in-plane skew (already covered by SCAN-06) from perspective/keystone distortion and curved-label deformation.
 - Evaluate perspective detection and bounded rectification as optional candidates only when confidence indicates likely benefit.
 - Curved-surface dewarping is a separate, higher-risk problem; do not infer curvature from a weak perspective estimate.
-- Gate: planar perspective fixtures, curved-label fixtures, negative controls, geometry bounds, interpolation loss and latency measurements. Preserve original ROI candidate.
+- Gate: planar perspective fixtures, curved-label fixtures, negative controls, geometry bounds, interpolation loss, memory cost and false-positive comparison. Preserve original ROI candidate.
 
 ## SCAN-10 — Adaptive performance
 **Status:** Planned — requires baseline measurements from SCAN-07/08/09.
@@ -66,19 +66,19 @@
 - Adapt bounded scale count, enhancement/perspective candidate budget and decode attempts while preserving the baseline candidate.
 - Enforce per-frame processing budget and prevent queues/concurrent access to the ZXing reader.
 - Do not change the current 70 ms session cadence until measurements and acceptance tests justify it.
-- Gate: low/mid/high device profiles, worst-case frame time, first-result latency, UI responsiveness and decode success.
+- Gate: low/mid/high device profiles, worst-case frame processing cost, UI responsiveness and decode success.
 
 ## SCAN-11 — Cross-platform hardening
 **Status:** Planned — continuous acceptance lane across all phases, final release gate.
 - iOS Safari/PWA and Android Chrome/PWA; low/mid/high capability devices.
 - Validate camera lifecycle, background/foreground, permission and recovery, Home and Stocktake flows, barcode accuracy and latency.
 - Include real retail labels: small/far, low light, reflective/saturated, curved and perspective-distorted, reticle edges.
-- Record device/browser/build, module, symbology, lighting, distance/pixel-height, orientation, attempts, success, first-result latency and decode cost. Do not invent missing measurements.
+- Record device/browser/build, module, symbology, lighting, distance/pixel-height, orientation, attempts, decode correctness, false positives, per-stage processing cost and UI responsiveness. Do not invent missing measurements.
 
 ## PR and rollout strategy
-- PR #77: documentation reconciliation plus SCAN-07 implementation on the same branch; no merge/deploy until CI and review.
-- SCAN-08: separate PR after SCAN-07 acceptance.
-- SCAN-08: separate PR, layered after SCAN-07 acceptance.
+- PR #77: merged/deployed strict-ROI multi-scale baseline.
+- PR #78: complete SCAN-07 native ROI detail, coordinated autofocus/Torch and both-module device acceptance.
+- SCAN-08: separate PR only after SCAN-07 closure.
 - SCAN-09: separate research/implementation PR; keep opt-in candidate path.
 - SCAN-10: separate adaptive-budget PR only after measured candidate costs exist.
 - SCAN-11: acceptance/diagnostics and targeted fixes, not a wholesale rewrite.
