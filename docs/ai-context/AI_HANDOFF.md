@@ -4,7 +4,7 @@
 **Current main:** PR #77 merge `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`; PR #77 is deployed and user-tested.
 **Current work branch:** `fix/scanner-scan07-focus-and-optical-pipeline`; PR #78 in progress.
 **Scope:** continue SCAN-07 only. Integrate native ROI detail, camera focus recovery, track constraint serialization and multi-scale decoder flow. Do not merge/deploy without explicit approval.
-**Operational note:** user reports scanner operation relatively stable; do not convert this into unsupported claims about measured accuracy, overall scanner response time or device coverage.
+**Operational note:** user reports modest improvement for small/far labels and reticle-edge reads, but not enough range/precision; focus recovery remains a reported issue.
 
 ## Resume instructions
 1. Read `docs/ai-context/SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` and `docs/ai-context/SCAN_07_ADAPTIVE_ROI_MULTISCALE.md` first.
@@ -23,7 +23,8 @@
 - Focus is configured only after a fresh video frame. Shared helper preserves negotiated constraints and serializes autofocus/Torch updates. A low-rate ROI sharpness/motion watchdog can reassert continuous focus after sustained stable blur, only when supported.
 - This is an autofocus re-arm request, not proof of physical lens movement. Real iOS/Android behavior must be tested.
 - Outward padding remains disabled because modules publish only the reticle; no capture envelope contract exists.
-- Do not attribute end-to-end scanner overall scanner response time to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
+- `ScannerProfileName` remains inert: the hook passes `HIGH` unconditionally and the session does not consume it. Adaptive runtime budgets remain a SCAN-07 closure item; do not claim weak-device adaptation yet.
+- Do not attribute overall scanner response time to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
 - Current user feedback: operationally relatively stable.
 
 ## Current PR #78 verification priorities
