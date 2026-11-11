@@ -46,7 +46,7 @@ export function buildTrackConstraintsWithAdvanced(
   );
   constraints.advanced = [
     ...preservedAdvanced,
-    { [key]: value } as MediaTrackConstraintSet,
+    { [key]: value } as unknown as MediaTrackConstraintSet,
   ];
   return constraints;
 }
