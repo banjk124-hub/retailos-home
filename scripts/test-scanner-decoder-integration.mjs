@@ -36,7 +36,7 @@ try {
     await writeFile(outputPath, compiled, 'utf8');
   }
 
-  const canvasStats = { created: 0, draws: 0, lastCrop: null };
+  const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false };
   globalThis.document = {
     createElement(tag) {
       assert.equal(tag, 'canvas');
@@ -48,6 +48,13 @@ try {
           canvasStats.draws += 1;
           canvasStats.lastCrop = { sx, sy, sw, sh, dw, dh };
           const output = new Uint8ClampedArray(dw * dh * 4);
+          if (canvasStats.forceBaselineMiss
+            && dw === Math.round(sw * 1.5)
+            && dh === Math.round(sh * 1.5)) {
+            output.fill(255);
+            this.pixels = output;
+            return;
+          }
           for (let y = 0; y < dh; y++) {
             const sourceY = Math.min(source.height - 1, Math.floor(sy + ((y + 0.5) / dh) * sh));
             for (let x = 0; x < dw; x++) {
@@ -399,6 +406,17 @@ try {
   assert.equal(canvasStats.lastCrop.sw, upright.width,
     'multi-scale sampling must never widen the source crop beyond the module-owned ROI');
   await roiDecoder.dispose();
+
+  const fallbackDecoder = await createDecoder();
+  canvasStats.forceBaselineMiss = true;
+  const fallbackDrawsBefore = canvasStats.draws;
+  const fallbackResult = await decodeOnce(fallbackDecoder, toSource(upright));
+  assert.equal(fallbackResult[0]?.value, '12345',
+    'production adapter must recover a barcode when the preserved 1.5x baseline misses and 1x fallback succeeds');
+  assert.equal(canvasStats.draws, fallbackDrawsBefore + 2,
+    'successful 1x fallback must stop the candidate loop before attempting 2x');
+  canvasStats.forceBaselineMiss = false;
+  await fallbackDecoder.dispose();
 
   const invalidDecoder = await createDecoder();
   const invalidDrawsBefore = canvasStats.draws;
