@@ -31,7 +31,7 @@
 ## SCAN-07 — active integration work
 - PR #77 is merged/deployed. User confirms modest improvement on small/far labels and reads near reticle edges, but current optical range/precision is insufficient.
 - PR #78 is implementing native ROI detail preservation, preferred 1080p acquisition, post-frame autofocus configuration, safe track constraint preservation/serialization, and bounded focus recovery.
-- Added automated tests for ROI sampling bounds, focus-vs-motion quality detection, bounded re-arm, and focus/Torch constraint serialization. CI and physical-device verification on the new branch are pending.
+- Added automated tests for ROI sampling bounds, focus-vs-motion quality detection, bounded re-arm, focus/Torch constraint serialization and orientation estimate reuse. GitHub Actions #677 passed on code/test head `e3d745b1ce1a7fba87265769365d48667103b89b`; final-head #678 passed on `4728a8888c6ee6ab439af18ce8353661429d4195`. Physical-device verification remains pending.
 - No outward reticle padding: current modules have not published a wider authorized capture envelope.
 - No claims about exact minimum barcode size, maximum distance or overall overall scanner response time until real-device measurements exist.
 
