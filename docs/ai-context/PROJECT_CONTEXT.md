@@ -1,12 +1,12 @@
-# Current scanner state — SCAN-05/06 merged and user-validated (2026-11-10)
+# Current scanner state — remediation in progress (2026-11-11)
 
-- PR #67 merged to main at 9406ac30d53bc9984912bd1928a32fd78157cf60; current main matches the merge commit.
-- User confirms deployment and successful operational testing. Scanner recognition is working well and feels sensitive across multiple processing paths.
-- Final PR-head CI #432 passed full preflight; executable source head CI #425 also passed.
-- Current decoder minimum interval is 70 ms, not the historical 110 ms SCAN-04 value. Decode remains serialized and strict module-owned ROI/no-fallback remains mandatory.
-- Current orientation path uses upright decode, a 90° fast path, continuous ±90° in-plane estimation, bounded bilinear correction and both ZXing binarizers.
-- No quantitative per-device latency, CPU, success-rate or detailed optical matrix was provided; do not invent such measurements.
-- SCAN-05/06 is complete. Future scanner work should be separately scoped and evidence-driven; preserve camera/session/lifecycle, Home and Stocktake contracts.
+- Current main is `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`, PR #74 merge commit. PR #74 is merged; deployment is not asserted here.
+- SCAN-05/06 remains merged, deployed and user-validated at the earlier PR #67 baseline; its 70 ms serialized cadence and strict module-owned ROI are preserved.
+- Code 39 existed in the generic symbology union and ZXing mapping, but was not enabled in the retail allowlist or payload validator. Branch `fix/scanner-engine-remediation-code39` enables it and adds validation + production decoder tests.
+- Recovery diagnostics emitted by the decoder were previously dropped by the collector allowlist. The remediation branch retains them and exposes them in QA Monitor / CSV.
+- Audio source is 50% gain 0.30, maximum gain 0.60, approximately 140 ms tone. Older 0.24/0.48 notes refer to pre-PR #57 behavior.
+- `ScannerModuleConfig.cameraRequest` is still declarative. Current camera lease uses fixed environment / 1280×720 / 30 FPS. Per-module request support is deferred until shared stream/lease semantics are designed.
+- No quantitative real-device latency, CPU or recognition-success matrix is claimed. No changes to camera lifecycle, strict ROI, Home or Stocktake workflows are included in the remediation branch.
 
 ---
 ## Current project focus — scanner Torch investigation closed (2026-11-09)
