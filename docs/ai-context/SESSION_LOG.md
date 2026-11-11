@@ -1,3 +1,14 @@
+### 2026-11-11 — Camera Request Bridge CI verification
+
+- CI run #588 initially exposed a test-harness import issue after `cameraSession.ts` gained platform contract/resolver imports. Updated the existing scanner validation harness to map those dependencies to data modules.
+- CI run #605 exposed the same class of isolation issue in `test-scanner-preview-region.mjs`: its dynamically loaded `UniversalScannerSession` did not stub the newly imported `./contracts` module. Added the missing contract stub.
+- Added production-service tests for best-effort ideal facing-mode negotiation, hard `maxFrameRate` rejection and stream cleanup, compatible sharing across soft preference differences, active incompatible request rejection, pending request compatibility, reacquisition after final lease release, cancellation and immutable intent snapshots.
+- Added regression guard for mapping compatibility conflicts to the scanner constraint error.
+- GitHub Actions run #610 passed on head `b954b8a784efd6826588097d6d170d94c80964dc`; full local-equivalent preflight completed successfully. Earlier failed runs were test-harness defects and were corrected; they were not bypassed.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remain outstanding. PR #76 remains Draft, unmerged and undeployed.
+
+---
+
 ### 2026-11-11 — Scanner Camera Request Bridge implementation
 
 - Audited current `main` at `9b84339fd25b2d3502ddccc3aa80c022ccedd827`; PR #75 is closed/merged. Created isolated branch `feat/scanner-camera-request-bridge` from that baseline.
