@@ -1,4 +1,6 @@
 import { getSafeCameraSettings, requestContinuousAutofocus } from './cameraDiagnostics';
+import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../platform/scanner/contracts';
+import { buildCameraVideoConstraints, resolveCameraStreamCompatibility } from '../../platform/scanner/cameraRequestResolver';
 
 let activeStream: MediaStream | null = null;
 let pendingRequest: Promise<MediaStream> | null = null;
@@ -17,12 +19,17 @@ export type CameraStreamLease = {
  * An unclaimed request can be cancelled without leaking a late camera lease.
  */
 export type CameraLeaseRequest = {
+  /** Immutable module intent retained across the lease handoff and recovery. */
+  readonly cameraRequest: ScannerCameraRequest;
   claim(): Promise<CameraStreamLease>;
   cancel(): void;
 };
 
-export function requestCameraLease(): CameraLeaseRequest {
-  const promise = acquireCameraLease();
+export function requestCameraLease(
+  cameraRequest: ScannerCameraRequest = DEFAULT_SCANNER_CAMERA_REQUEST,
+): CameraLeaseRequest {
+  const requestSnapshot = Object.freeze({ ...cameraRequest });
+  const promise = acquireCameraLease(requestSnapshot);
   let claimed = false;
   let cancelled = false;
 
@@ -31,6 +38,7 @@ export function requestCameraLease(): CameraLeaseRequest {
   void promise.catch(() => undefined);
 
   return {
+    cameraRequest: requestSnapshot,
     claim: () => {
       if (cancelled) {
         return Promise.reject(new DOMException('Camera request was cancelled before handoff.', 'AbortError'));
@@ -50,9 +58,32 @@ export function requestCameraLease(): CameraLeaseRequest {
 }
 
 
-async function acquireSharedStream(): Promise<{ stream: MediaStream; generation: number }> {
+function assertStreamCompatible(stream: MediaStream, cameraRequest: ScannerCameraRequest): void {
+  const track = stream.getVideoTracks().find((candidate) => candidate.readyState === 'live');
+  const actualSettings = track?.getSettings?.() ?? {};
+  const compatibility = resolveCameraStreamCompatibility(cameraRequest, actualSettings);
+  if (compatibility.compatible) return;
+
+  const error = new Error(
+    `Camera đang được phiên quét khác sử dụng với cấu hình không tương thích (${compatibility.reason}). Hãy đóng phiên đó trước khi mở camera theo yêu cầu mới.`,
+  );
+  error.name = 'OverconstrainedError';
+  throw error;
+}
+
+async function acquireSharedStream(
+  cameraRequest: ScannerCameraRequest,
+): Promise<{ stream: MediaStream; generation: number }> {
   if (activeStream?.getTracks().some((track) => track.readyState === 'live')) {
-    return { stream: activeStream, generation: requestGeneration };
+    try {
+      assertStreamCompatible(activeStream, cameraRequest);
+      return { stream: activeStream, generation: requestGeneration };
+    } catch (error) {
+      if (activeLeaseCount > 0) throw error;
+      const staleStream = activeStream;
+      activeStream = null;
+      staleStream.getTracks().forEach((track) => track.stop());
+    }
   }
   if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
     throw new Error('Camera chỉ hoạt động trên HTTPS hoặc localhost. Hãy mở ứng dụng bằng địa chỉ bảo mật rồi thử lại.');
@@ -63,12 +94,7 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
     const getUserMediaStartedAt = performance.now();
     const request = navigator.mediaDevices.getUserMedia({
       audio: false,
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        frameRate: { ideal: 30, max: 30 },
-      },
+      video: buildCameraVideoConstraints(cameraRequest),
     }).then(async (stream) => {
       console.info('[RetailOS Scanner] Performance stage', {
         stage: 'get_user_media_ms',
@@ -143,6 +169,9 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
   if (generation !== requestGeneration || activeStream !== stream) {
     throw new DOMException('Camera request was superseded.', 'AbortError');
   }
+  // A pending getUserMedia request may be shared only after its actual track
+  // settings prove compatible with this caller's intent.
+  assertStreamCompatible(stream, cameraRequest);
   return { stream, generation };
 }
 
@@ -151,8 +180,10 @@ async function acquireSharedStream(): Promise<{ stream: MediaStream; generation:
  * obsolete session decrements only its own lease and cannot stop a stream
  * still leased by a newer session.
  */
-export async function acquireCameraLease(): Promise<CameraStreamLease> {
-  const { stream, generation } = await acquireSharedStream();
+export async function acquireCameraLease(
+  cameraRequest: ScannerCameraRequest = DEFAULT_SCANNER_CAMERA_REQUEST,
+): Promise<CameraStreamLease> {
+  const { stream, generation } = await acquireSharedStream(cameraRequest);
   if (generation !== requestGeneration || activeStream !== stream) {
     throw new DOMException('Camera request was superseded.', 'AbortError');
   }
