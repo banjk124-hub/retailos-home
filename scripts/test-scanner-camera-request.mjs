@@ -42,7 +42,7 @@ assert.deepEqual(resolveCameraStreamCompatibility(rearDefault, {}), {
 
 const sourceCamera = await readFile(new URL('../src/shared/services/cameraSession.ts', import.meta.url), 'utf8');
 assert.ok(sourceCamera.includes('activeLeaseCount > 0'), 'an incompatible stream with active leases must not be replaced');
-assert.ok(sourceCamera.includes('assertStreamCompatible(stream, cameraRequest)'), 'pending shared acquisitions must be checked against the caller intent');
+assert.ok(sourceCamera.includes('assertStreamCompatible(stream, cameraRequest, isInitiatingIntent)'), 'pending shared acquisitions must be checked against the caller intent');
 assert.ok(sourceCamera.includes('cameraRequest: requestSnapshot'), 'the one-shot lease handoff must retain its module camera intent');
 
 const sessionSource = await readFile(new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url), 'utf8');
