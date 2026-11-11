@@ -1,9 +1,9 @@
 # AI handoff — Scanner roadmap reconciliation (2026-11-11)
 
 **Repository:** banjk124-hub/retailos-home
-**Current main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c` (PR #76 merge).
-**Current work branch:** `docs/scanner-roadmap-reconciliation-scan07-11`, based on current main.
-**Scope:** documentation reconciliation plus additive SCAN-07 strict-ROI multi-scale implementation. No merge/deploy.
+**Current main:** PR #77 merge `2c3fc1bd4b37f19bcfba2b1d7974184eb5e42c49`; PR #77 is deployed and user-tested.
+**Current work branch:** `fix/scanner-scan07-focus-and-optical-pipeline`; PR #78 in progress.
+**Scope:** continue SCAN-07 only. Integrate native ROI detail, camera focus recovery, track constraint serialization and multi-scale decoder flow. Do not merge/deploy without explicit approval.
 **Operational note:** user reports scanner operation relatively stable; do not convert this into unsupported claims about measured accuracy, latency or device coverage.
 
 ## Resume instructions
@@ -12,15 +12,18 @@
 3. Treat SCAN-02/03 mapping and SCAN-04 strict ROI as immutable contracts unless a separate compatibility design and regression evidence justify an additive extension.
 4. Preserve the current decode candidate as the baseline. New transforms are optional candidates after baseline misses; never replace the existing path without corpus evidence.
 5. Separate algorithm accuracy, false-positive rate, latency, memory and device responsiveness in all reports.
-6. SCAN-07 is being delivered inside PR #77 as requested. SCAN-08–11 remain separately scoped. Do not batch them into one rewrite.
+6. Stay in SCAN-07 until PR #78 and both module/device acceptance gates are complete. Do not begin SCAN-08/09 yet.
 
-## Current project state — SCAN-07 CI verified; device acceptance pending
+## Current project state — SCAN-07 remains active
 - SCAN-01 through SCAN-06 implemented; PR #67 confirmed merged/deployed by user.
 - PR #75 Code 39/diagnostic remediation merged.
 - PR #76 Camera Request Bridge merged to main at `20ce22e`; run #610 passed on code/test head `b954b8a`. Device QA evidence for PR #76 must not be assumed from CI.
-- Current PR #77 branch adds bounded 1×/2× strict-ROI fallback after the unchanged 1.5× baseline. At most three scales per frame; each additional scale is capped at 6 MP. Existing 1280 px source width cap, upright/90°/continuous deskew, percentile contrast stretch, Hybrid + GlobalHistogram, serialized decode and 70 ms minimum interval remain unchanged.
-- GitHub Actions run #634 passed full preflight, TypeScript, production and Pages builds on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`; verify any later final documentation-sync head again.
-- No padding outside reticle: a separate module-authorized capture envelope does not yet exist. Do not infer permission to expand the ROI.
+- PR #77 merged/deployed; user confirms modest small/far improvement and reticle-edge reads, but not enough range/precision.
+- PR #78 branch preserves native ROI pixels up to 2048 px width / 1.5 MP native area; camera request prefers 1920×1080 / 30 FPS maximum; fallbacks remain 1.5×, then 1×/2× after a full miss.
+- Focus is configured only after a fresh video frame. Shared helper preserves negotiated constraints and serializes autofocus/Torch updates. A low-rate ROI sharpness/motion watchdog can reassert continuous focus after sustained stable blur, only when supported.
+- This is an autofocus re-arm request, not proof of physical lens movement. Real iOS/Android behavior must be tested.
+- Outward padding remains disabled because modules publish only the reticle; no capture envelope contract exists.
+- Do not attribute end-to-end scanner latency to SCAN-07 or claim an absolute reading distance/minimum barcode size without device evidence.
 - Current user feedback: operationally relatively stable.
 
 ## Protected invariants
