@@ -1,93 +1,74 @@
-# Scanner roadmap — SCAN-07 remains active (2026-11-11)
+# Scanner roadmap — unified recognition pipeline (2026-11-11)
 
-**Main:** PR #78 is merged at `adee2b2815097a3d17714b2305fc144a240a3bac`; this corrective work remains isolated on `fix/scanner-native-autofocus-no-rearm`.
-**PR #77 device outcome:** user confirms modest improvement for small/far barcodes and successful reads near reticle edges, but recognition range and precision are not yet sufficient.
-**Current work:** complete SCAN-07 by preserving native ROI detail, synchronizing orientation/decoder paths and camera behavior, and removing post-preview autofocus intervention that caused focus disturbance. Do not advance to SCAN-08/09 until this gate is accepted.
-**User acceptance rule:** evaluate barcode dimensions in source-frame pixels, measured physical distance, correct/incorrect decode outcomes, and stable operation. Do not attribute end-to-end scanner response time to SCAN-07; total response depends on camera startup, frame delivery, decoding, session and module result handling.
+**Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
+**Current work:** PR A+B combined as one reviewable change on `feat/scanner-unified-enhancement-pipeline`.
+**Objective:** finish the already-built scanner capabilities as one coordinated recognition pipeline, then extend it with image enhancement, perspective/curved-label correction and measured adaptive budgets. Do not restart the camera platform or duplicate logic in Home/Stocktake.
 
-## Current shared scanner pipeline
+## Current architecture
 
-1. Home and Stocktake each own their video element, visible reticle and feature workflow.
-2. Both modules map the visible reticle through SCAN-02/03 into the same source-frame-normalized ROI contract.
-3. SCAN-04 remains strict: missing/invalid ROI fails closed; no full-frame or centered fallback.
-4. The decoder crops only that source ROI. Native source detail is retained up to a bounded 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled.
-5. Both modules use the shared camera lease. Camera request prefers 1920×1080 at 30 FPS maximum; browser-negotiated lower settings remain valid and must be recorded in device QA.
-6. Scale candidates remain ordered 1.5× baseline, then 1× and 2× only after the full baseline path misses. Additional candidates remain bounded to 6 MP each.
-7. SCAN-05/06 orientation recovery and both ZXing binarizers remain active within each scale. Valid baseline orientation estimates are reused by fallback scales for the same frame; missing estimates are recalculated. Result validation and module result handling remain authoritative.
-8. Continuous autofocus is an optional advanced preference in the initial `getUserMedia()` request. Unsupported/unexposed focus controls are ignored; the camera retains its native autofocus behavior.
-9. No focus `applyConstraints()` call is made after preview readiness. The scanner never re-arms autofocus in response to image sharpness.
-10. Existing grayscale ROI readback may report passive sharpness/motion diagnostics; these observations never change camera settings.
+1. Home and Stocktake own their video element, reticle and business workflow.
+2. SCAN-02/03 map the reticle into the module-owned source-frame ROI.
+3. SCAN-04 remains strict and fail-closed; the pipeline cannot widen or replace the ROI.
+4. SCAN-07 bounds source-ROI sampling: 1.5× first, then 1×/2× only after a complete miss.
+5. `scannerEnhancementPipeline.ts` coordinates the image candidates: original baseline → exact quarter-turn → confidence-gated continuous deskew.
+6. Each candidate retains both existing ZXing binarizers. The pipeline stops on the first decoder output; session validation and module handoff remain unchanged.
+7. Camera lease, fresh-frame readiness, lifecycle/recovery, passive focus diagnostics, native focus ownership and Torch remain outside the recognition pipeline.
 
-## SCAN-07 — Adaptive ROI, multi-scale and synchronized native camera behavior
+## PR A+B — unified pipeline foundation
 
-**Status:** Active; PR #78 is merged. Corrective PR #79 final-head CI #684 passed; post-preview focus commands are removed. Physical-device acceptance remains pending.
+**Status:** implementation authored; CI and physical-device QA pending.
 
-- Preserve SCAN-02/03 mapping and SCAN-04 strict ROI. No outward padding is enabled because Home/Stocktake have not published an authorized capture envelope.
-- Preserve native sensor pixels by bounding the ROI itself rather than scaling the entire frame to 1280 px.
-- Prefer 1080p camera input, while accepting browser-negotiated lower resolutions on weaker devices.
-- Keep the 1.5× baseline first, then bounded 1×/2× fallbacks after a complete baseline miss.
-- Keep SCAN-05/06 orientation, deskew, contrast and both binarizers connected to each scale. Do not run an unbounded Cartesian product or parallelize the ZXing reader.
-- Request continuous autofocus only as an optional advanced `getUserMedia()` preference during initial camera negotiation. If unsupported or ignored, use the camera's native default autofocus.
-- Never call `applyConstraints()` to set or reassert focus after preview starts. Focus quality monitoring is passive and diagnostic only.
-- Torch may still use the serialized track-constraint helper; Torch updates must preserve the original optional focus preference and active camera settings.
-- Test Home and Stocktake independently on iOS Safari/PWA and Android Chrome/PWA, with the same scanner platform behavior.
-- Do not claim a minimum barcode size or maximum reading distance until the source pixel-height/distance matrix has been measured on real devices.
-- Do not use overall scanner response time as a SCAN-07 success metric. Record decoder-stage processing cost and camera/focus state separately where needed.
+- [x] Extract SCAN-05/06 candidate sequencing from the ZXing adapter into one orchestration service.
+- [x] Preserve original-first, 90° fallback, deskew confidence gates, correction ordering and early exit.
+- [x] Preserve SCAN-07 scale ordering, bounded candidate sizes and same-attempt orientation reuse.
+- [x] Add regression tests for baseline-first, orthogonal fallback, deskew, reuse and early exit.
+- [x] Define the extension boundary for SCAN-08/09 without prematurely implementing unvalidated transforms.
+- [x] GitHub Actions run #690 passed full preflight, TypeScript, production build and Pages build on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; subsequent `8f6e0ae` was documentation-only.
+- [ ] Review exact diff and verify no unrelated camera/session/module behavior changed.
+- [ ] iOS Safari/PWA and Android Chrome/PWA QA in both Home and Stocktake.
 
-## SCAN-07 closure gates
+## Recognition principles
 
-- [ ] Native ROI pixel preservation improves small/far barcode recognition without weakening strict ROI.
-- [ ] Camera track reports actual negotiated width, height, frame rate and supported focus modes where exposed.
-- [ ] Optional continuous-focus preference is present only in initial camera negotiation; unsupported devices retain native autofocus.
-- [ ] No focus `applyConstraints()`, post-preview focus request, watchdog re-arm or focus retry exists in the scanner session.
-- [ ] Torch ON/OFF preserves negotiated camera settings and does not overwrite the initial focus preference.
-- [ ] Passive focus diagnostics distinguish sustained blur from motion/low-texture frames and never modify camera controls.
-- [ ] Replace the currently inert `profile: HIGH` handoff with a measured, conservative device-budget policy based on actual track settings and observed processing cost; unknown devices must fall back safely.
-- [ ] Decoder still tries the baseline first and never starves validation or module result delivery.
-- [ ] Home and Stocktake both pass normal, rotated, small/far, reticle-edge and outside-reticle negative tests.
-- [ ] iOS Safari/PWA and Android Chrome/PWA testing covers near/far transitions, camera movement, focus behavior, low light and foreground/background recovery.
-- [ ] Real labels are recorded by symbology, physical distance, barcode module/bar width where measurable, source ROI pixel height, orientation, lighting, glare, module, device/browser/build, decode outcome and false positives.
-- [ ] No unsupported performance/accuracy claims; do not attribute end-to-end scanner response time to SCAN-07.
+- Paper size or carrier type (A4/A3/A5, shelf label, package, screen) is not a barcode format and must not select a separate recognition algorithm.
+- The pipeline is symbology-agnostic; supported formats are registered centrally and validated by explicit policy.
+- New transforms are bounded, optional and confidence-gated. Original ROI is always retained as the first candidate.
+- Do not create an unbounded Cartesian product of rotations × scales × enhancements × geometry transforms.
+- Never parallelize access to the shared ZXing reader or queue stale camera frames.
+- Upscaling cannot restore optical detail that the camera did not resolve.
+- Accuracy, false positives, CPU/memory and UI responsiveness are separate acceptance measures.
 
 ## SCAN-08 — Image enhancement
-**Status:** Planned — candidate evaluation, not unconditional preprocessing.
-- Current baseline already has RGBA-to-luminance conversion and bounded 1st/99th percentile contrast stretch within the deskew path when dynamic range is compressed.
-- Evaluate gamma/contrast variants, adaptive thresholding and denoising as optional candidates after baseline misses.
-- Preserve original luminance as the first candidate. Enhancement must not invent barcode edges or erase narrow bars.
-- Treat specular highlights separately: clipped/saturated pixels are information loss, not recoverable detail. Detect/measure saturation; do not claim glare restoration.
-- Gate: low-light, low-contrast, noisy, clipped/highlight and normal-light corpora; compare false positives as well as decode rate.
+
+**Status:** next recognition stage after PR A+B is verified.
+- Evaluate gamma/local contrast, adaptive threshold and denoise as optional candidates after the baseline/orientation path misses.
+- Use measured image features to select only relevant variants; do not blindly run every enhancement on every frame.
+- Keep original luminance first and available; reject candidates that increase false positives or erase narrow bars.
+- Test normal, low contrast, low light, noise and clipped/glare samples.
 
 ## SCAN-09 — Perspective and curved barcode
-**Status:** Planned — feasibility research only until a validated detector exists.
-- Distinguish in-plane skew (already covered by SCAN-06) from perspective/keystone distortion and curved-label deformation.
-- Evaluate perspective detection and bounded rectification as optional candidates only when confidence indicates likely benefit.
-- Curved-surface dewarping is a separate, higher-risk problem; do not infer curvature from a weak perspective estimate.
-- Gate: planar perspective fixtures, curved-label fixtures, negative controls, geometry bounds, interpolation loss, memory cost and false-positive comparison. Preserve original ROI candidate.
+
+**Status:** subsequent stage.
+- Separate in-plane rotation from perspective/keystone and curved-surface deformation.
+- Use confidence-gated detection and bounded rectification; preserve the original ROI.
+- Keep planar perspective and curved-label cases distinct, with negative controls and measured interpolation/memory cost.
 
 ## SCAN-10 — Adaptive performance
-**Status:** Planned — requires baseline measurements from SCAN-07/08/09.
-- Classify device/runtime capability from observed processing time, frame cadence, long tasks and memory pressure; avoid brittle user-agent/device-name heuristics.
-- Adapt bounded scale count, enhancement/perspective candidate budget and decode attempts while preserving the baseline candidate.
-- Enforce per-frame processing budget and prevent queues/concurrent access to the ZXing reader.
-- Do not change the current 70 ms session cadence until measurements and acceptance tests justify it.
-- Gate: low/mid/high device profiles, worst-case frame processing cost, UI responsiveness and decode success.
 
-## SCAN-11 — Cross-platform hardening
-**Status:** Planned — continuous acceptance lane across all phases, final release gate.
-- iOS Safari/PWA and Android Chrome/PWA; low/mid/high capability devices.
-- Validate camera lifecycle, background/foreground, permission and recovery, Home and Stocktake flows, barcode accuracy and overall scanner response time.
-- Include real retail labels: small/far, low light, reflective/saturated, curved and perspective-distorted, reticle edges.
-- Record device/browser/build, module, symbology, lighting, distance/pixel-height, orientation, attempts, decode correctness, false positives, per-stage processing cost and UI responsiveness. Do not invent missing measurements.
+**Status:** after candidate stages have measured costs.
+- Derive device/runtime budgets from observed decode time, frame gaps, long tasks and memory pressure, not user-agent names.
+- Preserve baseline-first and serialized decode; bound the number and size of candidates.
+- Do not change the 70 ms session cadence without measurements and acceptance.
 
-## PR and rollout strategy
-- PR #77: merged/deployed strict-ROI multi-scale baseline.
-- PR #78: complete SCAN-07 native ROI detail, coordinated autofocus/Torch and both-module device acceptance.
-- SCAN-08: separate PR only after SCAN-07 closure.
-- SCAN-09: separate research/implementation PR; keep opt-in candidate path.
-- SCAN-10: separate adaptive-budget PR only after measured candidate costs exist.
-- SCAN-11: acceptance/diagnostics and targeted fixes, not a wholesale rewrite.
-- Every PR must include exact base/head, changed-file scope, protected invariants, automated regression, preflight/build, device evidence and rollback.
-- Never delete historical decision records. Mark superseded runtime statements explicitly and point to the current source/spec.
+## SCAN-11 — Cross-platform acceptance
+
+Continuous across all stages: iOS Safari/PWA and Android Chrome/PWA, Home and Stocktake, low/mid/high capability devices, real printed labels and negative controls. Record symbology, source-pixel module width, lighting, glare, motion, geometry, correct payload, false positives, per-stage cost and UI responsiveness.
+
+## Rollout rules
+
+- One PR per coherent recognition capability; do not split a single pipeline contract across repetitive micro-PRs.
+- No merge/deploy without explicit user approval.
+- CI is not physical-device QA.
+- Preserve historical records below; this current section is authoritative for active work.
 
 > **Historical records below:** older phase plans and decisions are retained for traceability. Their camera resolution, decoder cadence and profile values are snapshots from earlier baselines; the current authoritative SCAN-07 behavior is defined above and in `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`.
 

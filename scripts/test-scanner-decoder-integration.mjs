@@ -12,6 +12,7 @@ const modulePaths = [
   'src/platform/scanner/scannerRotation.ts',
   'src/platform/scanner/scannerDeskew.ts',
   'src/platform/scanner/scannerScale.ts',
+  'src/platform/scanner/scannerEnhancementPipeline.ts',
   'src/platform/scanner/scannerFocusQuality.ts',
   'src/platform/scanner/decoders/decoderAdapter.ts',
   'src/platform/scanner/decoders/rgbaToLuminance.ts',

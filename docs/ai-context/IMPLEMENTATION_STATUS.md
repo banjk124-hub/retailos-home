@@ -1,50 +1,48 @@
-# Scanner implementation status — current main (2026-11-11)
+# Scanner implementation status — unified recognition pipeline (2026-11-11)
 
-**Main:** PR #78 merged at `adee2b2815097a3d17714b2305fc144a240a3bac`. Corrective focus-policy work is isolated on `fix/scanner-native-autofocus-no-rearm`.
-**PR #77 device feedback:** small/far barcode recognition improved modestly and reticle-edge reads work, but range and precision remain insufficient. This is qualitative feedback, not a measured minimum size/distance.
+**Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
+**Active branch:** `feat/scanner-unified-enhancement-pipeline` — PR A+B combined.
+**Verification:** GitHub Actions run #690 passed full preflight, TypeScript, production and Pages builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; subsequent `8f6e0ae` changed documentation only. Physical-device QA remains pending; do not treat the branch as production-ready until device gates are recorded.
 
-## Implemented
-- SCAN-01: platform-neutral module/input contracts.
-- SCAN-02: preview-to-source geometry mapping including object-fit, object-position, visible content and mirror handling.
-- SCAN-03: Home and Stocktake independently publish reticle regions; in-place session region update without session/camera/decoder restart.
-- SCAN-04: strict module-owned ROI crop; missing/invalid region fails closed; no full-frame or fixed-centered fallback.
-- SCAN-05: exact quarter-turn recovery integrated into the current per-frame miss path.
-- SCAN-06: continuous Sobel orientation histogram, confidence gates, bounded bilinear deskew, original/quarter-turn candidates, bounded percentile contrast normalization, Hybrid + GlobalHistogram binarizers.
-- PR #75: Code 39 enabled through supported-format and payload-validation boundaries; privacy-safe recovery diagnostics retained in QA Monitor/export.
-- PR #76: camera intent wired through tap-origin lease, actual getUserMedia constraints, compatibility checks, reference-counted sharing and foreground recovery.
-- PR #78: native ROI detail preservation, preferred 1080p acquisition, bounded scale candidates, orientation estimate reuse, and camera constraint preservation.
+## Implemented in main
 
-## Current source facts
-- Decoder: `src/platform/scanner/decoders/zxingDecoder.ts`.
-- Geometry: `scannerGeometry.ts`; strict crop: `scannerRoi.ts`.
-- Orientation transform: `scannerRotation.ts`; continuous orientation/contrast/deskew: `scannerDeskew.ts`.
-- Camera/session: `cameraSession.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`.
-- Both Home and Stocktake consume the same `useScannerEngine`; each owns its reticle and business workflow.
-- `ScannerProfileName` is not currently an adaptive policy: `useScannerEngine` passes `HIGH` unconditionally and `UniversalScannerSession` does not consume the profile. A measured device-budget policy remains an explicit SCAN-07 closure item.
-- Native ROI pixels are preserved up to 2048 px ROI width and 1.5 MP native ROI area; oversized crops alone are downsampled. Each fallback candidate remains capped at 6 MP.
-- Camera request prefers 1920×1080, 30 FPS maximum. Browser-negotiated actual settings remain authoritative.
-- Continuous autofocus is now an optional advanced constraint in the initial `getUserMedia()` request. If unsupported or ignored, the device uses its native autofocus behavior.
-- The session does not call `applyConstraints()` for focus after preview readiness and does not automatically re-arm focus. Sharpness/motion sampling is passive telemetry only.
-- Torch remains capability-gated and uses the shared serialized constraint helper; Torch updates preserve the initial focus preference and active camera settings.
-- Decoder calls remain serialized; session minimum decode interval remains 70 ms. Overall scanner response time is not assigned to SCAN-07.
+- SCAN-01–04: scanner contracts, preview/source geometry mapping, module-owned ROI publication and strict fail-closed crop.
+- SCAN-05: exact quarter-turn recovery.
+- SCAN-06: confidence-gated continuous Sobel orientation estimation, bounded bilinear deskew and percentile contrast stretch within the deskew path.
+- SCAN-07: native ROI preservation, bounded 1.5× baseline then 1×/2× fallbacks, orientation estimate reuse, camera request bridge and passive focus diagnostics.
+- PR #75: Code 39 enabled through supported-format and payload-validation boundaries.
+- PR #76: camera intent wired through the shared lease and recovery path.
+- PR #79: optional initial focus preference only; no post-preview focus writes/re-arm; focus quality remains diagnostic only.
 
-## SCAN-07 — active integration work
-- PR #78 is merged; this corrective branch removes the post-preview focus request and automatic focus re-arm, then synchronizes tests, diagnostics and documentation.
-- GitHub Actions run #684 passed on final corrective head `d2a6dd5df99827e9d71a3156eba854988e22e808`: full preflight, TypeScript, production build and Pages build. Automated regression covers optional initial focus negotiation, no post-preview focus writes, passive blur diagnostics, Torch preservation, ROI bounds and orientation estimate reuse.
-- Physical-device verification remains pending on iOS Safari/PWA and Android Chrome/PWA, in both Home and Stocktake.
-- No outward reticle padding: current modules have not published a wider authorized capture envelope.
-- No claims about exact minimum barcode size, maximum distance or overall scanner response time until real-device measurements exist.
+## PR A+B — source changes on active branch
 
-## Not implemented yet
-- SCAN-07 physical-device acceptance and labelled small/far barcode size/distance evidence.
-- A measured conservative runtime device-budget policy; the current profile handoff is inert.
-- SCAN-08: optional gamma, adaptive threshold and denoise candidate paths.
-- SCAN-09: perspective detection/rectification and curved-label dewarping.
-- Cross-platform/device matrix and quantitative acceptance record.
+- Added `src/platform/scanner/scannerEnhancementPipeline.ts` as the single candidate orchestrator.
+- `zxingDecoder.ts` now delegates baseline → orthogonal → deskew ordering and early exit to that pipeline.
+- Preserved current scale candidate order, Hybrid + GlobalHistogram binarizers, focus sampling on baseline only, diagnostics and fallback orientation reuse.
+- Added a dedicated pipeline regression suite and registered it in `npm run preflight`.
+- Updated rotation/deskew source-contract tests to assert the new ownership boundary.
+- Added `docs/ai-context/SCANNER_RECOGNITION_PIPELINE.md` and synchronized active roadmap language.
 
-## Next gate
-Complete the native autofocus correction, verify final-head CI, then test both Home and Stocktake on iOS/Android. Do not move to SCAN-08/09 until SCAN-07's source-pixel, native-focus stability, precision and module workflow gates are accepted.
----
+## Current boundaries and known gaps
+
+- The current percentile contrast stretch is still limited to the existing deskew transform; there is no generalized SCAN-08 enhancement candidate subsystem yet.
+- SCAN-09 perspective/curved-label correction is not implemented.
+- `ScannerProfileName` remains an inert handoff; no measured adaptive device-budget policy is claimed.
+- Current supported symbologies remain the explicit registry in scanner contracts, ZXing format map and payload validator. The enhancement pipeline does not branch on symbology or paper/carrier type.
+- No universal optical guarantee, minimum barcode size or maximum reading distance is claimed without real-device measurements.
+- Camera acquisition/lifecycle, preview presentation, strict ROI, validation, Home lookup and Stocktake explicit-save remain protected.
+
+## Required verification
+
+1. [x] Full `npm run preflight`, TypeScript, production build and Pages build passed in GitHub Actions run #690 on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`.
+2. Review PR diff and ensure no unrelated source paths changed.
+3. Physical QA: iOS Safari/PWA and Android Chrome/PWA, in Home and Stocktake.
+4. Real-label corpus: multiple symbologies, paper/carrier types, orientation, low contrast/light, motion, glare, distance and reticle-edge/negative controls.
+5. Record correct decode, false positives, source-pixel sampling and per-stage/device costs.
+
+## Next step after PR A+B
+
+Implement SCAN-08 inside the same pipeline as optional image-quality-driven candidates. Then SCAN-09 geometry candidates, followed by measured SCAN-10 budgets and continuous SCAN-11 cross-platform acceptance. Do not create another parallel scanner pipeline.
 
 ---
 

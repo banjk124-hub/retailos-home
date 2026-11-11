@@ -16,8 +16,7 @@ import type {
   ScannerDecoderAdapter,
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
-import { rotateLuminance90Clockwise } from '../scannerRotation';
-import { deskewLuminanceFrame, deskewLuminanceFrameWithEstimate, type ScannerSkewEstimate } from '../scannerDeskew';
+import { executeScannerEnhancementPipeline, type ScannerOrientationHints } from '../scannerEnhancementPipeline';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 
@@ -165,10 +164,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastRoiWidth = 0;
   private lastRoiHeight = 0;
   private diagnosticRoiSourceScale = 1;
-  private cachedOrientationHints: {
-    upright: ScannerSkewEstimate | null;
-    rotated: ScannerSkewEstimate | null;
-  } | null = null;
+  private cachedOrientationHints: ScannerOrientationHints | null = null;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -349,117 +345,38 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       onFocusQuality(focusSample);
     }
 
-    // Run both production binarizers on each candidate. The additional CPU
-    // cost is intentional: a missed first threshold must not suppress a valid
-    // retail barcode on the same camera frame.
-    const uprightOutput = this.decodeLuminance(
-      grayscale,
-      this.canvas.width,
-      this.canvas.height,
-      timestamp,
-      true,
-      'upright',
-    );
-    if (uprightOutput) return uprightOutput;
-
-    // Keep a cheap exact quarter-turn candidate for the common sideways case.
-    // SCAN-06 then estimates a continuous orientation, including intermediate
-    // angles, rather than relying on a fixed list of rotations.
-    const rotationStartedAt = performance.now();
-    const rotated = rotateLuminance90Clockwise(
-      grayscale,
-      this.canvas.width,
-      this.canvas.height,
-    );
-    this.recordStageCost('rotation_90_clockwise', performance.now() - rotationStartedAt);
-    if (rotated) {
-      this.diagnosticRotationAttempts += 1;
-      const rotatedOutput = this.decodeLuminance(
-        rotated.luminance,
-        rotated.width,
-        rotated.height,
-        timestamp,
-        true,
-        'rotated_90',
-      );
-      if (rotatedOutput) {
-        this.diagnosticRotationHits += 1;
-        return rotatedOutput;
-      }
-    }
-
-    // Estimate both source axes. Choosing the smaller correction angle avoids
-    // unnecessarily large resampling (for example, 70° becomes a 20° residual
-    // after the quarter-turn candidate). Both candidates are decoded because
-    // interpolation and ROI bounds can make one representation more legible.
-    const deskewStartedAt = performance.now();
-    const cachedHints = reuseOrientationHints ? this.cachedOrientationHints : null;
-    const reusedOrientation = Boolean(cachedHints?.upright || cachedHints?.rotated);
-    this.diagnosticDeskewAttempts += 1;
-    const uprightDeskew = cachedHints?.upright
-      ? deskewLuminanceFrameWithEstimate(
-        grayscale,
-        this.canvas.width,
-        this.canvas.height,
-        cachedHints.upright,
-      )
-      : deskewLuminanceFrame(
-        grayscale,
-        this.canvas.width,
-        this.canvas.height,
-      );
-    if (!uprightDeskew) this.diagnosticDeskewEstimateMisses += 1;
-
-    let rotatedDeskew: ReturnType<typeof deskewLuminanceFrame> = null;
-    if (rotated) {
-      this.diagnosticDeskewAttempts += 1;
-      rotatedDeskew = cachedHints?.rotated
-        ? deskewLuminanceFrameWithEstimate(
-          rotated.luminance,
-          rotated.width,
-          rotated.height,
-          cachedHints.rotated,
-        )
-        : deskewLuminanceFrame(
-          rotated.luminance,
-          rotated.width,
-          rotated.height,
-        );
-      if (!rotatedDeskew) this.diagnosticDeskewEstimateMisses += 1;
-    }
-    this.cachedOrientationHints = {
-      upright: uprightDeskew
-        ? { angleDegrees: uprightDeskew.angleDegrees, confidence: uprightDeskew.confidence }
-        : cachedHints?.upright ?? null,
-      rotated: rotatedDeskew
-        ? { angleDegrees: rotatedDeskew.angleDegrees, confidence: rotatedDeskew.confidence }
-        : cachedHints?.rotated ?? null,
-    };
-    this.recordStageCost(
-      reusedOrientation ? 'deskew_reuse_orientation_and_rotate' : 'deskew_estimate_and_rotate',
-      performance.now() - deskewStartedAt,
-    );
-
-    const candidates = [uprightDeskew, rotatedDeskew]
-      .filter((candidate): candidate is NonNullable<ReturnType<typeof deskewLuminanceFrame>> => candidate !== null)
-      .sort((a, b) => Math.abs(a.angleDegrees) - Math.abs(b.angleDegrees));
-
-    for (const candidate of candidates) {
-      this.diagnosticLastDeskewAngleDegrees = candidate.angleDegrees;
-      const deskewOutput = this.decodeLuminance(
+    const pipelineResult = executeScannerEnhancementPipeline(
+      {
+        luminance: grayscale,
+        width: this.canvas.width,
+        height: this.canvas.height,
+      },
+      {
+        cachedOrientationHints: this.cachedOrientationHints,
+        reuseOrientationHints,
+      },
+      (candidate) => this.decodeLuminance(
         candidate.luminance,
         candidate.width,
         candidate.height,
         timestamp,
         true,
-        'deskew',
-      );
-      if (deskewOutput) {
-        this.diagnosticDeskewHits += 1;
-        return deskewOutput;
-      }
+        candidate.orientation,
+      ),
+      (stage, durationMs) => this.recordStageCost(stage, durationMs),
+    );
+
+    this.cachedOrientationHints = pipelineResult.orientationHints;
+    if (pipelineResult.rotationAttempted) this.diagnosticRotationAttempts += 1;
+    if (pipelineResult.matchedStage === 'orthogonal') this.diagnosticRotationHits += 1;
+    this.diagnosticDeskewAttempts += pipelineResult.deskewAttempts;
+    this.diagnosticDeskewEstimateMisses += pipelineResult.deskewEstimateMisses;
+    if (pipelineResult.lastDeskewAngleDegrees !== null) {
+      this.diagnosticLastDeskewAngleDegrees = pipelineResult.lastDeskewAngleDegrees;
     }
-    return null;
+    if (pipelineResult.matchedStage === 'deskew') this.diagnosticDeskewHits += 1;
+
+    return pipelineResult.output;
   }
 
   private decodeLuminance(
