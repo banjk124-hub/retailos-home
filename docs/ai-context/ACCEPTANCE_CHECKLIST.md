@@ -135,7 +135,7 @@ These additional measurements are not required to describe the user's functional
 
 ---
 
-# SCAN-07 — Adaptive ROI, focus recovery and shared optical pipeline (PR #78)
+# SCAN-07 — Adaptive ROI, multi-scale and native camera behavior (PR #78 + focus correction)
 
 ## Source/decoder
 - [x] SCAN-02/03 mapping and SCAN-04 strict module ROI remain unchanged.
@@ -144,32 +144,29 @@ These additional measurements are not required to describe the user's functional
 - [x] 1.5× baseline remains first; 1× and 2× fallback only after a complete baseline miss.
 - [x] Candidate fan-out remains bounded; each additional scale remains capped at 6 MP.
 - [x] SCAN-05/06 orientation, deskew, contrast and both binarizers remain integrated in every scale path.
-- [ ] Final CI passes on PR #78 head.
+- [ ] Final corrective-branch CI passes.
 - [ ] Home and Stocktake both pass real-label accuracy checks.
 
 ## Camera focus / shared track controls
-- [x] Initial continuous-focus request moved to after first fresh video frame; it does not block preview readiness.
-- [x] Focus constraints preserve active width, height, frame rate, facing mode and device constraints.
-- [x] Autofocus and Torch use one shared serialized track-constraint queue.
-- [x] ROI sharpness is measured from existing grayscale readback, not a second camera readback.
-- [x] Low-texture and moving/changing frames are excluded from focus re-arm.
-- [x] Re-arm is bounded to four stable blur samples and an 8-second cooldown, only when continuous focus is supported.
-- [ ] CI validates focus/torch coexistence, recovery cooldown and no lifecycle regressions.
-- [ ] iOS Safari/PWA and Android Chrome/PWA verify that focus recovers from near/far changes without closing/reopening scanner.
+- [x] Continuous focus is an optional advanced preference in the initial `getUserMedia()` request.
+- [x] Unsupported/unexposed focus controls fall back to native camera autofocus.
+- [x] No post-preview focus request, focus re-arm or focus `applyConstraints()` path remains in the session/lease.
+- [x] Focus quality sampling is passive; sustained blur telemetry never changes camera controls.
+- [x] Torch ON/OFF preserves the initial focus preference and negotiated camera constraints.
+- [ ] CI proves no post-preview focus writes and no focus-recovery API remains.
+- [ ] iOS Safari/PWA and Android Chrome/PWA confirm smooth native focus behavior during near/far transitions, with no scanner-induced hunting or preview disturbance.
 
 ## Physical optical acceptance — both modules
-- [ ] Record actual camera width/height/frameRate/focus capability and mode per device/browser.
+- [ ] Record actual camera width/height/frameRate/focus capability and mode per device/browser where exposed.
 - [ ] Record barcode type, printed X-dimension/bar width, source ROI pixel height and physical reading distance.
 - [ ] Test near-to-far and far-to-near transitions, rotated labels, moving camera, low light, glare, curved packaging and reticle edges.
 - [ ] Include outside-reticle negative controls; no decode outside module-owned region.
 - [ ] Verify correct payload/check digit, false positives and Home/Stocktake result workflows.
-- [ ] Confirm no camera lock, focus hunting loop, torch/focus constraint conflict, UI freeze or lifecycle regression.
-- [ ] Do not report end-to-end scanner overall scanner response time as a SCAN-07 metric. Decoder stage cost may be recorded separately.
+- [ ] Confirm no camera lock, focus hunting loop, Torch constraint conflict, UI freeze or lifecycle regression.
+- [ ] Do not report end-to-end scanner response time as a SCAN-07 metric. Decoder stage cost may be recorded separately.
 - [ ] Do not claim minimum barcode size or maximum distance until real measurements exist.
 
 **Scope lock:** remain in SCAN-07 until all above gates are accepted. SCAN-08/09 must not begin yet. No outward ROI padding without a module-owned capture-envelope contract.
-
----
 
 # Current scanner acceptance gates — capability-gated Torch (2026-11-09)
 
