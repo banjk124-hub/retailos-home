@@ -3,7 +3,8 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { BarcodeFormat, MultiFormatWriter } from '@zxing/library';
+import ZXing from '@zxing/library';
+const { BarcodeFormat, MultiFormatWriter } = ZXing;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const tempRoot = await mkdtemp(path.join(root, '.scanner-decoder-integration-'));
