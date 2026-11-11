@@ -17,7 +17,7 @@ import type {
 } from './decoderAdapter';
 import { rgbaToLuminance } from './rgbaToLuminance';
 import { rotateLuminance90Clockwise } from '../scannerRotation';
-import { deskewLuminanceFrame } from '../scannerDeskew';
+import { deskewLuminanceFrame, deskewLuminanceFrameWithEstimate, type ScannerSkewEstimate } from '../scannerDeskew';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 
@@ -165,6 +165,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastRoiWidth = 0;
   private lastRoiHeight = 0;
   private diagnosticRoiSourceScale = 1;
+  private cachedOrientationHints: {
+    upright: ScannerSkewEstimate | null;
+    rotated: ScannerSkewEstimate | null;
+  } | null = null;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing adapter has been disposed.');
@@ -251,7 +255,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         this.diagnosticScaleAttempts += 1;
         this.diagnosticLastScaleFactor = candidate.scale;
 
-        const output = this.decodeCurrentCanvas(timestamp, candidate.baseline ? onFocusQuality : undefined);
+        const output = this.decodeCurrentCanvas(
+          timestamp,
+          candidate.baseline ? onFocusQuality : undefined,
+          !candidate.baseline,
+        );
         if (output) {
           this.diagnosticScaleHits += 1;
           this.diagnosticDecoded += 1;
@@ -312,6 +320,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private decodeCurrentCanvas(
     timestamp: number,
     onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
+    reuseOrientationHints = false,
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
@@ -384,25 +393,53 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     // after the quarter-turn candidate). Both candidates are decoded because
     // interpolation and ROI bounds can make one representation more legible.
     const deskewStartedAt = performance.now();
+    const cachedHints = reuseOrientationHints ? this.cachedOrientationHints : null;
     this.diagnosticDeskewAttempts += 1;
-    const uprightDeskew = deskewLuminanceFrame(
-      grayscale,
-      this.canvas.width,
-      this.canvas.height,
-    );
+    const uprightDeskew = cachedHints?.upright
+      ? deskewLuminanceFrameWithEstimate(
+        grayscale,
+        this.canvas.width,
+        this.canvas.height,
+        cachedHints.upright,
+      )
+      : deskewLuminanceFrame(
+        grayscale,
+        this.canvas.width,
+        this.canvas.height,
+      );
     if (!uprightDeskew) this.diagnosticDeskewEstimateMisses += 1;
 
     let rotatedDeskew: ReturnType<typeof deskewLuminanceFrame> = null;
     if (rotated) {
       this.diagnosticDeskewAttempts += 1;
-      rotatedDeskew = deskewLuminanceFrame(
-        rotated.luminance,
-        rotated.width,
-        rotated.height,
-      );
+      rotatedDeskew = cachedHints?.rotated
+        ? deskewLuminanceFrameWithEstimate(
+          rotated.luminance,
+          rotated.width,
+          rotated.height,
+          cachedHints.rotated,
+        )
+        : deskewLuminanceFrame(
+          rotated.luminance,
+          rotated.width,
+          rotated.height,
+        );
       if (!rotatedDeskew) this.diagnosticDeskewEstimateMisses += 1;
     }
-    this.recordStageCost('deskew_estimate_and_rotate', performance.now() - deskewStartedAt);
+    if (!reuseOrientationHints) {
+      this.cachedOrientationHints = {
+        upright: uprightDeskew
+          ? { angleDegrees: uprightDeskew.angleDegrees, confidence: uprightDeskew.confidence }
+          : null,
+        rotated: rotatedDeskew
+          ? { angleDegrees: rotatedDeskew.angleDegrees, confidence: rotatedDeskew.confidence }
+          : null,
+      };
+    }
+    this.recordStageCost(
+      cachedHints ? 'deskew_reuse_orientation_and_rotate' : 'deskew_estimate_and_rotate',
+      performance.now() - deskewStartedAt,
+    );
 
     const candidates = [uprightDeskew, rotatedDeskew]
       .filter((candidate): candidate is NonNullable<ReturnType<typeof deskewLuminanceFrame>> => candidate !== null)
@@ -525,6 +562,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticScaleHits = 0;
     this.diagnosticLastScaleFactor = 0;
     this.diagnosticRoiSourceScale = 1;
+    this.cachedOrientationHints = null;
     this.lastFocusQualitySampleAt = 0;
     this.lastFocusQualityPixels = null;
     this.lastFocusQualityWidth = 0;
@@ -539,6 +577,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.context = null;
     this.canvas = null;
     this.formats = [];
+    this.cachedOrientationHints = null;
     this.decoding = false;
   }
 }
