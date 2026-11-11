@@ -112,7 +112,7 @@ No changes to camera acquisition/lease, camera constraints, autofocus, first-fra
 
 ### Acceptance
 - Payload validation covers valid alphabet, spaces, punctuation, empty values, control characters and invalid characters.
-- The production ZXing adapter decodes a generated Code 39 symbol upright and through the existing deskew path.
+- The production ZXing adapter decodes a generated Code 39 symbol upright and through the existing 180-degree OneDReader reversal path.
 - Existing EAN-8, EAN-13 and Code 128 tests remain green.
 - Full preflight, TypeScript, production build and GitHub Pages build pass.
 
