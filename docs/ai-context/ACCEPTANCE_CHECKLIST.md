@@ -8,7 +8,7 @@
 - [x] Scale fallback and orientation estimate reuse remain bounded and serialized.
 - [x] Hybrid and GlobalHistogram binarizers remain available for each candidate.
 - [x] Pipeline regression suite is registered in preflight.
-- [ ] Final-head full preflight, TypeScript, production and Pages builds pass.
+- [x] GitHub Actions run #690 passed full preflight, TypeScript, production and Pages builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474` (later documentation-only sync at `8f6e0ae`).
 - [ ] Complete diff review confirms camera/session/UI/business behavior is unchanged.
 - [ ] iOS Safari/PWA + Android Chrome/PWA acceptance in Home and Stocktake.
 
