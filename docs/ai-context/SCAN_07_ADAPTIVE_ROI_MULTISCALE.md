@@ -1,6 +1,6 @@
-# SCAN-07 — Adaptive ROI, multi-scale and coordinated focus recovery
+# SCAN-07 — Adaptive ROI, multi-scale and native autofocus behavior
 
-**Status:** Active implementation on PR #78 branch. Final-head CI #678 passed; physical-device acceptance pending.
+**Status:** PR #78 merged; native-autofocus corrective branch active. Physical-device acceptance pending.
 **User feedback on PR #77:** modest improvement for small/far barcodes and reads near reticle edges, but not sufficient range/precision.
 **Scope lock:** SCAN-07 remains active. Do not move to SCAN-08/09 yet.
 
@@ -39,41 +39,27 @@ The decoder downscaled the source crop based on the entire frame width exceeding
 
 This increases the amount of source detail available to the decoder when the camera actually supplies higher-resolution frames. Upscaling alone does not create optical detail. Real device resolution and barcode pixel height must be recorded.
 
-## 4. Autofocus source audit and correction
+## 4. Native autofocus negotiation
 
-### Confirmed source issues
+The user confirmed that the camera must retain ownership of autofocus. Different devices and browser implementations expose different levels of focus control; the scanner must not assume that it can safely reconfigure the lens during a live preview.
 
-- Continuous autofocus was previously requested immediately after getUserMedia resolved, before the video element had played and produced a fresh frame.
-- Camera capabilities may not be fully available at that point.
-- The focus helper called applyConstraints() with only an advanced focusMode value. That API replaces the active custom constraint set; omitting existing width/height/frameRate/facing/device constraints could reset the negotiated camera configuration.
-- Torch already applies track constraints after preview readiness. Independent focus and Torch calls could race and overwrite one another's advanced settings.
+- Continuous autofocus is requested only as an optional advanced preference in the initial `getUserMedia()` constraints.
+- Advanced constraints are best-effort. If unsupported or ignored, the camera continues with its native autofocus behavior.
+- Do not call `MediaStreamTrack.applyConstraints()` to set focus after preview readiness.
+- Do not expose post-preview focus setup or focus re-arm methods from the camera lease.
+- Torch ON/OFF may still use the shared track-constraint helper, preserving the initial focus preference and negotiated camera settings.
 
-### PR #78 implementation
+## 5. Passive focus-quality diagnostics
 
-1. Move the initial focus request to the point after video.play() and first fresh-frame readiness.
-2. Keep focus setup non-blocking; it must not delay preview readiness or decoder initialization.
-3. Use a shared constraint builder that preserves current getConstraints() values and falls back to actual getSettings() for dimensions, frame rate, facing mode and device ID.
-4. Serialize all track-level advanced constraint updates through one per-track queue shared by autofocus and Torch.
-5. Record safe focus capability/result information; never log device identifiers or barcode payloads.
+The decoder may sample sharpness, edge coverage and motion from its existing grayscale ROI readback. This is observation only.
 
-A successful applyConstraints() call means the browser accepted a request; it does not prove that the physical lens reached focus.
+- Low-texture/blank frames are invalid for focus-quality comparison.
+- Motion/changing frames are filtered.
+- Four consecutive stable samples below the relative sharpness threshold may produce a sustained-blur diagnostic event, rate-limited to one report per 8 seconds.
+- A diagnostic event must never call `applyConstraints()`, re-arm autofocus or change camera state.
+- A missing/unexposed `focusMode` capability is not treated as a camera failure; native autofocus remains the fallback.
 
-## 5. Bounded focus recovery watchdog
-
-The decoder already reads grayscale pixels from the strict ROI. PR #78 reuses that readback at a low rate (one sample per 500 ms) to calculate:
-- Laplacian sharpness (high-frequency edge response).
-- Edge coverage (whether the ROI contains enough texture to evaluate).
-- Frame-to-frame motion score after removing global brightness shift.
-
-Recovery policy:
-- Low-texture/blank ROI samples are ignored.
-- Motion/changing frames are ignored so camera movement does not trigger repeated focus reconfiguration.
-- A previously sharp ROI must show four consecutive stable samples below 55% of its reference sharpness before recovery is requested.
-- Recovery is limited to one reassertion per 8 seconds.
-- Recovery runs only if continuous focus was exposed and accepted by the browser. If unsupported/unavailable, the engine does not pretend it can control the lens.
-- Reapply uses the shared serialized track-constraint queue and preserves Torch/current camera settings.
-
-This is a conservative recovery request. It cannot guarantee hardware refocus, and image sharpness can still be affected by motion, exposure, glare, curved packaging and low light. Physical-device validation is mandatory.
+This monitor cannot distinguish every optical blur from glare, exposure, curved packaging or low-light noise. Physical-device validation remains mandatory.
 
 ## 6. Protected behavior
 
@@ -89,9 +75,9 @@ No changes to:
 ## 7. Automated verification
 
 - `scripts/test-scanner-scale.mjs`: native ROI preservation and source-pixel bounds, baseline ordering, fallback ordering, unique candidates and scale allocation bounds.
-- `scripts/test-scanner-focus-quality.mjs`: sharp vs blurred ROI, motion filtering, sustained blur trigger and cooldown.
-- `scripts/test-scanner-track-constraints.mjs`: concurrent focus/Torch requests are serialized and both advanced constraints survive.
-- `scripts/test-scanner-validation.mjs`: focus is deferred until preview-ready and existing camera constraints survive autofocus.
+- `scripts/test-scanner-focus-quality.mjs`: sharp vs blurred ROI, motion filtering, passive sustained-blur reporting and diagnostic cooldown.
+- `scripts/test-scanner-track-constraints.mjs`: Torch ON/OFF operations serialize and preserve the initial optional focus preference.
+- `scripts/test-scanner-camera-request.mjs`: optional continuous focus is requested at initial stream negotiation; no post-preview focus API exists.
 - `scripts/test-scanner-torch.mjs`: Torch uses the same shared track constraint helper.
 - GitHub Actions #677 passed full preflight, TypeScript, production build and Pages build on code/test head `e3d745b1ce1a7fba87265769365d48667103b89b`; final-head #678 passed on `4728a8888c6ee6ab439af18ce8353661429d4195`.
 

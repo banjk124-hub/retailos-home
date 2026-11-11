@@ -21,6 +21,7 @@ assert.deepEqual(constraints.facingMode, { ideal: 'environment' });
 assert.deepEqual(constraints.width, { ideal: 1920 });
 assert.deepEqual(constraints.height, { ideal: 1080 });
 assert.deepEqual(constraints.frameRate, { ideal: 30, max: 30 });
+assert.deepEqual(constraints.advanced, [{ focusMode: 'continuous' }], 'continuous autofocus is optional and negotiated only at stream acquisition');
 assert.deepEqual(buildCameraVideoConstraints({ ...rearDefault, preferredFrameRate: 60, maxFrameRate: 24 }).frameRate,
   { ideal: 24, max: 24 }, 'a preferred frame rate above its hard ceiling is safely clamped');
 
@@ -66,7 +67,7 @@ const contractsJs = ts.transpileModule(contractsSource, {
 }).outputText;
 const contractsUrl = 'data:text/javascript;base64,' + Buffer.from(contractsJs).toString('base64');
 const resolverUrl = moduleUrl;
-const diagnosticsJs = 'export function getSafeCameraSettings(){return {}}; export async function requestContinuousAutofocus(){return {status:"unavailable",supportedModes:[],durationMs:0}};';
+const diagnosticsJs = 'export function getSafeCameraSettings(){return {}};';
 const diagnosticsUrl = 'data:text/javascript;base64,' + Buffer.from(diagnosticsJs).toString('base64');
 const cameraSessionJs = cameraSessionSource
   .replace("from './cameraDiagnostics';", `from '${diagnosticsUrl}';`)
@@ -84,9 +85,11 @@ let currentStream = null;
 let deferredGetUserMedia = null;
 const makeStream = (settings) => {
   let stopCount = 0;
+  let focusApplyCount = 0;
   const track = {
     readyState: 'live',
     getSettings: () => ({ ...settings }),
+    applyConstraints: async () => { focusApplyCount += 1; },
     addEventListener: () => undefined,
     stop: () => { stopCount += 1; track.readyState = 'ended'; },
   };
@@ -94,6 +97,7 @@ const makeStream = (settings) => {
     getTracks: () => [track],
     getVideoTracks: () => [track],
     get stopCount() { return stopCount; },
+    get focusApplyCount() { return focusApplyCount; },
   };
 };
 const installMedia = (getUserMedia) => {
@@ -110,8 +114,12 @@ try {
   const sharedA = await cameraSession.acquireCameraLease(rearDefault);
   const sharedB = await cameraSession.acquireCameraLease({ ...rearDefault, preferredWidth: 640, preferredHeight: 480, preferredFrameRate: 15 });
   assert.equal(mediaCalls.length, 1, 'compatible requests reuse one getUserMedia stream');
+  assert.equal(typeof sharedA.prepareForScanning, 'undefined', 'camera leases expose no post-preview focus setup');
+  assert.equal(typeof sharedA.reapplyContinuousAutofocus, 'undefined', 'camera leases expose no focus re-arm operation');
   assert.equal(mediaCalls[0].video.facingMode.ideal, 'environment');
   assert.equal(mediaCalls[0].video.width.ideal, 1920);
+  assert.deepEqual(mediaCalls[0].video.advanced[0], { focusMode: 'continuous' }, 'continuous autofocus is an optional getUserMedia preference, not a post-preview applyConstraints call');
+  assert.equal(currentStream.focusApplyCount, 0, 'initial acquisition never performs a later track-level focus write');
   sharedA.release();
   assert.equal(currentStream.stopCount, 0, 'releasing one shared lease does not stop the stream');
   sharedB.release();

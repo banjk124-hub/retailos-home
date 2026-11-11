@@ -1,4 +1,4 @@
-import { getSafeCameraSettings, requestContinuousAutofocus, type CameraFocusResult } from './cameraDiagnostics';
+import { getSafeCameraSettings } from './cameraDiagnostics';
 import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../platform/scanner/contracts';
 import { buildCameraVideoConstraints, resolveCameraStreamCompatibility } from '../../platform/scanner/cameraRequestResolver';
 
@@ -8,16 +8,10 @@ let pendingRequest: Promise<MediaStream> | null = null;
 let pendingCameraRequest: ScannerCameraRequest | null = null;
 let requestGeneration = 0;
 let activeLeaseCount = 0;
-const focusPreparationByTrack = new WeakMap<MediaStreamTrack, Promise<CameraFocusResult>>();
-const focusRecoveryByTrack = new WeakMap<MediaStreamTrack, Promise<CameraFocusResult>>();
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
 
 export type CameraStreamLease = {
   readonly stream: MediaStream;
-  /** Apply optional camera tuning only after the owning video has a fresh frame. */
-  prepareForScanning(): Promise<CameraFocusResult[]>;
-  /** Reassert continuous autofocus after the scanner detects sustained image defocus. */
-  reapplyContinuousAutofocus(): Promise<CameraFocusResult[]>;
   release(): void;
 };
 
@@ -161,10 +155,13 @@ async function acquireSharedStream(
         }, { once: true });
       });
 
-      console.info('[RetailOS Scanner] Camera settings', getSafeCameraSettings(videoTracks[0]));
-
-      // Focus tuning is deferred until the owning video element is playing
-      // and has produced a fresh frame. Capabilities may not be complete earlier.
+      const cameraSettings = getSafeCameraSettings(videoTracks[0]);
+      console.info('[RetailOS Scanner] Camera settings', cameraSettings);
+      console.info('[RetailOS Scanner] Camera focus capability', {
+        focusModes: cameraSettings.focusModes?.join(',') ?? '',
+        focusMode: cameraSettings.focusMode,
+        focusPolicy: 'optional-getUserMedia-preference-native-fallback',
+      });
 
       return stream;
     }).finally(() => {
@@ -219,30 +216,6 @@ export async function acquireCameraLease(
   let released = false;
   return {
     stream,
-    prepareForScanning: async () => {
-      if (released || generation !== requestGeneration || activeStream !== stream) return [];
-      const tracks = stream.getVideoTracks().filter((track) => track.readyState === 'live');
-      return Promise.all(tracks.map((track) => {
-        const existing = focusPreparationByTrack.get(track);
-        if (existing) return existing;
-        const pending = requestContinuousAutofocus(track);
-        focusPreparationByTrack.set(track, pending);
-        return pending;
-      }));
-    },
-    reapplyContinuousAutofocus: async () => {
-      if (released || generation !== requestGeneration || activeStream !== stream) return [];
-      const tracks = stream.getVideoTracks().filter((track) => track.readyState === 'live');
-      return Promise.all(tracks.map((track) => {
-        const existing = focusRecoveryByTrack.get(track);
-        if (existing) return existing;
-        const pending = requestContinuousAutofocus(track).finally(() => {
-          if (focusRecoveryByTrack.get(track) === pending) focusRecoveryByTrack.delete(track);
-        });
-        focusRecoveryByTrack.set(track, pending);
-        return pending;
-      }));
-    },
     release: () => {
       if (released) return;
       released = true;
