@@ -6,7 +6,7 @@
 ## Current implementation on branch
 - `ScannerCameraRequest` is now carried by the one-shot `CameraLeaseRequest` and passed into the live `getUserMedia()` request.
 - Camera constraints preserve the existing default: rear camera, ideal 1280×720, ideal 30 FPS and max 30 FPS.
-- Shared-stream compatibility checks actual track facing mode and frame rate. Resolution remains an ideal, not an exact gate; missing browser settings remain unknown.
+- Shared-stream compatibility checks actual track facing mode and frame rate for different intents. The initiating request accepts the browser's negotiated best-effort result for its own ideal constraints; identical intents may share it. Resolution remains an ideal, not an exact gate; missing browser settings remain unknown.
 - Compatible requests continue to share the same stream and reference-counted lease. Incompatible requests cannot replace a stream while it has active leases.
 - The React bridge and platform session retain camera intent after the one-shot request is claimed. Foreground recovery still creates a fresh session and fresh video surface, then reacquires with the original intent.
 - Home and Stocktake retain their existing synchronous tap-origin acquisition path and current default camera behavior.
