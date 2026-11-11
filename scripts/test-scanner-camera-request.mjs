@@ -128,6 +128,14 @@ try {
   bestEffortB.release();
 
   mediaCalls = [];
+  currentStream = makeStream({ facingMode: 'environment', frameRate: 60 });
+  installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
+  await assert.rejects(cameraSession.acquireCameraLease(rearDefault),
+    (error) => error?.name === 'OverconstrainedError',
+    'the initiating request must still enforce its hard maxFrameRate ceiling');
+  assert.equal(currentStream.stopCount, 1, 'a stream that violates the initiating hard ceiling is stopped and not cached');
+
+  mediaCalls = [];
   currentStream = makeStream({ facingMode: 'environment', frameRate: 30 });
   installMedia(async (constraints) => { mediaCalls.push(constraints); return currentStream; });
   const rearLease = await cameraSession.acquireCameraLease(rearDefault);
