@@ -64,6 +64,7 @@ export type ScannerSourceScanRegion = {
 /**
  * Module intent for the camera opened from the initiating user gesture.
  * Dimensions and frame rates are preferred/ideal values, not exact demands.
+ * maxFrameRate, when present, is a hard upper bound for a shared stream.
  */
 export type ScannerCameraRequest = {
   facingMode: 'environment' | 'user';
@@ -75,9 +76,9 @@ export type ScannerCameraRequest = {
 
 /**
  * Required module-owned input to the shared scanner.
- * Preview geometry is resolved by the feature-owned region binding. Camera
- * request consumption remains a separate integration task; the production
- * shared camera lease currently preserves DEFAULT_SCANNER_CAMERA_REQUEST.
+ * Preview geometry is resolved by the feature-owned region binding. The
+ * camera request travels with the tap-origin lease and is retained by the
+ * platform session so foreground recovery can reacquire the same intent.
  */
 export type ScannerModuleConfig = {
   previewScanRegion: ScannerPreviewScanRegion;

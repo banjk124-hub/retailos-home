@@ -6,7 +6,9 @@ import type {
   ScannerLifecycleObserver,
   ScannerTorchState,
   ScannerSourceScanRegion,
+  ScannerCameraRequest,
 } from './contracts';
+import { DEFAULT_SCANNER_CAMERA_REQUEST } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
 import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
@@ -122,13 +124,14 @@ function waitForVideoFrameReady(video: HTMLVideoElement, timeoutMs = 3000): Prom
 }
 
 function scannerError(cause: unknown): ScannerError {
-  const name = cause instanceof DOMException ? cause.name : '';
+  const name = cause instanceof DOMException ? cause.name : cause instanceof Error ? cause.name : '';
   const message = cause instanceof Error ? cause.message : 'Không thể khởi động máy quét.';
   if (name === 'NotAllowedError' || name === 'SecurityError') {
     return { code: 'PERMISSION_DENIED', message: 'Quyền camera bị từ chối. Hãy cấp quyền camera trong trình duyệt rồi thử lại.', recoverable: true, cause };
   }
   if (name === 'NotFoundError') return { code: 'DEVICE_NOT_FOUND', message: 'Không tìm thấy camera trên thiết bị.', recoverable: true, cause };
   if (name === 'NotReadableError') return { code: 'DEVICE_BUSY', message: 'Camera đang được ứng dụng khác sử dụng.', recoverable: true, cause };
+  if (name === 'OverconstrainedError') return { code: 'CONSTRAINTS_UNSATISFIED', message, recoverable: true, cause };
   if (name === 'AbortError') return { code: 'LIFECYCLE_CONFLICT', message: 'Yêu cầu camera cũ đã bị hủy. Hãy thử mở lại máy quét.', recoverable: true, cause };
   if (!window.isSecureContext) return { code: 'INSECURE_CONTEXT', message: 'Camera cần HTTPS hoặc localhost.', recoverable: false, cause };
   return { code: 'UNKNOWN', message, recoverable: true, cause };
@@ -178,12 +181,18 @@ export class UniversalScannerSession implements ScannerSession {
   private unsubscribeTrackEnded: (() => void) | null = null;
   private trackEventCleanups: Array<() => void> = [];
   private readonly lifecycle: ScannerLifecycleAdapter;
+  private readonly cameraRequest: ScannerCameraRequest;
 
   constructor(
     private readonly video: HTMLVideoElement,
     private readonly options: ScannerOpenOptions,
     private initialCameraLeaseRequest?: CameraLeaseRequest,
+    cameraRequest: ScannerCameraRequest = DEFAULT_SCANNER_CAMERA_REQUEST,
   ) {
+    // The tap-origin request is authoritative for the initial session. Keep
+    // its immutable intent on the session so a fresh recovery session can
+    // reacquire with the same module configuration after the request is spent.
+    this.cameraRequest = initialCameraLeaseRequest?.cameraRequest ?? cameraRequest;
     this.lifecycle = new ScannerLifecycleAdapter(this.id, options.lifecycleObserver);
   }
   get state(): ScannerLifecycleState { return this.currentState; }
@@ -300,7 +309,7 @@ export class UniversalScannerSession implements ScannerSession {
       this.initialCameraLeaseRequest = undefined;
       const lease = initialRequest
         ? await initialRequest.claim()
-        : await acquireCameraLease();
+        : await acquireCameraLease(this.cameraRequest);
       this.logStage('camera_acquire_ms', performance.now() - cameraRequestStartedAt);
       const stream = lease.stream;
       if (this.disposed || generation !== this.generation) {

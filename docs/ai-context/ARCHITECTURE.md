@@ -854,3 +854,38 @@ Operator testing after PR #73 identified that the ZIP action could overlap the e
 - Desktop Chrome/Edge at multiple viewport heights verifies no overlap, no accidental whole-frame scrolling and usable bounded table/zone-list scrolling.
 - iOS Safari/PWA and Android Chrome/PWA verify compact layout, touch targets, preview navigation, file picker, clipboard and downloads.
 - PR remains unmerged until CI, manual QA and explicit user approval are complete.
+
+
+## ADR-035 — Runtime camera request intent, shared-stream compatibility and recovery preservation (2026-11-11)
+
+**Status:** Implemented on branch `feat/scanner-camera-request-bridge`; GitHub Actions run #610 passed full preflight/build checks. Physical-device acceptance pending.
+
+### Context
+- `ScannerCameraRequest` and `ScannerModuleConfig.cameraRequest` existed as contracts, but the production camera service always requested environment / 1280×720 / 30 FPS.
+- The shared stream lease was reference-counted, but reuse did not check whether the active track could satisfy a new module's camera intent.
+- The initiating module starts acquisition inside its click handler. That one-shot request is claimed by the first session; foreground recovery intentionally creates a fresh session and video element, so the module intent must survive beyond the one-shot request.
+
+### Decision
+- `requestCameraLease(cameraRequest)` snapshots the module intent and begins acquisition synchronously at the existing user gesture. The default remains `DEFAULT_SCANNER_CAMERA_REQUEST` (environment / 1280×720 / 30 FPS).
+- The same intent is translated into `getUserMedia()` constraints: facing mode, width, height and preferred frame rate are ideals; optional `maxFrameRate` is a hard ceiling. The preferred rate is clamped to the ceiling if necessary.
+- Compatibility is evaluated from actual video-track settings. A known facing-mode mismatch or a track rate above the requested maximum is incompatible. Preferred width/height are not treated as exact constraints. Missing settings are unknown and do not cause false rejection.
+- Compatible requests reuse the same active stream and retain existing reference-counted leases. A known incompatible request is rejected while any lease is active; the service never silently replaces a stream owned by another session.
+- A pending acquisition is shared only if its resolved actual settings are compatible with each different caller. The initiating request accepts the browser's negotiated best-effort result; an identical intent can reuse it. A conflicting different intent receives a controlled constraint error and does not start a competing acquisition.
+
+- Important preservation rule: the request that actually initiated `getUserMedia()` accepts the browser's negotiated best-effort `facingMode` because it is an ideal; repeated identical intents can share that result. The hard `maxFrameRate` ceiling is still enforced for the initiating request and every later lease. A different intent is checked against actual settings before sharing; this avoids turning a previously successful ideal-facing acquisition into a new failure.
+- The platform session retains the immutable camera intent after the initial lease request is claimed. Foreground recovery continues to dispose the retired session, replace the video surface and create a fresh session, which reacquires using the retained original intent.
+- The public lease contract is not expanded with employee IDs, device IDs, session-owner IDs or diagnostic identity metadata. Existing stream identity, generation and reference-count guards remain authoritative.
+
+### Protected invariants
+- Home and Stocktake still call `requestCameraLease(DEFAULT_SCANNER_CAMERA_REQUEST)` synchronously in their current tap handlers before mounting scanner presentation.
+- A tap-origin request is claimed once; no duplicate `getUserMedia()` request is added for the initial startup.
+- Compatible shared streams remain shareable. Releasing one lease cannot stop a stream still leased by another session.
+- An incompatible active request cannot replace the stream or invalidate existing leases.
+- Recovery MUST create a fresh scanner session and fresh video surface. It MUST NOT reuse the retired session, old video element or released lease. It MUST reacquire with the original module camera intent.
+- Lifecycle coordinator, teardown order, camera permission flow, autofocus policy, preview readiness, decoder/cadence, strict ROI, Torch, feature presentation and business flows remain unchanged.
+
+### Acceptance
+- Pure resolver tests cover soft ideals, known facing mismatch, maximum frame-rate conflict, and missing settings.
+- Integration regression tests cover lease sharing/conflict, one-claim handoff, cancellation, reference counts, and recovery intent preservation.
+- Full preflight, TypeScript, production and Pages builds pass.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA confirm no change to the existing Home and Stocktake flows.

@@ -1,8 +1,34 @@
-# Current Main reconciliation — Scanner Engine remediation (2026-11-11)
+# Current Main reconciliation — Scanner Camera Request Bridge (2026-11-11)
 
-**Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). The older `9406ac...` line below is the PR #67 historical scanner baseline, not current repository HEAD.
+**Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 is merged.  
+**Active branch:** `feat/scanner-camera-request-bridge`, based on current main. PR #76 is open Draft; CI run #610 passed. Physical iOS/Android QA pending. No merge/deploy.
 
-**Active remediation:** branch `fix/scanner-engine-remediation-code39`, based on current main. Not merged or deployed.
+## Current implementation on branch
+- `ScannerCameraRequest` is now carried by the one-shot `CameraLeaseRequest` and passed into the live `getUserMedia()` request.
+- Camera constraints preserve the existing default: rear camera, ideal 1280×720, ideal 30 FPS and max 30 FPS.
+- Shared-stream compatibility checks actual track facing mode and frame rate for different intents. The initiating request accepts a negotiated facing mode because it is an ideal, but every caller must still satisfy the hard `maxFrameRate` ceiling. Identical intents may share the negotiated stream. Resolution remains an ideal, not an exact gate; missing browser settings remain unknown.
+- Compatible requests continue to share the same stream and reference-counted lease. Incompatible requests cannot replace a stream while it has active leases.
+- The React bridge and platform session retain camera intent after the one-shot request is claimed. Foreground recovery still creates a fresh session and fresh video surface, then reacquires with the original intent.
+- Home and Stocktake retain their existing synchronous tap-origin acquisition path and current default camera behavior.
+
+## Protected scope
+No intended changes to permission UX, autofocus behavior, page lifecycle coordinator, teardown order, video readiness, decoder/cadence, strict ROI, Torch, callback semantics, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, storage, backend or deployment configuration.
+
+## Verification status
+- [x] Camera request resolver and compatibility regression suite.
+- [x] Lease sharing/conflict, pending request, cancellation and ref-count regression coverage.
+- [x] Recovery source-contract guards for fresh session/fresh surface/original intent.
+- [x] Full preflight, TypeScript, production and Pages builds — run #610 passed.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA.
+- [ ] Explicit approval before merge/deploy.
+
+---
+
+# Historical reconciliation — Scanner Engine remediation and Code 39 (2026-11-11)
+
+**Historical base:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). This section records the PR #75 Code 39 remediation that is now merged into current main `9b84339fd25b2d3502ddccc3aa80c022ccedd827`.
+
+**Historical branch:** `fix/scanner-engine-remediation-code39`; PR #75 is closed/merged.
 
 - Code 39 was present in the broad `ScannerSymbology` type and ZXing `FORMAT_MAP`, but absent from `SUPPORTED_BARCODE_FORMATS` and rejected by `validateBarcodePayload()`. This branch enables it end-to-end and adds production-adapter tests.
 - Rotation/deskew counters were emitted by `zxingDecoder.ts` but filtered out by `scannerDiagnosticCollector.ts`. This branch adds the missing safe keys and QA Monitor/CSV presentation.
@@ -11,7 +37,7 @@
 - `ScannerModuleConfig.cameraRequest` is not a runtime input. The shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. This is explicitly deferred; do not bypass the shared lease.
 - No camera, lifecycle, cadence, ROI, presentation or business-flow behavior is changed by this remediation branch.
 
-**Next gate:** finish CI and diff review, then request approval. Do not merge/deploy automatically.
+**Historical outcome:** PR #75 is merged. Current follow-up work is tracked in the Camera Request Bridge section at the top of this file.
 
 ---
 

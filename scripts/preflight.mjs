@@ -19,6 +19,11 @@ const checks = [
     args: ["scripts/test-scanner-validation.mjs"],
   },
   {
+    name: "Scanner camera request compatibility regression tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-camera-request.mjs"],
+  },
+  {
     name: "Scanner recovery diagnostics privacy and export tests",
     command: process.execPath,
     args: ["scripts/test-scanner-diagnostics.mjs"],

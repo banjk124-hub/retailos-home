@@ -1,3 +1,38 @@
+# Current task — Scanner Camera Request Bridge (2026-11-11)
+
+**Current main:** `9b84339fd25b2d3502ddccc3aa80c022ccedd827`. PR #75 (Code 39 + recovery diagnostics) is merged.  
+**Working branch:** `feat/scanner-camera-request-bridge`, based on that main commit.  
+**PR:** [#76 — Camera Request Bridge](https://github.com/banjk124-hub/retailos-home/pull/76), open Draft. GitHub Actions run #610 passed on head `b954b8a784efd6826588097d6d170d94c80964dc`; physical-device QA remains pending. No merge or deployment has occurred.
+
+## Scope and protected behavior
+- Wire the existing `ScannerCameraRequest` into the actual tap-origin camera lease and `getUserMedia()` constraints.
+- Resolve whether a live shared stream is compatible with a new request using actual track settings.
+- Preserve compatible shared-stream reuse and the existing reference-counted lease model.
+- Reject incompatible requests while another session holds a lease; never replace a stream out from under an active session.
+- Preserve the initiating module's camera intent after the one-shot lease is claimed, including foreground recovery.
+- Recovery must continue retiring the old session and video surface, then create a fresh session and fresh video surface. The new session reacquires with the original module intent.
+- Home and Stocktake continue requesting camera synchronously inside their existing initiating tap handlers. Their current default remains environment / 1280×720 / 30 FPS.
+
+No changes are intended to camera permission UX, autofocus policy, page lifecycle coordinator, teardown order, video readiness, decoder/cadence, strict ROI, Torch, result callbacks, module presentation, Home lookup, Stocktake form-fill/save, auth, storage, backend or deployment configuration.
+
+## Compatibility policy
+- `preferredWidth`, `preferredHeight` and `preferredFrameRate` are ideals, not exact demands. A browser-negotiated lower resolution is still compatible.
+- A known facing-mode mismatch is incompatible.
+- If `maxFrameRate` is set, an actual track frame rate above that ceiling is incompatible. The preferred frame rate is clamped to that ceiling when building constraints.
+- Missing browser track settings are treated as unknown, not as a proven mismatch.
+- The request that initiated `getUserMedia()` accepts the browser's negotiated best-effort facing mode because it is an ideal; identical intents may share it. The hard `maxFrameRate` ceiling remains enforced for every caller. Different intents are checked against actual settings.
+- Compatible requests share the active stream. An incompatible request cannot replace a stream with active leases. A pending acquisition is checked against each caller after actual settings become available.
+
+## Verification gates
+- [x] Resolver tests: ideal constraints, frame-rate ceiling, facing mismatch, missing settings.
+- [x] Lease tests: compatible sharing, incompatible active lease rejection, pending acquisition compatibility, cancellation, immutable intent and reference-count integrity.
+- [x] Recovery source-contract regression: fresh session + fresh video surface + original camera intent.
+- [x] Full preflight, TypeScript, production and Pages builds — GitHub Actions run #610 passed.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA.
+- [ ] Explicit user approval before merge/deploy.
+
+---
+
 # Current Main baseline and Scanner Engine remediation — 2026-11-11
 
 **Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). PR #74 is merged; deployment is not asserted here.
@@ -12,7 +47,7 @@
 - Updated ADR-020, added ADR-034, and clarified SCAN-01's actual implementation boundary.
 
 ## Explicitly deferred
-- The aggregate `ScannerModuleConfig` is not a runtime input yet. Its `cameraRequest` field is declarative; current shared camera lease uses the fixed environment / 1280×720 / 30 FPS request. Per-module camera requests require a separate design for shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition. Do not bypass the lease path.
+- Historical note (superseded by the current Camera Request Bridge work above): the aggregate `ScannerModuleConfig.cameraRequest` had been declarative only; the current branch wires camera intent through the tap-origin lease and recovery path.
 - Benchmark corpus, measured device baselines and generalized recovery orchestration remain follow-up work. Existing rotation/deskew remains intact; no speculative new image transforms are added here.
 - No camera constraints, autofocus, camera lease/lifecycle, frame cadence, ROI, Home/Stocktake UI or business workflows are changed by this branch.
 
@@ -32,9 +67,9 @@
 - Current scanner remediation branch: `fix/scanner-engine-remediation-code39`, based on current main `6ac1eef...`.
 - Remediation scope: Code 39 enablement end-to-end; recovery diagnostics allowlist + QA Monitor/CSV; privacy regression; audio documentation reconciliation.
 - Do not change camera lease, camera request defaults, autofocus, lifecycle/recovery, decode cadence, strict ROI, Home/Stocktake presentation or business workflows.
-- `ScannerModuleConfig.cameraRequest` is declarative only. Per-module camera request support is deferred until shared-stream/lease semantics and tap-origin acquisition/recovery are designed.
+- Historical baseline before this branch: `ScannerModuleConfig.cameraRequest` was declarative only. Current implementation is tracked in the task section at the top of this file.
 - Benchmark corpus and generalized conditional recovery orchestration remain future work, not implied by this remediation.
-- PR #75 is open as Draft. Final CI #577 passed on head `8f558511297596be0819baea01d49ed0993b86fb`; no merge/deploy has occurred.
+- Historical outcome: PR #75 was subsequently merged into `main`; current main baseline is recorded at the top of this file. The current follow-up is PR #76.
 
 **Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; angled Code 39 optical performance remains unverified.
 

@@ -1,3 +1,28 @@
+### 2026-11-11 — Camera Request Bridge CI verification
+
+- CI run #588 initially exposed a test-harness import issue after `cameraSession.ts` gained platform contract/resolver imports. Updated the existing scanner validation harness to map those dependencies to data modules.
+- CI run #605 exposed the same class of isolation issue in `test-scanner-preview-region.mjs`: its dynamically loaded `UniversalScannerSession` did not stub the newly imported `./contracts` module. Added the missing contract stub.
+- Added production-service tests for best-effort ideal facing-mode negotiation, hard `maxFrameRate` rejection and stream cleanup, compatible sharing across soft preference differences, active incompatible request rejection, pending request compatibility, reacquisition after final lease release, cancellation and immutable intent snapshots.
+- Added regression guard for mapping compatibility conflicts to the scanner constraint error.
+- GitHub Actions run #610 passed on head `b954b8a784efd6826588097d6d170d94c80964dc`; full local-equivalent preflight completed successfully. Earlier failed runs were test-harness defects and were corrected; they were not bypassed.
+- Physical iOS Safari/PWA and Android Chrome/PWA QA remain outstanding. PR #76 remains Draft, unmerged and undeployed.
+
+---
+
+### 2026-11-11 — Scanner Camera Request Bridge implementation
+
+- Audited current `main` at `9b84339fd25b2d3502ddccc3aa80c022ccedd827`; PR #75 is closed/merged. Created isolated branch `feat/scanner-camera-request-bridge` from that baseline.
+- Confirmed the earlier audit findings: the camera request contract existed but the shared camera service still used fixed constraints; active stream reuse did not validate the next caller's intent; the one-shot tap request was consumed before foreground recovery could reuse its intent.
+- Wired immutable camera intent through `requestCameraLease()`, `getUserMedia()`, the shared lease compatibility check, `UniversalScannerSession` and `useScannerEngine`.
+- Kept Home and Stocktake tap-origin acquisition in their existing handlers and explicitly passed the current default request. No new acquisition was moved into a React effect.
+- Added pure compatibility rules: preferred dimensions remain soft ideals; known facing mismatch and frame rate above a hard max are incompatible; unavailable browser settings are treated as unknown.
+- Preserved compatible stream sharing and reference counting. Conflicting requests cannot replace a stream while active leases exist. Pending acquisitions are checked against each caller's actual resolved stream.
+- Preserved the deliberate iOS recovery design: retire old session, create a fresh video surface and fresh session, reacquire with the original module intent.
+- Added resolver/recovery source regression tests and wired them into preflight. CI and physical iOS/Android verification remain pending.
+- No merge or deployment was performed. Presentation, lifecycle orchestration, autofocus policy, decoder/cadence, ROI, Torch and retail workflows were not intentionally changed.
+
+---
+
 ### 2026-11-10 — SCAN-05/06 post-merge documentation audit
 
 - Confirmed PR #67 is merged/closed at 9406ac30d53bc9984912bd1928a32fd78157cf60; main compares identical to the merge commit.

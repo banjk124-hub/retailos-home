@@ -4,6 +4,7 @@ import { UniversalScannerSession } from '../../../platform/scanner/universalScan
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { unlockScannerAudio } from '../services/scannerAudio';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
+import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../../platform/scanner/contracts';
 import { ScannerPageLifecycleCoordinator } from '../../../platform/scanner/scannerPageLifecycleCoordinator';
 
 export type ScannerMode = 'single' | 'continuous';
@@ -42,6 +43,11 @@ export function useScannerEngine({
   // its terminal close milestones if the feature closes before replacement.
   const recoveryRetiredSessionRef = useRef<ScannerSession | null>(null);
   const cameraLeaseRequestRef = useRef(cameraLeaseRequest);
+  // Keep the initiating module's intent after its one-shot lease request is
+  // claimed; foreground recovery creates a new session and reacquires using it.
+  const cameraRequestRef = useRef<ScannerCameraRequest>(
+    cameraLeaseRequest?.cameraRequest ?? DEFAULT_SCANNER_CAMERA_REQUEST,
+  );
   const onDetectedRef = useRef(onDetected);
   const lifecycleObserverRef = useRef(lifecycleObserver);
   lifecycleObserverRef.current = lifecycleObserver;
@@ -149,7 +155,7 @@ export function useScannerEngine({
         // track stopped. Keep the live preview/scanning state truthful.
         setIsScanning(sessionRef.current?.state === 'scanning');
       },
-    }, cameraLeaseRequestRef.current ?? undefined);
+    }, cameraLeaseRequestRef.current ?? undefined, cameraRequestRef.current);
     cameraLeaseRequestRef.current = null;
     sessionRef.current = session;
     recoveryRetiredSessionRef.current = null;

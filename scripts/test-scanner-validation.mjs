@@ -177,15 +177,33 @@ const cameraSessionSource = await readFile(
   new URL("../src/shared/services/cameraSession.ts", import.meta.url),
   "utf8",
 );
+const scannerContractsSource = await readFile(
+  new URL("../src/platform/scanner/contracts.ts", import.meta.url),
+  "utf8",
+);
+const scannerContractsCompiled = ts.transpileModule(scannerContractsSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const scannerContractsUrl = "data:text/javascript;base64," +
+  Buffer.from(scannerContractsCompiled).toString("base64");
+const cameraRequestResolverSource = await readFile(
+  new URL("../src/platform/scanner/cameraRequestResolver.ts", import.meta.url),
+  "utf8",
+);
+const cameraRequestResolverCompiled = ts.transpileModule(cameraRequestResolverSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const cameraRequestResolverUrl = "data:text/javascript;base64," +
+  Buffer.from(cameraRequestResolverCompiled).toString("base64");
 const cameraSessionCompiled = ts.transpileModule(cameraSessionSource, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
     target: ts.ScriptTarget.ES2022,
   },
-}).outputText.replace(
-  "from './cameraDiagnostics';",
-  `from '${cameraDiagnosticsUrl}';`,
-);
+}).outputText
+  .replace("from './cameraDiagnostics';", `from '${cameraDiagnosticsUrl}';`)
+  .replace("from '../../platform/scanner/contracts';", `from '${scannerContractsUrl}';`)
+  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${cameraRequestResolverUrl}';`);
 const cameraSessionUrl =
   "data:text/javascript;base64," +
   Buffer.from(cameraSessionCompiled).toString("base64");
