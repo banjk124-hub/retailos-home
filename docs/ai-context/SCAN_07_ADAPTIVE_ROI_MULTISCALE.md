@@ -1,6 +1,6 @@
 # SCAN-07 — Adaptive ROI & multi-scale sampling
 
-**Status:** Implemented on PR #77 branch. CI and physical-device acceptance pending.
+**Status:** Implemented on PR #77 branch. CI #634 passed on code/test head; physical-device acceptance pending.
 **Scope:** Decoder-side sampling improvements only. No camera, session, lifecycle, preview, UI or retail workflow changes.
 
 ## 1. Source audit findings
@@ -71,7 +71,7 @@ Automated:
 - scripts/test-scanner-scale.mjs: baseline ordering/dimensions, fallback ordering, invalid dimensions, unique candidates and 6 MP fallback allocation cap.
 - scripts/test-scanner-decoder-integration.mjs: production ZXing adapter uses multiple scales on a miss while every draw remains within the module-owned crop.
 - scripts/test-scanner-roi-decoder.mjs: existing strict ROI and fail-closed contract remains in preflight.
-- Full npm run preflight, TypeScript, production build and Pages build must pass on the final PR head.
+- GitHub Actions run #634 (`42970931657`) passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`. Any subsequent docs-only sync must also pass CI on the final PR head.
 
 Physical-device:
 - Home and Stocktake separately on iOS Safari/PWA and Android Chrome/PWA.
