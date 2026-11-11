@@ -36,9 +36,9 @@ try {
     focusEdgeCoverage: 0.12,
     focusMotionScore: 2.5,
     focusQualitySamples: 10,
-    focusRecoveryRequests: 1,
-    focusRecoveryStatus: 'requested',
-    focusControlEnabled: true,
+    focusSustainedBlurEvents: 1,
+    focusQualityStatus: 'sustained-blur-observed',
+    cameraControlChanged: false,
     lastDeskewAngleDegrees: -17.25,
     barcodePayload: 'MUST_NOT_BE_RETAINED',
     deviceId: 'MUST_NOT_BE_RETAINED',
@@ -63,9 +63,9 @@ try {
     focusSharpnessMin: 8.25,
     focusEdgeCoverage: 0.12,
     focusQualitySamples: 10,
-    focusRecoveryRequests: 1,
-    focusRecoveryStatus: 'requested',
-    focusControlEnabled: true,
+    focusSustainedBlurEvents: 1,
+    focusQualityStatus: 'sustained-blur-observed',
+    cameraControlChanged: false,
     lastDeskewAngleDegrees: -17.25,
   })) {
     assert.equal(event.metrics[key], expected, `diagnostic collector retains ${key}`);
@@ -83,8 +83,8 @@ try {
   assert.equal(exported.events[0].metrics.roiSourceScale, 0.75);
   assert.equal(exported.events[0].metrics.focusSharpness, 21.5);
   assert.equal(exported.events[0].metrics.focusMotionScore, 2.5);
-  assert.equal(exported.events[0].metrics.focusRecoveryRequests, 1);
-  assert.equal(exported.events[0].metrics.focusControlEnabled, true);
+  assert.equal(exported.events[0].metrics.focusSustainedBlurEvents, 1);
+  assert.equal(exported.events[0].metrics.cameraControlChanged, true);
   assert.equal(JSON.stringify(exported).includes('MUST_NOT_BE_RETAINED'), false,
     'export must not contain fields outside the diagnostic allowlist');
 } finally {
@@ -96,7 +96,7 @@ try {
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
   'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits',
-  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusRecoveryRequests', 'focusRecoveryStatus', 'focusControlEnabled', 'lastDeskewAngleDegrees',
+  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged', 'lastDeskewAngleDegrees',
 ]) {
   assert.ok(qaMonitor.includes(key), `QA Monitor displays/exports ${key}`);
 }
