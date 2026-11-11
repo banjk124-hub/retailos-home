@@ -64,7 +64,7 @@ The module defines its active region from its own reticle/layout. A future modul
 
 ## 6. Protected behavior
 
-No changes to camera lease/refcount, single-claim handoff, cancellation/release ordering, preview readiness, lifecycle/recovery, decoder cadence, one-decode-in-flight guard, ZXing implementation, EAN validation, CODE-128 payload handling, result acceptance/cooldown, Torch, feedback settings, Home lookup, or Stocktake form/save/revision/export behavior.
+No changes to camera lease/refcount, single-claim handoff, cancellation/release ordering, preview readiness, lifecycle/recovery, decoder cadence, one-decode-in-flight guard, ZXing implementation, EAN validation, CODE-128 and CODE-39 payload handling, result acceptance/cooldown, Torch, feedback settings, Home lookup, or Stocktake form/save/revision/export behavior.
 
 ## 7. Next PR dependencies
 
