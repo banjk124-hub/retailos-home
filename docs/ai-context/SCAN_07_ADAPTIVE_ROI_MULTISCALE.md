@@ -1,6 +1,6 @@
 # SCAN-07 — Adaptive ROI, multi-scale and coordinated focus recovery
 
-**Status:** Active implementation on PR #78 branch. CI and physical-device acceptance pending.
+**Status:** Active implementation on PR #78 branch. Final-head CI #678 passed; physical-device acceptance pending.
 **User feedback on PR #77:** modest improvement for small/far barcodes and reads near reticle edges, but not sufficient range/precision.
 **Scope lock:** SCAN-07 remains active. Do not move to SCAN-08/09 yet.
 
@@ -93,7 +93,7 @@ No changes to:
 - `scripts/test-scanner-track-constraints.mjs`: concurrent focus/Torch requests are serialized and both advanced constraints survive.
 - `scripts/test-scanner-validation.mjs`: focus is deferred until preview-ready and existing camera constraints survive autofocus.
 - `scripts/test-scanner-torch.mjs`: Torch uses the same shared track constraint helper.
-- Full `npm run preflight`, TypeScript, production build and Pages build must pass on the final PR head.
+- GitHub Actions #677 passed full preflight, TypeScript, production build and Pages build on code/test head `e3d745b1ce1a7fba87265769365d48667103b89b`; final-head #678 passed on `4728a8888c6ee6ab439af18ce8353661429d4195`.
 
 ## 8. Device acceptance — required on both Home and Stocktake
 
