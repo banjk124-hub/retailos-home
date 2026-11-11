@@ -33,6 +33,7 @@ try {
     focusSharpness: 21.5,
     focusSharpnessMin: 8.25,
     focusEdgeCoverage: 0.12,
+    focusMotionScore: 2.5,
     focusQualitySamples: 10,
     focusRecoveryRequests: 1,
     focusRecoveryStatus: 'requested',
@@ -78,6 +79,7 @@ try {
   assert.equal(exported.events[0].metrics.scaleHits, 1);
   assert.equal(exported.events[0].metrics.lastScaleFactor, 2);
   assert.equal(exported.events[0].metrics.focusSharpness, 21.5);
+  assert.equal(exported.events[0].metrics.focusMotionScore, 2.5);
   assert.equal(exported.events[0].metrics.focusRecoveryRequests, 1);
   assert.equal(exported.events[0].metrics.focusControlEnabled, true);
   assert.equal(JSON.stringify(exported).includes('MUST_NOT_BE_RETAINED'), false,
@@ -91,7 +93,7 @@ try {
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
   'roiUnavailable', 'roiWidth', 'roiHeight', 'rotationAttempts', 'rotationHits',
-  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusQualitySamples', 'focusRecoveryRequests', 'focusRecoveryStatus', 'focusControlEnabled', 'lastDeskewAngleDegrees',
+  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusRecoveryRequests', 'focusRecoveryStatus', 'focusControlEnabled', 'lastDeskewAngleDegrees',
 ]) {
   assert.ok(qaMonitor.includes(key), `QA Monitor displays/exports ${key}`);
 }
