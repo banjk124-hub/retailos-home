@@ -155,7 +155,13 @@ async function acquireSharedStream(
         }, { once: true });
       });
 
-      console.info('[RetailOS Scanner] Camera settings', getSafeCameraSettings(videoTracks[0]));
+      const cameraSettings = getSafeCameraSettings(videoTracks[0]);
+      console.info('[RetailOS Scanner] Camera settings', cameraSettings);
+      console.info('[RetailOS Scanner] Camera focus capability', {
+        focusModes: cameraSettings.focusModes?.join(',') ?? '',
+        focusMode: cameraSettings.focusMode,
+        focusPolicy: 'optional-getUserMedia-preference-native-fallback',
+      });
 
       // Focus tuning is deferred until the owning video element is playing
       // and has produced a fresh frame. Capabilities may not be complete earlier.
