@@ -54,7 +54,7 @@ assert.ok(sharpSample.sharpness > blurredSample.sharpness * 1.5,
 assert.equal(measureScannerFocusQuality(new Uint8ClampedArray(width * height).fill(255), width, height).valid, false,
   'blank low-texture frames must not be treated as defocus');
 
-const watchdog = new ScannerFocusWatchdog();
+const watchdog = new ScannerFocusQualityMonitor();
 assert.equal(watchdog.observe(sharpSample, 1000), false,
   'the first sharp sample establishes a reference and never requests recovery');
 assert.equal(watchdog.observe(movingBlurSample, 1500), false,
@@ -96,4 +96,4 @@ assert.match(session, /cameraControlChanged: false/,
 assert.doesNotMatch(session, /focusRecoveryRequests|focusRecoveryPending|focusControlEnabled/,
   'the old automatic focus-recovery state is removed');
 
-console.log('Scanner focus quality and bounded autofocus recovery tests passed.');
+console.log('Scanner passive focus-quality monitoring tests passed.');
