@@ -19,21 +19,29 @@
 - Geometry: `scannerGeometry.ts`; strict crop: `scannerRoi.ts`.
 - Orientation transform: `scannerRotation.ts`; continuous orientation/contrast/deskew: `scannerDeskew.ts`.
 - Camera/session: `cameraSession.ts`, `universalScannerSession.ts`, `useScannerEngine.ts`.
-- Current ROI upscale is fixed at 1.5×; frame-width cap is 1280 px.
+- SCAN-07 branch implementation: preserve the exact 1.5× baseline, then on a full baseline miss try 1× and 2× sampling within the same strict ROI; at most three candidates per frame.
+- Each additional scale is capped at 6 MP; frame-width cap remains 1280 px. The baseline 1.5× dimensions retain the existing rounding behavior.
 - Current candidate ordering: upright → exact 90° → deskew variants of original/rotated ROI, sorted by absolute correction angle.
 - Both HybridBinarizer and GlobalHistogramBinarizer are attempted per candidate.
 - Session minimum decode interval is 70 ms; decode calls remain serialized.
-- Existing metrics include decode duration/stage timing, ROI dimensions/availability, rotation and deskew attempts/misses/hits. These are not yet a calibrated cross-device benchmark.
+- Existing metrics include decode duration/stage timing, ROI dimensions/availability, rotation and deskew attempts/misses/hits. SCAN-07 adds scale attempts/hits and last attempted scale. These are not yet a calibrated cross-device benchmark.
+
+## SCAN-07 branch implementation — verification pending
+- `scannerScale.ts` produces the fixed 1.5× baseline plus at most two unique fallback scales (1× and 2×); fallback allocations are capped at 6 MP each.
+- `zxingDecoder.ts` executes the complete existing orientation/deskew/binarizer pipeline at 1.5× first. Only after a miss does it redraw the exact same strict source ROI at fallback scales.
+- No reticle geometry, session cadence, camera lifecycle, decoder concurrency, validation or module workflow changes.
+- Padding outside the published reticle is not implemented: Home/Stocktake do not yet publish a separate authorized capture envelope. This is intentional to preserve SCAN-04.
+- Added scale-planner regression tests and extended production-adapter integration coverage; preflight registration added. Latest CI result must be checked before marking verified.
 
 ## Not implemented yet
-- SCAN-07: adaptive ROI padding/capture envelope and multi-scale candidate selection.
+- SCAN-07 physical-device acceptance and labelled small/far barcode performance evidence.
 - SCAN-08: optional gamma, adaptive threshold and denoise candidate paths. Existing percentile contrast stretch is not equivalent to this phase.
 - SCAN-09: perspective detection/rectification and curved-label dewarping.
 - SCAN-10: runtime/device adaptive candidate budget and frame-time policy.
 - SCAN-11: completed cross-platform/device matrix and quantitative acceptance record.
 
 ## Next gate
-Complete documentation reconciliation and source audit before runtime changes. Preserve current path as baseline; add candidate paths behind deterministic gates and compare using a labelled fixture corpus. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows as part of optical algorithm work.
+Review and verify the SCAN-07 implementation on PR #77. Preserve the current 1.5× path as baseline; compare fallback candidates using a labelled fixture corpus. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows. Do not change camera lifecycle, preview geometry, strict ROI boundary, result semantics or business flows as part of optical algorithm work.
 
 ---
 
