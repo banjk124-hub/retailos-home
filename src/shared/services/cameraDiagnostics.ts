@@ -61,9 +61,7 @@ export async function requestContinuousAutofocus(
 
     // applyConstraints replaces the active custom constraint set. Preserve
     // the negotiated camera dimensions, frame rate, facing mode and device.
-    await track.applyConstraints(
-      buildTrackConstraintsWithAdvanced(track, 'focusMode', 'continuous'),
-    );
+    await applyTrackAdvancedConstraint(track, 'focusMode', 'continuous');
     const settings = track.getSettings?.() as FocusSettings | undefined;
 
     return {
