@@ -48,6 +48,7 @@ assert.ok(sourceCamera.includes('cameraRequest: requestSnapshot'), 'the one-shot
 const sessionSource = await readFile(new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url), 'utf8');
 assert.ok(sessionSource.includes('initialCameraLeaseRequest?.cameraRequest ?? cameraRequest'), 'the initial tap request is authoritative for the session intent');
 assert.ok(sessionSource.includes('acquireCameraLease(this.cameraRequest)'), 'a replacement session reacquires using the preserved module intent');
+assert.ok(sessionSource.includes("name === 'OverconstrainedError'"), 'camera compatibility conflicts map to the scanner constraint error');
 
 const hookSource = await readFile(new URL('../src/features/scanner/hooks/useScannerEngine.ts', import.meta.url), 'utf8');
 assert.ok(hookSource.includes('cameraRequestRef.current'), 'the React bridge retains camera intent beyond the one-shot lease request');
@@ -170,7 +171,10 @@ try {
   mediaCalls = [];
   currentStream = makeStream({ facingMode: 'environment', frameRate: 30 });
   installMedia(async () => currentStream);
-  const unclaimed = cameraSession.requestCameraLease(rearDefault);
+  const mutableIntent = { ...rearDefault };
+  const unclaimed = cameraSession.requestCameraLease(mutableIntent);
+  mutableIntent.facingMode = 'user';
+  assert.equal(unclaimed.cameraRequest.facingMode, 'environment', 'the tap request snapshots module intent before it can be mutated');
   unclaimed.cancel();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(currentStream.stopCount, 1, 'cancelling an unclaimed tap request releases its eventual lease');
