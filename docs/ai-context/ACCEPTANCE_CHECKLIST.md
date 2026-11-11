@@ -6,7 +6,7 @@
 - [x] Added `CODE_39` to the production allowlist used by Home and Stocktake.
 - [x] Added payload validation for the standard uppercase Code 39 alphabet, preserving spaces and rejecting control/unsupported characters.
 - [x] Added validation fixtures for valid text, punctuation, spaces, empty payload, control characters and invalid characters.
-- [x] Added production ZXing adapter fixtures for upright and deskewed Code 39.
+- [x] Added production ZXing adapter fixtures for upright and 180-degree Code 39.
 - [ ] Full preflight and production/Pages builds pass on the remediation branch.
 - [ ] Manual real-label Code 39 verification on iOS Safari/PWA and Android Chrome/PWA.
 
