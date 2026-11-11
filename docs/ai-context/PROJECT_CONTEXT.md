@@ -24,7 +24,7 @@
 - Device-local shared preferences: vibration enabled by default; beep volume 50% by default. After PR #57, 50% maps to gain 0.30; 0% mutes and 100% maps to 0.60.
 - Settings Hub separates Scanner preferences from Scanner QA Monitor. Home and Stocktake use one shared accepted-result feedback service.
 - Deployment of PR #56 is not inferred from merge. Physical Android/iOS validation remains a separate gate.
-- Follow-up PR #57 adds mocked AudioContext/GainNode runtime assertions and synchronizes the current engineering records. Full preflight passed in GitHub Actions run #42648085229 on documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. Production audio mapping and scanner/camera workflows remain unchanged pending physical A/B evidence.
+- PR #57 is merged at `09cd3b5117ea38a16dd991f74320835b67ea04b5`; it adds mocked AudioContext/GainNode runtime assertions and iOS foreground recovery. Current gain mapping is 0–0.60, with 50%=0.30 and approximately 140 ms tone. Physical acoustic acceptance remains separate.
 
 ---
 
