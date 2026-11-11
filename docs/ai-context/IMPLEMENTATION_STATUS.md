@@ -26,12 +26,13 @@
 - Session minimum decode interval is 70 ms; decode calls remain serialized.
 - Existing metrics include decode duration/stage timing, ROI dimensions/availability, rotation and deskew attempts/misses/hits. SCAN-07 adds scale attempts/hits and last attempted scale. These are not yet a calibrated cross-device benchmark.
 
-## SCAN-07 branch implementation — verification pending
+## SCAN-07 branch implementation — CI verified; device acceptance pending
 - `scannerScale.ts` produces the fixed 1.5× baseline plus at most two unique fallback scales (1× and 2×); fallback allocations are capped at 6 MP each.
 - `zxingDecoder.ts` executes the complete existing orientation/deskew/binarizer pipeline at 1.5× first. Only after a miss does it redraw the exact same strict source ROI at fallback scales.
 - No reticle geometry, session cadence, camera lifecycle, decoder concurrency, validation or module workflow changes.
 - Padding outside the published reticle is not implemented: Home/Stocktake do not yet publish a separate authorized capture envelope. This is intentional to preserve SCAN-04.
-- Added scale-planner regression tests and extended production-adapter integration coverage; preflight registration added. Latest CI result must be checked before marking verified.
+- Added scale-planner regression tests and extended production-adapter integration coverage, including a forced 1.5× baseline miss followed by a successful 1× fallback; preflight registration added.
+- GitHub Actions run #634 (`42970931657`) passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`. Any later documentation-only commit must pass CI on the final PR head.
 
 ## Not implemented yet
 - SCAN-07 physical-device acceptance and labelled small/far barcode performance evidence.
