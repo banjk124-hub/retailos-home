@@ -7,7 +7,7 @@
 - [x] Added payload validation for the standard uppercase Code 39 alphabet, preserving spaces and rejecting control/unsupported characters.
 - [x] Added validation fixtures for valid text, punctuation, spaces, empty payload, control characters and invalid characters.
 - [x] Added production ZXing adapter fixtures for upright and 180-degree Code 39.
-- [x] Full preflight and production/Pages builds pass on final branch head `e7cf527932490c41926f1e8fe108d108fc9ad438` (CI #571).
+- [x] Full preflight and production/Pages builds pass on final branch head `8f558511297596be0819baea01d49ed0993b86fb` (CI #577).
 - [ ] Manual real-label Code 39 verification on iOS Safari/PWA and Android Chrome/PWA.
 
 ## Recovery diagnostics
