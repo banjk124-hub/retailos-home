@@ -139,10 +139,18 @@ const decoderSource = await readFile(
 assert.match(decoderSource, /rotateLuminance90Clockwise\(/, 'decoder must consume the pure rotation helper');
 assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(\s*timestamp,\s*candidate\.baseline \? onFocusQuality : undefined,\s*!candidate\.baseline,\s*\)/,
   'every valid ROI frame must enter the complete production decode pipeline, with focus sampling limited to the baseline and orientation hints reused for fallbacks');
-assert.match(decoderSource, /if \(uprightOutput\) return uprightOutput/,
-  'upright decode must be attempted first');
-assert.match(decoderSource, /deskewLuminanceFrame\(/,
-  'continuous deskew must be wired into the production decoder');
+assert.match(decoderSource, /executeScannerEnhancementPipeline/,
+  'production decoder must delegate orientation candidate ordering to the shared enhancement pipeline');
+const enhancementPipelineSource = await readFile(
+  new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url),
+  'utf8',
+);
+assert.match(enhancementPipelineSource, /stage: 'baseline'/,
+  'the original ROI must remain the first enhancement candidate');
+assert.match(enhancementPipelineSource, /stage: 'orthogonal'/,
+  'the exact quarter-turn candidate must remain in the shared enhancement pipeline');
+assert.match(enhancementPipelineSource, /stage: 'deskew'/,
+  'continuous deskew must remain a bounded candidate in the shared enhancement pipeline');
 assert.match(decoderSource, /rotationAttempts:/, 'rotation attempt diagnostics must be exposed');
 assert.match(decoderSource, /rotationHits:/, 'rotation hit diagnostics must be exposed');
 
