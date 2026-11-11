@@ -135,11 +135,12 @@ try {
   });
   const pendingRear = cameraSession.acquireCameraLease(rearDefault);
   const pendingFront = cameraSession.acquireCameraLease({ ...rearDefault, facingMode: 'user' });
+  const pendingFrontAssertion = assert.rejects(pendingFront, (error) => error?.name === 'OverconstrainedError',
+    'a pending stream is checked against every waiting caller after settings resolve');
   assert.equal(mediaCalls.length, 1, 'in-flight acquisitions are coalesced before actual settings are known');
   resolvePending();
   const pendingRearLease = await pendingRear;
-  await assert.rejects(pendingFront, (error) => error?.name === 'OverconstrainedError',
-    'a pending stream is checked against every waiting caller after settings resolve');
+  await pendingFrontAssertion;
   pendingRearLease.release();
 
   mediaCalls = [];
