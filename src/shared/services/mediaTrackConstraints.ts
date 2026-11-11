@@ -50,3 +50,31 @@ export function buildTrackConstraintsWithAdvanced(
   ];
   return constraints;
 }
+
+
+const trackConstraintQueues = new WeakMap<MediaStreamTrack, Promise<void>>();
+
+/**
+ * Serialize track-level camera tuning. Autofocus recovery and Torch share the
+ * same MediaStreamTrack; concurrent applyConstraints() calls could otherwise
+ * overwrite each other's advanced settings.
+ */
+export async function applyTrackAdvancedConstraint(
+  track: MediaStreamTrack,
+  key: string,
+  value: unknown,
+): Promise<void> {
+  const previous = trackConstraintQueues.get(track) ?? Promise.resolve();
+  const operation = previous.catch(() => undefined).then(async () => {
+    const constraints = buildTrackConstraintsWithAdvanced(track, key, value);
+    await track.applyConstraints(constraints);
+  });
+  trackConstraintQueues.set(track, operation);
+  try {
+    await operation;
+  } finally {
+    if (trackConstraintQueues.get(track) === operation) {
+      trackConstraintQueues.delete(track);
+    }
+  }
+}
