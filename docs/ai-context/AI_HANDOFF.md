@@ -3,22 +3,23 @@
 **Repository:** banjk124-hub/retailos-home
 **Current main:** `20ce22e4d015d01249d6996f5d5bb55b02bb976c` (PR #76 merge).
 **Current work branch:** `docs/scanner-roadmap-reconciliation-scan07-11`, based on current main.
-**Scope:** documentation and source audit only. No scanner runtime changes, no merge/deploy.
+**Scope:** documentation reconciliation plus additive SCAN-07 strict-ROI multi-scale implementation. No merge/deploy.
 **Operational note:** user reports scanner operation relatively stable; do not convert this into unsupported claims about measured accuracy, latency or device coverage.
 
 ## Resume instructions
-1. Read `docs/ai-context/SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` first.
+1. Read `docs/ai-context/SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` and `docs/ai-context/SCAN_07_ADAPTIVE_ROI_MULTISCALE.md` first.
 2. Read current source in `zxingDecoder.ts`, `scannerGeometry.ts`, `scannerRoi.ts`, `scannerRotation.ts`, `scannerDeskew.ts`, `universalScannerSession.ts` and the Home/Stocktake ROI bindings.
 3. Treat SCAN-02/03 mapping and SCAN-04 strict ROI as immutable contracts unless a separate compatibility design and regression evidence justify an additive extension.
 4. Preserve the current decode candidate as the baseline. New transforms are optional candidates after baseline misses; never replace the existing path without corpus evidence.
 5. Separate algorithm accuracy, false-positive rate, latency, memory and device responsiveness in all reports.
-6. Each phase gets its own branch/PR, tests, diagnostics and rollback plan. Do not batch SCAN-07–10 into one rewrite.
+6. SCAN-07 is being delivered inside PR #77 as requested. SCAN-08–11 remain separately scoped. Do not batch them into one rewrite.
 
-## Current verified project state
+## Current project state — SCAN-07 branch implementation pending verification
 - SCAN-01 through SCAN-06 implemented; PR #67 confirmed merged/deployed by user.
 - PR #75 Code 39/diagnostic remediation merged.
 - PR #76 Camera Request Bridge merged to main at `20ce22e`; run #610 passed on code/test head `b954b8a`. Device QA evidence for PR #76 must not be assumed from CI.
-- Current runtime: strict ROI, 1.5× upscale, 1280 px source width cap, upright/90°/continuous deskew candidate flow, percentile contrast stretch, Hybrid + GlobalHistogram, serialized decode, 70 ms minimum interval.
+- Current PR #77 branch adds bounded 1×/2× strict-ROI fallback after the unchanged 1.5× baseline. At most three scales per frame; each additional scale is capped at 6 MP. Existing 1280 px source width cap, upright/90°/continuous deskew, percentile contrast stretch, Hybrid + GlobalHistogram, serialized decode and 70 ms minimum interval remain unchanged.
+- No padding outside reticle: a separate module-authorized capture envelope does not yet exist. Do not infer permission to expand the ROI.
 - Current user feedback: operationally relatively stable.
 
 ## Protected invariants
