@@ -127,7 +127,7 @@ These additional measurements are not required to describe the user's functional
 - [x] Rectangles use normalized fractions and document top-left origin and bounds invariants.
 - [x] Module contract separates scan region from camera request.
 - [x] Camera request values are preferred constraints, independent of display aspect ratio.
-- [x] Default camera request remains environment / 1280×720 / 30 FPS ideal / 30 FPS maximum.
+- [x] Current camera request prefers environment / 1920×1080 / 30 FPS ideal / 30 FPS maximum; actual browser-negotiated settings are recorded.
 - [x] Runtime call sites consume the module request through the tap-origin shared lease; PR #76 merged at main baseline `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
 - [x] Camera lease compatibility, immutable intent and recovery re-acquisition are covered by PR #76 regression tests.
 - [x] GitHub Actions run #610 passed full preflight, TypeScript, production and Pages builds on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`.
