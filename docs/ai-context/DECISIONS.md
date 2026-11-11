@@ -35,7 +35,7 @@ The shared scanner is already separated into feature-owned UI, a React bridge, a
 - Resource adaptation may change optional visual/processing intensity only. Barcode allowlist/validation, scan accuracy, session ownership, callback delivery, persistence and feature workflows are hard invariants.
 - Home and Stocktake presentation remain independently owned while sharing the engine.
 - Do not assume universal battery/temperature telemetry in iOS Safari or Android Chrome. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
-- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified Low. Such changes require measured scan-accuracy and latency evidence.
+- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified Low. Such changes require measured scan-accuracy and per-stage processing-cost evidence.
 
 ### Consequences
 - Profile selection is advisory and must degrade safely when capability data is missing.
