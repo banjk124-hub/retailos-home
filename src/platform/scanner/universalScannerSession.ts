@@ -562,8 +562,9 @@ export class UniversalScannerSession implements ScannerSession {
     if (this.focusControlEnabled && !this.focusRecoveryPending
       && this.focusWatchdog.observe(sample, timestamp)) {
       const lease = this.cameraLease;
-      const track = this.stream?.getVideoTracks()[0] ?? null;
-      if (lease && track?.readyState === 'live') {
+      const stream = this.stream;
+      const track = stream?.getVideoTracks()[0] ?? null;
+      if (lease && stream && track?.readyState === 'live') {
         this.focusRecoveryPending = true;
         this.focusRecoveryRequests += 1;
         console.warn('[RetailOS Scanner] Camera focus recovery', {
@@ -574,7 +575,7 @@ export class UniversalScannerSession implements ScannerSession {
         });
         void lease.reapplyContinuousAutofocus()
           .then((results) => {
-            if (generation !== this.generation || this.stream !== track?.getSettings && false) return;
+            if (generation !== this.generation || this.stream !== stream || this.disposed) return;
             const result = results[0];
             console.info('[RetailOS Scanner] Camera focus recovery', {
               focusRecoveryStatus: result?.status ?? 'unavailable',
