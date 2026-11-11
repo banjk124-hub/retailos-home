@@ -77,6 +77,12 @@ try {
   assert.match(sessionSource, /const minDecodeIntervalMs = 70/,
     'the shared session must use the approved higher decode sampling cadence');
 
+  const { SUPPORTED_BARCODE_FORMATS } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/contracts.js'),
+  ).href);
+  assert.ok(SUPPORTED_BARCODE_FORMATS.includes('CODE_39'),
+    'production retail allowlist must enable Code 39');
+
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
@@ -119,6 +125,42 @@ try {
     }
     return { luminance, width, height };
   }
+  const CODE39_ENCODINGS = {
+    '0': 0x034, '1': 0x121, '2': 0x061, '3': 0x160, '4': 0x031,
+    '5': 0x130, '6': 0x070, '7': 0x025, '8': 0x124, '9': 0x064,
+    A: 0x109, B: 0x049, C: 0x148, D: 0x019, E: 0x118, F: 0x058,
+    G: 0x00d, H: 0x10c, I: 0x04c, J: 0x01c, K: 0x103, L: 0x043,
+    M: 0x142, N: 0x013, O: 0x112, P: 0x052, Q: 0x007, R: 0x106,
+    S: 0x046, T: 0x016, U: 0x181, V: 0x0c1, W: 0x1c0, X: 0x091,
+    Y: 0x190, Z: 0x0d0, '-': 0x085, '.': 0x184, ' ': 0x0c4,
+    '$': 0x0a8, '/': 0x0a2, '+': 0x08a, '%': 0x02a, '*': 0x094,
+  };
+  function makeCode39Frame(value) {
+    const framed = '*' + value + '*';
+    let modules = '0'.repeat(12);
+    for (let characterIndex = 0; characterIndex < framed.length; characterIndex += 1) {
+      const encoding = CODE39_ENCODINGS[framed[characterIndex]];
+      assert.notEqual(encoding, undefined, 'Code 39 fixture supports ' + framed[characterIndex]);
+      for (let element = 0; element < 9; element += 1) {
+        const wide = (encoding & (1 << (8 - element))) !== 0;
+        const black = element % 2 === 0;
+        modules += (black ? '1' : '0').repeat(wide ? 3 : 1);
+      }
+      if (characterIndex < framed.length - 1) modules += '0';
+    }
+    modules += '0'.repeat(12);
+    const scale = 3;
+    const width = modules.length * scale;
+    const height = 84;
+    const luminance = new Uint8ClampedArray(width * height);
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < modules.length; x += 1) {
+        luminance.fill(modules[x] === '1' ? 0 : 255, y * width + x * scale, y * width + (x + 1) * scale);
+      }
+    }
+    return { luminance, width, height };
+  }
+
   const EAN_L = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
   const EAN_G = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
   const EAN_FIRST_PARITY = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
@@ -175,6 +217,22 @@ try {
   async function decodeOnce(decoder, source, scanRegion = fullRegion) {
     return decoder.decode(source, { timestamp: 1234, scanRegion });
   }
+
+  const code39Frame = makeCode39Frame('RETAIL-39');
+  const code39Decoder = await createDecoder('CODE_39');
+  const code39Result = await decodeOnce(code39Decoder, toSource(code39Frame));
+  assert.equal(code39Result[0]?.value, 'RETAIL-39',
+    'production adapter must decode a real Code 39 symbol through the strict ROI');
+  assert.equal(code39Result[0]?.symbology, 'CODE_39',
+    'production adapter must preserve Code 39 symbology in result delivery');
+  await code39Decoder.dispose();
+
+  const reversedCode39Frame = rotateCW(rotateCW(code39Frame));
+  const reversedCode39Decoder = await createDecoder('CODE_39');
+  const reversedCode39Result = await decodeOnce(reversedCode39Decoder, toSource(reversedCode39Frame));
+  assert.equal(reversedCode39Result[0]?.value, 'RETAIL-39',
+    'production adapter must decode Code 39 through the existing 180-degree OneDReader reversal path');
+  await reversedCode39Decoder.dispose();
 
   const upright = makeCode128();
   const uprightDecoder = await createDecoder();
@@ -341,7 +399,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: upright, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
+  console.log('Production ZXing adapter integration passed: Code 39 upright/deskew, Code 128, EAN, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });

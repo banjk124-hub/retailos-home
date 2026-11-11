@@ -1,3 +1,31 @@
+# Scanner Engine remediation — Code 39 and diagnostic integration (2026-11-11)
+
+## Code 39
+- [x] Confirmed `@zxing/library` 0.23.0 is already installed; no dependency change required.
+- [x] Confirmed `BarcodeFormat.CODE_39` and forward/reverse decoder mapping already existed.
+- [x] Added `CODE_39` to the production allowlist used by Home and Stocktake.
+- [x] Added payload validation for the standard uppercase Code 39 alphabet, preserving spaces and rejecting control/unsupported characters.
+- [x] Added validation fixtures for valid text, punctuation, spaces, empty payload, control characters and invalid characters.
+- [x] Added production ZXing adapter fixtures for upright and 180-degree Code 39.
+- [x] Full preflight and production/Pages builds pass on final branch head `8f558511297596be0819baea01d49ed0993b86fb` (CI #577).
+- [ ] Manual real-label Code 39 verification on iOS Safari/PWA and Android Chrome/PWA.
+
+## Recovery diagnostics
+- [x] Collector allowlist retains ROI availability/dimensions, rotation and deskew counters/angle.
+- [x] QA Monitor event detail and CSV export include the recovery metrics.
+- [x] Privacy regression verifies payload-like keys and camera identifiers are excluded.
+- [ ] Full preflight passes on the remediation branch.
+- [ ] Verify a live diagnostic export from a device session contains the metrics after rotation/deskew activity.
+
+**Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; Code 39 angled/optical performance remains unverified and must not be claimed from the upright/180° tests.
+
+## Explicitly deferred
+- [ ] Complete runtime use of `ScannerModuleConfig.cameraRequest`; requires separate shared-camera lease compatibility design.
+- [ ] Labelled benchmark corpus and measured device baselines.
+- [ ] Generalized conditional recovery orchestration for future SCAN-08/09 capabilities.
+
+---
+
 # SCAN-05/06 acceptance — merged and user-validated (2026-11-10)
 
 ## Source and pipeline
@@ -88,7 +116,7 @@ These additional measurements are not required to describe the user's functional
 - [x] Settings dock icon uses the gear-shaped Settings icon.
 - [x] Settings opens a hub with separate Scanner QA Monitor and Scanner preferences entries.
 - [x] Device-local versioned preferences default to vibration enabled and beep volume 50%.
-- [x] Beep volume slider has 11 levels; 50% preserves gain 0.24, 0% mutes, 100% maps to gain 0.48.
+- [x] Beep volume slider has 11 levels; current merged audio mapping is 50% gain 0.30, 0% mutes, 100% maps to gain 0.60 (PR #57).
 - [x] Shared feedback reads current preferences at accepted-result time; Home/Stocktake cannot override global settings.
 - [x] Unsupported vibration API is surfaced honestly and does not block barcode delivery.
 - [x] Regression test is included in preflight.

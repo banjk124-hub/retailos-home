@@ -100,3 +100,14 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Device QA remains mandatory on iOS Safari/PWA and Android Chrome/PWA, including low-end latency/CPU comparison.
 
 - Final consolidated PR #66 CI run #360 passed after the final branch was rebased onto the restored `main` baseline. The PR remains unmerged/undeployed pending physical device acceptance.
+
+
+## 2026-11-11 — Scanner Engine remediation and Code 39 enablement
+
+- Main baseline: `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge).
+- PR #75 branch `fix/scanner-engine-remediation-code39`: enabled Code 39 end-to-end using existing ZXing 0.23.0 support; no new dependency.
+- Added standard Code 39 payload validation and production-adapter upright/180-degree regression fixtures.
+- Repaired diagnostic metric filtering so ROI/rotation/deskew counters reach QA Monitor and CSV export; added privacy tests for payload/device identifier exclusion.
+- Reconciled current audio values after PR #57 (50% gain 0.30, max gain 0.60, approximately 140 ms).
+- Corrected scanner handoff, roadmap, architecture and acceptance documentation; clarified that the aggregate camera request contract remains declarative.
+- PR #75 remains Draft/unmerged/undeployed pending review. CI #577 passed full preflight and builds. Code 39 upright/180° integration passes; a synthetic 17° deskew fixture did not decode, so angled Code 39 remains unverified. No camera/lifecycle/ROI/presentation/business-flow changes.

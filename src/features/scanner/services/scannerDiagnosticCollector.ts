@@ -15,7 +15,7 @@ const ALLOWED_KEYS = new Set([
   'decoderErrors', 'callbackErrors', 'decodeDurationAverageMs', 'decodeDurationMaxMs',
   'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore', 'validationRejectReasons',
   'averageDecodeMs', 'maxDecodeMs', 'samples', 'stages', 'sourceWidth', 'sourceHeight',
-  'frames', 'decoded', 'roiHits', 'notFound', 'checksumErrors', 'formatErrors',
+  'frames', 'decoded', 'roiHits', 'roiUnavailable', 'roiWidth', 'roiHeight', 'rotationAttempts', 'rotationHits', 'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'lastDeskewAngleDegrees', 'notFound', 'checksumErrors', 'formatErrors',
   'unexpectedErrors', 'valueLength', 'symbology', 'mode', 'focusStatus', 'focusModes', 'focusRequestMs', 'focusErrorName',
   'width', 'height', 'frameRate', 'facingMode', 'focusMode', 'exposureMode', 'whiteBalanceMode', 'pageLifecycle', 'frameCallbackObserved',
   'videoReadyMs', 'videoReadyState', 'videoWidth', 'videoHeight', 'trackEvent', 'trackMuted', 'trackReadyState',

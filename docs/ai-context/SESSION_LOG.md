@@ -528,3 +528,16 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Extended the production decoder integration suite to exercise the actual scheduled SCAN-06 deskew path as well as upright and orthogonal decode. It now verifies that a synthetic +5° Code 128 ROI is not deskewed on frames one/two and is corrected/decoded on the third valid ROI frame. Fresh CI is required for this final test extension.
 
 - GitHub Actions run #395 passed the final implementation head: all preflight suites, including production adapter upright decode, scheduled 90°/270° rotation, scheduled +5° deskew, strict ROI/no-fallback assertions, TypeScript, production build, GitHub Pages build and diff checks. The remaining release gate is physical iOS Safari/PWA and Android Chrome/PWA QA with real devices and low-end performance measurements.
+
+
+## 2026-11-11 — Scanner Engine remediation and Code 39
+
+- Baseline confirmed: current `main` was `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`, PR #74 merge commit. Scanner remediation branch `fix/scanner-engine-remediation-code39` is based directly on this commit.
+- Source audit confirmed `@zxing/library` 0.23.0 and the adapter's `BarcodeFormat.CODE_39` mapping already existed, but `SUPPORTED_BARCODE_FORMATS` and `validateBarcodePayload()` rejected Code 39. Enabled Code 39 without adding a dependency.
+- Added Code 39 payload policy for standard uppercase data characters, preserving spaces; optional Mod-43 checksum enforcement remains disabled.
+- Added Code 39 validation fixtures and production-adapter fixtures (upright and 180-degree reversal).
+- Found decoder ROI/rotation/deskew counters were emitted but removed by the diagnostic collector allowlist. Added safe keys, QA Monitor display/CSV fields and an export privacy regression test.
+- Reconciled PR #57/#68/#74 status descriptions and scanner docs. PR #57 merged at `09cd3b5117ea38a16dd991f74320835b67ea04b5`; PR #68 merged at `16e296cc5d1074a15a179f186b5db7c2b37c2131`; PR #74 merged at `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.
+- Explicitly deferred runtime consumption of `ScannerModuleConfig.cameraRequest`: current shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. Per-module requests need a separate shared-stream/lease and recovery design.
+- No camera acquisition, constraints/autofocus, lifecycle/recovery, cadence, strict ROI, Home/Stocktake presentation or business workflow changes were made.
+- PR #75 is open and Draft. Final CI #577 passed full preflight, Code 39 validation + upright/180° production-adapter tests, diagnostic privacy/export tests, TypeScript, production and Pages builds. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified. No merge/deploy has occurred.

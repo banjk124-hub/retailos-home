@@ -7,7 +7,7 @@ export type ScannerSettings = {
 
 export const DEFAULT_SCANNER_SETTINGS: Readonly<ScannerSettings> = Object.freeze({
   vibrationEnabled: true,
-  // 50% maps to the existing Web Audio gain of 0.24.
+  // 50% maps to the current Web Audio gain of 0.30 (0.60 at 100%).
   beepVolume: 50,
 });
 

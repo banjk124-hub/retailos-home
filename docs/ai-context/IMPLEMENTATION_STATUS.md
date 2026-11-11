@@ -1,7 +1,24 @@
+# Current Main reconciliation — Scanner Engine remediation (2026-11-11)
+
+**Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). The older `9406ac...` line below is the PR #67 historical scanner baseline, not current repository HEAD.
+
+**Active remediation:** branch `fix/scanner-engine-remediation-code39`, based on current main. Not merged or deployed.
+
+- Code 39 was present in the broad `ScannerSymbology` type and ZXing `FORMAT_MAP`, but absent from `SUPPORTED_BARCODE_FORMATS` and rejected by `validateBarcodePayload()`. This branch enables it end-to-end and adds production-adapter tests.
+- Rotation/deskew counters were emitted by `zxingDecoder.ts` but filtered out by `scannerDiagnosticCollector.ts`. This branch adds the missing safe keys and QA Monitor/CSV presentation.
+- Diagnostic privacy tests ensure payload-like fields and camera identifiers remain excluded.
+- Current audio source: 50% = gain 0.30; 100% = gain 0.60; approximately 140 ms. Historical PR #56 values 0.24/0.48 are superseded by merged PR #57.
+- `ScannerModuleConfig.cameraRequest` is not a runtime input. The shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. This is explicitly deferred; do not bypass the shared lease.
+- No camera, lifecycle, cadence, ROI, presentation or business-flow behavior is changed by this remediation branch.
+
+**Next gate:** finish CI and diff review, then request approval. Do not merge/deploy automatically.
+
+---
+
 # SCAN-05/06 — merged, deployed and user-validated (2026-11-10)
 
 **Repository:** banjk124-hub/retailos-home
-**Current main:** 9406ac30d53bc9984912bd1928a32fd78157cf60 (PR #67 merge commit).
+**PR #67 merge baseline:** 9406ac30d53bc9984912bd1928a32fd78157cf60. Current repository main advanced to PR #74 merge commit `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.
 **PR:** [#67 — Continuous barcode orientation recovery](https://github.com/banjk124-hub/retailos-home/pull/67), merged 2026-11-10.
 **Final PR head:** c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
 **CI:** run #432 passed full preflight on the final PR head. CI #425 passed the executable source head e0b28787f40db8c811bc7fde912bae2558289198; the 13 commits between those heads were documentation-only.
@@ -102,7 +119,7 @@ SCAN-05/06 is closed as a completed corrective slice. Do not reopen or alter its
 - PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 is merged at `5eee1a6a565f6263907541dac6af6b4ba77b37be`. Deployment status is not asserted by this record.
 - Final PR head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full `npm run preflight` in GitHub Actions run #42575773839.
 - Device-local versioned preferences are shared by all Scanner consumers: vibration enabled by default; beep volume 50% by default.
-- 50% maps to existing Web Audio gain 0.24; 0% mutes; 100% maps to 0.48. The slider has 11 discrete steps.
+- At PR #56 merge, 50% mapped to gain 0.24 and 100% to 0.48. This historical mapping was superseded by merged PR #57 (current: 50%=0.30, 100%=0.60, approximately 140 ms tone). The slider retains 11 discrete steps.
 - Shared accepted-result feedback reads preferences at event time; Home and Stocktake no longer pass independent audio/haptic overrides.
 - Settings Hub exposes separate Scanner preferences and Scanner QA Monitor entries. The dock uses the gear-shaped Settings icon.
 - Vibration control feature-detects `navigator.vibrate`; unsupported browsers display a note and disable the control without affecting scanning.
@@ -112,9 +129,9 @@ SCAN-05/06 is closed as a completed corrective slice. Do not reopen or alter its
 - Branch: `test/scanner-audio-runtime-and-doc-sync`, based on PR #56 merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
 - Adds a mocked Web Audio runtime test for actual GainNode ramp values (0, 50, 70 and 100%), AudioContext gesture unlock, preview/current-setting synchronization, shared accepted-result feedback and missing-Vibration-API behavior.
 - Registers the runtime test in `npm run preflight`. GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`.
-- Does not alter the production volume curve: 50% remains gain 0.24 and 100% remains 0.48 until real-device comparison supports a change.
+- PR #57 changes the production curve: 50% maps to gain 0.30 and 100% to 0.60; tone duration is approximately 140 ms.
 - Camera acquisition/lease, decoder, validation, lifecycle, Torch, Home lookup and Stocktake form/save flows remain outside scope.
-- CI for PR #57 passed; PR remains Draft, open, unmerged and undeployed. Real-device audio loudness and vibration QA remain pending.
+- PR #57 is merged; deployment/physical audio loudness and vibration QA must be tracked independently. CI does not prove physical output.
 
 ---
 

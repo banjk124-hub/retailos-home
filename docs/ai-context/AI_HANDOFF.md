@@ -1,15 +1,38 @@
-# Current task — Xuất file: workspace v2, product metrics and action states (2026-11-10)
+# Current task — Scanner Engine remediation and Code 39 enablement (2026-11-11)
 
-**Deployed baseline:** PR #70–#73 merged; user confirms PR #73 is merged and deployed.  
-**Current main:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`.  
-**Current branch:** `feat/stocktake-import-workspace-v2`.  
-**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; not merged/deployed).  
-**Current PR #74 code head:** `c61746272f2b31cd8be222cc4012e38de1ce3ddc` (latest docs synchronization may advance the PR head).  
-**CI:** run #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`.  
-**Module record:** `modules/EXPORT_FILE.md` (authoritative resume point).  
-**Detailed contract:** `STOCKTAKE_FILE_IMPORT.md`; architecture decision ADR-033.
+**Repository:** banjk124-hub/retailos-home  
+**Current main baseline:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit).  
+**Active branch:** `fix/scanner-engine-remediation-code39`.  
+**Branch base:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`.  
+**PR:** [#75 — Scanner remediation and Code 39](https://github.com/banjk124-hub/retailos-home/pull/75), open Draft; branch remains unmerged.  
+**Deployment:** no changes from this branch have been deployed.
 
-## User requirements being implemented
+## Current branch scope
+- Enable Code 39 in the existing ZXing adapter path, explicit supported-format allowlist and payload validation. ZXing's Code 39 enum/mapping existed before this branch; production activation did not.
+- Add Code 39 validation tests and production-adapter upright/180-degree integration fixtures.
+- Retain rotation/deskew diagnostics through the privacy allowlist and surface them in QA Monitor / CSV export.
+- Add a privacy regression test for diagnostic collection/export.
+- Correct stale audio gain documentation/comment: 50% = 0.30, 100% = 0.60, tone duration approximately 140 ms.
+- Synchronize scanner architecture, acceptance and roadmap records.
+
+## Protected invariants
+No camera acquisition/lease, constraints/autofocus, lifecycle/recovery, decode cadence, strict ROI/no-fallback, Home presentation/lookup, Stocktake presentation/form-fill/explicit-save, auth, snapshot/cache, service worker or deployment configuration changes.
+
+## Known deferred architecture item
+`ScannerModuleConfig.cameraRequest` remains declarative and is not consumed by the runtime. The shared camera lease currently uses a fixed environment / 1280×720 / 30 FPS request. Per-module camera requests must not be wired until shared-stream compatibility, lease ownership, tap-origin acquisition and recovery re-acquisition semantics are designed together.
+
+**Current CI:** GitHub Actions run #577 passed on final head `8f558511297596be0819baea01d49ed0993b86fb`: full preflight, Code 39 validation + production adapter upright/180° tests, diagnostic privacy/export tests, TypeScript, production build and Pages build. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified and no deskew algorithm change was made.
+
+## Required verification
+1. Run Code 39 payload validation and production ZXing adapter integration (upright and 180-degree reversal).
+2. Run diagnostic collector privacy/allowlist tests and verify QA Monitor / CSV fields.
+3. Run full `npm run preflight`, TypeScript, production build and GitHub Pages build.
+4. Review the entire diff against the exact branch base.
+5. Keep PR unmerged and undeployed pending review and explicit user approval.
+
+---
+
+## PR #74 — delivered Stocktake Import requirements (historical)
 
 1. Move ZIP to a compact control beside “CÁC VÙNG”; render only when session has multiple zones.
 2. Per-zone action status: Ready, Saved, Copied, TXT downloaded, ZIP exported, Dirty, Invalid.
@@ -86,7 +109,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 # Current AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
 
 - Repository: banjk124-hub/retailos-home; default branch: main.
-- Current main is 9406ac30d53bc9984912bd1928a32fd78157cf60, the merge commit for PR #67.
+- PR #67 merge baseline is 9406ac30d53bc9984912bd1928a32fd78157cf60; current main later advanced to PR #74 merge commit 6ac1eefad1c47d87d2c83f9002050c8a7d7802fe.
 - PR #67 is merged and closed. The user confirms deployment and successful real-world operation; scanner recognition is working well and feels sensitive across multiple processing paths.
 - Final PR-head CI #432 passed full preflight on c9794a5422aa2d6ace16480c2948c1bae3e0d06b. CI #425 passed on executable source head e0b28787f40db8c811bc7fde912bae2558289198; the subsequent 13 commits were documentation-only.
 - SCAN-05/06 is complete. Current source uses a 70 ms minimum decode interval, continuous orientation estimation, strict module-owned ROI and serialized decoder calls.
@@ -187,11 +210,11 @@ Canonical contract: `docs/ai-context/SCAN_01_INPUT_CONTRACT.md`.
 - PR #56: https://github.com/banjk124-hub/retailos-home/pull/56 is merged into `main` at merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`. Do not describe it as Draft/open/unmerged. Deployment of this merge is not asserted here.
 - PR #56 final head `0790e4f7d04ccaa8b6500e2e8c59b99131504318` passed full preflight in GitHub Actions run #42575773839.
 - Settings Hub, independent Scanner QA Monitor and Scanner preferences entries, gear icon, device-local shared preference store and centralized feedback are present on main.
-- Defaults: vibration enabled and beep volume 50%; 50% maps to Web Audio gain 0.24, 0% mutes, 100% maps to 0.48. Slider steps are 10%.
+- Defaults: vibration enabled and beep volume 50%; after PR #57, 50% maps to Web Audio gain 0.30, 0% mutes, 100% maps to 0.60. Tone duration is approximately 140 ms. Slider steps are 10%.
 - Home and Stocktake consume the same feedback service. Feedback reads the latest setting when a barcode is accepted; no per-feature override remains.
 - iOS vibration remains unavailable where `navigator.vibrate` is absent. The UI reports unsupported capability and scanning remains non-fatal.
 - Physical Android/iOS QA remains an explicit acceptance gate. CI does not prove perceived loudness, actual device vibration or hardware output.
-- Current follow-up PR #57: https://github.com/banjk124-hub/retailos-home/pull/57 on branch `test/scanner-audio-runtime-and-doc-sync`. GitHub Actions run #42648085229 passed full preflight on the documentation-synchronized head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. It adds executable Web Audio gain/preview/vibration-policy tests and synchronizes current documentation. No camera, decoder, lifecycle or business workflow changes are included.
+- PR #57: https://github.com/banjk124-hub/retailos-home/pull/57 is merged at `09cd3b5117ea38a16dd991f74320835b67ea04b5`. It adds iOS AudioContext foreground recovery and executable Web Audio gain/preview/vibration-policy tests. Current mapping is 50%=0.30, 100%=0.60 and approximately 140 ms tone duration. Physical acoustic QA remains separate.
 - See Architecture ADR-019/ADR-020, `scripts/test-scanner-settings.mjs` and `scripts/test-scanner-audio-runtime.mjs`.
 
 ---
