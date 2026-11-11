@@ -153,7 +153,7 @@ These additional measurements are not required to describe the user's functional
 - [x] No post-preview focus request, focus re-arm or focus `applyConstraints()` path remains in the session/lease.
 - [x] Focus quality sampling is passive; sustained blur telemetry never changes camera controls.
 - [x] Torch ON/OFF preserves the initial focus preference and negotiated camera constraints.
-- [ ] CI proves no post-preview focus writes and no focus-recovery API remains.
+- [x] GitHub Actions run #684 passes full preflight, TypeScript, production build and Pages build; no post-preview focus writes or focus-recovery API remain.
 - [ ] iOS Safari/PWA and Android Chrome/PWA confirm smooth native focus behavior during near/far transitions, with no scanner-induced hunting or preview disturbance.
 
 ## Physical optical acceptance — both modules
