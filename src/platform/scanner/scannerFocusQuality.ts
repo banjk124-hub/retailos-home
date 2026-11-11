@@ -3,6 +3,7 @@ export type ScannerFocusQualitySample = {
   sharpness: number;
   /** Fraction of sampled pixels containing a meaningful high-frequency edge. */
   edgeCoverage: number;
+  luminanceStdDev: number;
   /** Local frame-to-frame change after removing global brightness shift. */
   motionScore: number;
   /** Internal low-resolution sample retained by the decoder for the next comparison. */
@@ -13,6 +14,7 @@ export type ScannerFocusQualitySample = {
 const SAMPLE_STEP = 4;
 const EDGE_THRESHOLD = 18;
 const MIN_EDGE_COVERAGE = 0.002;
+const MIN_LUMINANCE_STD_DEV = 6;
 const MIN_REFERENCE_SHARPNESS = 8;
 const BLUR_RATIO = 0.55;
 const REQUIRED_BLUR_SAMPLES = 4;
@@ -33,11 +35,13 @@ export function measureScannerFocusQuality(
   if (!(luminance instanceof Uint8ClampedArray)
     || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
     || width < 5 || height < 5 || luminance.length !== width * height) {
-    return { sharpness: 0, edgeCoverage: 0, motionScore: 0, sampledPixels: new Uint8Array(), valid: false };
+    return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, sampledPixels: new Uint8Array(), valid: false };
   }
 
   let squaredResponse = 0;
   let edgeSamples = 0;
+  let luminanceTotal = 0;
+  let luminanceSquaredTotal = 0;
   let samples = 0;
   const sampledPixels = new Uint8Array(
     Math.ceil((height - 4) / SAMPLE_STEP) * Math.ceil((width - 4) / SAMPLE_STEP),
@@ -47,6 +51,8 @@ export function measureScannerFocusQuality(
     for (let x = 2; x < width - 2; x += SAMPLE_STEP) {
       const index = row + x;
       sampledPixels[samples] = luminance[index];
+      luminanceTotal += luminance[index];
+      luminanceSquaredTotal += luminance[index] * luminance[index];
       const response = 4 * luminance[index]
         - luminance[index - 1]
         - luminance[index + 1]
@@ -59,9 +65,11 @@ export function measureScannerFocusQuality(
     }
   }
 
-  if (samples < 64) return { sharpness: 0, edgeCoverage: 0, motionScore: 0, sampledPixels, valid: false };
+  if (samples < 64) return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, sampledPixels, valid: false };
   const sharpness = Math.sqrt(squaredResponse / samples);
   const edgeCoverage = edgeSamples / samples;
+  const luminanceMean = luminanceTotal / samples;
+  const luminanceStdDev = Math.sqrt(Math.max(0, luminanceSquaredTotal / samples - luminanceMean * luminanceMean));
   let motionScore = 0;
   if (previousSampledPixels && previousSampledPixels.length === samples) {
     let meanDelta = 0;
@@ -78,9 +86,10 @@ export function measureScannerFocusQuality(
   return {
     sharpness: Number(sharpness.toFixed(2)),
     edgeCoverage: Number(edgeCoverage.toFixed(4)),
+    luminanceStdDev: Number(luminanceStdDev.toFixed(2)),
     motionScore: Number(motionScore.toFixed(2)),
     sampledPixels,
-    valid: Number.isFinite(sharpness) && edgeCoverage >= MIN_EDGE_COVERAGE,
+    valid: Number.isFinite(sharpness) && luminanceStdDev >= MIN_LUMINANCE_STD_DEV,
   };
 }
 
@@ -106,7 +115,8 @@ export class ScannerFocusWatchdog {
     }
 
     if (this.referenceSharpness < MIN_REFERENCE_SHARPNESS) {
-      if (sample.sharpness >= MIN_REFERENCE_SHARPNESS) {
+      if (sample.sharpness >= MIN_REFERENCE_SHARPNESS
+        && sample.edgeCoverage >= MIN_EDGE_COVERAGE) {
         this.referenceSharpness = sample.sharpness;
       }
       return false;
