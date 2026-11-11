@@ -397,7 +397,8 @@ export class UniversalScannerSession implements ScannerSession {
             stage: 'optional_autofocus_ms',
             durationMs: Number((performance.now() - autofocusStartedAt).toFixed(1)),
           });
-          this.focusControlEnabled = focusResult.status === 'continuous-requested';
+          this.focusControlEnabled = focusResult.status === 'continuous-requested'
+            && (!focusResult.actualMode || focusResult.actualMode === 'continuous');
           this.focusWatchdog.reset();
           console.info('[RetailOS Scanner] Camera focus', {
             focusStatus: focusResult.status,
@@ -571,6 +572,7 @@ export class UniversalScannerSession implements ScannerSession {
           focusRecoveryStatus: 'requested',
           focusSharpness: sample.sharpness,
           focusEdgeCoverage: sample.edgeCoverage,
+          focusMotionScore: sample.motionScore,
           focusRecoveryRequests: this.focusRecoveryRequests,
         });
         void lease.reapplyContinuousAutofocus()
@@ -585,6 +587,7 @@ export class UniversalScannerSession implements ScannerSession {
               focusErrorName: result?.errorName,
               focusSharpness: sample.sharpness,
               focusEdgeCoverage: sample.edgeCoverage,
+              focusMotionScore: sample.motionScore,
               focusRecoveryRequests: this.focusRecoveryRequests,
             });
           })
