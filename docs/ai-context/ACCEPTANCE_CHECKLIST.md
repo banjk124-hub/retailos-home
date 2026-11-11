@@ -134,21 +134,39 @@ These additional measurements are not required to describe the user's functional
 
 ---
 
-# SCAN-07 — Adaptive ROI & multi-scale (PR #77 branch)
+# SCAN-07 — Adaptive ROI, focus recovery and shared optical pipeline (PR #78)
 
-- [x] Existing module-owned source-frame ROI remains authoritative; no outward padding or fallback.
-- [x] Existing 1.5× candidate remains first with unchanged baseline dimensions.
-- [x] 1× and 2× fallback scales run only after the full 1.5× orientation/deskew/binarizer pipeline misses.
-- [x] Candidate count is bounded to three total; additional candidates are deduplicated and capped at 6 MP each.
-- [x] Existing 1280 px source-width cap, serialized decoder, 70 ms session interval and result validation remain unchanged.
-- [x] Scale attempt/hit diagnostics added without barcode payloads.
-- [x] Scale planner regression script added to preflight; production adapter integration test extended for strict ROI crop invariance.
-- [x] GitHub Actions run #634 passed full preflight, TypeScript, production build and Pages build on code/test head `cdf35ab6c8f66b3f1ca0fc798cc2eaf0493c540c`; final documentation sync must also pass CI.
-- [ ] iOS Safari/PWA and Android Chrome/PWA small/far real-label comparison; low/high capability devices.
-- [ ] Confirm reticle-edge and outside-reticle negative controls; verify Home and Stocktake workflows remain unchanged.
-- [ ] Record decode success, false positives, first-result latency, processing cost and UI responsiveness. No unsupported accuracy/performance claims.
+## Source/decoder
+- [x] SCAN-02/03 mapping and SCAN-04 strict module ROI remain unchanged.
+- [x] Native ROI sampling replaces the old full-frame 1280 px downscale; ROI bounded to 2048 px width / 1.5 MP native pixels.
+- [x] Camera request prefers 1920×1080, 30 FPS maximum; browser actual settings remain authoritative.
+- [x] 1.5× baseline remains first; 1× and 2× fallback only after a complete baseline miss.
+- [x] Candidate fan-out remains bounded; each additional scale remains capped at 6 MP.
+- [x] SCAN-05/06 orientation, deskew, contrast and both binarizers remain integrated in every scale path.
+- [ ] Final CI passes on PR #78 head.
+- [ ] Home and Stocktake both pass real-label accuracy checks.
 
-**Padding decision:** outward padding is deferred. Current modules publish the reticle only; an expanded capture envelope requires an explicit module-owned contract and separate geometry tests.
+## Camera focus / shared track controls
+- [x] Initial continuous-focus request moved to after first fresh video frame; it does not block preview readiness.
+- [x] Focus constraints preserve active width, height, frame rate, facing mode and device constraints.
+- [x] Autofocus and Torch use one shared serialized track-constraint queue.
+- [x] ROI sharpness is measured from existing grayscale readback, not a second camera readback.
+- [x] Low-texture and moving/changing frames are excluded from focus re-arm.
+- [x] Re-arm is bounded to four stable blur samples and an 8-second cooldown, only when continuous focus is supported.
+- [ ] CI validates focus/torch coexistence, recovery cooldown and no lifecycle regressions.
+- [ ] iOS Safari/PWA and Android Chrome/PWA verify that focus recovers from near/far changes without closing/reopening scanner.
+
+## Physical optical acceptance — both modules
+- [ ] Record actual camera width/height/frameRate/focus capability and mode per device/browser.
+- [ ] Record barcode type, printed X-dimension/bar width, source ROI pixel height and physical reading distance.
+- [ ] Test near-to-far and far-to-near transitions, rotated labels, moving camera, low light, glare, curved packaging and reticle edges.
+- [ ] Include outside-reticle negative controls; no decode outside module-owned region.
+- [ ] Verify correct payload/check digit, false positives and Home/Stocktake result workflows.
+- [ ] Confirm no camera lock, focus hunting loop, torch/focus constraint conflict, UI freeze or lifecycle regression.
+- [ ] Do not report end-to-end scanner latency as a SCAN-07 metric. Decoder stage cost may be recorded separately.
+- [ ] Do not claim minimum barcode size or maximum distance until real measurements exist.
+
+**Scope lock:** remain in SCAN-07 until all above gates are accepted. SCAN-08/09 must not begin yet. No outward ROI padding without a module-owned capture-envelope contract.
 
 ---
 
