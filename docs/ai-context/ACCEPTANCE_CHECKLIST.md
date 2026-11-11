@@ -7,7 +7,7 @@
 - [x] Added payload validation for the standard uppercase Code 39 alphabet, preserving spaces and rejecting control/unsupported characters.
 - [x] Added validation fixtures for valid text, punctuation, spaces, empty payload, control characters and invalid characters.
 - [x] Added production ZXing adapter fixtures for upright and 180-degree Code 39.
-- [ ] Full preflight and production/Pages builds pass on the remediation branch.
+- [x] Full preflight and production/Pages builds pass on final branch head `4e5cf076f5054a53af7ca08f053c28d776e46eab` (CI #566).
 - [ ] Manual real-label Code 39 verification on iOS Safari/PWA and Android Chrome/PWA.
 
 ## Recovery diagnostics
@@ -16,6 +16,8 @@
 - [x] Privacy regression verifies payload-like keys and camera identifiers are excluded.
 - [ ] Full preflight passes on the remediation branch.
 - [ ] Verify a live diagnostic export from a device session contains the metrics after rotation/deskew activity.
+
+**Verification boundary:** a synthetic 17° Code 39 fixture did not decode through the current deskew path during this work. No deskew algorithm change was made; Code 39 angled/optical performance remains unverified and must not be claimed from the upright/180° tests.
 
 ## Explicitly deferred
 - [ ] Complete runtime use of `ScannerModuleConfig.cameraRequest`; requires separate shared-camera lease compatibility design.
