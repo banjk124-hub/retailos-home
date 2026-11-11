@@ -1,3 +1,20 @@
+# Current Main reconciliation — Scanner Engine remediation (2026-11-11)
+
+**Current main:** `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe` (PR #74 merge commit). The older `9406ac...` line below is the PR #67 historical scanner baseline, not current repository HEAD.
+
+**Active remediation:** branch `fix/scanner-engine-remediation-code39`, based on current main. Not merged or deployed.
+
+- Code 39 was present in the broad `ScannerSymbology` type and ZXing `FORMAT_MAP`, but absent from `SUPPORTED_BARCODE_FORMATS` and rejected by `validateBarcodePayload()`. This branch enables it end-to-end and adds production-adapter tests.
+- Rotation/deskew counters were emitted by `zxingDecoder.ts` but filtered out by `scannerDiagnosticCollector.ts`. This branch adds the missing safe keys and QA Monitor/CSV presentation.
+- Diagnostic privacy tests ensure payload-like fields and camera identifiers remain excluded.
+- Current audio source: 50% = gain 0.30; 100% = gain 0.60; approximately 140 ms. Historical PR #56 values 0.24/0.48 are superseded by merged PR #57.
+- `ScannerModuleConfig.cameraRequest` is not a runtime input. The shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. This is explicitly deferred; do not bypass the shared lease.
+- No camera, lifecycle, cadence, ROI, presentation or business-flow behavior is changed by this remediation branch.
+
+**Next gate:** finish CI and diff review, then request approval. Do not merge/deploy automatically.
+
+---
+
 # SCAN-05/06 — merged, deployed and user-validated (2026-11-10)
 
 **Repository:** banjk124-hub/retailos-home
