@@ -26,20 +26,24 @@
 
 ---
 
-# Current work — Xuất file: unified workspace and interaction system (2026-11-10)
+# Current work — Scanner Engine remediation and Stocktake Import workspace (2026-11-11)
 
-- PR #70 is deployed and user-accepted; PR #71 (multi-file sessions and output generation) is merged into main.
-- Current UX branch: `feat/stocktake-import-native-workspace`; draft PR #72: https://github.com/banjk124-hub/retailos-home/pull/72.
-- Base main: `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`; code head at CI #534: `2dc003ad4b1a17556fd18188b30206ae3bf06670`.
-- CI #534 passed the Stocktake import regression suite, existing scanner regression suite, TypeScript, production build, GitHub Pages build and diff checks.
-- Preserve all import/session business rules: source parsing and numeric fidelity, code precedence, multi-file additive import, SHA-256 duplicate detection, explicit duplicate-zone merge/skip, row provenance, IndexedDB history and TXT/ZIP payload parity.
-- Replace the mutually exclusive Output/Editor layers with one continuous zone workspace: table as the primary review/edit surface, TXT Preview as an expandable secondary inspector.
-- Add explicit in-memory vs persisted state, action-specific loading feedback, semantic success/warning/info notices and separate error states.
-- Refine header, typography, numerical hierarchy, semantic colors, compact text containers and responsive spacing. Use restrained transform/opacity motion; honor reduced-motion and power-conserve settings.
-- Protected: Stocktake scanner, Scanner Engine, camera lifecycle, snapshot/cache, auth, service worker and deployment configuration.
-- Remaining gates: desktop Chrome/Edge, iOS Safari/PWA, Android Chrome/PWA and real workbook end-to-end QA. Do not merge/deploy without explicit approval.
-- Module record: `modules/EXPORT_FILE.md`; detailed contract: `STOCKTAKE_FILE_IMPORT.md`.
+- PR #70–#73 were merged; PR #74 (Stocktake Import workspace v2) is now merged into main at `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`. Deployment of PR #74 is not asserted by this record.
+- Current scanner remediation branch: `fix/scanner-engine-remediation-code39`, based on current main `6ac1eef...`.
+- Remediation scope: Code 39 enablement end-to-end; recovery diagnostics allowlist + QA Monitor/CSV; privacy regression; audio documentation reconciliation.
+- Do not change camera lease, camera request defaults, autofocus, lifecycle/recovery, decode cadence, strict ROI, Home/Stocktake presentation or business workflows.
+- `ScannerModuleConfig.cameraRequest` is declarative only. Per-module camera request support is deferred until shared-stream/lease semantics and tap-origin acquisition/recovery are designed.
+- Benchmark corpus and generalized conditional recovery orchestration remain future work, not implied by this remediation.
+- PR for the scanner remediation has not yet been created; all changes remain isolated on the branch and unmerged/undeployed.
 
+## Scanner remediation acceptance
+- [ ] Code 39 validation and production ZXing adapter tests pass.
+- [ ] Recovery metrics survive collector allowlisting and appear in QA Monitor / CSV.
+- [ ] Privacy regression passes.
+- [ ] Existing EAN-8, EAN-13 and Code 128 behavior remains green.
+- [ ] Full preflight, TypeScript, production and Pages builds pass.
+- [ ] Diff review confirms no protected camera/lifecycle/feature behavior changed.
+- [ ] Explicit user approval before merge/deploy.
 
 ---
 
