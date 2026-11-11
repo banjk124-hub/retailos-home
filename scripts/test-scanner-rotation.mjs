@@ -136,7 +136,8 @@ const decoderSource = await readFile(
   new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
   'utf8',
 );
-assert.match(decoderSource, /rotateLuminance90Clockwise\(/, 'decoder must consume the pure rotation helper');
+assert.match(decoderSource, /executeScannerEnhancementPipeline/,
+  'decoder must consume the shared orientation and enhancement orchestrator');
 assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(\s*timestamp,\s*candidate\.baseline \? onFocusQuality : undefined,\s*!candidate\.baseline,\s*\)/,
   'every valid ROI frame must enter the complete production decode pipeline, with focus sampling limited to the baseline and orientation hints reused for fallbacks');
 assert.match(decoderSource, /executeScannerEnhancementPipeline/,
