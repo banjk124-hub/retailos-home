@@ -3,8 +3,6 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import ZXing from '@zxing/library';
-const { BarcodeFormat, MultiFormatWriter } = ZXing;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const tempRoot = await mkdtemp(path.join(root, '.scanner-decoder-integration-'));
@@ -121,14 +119,37 @@ try {
     }
     return { luminance, width, height };
   }
+  const CODE39_ENCODINGS = {
+    '0': 0x034, '1': 0x121, '2': 0x061, '3': 0x160, '4': 0x031,
+    '5': 0x130, '6': 0x070, '7': 0x025, '8': 0x124, '9': 0x064,
+    A: 0x109, B: 0x049, C: 0x148, D: 0x019, E: 0x118, F: 0x058,
+    G: 0x00d, H: 0x10c, I: 0x04c, J: 0x01c, K: 0x103, L: 0x043,
+    M: 0x142, N: 0x013, O: 0x112, P: 0x052, Q: 0x007, R: 0x106,
+    S: 0x046, T: 0x016, U: 0x181, V: 0x0c1, W: 0x1c0, X: 0x091,
+    Y: 0x190, Z: 0x0d0, '-': 0x085, '.': 0x184, ' ': 0x0c4,
+    '$': 0x0a8, '/': 0x0a2, '+': 0x08a, '%': 0x02a, '*': 0x094,
+  };
   function makeCode39Frame(value) {
-    const matrix = new MultiFormatWriter().encode(value, BarcodeFormat.CODE_39, 0, 84);
-    const width = matrix.getWidth();
-    const height = matrix.getHeight();
+    const framed = \`*\${value}*\`;
+    let modules = '0'.repeat(12);
+    for (let characterIndex = 0; characterIndex < framed.length; characterIndex += 1) {
+      const encoding = CODE39_ENCODINGS[framed[characterIndex]];
+      assert.notEqual(encoding, undefined, \`Code 39 fixture supports \${framed[characterIndex]}\`);
+      for (let element = 0; element < 9; element += 1) {
+        const wide = (encoding & (1 << (8 - element))) !== 0;
+        const black = element % 2 === 0;
+        modules += (black ? '1' : '0').repeat(wide ? 3 : 1);
+      }
+      if (characterIndex < framed.length - 1) modules += '0';
+    }
+    modules += '0'.repeat(12);
+    const scale = 3;
+    const width = modules.length * scale;
+    const height = 84;
     const luminance = new Uint8ClampedArray(width * height);
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        luminance[y * width + x] = matrix.get(x, y) ? 0 : 255;
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < modules.length; x += 1) {
+        luminance.fill(modules[x] === '1' ? 0 : 255, y * width + x * scale, y * width + (x + 1) * scale);
       }
     }
     return { luminance, width, height };
