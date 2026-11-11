@@ -157,13 +157,13 @@ const continuousTrack = {
 const continuousFocus = await requestContinuousAutofocus(continuousTrack);
 assert.equal(continuousFocus.status, "continuous-requested");
 assert.deepEqual(appliedFocusConstraints.advanced[0], { focusMode: "continuous" });
-assert.deepEqual(appliedFocusConstraints.width, { exact: 1280 },
+assert.deepEqual(appliedFocusConstraints.width, { ideal: 1280 },
   "autofocus must preserve the active camera width when reapplying track constraints");
-assert.deepEqual(appliedFocusConstraints.height, { exact: 720 },
+assert.deepEqual(appliedFocusConstraints.height, { ideal: 720 },
   "autofocus must preserve the active camera height when reapplying track constraints");
-assert.deepEqual(appliedFocusConstraints.frameRate, { exact: 30 },
+assert.deepEqual(appliedFocusConstraints.frameRate, { ideal: 30, max: 30 },
   "autofocus must preserve the active camera frame rate when reapplying track constraints");
-assert.deepEqual(appliedFocusConstraints.facingMode, { exact: "environment" },
+assert.deepEqual(appliedFocusConstraints.facingMode, { ideal: "environment" },
   "autofocus must preserve the active camera facing mode when reapplying track constraints");
 
 const unsupportedTrack = {
