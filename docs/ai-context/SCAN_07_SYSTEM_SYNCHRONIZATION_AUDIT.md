@@ -45,37 +45,39 @@ The old decoder scaled the source ROI based on the entire frame width exceeding 
 
 Upscaling alone does not create optical detail. Improvement depends on the actual camera resolution, lens, barcode physical module size and distance.
 
-### 3.2 Autofocus was requested too early
+### 3.2 Post-preview focus request caused camera disturbance
 
-The previous flow requested continuous focus as soon as getUserMedia returned, before video playback and fresh-frame readiness. Camera capabilities can be incomplete before the track is actually streaming.
+The merged PR #78 moved the optional continuous-focus request until after the first fresh video frame. Although it did not await the request, it still issued `applyConstraints()` after the user could already see the preview. The request could therefore alter camera focus behavior during the live session. The watchdog could then issue additional focus requests after sustained blur samples.
 
-**Change in this branch**
-- The camera lease is still delivered immediately after getUserMedia; autofocus never blocks lease acquisition.
-- The owning session requests focus after video.play() and a fresh frame.
-- Preview readiness and decoder initialization do not await the focus request.
+**Corrective decision**
+- Continuous autofocus is expressed only as an optional `advanced` preference in the initial `getUserMedia()` request.
+- Advanced constraints are best-effort. If the browser/device does not support or accept the optional focus preference, it is ignored and native camera autofocus remains in control.
+- No focus `applyConstraints()` call is allowed after preview readiness.
+- Camera lease and session contracts expose no `prepareForScanning()` or `reapplyContinuousAutofocus()` methods.
+- The preview and decoder startup path does not wait for a separate focus request.
 
-### 3.3 Autofocus could reset the active camera constraints
+### 3.3 Torch constraint preservation remains, focus writes are removed
 
-The previous focus helper called applyConstraints() with only the advanced focusMode property. applyConstraints replaces the active custom constraint set. Omitting the active width/height/frameRate/facing/device constraints can reset negotiated camera settings.
+The previous focus helper used `applyConstraints()` with an advanced focusMode value. That required preserving active width/height/frameRate/facing/device constraints and serializing focus and Torch writes.
 
-**Change in this branch**
-- Shared `mediaTrackConstraints.ts` preserves existing getConstraints() and fills missing key values from getSettings().
-- Focus and Torch both use the same helper.
-- A per-track serialized queue prevents simultaneous focus/Torch updates from overwriting each other's advanced settings.
+**Corrective decision**
+- Keep the shared constraint-preservation helper for Torch ON/OFF operations.
+- The initial focus preference is already part of the camera request; Torch updates must preserve that existing advanced preference.
+- Do not call the shared helper for focus. There is no post-preview focus write to serialize with Torch.
+- The per-track queue remains useful for repeated Torch changes and prevents overlapping track updates.
 
-### 3.4 A continuous-focus request did not prove optical focus
+### 3.4 Focus quality is diagnostic only
 
-A successful browser constraint request only confirms that the browser accepted the request. It does not prove the physical lens reached focus or continues to track distance.
+A successful optional focus preference does not prove that the physical lens has locked or tracks distance. Conversely, a missing `focusMode` setting does not prove that native autofocus is unavailable.
 
-**Change in this branch**
-- The decoder reuses its existing grayscale ROI readback at a low rate (500 ms) to calculate sharpness, edge coverage and frame-to-frame motion.
-- Blank/low-texture samples are ignored.
-- Changing/moving frames are filtered before any focus re-arm.
-- Four consecutive stable samples below 55% of a previously sharp reference can trigger a continuous-focus reassertion.
-- Re-arm is limited to one request per 8 seconds and only occurs when continuous focus is exposed and accepted.
-- The operation remains on the shared camera track queue and preserves Torch/current camera settings.
+**Corrective decision**
+- Keep low-rate sharpness, edge-coverage and motion sampling from the existing grayscale ROI readback.
+- Ignore blank/low-texture samples and filter moving/changing frames.
+- Sustained blur may be reported as a diagnostic event after four stable samples, with an 8-second report cooldown.
+- The diagnostic must never issue focus commands, change track constraints, or claim that camera control changed.
+- The camera remains responsible for native autofocus behavior regardless of whether focus capability metadata is exposed.
 
-This is a bounded re-arm request, not a guarantee of physical refocus. Motion, glare, exposure, curved packaging and changing barcode texture can still affect the sharpness metric.
+This separates observation from control. Motion, glare, exposure, curved packaging and changing barcode texture can still affect sharpness; passive telemetry is not a guarantee of focus recovery.
 
 ## 4. Protected SCAN-01 to SCAN-06 contracts
 
