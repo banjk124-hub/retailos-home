@@ -40,6 +40,18 @@ try {
     focusQualityStatus: 'sustained-blur-observed',
     cameraControlChanged: false,
     lastDeskewAngleDegrees: -17.25,
+    adaptiveProcessingPlan: {
+      schemaVersion: 1,
+      mode: 'targeted',
+      imageTransforms: ['contrast', 'gamma'],
+      maxImageCandidates: 2,
+      geometryCandidateLimit: 4,
+      orientationPolicy: 'preserve_existing_order',
+      scalePolicy: 'preserve_existing_order',
+      temporalPolicy: 'preserve_t3_contract',
+      reasons: ['compressed_contrast', 'underexposure'],
+      rawPixels: 'MUST_NOT_BE_RETAINED',
+    },
     barcodePayload: 'MUST_NOT_BE_RETAINED',
     deviceId: 'MUST_NOT_BE_RETAINED',
   });
@@ -70,11 +82,26 @@ try {
   })) {
     assert.equal(event.metrics[key], expected, `diagnostic collector retains ${key}`);
   }
+  assert.deepEqual(event.metrics.adaptiveProcessingPlan, {
+    schemaVersion: 1,
+    mode: 'targeted',
+    imageTransforms: ['contrast', 'gamma'],
+    maxImageCandidates: 2,
+    geometryCandidateLimit: 4,
+    orientationPolicy: 'preserve_existing_order',
+    scalePolicy: 'preserve_existing_order',
+    temporalPolicy: 'preserve_t3_contract',
+    reasons: ['compressed_contrast', 'underexposure'],
+  }, 'adaptive plan is retained as a bounded scalar-only diagnostic snapshot');
   assert.equal('barcodePayload' in event.metrics, false, 'barcode payload-like keys are rejected');
   assert.equal('deviceId' in event.metrics, false, 'camera identifiers are rejected');
 
   const exported = JSON.parse(collector.exportScannerDiagnostics());
   assert.equal(exported.eventCount, 1);
+  assert.equal(exported.events[0].metrics.adaptiveProcessingPlan.mode, 'targeted');
+  assert.deepEqual(exported.events[0].metrics.adaptiveProcessingPlan.imageTransforms, ['contrast', 'gamma']);
+  assert.equal(JSON.stringify(exported).includes('MUST_NOT_BE_RETAINED'), false,
+    'nested adaptive diagnostics must exclude unknown/raw fields');
   assert.equal(exported.events[0].metrics.rotationHits, 3);
   assert.equal(exported.events[0].metrics.deskewHits, 4);
   assert.equal(exported.events[0].metrics.scaleAttempts, 3);
