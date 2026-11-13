@@ -16,6 +16,7 @@ const modulePaths = [
   'src/platform/scanner/scannerImageEnhancement.ts',
   'src/platform/scanner/scannerGeometryCorrection.ts',
   'src/platform/scanner/scannerFocusQuality.ts',
+  'src/platform/scanner/scannerImageQualityProfile.ts',
   'src/platform/scanner/scannerTemporalRecognition.ts',
   'src/platform/scanner/decoders/decoderAdapter.ts',
   'src/platform/scanner/decoders/rgbaToLuminance.ts',
