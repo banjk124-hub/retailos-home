@@ -268,10 +268,10 @@ try {
     for (let y = 0; y < frame.height; y++) {
       const t = y / Math.max(1, frame.height - 1);
       const phase = Math.sin(t * Math.PI * 2);
-      const shift = 13 * phase;
-      const scale = 1 + 0.12 * phase;
+      const shift = 9 * phase;
+      const scale = 1 + 0.06 * phase;
       for (let x = 0; x < frame.width; x++) {
-        const localBend = 7 * phase * Math.sin((x / frame.width) * Math.PI * 2);
+        const localBend = 4 * phase * Math.sin((x / frame.width) * Math.PI * 2);
         const sourceX = (x - center - shift - localBend) / scale + center;
         const x0 = Math.floor(sourceX), x1 = Math.min(frame.width - 1, x0 + 1);
         if (sourceX < 0 || sourceX > frame.width - 1) continue;
