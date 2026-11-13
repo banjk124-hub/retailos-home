@@ -113,7 +113,8 @@ export class ScannerFocusQualityMonitor {
     }
 
     // Motion blur or a changing scene must settle before sustained-blur diagnostics are reported.
-    if (!Number.isFinite(sample.motionScore) || sample.motionScore > MAX_STABLE_MOTION_SCORE) {
+    if (!sample.motionAvailable || !Number.isFinite(sample.motionScore)
+      || sample.motionScore > MAX_STABLE_MOTION_SCORE) {
       this.consecutiveBlurSamples = 0;
       return false;
     }

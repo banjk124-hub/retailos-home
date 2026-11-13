@@ -582,7 +582,10 @@ export class UniversalScannerSession implements ScannerSession {
     this.focusQualitySharpnessMin = Math.min(this.focusQualitySharpnessMin, sample.sharpness);
     this.focusQualityEdgeCoverageTotal += sample.edgeCoverage;
 
-    if (this.focusQualityMonitor.observe(sample, timestamp)) {
+    // An unavailable motion reference means the ROI just changed or this is
+    // the first sample. Reset the passive blur baseline before comparing again.
+    if (!sample.motionAvailable) this.focusQualityMonitor.reset();
+    if (sample.motionAvailable && this.focusQualityMonitor.observe(sample, timestamp)) {
       this.focusSustainedBlurEvents += 1;
       console.warn('[RetailOS Scanner] Sustained camera blur observed', {
         focusQualityStatus: 'sustained-blur-observed',

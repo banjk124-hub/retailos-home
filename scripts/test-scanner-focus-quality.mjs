@@ -40,8 +40,9 @@ function boxBlur(input, radius = 6) {
 }
 
 const sharpSample = measureScannerFocusQuality(sharp, width, height);
+const sharpStableSample = measureScannerFocusQuality(sharp, width, height, sharpSample.sampledPixels);
 const blurredPixels = boxBlur(sharp);
-const blurredSample = measureScannerFocusQuality(blurredPixels, width, height);
+const blurredSample = measureScannerFocusQuality(blurredPixels, width, height, blurredPixels);
 const movingBlurSample = measureScannerFocusQuality(blurredPixels, width, height, sharpSample.sampledPixels);
 assert.equal(sharpSample.valid, true, 'textured barcode-like ROI produces a valid focus sample');
 assert.equal(blurredSample.valid, true, 'severely blurred but contrast-bearing ROI remains measurable');
@@ -55,20 +56,24 @@ assert.equal(measureScannerFocusQuality(new Uint8ClampedArray(width * height).fi
   'blank low-texture frames must not be treated as defocus');
 
 const monitor = new ScannerFocusQualityMonitor();
+assert.equal(sharpSample.motionAvailable, false);
+assert.equal(sharpStableSample.motionAvailable, true);
 assert.equal(monitor.observe(sharpSample, 1000), false,
-  'the first sharp sample establishes a reference and never requests recovery');
-assert.equal(monitor.observe(movingBlurSample, 1500), false,
+  'a first sample without a motion reference must not establish a stable-scene baseline');
+assert.equal(monitor.observe(sharpStableSample, 1500), false,
+  'the first same-ROI motion-valid sharp sample establishes a reference');
+assert.equal(monitor.observe(movingBlurSample, 2000), false,
   'motion blur or a changing scene must not trigger autofocus reconfiguration');
-assert.equal(monitor.observe(blurredSample, 2000), false,
+assert.equal(monitor.observe(blurredSample, 2500), false,
   'one stable blurred frame is ignored');
-assert.equal(monitor.observe(sharpSample, 2500), false,
+assert.equal(monitor.observe(sharpStableSample, 3000), false,
   'a recovered sharp frame clears the consecutive-blur streak');
-assert.equal(monitor.observe(blurredSample, 3000), false);
 assert.equal(monitor.observe(blurredSample, 3500), false);
 assert.equal(monitor.observe(blurredSample, 4000), false);
-assert.equal(monitor.observe(blurredSample, 4500), true,
+assert.equal(monitor.observe(blurredSample, 4500), false);
+assert.equal(monitor.observe(blurredSample, 5000), true,
   'four sustained low-sharpness samples are reported as a passive blur event');
-assert.equal(monitor.observe(blurredSample, 5000), false,
+assert.equal(monitor.observe(blurredSample, 5500), false,
   'the monitor rate-limits repeated blur diagnostics');
 assert.equal(monitor.observe(blurredSample, 13500), false);
 assert.equal(monitor.observe(blurredSample, 14000), false);
@@ -89,7 +94,7 @@ assert.match(adapter, /candidate\.baseline \? onFocusQuality : undefined/,
   'focus quality is sampled only from the baseline scale, not every fallback');
 assert.doesNotMatch(session, /prepareForScanning|reapplyContinuousAutofocus/,
   'the session must never issue focus commands after preview readiness');
-assert.match(session, /focusQualityMonitor\.observe\(sample, timestamp\)/,
+assert.match(session, /sample\.motionAvailable && this\.focusQualityMonitor\.observe\(sample, timestamp\)/,
   'the shared session observes focus quality passively');
 assert.match(session, /cameraControlChanged: false/,
   'sustained blur diagnostics explicitly confirm that camera controls were not changed');
