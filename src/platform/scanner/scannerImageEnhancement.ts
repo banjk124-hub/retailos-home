@@ -7,7 +7,8 @@ export type ScannerImageQualityIssue =
   | 'overexposed'
   | 'shadow_clipping'
   | 'highlight_clipping'
-  | 'high_noise';
+  | 'high_noise'
+  | 'specular_glare';
 
 export type ScannerImageQuality = {
   /** Existing metrics retained with their original definitions for enhancement-gate compatibility. */
@@ -21,6 +22,8 @@ export type ScannerImageQuality = {
   verticalContrast: number;
   edgeStrength: number;
   verticalNoise: number;
+  specularGlareFraction: number;
+  glareBandCoverage: number;
   issues: ScannerImageQualityIssue[];
 };
 export type ScannerImageEnhancement = ScannerLuminanceFrame & {
@@ -55,10 +58,13 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
   let dark = 0, bright = 0;
   let horizontalEdge = 0, verticalEdge = 0, gradient = 0;
   let horizontalNoise = 0, verticalNoise = 0, luminanceTotal = 0;
+  let specularBrightSamples = 0, glareBandRows = 0, sampledRows = 0;
   let sampleCount = 0;
   const step = Math.max(1, Math.floor(Math.sqrt(data.length / 12000)));
 
   for (let y = 1; y < height - 1; y += step) {
+    let currentBrightRun = 0, longestBrightRun = 0;
+    sampledRows++;
     for (let x = 1; x < width - 1; x += step) {
       const i = y * width + x;
       const value = data[i];
@@ -68,6 +74,14 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
       dark += value <= 12 ? 1 : 0;
       bright += value >= 243 ? 1 : 0;
       luminanceTotal += value;
+      const internalSaturated = value >= 250 && x > width * 0.05 && x < width * 0.95;
+      if (internalSaturated) {
+        specularBrightSamples++;
+        currentBrightRun++;
+        longestBrightRun = Math.max(longestBrightRun, currentBrightRun);
+      } else {
+        currentBrightRun = 0;
+      }
 
       const dx = Math.abs(value - left);
       const dy = Math.abs(value - above);
@@ -81,6 +95,9 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
       verticalNoise += Math.abs(value - median3(above, value, data[i + width]));
       sampleCount++;
     }
+    // Ignore edge quiet-zones; a wide, persistent saturated band inside the
+    // barcode envelope is more consistent with specular reflection than bars.
+    if (longestBrightRun >= Math.max(3, Math.floor((width * 0.06) / step))) glareBandRows++;
   }
 
   if (!sampleCount) return null;
@@ -106,6 +123,8 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
   const verticalContrast = verticalEdge / sampleCount;
   const edgeStrength = gradient / sampleCount;
   const verticalNoiseValue = verticalNoise / sampleCount;
+  const specularGlareFraction = specularBrightSamples / sampleCount;
+  const glareBandCoverage = sampledRows ? glareBandRows / sampledRows : 0;
 
   // These are diagnostic heuristics, not decode eligibility thresholds.
   const issues: ScannerImageQualityIssue[] = [];
@@ -116,6 +135,7 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
   if (darkFraction > 0.6) issues.push('shadow_clipping');
   if (brightFraction > 0.6) issues.push('highlight_clipping');
   if (Math.max(noise, verticalNoiseValue) > 14) issues.push('high_noise');
+  if (specularGlareFraction > 0.015 && glareBandCoverage > 0.12) issues.push('specular_glare');
 
   return {
     dynamicRange,
@@ -127,6 +147,8 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
     verticalContrast,
     edgeStrength,
     verticalNoise: verticalNoiseValue,
+    specularGlareFraction,
+    glareBandCoverage,
     issues,
   };
 }
@@ -142,6 +164,9 @@ export function createScannerImageEnhancements(
   const { luminance: src, width, height } = frame;
   if (src.length !== width * height || src.length > MAX_PIXELS) return [];
   const out: ScannerImageEnhancement[] = [];
+  // Saturated specular bands contain lost sensor information. Avoid contrast,
+  // gamma or denoise transforms that could exaggerate their artificial edges.
+  if (quality.issues.includes('specular_glare')) return out;
   const add = (kind: ScannerImageEnhancement['kind'], data: Uint8ClampedArray) =>
     out.push({ kind, luminance: data, width, height });
 
