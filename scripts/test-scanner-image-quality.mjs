@@ -37,7 +37,7 @@ assert.ok(bright.issues.includes('highlight_clipping'),
 const lowContrastPixels = new Uint8ClampedArray(width * height);
 for (let y = 0; y < height; y++) {
   for (let x = 0; x < width; x++) {
-    lowContrastPixels[y * width + x] = x % 2 === 0 ? 120 : 130;
+    lowContrastPixels[y * width + x] = x % 2 === 0 ? 124 : 126;
   }
 }
 const lowContrast = measureScannerImageQuality({ luminance: lowContrastPixels, width, height });
