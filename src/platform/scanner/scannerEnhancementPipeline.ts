@@ -44,6 +44,7 @@ export type ScannerEnhancementPipelineResult<T> = {
   candidatesAttempted: number;
   imageCandidatesAttempted: number;
   geometryCandidatesAttempted: number;
+  matchedTransform: string | null;
 };
 
 type StageCostObserver = (stage: string, durationMs: number) => void;
@@ -75,6 +76,7 @@ export function executeScannerEnhancementPipeline<T>(
   let candidatesAttempted = 0;
   let imageCandidatesAttempted = 0;
   let geometryCandidatesAttempted = 0;
+  let matchedTransform: string | null = null;
   let rotationAttempted = false;
   let deskewAttempts = 0;
   let deskewEstimateMisses = 0;
@@ -84,7 +86,9 @@ export function executeScannerEnhancementPipeline<T>(
     candidate: ScannerEnhancementCandidate,
   ): T | null => {
     candidatesAttempted += 1;
-    return decodeCandidate(candidate);
+    const output = decodeCandidate(candidate);
+    if (output !== null) matchedTransform = candidate.transform ?? null;
+    return output;
   };
 
   const baselineOutput = attempt({
@@ -106,6 +110,7 @@ export function executeScannerEnhancementPipeline<T>(
       candidatesAttempted,
       imageCandidatesAttempted,
       geometryCandidatesAttempted,
+    matchedTransform,
     };
   }
 
@@ -138,6 +143,7 @@ export function executeScannerEnhancementPipeline<T>(
         candidatesAttempted,
         imageCandidatesAttempted,
         geometryCandidatesAttempted,
+      matchedTransform,
       };
     }
   }
@@ -218,6 +224,7 @@ export function executeScannerEnhancementPipeline<T>(
         candidatesAttempted,
         imageCandidatesAttempted,
         geometryCandidatesAttempted,
+      matchedTransform,
       };
     }
   }
@@ -241,6 +248,7 @@ export function executeScannerEnhancementPipeline<T>(
           lastDeskewAngleDegrees, rotationAttempted, deskewAttempts,
           deskewEstimateMisses, reusedOrientation, candidatesAttempted,
           imageCandidatesAttempted, geometryCandidatesAttempted,
+        matchedTransform,
         };
       }
     }
@@ -282,6 +290,7 @@ export function executeScannerEnhancementPipeline<T>(
         lastDeskewAngleDegrees, rotationAttempted, deskewAttempts,
         deskewEstimateMisses, reusedOrientation, candidatesAttempted,
         imageCandidatesAttempted, geometryCandidatesAttempted,
+      matchedTransform,
       };
     }
   }
@@ -299,5 +308,6 @@ export function executeScannerEnhancementPipeline<T>(
     candidatesAttempted,
     imageCandidatesAttempted,
     geometryCandidatesAttempted,
+  matchedTransform,
   };
 }
