@@ -421,13 +421,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       onFocusQuality(focusSample);
       // A1 samples the existing grayscale ROI readback at the same bounded
       // cadence as focus observation; it does not request another camera read.
+      const imageQualityStartedAt = performance.now();
       sampledImageQuality = measureScannerImageQuality({
         luminance: grayscale,
         width: this.canvas.width,
         height: this.canvas.height,
       });
+      this.recordStageCost('image_quality', performance.now() - imageQualityStartedAt);
       if (sampledImageQuality) {
         this.lastImageQuality = sampledImageQuality;
+        const profileStartedAt = performance.now();
         this.lastImageQualityProfile = createScannerImageQualityProfile({
           timestamp,
           frameWidth: dimensions.width,
@@ -441,6 +444,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           focus: focusSample,
           image: sampledImageQuality,
         });
+        this.recordStageCost('quality_profile', performance.now() - profileStartedAt);
       } else {
         this.lastImageQualityProfile = null;
       }

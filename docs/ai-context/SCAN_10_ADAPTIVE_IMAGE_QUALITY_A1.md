@@ -10,7 +10,7 @@ A1 creates one versioned, serializable quality profile from the scanner's existi
 2. The existing `getImageData()` readback is converted to grayscale once.
 3. At the existing 500 ms focus-observation cadence, A1 runs image-quality analysis on that same grayscale buffer.
 4. `createScannerImageQualityProfile()` combines the focus and luminance metrics.
-5. The latest profile is included in the existing decoder diagnostic event.
+5. The image-quality computation and profile assembly are recorded as separate decoder stage costs; the latest profile is included in the existing decoder diagnostic event.
 6. If the same frame later reaches the image-enhancement fallback stage, the pipeline reuses the precomputed quality result instead of measuring the same pixels again.
 
 A1 does not add camera readbacks, retain image pixels, change the ROI, or change decode candidate order.

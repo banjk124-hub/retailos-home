@@ -129,11 +129,16 @@ assert.match(adapter, /dimensions\.width\}x\$\{dimensions\.height\}:\$\{crop\.x\
   'focus reference identity must include the source crop coordinates');
 assert.match(adapter, /measureScannerImageQuality\(\{/,
   'A1 must reuse the existing grayscale ROI readback');
+assert.match(adapter, /recordStageCost\('image_quality'/,
+  'the periodic A1 image-quality computation must be included in decoder stage-cost diagnostics');
+assert.match(adapter, /recordStageCost\('quality_profile'/,
+  'profile assembly cost must be observable for later performance budgeting');
 assert.match(adapter, /createScannerImageQualityProfile\(/,
   'decoder must assemble the unified quality profile');
 assert.match(adapter, /qualityProfile: this\.lastImageQualityProfile/,
   'quality profile must be visible in scanner diagnostics');
 assert.match(pipeline, /options\.imageQuality !== undefined/,
+
   'the enhancement pipeline must reuse a precomputed same-frame quality observation');
 
 console.log('Scanner A1 image-quality profile tests passed.');
