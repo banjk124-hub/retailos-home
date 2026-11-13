@@ -315,7 +315,6 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           cachedOrientationHints: this.cachedOrientationHints,
           reuseOrientationHints: true,
           onImageQuality: (quality) => { this.lastImageQuality = quality; },
-        onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
           onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
         },
         (candidate) => this.decodeLuminance(
@@ -484,6 +483,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         reuseOrientationHints,
         imageQuality: sampledImageQuality,
         onImageQuality: (quality) => { this.lastImageQuality = quality; },
+        onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
       },
       (candidate) => this.decodeLuminance(
         candidate.luminance,
