@@ -39,6 +39,17 @@ assert.deepEqual(profile.roi, { width, height });
 assert.equal(profile.focus.valid, true);
 assert.equal(profile.focus.motionAvailable, false,
   'the first sample must not misrepresent an unavailable motion baseline as zero motion');
+
+const darkPixels = new Uint8ClampedArray(width * height).fill(8);
+const darkImage = measureScannerImageQuality({ luminance: darkPixels, width, height });
+const darkFocus = measureScannerFocusQuality(darkPixels, width, height);
+const darkProfile = createScannerImageQualityProfile(width, height, 2234, darkFocus, darkImage);
+assert.ok(darkProfile);
+assert.equal(darkProfile.focus.valid, false,
+  'a low-texture dark frame must not be described as a valid focus observation');
+assert.ok(darkProfile.issues.includes('underexposed'));
+assert.ok(darkProfile.issues.includes('shadow_clipping'),
+  'the unified profile must preserve independent exposure and clipping flags');
 assert.ok(profile.focus.sharpness > 0);
 assert.ok(profile.focus.edgeCoverage > 0);
 assert.ok(profile.exposure.meanLuminance >= 0 && profile.exposure.meanLuminance <= 255);
