@@ -82,7 +82,13 @@ try {
   const { executeScannerEnhancementPipeline } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
   ).href);
-  const source = { luminance: new Uint8ClampedArray(80 * 40).fill(150), width: 80, height: 40 };
+  const sourcePixels = new Uint8ClampedArray(240 * 96).fill(165);
+  for (let y = 8; y < 88; y++) {
+    for (let x = 20; x < 220; x++) {
+      if (Math.floor((x - 20) / 6) % 2 === 0) sourcePixels[y * 240 + x] = 116;
+    }
+  }
+  const source = { luminance: sourcePixels, width: 240, height: 96 };
   let selectedPlan = null;
   const attempted = [];
   const pipelineResult = executeScannerEnhancementPipeline(source, {
