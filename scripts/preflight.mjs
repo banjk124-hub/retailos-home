@@ -14,6 +14,11 @@ const checks = [
     args: ["scripts/test-stocktake-import.mjs"],
   },
   {
+    name: "Scanner temporal recognition contract tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-temporal-recognition.mjs"],
+  },
+  {
     name: "Scanner barcode validation regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-validation.mjs"],
