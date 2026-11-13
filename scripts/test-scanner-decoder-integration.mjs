@@ -100,6 +100,9 @@ try {
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
+  const { createScannerGeometryCandidates } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
+  ).href);
   const { resolveScannerRoiScaleCandidates } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerScale.js'),
   ).href);
@@ -255,6 +258,45 @@ try {
   await reversedCode39Decoder.dispose();
 
   const upright = makeCode128();
+
+  // Curved/dented carrier fixture: each scanline receives a different smooth
+  // nonlinear horizontal displacement and local scale. The geometry mesh must
+  // align stable bar-edge correspondences without changing the source buffer.
+  const makeDentedCode128 = (frame) => {
+    const luminance = new Uint8ClampedArray(frame.luminance.length).fill(255);
+    const center = (frame.width - 1) / 2;
+    for (let y = 0; y < frame.height; y++) {
+      const t = y / Math.max(1, frame.height - 1);
+      const phase = Math.sin(t * Math.PI * 2);
+      const shift = 13 * phase;
+      const scale = 1 + 0.12 * phase;
+      for (let x = 0; x < frame.width; x++) {
+        const localBend = 7 * phase * Math.sin((x / frame.width) * Math.PI * 2);
+        const sourceX = (x - center - shift - localBend) / scale + center;
+        const x0 = Math.floor(sourceX), x1 = Math.min(frame.width - 1, x0 + 1);
+        if (x0 < 0 || x1 >= frame.width) continue;
+        const weight = sourceX - x0;
+        luminance[y * frame.width + x] = Math.round(
+          frame.luminance[y * frame.width + x0] * (1 - weight)
+          + frame.luminance[y * frame.width + x1] * weight,
+        );
+      }
+    }
+    return { ...frame, luminance };
+  };
+  const dentedCode128 = makeDentedCode128(upright);
+  const dentedCopy = new Uint8ClampedArray(dentedCode128.luminance);
+  const dentedGeometry = createScannerGeometryCandidates(dentedCode128);
+  assert.ok(dentedGeometry.length > 0,
+    'production-sized CODE-128 fixture on a dented/curved carrier must produce a bounded geometry candidate');
+  assert.deepEqual(dentedCode128.luminance, dentedCopy,
+    'geometry estimation and rectification must not mutate the captured ROI');
+  const dentedDecoder = await createDecoder();
+  const dentedResult = await decodeOnce(dentedDecoder, toSource(dentedGeometry[0]));
+  assert.equal(dentedResult[0]?.value, '12345',
+    'the real ZXing production adapter must decode the rectified dented-carrier candidate');
+  await dentedDecoder.dispose();
+
   const uprightDecoder = await createDecoder();
   const uprightResult = await decodeOnce(uprightDecoder, toSource(upright));
   assert.equal(uprightResult[0]?.value, '12345',
