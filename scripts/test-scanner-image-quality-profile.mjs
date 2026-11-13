@@ -28,11 +28,17 @@ assert.ok(image, 'image quality metrics are available for a valid ROI');
 assert.ok(focus.valid, 'focus metrics are available for a structured barcode-like ROI');
 
 const profile = createScannerImageQualityProfile(width, height, 1234, focus, image);
+const nextFocus = measureScannerFocusQuality(pixels, width, height, focus.sampledPixels);
+assert.equal(nextFocus.motionAvailable, true, 'motion becomes measurable after a same-geometry reference exists');
+const nextProfile = createScannerImageQualityProfile(width, height, 1734, nextFocus, image);
+assert.equal(nextProfile.focus.motionAvailable, true);
 assert.ok(profile, 'valid focus and image metrics produce one profile');
 assert.equal(profile.schemaVersion, 1);
 assert.equal(profile.timestamp, 1234);
 assert.deepEqual(profile.roi, { width, height });
 assert.equal(profile.focus.valid, true);
+assert.equal(profile.focus.motionAvailable, false,
+  'the first sample must not misrepresent an unavailable motion baseline as zero motion');
 assert.ok(profile.focus.sharpness > 0);
 assert.ok(profile.focus.edgeCoverage > 0);
 assert.ok(profile.exposure.meanLuminance >= 0 && profile.exposure.meanLuminance <= 255);
