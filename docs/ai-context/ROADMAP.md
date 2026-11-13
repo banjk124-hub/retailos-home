@@ -1,79 +1,58 @@
-# Scanner roadmap — unified recognition pipeline (2026-11-11)
+# Scanner roadmap — unified recognition pipeline (2026-11-13)
 
-**Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
-**Current work:** PR A+B combined as one reviewable change on `feat/scanner-unified-enhancement-pipeline`.
-**Objective:** finish the already-built scanner capabilities as one coordinated recognition pipeline, then extend it with image enhancement, perspective/curved-label correction and measured adaptive budgets. Do not restart the camera platform or duplicate logic in Home/Stocktake.
+**Current main:** `8604bdee8c37e78ac758bf7e71ff44eb9141a605` (post-merge of PR #82 and PR #83).
+**Current work:** Gate 3 Geometry Correction on `feat/scanner-geometry-correction-gate3`.
+**Objective:** finish and verify the existing recognition stages before acceptance; do not move to adaptive strategy while geometry, glare handling and real-world limits remain incomplete.
 
-## Current architecture
+## Current merged baseline
+
+- PR #82 — Multi-scale preview isolation: merged; CI run #703 passed, including the explicit 1.5x miss → 1x miss → 2x successful fallback path.
+- PR #83 — Image Quality Analysis: merged; CI run #705 passed full preflight, TypeScript and production/Pages builds.
+- Image quality now includes orientation-aware horizontal/vertical observations and advisory exposure/clipping/noise classifications.
+- The original enhancement-gate metrics remain unchanged; quality analysis is observational except that the newly detected specular-glare condition prevents contrast/gamma/denoise candidates from amplifying clipped highlight bands.
+
+## Gate 3 — Geometry Correction (active implementation)
+
+**Branch:** `feat/scanner-geometry-correction-gate3`.
+**Base:** `8604bdee`.
+
+- Replace row-only envelope assumptions with a bounded 2D correction model:
+  - Row-wise edge correspondence mesh for horizontal perspective, cylindrical bow and smooth local deformation.
+  - Column-wise top/bottom envelope for the orthogonal perspective axis.
+  - Combined grid correction when both axes show stable evidence.
+- Evaluate geometry on two normalized orientation surfaces: upright/deskewed and quarter-turned/deskewed. This keeps geometry available regardless of the barcode's 0°/90°/180°/270° capture orientation without multiplying every scale and transform.
+- Cap geometry work at two orientation candidates per pipeline attempt; each candidate remains inside the original module-owned ROI and is validated by the existing ZXing decoder.
+- Reject inconsistent edge counts, insufficient profile coverage, non-monotonic mappings, excessive local scale changes and geometry obscured by substantial clipping/occlusion.
+- Add local specular-band detection. When a persistent saturated band crosses the barcode region, do not run contrast/gamma/denoise transforms that could exaggerate artificial edges. Geometry must not attempt to reconstruct the missing highlight data.
+- Add geometry attempt/hit/transform and glare metrics to existing decoder diagnostics; no camera/session/preview/presentation changes.
+
+### Gate 3 regression scope
+
+- Planar perspective along both image axes.
+- Curved carrier and localized smooth dent/bow deformation.
+- 0°/90°/180°/270° geometry surfaces and compound in-plane rotation + perspective.
+- Fail-closed controls for uniform input and severe occlusion.
+- Production ZXing adapter validation using a known CODE-128 payload after geometry rectification.
+- Specular highlight fixture and enhancement suppression.
+- CI success is necessary but not sufficient; real packaging, bottles, reflective film and glass still require a labelled device corpus.
+
+## Protected architecture
 
 1. Home and Stocktake own their video element, reticle and business workflow.
-2. SCAN-02/03 map the reticle into the module-owned source-frame ROI.
-3. SCAN-04 remains strict and fail-closed; the pipeline cannot widen or replace the ROI.
-4. SCAN-07 bounds source-ROI sampling: 1.5× first, then 1×/2× only after a complete miss.
-5. `scannerEnhancementPipeline.ts` coordinates the image candidates: original baseline → exact quarter-turn → confidence-gated continuous deskew.
-6. Each candidate retains both existing ZXing binarizers. The pipeline stops on the first decoder output; session validation and module handoff remain unchanged.
-7. Camera lease, fresh-frame readiness, lifecycle/recovery, passive focus diagnostics, native focus ownership and Torch remain outside the recognition pipeline.
+2. The feature-owned reticle is mapped into the strict source-frame ROI by the existing geometry mapper.
+3. Geometry correction can transform pixels only inside that ROI; it cannot enlarge, recenter or invent a new capture region.
+4. The original image and baseline candidate remain first; every transformed candidate must still pass ZXing format/checksum and downstream payload validation.
+5. Camera lease, lifecycle/recovery, native focus ownership, session cadence and module presentation remain outside optical correction.
+6. Keep candidate count, pixels and transform complexity bounded. No unbounded Cartesian product.
+7. Synthetic fixtures are regression controls, not proof of retail-world optical performance.
 
-## PR A+B — unified pipeline foundation
+## Acceptance order
 
-**Status:** implementation authored; CI and physical-device QA pending.
-
-- [x] Extract SCAN-05/06 candidate sequencing from the ZXing adapter into one orchestration service.
-- [x] Preserve original-first, 90° fallback, deskew confidence gates, correction ordering and early exit.
-- [x] Preserve SCAN-07 scale ordering, bounded candidate sizes and same-attempt orientation reuse.
-- [x] Add regression tests for baseline-first, orthogonal fallback, deskew, reuse and early exit.
-- [x] Define the extension boundary for SCAN-08/09 without prematurely implementing unvalidated transforms.
-- [x] GitHub Actions run #690 passed full preflight, TypeScript, production build and Pages build on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; subsequent `8f6e0ae` was documentation-only.
-- [ ] Review exact diff and verify no unrelated camera/session/module behavior changed.
-- [ ] iOS Safari/PWA and Android Chrome/PWA QA in both Home and Stocktake.
-
-## Recognition principles
-
-- Paper size or carrier type (A4/A3/A5, shelf label, package, screen) is not a barcode format and must not select a separate recognition algorithm.
-- The pipeline is symbology-agnostic; supported formats are registered centrally and validated by explicit policy.
-- New transforms are bounded, optional and confidence-gated. Original ROI is always retained as the first candidate.
-- Do not create an unbounded Cartesian product of rotations × scales × enhancements × geometry transforms.
-- Never parallelize access to the shared ZXing reader or queue stale camera frames.
-- Upscaling cannot restore optical detail that the camera did not resolve.
-- Accuracy, false positives, CPU/memory and UI responsiveness are separate acceptance measures.
-
-## SCAN-08 — Image enhancement
-
-**Status:** next recognition stage after PR A+B is verified.
-- Evaluate gamma/local contrast, adaptive threshold and denoise as optional candidates after the baseline/orientation path misses.
-- Use measured image features to select only relevant variants; do not blindly run every enhancement on every frame.
-- Keep original luminance first and available; reject candidates that increase false positives or erase narrow bars.
-- Test normal, low contrast, low light, noise and clipped/glare samples.
-
-## SCAN-09 — Perspective and curved barcode
-
-**Status:** subsequent stage.
-- Separate in-plane rotation from perspective/keystone and curved-surface deformation.
-- Use confidence-gated detection and bounded rectification; preserve the original ROI.
-- Keep planar perspective and curved-label cases distinct, with negative controls and measured interpolation/memory cost.
-
-## SCAN-10 — Adaptive performance
-
-**Status:** after candidate stages have measured costs.
-- Derive device/runtime budgets from observed decode time, frame gaps, long tasks and memory pressure, not user-agent names.
-- Preserve baseline-first and serialized decode; bound the number and size of candidates.
-- Do not change the 70 ms session cadence without measurements and acceptance.
-
-## SCAN-11 — Cross-platform acceptance
-
-Continuous across all stages: iOS Safari/PWA and Android Chrome/PWA, Home and Stocktake, low/mid/high capability devices, real printed labels and negative controls. Record symbology, source-pixel module width, lighting, glare, motion, geometry, correct payload, false positives, per-stage cost and UI responsiveness.
-
-## Rollout rules
-
-- One PR per coherent recognition capability; do not split a single pipeline contract across repetitive micro-PRs.
-- No merge/deploy without explicit user approval.
-- CI is not physical-device QA.
-- Preserve historical records below; this current section is authoritative for active work.
-
-> **Historical records below:** older phase plans and decisions are retained for traceability. Their camera resolution, decoder cadence and profile values are snapshots from earlier baselines; the current authoritative SCAN-07 behavior is defined above and in `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`.
-
-## Legacy roadmap history
-The sections below are historical records. Their old branch names, pending states and pre-SCAN-05/06 cadence descriptions are not current status. Use this top section as the authoritative current plan; retain older records only as traceable decision history.
+1. Complete Gate 3 implementation and all synthetic + production-adapter regression tests.
+2. Run full preflight, TypeScript, production build and Pages build.
+3. Review exact diff and confirm no unrelated runtime behavior changed.
+4. Then collect real device samples: matte labels, curved bottles, dented bottles, shrink-wrap, glass/reflective labels, glare, shadow and partial occlusion.
+5. Only after these are complete, return to formal acceptance. Do not start SCAN-10 adaptive performance work before the current stages are complete.
 
 ---
 
