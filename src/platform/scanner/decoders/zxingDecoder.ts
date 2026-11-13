@@ -396,7 +396,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     height: number,
     timestamp: number,
     includeGlobalHistogram: boolean,
-    orientation: 'upright' | 'rotated_90' | 'deskew',
+    orientation: 'upright' | 'rotated_90' | 'deskew' | 'rotated_90_deskew',
   ): DecoderOutput | null {
     if (!this.reader) return null;
     const luminance = new RGBLuminanceSource(grayscale, width, height);
@@ -433,7 +433,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         this.recordStageCost(
           orientation === 'upright'
             ? 'zxing_decode'
-            : orientation === 'rotated_90' ? 'zxing_decode_rotated_90' : 'zxing_decode_deskew',
+            : orientation === 'rotated_90' ? 'zxing_decode_rotated_90'
+              : orientation === 'rotated_90_deskew' ? 'zxing_decode_rotated_90_deskew' : 'zxing_decode_deskew',
           performance.now() - zxingStartedAt,
         );
         this.reader.reset();
