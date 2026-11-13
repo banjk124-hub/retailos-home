@@ -75,9 +75,14 @@ function sampleRowProfiles(frame: ScannerLuminanceFrame): RowProfile[] {
   }
   if (profiles.length < 10) return [];
 
-  const typicalCount = median(profiles.map((profile) => profile.edges.length));
-  const stable = profiles.filter((profile) =>
-    Math.abs(profile.edges.length - typicalCount) <= Math.max(2, typicalCount * 0.12));
+  const countFrequency = new Map<number, number>();
+  for (const profile of profiles) {
+    countFrequency.set(profile.edges.length, (countFrequency.get(profile.edges.length) ?? 0) + 1);
+  }
+  const stableCount = [...countFrequency.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0];
+  if (stableCount === undefined) return [];
+  const stable = profiles.filter((profile) => profile.edges.length === stableCount);
   return stable.length >= Math.max(10, Math.ceil(profiles.length * 0.55)) ? stable : [];
 }
 
