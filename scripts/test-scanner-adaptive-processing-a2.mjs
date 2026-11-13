@@ -51,17 +51,17 @@ try {
   assert.deepEqual(lowContrast.imageTransforms, ['contrast']);
 
   const underexposed = createScannerAdaptiveProcessingPlan({
-    ...base, issues: ['underexposed'],
+    ...base, darkFraction: 0.2, issues: ['underexposed'],
   });
   assert.deepEqual(underexposed.imageTransforms, ['gamma']);
 
   const noisy = createScannerAdaptiveProcessingPlan({
-    ...base, issues: ['high_noise'],
+    ...base, noise: 18, issues: ['high_noise'],
   });
   assert.deepEqual(noisy.imageTransforms, ['denoise']);
 
   const combined = createScannerAdaptiveProcessingPlan({
-    ...base, issues: ['low_contrast', 'underexposed', 'high_noise'],
+    ...base, darkFraction: 0.2, noise: 18, issues: ['low_contrast', 'underexposed', 'high_noise'],
   });
   assert.deepEqual(combined.imageTransforms, ['contrast', 'gamma'],
     'multi-cause plans must retain deterministic priority and stay within two transforms');
