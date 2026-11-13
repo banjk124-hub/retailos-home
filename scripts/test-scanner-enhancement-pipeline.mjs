@@ -126,9 +126,9 @@ try {
     const pixels = new Uint8ClampedArray(width * height).fill(255);
     for (let y = 0; y < height; y++) {
       const t = y / (height - 1);
-      const dent = 19 * Math.exp(-((t - 0.5) / 0.19) ** 2);
+      const dent = 19 * Math.exp(-(((t - 0.5) / 0.19) ** 2));
       const center = 120 + dent;
-      const span = 158 - 7 * Math.exp(-((t - 0.5) / 0.22) ** 2);
+      const span = 158 - 7 * Math.exp(-(((t - 0.5) / 0.22) ** 2));
       for (let x = 0; x < width; x++) {
         const u = (x - center) / span + 0.5;
         if (u >= 0 && u < 1 && Math.floor(u * 32) % 2 === 0) pixels[y * width + x] = 0;
