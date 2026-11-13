@@ -252,13 +252,15 @@ try {
     {},
     (candidate) => {
       if (candidate.stage === 'geometry') geometryOrientations.push(candidate.orientation);
-      return candidate.stage === 'geometry' && candidate.orientation === 'rotated_90'
+      return candidate.stage === 'geometry'
+        && ['rotated_90', 'rotated_90_deskew'].includes(candidate.orientation)
         ? 'rotated-geometry-hit' : null;
     },
   );
   assert.equal(rotatedGeometryResult.output, 'rotated-geometry-hit',
     'the pipeline must attempt a geometry candidate from the quarter-turned ROI');
-  assert.ok(geometryOrientations.includes('rotated_90'),
+  assert.ok(geometryOrientations.some((orientation) =>
+    ['rotated_90', 'rotated_90_deskew'].includes(orientation)),
     'rotated geometry candidate must retain its orientation metadata');
 
   const missResult = executeScannerEnhancementPipeline(
