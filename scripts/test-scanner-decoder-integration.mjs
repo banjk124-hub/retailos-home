@@ -40,7 +40,7 @@ try {
     await writeFile(outputPath, compiled, 'utf8');
   }
 
-  const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false, canvases: [] };
+  const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false, forceOneXMiss: false, canvases: [] };
   globalThis.document = {
     createElement(tag) {
       assert.equal(tag, 'canvas');
@@ -53,9 +53,10 @@ try {
           canvasStats.draws += 1;
           canvasStats.lastCrop = { sx, sy, sw, sh, dw, dh };
           const output = new Uint8ClampedArray(dw * dh * 4);
-          if (canvasStats.forceBaselineMiss
-            && dw === Math.round(sw * 1.5)
-            && dh === Math.round(sh * 1.5)) {
+          if ((canvasStats.forceBaselineMiss
+              && dw === Math.round(sw * 1.5)
+              && dh === Math.round(sh * 1.5))
+            || (canvasStats.forceOneXMiss && dw === sw && dh === sh)) {
             output.fill(255);
             this.pixels = output;
             return;
@@ -422,6 +423,21 @@ try {
     'successful 1x fallback must stop the candidate loop before attempting 2x');
   canvasStats.forceBaselineMiss = false;
   await fallbackDecoder.dispose();
+
+  // Exercise the final 2x fallback independently: force both earlier
+  // candidates to miss while allowing the production decoder to process 2x.
+  const twoXFallbackDecoder = await createDecoder();
+  canvasStats.forceBaselineMiss = true;
+  canvasStats.forceOneXMiss = true;
+  const twoXDrawsBefore = canvasStats.draws;
+  const twoXFallbackResult = await decodeOnce(twoXFallbackDecoder, toSource(upright));
+  assert.equal(twoXFallbackResult[0]?.value, '12345',
+    'production adapter must recover a barcode when 1.5x and 1x miss and the 2x fallback succeeds');
+  assert.equal(canvasStats.draws, twoXDrawsBefore + 3,
+    'successful 2x fallback must run after both earlier candidates and stop immediately on success');
+  canvasStats.forceBaselineMiss = false;
+  canvasStats.forceOneXMiss = false;
+  await twoXFallbackDecoder.dispose();
 
   // Multi-scale is an internal pixel-processing concern. Pass a video-shaped
   // source with immutable presentation/camera state through the real adapter
