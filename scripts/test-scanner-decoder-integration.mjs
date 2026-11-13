@@ -100,6 +100,9 @@ try {
   const { ZXingDecoderAdapter } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
   ).href);
+  const { createScannerGeometryCandidates } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
+  ).href);
   const { resolveScannerRoiScaleCandidates } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerScale.js'),
   ).href);
@@ -255,6 +258,96 @@ try {
   await reversedCode39Decoder.dispose();
 
   const upright = makeCode128();
+
+  // Curved/dented carrier fixture: each scanline receives a different smooth
+  // nonlinear horizontal displacement and local scale. The geometry mesh must
+  // align stable bar-edge correspondences without changing the source buffer.
+  const makeDentedBarcodeFrame = (frame) => {
+    const luminance = new Uint8ClampedArray(frame.luminance.length).fill(255);
+    const center = (frame.width - 1) / 2;
+    for (let y = 0; y < frame.height; y++) {
+      const t = y / Math.max(1, frame.height - 1);
+      const phase = Math.sin(t * Math.PI * 2);
+      const shift = 7 * phase;
+      const scale = 1 + 0.05 * phase;
+      for (let x = 0; x < frame.width; x++) {
+        const localBend = 3 * phase * Math.sin((x / frame.width) * Math.PI * 2);
+        const sourceX = (x - center - shift - localBend) / scale + center;
+        const x0 = Math.floor(sourceX), x1 = Math.min(frame.width - 1, x0 + 1);
+        if (sourceX < 0 || sourceX > frame.width - 1) continue;
+        const weight = sourceX - x0;
+        luminance[y * frame.width + x] = Math.round(
+          frame.luminance[y * frame.width + x0] * (1 - weight)
+          + frame.luminance[y * frame.width + x1] * weight,
+        );
+      }
+    }
+    return { ...frame, luminance };
+  };
+  const dentedCode128 = makeDentedBarcodeFrame(upright);
+  const dentedCopy = new Uint8ClampedArray(dentedCode128.luminance);
+  const dentedGeometry = createScannerGeometryCandidates(dentedCode128);
+  assert.ok(dentedGeometry.length > 0,
+    'production-sized CODE-128 fixture on a dented/curved carrier must produce a bounded geometry candidate');
+  assert.deepEqual(dentedCode128.luminance, dentedCopy,
+    'geometry estimation and rectification must not mutate the captured ROI');
+  const dentedDecoder = await createDecoder();
+  const dentedResult = await decodeOnce(dentedDecoder, toSource(dentedGeometry[0]));
+  assert.equal(dentedResult[0]?.value, '12345',
+    'the real ZXing production adapter must decode the rectified dented-carrier candidate');
+  await dentedDecoder.dispose();
+
+  const dentedEan = makeDentedBarcodeFrame(makeEanFrame('5901234123457', 'EAN_13'));
+  const dentedEanGeometry = createScannerGeometryCandidates(dentedEan);
+  assert.ok(dentedEanGeometry.length > 0,
+    'EAN-13 on a curved carrier must produce a bounded geometry candidate');
+  const dentedEanDecoder = await createDecoder('EAN_13');
+  const dentedEanResult = await decodeOnce(dentedEanDecoder, toSource(dentedEanGeometry[0]));
+  assert.equal(dentedEanResult[0]?.value, '5901234123457',
+    'the production EAN-13 adapter must decode a rectified curved-carrier barcode');
+  await dentedEanDecoder.dispose();
+
+  // Orthogonal planar tilt fixture: barcode bars keep their horizontal
+  // positions while the top/bottom envelope changes smoothly across x.
+  const paddedHeight = 120;
+  const paddedTop = Math.floor((paddedHeight - upright.height) / 2);
+  const padded = {
+    width: upright.width,
+    height: paddedHeight,
+    luminance: new Uint8ClampedArray(upright.width * paddedHeight).fill(255),
+  };
+  for (let y = 0; y < upright.height; y++) {
+    padded.luminance.set(
+      upright.luminance.subarray(y * upright.width, (y + 1) * upright.width),
+      (y + paddedTop) * padded.width,
+    );
+  }
+  const verticalTiltPixels = new Uint8ClampedArray(padded.luminance.length).fill(255);
+  const verticalCenter = (padded.height - 1) / 2;
+  for (let y = 0; y < padded.height; y++) {
+    for (let x = 0; x < padded.width; x++) {
+      const phase = Math.sin((x / padded.width) * Math.PI * 2);
+      const sourceY = (y - verticalCenter - 7 * phase) / (1 + 0.07 * phase) + verticalCenter;
+      if (sourceY < 0 || sourceY > padded.height - 1) continue;
+      const y0 = Math.floor(sourceY), y1 = Math.min(padded.height - 1, y0 + 1);
+      const weight = sourceY - y0;
+      verticalTiltPixels[y * padded.width + x] = Math.round(
+        padded.luminance[y0 * padded.width + x] * (1 - weight)
+        + padded.luminance[y1 * padded.width + x] * weight,
+      );
+    }
+  }
+  const verticalTilt = { ...padded, luminance: verticalTiltPixels };
+  const verticalGeometry = createScannerGeometryCandidates(verticalTilt);
+  assert.ok(verticalGeometry.some((candidate) => candidate.correction === 'column-envelope'
+    || candidate.correction === 'combined-grid'),
+    'the production-sized orthogonal perspective fixture must produce a column-envelope candidate');
+  const verticalDecoder = await createDecoder();
+  const verticalResult = await decodeOnce(verticalDecoder, toSource(verticalGeometry[0]));
+  assert.equal(verticalResult[0]?.value, '12345',
+    'the real ZXing production adapter must decode the rectified orthogonal-perspective candidate');
+  await verticalDecoder.dispose();
+
   const uprightDecoder = await createDecoder();
   const uprightResult = await decodeOnce(uprightDecoder, toSource(upright));
   assert.equal(uprightResult[0]?.value, '12345',

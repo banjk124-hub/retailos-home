@@ -208,8 +208,8 @@ assert.match(pipelineSource, /sort\(\(a, b\) => Math\.abs\(a\.angleDegrees\) - M
 assert.match(decoderSource, /deskewAttempts:/, 'deskew attempt diagnostics must be exposed');
 assert.match(decoderSource, /deskewEstimateMisses:/, 'failed orientation estimates must be observable separately');
 assert.match(decoderSource, /deskewHits:/, 'deskew hit diagnostics must be exposed');
-assert.match(pipelineSource, /orientation: 'deskew'/,
-  'deskew candidates must flow through the same decoder/binarizer callback as other stages');
+assert.match(pipelineSource, /orientation: candidate === rotatedDeskew \? 'rotated_90_deskew' : 'deskew'/,
+  'upright and quarter-turned deskew candidates must retain distinct orientation metadata');
 assert.match(decoderSource, /lastDeskewAngleDegrees:/, 'measured skew angle must be observable');
 
 

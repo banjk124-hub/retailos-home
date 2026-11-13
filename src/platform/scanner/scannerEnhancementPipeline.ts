@@ -14,7 +14,7 @@ export type ScannerOrientationHints = {
 };
 
 export type ScannerEnhancementStage = 'baseline' | 'orthogonal' | 'deskew' | 'image' | 'geometry';
-export type ScannerEnhancementOrientation = 'upright' | 'rotated_90' | 'deskew';
+export type ScannerEnhancementOrientation = 'upright' | 'rotated_90' | 'deskew' | 'rotated_90_deskew';
 
 export type ScannerEnhancementCandidate = ScannerLuminanceFrame & {
   stage: ScannerEnhancementStage;
@@ -44,6 +44,7 @@ export type ScannerEnhancementPipelineResult<T> = {
   candidatesAttempted: number;
   imageCandidatesAttempted: number;
   geometryCandidatesAttempted: number;
+  matchedTransform: string | null;
 };
 
 type StageCostObserver = (stage: string, durationMs: number) => void;
@@ -75,6 +76,7 @@ export function executeScannerEnhancementPipeline<T>(
   let candidatesAttempted = 0;
   let imageCandidatesAttempted = 0;
   let geometryCandidatesAttempted = 0;
+  let matchedTransform: string | null = null;
   let rotationAttempted = false;
   let deskewAttempts = 0;
   let deskewEstimateMisses = 0;
@@ -84,7 +86,9 @@ export function executeScannerEnhancementPipeline<T>(
     candidate: ScannerEnhancementCandidate,
   ): T | null => {
     candidatesAttempted += 1;
-    return decodeCandidate(candidate);
+    const output = decodeCandidate(candidate);
+    if (output !== null) matchedTransform = candidate.transform ?? null;
+    return output;
   };
 
   const baselineOutput = attempt({
@@ -106,6 +110,7 @@ export function executeScannerEnhancementPipeline<T>(
       candidatesAttempted,
       imageCandidatesAttempted,
       geometryCandidatesAttempted,
+    matchedTransform,
     };
   }
 
@@ -138,6 +143,7 @@ export function executeScannerEnhancementPipeline<T>(
         candidatesAttempted,
         imageCandidatesAttempted,
         geometryCandidatesAttempted,
+      matchedTransform,
       };
     }
   }
@@ -191,7 +197,7 @@ export function executeScannerEnhancementPipeline<T>(
     .map((candidate) => ({
       ...candidate,
       stage: 'deskew',
-      orientation: 'deskew',
+      orientation: candidate === rotatedDeskew ? 'rotated_90_deskew' : 'deskew',
     }));
 
   onStageCost?.(
@@ -218,6 +224,7 @@ export function executeScannerEnhancementPipeline<T>(
         candidatesAttempted,
         imageCandidatesAttempted,
         geometryCandidatesAttempted,
+      matchedTransform,
       };
     }
   }
@@ -241,24 +248,54 @@ export function executeScannerEnhancementPipeline<T>(
           lastDeskewAngleDegrees, rotationAttempted, deskewAttempts,
           deskewEstimateMisses, reusedOrientation, candidatesAttempted,
           imageCandidatesAttempted, geometryCandidatesAttempted,
+        matchedTransform,
         };
       }
     }
   }
 
-  // SCAN-09: bounded geometric fallback, never a substitute for SCAN-04 ROI.
+  // SCAN-09: test geometry after normalizing every supported in-plane
+  // orientation. A tilted plane must not be invisible to geometry merely
+  // because the barcode arrived rotated 90 degrees or required deskew.
+  // The candidate budget is explicit: at most one geometry candidate for
+  // each of two normalized orientation surfaces (upright and quarter-turned).
+  // Each surface prefers its deskewed representation when available. No
+  // Cartesian product of rotations, scales and transforms.
   const geometryStartedAt = now();
-  const geometryVariants = createScannerGeometryCandidates(source);
+  const geometrySources: Array<{
+    frame: ScannerLuminanceFrame;
+    orientation: ScannerEnhancementOrientation;
+  }> = [
+    {
+      frame: uprightDeskew ?? source,
+      orientation: uprightDeskew ? 'deskew' : 'upright',
+    },
+    ...(rotated ? [{
+      frame: rotatedDeskew ?? rotated,
+      orientation: rotatedDeskew ? 'rotated_90_deskew' as const : 'rotated_90' as const,
+    }] : []),
+  ];
+  const geometryCandidates = geometrySources.flatMap(({ frame, orientation }) =>
+    createScannerGeometryCandidates(frame).map((variant) => ({
+      ...variant,
+      orientation,
+      transform: `${variant.kind}:${variant.correction}`,
+    })));
   onStageCost?.('geometry_detection_and_rectification', now() - geometryStartedAt);
-  for (const variant of geometryVariants) {
+
+  // Prefer the strongest geometric evidence, while retaining a hard upper
+  // bound on the amount of rectified data sent through the decoder.
+  geometryCandidates.sort((a, b) => b.confidence - a.confidence);
+  for (const variant of geometryCandidates.slice(0, 4)) {
     geometryCandidatesAttempted++;
-    const output = attempt({ ...variant, stage: 'geometry', orientation: 'upright', transform: variant.kind });
+    const output = attempt({ ...variant, stage: 'geometry' });
     if (output !== null) {
       return {
         output, orientationHints, matchedStage: 'geometry', matchedAngleDegrees: null,
         lastDeskewAngleDegrees, rotationAttempted, deskewAttempts,
         deskewEstimateMisses, reusedOrientation, candidatesAttempted,
         imageCandidatesAttempted, geometryCandidatesAttempted,
+      matchedTransform,
       };
     }
   }
@@ -276,5 +313,6 @@ export function executeScannerEnhancementPipeline<T>(
     candidatesAttempted,
     imageCandidatesAttempted,
     geometryCandidatesAttempted,
+  matchedTransform,
   };
 }

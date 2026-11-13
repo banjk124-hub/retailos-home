@@ -42,6 +42,9 @@ try {
   const { createScannerGeometryCandidates } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
   ).href);
+  const { rotateLuminance90Clockwise } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerRotation.js'),
+  ).href);
 
   // SCAN-08: the baseline stays immutable and low-contrast imagery can
   // produce an optional enhanced representation without format-specific code.
@@ -86,12 +89,119 @@ try {
     }
     return { luminance: pixels, width, height };
   };
-  const perspectiveCandidates = createScannerGeometryCandidates(makeWarpedBars('perspective'));
+  const perspectiveFixture = makeWarpedBars('perspective');
+  const perspectiveCopy = new Uint8ClampedArray(perspectiveFixture.luminance);
+  const perspectiveCandidates = createScannerGeometryCandidates(perspectiveFixture);
   assert.ok(perspectiveCandidates.some(candidate => candidate.kind === 'perspective'),
     'coherent keystone distortion should yield a bounded perspective candidate');
+  assert.equal(perspectiveCandidates[0].width, perspectiveFixture.width);
+  assert.equal(perspectiveCandidates[0].height, perspectiveFixture.height);
+  assert.deepEqual(perspectiveFixture.luminance, perspectiveCopy,
+    'geometry correction must preserve the original captured ROI buffer');
   const curvedCandidates = createScannerGeometryCandidates(makeWarpedBars('curved'));
   assert.ok(curvedCandidates.some(candidate => candidate.kind === 'curved'),
     'coherent curved-label bow should yield a bounded geometry candidate');
+
+  // Orthogonal top/bottom envelope: simulates a barcode plane tilted around
+  // the camera's horizontal axis, which row-only geometry cannot observe.
+  const makeVerticalPerspectiveBars = () => {
+    const width = 240, height = 120;
+    const pixels = new Uint8ClampedArray(width * height).fill(255);
+    for (let x = 0; x < width; x++) {
+      const t = x / (width - 1);
+      const top = Math.round(12 + 18 * t);
+      const bottom = Math.round(106 - 14 * t);
+      for (let y = top; y <= bottom; y++) {
+        if (Math.floor((x - 30) / 5) % 2 === 0 && x >= 30 && x < 210) {
+          pixels[y * width + x] = 0;
+        }
+      }
+    }
+    return { luminance: pixels, width, height };
+  };
+  const verticalPerspective = makeVerticalPerspectiveBars();
+  const verticalPerspectiveCopy = new Uint8ClampedArray(verticalPerspective.luminance);
+  const verticalPerspectiveCandidates = createScannerGeometryCandidates(verticalPerspective);
+  assert.ok(verticalPerspectiveCandidates.length > 0,
+    'column envelope must detect perspective that varies across the barcode width');
+  assert.deepEqual(verticalPerspective.luminance,
+    verticalPerspectiveCopy,
+    'column-envelope rectification must not mutate source pixels');
+  assert.ok(['column-envelope', 'combined-grid'].includes(verticalPerspectiveCandidates[0].correction),
+    'orthogonal perspective must use the column-envelope correction path');
+
+  // A local dent/bow is nonlinear rather than a single global trapezoid.
+  const makeDentedBars = () => {
+    const width = 240, height = 96;
+    const pixels = new Uint8ClampedArray(width * height).fill(255);
+    for (let y = 0; y < height; y++) {
+      const t = y / (height - 1);
+      const dent = 19 * Math.exp(-(((t - 0.5) / 0.19) ** 2));
+      const center = 120 + dent;
+      const span = 158 - 7 * Math.exp(-(((t - 0.5) / 0.22) ** 2));
+      for (let x = 0; x < width; x++) {
+        const u = (x - center) / span + 0.5;
+        if (u >= 0 && u < 1 && Math.floor(u * 32) % 2 === 0) pixels[y * width + x] = 0;
+      }
+    }
+    return { luminance: pixels, width, height };
+  };
+  const dentedCandidates = createScannerGeometryCandidates(makeDentedBars());
+  assert.ok(dentedCandidates.some(candidate => candidate.kind === 'curved'),
+    'localized smooth dent deformation must yield a conservative curved-surface candidate');
+
+  // Repeated shallow wrinkles: smooth multi-frequency displacement and scale
+  // variation are a realistic intermediate case between a cylinder and a dent.
+  const makeWrinkledBars = () => {
+    const width = 240, height = 120;
+    const pixels = new Uint8ClampedArray(width * height).fill(255);
+    for (let y = 0; y < height; y++) {
+      const t = y / (height - 1);
+      const center = 120 + 7 * Math.sin(t * Math.PI * 2) + 4 * Math.sin(t * Math.PI * 8);
+      const span = 160 + 7 * Math.sin(t * Math.PI * 4);
+      for (let x = 0; x < width; x++) {
+        const u = (x - center) / span + 0.5;
+        if (u >= 0 && u < 1 && Math.floor(u * 30) % 2 === 0) pixels[y * width + x] = 0;
+      }
+    }
+    return { luminance: pixels, width, height };
+  };
+  const wrinkled = makeWrinkledBars();
+  const wrinkledCopy = new Uint8ClampedArray(wrinkled.luminance);
+  const wrinkledCandidates = createScannerGeometryCandidates(wrinkled);
+  assert.ok(wrinkledCandidates.some(candidate => candidate.kind === 'curved'),
+    'bounded smooth wrinkles must yield a curved-surface mesh candidate');
+  assert.deepEqual(wrinkled.luminance, wrinkledCopy,
+    'wrinkle rectification must leave the source ROI immutable');
+
+  const clippedBand = makeDentedBars();
+  for (let y = 8; y < 88; y++) clippedBand.luminance.fill(255, y * clippedBand.width, (y + 1) * clippedBand.width);
+  assert.deepEqual(createScannerGeometryCandidates(clippedBand), [],
+    'a wide occluded band that destroys stable edge correspondence must fail closed');
+
+  // Geometry is evaluated after orientation normalization. Exercise the
+  // complete pipeline at all four orthogonal capture directions rather than
+  // asking the horizontal-scanline geometry detector to process sideways data.
+  const orientationBase = makeWarpedBars('perspective');
+  for (const angle of [0, 90, 180, 270]) {
+    let orientationFrame = orientationBase;
+    for (let turn = 0; turn < angle / 90; turn++) {
+      const rotatedFrame = rotateLuminance90Clockwise(
+        orientationFrame.luminance, orientationFrame.width, orientationFrame.height,
+      );
+      assert.ok(rotatedFrame, 'orthogonal orientation fixture must be generated');
+      orientationFrame = rotatedFrame;
+    }
+    const orientationResult = executeScannerEnhancementPipeline(
+      orientationFrame,
+      {},
+      (candidate) => candidate.stage === 'geometry' ? `geometry-${angle}` : null,
+    );
+    assert.equal(orientationResult.output, `geometry-${angle}`,
+      `pipeline must reach a geometry candidate at ${angle}-degree capture orientation`);
+    assert.ok(orientationResult.geometryCandidatesAttempted > 0,
+      `geometry attempts must be recorded at ${angle}-degree capture orientation`);
+  }
 
   const width = 240, height = 96;
   const source = new Uint8ClampedArray(width * height).fill(255);
@@ -180,6 +290,56 @@ try {
     'the pipeline must expose advisory quality observations after established orientation candidates miss');
   assert.deepEqual(qualityCandidateStages.slice(0, 2), ['baseline', 'orthogonal'],
     'quality analysis must not move ahead of the established baseline and orthogonal candidates');
+
+  // Geometry is evaluated on normalized orientation surfaces as well as
+  // the original source, so a rotated tilted plane is not silently skipped.
+  const rotatedGeometrySource = rotateLuminance90Clockwise(
+    makeWarpedBars('perspective').luminance,
+    makeWarpedBars('perspective').width,
+    makeWarpedBars('perspective').height,
+  );
+  const geometryOrientations = [];
+  const rotatedGeometryResult = executeScannerEnhancementPipeline(
+    rotatedGeometrySource,
+    {},
+    (candidate) => {
+      if (candidate.stage === 'geometry') geometryOrientations.push(candidate.orientation);
+      return candidate.stage === 'geometry'
+        && ['rotated_90', 'rotated_90_deskew'].includes(candidate.orientation)
+        ? 'rotated-geometry-hit' : null;
+    },
+  );
+  assert.equal(rotatedGeometryResult.output, 'rotated-geometry-hit',
+    'the pipeline must attempt a geometry candidate from the quarter-turned ROI');
+  assert.ok(geometryOrientations.some((orientation) =>
+    ['rotated_90', 'rotated_90_deskew'].includes(orientation)),
+    'rotated geometry candidate must retain its orientation metadata');
+
+  const compoundTiltBase = makeWarpedBars('perspective');
+  const compoundTilt = rotateLuminanceByAngle(
+    compoundTiltBase.luminance, compoundTiltBase.width, compoundTiltBase.height, 17,
+  );
+  assert.ok(compoundTilt);
+  const compoundTiltEstimate = estimateScannerSkewAngle(
+    compoundTilt.luminance, compoundTilt.width, compoundTilt.height,
+  );
+  assert.ok(compoundTiltEstimate,
+    'compound tilt fixture must expose a confidence-gated in-plane orientation estimate');
+  const compoundTiltStages = [];
+  const compoundTiltResult = executeScannerEnhancementPipeline(
+    compoundTilt,
+    { cachedOrientationHints: { upright: compoundTiltEstimate, rotated: null }, reuseOrientationHints: true },
+    (candidate) => {
+      if (candidate.stage === 'geometry') compoundTiltStages.push(candidate.orientation);
+      return candidate.stage === 'geometry' ? 'compound-geometry-hit' : null;
+    },
+  );
+  assert.equal(compoundTiltResult.output, 'compound-geometry-hit',
+    'a barcode with both in-plane rotation and planar perspective must reach geometry after orientation normalization');
+  assert.ok(compoundTiltStages.length > 0,
+    'the combined tilt path must actually attempt a bounded geometry candidate');
+  assert.ok(compoundTiltResult.geometryCandidatesAttempted <= 2,
+    'geometry candidate work must remain capped at two normalized orientation surfaces');
 
   const missResult = executeScannerEnhancementPipeline(
     { luminance: new Uint8ClampedArray(80 * 40).fill(255), width: 80, height: 40 },

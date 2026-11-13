@@ -1,5 +1,70 @@
 # SCAN-07 to SCAN-11 — research and implementation plan
 
+**Current main baseline:** `8604bdee8c37e78ac758bf7e71ff44eb9141a605` (PR #82 and #83 merged).
+**Current active work:** Gate 3 Geometry Correction, branch `feat/scanner-geometry-correction-gate3`.
+**Scope:** finish the bounded optical recognition pipeline and establish evidence before formal acceptance.
+
+## Current source audit — 2026-11-13
+
+- Multi-scale preview-isolation contract is merged and CI-verified, including successful 2x fallback after forced baseline and 1x misses.
+- Image Quality Analysis is merged. Existing fields that drive enhancement candidate gates retain their previous definitions.
+- New quality observations cover both image axes, luminance distribution, exposure, clipping, noise and specular bright-band heuristics.
+- SCAN-09's previous row-envelope-only implementation was insufficient for orthogonal plane tilt and localized surface deformation.
+- The active Gate 3 branch adds a row-edge correspondence mesh, orthogonal column envelope, bounded combined grid warp, geometry on upright and quarter-turned normalized surfaces, and specular-glare suppression for enhancement variants.
+- Current geometry is still a conservative 1D-barcode deformation model, not a general-purpose computer-vision homography/dewarping engine. It rejects unstable/missing edge correspondences rather than inventing data.
+- No physical device performance claims or distance limits are established by synthetic tests.
+
+## Gate 3 — Geometry Correction implementation contract
+
+### Geometry classes
+
+1. **In-plane orientation:** continuous deskew and quarter-turn normalization remain the existing stage; geometry must be attempted after both normalized axes.
+2. **Planar perspective / keystone:** correct coherent changes in barcode edge positions across scanlines and the orthogonal top/bottom barcode envelope.
+3. **Curved carrier:** compensate for smooth row-to-row displacement and width variation, such as a barcode printed on a cylindrical bottle or can.
+4. **Localized smooth deformation:** attempt a bounded piecewise mesh for modest dents/bows; severe folds, creases or topology changes must fail closed.
+5. **Specular reflection / clipping:** detect persistent internal saturated bands and do not amplify them with contrast/gamma/denoise. Missing sensor detail cannot be reconstructed by a warp.
+
+### Candidate and resource limits
+
+- Preserve strict module-owned ROI and original candidate.
+- Geometry is a late fallback after the current baseline/orientation and image-enhancement stages.
+- Evaluate at most two normalized geometry surfaces: upright/deskewed and quarter-turned/deskewed.
+- One geometry candidate per normalized surface; maximum two geometry candidates per pipeline attempt.
+- Preserve source pixels and dimensions; no mutation, crop expansion or synthetic barcode generation.
+- Reject inconsistent edge counts, insufficient row coverage, invalid monotonic anchors and local scale ratios outside the bounded range. Current row-mesh sampling requires at least 45% stable scanline coverage and at least 50% vertical ROI span; this accommodates deskew padding and EAN narrow-edge variation while rejecting severe occlusion.
+- Every candidate is decoded by the existing ZXing adapter; geometry never returns a payload itself.
+
+### Synthetic and adapter regression matrix
+
+- Horizontal perspective: row-wise edge widths/centers vary coherently.
+- Orthogonal perspective: top/bottom barcode envelope varies across columns.
+- Curved surface: nonlinear edge bow across scanlines.
+- Dented carrier: local smooth displacement and scale change.
+- Orientation: 0°, 90°, 180°, 270°, plus arbitrary in-plane angle combined with perspective.
+- Negative controls: uniform texture, unstable edge counts, severe occlusion and clipping.
+- Reflective film/glass: horizontal and vertical internal saturated highlight bands; quality flags must identify their orientation and suppress enhancement variants.
+- Production adapter: rectified known CODE-128 fixture must decode to the exact expected payload.
+
+### Known optical limits
+
+- Upscaling does not restore missing optical detail.
+- Saturated highlights, transparent glare, motion blur, out-of-focus capture, severe occlusion and folds can erase information; do not claim universal recovery.
+- A cylindrical or dented bottle is recoverable only when enough bar-edge correspondence survives in the source pixels.
+- Strong 3D curvature, high-angle perspective, severe wrinkles and local discontinuities may require dedicated learned/nonlinear dewarping and a real labelled dataset. They remain unsupported until separately evidenced.
+
+## Formal acceptance gates
+
+1. Full preflight, TypeScript, production build and GitHub Pages build pass.
+2. Review exact diff against current main; no camera/session/lifecycle/UI/ROI contract changes.
+3. Geometry tests cover both image axes, all orthogonal orientations, compound tilt and negative controls.
+4. Production-adapter regression verifies a rectified real symbology fixture.
+5. Device corpus covers Android Chrome/PWA and iOS Safari/PWA with matte, glossy, shrink-wrap, glass, curved and dented packaging under normal, uneven, low and high light.
+6. Record success/failure, false positives, X-dimension in source pixels, glare/occlusion, orientation, geometry transform, stage cost and device/browser. Do not infer physical working distance without camera/FOV and label measurements.
+
+---
+
+# SCAN-07 to SCAN-11 — research and implementation plan
+
 **Baseline:** main `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
 **Scope of this document:** source audit, architecture constraints, experimental design and acceptance gates. No runtime changes.
 
