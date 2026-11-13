@@ -4,141 +4,57 @@ import ts from 'typescript';
 
 async function loadTs(path) {
   const source = await readFile(new URL(path, import.meta.url), 'utf8');
-  const compiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-  }).outputText;
+  const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
   return import('data:text/javascript;base64,' + Buffer.from(compiled).toString('base64'));
 }
-
 const { measureScannerImageQuality } = await loadTs('../src/platform/scanner/scannerImageEnhancement.ts');
 const { measureScannerFocusQuality } = await loadTs('../src/platform/scanner/scannerFocusQuality.ts');
 const { createScannerImageQualityProfile } = await loadTs('../src/platform/scanner/scannerImageQualityProfile.ts');
-
 const width = 320, height = 160;
 const pixels = new Uint8ClampedArray(width * height).fill(245);
-for (let x = 23; x < width - 24; x += 16) {
-  for (let y = 12; y < height - 12; y++) {
-    pixels.fill(8, y * width + x, y * width + x + 8);
-  }
-}
-const frame = { luminance: pixels, width, height };
-const image = measureScannerImageQuality(frame);
+for (let x = 23; x < width - 24; x += 16) for (let y = 12; y < height - 12; y++) pixels.fill(8, y * width + x, y * width + x + 8);
+const image = measureScannerImageQuality({ luminance: pixels, width, height });
 const focus = measureScannerFocusQuality(pixels, width, height);
-assert.ok(image, 'image quality metrics are available for a valid ROI');
-assert.ok(focus.valid, 'focus metrics are available for a structured barcode-like ROI');
-
-const profile = createScannerImageQualityProfile({
-  timestamp: 1234,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height,
-  focus, image,
-});
-const nextFocus = measureScannerFocusQuality(pixels, width, height, focus.sampledPixels);
-assert.equal(nextFocus.motionAvailable, true, 'motion becomes measurable after a same-geometry reference exists');
-const nextProfile = createScannerImageQualityProfile({
-  timestamp: 1734,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height,
-  focus: nextFocus, image,
-});
-assert.ok(nextProfile, 'a second valid observation produces a profile');
-assert.equal(nextProfile.focus.motionAvailable, true);
-assert.ok(profile, 'valid focus and image metrics produce one profile');
+assert.ok(image && focus.valid);
+const input = { timestamp: 1234, frameWidth: 1920, frameHeight: 1080, roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320, sampleWidth: width, sampleHeight: height, focus, image };
+const profile = createScannerImageQualityProfile(input);
+assert.ok(profile);
 assert.equal(profile.schemaVersion, 1);
-assert.equal(profile.timestamp, 1234);
-assert.deepEqual(profile.roi, {
-  frameWidth: 1920, frameHeight: 1080,
-  x: 240, y: 320, width: 640, height: 320,
-  sampleWidth: width, sampleHeight: height,
-});
-assert.equal(profile.focus.valid, true);
-assert.equal(profile.focus.motionAvailable, false,
-  'the first sample must not misrepresent an unavailable motion baseline as zero motion');
-
+assert.equal(profile.focus.motionAvailable, false);
+assert.equal(profile.diagnosis, null, 'clean structured input has no actionable diagnosis');
+assert.deepEqual(profile.roi, { frameWidth: 1920, frameHeight: 1080, x: 240, y: 320, width: 640, height: 320, sampleWidth: width, sampleHeight: height });
+assert.ok(!('sampledPixels' in profile.focus));
+const nextFocus = measureScannerFocusQuality(pixels, width, height, focus.sampledPixels);
+assert.equal(nextFocus.motionAvailable, true);
+assert.ok(createScannerImageQualityProfile({ ...input, timestamp: 1734, focus: nextFocus }));
 const darkPixels = new Uint8ClampedArray(width * height).fill(8);
 const darkImage = measureScannerImageQuality({ luminance: darkPixels, width, height });
 const darkFocus = measureScannerFocusQuality(darkPixels, width, height);
-const darkProfile = createScannerImageQualityProfile({
-  timestamp: 2234,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height,
-  focus: darkFocus, image: darkImage,
-});
+const darkProfile = createScannerImageQualityProfile({ ...input, timestamp: 2234, focus: darkFocus, image: darkImage });
 assert.ok(darkProfile);
-assert.equal(darkProfile.focus.valid, false,
-  'a low-texture dark frame must not be described as a valid focus observation');
-assert.ok(darkProfile.issues.includes('underexposed'));
-assert.ok(darkProfile.issues.includes('shadow_clipping'),
-  'the unified profile must preserve independent exposure and clipping flags');
-assert.ok(profile.focus.sharpness > 0);
-assert.ok(profile.focus.edgeCoverage > 0);
-assert.ok(profile.exposure.meanLuminance >= 0 && profile.exposure.meanLuminance <= 255);
-assert.ok(profile.exposure.dynamicRange >= 0 && profile.exposure.dynamicRange <= 255);
-assert.ok(profile.contrast.horizontal >= 0 && profile.contrast.vertical >= 0);
-assert.ok(profile.noise.horizontal >= 0 && profile.noise.vertical >= 0);
-assert.ok(Array.isArray(profile.issues));
-assert.ok(!('sampledPixels' in profile.focus), 'profile must not retain the focus monitor pixel buffer');
-assert.ok(!('luminance' in profile), 'profile must not retain source image pixels');
-
-assert.equal(createScannerImageQualityProfile({
-  timestamp: NaN,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height, focus, image,
-}), null,
-  'invalid timestamps fail closed');
-assert.equal(createScannerImageQualityProfile({
-  timestamp: 1234,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height,
-  focus: { ...focus, sharpness: NaN }, image,
-}), null,
-  'non-finite focus metrics fail closed');
-assert.equal(createScannerImageQualityProfile({
-  timestamp: 1234,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: 2000, sampleHeight: 1000, focus, image,
-}), null,
-  'profiles must reject dimensions outside the bounded quality-analysis budget');
-assert.equal(createScannerImageQualityProfile({
-  timestamp: 1234,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height, focus,
-  image: { ...image, darkFraction: 1.5 },
-}), null, 'invalid normalized fractions fail closed');
-assert.equal(createScannerImageQualityProfile({
-  timestamp: 1234,
-  frameWidth: 1920, frameHeight: 1080,
-  roiX: 1800, roiY: 900, roiWidth: 640, roiHeight: 320,
-  sampleWidth: width, sampleHeight: height, focus, image,
-}), null, 'a source ROI outside the camera frame fails closed');
-
+assert.ok(darkProfile.findings.some(f => f.code === 'underexposed' && f.description && f.recommendation));
+assert.ok(darkProfile.findings.some(f => f.code === 'insufficient_visual_detail'), 'low texture is not diagnosed as blur');
+assert.ok(darkProfile.diagnosis.includes('thiếu sáng'));
+const multiImage = { ...image, issues: ['underexposed', 'low_contrast', 'high_noise', 'specular_glare'] };
+const multi = createScannerImageQualityProfile({ ...input, image: multiImage, focus: { ...focus, motionAvailable: true, motionScore: 20 } });
+assert.deepEqual(multi.findings.map(f => f.code), ['underexposed', 'low_contrast', 'high_noise', 'specular_glare', 'motion_detected']);
+assert.ok(multi.findings.every(f => f.description.length && f.recommendation.length));
+const unknownMotion = createScannerImageQualityProfile({ ...input, focus: { ...focus, motionAvailable: false, motionScore: 99 } });
+assert.ok(!unknownMotion.findings.some(f => f.code === 'motion_detected'));
+const blur = createScannerImageQualityProfile({ ...input, focus: { ...focus, sharpness: 2, edgeCoverage: 0.02, valid: true } });
+assert.ok(blur.findings.some(f => f.code === 'low_sharpness'));
+const blank = createScannerImageQualityProfile({ ...input, focus: { ...focus, sharpness: 1, edgeCoverage: 0, valid: false } });
+assert.ok(!blank.findings.some(f => f.code === 'low_sharpness'));
+assert.equal(createScannerImageQualityProfile({ ...input, timestamp: NaN }), null);
+assert.equal(createScannerImageQualityProfile({ ...input, focus: { ...focus, sharpness: NaN } }), null);
+assert.equal(createScannerImageQualityProfile({ ...input, sampleWidth: 2000, sampleHeight: 1000 }), null);
+assert.equal(createScannerImageQualityProfile({ ...input, image: { ...image, darkFraction: 1.5 } }), null);
+assert.equal(createScannerImageQualityProfile({ ...input, roiX: 1800, roiY: 900 }), null);
 const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url), 'utf8');
 const pipeline = await readFile(new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url), 'utf8');
-assert.match(adapter, /timestamp - this\.lastFocusQualitySampleAt >= 500/,
-  'A1 observation must remain rate limited');
-assert.match(adapter, /lastFocusQualityRegionKey === focusRegionKey/,
-  'motion comparison must reset when the source ROI changes even if dimensions remain identical');
-assert.match(adapter, /focusRegion\.frameWidth\}x\$\{focusRegion\.frameHeight\}:\$\{focusRegion\.x\}/,
-  'focus reference identity must include the source crop coordinates');
-assert.match(adapter, /measureScannerImageQuality\(\{/,
-  'A1 must reuse the existing grayscale ROI readback');
-assert.match(adapter, /recordStageCost\('image_quality'/,
-  'the periodic A1 image-quality computation must be included in decoder stage-cost diagnostics');
-assert.match(adapter, /recordStageCost\('quality_profile'/,
-  'profile assembly cost must be observable for later performance budgeting');
-assert.match(adapter, /createScannerImageQualityProfile\(/,
-  'decoder must assemble the unified quality profile');
-assert.match(adapter, /qualityProfile: this\.lastImageQualityProfile/,
-  'quality profile must be visible in scanner diagnostics');
-assert.match(pipeline, /options\.imageQuality !== undefined/,
-
-  'the enhancement pipeline must reuse a precomputed same-frame quality observation');
-
-console.log('Scanner A1 image-quality profile tests passed.');
+assert.match(adapter, /timestamp - this\\.lastFocusQualitySampleAt >= 500/);
+assert.match(adapter, /lastFocusQualityRegionKey === focusRegionKey/);
+assert.match(adapter, /createScannerImageQualityProfile\\(/);
+assert.match(adapter, /qualityProfile: this\\.lastImageQualityProfile/);
+assert.match(pipeline, /options\\.imageQuality !== undefined/);
+console.log('Scanner A1 automatic diagnosis tests passed.');

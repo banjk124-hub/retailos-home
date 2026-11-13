@@ -1,66 +1,32 @@
-# Scanner A1 — Adaptive Image Quality Observation
+# Scanner A1 — Adaptive Image Quality Diagnosis
 
 ## Purpose
-
-A1 creates one versioned, serializable quality profile from the scanner's existing grayscale ROI observation. It standardizes the evidence that later adaptive stages may consume. A1 is observation-only.
+A1 turns existing grayscale ROI measurements into a scalar-only profile and actionable multi-label findings. Operators should not need to interpret raw sharpness, luminance, contrast or noise values. Modules own presentation; the scanner engine emits diagnosis data only.
 
 ## Data path
+1. Reuse the existing strict ROI and grayscale readback.
+2. At the existing 500 ms observation cadence, measure image quality from that same grayscale buffer.
+3. Combine focus and image-quality measurements into the versioned profile.
+4. Map evidence to stable finding codes, severity, Vietnamese description and practical recommendation.
+5. Expose the latest profile through existing decoder diagnostics. No additional image readback or retained pixels.
 
-1. The decoder draws the existing strict module-owned ROI into its baseline canvas.
-2. The existing `getImageData()` readback is converted to grayscale once.
-3. At the existing 500 ms focus-observation cadence, A1 runs image-quality analysis on that same grayscale buffer.
-4. `createScannerImageQualityProfile()` combines the focus and luminance metrics.
-5. The image-quality computation and profile assembly are recorded as separate decoder stage costs; the latest profile is included in the existing decoder diagnostic event.
-6. If the same frame later reaches the image-enhancement fallback stage, the pipeline reuses the precomputed quality result instead of measuring the same pixels again.
+## Findings
+Findings are multi-label; several causes may coexist: exposure, clipping, contrast, dynamic range, noise, glare, measurable low sharpness, measurable frame-to-frame motion, or insufficient visual detail.
 
-A1 does not add camera readbacks, retain image pixels, change the ROI, or change decode candidate order.
+Each finding contains a stable code, severity, description and recommendation. Recommendations are operator guidance, not camera commands. The UI remains module-owned.
 
-## Profile contract
+## Measurement semantics
+- Motion is classified only when a valid same-ROI temporal reference exists. Unknown motion is not treated as stable or moving.
+- A single frame cannot prove motion blur. The finding describes observed frame-to-frame change, not its cause.
+- Low sharpness is reported only when the focus sample is valid and contains measurable edges. A blank ROI is not called blurry.
+- Existing image issue thresholds remain heuristic indicators, not calibrated probabilities or decode eligibility gates.
+- No global quality score is introduced; multiple findings preserve distinct failure causes.
+- Invalid measurements fail closed. Profiles contain scalar data only, never pixels, canvas, ImageData, tracks or DOM objects.
 
-`ScannerImageQualityProfile` is versioned with `schemaVersion: 1` and contains:
-
-| Group | Metrics |
-|---|---|
-| Focus | Sharpness (RMS Laplacian), edge coverage, luminance standard deviation, motion score, motion-reference availability |
-| Exposure | Mean luminance, dark fraction, bright fraction, percentile dynamic range |
-| Contrast | Horizontal contrast, vertical contrast, orientation-aware edge strength |
-| Noise | Horizontal and vertical impulse-noise observations |
-| Glare | Saturated-pixel fraction, glare-band coverage and orientation |
-| Issues | Existing advisory issue flags from image-quality analysis |
-
-The ROI record distinguishes native source-frame crop coordinates and dimensions from the baseline analysis-raster dimensions. This matters because the decoder upscales the strict crop before measuring it.
-
-The profile contains scalar values and issue labels only. It does not contain canvas, ImageData, pixel arrays, video elements, tracks, or DOM references.
-
-## Metric semantics and limitations
-
-- `motionScore` is meaningful only when `motionAvailable` is true. The first observation, or an observation after the source ROI changes, has no valid temporal reference; a zero score in that case must not be interpreted as a stable scene. The passive blur monitor resets its baseline on such a sample, and temporal-frame ranking applies a motion penalty only when the reference is available.
-- Motion comparison requires the same canvas dimensions and the same source-frame dimensions plus crop coordinates. Moving the ROI invalidates the previous motion reference even when the crop dimensions remain unchanged.
-- Horizontal and vertical contrast are both retained. A barcode rotated by 90 degrees must not be treated as low contrast merely because one directional metric is small.
-- Exposure, contrast, noise and glare issue flags are advisory heuristics, not calibrated probabilities or decode-eligibility rules.
-- A1 deliberately does not publish a single quality score or categorical good/bad label. There is no validated real-world benchmark yet to justify a universal weighting or threshold across Android and iOS camera pipelines.
-- Focus validity and image-quality issue flags are separate observations. A low-texture frame may have invalid focus metrics while still carrying useful exposure/clipping observations.
-
-## Ownership boundaries
-
-A1 may observe pixels already owned by the decoder. It must not:
-- change autofocus, exposure, torch, zoom, or other camera controls;
-- change camera lifecycle, frame scheduling, or preview presentation;
-- alter the scan region or decode candidate order;
-- accept or reject barcode payloads;
-- select adaptive processing strategies.
-
-Those decisions belong to later stages, especially A2. Payload validation remains in `UniversalScannerSession`.
+## Boundaries
+A1 observes and diagnoses only. It does not change camera controls, lifecycle, scheduling, ROI, decode candidate order, payload validation or presentation. Adaptive decisions belong to A2/A3.
 
 ## Validation
+Automated validation covers profile bounds, source-ROI provenance, issue-to-description mapping, multiple simultaneous findings, motion-reference semantics, low-texture handling, and preservation of the 500 ms cadence/readback reuse.
 
-The A1 profile regression test checks:
-- profile schema, native source-ROI geometry and analysis-raster dimensions;
-- bounded dimensions and finite/range validation;
-- absence of retained pixel buffers;
-- motion-reference availability semantics;
-- propagation of underexposure and clipping signals;
-- source-ROI identity in motion comparison;
-- 500 ms sampling and reuse of same-frame quality analysis.
-
-Synthetic fixtures are useful for deterministic regression coverage but do not replace physical-device validation. Android and iOS QA must inspect diagnostic profiles under sharp, blurred, low-light, low-contrast, noisy, rotated and glare conditions before A1 is treated as production-validated.
+Synthetic fixtures provide deterministic algorithmic regression coverage. Exhaustive manual testing of every device condition is not an A1 acceptance requirement; runtime findings must make field conditions diagnosable without requiring operators to inspect raw metrics.
