@@ -52,9 +52,9 @@ assert.equal(createScannerImageQualityProfile({ ...input, image: { ...image, dar
 assert.equal(createScannerImageQualityProfile({ ...input, roiX: 1800, roiY: 900 }), null);
 const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url), 'utf8');
 const pipeline = await readFile(new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url), 'utf8');
-assert.match(adapter, /timestamp - this\\.lastFocusQualitySampleAt >= 500/);
+assert.match(adapter, /timestamp - this\.lastFocusQualitySampleAt >= 500/);
 assert.match(adapter, /lastFocusQualityRegionKey === focusRegionKey/);
-assert.match(adapter, /createScannerImageQualityProfile\\(/);
-assert.match(adapter, /qualityProfile: this\\.lastImageQualityProfile/);
-assert.match(pipeline, /options\\.imageQuality !== undefined/);
+assert.match(adapter, /createScannerImageQualityProfile\(/);
+assert.match(adapter, /qualityProfile: this\.lastImageQualityProfile/);
+assert.match(pipeline, /options\.imageQuality !== undefined/);
 console.log('Scanner A1 automatic diagnosis tests passed.');
