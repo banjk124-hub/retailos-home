@@ -246,13 +246,36 @@ export function executeScannerEnhancementPipeline<T>(
     }
   }
 
-  // SCAN-09: bounded geometric fallback, never a substitute for SCAN-04 ROI.
+  // SCAN-09: test geometry after normalizing every supported in-plane
+  // orientation. A tilted plane must not be invisible to geometry merely
+  // because the barcode arrived rotated 90 degrees or required deskew.
+  // The candidate budget is explicit: at most one geometry candidate for
+  // each of the four orientation surfaces (source, quarter-turn, and the
+  // two continuous-deskew surfaces). No ROI expansion or cross-product.
   const geometryStartedAt = now();
-  const geometryVariants = createScannerGeometryCandidates(source);
+  const geometrySources: Array<{
+    frame: ScannerLuminanceFrame;
+    orientation: ScannerEnhancementOrientation;
+  }> = [
+    { frame: source, orientation: 'upright' },
+    ...(rotated ? [{ frame: rotated, orientation: 'rotated_90' as const }] : []),
+    ...(uprightDeskew ? [{ frame: uprightDeskew, orientation: 'deskew' as const }] : []),
+    ...(rotatedDeskew ? [{ frame: rotatedDeskew, orientation: 'deskew' as const }] : []),
+  ];
+  const geometryCandidates = geometrySources.flatMap(({ frame, orientation }) =>
+    createScannerGeometryCandidates(frame).map((variant) => ({
+      ...variant,
+      orientation,
+      transform: `${variant.kind}:${variant.correction}`,
+    })));
   onStageCost?.('geometry_detection_and_rectification', now() - geometryStartedAt);
-  for (const variant of geometryVariants) {
+
+  // Prefer the strongest geometric evidence, while retaining a hard upper
+  // bound on the amount of rectified data sent through the decoder.
+  geometryCandidates.sort((a, b) => b.confidence - a.confidence);
+  for (const variant of geometryCandidates.slice(0, 4)) {
     geometryCandidatesAttempted++;
-    const output = attempt({ ...variant, stage: 'geometry', orientation: 'upright', transform: variant.kind });
+    const output = attempt({ ...variant, stage: 'geometry' });
     if (output !== null) {
       return {
         output, orientationHints, matchedStage: 'geometry', matchedAngleDegrees: null,
