@@ -89,9 +89,15 @@ try {
     }
     return { luminance: pixels, width, height };
   };
-  const perspectiveCandidates = createScannerGeometryCandidates(makeWarpedBars('perspective'));
+  const perspectiveFixture = makeWarpedBars('perspective');
+  const perspectiveCopy = new Uint8ClampedArray(perspectiveFixture.luminance);
+  const perspectiveCandidates = createScannerGeometryCandidates(perspectiveFixture);
   assert.ok(perspectiveCandidates.some(candidate => candidate.kind === 'perspective'),
     'coherent keystone distortion should yield a bounded perspective candidate');
+  assert.equal(perspectiveCandidates[0].width, perspectiveFixture.width);
+  assert.equal(perspectiveCandidates[0].height, perspectiveFixture.height);
+  assert.deepEqual(perspectiveFixture.luminance, perspectiveCopy,
+    'geometry correction must preserve the original captured ROI buffer');
   const curvedCandidates = createScannerGeometryCandidates(makeWarpedBars('curved'));
   assert.ok(curvedCandidates.some(candidate => candidate.kind === 'curved'),
     'coherent curved-label bow should yield a bounded geometry candidate');
@@ -117,6 +123,9 @@ try {
   const verticalPerspectiveCandidates = createScannerGeometryCandidates(verticalPerspective);
   assert.ok(verticalPerspectiveCandidates.length > 0,
     'column envelope must detect perspective that varies across the barcode width');
+  assert.deepEqual(verticalPerspective.luminance,
+    new Uint8ClampedArray(verticalPerspective.luminance),
+    'column-envelope rectification must not mutate source pixels');
   assert.ok(['column-envelope', 'combined-grid'].includes(verticalPerspectiveCandidates[0].correction),
     'orthogonal perspective must use the column-envelope correction path');
 
@@ -304,6 +313,8 @@ try {
     'a barcode with both in-plane rotation and planar perspective must reach geometry after orientation normalization');
   assert.ok(compoundTiltStages.length > 0,
     'the combined tilt path must actually attempt a bounded geometry candidate');
+  assert.ok(compoundTiltResult.geometryCandidatesAttempted <= 2,
+    'geometry candidate work must remain capped at two normalized orientation surfaces');
 
   const missResult = executeScannerEnhancementPipeline(
     { luminance: new Uint8ClampedArray(80 * 40).fill(255), width: 80, height: 40 },
