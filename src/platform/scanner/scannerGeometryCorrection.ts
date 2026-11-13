@@ -216,8 +216,21 @@ function fitGeometryModel(frame: ScannerLuminanceFrame): GeometryModel | null {
       const bottomExpected = first.bottom + (last.bottom - first.bottom) * t;
       return (Math.abs(offset.top - topExpected) + Math.abs(offset.bottom - bottomExpected)) / 2;
     }));
+    // A true top/bottom envelope changes smoothly along x. Abrupt jumps
+    // caused by the barcode's own alternating bars must not be mistaken for
+    // the orthogonal surface boundary.
+    const secondDifferences: number[] = [];
+    for (let index = 1; index < columns.length - 1; index++) {
+      const previous = columns[index - 1], current = columns[index], next = columns[index + 1];
+      secondDifferences.push((
+        Math.abs(next.top - 2 * current.top + previous.top)
+        + Math.abs(next.bottom - 2 * current.bottom + previous.bottom)
+      ) / 2);
+    }
+    const columnBoundaryRoughness = median(secondDifferences);
     columnCorrection = columnDeviation > Math.max(1.5, height * 0.012)
-      && referenceBottom - referenceTop > height * 0.35;
+      && referenceBottom - referenceTop > height * 0.35
+      && columnBoundaryRoughness < height * 0.08;
   }
 
   if (!rowCorrection && !columnCorrection) return null;
