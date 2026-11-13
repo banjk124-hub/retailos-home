@@ -19,6 +19,7 @@ import { rgbaToLuminance } from './rgbaToLuminance';
 import { executeScannerEnhancementPipeline, type ScannerOrientationHints } from '../scannerEnhancementPipeline';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
+import type { ScannerImageQuality } from '../scannerImageEnhancement';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -159,6 +160,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastFocusQualityWidth = 0;
   private lastFocusQualityHeight = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
+  private lastImageQuality: ScannerImageQuality | null = null;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
@@ -354,6 +356,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       {
         cachedOrientationHints: this.cachedOrientationHints,
         reuseOrientationHints,
+        onImageQuality: (quality) => { this.lastImageQuality = quality; },
       },
       (candidate) => this.decodeLuminance(
         candidate.luminance,
@@ -449,6 +452,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       scaleHits: this.diagnosticScaleHits,
       lastScaleFactor: Number(this.diagnosticLastScaleFactor.toFixed(2)),
       lastDeskewAngleDegrees: Number(this.diagnosticLastDeskewAngleDegrees.toFixed(2)),
+      imageQuality: this.lastImageQuality ? {
+        dynamicRange: Number(this.lastImageQuality.dynamicRange.toFixed(1)),
+        meanLuminance: Number(this.lastImageQuality.meanLuminance.toFixed(1)),
+        horizontalContrast: Number(this.lastImageQuality.contrast.toFixed(1)),
+        verticalContrast: Number(this.lastImageQuality.verticalContrast.toFixed(1)),
+        edgeStrength: Number(this.lastImageQuality.edgeStrength.toFixed(1)),
+        horizontalNoise: Number(this.lastImageQuality.noise.toFixed(1)),
+        verticalNoise: Number(this.lastImageQuality.verticalNoise.toFixed(1)),
+        issues: this.lastImageQuality.issues,
+      } : null,
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,
@@ -484,6 +497,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.lastFocusQualityWidth = 0;
     this.lastFocusQualityHeight = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
+    this.lastImageQuality = null;
   }
 
   dispose(): void {
