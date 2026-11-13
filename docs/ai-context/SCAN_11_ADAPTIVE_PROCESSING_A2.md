@@ -10,7 +10,7 @@ A2 first controls optional image-enhancement candidates:
 - High noise: allow the existing horizontal median denoise.
 - Multiple actionable signals: retain deterministic priority and cap the list at two transforms.
 - Specular glare or clipped highlights/shadows: bypass optional image transforms because missing sensor information cannot be reconstructed safely.
-- Missing or non-actionable quality evidence: preserve the existing enhancement candidate policy.
+- Missing or non-actionable quality evidence: preserve the existing enhancement candidate policy. A policy selects a transform only when its existing generator eligibility gates are also satisfied; vertical-only noise does not select the horizontal denoiser.
 
 The controller does not yet reorder baseline, orthogonal rotation, deskew, ROI scale, geometry, or T3 temporal fallback. Those paths retain their validated ordering and budgets. This is intentional: A1's quality profile does not provide reliable orientation/geometry evidence, and A3 owns runtime scheduling/performance adaptation.
 
@@ -25,7 +25,7 @@ The controller does not yet reorder baseline, orthogonal rotation, deskew, ROI s
 - A2 never modifies camera constraints, preview/video, lifecycle, frame cadence or UI.
 
 ## Diagnostics
-Each fallback attempt emits a scalar policy snapshot through the decoder's existing diagnostic aggregation: mode, selected transforms, candidate budgets, preserved strategy contracts and reason codes. No image pixels or DOM/camera objects are included.
+Each fallback attempt emits a bounded policy snapshot through the decoder diagnostics and the QA Monitor allowlist: mode, selected transforms, candidate budgets, preserved strategy contracts and reason codes. The collector explicitly projects only known scalar fields and bounded string arrays; unknown nested fields, image pixels and DOM/camera objects are discarded.
 
 ## Validation
-The A2 regression test covers unavailable evidence fallback, contrast/gamma/denoise selection, multi-cause priority, candidate cap, glare/clipping safety bypass, production-pipeline integration and baseline fast-path short-circuiting. Full repository preflight, TypeScript and production builds remain required before PR review.
+The A2 regression test covers unavailable evidence fallback, contrast/gamma/denoise selection, multi-cause priority, candidate cap, glare/clipping enhancement bypass, production-pipeline integration and baseline fast-path short-circuiting. Full repository preflight, TypeScript and production builds remain required before PR review.
