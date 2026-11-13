@@ -1,5 +1,6 @@
 import type { ScannerGeometry, ScannerSourceScanRegion, ScannerSymbology } from '../contracts';
 import type { ScannerFocusQualitySample } from '../scannerFocusQuality';
+import type { ScannerTemporalSnapshot } from '../scannerTemporalRecognition';
 
 /** A decoded value before it is accepted by the shared scanner policy. */
 export type DecoderOutput = {
@@ -23,6 +24,8 @@ export type DecoderDecodeOptions = {
   scanRegion: ScannerSourceScanRegion | null;
   /** Optional low-rate quality sample from the existing grayscale ROI readback. */
   onFocusQuality?: (sample: ScannerFocusQualitySample) => void;
+  /** Low-rate copied grayscale ROI snapshot; never exposes the live canvas. */
+  onTemporalFrame?: (snapshot: ScannerTemporalSnapshot, quality: ScannerFocusQualitySample) => void;
 };
 
 /**

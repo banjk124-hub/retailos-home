@@ -16,6 +16,7 @@ import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
 import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
 import { ScannerFocusQualityMonitor, type ScannerFocusQualitySample } from './scannerFocusQuality';
+import { ScannerTemporalFrameBuffer } from './scannerTemporalRecognition';
 
 type VideoReadiness = {
   readyState: number;
@@ -149,6 +150,8 @@ export class UniversalScannerSession implements ScannerSession {
   private torchState: ScannerTorchState = { supported: false, enabled: false, pending: false };
   private torchCommand: Promise<ScannerTorchState> | null = null;
   private readonly focusQualityMonitor = new ScannerFocusQualityMonitor();
+  private readonly temporalFrameBuffer = new ScannerTemporalFrameBuffer();
+  private regionRevision = 0;
   private focusQualityStartedAt = Date.now();
   private focusQualitySamples = 0;
   private focusQualitySharpnessTotal = 0;
@@ -212,7 +215,11 @@ export class UniversalScannerSession implements ScannerSession {
   setScanRegion(region: ScannerSourceScanRegion | null): void {
     if (!region || region.coordinateSpace !== 'source-frame-normalized'
       || !region.rect || typeof region.rect !== 'object') {
-      this.sourceScanRegion = null;
+      if (this.sourceScanRegion !== null) {
+        this.sourceScanRegion = null;
+        this.regionRevision += 1;
+        this.temporalFrameBuffer.clear();
+      }
       return;
     }
 
@@ -222,9 +229,20 @@ export class UniversalScannerSession implements ScannerSession {
       && rect.x >= 0 && rect.y >= 0 && rect.width > 0 && rect.height > 0
       && rect.x + rect.width <= 1 + 1e-7
       && rect.y + rect.height <= 1 + 1e-7;
-    this.sourceScanRegion = valid
-      ? { coordinateSpace: 'source-frame-normalized', rect: { ...rect } }
+    const nextRegion = valid
+      ? { coordinateSpace: 'source-frame-normalized' as const, rect: { ...rect } }
       : null;
+    const previous = this.sourceScanRegion?.rect;
+    const next = nextRegion?.rect;
+    const changed = !previous || !next
+      ? previous !== next
+      : previous.x !== next.x || previous.y !== next.y
+        || previous.width !== next.width || previous.height !== next.height;
+    if (changed) {
+      this.sourceScanRegion = nextRegion;
+      this.regionRevision += 1;
+      this.temporalFrameBuffer.clear();
+    }
   }
 
   getScanRegion(): ScannerSourceScanRegion | null {
@@ -303,6 +321,7 @@ export class UniversalScannerSession implements ScannerSession {
 
   private async startInternal(): Promise<void> {
     const generation = ++this.generation;
+    this.temporalFrameBuffer.clear();
     this.lifecycle.opening();
     this.setState('requesting');
     this.startAttemptStartedAt = performance.now();
@@ -455,12 +474,33 @@ export class UniversalScannerSession implements ScannerSession {
     this.decoding = true;
     this.lastDecodeAt = timestamp;
     const decodeStartedAt = performance.now();
+    const regionRevision = this.regionRevision;
+    const scanRegion = this.getScanRegion();
     this.diagnosticFrames += 1;
     try {
       const results = await this.decoder.decode(this.video, {
         timestamp,
-        scanRegion: this.getScanRegion(),
+        scanRegion,
         onFocusQuality: (sample) => this.handleFocusQuality(sample, timestamp, generation),
+        onTemporalFrame: (snapshot, quality) => {
+          if (generation !== this.generation || regionRevision !== this.regionRevision
+            || this.disposed || this.currentState !== 'scanning') return;
+          this.temporalFrameBuffer.push({
+            timestamp,
+            generation,
+            regionRevision,
+            pixels: snapshot.pixels,
+            width: snapshot.width,
+            height: snapshot.height,
+            quality: {
+              sharpness: quality.sharpness,
+              edgeCoverage: quality.edgeCoverage,
+              motionScore: quality.motionScore,
+              luminanceStdDev: quality.luminanceStdDev,
+              valid: quality.valid,
+            },
+          });
+        },
       });
       const decodeDurationMs = performance.now() - decodeStartedAt;
       this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
@@ -681,6 +721,7 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async teardown(release: boolean): Promise<void> {
+    this.temporalFrameBuffer.clear();
     const teardownStartedAt = performance.now();
     const video = this.video as HTMLVideoElement & { cancelVideoFrameCallback?: (handle: number) => void };
     if (this.frameHandle !== null) {

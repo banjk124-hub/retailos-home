@@ -19,6 +19,7 @@ import { rgbaToLuminance } from './rgbaToLuminance';
 import { executeScannerEnhancementPipeline, type ScannerOrientationHints } from '../scannerEnhancementPipeline';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
+import { createScannerTemporalSnapshot } from '../scannerTemporalRecognition';
 import type { ScannerImageQuality } from '../scannerImageEnhancement';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
@@ -195,7 +196,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
 
   async decode(
     source: CanvasImageSource,
-    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion, onFocusQuality }: DecoderDecodeOptions,
+    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion, onFocusQuality, onTemporalFrame }: DecoderDecodeOptions,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !this.canvas || !this.context) {
       throw new Error('ZXing adapter has not been initialized.');
@@ -260,6 +261,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           timestamp,
           candidate.baseline ? onFocusQuality : undefined,
           !candidate.baseline,
+          candidate.baseline ? onTemporalFrame : undefined,
         );
         if (output) {
           this.diagnosticScaleHits += 1;
@@ -322,6 +324,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     timestamp: number,
     onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
     reuseOrientationHints = false,
+    onTemporalFrame?: DecoderDecodeOptions['onTemporalFrame'],
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
@@ -348,6 +351,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.lastFocusQualityWidth = this.canvas.width;
       this.lastFocusQualityHeight = this.canvas.height;
       onFocusQuality(focusSample);
+      if (focusSample.valid && onTemporalFrame) {
+        const snapshot = createScannerTemporalSnapshot(grayscale, this.canvas.width, this.canvas.height);
+        if (snapshot) onTemporalFrame(snapshot, focusSample);
+      }
     }
 
     const pipelineResult = executeScannerEnhancementPipeline(

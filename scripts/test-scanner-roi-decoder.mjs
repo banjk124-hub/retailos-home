@@ -71,7 +71,8 @@ const sessionSource = await readFile(
   'utf8',
 );
 assert.match(adapterSource, /scanRegion:\s*ScannerSourceScanRegion \| null/);
-assert.match(sessionSource, /this\.decoder\.decode\(this\.video,\s*\{[\s\S]*?scanRegion:\s*this\.getScanRegion\(\)/);
+assert.match(sessionSource, /const scanRegion = this\.getScanRegion\(\);[\s\S]*?this\.decoder\.decode\(this\.video,\s*\{[\s\S]*?scanRegion,/,
+  'each decode must use the immutable ROI snapshot captured before asynchronous decoder work');
 assert.match(decoderSource, /resolveScannerRoiCrop\(scanRegion, dimensions\.width, dimensions\.height\)/);
 assert.match(decoderSource, /if \(!crop\)\s*\{[\s\S]*?return \[\];/);
 assert.doesNotMatch(decoderSource, /drawImage\(source,\s*0,\s*0,\s*width,\s*height/);

@@ -188,6 +188,9 @@ const stubs = {
   './scannerFocusQuality': makeDataModule(
     'export class ScannerFocusQualityMonitor { observe() { return false; } reset() {} } export function measureScannerFocusQuality() { return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, sampledPixels: new Uint8Array(), valid: false }; }',
   ),
+  './scannerTemporalRecognition': makeDataModule(
+    'export class ScannerTemporalFrameBuffer { push() { return true; } clear() {} }',
+  ),
 };
 let sessionJs = compileModule(sessionSource);
 for (const [specifier, stubUrl] of Object.entries(stubs)) {
