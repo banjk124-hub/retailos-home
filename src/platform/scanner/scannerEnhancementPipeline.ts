@@ -7,6 +7,7 @@ import {
 import { rotateLuminance90Clockwise } from './scannerRotation';
 import { measureScannerImageQuality, createScannerImageEnhancements, type ScannerImageQuality } from './scannerImageEnhancement';
 import { createScannerGeometryCandidates } from './scannerGeometryCorrection';
+import { createScannerAdaptiveProcessingPlan, type ScannerAdaptiveProcessingPlan } from './scannerAdaptiveProcessingController';
 
 export type ScannerOrientationHints = {
   upright: ScannerSkewEstimate | null;
@@ -31,6 +32,8 @@ export type ScannerEnhancementPipelineOptions = {
   onImageQuality?: (quality: ScannerImageQuality) => void;
   /** Reuse an observation from this exact source frame; undefined requests fallback measurement. */
   imageQuality?: ScannerImageQuality | null;
+  /** Emits the deterministic A2 policy selected for this fallback attempt. */
+  onProcessingPlan?: (plan: ScannerAdaptiveProcessingPlan) => void;
 };
 
 export type ScannerEnhancementPipelineResult<T> = {
@@ -245,10 +248,16 @@ export function executeScannerEnhancementPipeline<T>(
     quality = measureScannerImageQuality(source);
     onStageCost?.('image_quality', now() - qualityStartedAt);
   }
+  const processingPlan = createScannerAdaptiveProcessingPlan(quality);
+  options.onProcessingPlan?.(processingPlan);
   if (quality) {
     options.onImageQuality?.(quality);
     const enhancementStartedAt = now();
-    const variants = createScannerImageEnhancements(source, quality);
+    const availableVariants = createScannerImageEnhancements(source, quality);
+    const variants = processingPlan.imageTransforms === null
+      ? availableVariants
+      : availableVariants.filter((variant) => processingPlan.imageTransforms?.includes(variant.kind))
+        .slice(0, processingPlan.maxImageCandidates);
     onStageCost?.('image_enhancement', now() - enhancementStartedAt);
     for (const variant of variants) {
       imageCandidatesAttempted++;
@@ -297,7 +306,7 @@ export function executeScannerEnhancementPipeline<T>(
   // Prefer the strongest geometric evidence, while retaining a hard upper
   // bound on the amount of rectified data sent through the decoder.
   geometryCandidates.sort((a, b) => b.confidence - a.confidence);
-  for (const variant of geometryCandidates.slice(0, 4)) {
+  for (const variant of geometryCandidates.slice(0, processingPlan.geometryCandidateLimit)) {
     geometryCandidatesAttempted++;
     const output = attempt({ ...variant, stage: 'geometry' });
     if (output !== null) {

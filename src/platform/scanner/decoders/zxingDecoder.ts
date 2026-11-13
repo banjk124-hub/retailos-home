@@ -22,6 +22,7 @@ import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot } from '../scannerTemporalRecognition';
 import { measureScannerImageQuality, type ScannerImageQuality } from '../scannerImageEnhancement';
 import { createScannerImageQualityProfile, type ScannerImageQualityProfile } from '../scannerImageQualityProfile';
+import type { ScannerAdaptiveProcessingPlan } from '../scannerAdaptiveProcessingController';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -168,6 +169,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastImageQuality: ScannerImageQuality | null = null;
   private lastImageQualityProfile: ScannerImageQualityProfile | null = null;
+  private lastAdaptiveProcessingPlan: ScannerAdaptiveProcessingPlan | null = null;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
@@ -313,6 +315,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           cachedOrientationHints: this.cachedOrientationHints,
           reuseOrientationHints: true,
           onImageQuality: (quality) => { this.lastImageQuality = quality; },
+          onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
         },
         (candidate) => this.decodeLuminance(
           candidate.luminance,
@@ -480,6 +483,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         reuseOrientationHints,
         imageQuality: sampledImageQuality,
         onImageQuality: (quality) => { this.lastImageQuality = quality; },
+        onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
       },
       (candidate) => this.decodeLuminance(
         candidate.luminance,
@@ -599,6 +603,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       } : null,
       // Latest A1 observation; raw numeric metrics are retained for analysis.
       qualityProfile: this.lastImageQualityProfile,
+      adaptiveProcessingPlan: this.lastAdaptiveProcessingPlan,
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,
@@ -638,6 +643,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.lastFocusQualityHeight = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
     this.lastImageQuality = null;
+    this.lastAdaptiveProcessingPlan = null;
   }
 
   dispose(): void {
