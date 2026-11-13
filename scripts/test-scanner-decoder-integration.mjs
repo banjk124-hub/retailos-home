@@ -262,7 +262,7 @@ try {
   // Curved/dented carrier fixture: each scanline receives a different smooth
   // nonlinear horizontal displacement and local scale. The geometry mesh must
   // align stable bar-edge correspondences without changing the source buffer.
-  const makeDentedCode128 = (frame) => {
+  const makeDentedBarcodeFrame = (frame) => {
     const luminance = new Uint8ClampedArray(frame.luminance.length).fill(255);
     const center = (frame.width - 1) / 2;
     for (let y = 0; y < frame.height; y++) {
@@ -284,7 +284,7 @@ try {
     }
     return { ...frame, luminance };
   };
-  const dentedCode128 = makeDentedCode128(upright);
+  const dentedCode128 = makeDentedBarcodeFrame(upright);
   const dentedCopy = new Uint8ClampedArray(dentedCode128.luminance);
   const dentedGeometry = createScannerGeometryCandidates(dentedCode128);
   assert.ok(dentedGeometry.length > 0,
@@ -296,6 +296,16 @@ try {
   assert.equal(dentedResult[0]?.value, '12345',
     'the real ZXing production adapter must decode the rectified dented-carrier candidate');
   await dentedDecoder.dispose();
+
+  const dentedEan = makeDentedBarcodeFrame(makeEanFrame('5901234123457', 'EAN_13'));
+  const dentedEanGeometry = createScannerGeometryCandidates(dentedEan);
+  assert.ok(dentedEanGeometry.length > 0,
+    'EAN-13 on a curved carrier must produce a bounded geometry candidate');
+  const dentedEanDecoder = await createDecoder('EAN_13');
+  const dentedEanResult = await decodeOnce(dentedEanDecoder, toSource(dentedEanGeometry[0]));
+  assert.equal(dentedEanResult[0]?.value, '5901234123457',
+    'the production EAN-13 adapter must decode a rectified curved-carrier barcode');
+  await dentedEanDecoder.dispose();
 
   // Orthogonal planar tilt fixture: barcode bars keep their horizontal
   // positions while the top/bottom envelope changes smoothly across x.
