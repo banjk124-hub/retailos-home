@@ -53,6 +53,11 @@ assert.equal(createScannerImageQualityProfile(width, height, NaN, focus, image),
   'invalid timestamps fail closed');
 assert.equal(createScannerImageQualityProfile(width, height, 1234, { ...focus, sharpness: NaN }, image), null,
   'non-finite focus metrics fail closed');
+assert.equal(createScannerImageQualityProfile(2000, 1000, 1234, focus, image), null,
+  'profiles must reject dimensions outside the bounded quality-analysis budget');
+assert.equal(createScannerImageQualityProfile(width, height, 1234, focus, {
+  ...image, darkFraction: 1.5,
+}), null, 'invalid normalized fractions fail closed');
 
 const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url), 'utf8');
 const pipeline = await readFile(new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url), 'utf8');

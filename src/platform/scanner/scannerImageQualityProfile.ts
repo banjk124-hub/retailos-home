@@ -49,7 +49,8 @@ export function createScannerImageQualityProfile(
   image: ScannerImageQuality,
 ): ScannerImageQualityProfile | null {
   if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)
-    || width < 1 || height < 1 || !Number.isFinite(timestamp)
+    || width < 1 || height < 1 || !Number.isSafeInteger(width * height)
+    || width * height > 1_500_000 || !Number.isFinite(timestamp)
     || !finite([focus.sharpness, focus.edgeCoverage, focus.luminanceStdDev, focus.motionScore,
       image.meanLuminance, image.darkFraction, image.brightFraction, image.dynamicRange,
       image.contrast, image.verticalContrast, image.edgeStrength, image.noise,
