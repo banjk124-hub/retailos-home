@@ -138,7 +138,7 @@ const decoderSource = await readFile(
 );
 assert.match(decoderSource, /executeScannerEnhancementPipeline/,
   'decoder must consume the shared orientation and enhancement orchestrator');
-assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(\s*timestamp,\s*candidate\.baseline \? onFocusQuality : undefined,\s*!candidate\.baseline,\s*\)/,
+assert.match(decoderSource, /const output = this\.decodeCurrentCanvas\(\s*timestamp,\s*candidate\.baseline \? onFocusQuality : undefined,\s*!candidate\.baseline,\s*candidate\.baseline \? onTemporalFrame : undefined,\s*\)/,
   'every valid ROI frame must enter the complete production decode pipeline, with focus sampling limited to the baseline and orientation hints reused for fallbacks');
 assert.match(decoderSource, /executeScannerEnhancementPipeline/,
   'production decoder must delegate orientation candidate ordering to the shared enhancement pipeline');
