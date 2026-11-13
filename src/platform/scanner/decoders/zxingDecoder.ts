@@ -474,6 +474,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         verticalNoise: Number(this.lastImageQuality.verticalNoise.toFixed(1)),
         specularGlareFraction: Number(this.lastImageQuality.specularGlareFraction.toFixed(3)),
         glareBandCoverage: Number(this.lastImageQuality.glareBandCoverage.toFixed(3)),
+        glareBandOrientation: this.lastImageQuality.glareBandOrientation,
         issues: this.lastImageQuality.issues,
       } : null,
       notFound: this.diagnosticNotFound,
