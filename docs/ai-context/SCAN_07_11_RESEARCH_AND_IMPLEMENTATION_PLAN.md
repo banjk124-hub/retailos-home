@@ -42,7 +42,7 @@
 - Dented carrier: local smooth displacement and scale change.
 - Orientation: 0°, 90°, 180°, 270°, plus arbitrary in-plane angle combined with perspective.
 - Negative controls: uniform texture, unstable edge counts, severe occlusion and clipping.
-- Reflective film/glass: internal saturated highlight band; quality flags must identify it and suppress enhancement variants.
+- Reflective film/glass: horizontal and vertical internal saturated highlight bands; quality flags must identify their orientation and suppress enhancement variants.
 - Production adapter: rectified known CODE-128 fixture must decode to the exact expected payload.
 
 ### Known optical limits
