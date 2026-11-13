@@ -120,11 +120,12 @@ try {
     return { luminance: pixels, width, height };
   };
   const verticalPerspective = makeVerticalPerspectiveBars();
+  const verticalPerspectiveCopy = new Uint8ClampedArray(verticalPerspective.luminance);
   const verticalPerspectiveCandidates = createScannerGeometryCandidates(verticalPerspective);
   assert.ok(verticalPerspectiveCandidates.length > 0,
     'column envelope must detect perspective that varies across the barcode width');
   assert.deepEqual(verticalPerspective.luminance,
-    new Uint8ClampedArray(verticalPerspective.luminance),
+    verticalPerspectiveCopy,
     'column-envelope rectification must not mutate source pixels');
   assert.ok(['column-envelope', 'combined-grid'].includes(verticalPerspectiveCandidates[0].correction),
     'orthogonal perspective must use the column-envelope correction path');
