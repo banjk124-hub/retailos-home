@@ -16,7 +16,7 @@ const { createScannerImageQualityProfile } = await loadTs('../src/platform/scann
 
 const width = 320, height = 160;
 const pixels = new Uint8ClampedArray(width * height).fill(245);
-for (let x = 24; x < width - 24; x += 16) {
+for (let x = 23; x < width - 24; x += 16) {
   for (let y = 12; y < height - 12; y++) {
     pixels.fill(8, y * width + x, y * width + x + 8);
   }
@@ -43,6 +43,7 @@ const nextProfile = createScannerImageQualityProfile({
   sampleWidth: width, sampleHeight: height,
   focus: nextFocus, image,
 });
+assert.ok(nextProfile, 'a second valid observation produces a profile');
 assert.equal(nextProfile.focus.motionAvailable, true);
 assert.ok(profile, 'valid focus and image metrics produce one profile');
 assert.equal(profile.schemaVersion, 1);
