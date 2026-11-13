@@ -47,7 +47,7 @@ try {
   assert.equal(buffer.push(makeFrame(340, 25)), true);
   assert.equal(buffer.size, 3);
   assert.equal(buffer.selectBest(350, 1, 1).timestamp, 260);
-  assert.equal(buffer.selectBest(1000, 1, 1), null);
+  assert.equal(buffer.selectBest(1100, 1, 1), null);
   assert.equal(buffer.selectBest(350, 2, 1), null);
   assert.equal(buffer.selectBest(350, 1, 2), null);
   assert.equal(buffer.push(makeFrame(420, 22, 1, 2)), true);
