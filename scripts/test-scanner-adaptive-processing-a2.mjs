@@ -97,6 +97,9 @@ try {
   assert.equal(verticalOnlyNoise.mode, 'legacy_fallback',
     'do not select horizontal denoise from vertical-only noise evidence');
 
+  const { createScannerImageEnhancements } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerImageEnhancement.js'),
+  ).href);
   const { executeScannerEnhancementPipeline } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
   ).href);
@@ -107,6 +110,25 @@ try {
     }
   }
   const source = { luminance: sourcePixels, width: 240, height: 96 };
+  const originalPixels = new Uint8ClampedArray(source.luminance);
+  const generatedContrast = createScannerImageEnhancements(source, {
+    ...base, issues: ['low_contrast'],
+  });
+  const generatedGamma = createScannerImageEnhancements(source, {
+    ...base, darkFraction: 0.2, issues: ['underexposed'],
+  });
+  const generatedDenoise = createScannerImageEnhancements(source, {
+    ...base, noise: 18, issues: ['high_noise'],
+  });
+  assert.ok(generatedContrast.some((candidate) => candidate.kind === 'contrast'));
+  assert.ok(generatedGamma.some((candidate) => candidate.kind === 'gamma'));
+  assert.ok(generatedDenoise.some((candidate) => candidate.kind === 'denoise'));
+  for (const candidate of [...generatedContrast, ...generatedGamma, ...generatedDenoise]) {
+    assert.notEqual(candidate.luminance, source.luminance,
+      'every enhancement must use a separate output buffer');
+  }
+  assert.deepEqual(source.luminance, originalPixels,
+    'candidate generation must not mutate the immutable source frame');
   let selectedPlan = null;
   const attempted = [];
   const pipelineResult = executeScannerEnhancementPipeline(source, {
