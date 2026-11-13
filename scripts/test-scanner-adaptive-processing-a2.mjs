@@ -69,15 +69,33 @@ try {
   const glare = createScannerAdaptiveProcessingPlan({
     ...base, issues: ['specular_glare', 'low_contrast'],
   });
-  assert.equal(glare.mode, 'safety_bypass');
+  assert.equal(glare.mode, 'enhancement_bypass');
   assert.deepEqual(glare.imageTransforms, [],
     'specular glare must suppress potentially destructive image transforms');
 
   const clipped = createScannerAdaptiveProcessingPlan({
     ...base, issues: ['highlight_clipping', 'underexposed'],
   });
-  assert.equal(clipped.mode, 'safety_bypass',
+  assert.equal(clipped.mode, 'enhancement_bypass',
     'clipped input must not be amplified by gamma or contrast transforms');
+
+  const ineligibleContrast = createScannerAdaptiveProcessingPlan({
+    ...base, dynamicRange: 12, issues: ['low_contrast'],
+  });
+  assert.equal(ineligibleContrast.mode, 'legacy_fallback',
+    'do not select contrast when the existing transform generator cannot produce it');
+
+  const ineligibleGamma = createScannerAdaptiveProcessingPlan({
+    ...base, dynamicRange: 18, issues: ['underexposed'],
+  });
+  assert.equal(ineligibleGamma.mode, 'legacy_fallback',
+    'do not select gamma when the existing transform generator rejects the range');
+
+  const verticalOnlyNoise = createScannerAdaptiveProcessingPlan({
+    ...base, noise: 4, verticalNoise: 19, issues: ['high_noise'],
+  });
+  assert.equal(verticalOnlyNoise.mode, 'legacy_fallback',
+    'do not select horizontal denoise from vertical-only noise evidence');
 
   const { executeScannerEnhancementPipeline } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
