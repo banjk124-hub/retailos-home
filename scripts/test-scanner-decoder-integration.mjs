@@ -259,6 +259,17 @@ try {
   await reversedCode39Decoder.dispose();
 
   const upright = makeCode128();
+  const temporalDecoder = await createDecoder('CODE_128');
+  const temporalDecoded = await temporalDecoder.decodeTemporalSnapshot({
+    pixels: new Uint8Array(upright.luminance),
+    width: upright.width,
+    height: upright.height,
+  }, 4321);
+  assert.equal(temporalDecoded[0]?.value, '12345',
+    'temporal snapshots must decode through the same production enhancement and ZXing path');
+  assert.equal(temporalDecoded[0]?.timestamp, 4321,
+    'temporal fallback output must retain the source observation timestamp');
+  await temporalDecoder.dispose();
 
   // Curved/dented carrier fixture: each scanline receives a different smooth
   // nonlinear horizontal displacement and local scale. The geometry mesh must

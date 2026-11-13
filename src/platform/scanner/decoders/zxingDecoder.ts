@@ -281,6 +281,63 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     }
   }
 
+  async decodeTemporalSnapshot(
+    snapshot: import('../scannerTemporalRecognition').ScannerTemporalSnapshot,
+    timestamp: number,
+  ): Promise<DecoderOutput[]> {
+    if (this.disposed || !this.reader || !Number.isFinite(timestamp)
+      || !(snapshot.pixels instanceof Uint8Array)
+      || !Number.isSafeInteger(snapshot.width) || !Number.isSafeInteger(snapshot.height)
+      || snapshot.width < 1 || snapshot.height < 1
+      || snapshot.pixels.length !== snapshot.width * snapshot.height
+      || snapshot.pixels.length > 640 * 360) return [];
+    if (this.decoding) return [];
+    this.decoding = true;
+    const startedAt = performance.now();
+    try {
+      const grayscale = new Uint8ClampedArray(snapshot.pixels);
+      const pipelineResult = executeScannerEnhancementPipeline(
+        { luminance: grayscale, width: snapshot.width, height: snapshot.height },
+        {
+          cachedOrientationHints: this.cachedOrientationHints,
+          reuseOrientationHints: true,
+          onImageQuality: (quality) => { this.lastImageQuality = quality; },
+        },
+        (candidate) => this.decodeLuminance(
+          candidate.luminance,
+          candidate.width,
+          candidate.height,
+          timestamp,
+          true,
+          candidate.orientation,
+        ),
+        (stage, durationMs) => this.recordStageCost(stage, durationMs),
+      );
+      this.cachedOrientationHints = pipelineResult.orientationHints;
+      if (pipelineResult.rotationAttempted) this.diagnosticRotationAttempts += 1;
+      if (pipelineResult.matchedStage === 'orthogonal') this.diagnosticRotationHits += 1;
+      this.diagnosticDeskewAttempts += pipelineResult.deskewAttempts;
+      this.diagnosticDeskewEstimateMisses += pipelineResult.deskewEstimateMisses;
+      if (pipelineResult.lastDeskewAngleDegrees !== null) {
+        this.diagnosticLastDeskewAngleDegrees = pipelineResult.lastDeskewAngleDegrees;
+      }
+      if (pipelineResult.matchedStage === 'deskew') this.diagnosticDeskewHits += 1;
+      this.diagnosticGeometryAttempts += pipelineResult.geometryCandidatesAttempted;
+      if (pipelineResult.matchedStage === 'geometry') {
+        this.diagnosticGeometryHits += 1;
+        this.diagnosticLastGeometryTransform = pipelineResult.matchedTransform;
+      }
+      if (!pipelineResult.output) return [];
+      this.diagnosticDecoded += 1;
+      this.diagnosticRoiHits += 1;
+      return [pipelineResult.output];
+    } finally {
+      this.recordStageCost('temporal_fallback_total', performance.now() - startedAt);
+      this.reader?.reset();
+      this.decoding = false;
+    }
+  }
+
   private decodeCostStartedAt = 0;
   private decodeCostCount = 0;
   private decodeCostTotalMs = 0;

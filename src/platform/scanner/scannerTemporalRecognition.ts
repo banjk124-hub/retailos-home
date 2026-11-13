@@ -188,6 +188,20 @@ export class ScannerTemporalFrameBuffer {
     };
   }
 
+  /** Select and remove one eligible historical frame for a single fallback attempt. */
+  takeBest(now: number, generation: number, regionRevision: number): ScannerTemporalFrame | null {
+    const best = this.selectBest(now, generation, regionRevision);
+    if (!best) return null;
+    const index = this.frames.findIndex((frame) =>
+      frame.timestamp === best.timestamp
+      && frame.generation === generation
+      && frame.regionRevision === regionRevision,
+    );
+    if (index < 0) return null;
+    this.frames.splice(index, 1);
+    return best;
+  }
+
   clear(): void {
     this.frames = [];
   }
