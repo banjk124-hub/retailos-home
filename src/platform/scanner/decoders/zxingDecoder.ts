@@ -286,6 +286,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     timestamp: number,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !Number.isFinite(timestamp)
+      || !(snapshot.pixels instanceof Uint8Array)
       || !Number.isSafeInteger(snapshot.width) || !Number.isSafeInteger(snapshot.height)
       || snapshot.width < 1 || snapshot.height < 1
       || snapshot.pixels.length !== snapshot.width * snapshot.height

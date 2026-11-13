@@ -505,8 +505,6 @@ export class UniversalScannerSession implements ScannerSession {
           });
         },
       });
-      const decodeDurationMs = performance.now() - decodeStartedAt;
-      this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
       // Temporal recognition is a fallback only for a true decoder miss.
       // Any decoder output (even one later rejected by payload validation)
       // blocks fallback so temporal evidence can never override rejection.
@@ -515,6 +513,9 @@ export class UniversalScannerSession implements ScannerSession {
         && !this.disposed && this.currentState === 'scanning') {
         results = await this.decoder.decodeTemporalSnapshot(temporalCandidate, temporalCandidate.timestamp);
       }
+      // Include fallback cost in the session's end-to-end decode duration.
+      const decodeDurationMs = performance.now() - decodeStartedAt;
+      this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
       this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
       if (generation !== this.generation || regionRevision !== this.regionRevision
         || this.disposed || this.currentState !== 'scanning') return;
