@@ -17,7 +17,7 @@ try {
   }).outputText;
   const output = path.join(tempRoot, 'scannerTemporalRecognition.js');
   await writeFile(output, compiled, 'utf8');
-  const { SCANNER_TEMPORAL_POLICY, ScannerTemporalFrameBuffer } = await import(pathToFileURL(output).href);
+  const { SCANNER_TEMPORAL_POLICY, ScannerTemporalFrameBuffer, createScannerTemporalSnapshot } = await import(pathToFileURL(output).href);
 
   assert.equal(SCANNER_TEMPORAL_POLICY.maxBufferedFrames, 3);
   assert.equal(SCANNER_TEMPORAL_POLICY.maxFrameAgeMs, 700);
@@ -29,6 +29,15 @@ try {
   assert.match(source, /one session generation and one ROI/);
   assert.match(source, /must never override a[\s\S]+validator rejection/);
   assert.match(source, /does not delay them/);
+
+  const sourcePixels = new Uint8Array(800 * 500);
+  sourcePixels[0] = 17;
+  const boundedSnapshot = createScannerTemporalSnapshot(sourcePixels, 800, 500);
+  assert.ok(boundedSnapshot);
+  assert.ok(boundedSnapshot.pixels.length <= SCANNER_TEMPORAL_POLICY.maxSnapshotPixels);
+  assert.notEqual(boundedSnapshot.pixels, sourcePixels);
+  assert.equal(boundedSnapshot.pixels[0], 17);
+  assert.equal(createScannerTemporalSnapshot(new Uint8Array(3), 2, 2), null);
 
   const buffer = new ScannerTemporalFrameBuffer();
   const makeFrame = (timestamp, sharpness, generation = 1, regionRevision = 1) => ({
@@ -52,12 +61,15 @@ try {
   assert.equal(buffer.selectBest(350, 1, 2), null);
   assert.equal(buffer.push(makeFrame(420, 22, 1, 2)), true);
   assert.equal(buffer.size, 1);
+  // A new camera generation may restart its timestamp clock.
+  assert.equal(buffer.push(makeFrame(10, 18, 2, 2)), true);
+  assert.equal(buffer.size, 1);
   assert.equal(buffer.push({ ...makeFrame(500, 20), pixels: new Uint8Array(1000) }), false);
   buffer.clear();
   assert.equal(buffer.size, 0);
 
 
-  console.log('Scanner temporal T1 contract tests passed: bounded snapshots, freshness, generation/ROI isolation and validation precedence.');
+  console.log('Scanner temporal T1/T2 tests passed: bounded snapshot copies, freshness, generation/ROI isolation and validation precedence.');
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
