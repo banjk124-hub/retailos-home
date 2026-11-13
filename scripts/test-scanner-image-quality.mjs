@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const url = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { measureScannerImageQuality } = await import(url);
+const { measureScannerImageQuality, createScannerImageEnhancements } = await import(url);
 
 const width = 128;
 const height = 96;
@@ -89,6 +89,23 @@ assert.ok(!clean.issues.includes('high_noise'),
   'clean barcode edges must not be classified as impulse noise');
 assert.deepEqual(cleanFrame.luminance, cleanCopy,
   'quality analysis must never mutate the source ROI');
+
+// A broad, internally located saturated patch crossing barcode bars is a
+// specular-glare signal; clipped data must not be amplified into false edges.
+const glarePixels = new Uint8ClampedArray(width * height).fill(245);
+for (let y = 8; y < height - 8; y++) {
+  for (let x = 12; x < width - 12; x++) {
+    if (Math.floor((x - 12) / 5) % 2 === 0) glarePixels[y * width + x] = 12;
+  }
+}
+for (let y = 20; y < 76; y++) glarePixels.fill(255, y * width + 54, y * width + 76);
+const glareFrame = { luminance: glarePixels, width, height };
+const glareQuality = measureScannerImageQuality(glareFrame);
+assert.ok(glareQuality);
+assert.ok(glareQuality.issues.includes('specular_glare'),
+  'persistent internal saturated bands must be flagged as specular glare');
+assert.deepEqual(createScannerImageEnhancements(glareFrame, glareQuality), [],
+  'contrast/gamma/denoise must not manufacture edges across clipped glare');
 
 assert.equal(measureScannerImageQuality({
   luminance: new Uint8ClampedArray(width * height),
