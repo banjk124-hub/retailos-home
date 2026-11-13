@@ -265,9 +265,14 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           candidate.baseline ? onFocusQuality : undefined,
           !candidate.baseline,
           candidate.baseline ? onTemporalFrame : undefined,
-          candidate.baseline
-            ? `${dimensions.width}x${dimensions.height}:${crop.x},${crop.y},${crop.width},${crop.height}`
-            : undefined,
+          candidate.baseline ? {
+            frameWidth: dimensions.width,
+            frameHeight: dimensions.height,
+            x: crop.x,
+            y: crop.y,
+            width: crop.width,
+            height: crop.height,
+          } : undefined,
         );
         if (output) {
           this.diagnosticScaleHits += 1;
@@ -388,7 +393,14 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
     reuseOrientationHints = false,
     onTemporalFrame?: DecoderDecodeOptions['onTemporalFrame'],
-    focusRegionKey?: string,
+    focusRegion?: {
+      frameWidth: number;
+      frameHeight: number;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    },
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
@@ -404,9 +416,12 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     let sampledImageQuality: ScannerImageQuality | null | undefined;
     if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
       this.lastFocusQualitySampleAt = timestamp;
+      const focusRegionKey = focusRegion
+        ? `${focusRegion.frameWidth}x${focusRegion.frameHeight}:${focusRegion.x},${focusRegion.y},${focusRegion.width},${focusRegion.height}`
+        : null;
       const sameFocusGeometry = this.lastFocusQualityWidth === this.canvas.width
         && this.lastFocusQualityHeight === this.canvas.height
-        && Boolean(focusRegionKey)
+        && focusRegionKey !== null
         && this.lastFocusQualityRegionKey === focusRegionKey;
       const focusSample = measureScannerFocusQuality(
         grayscale,
@@ -417,7 +432,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.lastFocusQualityPixels = focusSample.sampledPixels;
       this.lastFocusQualityWidth = this.canvas.width;
       this.lastFocusQualityHeight = this.canvas.height;
-      this.lastFocusQualityRegionKey = focusRegionKey ?? null;
+      this.lastFocusQualityRegionKey = focusRegionKey;
       onFocusQuality(focusSample);
       // A1 samples the existing grayscale ROI readback at the same bounded
       // cadence as focus observation; it does not request another camera read.
@@ -428,17 +443,17 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         height: this.canvas.height,
       });
       this.recordStageCost('image_quality', performance.now() - imageQualityStartedAt);
-      if (sampledImageQuality) {
+      if (sampledImageQuality && focusRegion) {
         this.lastImageQuality = sampledImageQuality;
         const profileStartedAt = performance.now();
         this.lastImageQualityProfile = createScannerImageQualityProfile({
           timestamp,
-          frameWidth: dimensions.width,
-          frameHeight: dimensions.height,
-          roiX: crop.x,
-          roiY: crop.y,
-          roiWidth: crop.width,
-          roiHeight: crop.height,
+          frameWidth: focusRegion.frameWidth,
+          frameHeight: focusRegion.frameHeight,
+          roiX: focusRegion.x,
+          roiY: focusRegion.y,
+          roiWidth: focusRegion.width,
+          roiHeight: focusRegion.height,
           sampleWidth: this.canvas.width,
           sampleHeight: this.canvas.height,
           focus: focusSample,
