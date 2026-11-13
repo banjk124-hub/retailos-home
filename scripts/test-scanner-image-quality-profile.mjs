@@ -11,8 +11,8 @@ const { measureScannerImageQuality } = await loadTs('../src/platform/scanner/sca
 const { measureScannerFocusQuality } = await loadTs('../src/platform/scanner/scannerFocusQuality.ts');
 const { createScannerImageQualityProfile } = await loadTs('../src/platform/scanner/scannerImageQualityProfile.ts');
 const width = 320, height = 160;
-const pixels = new Uint8ClampedArray(width * height).fill(245);
-for (let x = 23; x < width - 24; x += 16) for (let y = 12; y < height - 12; y++) pixels.fill(8, y * width + x, y * width + x + 8);
+const pixels = new Uint8ClampedArray(width * height).fill(220);
+for (let x = 23; x < width - 24; x += 16) for (let y = 12; y < height - 12; y++) pixels.fill(35, y * width + x, y * width + x + 8);
 const image = measureScannerImageQuality({ luminance: pixels, width, height });
 const focus = measureScannerFocusQuality(pixels, width, height);
 assert.ok(image && focus.valid);
