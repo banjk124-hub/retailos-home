@@ -164,6 +164,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastFocusQualityPixels: Uint8Array | null = null;
   private lastFocusQualityWidth = 0;
   private lastFocusQualityHeight = 0;
+  private lastFocusQualityRegionKey: string | null = null;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastImageQuality: ScannerImageQuality | null = null;
   private lastImageQualityProfile: ScannerImageQualityProfile | null = null;
@@ -264,6 +265,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           candidate.baseline ? onFocusQuality : undefined,
           !candidate.baseline,
           candidate.baseline ? onTemporalFrame : undefined,
+          candidate.baseline
+            ? `${dimensions.width}x${dimensions.height}:${crop.x},${crop.y},${crop.width},${crop.height}`
+            : undefined,
         );
         if (output) {
           this.diagnosticScaleHits += 1;
@@ -384,6 +388,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
     reuseOrientationHints = false,
     onTemporalFrame?: DecoderDecodeOptions['onTemporalFrame'],
+    focusRegionKey?: string,
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
@@ -400,7 +405,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
       this.lastFocusQualitySampleAt = timestamp;
       const sameFocusGeometry = this.lastFocusQualityWidth === this.canvas.width
-        && this.lastFocusQualityHeight === this.canvas.height;
+        && this.lastFocusQualityHeight === this.canvas.height
+        && Boolean(focusRegionKey)
+        && this.lastFocusQualityRegionKey === focusRegionKey;
       const focusSample = measureScannerFocusQuality(
         grayscale,
         this.canvas.width,
@@ -410,6 +417,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.lastFocusQualityPixels = focusSample.sampledPixels;
       this.lastFocusQualityWidth = this.canvas.width;
       this.lastFocusQualityHeight = this.canvas.height;
+      this.lastFocusQualityRegionKey = focusRegionKey ?? null;
       onFocusQuality(focusSample);
       // A1 samples the existing grayscale ROI readback at the same bounded
       // cadence as focus observation; it does not request another camera read.

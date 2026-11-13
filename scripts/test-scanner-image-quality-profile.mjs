@@ -63,6 +63,10 @@ const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingDe
 const pipeline = await readFile(new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url), 'utf8');
 assert.match(adapter, /timestamp - this\.lastFocusQualitySampleAt >= 500/,
   'A1 observation must remain rate limited');
+assert.match(adapter, /lastFocusQualityRegionKey === focusRegionKey/,
+  'motion comparison must reset when the source ROI changes even if dimensions remain identical');
+assert.match(adapter, /dimensions\.width\}x\$\{dimensions\.height\}:\$\{crop\.x\}/,
+  'focus reference identity must include the source crop coordinates');
 assert.match(adapter, /measureScannerImageQuality\(\{/,
   'A1 must reuse the existing grayscale ROI readback');
 assert.match(adapter, /createScannerImageQualityProfile\(/,
