@@ -152,6 +152,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private diagnosticDeskewAttempts = 0;
   private diagnosticDeskewEstimateMisses = 0;
   private diagnosticDeskewHits = 0;
+  private diagnosticGeometryAttempts = 0;
+  private diagnosticGeometryHits = 0;
+  private diagnosticLastGeometryTransform: string | null = null;
   private diagnosticScaleAttempts = 0;
   private diagnosticScaleHits = 0;
   private diagnosticLastScaleFactor = 0;
@@ -378,6 +381,11 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.diagnosticLastDeskewAngleDegrees = pipelineResult.lastDeskewAngleDegrees;
     }
     if (pipelineResult.matchedStage === 'deskew') this.diagnosticDeskewHits += 1;
+    this.diagnosticGeometryAttempts += pipelineResult.geometryCandidatesAttempted;
+    if (pipelineResult.matchedStage === 'geometry') {
+      this.diagnosticGeometryHits += 1;
+      this.diagnosticLastGeometryTransform = pipelineResult.matchedTransform;
+    }
 
     return pipelineResult.output;
   }
@@ -448,6 +456,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       deskewAttempts: this.diagnosticDeskewAttempts,
       deskewEstimateMisses: this.diagnosticDeskewEstimateMisses,
       deskewHits: this.diagnosticDeskewHits,
+      geometryAttempts: this.diagnosticGeometryAttempts,
+      geometryHits: this.diagnosticGeometryHits,
+      lastGeometryTransform: this.diagnosticLastGeometryTransform,
       scaleAttempts: this.diagnosticScaleAttempts,
       scaleHits: this.diagnosticScaleHits,
       lastScaleFactor: Number(this.diagnosticLastScaleFactor.toFixed(2)),
@@ -460,6 +471,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         edgeStrength: Number(this.lastImageQuality.edgeStrength.toFixed(1)),
         horizontalNoise: Number(this.lastImageQuality.noise.toFixed(1)),
         verticalNoise: Number(this.lastImageQuality.verticalNoise.toFixed(1)),
+        specularGlareFraction: Number(this.lastImageQuality.specularGlareFraction.toFixed(3)),
+        glareBandCoverage: Number(this.lastImageQuality.glareBandCoverage.toFixed(3)),
         issues: this.lastImageQuality.issues,
       } : null,
       notFound: this.diagnosticNotFound,
@@ -487,6 +500,9 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticDeskewAttempts = 0;
     this.diagnosticDeskewEstimateMisses = 0;
     this.diagnosticDeskewHits = 0;
+    this.diagnosticGeometryAttempts = 0;
+    this.diagnosticGeometryHits = 0;
+    this.diagnosticLastGeometryTransform = null;
     this.diagnosticScaleAttempts = 0;
     this.diagnosticScaleHits = 0;
     this.diagnosticLastScaleFactor = 0;
