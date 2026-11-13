@@ -27,15 +27,31 @@ const focus = measureScannerFocusQuality(pixels, width, height);
 assert.ok(image, 'image quality metrics are available for a valid ROI');
 assert.ok(focus.valid, 'focus metrics are available for a structured barcode-like ROI');
 
-const profile = createScannerImageQualityProfile(width, height, 1234, focus, image);
+const profile = createScannerImageQualityProfile({
+  timestamp: 1234,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height,
+  focus, image,
+});
 const nextFocus = measureScannerFocusQuality(pixels, width, height, focus.sampledPixels);
 assert.equal(nextFocus.motionAvailable, true, 'motion becomes measurable after a same-geometry reference exists');
-const nextProfile = createScannerImageQualityProfile(width, height, 1734, nextFocus, image);
+const nextProfile = createScannerImageQualityProfile({
+  timestamp: 1734,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height,
+  focus: nextFocus, image,
+});
 assert.equal(nextProfile.focus.motionAvailable, true);
 assert.ok(profile, 'valid focus and image metrics produce one profile');
 assert.equal(profile.schemaVersion, 1);
 assert.equal(profile.timestamp, 1234);
-assert.deepEqual(profile.roi, { width, height });
+assert.deepEqual(profile.roi, {
+  frameWidth: 1920, frameHeight: 1080,
+  x: 240, y: 320, width: 640, height: 320,
+  sampleWidth: width, sampleHeight: height,
+});
 assert.equal(profile.focus.valid, true);
 assert.equal(profile.focus.motionAvailable, false,
   'the first sample must not misrepresent an unavailable motion baseline as zero motion');
@@ -43,7 +59,13 @@ assert.equal(profile.focus.motionAvailable, false,
 const darkPixels = new Uint8ClampedArray(width * height).fill(8);
 const darkImage = measureScannerImageQuality({ luminance: darkPixels, width, height });
 const darkFocus = measureScannerFocusQuality(darkPixels, width, height);
-const darkProfile = createScannerImageQualityProfile(width, height, 2234, darkFocus, darkImage);
+const darkProfile = createScannerImageQualityProfile({
+  timestamp: 2234,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height,
+  focus: darkFocus, image: darkImage,
+});
 assert.ok(darkProfile);
 assert.equal(darkProfile.focus.valid, false,
   'a low-texture dark frame must not be described as a valid focus observation');
@@ -60,15 +82,41 @@ assert.ok(Array.isArray(profile.issues));
 assert.ok(!('sampledPixels' in profile.focus), 'profile must not retain the focus monitor pixel buffer');
 assert.ok(!('luminance' in profile), 'profile must not retain source image pixels');
 
-assert.equal(createScannerImageQualityProfile(width, height, NaN, focus, image), null,
+assert.equal(createScannerImageQualityProfile({
+  timestamp: NaN,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height, focus, image,
+}), null,
   'invalid timestamps fail closed');
-assert.equal(createScannerImageQualityProfile(width, height, 1234, { ...focus, sharpness: NaN }, image), null,
+assert.equal(createScannerImageQualityProfile({
+  timestamp: 1234,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height,
+  focus: { ...focus, sharpness: NaN }, image,
+}), null,
   'non-finite focus metrics fail closed');
-assert.equal(createScannerImageQualityProfile(2000, 1000, 1234, focus, image), null,
+assert.equal(createScannerImageQualityProfile({
+  timestamp: 1234,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: 2000, sampleHeight: 1000, focus, image,
+}), null,
   'profiles must reject dimensions outside the bounded quality-analysis budget');
-assert.equal(createScannerImageQualityProfile(width, height, 1234, focus, {
-  ...image, darkFraction: 1.5,
+assert.equal(createScannerImageQualityProfile({
+  timestamp: 1234,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 240, roiY: 320, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height, focus,
+  image: { ...image, darkFraction: 1.5 },
 }), null, 'invalid normalized fractions fail closed');
+assert.equal(createScannerImageQualityProfile({
+  timestamp: 1234,
+  frameWidth: 1920, frameHeight: 1080,
+  roiX: 1800, roiY: 900, roiWidth: 640, roiHeight: 320,
+  sampleWidth: width, sampleHeight: height, focus, image,
+}), null, 'a source ROI outside the camera frame fails closed');
 
 const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url), 'utf8');
 const pipeline = await readFile(new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url), 'utf8');

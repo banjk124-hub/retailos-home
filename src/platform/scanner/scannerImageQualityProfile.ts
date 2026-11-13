@@ -4,7 +4,16 @@ import type { ScannerImageQuality, ScannerImageQualityIssue } from './scannerIma
 export type ScannerImageQualityProfile = {
   schemaVersion: 1;
   timestamp: number;
-  roi: { width: number; height: number };
+  roi: {
+    frameWidth: number;
+    frameHeight: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    sampleWidth: number;
+    sampleHeight: number;
+  };
   focus: {
     valid: boolean;
     sharpness: number;
@@ -41,16 +50,41 @@ const round = (value: number) => Number(value.toFixed(2));
  * serializable profile. This is observation-only: it does not rank decode
  * candidates, alter camera settings, or infer a recovery action.
  */
-export function createScannerImageQualityProfile(
-  width: number,
-  height: number,
-  timestamp: number,
-  focus: Pick<ScannerFocusQualitySample, 'valid' | 'sharpness' | 'edgeCoverage' | 'luminanceStdDev' | 'motionScore' | 'motionAvailable'>,
-  image: ScannerImageQuality,
-): ScannerImageQualityProfile | null {
-  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)
-    || width < 1 || height < 1 || !Number.isSafeInteger(width * height)
-    || width * height > 1_500_000 || !Number.isFinite(timestamp)
+export type ScannerImageQualityProfileInput = {
+  timestamp: number;
+  frameWidth: number;
+  frameHeight: number;
+  roiX: number;
+  roiY: number;
+  roiWidth: number;
+  roiHeight: number;
+  sampleWidth: number;
+  sampleHeight: number;
+  focus: Pick<ScannerFocusQualitySample, 'valid' | 'sharpness' | 'edgeCoverage' | 'luminanceStdDev' | 'motionScore' | 'motionAvailable'>;
+  image: ScannerImageQuality;
+};
+
+export function createScannerImageQualityProfile({
+  timestamp,
+  frameWidth,
+  frameHeight,
+  roiX,
+  roiY,
+  roiWidth,
+  roiHeight,
+  sampleWidth,
+  sampleHeight,
+  focus,
+  image,
+}: ScannerImageQualityProfileInput): ScannerImageQualityProfile | null {
+  if (![frameWidth, frameHeight, roiX, roiY, roiWidth, roiHeight, sampleWidth, sampleHeight]
+      .every(Number.isSafeInteger)
+    || frameWidth < 1 || frameHeight < 1 || roiX < 0 || roiY < 0
+    || roiWidth < 1 || roiHeight < 1
+    || roiX + roiWidth > frameWidth || roiY + roiHeight > frameHeight
+    || sampleWidth < 1 || sampleHeight < 1
+    || !Number.isSafeInteger(sampleWidth * sampleHeight)
+    || sampleWidth * sampleHeight > 1_500_000 || !Number.isFinite(timestamp)
     || !finite([focus.sharpness, focus.edgeCoverage, focus.luminanceStdDev, focus.motionScore,
       image.meanLuminance, image.darkFraction, image.brightFraction, image.dynamicRange,
       image.contrast, image.verticalContrast, image.edgeStrength, image.noise,
@@ -67,7 +101,16 @@ export function createScannerImageQualityProfile(
   return {
     schemaVersion: 1,
     timestamp,
-    roi: { width, height },
+    roi: {
+      frameWidth,
+      frameHeight,
+      x: roiX,
+      y: roiY,
+      width: roiWidth,
+      height: roiHeight,
+      sampleWidth,
+      sampleHeight,
+    },
     focus: {
       valid: focus.valid,
       sharpness: round(focus.sharpness),

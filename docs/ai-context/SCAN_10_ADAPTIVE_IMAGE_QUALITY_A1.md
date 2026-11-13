@@ -28,6 +28,8 @@ A1 does not add camera readbacks, retain image pixels, change the ROI, or change
 | Glare | Saturated-pixel fraction, glare-band coverage and orientation |
 | Issues | Existing advisory issue flags from image-quality analysis |
 
+The ROI record distinguishes native source-frame crop coordinates and dimensions from the baseline analysis-raster dimensions. This matters because the decoder upscales the strict crop before measuring it.
+
 The profile contains scalar values and issue labels only. It does not contain canvas, ImageData, pixel arrays, video elements, tracks, or DOM references.
 
 ## Metric semantics and limitations
@@ -53,7 +55,7 @@ Those decisions belong to later stages, especially A2. Payload validation remain
 ## Validation
 
 The A1 profile regression test checks:
-- profile schema and metric grouping;
+- profile schema, native source-ROI geometry and analysis-raster dimensions;
 - bounded dimensions and finite/range validation;
 - absence of retained pixel buffers;
 - motion-reference availability semantics;

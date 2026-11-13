@@ -428,13 +428,19 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       });
       if (sampledImageQuality) {
         this.lastImageQuality = sampledImageQuality;
-        this.lastImageQualityProfile = createScannerImageQualityProfile(
-          this.canvas.width,
-          this.canvas.height,
+        this.lastImageQualityProfile = createScannerImageQualityProfile({
           timestamp,
-          focusSample,
-          sampledImageQuality,
-        );
+          frameWidth: dimensions.width,
+          frameHeight: dimensions.height,
+          roiX: crop.x,
+          roiY: crop.y,
+          roiWidth: crop.width,
+          roiHeight: crop.height,
+          sampleWidth: this.canvas.width,
+          sampleHeight: this.canvas.height,
+          focus: focusSample,
+          image: sampledImageQuality,
+        });
       } else {
         this.lastImageQualityProfile = null;
       }
