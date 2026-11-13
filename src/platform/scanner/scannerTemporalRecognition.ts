@@ -73,3 +73,86 @@ export type ScannerTemporalDecision =
  *   integration must prove that temporal work does not delay them.
  * - All buffers and work are bounded by SCANNER_TEMPORAL_POLICY.
  */
+
+/**
+ * T2 bounded snapshot store. The caller supplies an already downsampled,
+ * owned grayscale ROI snapshot and quality metrics. This class never reads
+ * camera/video/DOM state and never performs decoding.
+ */
+export class ScannerTemporalFrameBuffer {
+  private frames: ScannerTemporalFrame[] = [];
+
+  push(frame: ScannerTemporalFrame): boolean {
+    const { timestamp, generation, regionRevision, pixels, width, height, quality } = frame;
+    const pixelCount = width * height;
+    if (!Number.isFinite(timestamp) || !Number.isSafeInteger(generation)
+      || !Number.isSafeInteger(regionRevision) || generation < 0 || regionRevision < 0
+      || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
+      || width < 1 || height < 1 || pixelCount > SCANNER_TEMPORAL_POLICY.maxSnapshotPixels
+      || !(pixels instanceof Uint8Array) || pixels.length !== pixelCount
+      || !quality || ![quality.sharpness, quality.edgeCoverage, quality.motionScore,
+        quality.luminanceStdDev].every(Number.isFinite)) return false;
+
+    const previous = this.frames[this.frames.length - 1];
+    if (previous && (timestamp <= previous.timestamp
+      || timestamp - previous.timestamp < SCANNER_TEMPORAL_POLICY.minObservationIntervalMs)) {
+      return false;
+    }
+
+    // A session recovery or ROI change invalidates all prior temporal evidence.
+    if (previous && (previous.generation !== generation
+      || previous.regionRevision !== regionRevision)) this.clear();
+
+    this.frames.push({
+      ...frame,
+      pixels: new Uint8Array(pixels),
+      quality: { ...quality },
+    });
+    while (this.frames.length > SCANNER_TEMPORAL_POLICY.maxBufferedFrames) this.frames.shift();
+    return true;
+  }
+
+  selectBest(
+    now: number,
+    generation: number,
+    regionRevision: number,
+  ): ScannerTemporalFrame | null {
+    if (!Number.isFinite(now) || !Number.isSafeInteger(generation)
+      || !Number.isSafeInteger(regionRevision)) return null;
+
+    const eligible = this.frames.filter((frame) =>
+      frame.generation === generation
+      && frame.regionRevision === regionRevision
+      && now >= frame.timestamp
+      && now - frame.timestamp <= SCANNER_TEMPORAL_POLICY.maxFrameAgeMs
+      && frame.quality.valid
+      && frame.quality.edgeCoverage > 0
+      && frame.quality.luminanceStdDev > 0,
+    );
+    if (eligible.length === 0) return null;
+
+    // Sharpness and edge coverage reward readable structure; motion is a
+    // penalty. Luminance spread is a weak tie-breaker, not an exposure target.
+    const score = (frame: ScannerTemporalFrame) =>
+      Math.log1p(Math.max(0, frame.quality.sharpness)) * 0.55
+      + Math.min(1, frame.quality.edgeCoverage * 20) * 0.30
+      + Math.min(1, frame.quality.luminanceStdDev / 64) * 0.15
+      - Math.min(1, frame.quality.motionScore / 32) * 0.35;
+    const best = eligible.reduce((winner, candidate) =>
+      score(candidate) > score(winner) ? candidate : winner,
+    );
+    return {
+      ...best,
+      pixels: new Uint8Array(best.pixels),
+      quality: { ...best.quality },
+    };
+  }
+
+  clear(): void {
+    this.frames = [];
+  }
+
+  get size(): number {
+    return this.frames.length;
+  }
+}
