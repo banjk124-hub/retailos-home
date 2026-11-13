@@ -107,6 +107,24 @@ assert.ok(glareQuality.issues.includes('specular_glare'),
 assert.deepEqual(createScannerImageEnhancements(glareFrame, glareQuality), [],
   'contrast/gamma/denoise must not manufacture edges across clipped glare');
 
+const verticalGlarePixels = new Uint8ClampedArray(width * height).fill(245);
+for (let y = 8; y < height - 8; y++) {
+  for (let x = 12; x < width - 12; x++) {
+    if (Math.floor((x - 12) / 5) % 2 === 0) verticalGlarePixels[y * width + x] = 12;
+  }
+}
+for (let x = 60; x < 69; x++) {
+  for (let y = 8; y < height - 8; y++) verticalGlarePixels[y * width + x] = 255;
+}
+const verticalGlareQuality = measureScannerImageQuality({
+  luminance: verticalGlarePixels, width, height,
+});
+assert.ok(verticalGlareQuality);
+assert.ok(verticalGlareQuality.issues.includes('specular_glare'),
+  'a vertical saturated reflection streak must also be detected');
+assert.equal(verticalGlareQuality.glareBandOrientation, 'vertical',
+  'diagnostics must distinguish a vertical glare band from a horizontal one');
+
 assert.equal(measureScannerImageQuality({
   luminance: new Uint8ClampedArray(width * height),
   width: width + 1,
