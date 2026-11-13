@@ -20,7 +20,8 @@ import { executeScannerEnhancementPipeline, type ScannerOrientationHints } from 
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot } from '../scannerTemporalRecognition';
-import type { ScannerImageQuality } from '../scannerImageEnhancement';
+import { measureScannerImageQuality, type ScannerImageQuality } from '../scannerImageEnhancement';
+import { createScannerImageQualityProfile, type ScannerImageQualityProfile } from '../scannerImageQualityProfile';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -165,6 +166,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastFocusQualityHeight = 0;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastImageQuality: ScannerImageQuality | null = null;
+  private lastImageQualityProfile: ScannerImageQualityProfile | null = null;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
@@ -394,6 +396,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height,
     );
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+    let sampledImageQuality: ScannerImageQuality | null | undefined;
     if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
       this.lastFocusQualitySampleAt = timestamp;
       const sameFocusGeometry = this.lastFocusQualityWidth === this.canvas.width
@@ -408,6 +411,25 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.lastFocusQualityWidth = this.canvas.width;
       this.lastFocusQualityHeight = this.canvas.height;
       onFocusQuality(focusSample);
+      // A1 samples the existing grayscale ROI readback at the same bounded
+      // cadence as focus observation; it does not request another camera read.
+      sampledImageQuality = measureScannerImageQuality({
+        luminance: grayscale,
+        width: this.canvas.width,
+        height: this.canvas.height,
+      });
+      if (sampledImageQuality) {
+        this.lastImageQuality = sampledImageQuality;
+        this.lastImageQualityProfile = createScannerImageQualityProfile(
+          this.canvas.width,
+          this.canvas.height,
+          timestamp,
+          focusSample,
+          sampledImageQuality,
+        );
+      } else {
+        this.lastImageQualityProfile = null;
+      }
       if (focusSample.valid && onTemporalFrame) {
         const snapshot = createScannerTemporalSnapshot(grayscale, this.canvas.width, this.canvas.height);
         if (snapshot) onTemporalFrame(snapshot, focusSample);
@@ -423,6 +445,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       {
         cachedOrientationHints: this.cachedOrientationHints,
         reuseOrientationHints,
+        imageQuality: sampledImageQuality,
         onImageQuality: (quality) => { this.lastImageQuality = quality; },
       },
       (candidate) => this.decodeLuminance(
@@ -541,6 +564,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         glareBandOrientation: this.lastImageQuality.glareBandOrientation,
         issues: this.lastImageQuality.issues,
       } : null,
+      // Latest A1 observation; raw numeric metrics are retained for analysis.
+      qualityProfile: this.lastImageQualityProfile,
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,
