@@ -141,7 +141,7 @@ try {
     'localized smooth dent deformation must yield a conservative curved-surface candidate');
 
   const clippedBand = makeDentedBars();
-  for (let y = 28; y < 72; y++) clippedBand.luminance.fill(255, y * clippedBand.width, (y + 1) * clippedBand.width);
+  for (let y = 8; y < 88; y++) clippedBand.luminance.fill(255, y * clippedBand.width, (y + 1) * clippedBand.width);
   assert.deepEqual(createScannerGeometryCandidates(clippedBand), [],
     'a wide occluded band that destroys stable edge correspondence must fail closed');
 
