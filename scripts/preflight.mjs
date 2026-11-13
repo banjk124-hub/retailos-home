@@ -99,6 +99,11 @@ const checks = [
     args: ["scripts/test-scanner-image-quality-profile.mjs"],
   },
   {
+    name: "Scanner A2 adaptive processing controller tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-adaptive-processing-a2.mjs"],
+  },
+  {
     name: "Scanner bounded deskew regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-deskew.mjs"],
