@@ -56,7 +56,7 @@ function buildFindings(focus: ScannerImageQualityProfileInput['focus'], image: S
     description: 'Các cạnh trong vùng mã vạch chưa đủ sắc nét để nhận dạng ổn định.',
     recommendation: 'Giữ camera ổn định và điều chỉnh khoảng cách để mã vạch rõ nét hơn.',
   });
-  if (!focus.valid && image.issues.length === 0) findings.push({
+  if (!focus.valid) findings.push({
     code: 'insufficient_visual_detail', severity: 'info',
     description: 'Chưa có đủ chi tiết hình ảnh để đánh giá độ nét; chưa thể kết luận camera bị mất nét.',
     recommendation: 'Đưa mã vạch vào rõ vùng quét và giữ yên để hệ thống đánh giá lại.',
@@ -79,7 +79,8 @@ export function createScannerImageQualityProfile(input: ScannerImageQualityProfi
     || image.specularGlareFraction < 0 || image.specularGlareFraction > 1 || image.glareBandCoverage < 0 || image.glareBandCoverage > 1
     || image.meanLuminance < 0 || image.meanLuminance > 255 || image.dynamicRange < 0 || image.dynamicRange > 255
     || image.contrast < 0 || image.verticalContrast < 0 || image.edgeStrength < 0 || image.noise < 0 || image.verticalNoise < 0
-    || !Array.isArray(image.issues) || image.issues.some((issue) => !(issue in ISSUE_FINDINGS))) return null;
+    || !Array.isArray(image.issues) || image.issues.some((issue) => !Object.hasOwn(ISSUE_FINDINGS, issue))
+    || !['horizontal', 'vertical', 'both', null].includes(image.glareBandOrientation)) return null;
   const findings = buildFindings(focus, image);
   return {
     schemaVersion: 1, timestamp,
