@@ -140,6 +140,11 @@ try {
   assert.ok(dentedCandidates.some(candidate => candidate.kind === 'curved'),
     'localized smooth dent deformation must yield a conservative curved-surface candidate');
 
+  const clippedBand = makeDentedBars();
+  for (let y = 28; y < 72; y++) clippedBand.luminance.fill(255, y * clippedBand.width, (y + 1) * clippedBand.width);
+  assert.deepEqual(createScannerGeometryCandidates(clippedBand), [],
+    'a wide occluded band that destroys stable edge correspondence must fail closed');
+
   // Geometry detection must be orientation-independent; test all four
   // orthogonal capture directions, not only the upright synthetic fixture.
   let orientationFrame = makeWarpedBars('perspective');
@@ -262,6 +267,25 @@ try {
   assert.ok(geometryOrientations.some((orientation) =>
     ['rotated_90', 'rotated_90_deskew'].includes(orientation)),
     'rotated geometry candidate must retain its orientation metadata');
+
+  const compoundTiltBase = makeWarpedBars('perspective');
+  const compoundTilt = rotateLuminanceByAngle(
+    compoundTiltBase.luminance, compoundTiltBase.width, compoundTiltBase.height, 27,
+  );
+  assert.ok(compoundTilt);
+  const compoundTiltStages = [];
+  const compoundTiltResult = executeScannerEnhancementPipeline(
+    compoundTilt,
+    {},
+    (candidate) => {
+      if (candidate.stage === 'geometry') compoundTiltStages.push(candidate.orientation);
+      return candidate.stage === 'geometry' ? 'compound-geometry-hit' : null;
+    },
+  );
+  assert.equal(compoundTiltResult.output, 'compound-geometry-hit',
+    'a barcode with both in-plane rotation and planar perspective must reach geometry after orientation normalization');
+  assert.ok(compoundTiltStages.length > 0,
+    'the combined tilt path must actually attempt a bounded geometry candidate');
 
   const missResult = executeScannerEnhancementPipeline(
     { luminance: new Uint8ClampedArray(80 * 40).fill(255), width: 80, height: 40 },
