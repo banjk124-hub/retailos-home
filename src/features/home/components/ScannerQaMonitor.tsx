@@ -26,6 +26,22 @@ function metricNumber(event: ScannerDiagnosticEvent, key: string): number | null
   return typeof value === 'number' ? value : null;
 }
 
+function adaptivePlan(event: ScannerDiagnosticEvent): Record<string, unknown> | null {
+  const value = event.metrics.adaptiveProcessingPlan;
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+}
+
+function metricValue(event: ScannerDiagnosticEvent, key: string): unknown {
+  const plan = adaptivePlan(event);
+  if (key === 'adaptiveMode') return plan?.mode;
+  if (key === 'adaptiveTransforms') return Array.isArray(plan?.imageTransforms)
+    ? plan.imageTransforms.join('|') : plan?.imageTransforms === null ? 'legacy' : '';
+  if (key === 'adaptiveReasons') return Array.isArray(plan?.reasons) ? plan.reasons.join('|') : '';
+  return event.metrics[key];
+}
+
 export default function ScannerQaMonitor({ onClose }: Props) {
   const [events, setEvents] = useState(getScannerDiagnosticSnapshot());
   const [filter, setFilter] = useState<'all' | 'warn' | 'performance'>('all');
@@ -62,9 +78,9 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
   const exportJson = () => downloadReport(exportScannerDiagnostics(), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, 'application/json');
   const exportCsv = () => {
-    const columns = ['timestamp', 'level', 'category', 'stage', 'durationMs', 'phase', 'decodeAttempts', 'accepted', 'rejectedByValidation', 'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore','focusStatus','focusModes','focusRequestMs','focusSharpness','focusSharpnessMin','focusEdgeCoverage','focusMotionScore','focusQualitySamples','focusSustainedBlurEvents','focusQualityStatus','cameraControlChanged','videoReadyMs','videoReadyState','videoWidth','videoHeight','pageLifecycle','trackEvent','trackMuted','trackReadyState','roiUnavailable','roiWidth','roiHeight','roiSourceScale','rotationAttempts','rotationHits','deskewAttempts','deskewEstimateMisses','deskewHits','scaleAttempts','scaleHits','lastScaleFactor','lastDeskewAngleDegrees'];
+    const columns = ['timestamp', 'level', 'category', 'stage', 'durationMs', 'phase', 'decodeAttempts', 'accepted', 'rejectedByValidation', 'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore','focusStatus','focusModes','focusRequestMs','focusSharpness','focusSharpnessMin','focusEdgeCoverage','focusMotionScore','focusQualitySamples','focusSustainedBlurEvents','focusQualityStatus','cameraControlChanged','videoReadyMs','videoReadyState','videoWidth','videoHeight','pageLifecycle','trackEvent','trackMuted','trackReadyState','roiUnavailable','roiWidth','roiHeight','roiSourceScale','rotationAttempts','rotationHits','deskewAttempts','deskewEstimateMisses','deskewHits','scaleAttempts','scaleHits','lastScaleFactor','lastDeskewAngleDegrees','adaptiveMode','adaptiveTransforms','adaptiveReasons'];
     const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-    const rows = [columns.join(','), ...events.map((event) => columns.map((column) => quote(column === 'timestamp' ? event.timestamp : column === 'level' ? event.level : column === 'category' ? event.category : event.metrics[column])).join(','))];
+    const rows = [columns.join(','), ...events.map((event) => columns.map((column) => quote(column === 'timestamp' ? event.timestamp : column === 'level' ? event.level : column === 'category' ? event.category : metricValue(event, column))).join(','))];
     downloadReport(rows.join('\n'), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`, 'text/csv;charset=utf-8');
   };
   const copyReport = async () => {
@@ -110,6 +126,11 @@ export default function ScannerQaMonitor({ onClose }: Props) {
             <div className="scanner-qa-event-copy">
               <strong>{event.category}</strong>
               <time>{new Date(event.timestamp).toLocaleTimeString('vi-VN')}</time>
+              {adaptivePlan(event) && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
+                <span>A2 mode: <b>{String(adaptivePlan(event)?.mode ?? '—')}</b></span>
+                <span>Transforms: <b>{Array.isArray(adaptivePlan(event)?.imageTransforms) ? (adaptivePlan(event)?.imageTransforms as string[]).join(', ') || 'none' : 'legacy policy'}</b></span>
+                <span>Reasons: <b>{Array.isArray(adaptivePlan(event)?.reasons) ? (adaptivePlan(event)?.reasons as string[]).join(', ') : '—'}</b></span>
+              </div>}
               <div className="scanner-qa-metrics">{Object.entries(event.metrics).filter(([key, value]) => value !== undefined && ['stage','durationMs','phase','phaseCommitIntervalMs','pageLifecycle','focusStatus','focusModes','focusRequestMs','focusSharpness','focusSharpnessMin','focusEdgeCoverage','focusMotionScore','focusQualitySamples','focusSustainedBlurEvents','focusQualityStatus','cameraControlChanged','width','height','frameRate','facingMode','focusMode','videoReadyMs','videoReadyState','videoWidth','videoHeight','trackEvent','trackMuted','trackReadyState','frameCallbackObserved','decodeAttempts','framesWithSymbols','accepted','rejectedByValidation','decoderErrors','decodeDurationAverageMs','decodeDurationMaxMs','maxFrameCallbackGapMs','longTasks','layoutShiftScore','averageDecodeMs','maxDecodeMs','samples','roiUnavailable','roiWidth','roiHeight','roiSourceScale','rotationAttempts','rotationHits','deskewAttempts','deskewEstimateMisses','deskewHits','scaleAttempts','scaleHits','lastScaleFactor','lastDeskewAngleDegrees'].includes(key)).slice(0, 12).map(([key, value]) => <span key={key}>{key}: <b>{typeof value === 'number' ? Number(value.toFixed(2)) : String(value)}</b></span>)}</div>
             </div>
           </article>)}
