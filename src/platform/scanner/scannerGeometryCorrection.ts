@@ -258,8 +258,8 @@ function fitGeometryModel(frame: ScannerLuminanceFrame): GeometryModel | null {
     }
   }
 
-  const nonlinear = rowCurveResidual > width * 0.004
-    || columnCurveResidual > height * 0.012;
+  const nonlinear = (rowCorrection && rowCurveResidual > width * 0.004)
+    || (columnCorrection && columnCurveResidual > height * 0.012);
   const kind: ScannerGeometryCandidate['kind'] = nonlinear ? 'curved' : 'perspective';
   const confidence = clamp(
     0.45
