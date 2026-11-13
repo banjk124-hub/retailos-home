@@ -1,6 +1,6 @@
 import type { ScannerImageQuality } from './scannerImageEnhancement';
 
-export type ScannerAdaptiveProcessingMode = 'targeted' | 'legacy_fallback' | 'safety_bypass';
+export type ScannerAdaptiveProcessingMode = 'targeted' | 'legacy_fallback' | 'enhancement_bypass';
 export type ScannerAdaptiveImageTransform = 'contrast' | 'gamma' | 'denoise';
 
 export type ScannerAdaptiveProcessingPlan = {
@@ -43,7 +43,7 @@ export function createScannerAdaptiveProcessingPlan(
 
   if (destructiveSignal) {
     return {
-      schemaVersion: 1, mode: 'safety_bypass', imageTransforms: [],
+      schemaVersion: 1, mode: 'enhancement_bypass', imageTransforms: [],
       maxImageCandidates: 0, geometryCandidateLimit: 4,
       orientationPolicy: 'preserve_existing_order',
       scalePolicy: 'preserve_existing_order',
@@ -56,17 +56,25 @@ export function createScannerAdaptiveProcessingPlan(
 
   const transforms: ScannerAdaptiveImageTransform[] = [];
   const reasons: string[] = [];
-  if (issues.has('low_dynamic_range') || issues.has('low_contrast')) {
+  // Match the transform generator's actual eligibility gates. A diagnostic
+  // issue alone is not sufficient: selecting a transform that the generator
+  // cannot produce would make the plan claim work that never happens.
+  if ((issues.has('low_dynamic_range') || issues.has('low_contrast'))
+    && quality.dynamicRange >= 16 && quality.dynamicRange < 150
+    && quality.darkFraction < 0.6 && quality.brightFraction < 0.6) {
     transforms.push('contrast');
     reasons.push('compressed_contrast');
   }
-  if (issues.has('underexposed')) {
+  if (issues.has('underexposed') && quality.brightFraction < 0.08
+    && quality.darkFraction > 0.12 && quality.dynamicRange >= 24) {
     transforms.push('gamma');
     reasons.push('underexposure');
   }
-  if (issues.has('high_noise')) {
+  // The currently deployed denoiser filters horizontally. Do not select it
+  // from verticalNoise alone; that observation has no matching transform yet.
+  if (issues.has('high_noise') && quality.noise > 14 && quality.contrast < 65) {
     transforms.push('denoise');
-    reasons.push('high_noise');
+    reasons.push('horizontal_impulse_noise');
   }
 
   if (transforms.length === 0) {
