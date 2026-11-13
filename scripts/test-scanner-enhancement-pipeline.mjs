@@ -145,15 +145,28 @@ try {
   assert.deepEqual(createScannerGeometryCandidates(clippedBand), [],
     'a wide occluded band that destroys stable edge correspondence must fail closed');
 
-  // Geometry detection must be orientation-independent; test all four
-  // orthogonal capture directions, not only the upright synthetic fixture.
-  let orientationFrame = makeWarpedBars('perspective');
+  // Geometry is evaluated after orientation normalization. Exercise the
+  // complete pipeline at all four orthogonal capture directions rather than
+  // asking the horizontal-scanline geometry detector to process sideways data.
+  const orientationBase = makeWarpedBars('perspective');
   for (const angle of [0, 90, 180, 270]) {
-    if (angle !== 0) orientationFrame = rotateLuminance90Clockwise(
-      orientationFrame.luminance, orientationFrame.width, orientationFrame.height,
+    let orientationFrame = orientationBase;
+    for (let turn = 0; turn < angle / 90; turn++) {
+      const rotatedFrame = rotateLuminance90Clockwise(
+        orientationFrame.luminance, orientationFrame.width, orientationFrame.height,
+      );
+      assert.ok(rotatedFrame, 'orthogonal orientation fixture must be generated');
+      orientationFrame = rotatedFrame;
+    }
+    const orientationResult = executeScannerEnhancementPipeline(
+      orientationFrame,
+      {},
+      (candidate) => candidate.stage === 'geometry' ? `geometry-${angle}` : null,
     );
-    assert.ok(createScannerGeometryCandidates(orientationFrame).length > 0,
-      `geometry must remain detectable at ${angle}-degree barcode orientation`);
+    assert.equal(orientationResult.output, `geometry-${angle}`,
+      `pipeline must reach a geometry candidate at ${angle}-degree capture orientation`);
+    assert.ok(orientationResult.geometryCandidatesAttempted > 0,
+      `geometry attempts must be recorded at ${angle}-degree capture orientation`);
   }
 
   const width = 240, height = 96;
