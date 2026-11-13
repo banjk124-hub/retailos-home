@@ -474,18 +474,21 @@ export class UniversalScannerSession implements ScannerSession {
     this.decoding = true;
     this.lastDecodeAt = timestamp;
     const decodeStartedAt = performance.now();
+    const regionRevision = this.regionRevision;
+    const scanRegion = this.getScanRegion();
     this.diagnosticFrames += 1;
     try {
       const results = await this.decoder.decode(this.video, {
         timestamp,
-        scanRegion: this.getScanRegion(),
+        scanRegion,
         onFocusQuality: (sample) => this.handleFocusQuality(sample, timestamp, generation),
         onTemporalFrame: (snapshot, quality) => {
-          if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
+          if (generation !== this.generation || regionRevision !== this.regionRevision
+            || this.disposed || this.currentState !== 'scanning') return;
           this.temporalFrameBuffer.push({
             timestamp,
             generation,
-            regionRevision: this.regionRevision,
+            regionRevision,
             pixels: snapshot.pixels,
             width: snapshot.width,
             height: snapshot.height,
