@@ -150,6 +150,30 @@ try {
   assert.ok(dentedCandidates.some(candidate => candidate.kind === 'curved'),
     'localized smooth dent deformation must yield a conservative curved-surface candidate');
 
+  // Repeated shallow wrinkles: smooth multi-frequency displacement and scale
+  // variation are a realistic intermediate case between a cylinder and a dent.
+  const makeWrinkledBars = () => {
+    const width = 240, height = 120;
+    const pixels = new Uint8ClampedArray(width * height).fill(255);
+    for (let y = 0; y < height; y++) {
+      const t = y / (height - 1);
+      const center = 120 + 7 * Math.sin(t * Math.PI * 2) + 4 * Math.sin(t * Math.PI * 8);
+      const span = 160 + 7 * Math.sin(t * Math.PI * 4);
+      for (let x = 0; x < width; x++) {
+        const u = (x - center) / span + 0.5;
+        if (u >= 0 && u < 1 && Math.floor(u * 30) % 2 === 0) pixels[y * width + x] = 0;
+      }
+    }
+    return { luminance: pixels, width, height };
+  };
+  const wrinkled = makeWrinkledBars();
+  const wrinkledCopy = new Uint8ClampedArray(wrinkled.luminance);
+  const wrinkledCandidates = createScannerGeometryCandidates(wrinkled);
+  assert.ok(wrinkledCandidates.some(candidate => candidate.kind === 'curved'),
+    'bounded smooth wrinkles must yield a curved-surface mesh candidate');
+  assert.deepEqual(wrinkled.luminance, wrinkledCopy,
+    'wrinkle rectification must leave the source ROI immutable');
+
   const clippedBand = makeDentedBars();
   for (let y = 8; y < 88; y++) clippedBand.luminance.fill(255, y * clippedBand.width, (y + 1) * clippedBand.width);
   assert.deepEqual(createScannerGeometryCandidates(clippedBand), [],
