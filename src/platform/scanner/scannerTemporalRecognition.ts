@@ -32,6 +32,41 @@ export type ScannerTemporalQuality = {
   valid: boolean;
 };
 
+export type ScannerTemporalSnapshot = {
+  pixels: Uint8Array;
+  width: number;
+  height: number;
+};
+
+/** Copy grayscale ROI pixels into an independently owned, bounded snapshot. */
+export function createScannerTemporalSnapshot(
+  grayscale: Uint8Array | Uint8ClampedArray,
+  width: number,
+  height: number,
+): ScannerTemporalSnapshot | null {
+  const pixelCount = width * height;
+  if (!(grayscale instanceof Uint8Array || grayscale instanceof Uint8ClampedArray)
+    || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
+    || width < 1 || height < 1 || !Number.isSafeInteger(pixelCount)
+    || grayscale.length !== pixelCount) return null;
+
+  const maxPixels = SCANNER_TEMPORAL_POLICY.maxSnapshotPixels;
+  if (pixelCount <= maxPixels) return { pixels: new Uint8Array(grayscale), width, height };
+
+  const scale = Math.sqrt(maxPixels / pixelCount);
+  const targetWidth = Math.max(1, Math.floor(width * scale));
+  const targetHeight = Math.max(1, Math.min(Math.floor(height * scale), Math.floor(maxPixels / targetWidth)));
+  const pixels = new Uint8Array(targetWidth * targetHeight);
+  for (let y = 0; y < targetHeight; y += 1) {
+    const sourceY = Math.min(height - 1, Math.floor((y + 0.5) * height / targetHeight));
+    for (let x = 0; x < targetWidth; x += 1) {
+      const sourceX = Math.min(width - 1, Math.floor((x + 0.5) * width / targetWidth));
+      pixels[y * targetWidth + x] = grayscale[sourceY * width + sourceX];
+    }
+  }
+  return { pixels, width: targetWidth, height: targetHeight };
+}
+
 export type ScannerTemporalFrame = {
   /** Monotonic timestamp from the video-frame callback clock. */
   timestamp: number;
@@ -93,15 +128,20 @@ export class ScannerTemporalFrameBuffer {
       || !quality || ![quality.sharpness, quality.edgeCoverage, quality.motionScore,
         quality.luminanceStdDev].every(Number.isFinite)) return false;
 
-    const previous = this.frames[this.frames.length - 1];
-    if (previous && (timestamp <= previous.timestamp
-      || timestamp - previous.timestamp < SCANNER_TEMPORAL_POLICY.minObservationIntervalMs)) {
-      return false;
-    }
+    if (typeof quality.valid !== 'boolean' || quality.sharpness < 0
+      || quality.edgeCoverage < 0 || quality.edgeCoverage > 1
+      || quality.motionScore < 0 || quality.luminanceStdDev < 0) return false;
 
-    // A session recovery or ROI change invalidates all prior temporal evidence.
+    let previous = this.frames[this.frames.length - 1];
+    // Invalidate old evidence before timestamp checks: a new camera generation
+    // may legitimately restart its media timestamp clock.
     if (previous && (previous.generation !== generation
-      || previous.regionRevision !== regionRevision)) this.clear();
+      || previous.regionRevision !== regionRevision)) {
+      this.clear();
+      previous = undefined;
+    }
+    if (previous && (timestamp <= previous.timestamp
+      || timestamp - previous.timestamp < SCANNER_TEMPORAL_POLICY.minObservationIntervalMs)) return false;
 
     this.frames.push({
       ...frame,
