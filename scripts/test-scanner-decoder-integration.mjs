@@ -40,21 +40,23 @@ try {
     await writeFile(outputPath, compiled, 'utf8');
   }
 
-  const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false };
+  const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false, forceOneXMiss: false, canvases: [] };
   globalThis.document = {
     createElement(tag) {
       assert.equal(tag, 'canvas');
       canvasStats.created += 1;
-      const canvas = { width: 0, height: 0 };
+      const canvas = { width: 0, height: 0, isConnected: false, parentNode: null };
+      canvasStats.canvases.push(canvas);
       const context = {
         pixels: new Uint8ClampedArray(),
         drawImage(source, sx, sy, sw, sh, _dx, _dy, dw, dh) {
           canvasStats.draws += 1;
           canvasStats.lastCrop = { sx, sy, sw, sh, dw, dh };
           const output = new Uint8ClampedArray(dw * dh * 4);
-          if (canvasStats.forceBaselineMiss
-            && dw === Math.round(sw * 1.5)
-            && dh === Math.round(sh * 1.5)) {
+          if ((canvasStats.forceBaselineMiss
+              && dw === Math.round(sw * 1.5)
+              && dh === Math.round(sh * 1.5))
+            || (canvasStats.forceOneXMiss && dw === sw && dh === sh)) {
             output.fill(255);
             this.pixels = output;
             return;
@@ -422,6 +424,91 @@ try {
   canvasStats.forceBaselineMiss = false;
   await fallbackDecoder.dispose();
 
+  // Exercise the final 2x fallback independently: force both earlier
+  // candidates to miss while allowing the production decoder to process 2x.
+  const twoXFallbackDecoder = await createDecoder();
+  canvasStats.forceBaselineMiss = true;
+  canvasStats.forceOneXMiss = true;
+  const twoXDrawsBefore = canvasStats.draws;
+  const twoXFallbackResult = await decodeOnce(twoXFallbackDecoder, toSource(upright));
+  assert.equal(twoXFallbackResult[0]?.value, '12345',
+    'production adapter must recover a barcode when 1.5x and 1x miss and the 2x fallback succeeds');
+  assert.equal(canvasStats.draws, twoXDrawsBefore + 3,
+    'successful 2x fallback must run after both earlier candidates and stop immediately on success');
+  canvasStats.forceBaselineMiss = false;
+  canvasStats.forceOneXMiss = false;
+  await twoXFallbackDecoder.dispose();
+
+  // Multi-scale is an internal pixel-processing concern. Pass a video-shaped
+  // source with immutable presentation/camera state through the real adapter
+  // and prove decoding only reads it while drawing into detached canvases.
+  let playCalls = 0;
+  let pauseCalls = 0;
+  let frameCallbackCalls = 0;
+  let cancelFrameCallbackCalls = 0;
+  let trackStopCalls = 0;
+  let constraintCalls = 0;
+  const track = Object.freeze({
+    readyState: 'live',
+    stop() { trackStopCalls += 1; },
+    applyConstraints() { constraintCalls += 1; },
+  });
+  const stream = Object.freeze({
+    active: true,
+    getTracks: () => Object.freeze([track]),
+    getVideoTracks: () => Object.freeze([track]),
+  });
+  const previewStyle = Object.freeze({
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    transform: 'none',
+  });
+  const videoSource = Object.freeze({
+    ...toSource(upright),
+    videoWidth: upright.width,
+    videoHeight: upright.height,
+    srcObject: stream,
+    paused: false,
+    currentTime: 12.5,
+    playbackRate: 1,
+    style: previewStyle,
+    play() { playCalls += 1; },
+    pause() { pauseCalls += 1; },
+    requestVideoFrameCallback() { frameCallbackCalls += 1; },
+    cancelVideoFrameCallback() { cancelFrameCallbackCalls += 1; },
+  });
+  const videoDecoder = await createDecoder();
+  const videoDrawsBefore = canvasStats.draws;
+  const videoResult = await decodeOnce(videoDecoder, videoSource);
+  assert.equal(videoResult[0]?.value, '12345',
+    'the production decoder must decode from a video-like source without owning video playback');
+  assert.equal(canvasStats.draws, videoDrawsBefore + 1,
+    'a successful baseline must not run unnecessary alternate scales');
+  assert.equal(videoSource.srcObject, stream,
+    'multi-scale decoding must preserve the active camera stream attachment');
+  assert.equal(videoSource.videoWidth, upright.width,
+    'multi-scale decoding must not alter the intrinsic video width');
+  assert.equal(videoSource.videoHeight, upright.height,
+    'multi-scale decoding must not alter the intrinsic video height');
+  assert.equal(videoSource.paused, false,
+    'multi-scale decoding must not pause the preview');
+  assert.equal(videoSource.currentTime, 12.5,
+    'multi-scale decoding must not seek or otherwise change video playback');
+  assert.equal(videoSource.playbackRate, 1,
+    'multi-scale decoding must not change video playback rate');
+  assert.equal(videoSource.style, previewStyle,
+    'multi-scale decoding must not replace or mutate preview presentation styles');
+  assert.equal(playCalls + pauseCalls + frameCallbackCalls + cancelFrameCallbackCalls, 0,
+    'multi-scale decoding must not invoke video playback or frame scheduling APIs');
+  assert.equal(stream.active, true, 'multi-scale decoding must preserve camera stream activity');
+  assert.equal(track.readyState, 'live', 'multi-scale decoding must preserve the camera track');
+  assert.equal(trackStopCalls, 0, 'multi-scale decoding must never stop the camera track');
+  assert.equal(constraintCalls, 0, 'multi-scale decoding must never reconfigure camera constraints');
+  assert.ok(canvasStats.canvases.every(canvas => !canvas.isConnected && canvas.parentNode === null),
+    'all decoder canvases must remain detached internal processing surfaces');
+  await videoDecoder.dispose();
+
   const invalidDecoder = await createDecoder();
   const invalidDrawsBefore = canvasStats.draws;
   assert.deepEqual(await decodeOnce(invalidDecoder, toSource(upright), null), [],
@@ -430,7 +517,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: Code 39 upright/deskew, Code 128, EAN, 90°/270°, continuous ±5°–±75° orientation sweep, combined quarter-turn/skew, strict ROI crop and fail-closed no-fallback.');
+  console.log('Production ZXing adapter integration passed: formats/orientations, strict ROI, 1.5x→1x→2x fallback, detached processing canvas, immutable video preview and camera stream contract.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });
