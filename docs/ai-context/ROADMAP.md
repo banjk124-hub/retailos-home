@@ -23,7 +23,7 @@
 - Evaluate geometry on two normalized orientation surfaces: upright/deskewed and quarter-turned/deskewed. This keeps geometry available regardless of the barcode's 0°/90°/180°/270° capture orientation without multiplying every scale and transform.
 - Cap geometry work at two orientation candidates per pipeline attempt; each candidate remains inside the original module-owned ROI and is validated by the existing ZXing decoder.
 - Reject inconsistent edge counts, insufficient profile coverage, non-monotonic mappings, excessive local scale changes and geometry obscured by substantial clipping/occlusion.
-- Add local specular-band detection. When a persistent saturated band crosses the barcode region, do not run contrast/gamma/denoise transforms that could exaggerate artificial edges. Geometry must not attempt to reconstruct the missing highlight data.
+- Add horizontal and vertical internal specular-band detection. When a persistent saturated reflection crosses the barcode region, do not run contrast/gamma/denoise transforms that could exaggerate artificial edges. Geometry must not attempt to reconstruct the missing highlight data.
 - Add geometry attempt/hit/transform and glare metrics to existing decoder diagnostics; no camera/session/preview/presentation changes.
 
 ### Gate 3 regression scope
@@ -32,8 +32,8 @@
 - Curved carrier and localized smooth dent/bow deformation.
 - 0°/90°/180°/270° geometry surfaces and compound in-plane rotation + perspective.
 - Fail-closed controls for uniform input and severe occlusion.
-- Production ZXing adapter validation using a known CODE-128 payload after geometry rectification.
-- Specular highlight fixture and enhancement suppression.
+- Production ZXing adapter validation using known CODE-128 and EAN-13 payloads after geometry rectification.
+- Horizontal and vertical specular highlight fixtures, orientation diagnostics and enhancement suppression.
 - CI success is necessary but not sufficient; real packaging, bottles, reflective film and glass still require a labelled device corpus.
 
 ## Protected architecture
