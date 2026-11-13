@@ -45,7 +45,7 @@ const ISSUE_FINDINGS: Record<ScannerImageQualityIssue, Omit<ScannerImageQualityF
 };
 
 function buildFindings(focus: ScannerImageQualityProfileInput['focus'], image: ScannerImageQuality): ScannerImageQualityFinding[] {
-  const findings = image.issues.map((code) => ({ code, ...ISSUE_FINDINGS[code] }));
+  const findings: ScannerImageQualityFinding[] = image.issues.map((code) => ({ code, ...ISSUE_FINDINGS[code] }));
   if (focus.motionAvailable && focus.motionScore > 14) findings.push({
     code: 'motion_detected', severity: 'warning',
     description: 'Hình ảnh thay đổi rõ giữa các khung hình; thiết bị hoặc sản phẩm có thể đang rung/di chuyển.',
