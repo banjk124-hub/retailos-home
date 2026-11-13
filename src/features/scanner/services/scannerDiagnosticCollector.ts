@@ -16,7 +16,7 @@ const ALLOWED_KEYS = new Set([
   'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore', 'validationRejectReasons',
   'averageDecodeMs', 'maxDecodeMs', 'samples', 'stages', 'sourceWidth', 'sourceHeight',
   'frames', 'decoded', 'roiHits', 'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits', 'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'lastDeskewAngleDegrees', 'notFound', 'checksumErrors', 'formatErrors',
-  'unexpectedErrors', 'valueLength', 'symbology', 'mode', 'focusStatus', 'focusModes', 'focusRequestMs', 'focusErrorName', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged',
+  'unexpectedErrors', 'valueLength', 'symbology', 'mode', 'adaptiveProcessingPlan', 'focusStatus', 'focusModes', 'focusRequestMs', 'focusErrorName', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged',
   'width', 'height', 'frameRate', 'facingMode', 'focusMode', 'exposureMode', 'whiteBalanceMode', 'pageLifecycle', 'frameCallbackObserved',
   'videoReadyMs', 'videoReadyState', 'videoWidth', 'videoHeight', 'trackEvent', 'trackMuted', 'trackReadyState',
 ]);
@@ -30,7 +30,32 @@ function safeMetrics(input: unknown): Record<string, unknown> {
   const output: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
     if (!ALLOWED_KEYS.has(key)) continue;
-    if (key === 'stages' && value && typeof value === 'object' && !Array.isArray(value)) {
+    if (key === 'adaptiveProcessingPlan' && value && typeof value === 'object' && !Array.isArray(value)) {
+      const plan = value as Record<string, unknown>;
+      const stringArray = (candidate: unknown) => Array.isArray(candidate)
+        ? candidate.filter((item): item is string => typeof item === 'string').slice(0, 12)
+        : [];
+      const allowedModes = new Set(['targeted', 'legacy_fallback', 'enhancement_bypass']);
+      const allowedTransforms = new Set(['contrast', 'gamma', 'denoise']);
+      const transforms = stringArray(plan.imageTransforms)
+        .filter((item) => allowedTransforms.has(item));
+      output.adaptiveProcessingPlan = {
+        schemaVersion: plan.schemaVersion === 1 ? 1 : undefined,
+        mode: typeof plan.mode === 'string' && allowedModes.has(plan.mode) ? plan.mode : undefined,
+        imageTransforms: plan.imageTransforms === null ? null : transforms,
+        maxImageCandidates: typeof plan.maxImageCandidates === 'number'
+          ? Math.max(0, Math.min(4, plan.maxImageCandidates)) : undefined,
+        geometryCandidateLimit: typeof plan.geometryCandidateLimit === 'number'
+          ? Math.max(0, Math.min(4, plan.geometryCandidateLimit)) : undefined,
+        orientationPolicy: plan.orientationPolicy === 'preserve_existing_order'
+          ? plan.orientationPolicy : undefined,
+        scalePolicy: plan.scalePolicy === 'preserve_existing_order'
+          ? plan.scalePolicy : undefined,
+        temporalPolicy: plan.temporalPolicy === 'preserve_t3_contract'
+          ? plan.temporalPolicy : undefined,
+        reasons: stringArray(plan.reasons),
+      };
+    } else if (key === 'stages' && value && typeof value === 'object' && !Array.isArray(value)) {
       const stages: Record<string, unknown> = {};
       for (const [stage, detail] of Object.entries(value as Record<string, unknown>)) {
         if (!detail || typeof detail !== 'object' || Array.isArray(detail)) continue;
