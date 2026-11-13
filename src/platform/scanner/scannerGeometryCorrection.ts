@@ -303,8 +303,18 @@ function rectify(frame: ScannerLuminanceFrame, model: GeometryModel): ScannerGeo
         const targetHeight = model.referenceBottom - model.referenceTop;
         const sourceHeight = bottom - top;
         if (targetHeight > 1 && sourceHeight > 1) {
-          const targetAnchors = [0, model.referenceTop, model.referenceBottom, height - 1];
-          const sourceAnchors = [0, top, bottom, height - 1];
+          const targetAnchors = [0];
+          const sourceAnchors = [0];
+          if (model.referenceTop > 1) {
+            targetAnchors.push(model.referenceTop);
+            sourceAnchors.push(top);
+          }
+          if (model.referenceBottom < height - 2) {
+            targetAnchors.push(model.referenceBottom);
+            sourceAnchors.push(bottom);
+          }
+          targetAnchors.push(height - 1);
+          sourceAnchors.push(height - 1);
           sourceY = mapPiecewise(y, targetAnchors, sourceAnchors);
         }
       }
