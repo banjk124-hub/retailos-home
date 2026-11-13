@@ -24,6 +24,7 @@ export type ScannerImageQuality = {
   verticalNoise: number;
   specularGlareFraction: number;
   glareBandCoverage: number;
+  glareBandOrientation: 'horizontal' | 'vertical' | 'both' | null;
   issues: ScannerImageQualityIssue[];
 };
 export type ScannerImageEnhancement = ScannerLuminanceFrame & {
@@ -61,9 +62,13 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
   let specularBrightSamples = 0, glareBandRows = 0, sampledRows = 0;
   let sampleCount = 0;
   const step = Math.max(1, Math.floor(Math.sqrt(data.length / 12000)));
+  const verticalCurrentRuns = new Uint16Array(Math.ceil((width - 2) / step) + 1);
+  const verticalLongestRuns = new Uint16Array(verticalCurrentRuns.length);
+  let sampledColumns = 0;
 
   for (let y = 1; y < height - 1; y += step) {
     let currentBrightRun = 0, longestBrightRun = 0;
+    let sampleColumnIndex = 0;
     sampledRows++;
     for (let x = 1; x < width - 1; x += step) {
       const i = y * width + x;
@@ -74,14 +79,21 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
       dark += value <= 12 ? 1 : 0;
       bright += value >= 243 ? 1 : 0;
       luminanceTotal += value;
-      const internalSaturated = value >= 250 && x > width * 0.05 && x < width * 0.95;
+      const internalSaturated = value >= 250 && x > width * 0.05 && x < width * 0.95
+        && y > height * 0.05 && y < height * 0.95;
       if (internalSaturated) {
         specularBrightSamples++;
         currentBrightRun++;
         longestBrightRun = Math.max(longestBrightRun, currentBrightRun);
+        verticalCurrentRuns[sampleColumnIndex]++;
+        verticalLongestRuns[sampleColumnIndex] = Math.max(
+          verticalLongestRuns[sampleColumnIndex], verticalCurrentRuns[sampleColumnIndex],
+        );
       } else {
         currentBrightRun = 0;
+        verticalCurrentRuns[sampleColumnIndex] = 0;
       }
+      sampleColumnIndex++;
 
       const dx = Math.abs(value - left);
       const dy = Math.abs(value - above);
@@ -98,6 +110,7 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
     // Ignore edge quiet-zones; a wide, persistent saturated band inside the
     // barcode envelope is more consistent with specular reflection than bars.
     if (longestBrightRun >= Math.max(3, Math.floor((width * 0.06) / step))) glareBandRows++;
+    sampledColumns = Math.max(sampledColumns, sampleColumnIndex);
   }
 
   if (!sampleCount) return null;
@@ -124,7 +137,23 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
   const edgeStrength = gradient / sampleCount;
   const verticalNoiseValue = verticalNoise / sampleCount;
   const specularGlareFraction = specularBrightSamples / sampleCount;
-  const glareBandCoverage = sampledRows ? glareBandRows / sampledRows : 0;
+  const horizontalGlareCoverage = sampledRows ? glareBandRows / sampledRows : 0;
+  const verticalRunThreshold = Math.max(3, Math.floor((height * 0.06) / step));
+  let longestVerticalGlareBand = 0, currentVerticalGlareBand = 0;
+  for (let index = 0; index < sampledColumns; index++) {
+    if (verticalLongestRuns[index] >= verticalRunThreshold) {
+      currentVerticalGlareBand++;
+      longestVerticalGlareBand = Math.max(longestVerticalGlareBand, currentVerticalGlareBand);
+    } else {
+      currentVerticalGlareBand = 0;
+    }
+  }
+  const verticalGlareCoverage = sampledColumns ? longestVerticalGlareBand / sampledColumns : 0;
+  const glareBandCoverage = Math.max(horizontalGlareCoverage, verticalGlareCoverage);
+  const glareBandOrientation = horizontalGlareCoverage > 0.12 && verticalGlareCoverage > 0.06
+    ? 'both'
+    : horizontalGlareCoverage > 0.12 ? 'horizontal'
+      : verticalGlareCoverage > 0.06 ? 'vertical' : null;
 
   // These are diagnostic heuristics, not decode eligibility thresholds.
   const issues: ScannerImageQualityIssue[] = [];
@@ -149,6 +178,7 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
     verticalNoise: verticalNoiseValue,
     specularGlareFraction,
     glareBandCoverage,
+    glareBandOrientation,
     issues,
   };
 }
