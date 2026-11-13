@@ -283,13 +283,18 @@ try {
 
   const compoundTiltBase = makeWarpedBars('perspective');
   const compoundTilt = rotateLuminanceByAngle(
-    compoundTiltBase.luminance, compoundTiltBase.width, compoundTiltBase.height, 27,
+    compoundTiltBase.luminance, compoundTiltBase.width, compoundTiltBase.height, 17,
   );
   assert.ok(compoundTilt);
+  const compoundTiltEstimate = estimateScannerSkewAngle(
+    compoundTilt.luminance, compoundTilt.width, compoundTilt.height,
+  );
+  assert.ok(compoundTiltEstimate,
+    'compound tilt fixture must expose a confidence-gated in-plane orientation estimate');
   const compoundTiltStages = [];
   const compoundTiltResult = executeScannerEnhancementPipeline(
     compoundTilt,
-    {},
+    { cachedOrientationHints: { upright: compoundTiltEstimate, rotated: null }, reuseOrientationHints: true },
     (candidate) => {
       if (candidate.stage === 'geometry') compoundTiltStages.push(candidate.orientation);
       return candidate.stage === 'geometry' ? 'compound-geometry-hit' : null;
