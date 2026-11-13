@@ -52,11 +52,11 @@ try {
   assert.equal(createScannerTemporalSnapshot(new Uint8Array(3), 2, 2), null);
 
   const buffer = new ScannerTemporalFrameBuffer();
-  const makeFrame = (timestamp, sharpness, generation = 1, regionRevision = 1) => ({
+  const makeFrame = (timestamp, sharpness, generation = 1, regionRevision = 1, motionScore = 1, motionAvailable = true) => ({
     timestamp, generation, regionRevision,
     pixels: new Uint8Array(16).fill(Math.round(sharpness)),
     width: 4, height: 4,
-    quality: { sharpness, edgeCoverage: 0.2, motionScore: 1, luminanceStdDev: 40, valid: true },
+    quality: { sharpness, edgeCoverage: 0.2, motionScore, motionAvailable, luminanceStdDev: 40, valid: true },
   });
   const first = makeFrame(100, 10);
   assert.equal(buffer.push(first), true);
@@ -82,6 +82,12 @@ try {
   assert.equal(buffer.push({ ...makeFrame(500, 20), pixels: new Uint8Array(1000) }), false);
   buffer.clear();
   assert.equal(buffer.size, 0);
+
+  const unknownMotionBuffer = new ScannerTemporalFrameBuffer();
+  assert.equal(unknownMotionBuffer.push(makeFrame(100, 12, 1, 1, 32, false)), true);
+  assert.equal(unknownMotionBuffer.push(makeFrame(180, 10, 1, 1, 0, true)), true);
+  assert.equal(unknownMotionBuffer.selectBest(200, 1, 1).timestamp, 100,
+    'an unavailable motion reference must be neutral, not treated as high or zero measured motion');
 
 
   console.log('Scanner temporal T1/T2 tests passed: bounded snapshot copies, freshness, generation/ROI isolation and validation precedence.');

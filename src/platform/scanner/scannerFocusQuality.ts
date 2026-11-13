@@ -6,6 +6,8 @@ export type ScannerFocusQualitySample = {
   luminanceStdDev: number;
   /** Local frame-to-frame change after removing global brightness shift. */
   motionScore: number;
+  /** False until a same-geometry previous sample exists; zero alone does not imply stability. */
+  motionAvailable: boolean;
   /** Internal low-resolution sample retained by the decoder for the next comparison. */
   sampledPixels: Uint8Array;
   valid: boolean;
@@ -35,7 +37,7 @@ export function measureScannerFocusQuality(
   if (!(luminance instanceof Uint8ClampedArray)
     || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
     || width < 5 || height < 5 || luminance.length !== width * height) {
-    return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, sampledPixels: new Uint8Array(), valid: false };
+    return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, motionAvailable: false, sampledPixels: new Uint8Array(), valid: false };
   }
 
   let squaredResponse = 0;
@@ -65,13 +67,14 @@ export function measureScannerFocusQuality(
     }
   }
 
-  if (samples < 64) return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, sampledPixels, valid: false };
+  if (samples < 64) return { sharpness: 0, edgeCoverage: 0, luminanceStdDev: 0, motionScore: 0, motionAvailable: false, sampledPixels, valid: false };
   const sharpness = Math.sqrt(squaredResponse / samples);
   const edgeCoverage = edgeSamples / samples;
   const luminanceMean = luminanceTotal / samples;
   const luminanceStdDev = Math.sqrt(Math.max(0, luminanceSquaredTotal / samples - luminanceMean * luminanceMean));
   let motionScore = 0;
-  if (previousSampledPixels && previousSampledPixels.length === samples) {
+  const motionAvailable = Boolean(previousSampledPixels && previousSampledPixels.length === samples);
+  if (motionAvailable && previousSampledPixels) {
     let meanDelta = 0;
     for (let index = 0; index < samples; index += 1) {
       meanDelta += sampledPixels[index] - previousSampledPixels[index];
@@ -88,6 +91,7 @@ export function measureScannerFocusQuality(
     edgeCoverage: Number(edgeCoverage.toFixed(4)),
     luminanceStdDev: Number(luminanceStdDev.toFixed(2)),
     motionScore: Number(motionScore.toFixed(2)),
+    motionAvailable,
     sampledPixels,
     valid: Number.isFinite(sharpness) && luminanceStdDev >= MIN_LUMINANCE_STD_DEV,
   };
@@ -109,7 +113,8 @@ export class ScannerFocusQualityMonitor {
     }
 
     // Motion blur or a changing scene must settle before sustained-blur diagnostics are reported.
-    if (!Number.isFinite(sample.motionScore) || sample.motionScore > MAX_STABLE_MOTION_SCORE) {
+    if (!sample.motionAvailable || !Number.isFinite(sample.motionScore)
+      || sample.motionScore > MAX_STABLE_MOTION_SCORE) {
       this.consecutiveBlurSamples = 0;
       return false;
     }

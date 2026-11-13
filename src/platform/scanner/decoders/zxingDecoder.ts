@@ -20,7 +20,8 @@ import { executeScannerEnhancementPipeline, type ScannerOrientationHints } from 
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot } from '../scannerTemporalRecognition';
-import type { ScannerImageQuality } from '../scannerImageEnhancement';
+import { measureScannerImageQuality, type ScannerImageQuality } from '../scannerImageEnhancement';
+import { createScannerImageQualityProfile, type ScannerImageQualityProfile } from '../scannerImageQualityProfile';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -163,8 +164,10 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   private lastFocusQualityPixels: Uint8Array | null = null;
   private lastFocusQualityWidth = 0;
   private lastFocusQualityHeight = 0;
+  private lastFocusQualityRegionKey: string | null = null;
   private diagnosticLastDeskewAngleDegrees = 0;
   private lastImageQuality: ScannerImageQuality | null = null;
+  private lastImageQualityProfile: ScannerImageQualityProfile | null = null;
   private lastFrameWidth = 0;
   private lastFrameHeight = 0;
   private lastRoiWidth = 0;
@@ -262,6 +265,14 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           candidate.baseline ? onFocusQuality : undefined,
           !candidate.baseline,
           candidate.baseline ? onTemporalFrame : undefined,
+          candidate.baseline ? {
+            frameWidth: dimensions.width,
+            frameHeight: dimensions.height,
+            x: crop.x,
+            y: crop.y,
+            width: crop.width,
+            height: crop.height,
+          } : undefined,
         );
         if (output) {
           this.diagnosticScaleHits += 1;
@@ -382,6 +393,14 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
     onFocusQuality?: DecoderDecodeOptions['onFocusQuality'],
     reuseOrientationHints = false,
     onTemporalFrame?: DecoderDecodeOptions['onTemporalFrame'],
+    focusRegion?: {
+      frameWidth: number;
+      frameHeight: number;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    },
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
@@ -394,10 +413,16 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.canvas.height,
     );
     this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+    let sampledImageQuality: ScannerImageQuality | null | undefined;
     if (onFocusQuality && timestamp - this.lastFocusQualitySampleAt >= 500) {
       this.lastFocusQualitySampleAt = timestamp;
+      const focusRegionKey = focusRegion
+        ? `${focusRegion.frameWidth}x${focusRegion.frameHeight}:${focusRegion.x},${focusRegion.y},${focusRegion.width},${focusRegion.height}`
+        : null;
       const sameFocusGeometry = this.lastFocusQualityWidth === this.canvas.width
-        && this.lastFocusQualityHeight === this.canvas.height;
+        && this.lastFocusQualityHeight === this.canvas.height
+        && focusRegionKey !== null
+        && this.lastFocusQualityRegionKey === focusRegionKey;
       const focusSample = measureScannerFocusQuality(
         grayscale,
         this.canvas.width,
@@ -407,7 +432,37 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       this.lastFocusQualityPixels = focusSample.sampledPixels;
       this.lastFocusQualityWidth = this.canvas.width;
       this.lastFocusQualityHeight = this.canvas.height;
+      this.lastFocusQualityRegionKey = focusRegionKey;
       onFocusQuality(focusSample);
+      // A1 samples the existing grayscale ROI readback at the same bounded
+      // cadence as focus observation; it does not request another camera read.
+      const imageQualityStartedAt = performance.now();
+      sampledImageQuality = measureScannerImageQuality({
+        luminance: grayscale,
+        width: this.canvas.width,
+        height: this.canvas.height,
+      });
+      this.recordStageCost('image_quality', performance.now() - imageQualityStartedAt);
+      if (sampledImageQuality && focusRegion) {
+        this.lastImageQuality = sampledImageQuality;
+        const profileStartedAt = performance.now();
+        this.lastImageQualityProfile = createScannerImageQualityProfile({
+          timestamp,
+          frameWidth: focusRegion.frameWidth,
+          frameHeight: focusRegion.frameHeight,
+          roiX: focusRegion.x,
+          roiY: focusRegion.y,
+          roiWidth: focusRegion.width,
+          roiHeight: focusRegion.height,
+          sampleWidth: this.canvas.width,
+          sampleHeight: this.canvas.height,
+          focus: focusSample,
+          image: sampledImageQuality,
+        });
+        this.recordStageCost('quality_profile', performance.now() - profileStartedAt);
+      } else {
+        this.lastImageQualityProfile = null;
+      }
       if (focusSample.valid && onTemporalFrame) {
         const snapshot = createScannerTemporalSnapshot(grayscale, this.canvas.width, this.canvas.height);
         if (snapshot) onTemporalFrame(snapshot, focusSample);
@@ -423,6 +478,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       {
         cachedOrientationHints: this.cachedOrientationHints,
         reuseOrientationHints,
+        imageQuality: sampledImageQuality,
         onImageQuality: (quality) => { this.lastImageQuality = quality; },
       },
       (candidate) => this.decodeLuminance(
@@ -541,6 +597,8 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         glareBandOrientation: this.lastImageQuality.glareBandOrientation,
         issues: this.lastImageQuality.issues,
       } : null,
+      // Latest A1 observation; raw numeric metrics are retained for analysis.
+      qualityProfile: this.lastImageQualityProfile,
       notFound: this.diagnosticNotFound,
       checksumErrors: this.diagnosticChecksum,
       formatErrors: this.diagnosticFormat,

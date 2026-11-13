@@ -29,6 +29,8 @@ export type ScannerEnhancementPipelineOptions = {
   reuseOrientationHints?: boolean;
   /** Receives advisory quality observations only; never controls candidate selection. */
   onImageQuality?: (quality: ScannerImageQuality) => void;
+  /** Reuse an observation from this exact source frame; undefined requests fallback measurement. */
+  imageQuality?: ScannerImageQuality | null;
 };
 
 export type ScannerEnhancementPipelineResult<T> = {
@@ -231,9 +233,18 @@ export function executeScannerEnhancementPipeline<T>(
 
   // SCAN-08: only after all established orientation candidates miss.
   // Feature-gated transforms are never applied to the original buffer.
-  const qualityStartedAt = now();
-  const quality = measureScannerImageQuality(source);
-  onStageCost?.('image_quality', now() - qualityStartedAt);
+  // A1 may supply a low-rate observation already measured from this exact ROI.
+  // Undefined means no observation was supplied; null means it was measured
+  // but the input was not eligible for quality analysis. Only charge the
+  // image_quality stage where this pipeline actually performs the analysis.
+  let quality: ScannerImageQuality | null;
+  if (options.imageQuality !== undefined) {
+    quality = options.imageQuality;
+  } else {
+    const qualityStartedAt = now();
+    quality = measureScannerImageQuality(source);
+    onStageCost?.('image_quality', now() - qualityStartedAt);
+  }
   if (quality) {
     options.onImageQuality?.(quality);
     const enhancementStartedAt = now();

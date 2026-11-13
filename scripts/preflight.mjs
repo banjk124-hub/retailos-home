@@ -94,6 +94,11 @@ const checks = [
     args: ["scripts/test-scanner-image-quality.mjs"],
   },
   {
+    name: "Scanner A1 unified image-quality profile tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-image-quality-profile.mjs"],
+  },
+  {
     name: "Scanner bounded deskew regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-deskew.mjs"],
