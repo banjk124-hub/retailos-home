@@ -31,7 +31,7 @@
 - Evaluate at most two normalized geometry surfaces: upright/deskewed and quarter-turned/deskewed.
 - One geometry candidate per normalized surface; maximum two geometry candidates per pipeline attempt.
 - Preserve source pixels and dimensions; no mutation, crop expansion or synthetic barcode generation.
-- Reject inconsistent edge counts, insufficient row coverage, invalid monotonic anchors and local scale ratios outside the bounded range.
+- Reject inconsistent edge counts, insufficient row coverage, invalid monotonic anchors and local scale ratios outside the bounded range. Current row-mesh sampling requires at least 45% stable scanline coverage and at least 50% vertical ROI span; this accommodates deskew padding and EAN narrow-edge variation while rejecting severe occlusion.
 - Every candidate is decoded by the existing ZXing adapter; geometry never returns a payload itself.
 
 ### Synthetic and adapter regression matrix
