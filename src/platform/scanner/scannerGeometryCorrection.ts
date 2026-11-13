@@ -83,7 +83,7 @@ function sampleRowProfiles(frame: ScannerLuminanceFrame): RowProfile[] {
     .sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0];
   if (stableCount === undefined) return [];
   const stable = profiles.filter((profile) => profile.edges.length === stableCount);
-  const coversMostRows = stable.length >= Math.max(10, Math.ceil(count * 0.55))
+  const coversMostRows = stable.length >= Math.max(10, Math.ceil(count * 0.45))
     && stable[stable.length - 1].y - stable[0].y >= height * 0.5;
   return coversMostRows ? stable : [];
 }
