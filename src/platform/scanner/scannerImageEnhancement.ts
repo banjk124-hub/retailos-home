@@ -109,7 +109,7 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
     }
     // Ignore edge quiet-zones; a wide, persistent saturated band inside the
     // barcode envelope is more consistent with specular reflection than bars.
-    if (longestBrightRun >= Math.max(3, Math.floor((width * 0.06) / step))) glareBandRows++;
+    if (longestBrightRun >= Math.max(3, Math.floor((width * 0.10) / step))) glareBandRows++;
     sampledColumns = Math.max(sampledColumns, sampleColumnIndex);
   }
 
@@ -164,7 +164,10 @@ export function measureScannerImageQuality(frame: ScannerLuminanceFrame): Scanne
   if (darkFraction > 0.6) issues.push('shadow_clipping');
   if (brightFraction > 0.6) issues.push('highlight_clipping');
   if (Math.max(noise, verticalNoiseValue) > 14) issues.push('high_noise');
-  if (specularGlareFraction > 0.015 && glareBandCoverage > 0.12) issues.push('specular_glare');
+  if (specularGlareFraction > 0.015
+    && (horizontalGlareCoverage > 0.12 || verticalGlareCoverage > 0.06)) {
+    issues.push('specular_glare');
+  }
 
   return {
     dynamicRange,
