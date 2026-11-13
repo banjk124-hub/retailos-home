@@ -122,6 +122,7 @@ try {
 
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
+  'adaptiveProcessingPlan', 'adaptivePlan(event)', 'adaptiveMode', 'adaptiveTransforms', 'adaptiveReasons',
   'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits',
   'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged', 'lastDeskewAngleDegrees',
 ]) {
