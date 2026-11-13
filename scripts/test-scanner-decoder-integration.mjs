@@ -297,6 +297,47 @@ try {
     'the real ZXing production adapter must decode the rectified dented-carrier candidate');
   await dentedDecoder.dispose();
 
+  // Orthogonal planar tilt fixture: barcode bars keep their horizontal
+  // positions while the top/bottom envelope changes smoothly across x.
+  const paddedHeight = 120;
+  const paddedTop = Math.floor((paddedHeight - upright.height) / 2);
+  const padded = {
+    width: upright.width,
+    height: paddedHeight,
+    luminance: new Uint8ClampedArray(upright.width * paddedHeight).fill(255),
+  };
+  for (let y = 0; y < upright.height; y++) {
+    padded.luminance.set(
+      upright.luminance.subarray(y * upright.width, (y + 1) * upright.width),
+      (y + paddedTop) * padded.width,
+    );
+  }
+  const verticalTiltPixels = new Uint8ClampedArray(padded.luminance.length).fill(255);
+  const verticalCenter = (padded.height - 1) / 2;
+  for (let y = 0; y < padded.height; y++) {
+    for (let x = 0; x < padded.width; x++) {
+      const phase = Math.sin((x / padded.width) * Math.PI * 2);
+      const sourceY = (y - verticalCenter - 7 * phase) / (1 + 0.07 * phase) + verticalCenter;
+      if (sourceY < 0 || sourceY > padded.height - 1) continue;
+      const y0 = Math.floor(sourceY), y1 = Math.min(padded.height - 1, y0 + 1);
+      const weight = sourceY - y0;
+      verticalTiltPixels[y * padded.width + x] = Math.round(
+        padded.luminance[y0 * padded.width + x] * (1 - weight)
+        + padded.luminance[y1 * padded.width + x] * weight,
+      );
+    }
+  }
+  const verticalTilt = { ...padded, luminance: verticalTiltPixels };
+  const verticalGeometry = createScannerGeometryCandidates(verticalTilt);
+  assert.ok(verticalGeometry.some((candidate) => candidate.correction === 'column-envelope'
+    || candidate.correction === 'combined-grid'),
+    'the production-sized orthogonal perspective fixture must produce a column-envelope candidate');
+  const verticalDecoder = await createDecoder();
+  const verticalResult = await decodeOnce(verticalDecoder, toSource(verticalGeometry[0]));
+  assert.equal(verticalResult[0]?.value, '12345',
+    'the real ZXing production adapter must decode the rectified orthogonal-perspective candidate');
+  await verticalDecoder.dispose();
+
   const uprightDecoder = await createDecoder();
   const uprightResult = await decodeOnce(uprightDecoder, toSource(upright));
   assert.equal(uprightResult[0]?.value, '12345',
