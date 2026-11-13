@@ -132,7 +132,7 @@ export class ScannerTemporalFrameBuffer {
       || quality.edgeCoverage < 0 || quality.edgeCoverage > 1
       || quality.motionScore < 0 || quality.luminanceStdDev < 0) return false;
 
-    let previous = this.frames[this.frames.length - 1];
+    let previous: ScannerTemporalFrame | undefined = this.frames[this.frames.length - 1];
     // Invalidate old evidence before timestamp checks: a new camera generation
     // may legitimately restart its media timestamp clock.
     if (previous && (previous.generation !== generation
