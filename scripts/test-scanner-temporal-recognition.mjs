@@ -27,7 +27,7 @@ try {
 
   assert.match(source, /Only copied grayscale snapshots may be retained/);
   assert.match(source, /one session generation and one ROI/);
-  assert.match(source, /must never override a validator rejection/);
+  assert.match(source, /must never override a\\s+validator rejection/);
   assert.match(source, /does not delay them/);
 
   const buffer = new ScannerTemporalFrameBuffer();
