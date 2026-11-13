@@ -35,6 +35,10 @@ try {
   assert.match(sessionSource, /onTemporalFrame:/);
   assert.match(sessionSource, /regionRevision !== this\.regionRevision/);
   assert.match(sessionSource, /temporalFrameBuffer\.clear\(\)/);
+  assert.match(sessionSource, /takeBest\(timestamp, generation, regionRevision\)/);
+  assert.match(sessionSource, /results\.length === 0 && temporalCandidate/);
+  assert.match(sessionSource, /regionRevision !== this\.regionRevision[\s\S]*?currentState !== 'scanning'/);
+  assert.match(decoderSource, /decodeTemporalSnapshot\(/);
   assert.match(decoderSource, /createScannerTemporalSnapshot\(grayscale/);
   assert.match(decoderSource, /candidate\.baseline \? onTemporalFrame : undefined/);
 
@@ -64,7 +68,10 @@ try {
   assert.equal(buffer.push(makeFrame(340, 25)), true);
   assert.equal(buffer.size, 3);
   assert.equal(buffer.selectBest(350, 1, 1).timestamp, 260);
-  assert.equal(buffer.selectBest(1100, 1, 1), null);
+  const consumed = buffer.takeBest(350, 1, 1);
+  assert.equal(consumed.timestamp, 260);
+  assert.equal(buffer.selectBest(350, 1, 1).timestamp, 340);
+  assert.equal(buffer.takeBest(1100, 1, 1), null);
   assert.equal(buffer.selectBest(350, 2, 1), null);
   assert.equal(buffer.selectBest(350, 1, 2), null);
   assert.equal(buffer.push(makeFrame(420, 22, 1, 2)), true);

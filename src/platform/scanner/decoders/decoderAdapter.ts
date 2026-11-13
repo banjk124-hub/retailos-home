@@ -37,5 +37,7 @@ export interface ScannerDecoderAdapter {
   initialize(options: DecoderInitOptions): Promise<void>;
   /** Strict ROI input: missing or invalid geometry must not trigger full-frame decoding. */
   decode(source: CanvasImageSource, options: DecoderDecodeOptions): Promise<DecoderOutput[]>;
+  /** Decode an owned historical grayscale ROI snapshot through the same enhancement/validation boundary. */
+  decodeTemporalSnapshot(snapshot: ScannerTemporalSnapshot, timestamp: number): Promise<DecoderOutput[]>;
   dispose(): Promise<void> | void;
 }

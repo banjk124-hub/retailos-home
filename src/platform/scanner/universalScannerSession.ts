@@ -476,9 +476,12 @@ export class UniversalScannerSession implements ScannerSession {
     const decodeStartedAt = performance.now();
     const regionRevision = this.regionRevision;
     const scanRegion = this.getScanRegion();
+    // Consume one historical frame before the current decode can append its own
+    // observation. This prevents the fallback from decoding the same frame twice.
+    const temporalCandidate = this.temporalFrameBuffer.takeBest(timestamp, generation, regionRevision);
     this.diagnosticFrames += 1;
     try {
-      const results = await this.decoder.decode(this.video, {
+      let results = await this.decoder.decode(this.video, {
         timestamp,
         scanRegion,
         onFocusQuality: (sample) => this.handleFocusQuality(sample, timestamp, generation),
@@ -504,8 +507,15 @@ export class UniversalScannerSession implements ScannerSession {
       });
       const decodeDurationMs = performance.now() - decodeStartedAt;
       this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
+      // Temporal recognition is a fallback only for a true decoder miss.
+      // Any decoder output (even one later rejected by payload validation)
+      // blocks fallback so temporal evidence can never override rejection.
+      if (results.length === 0 && temporalCandidate && this.decoder) {
+        results = await this.decoder.decodeTemporalSnapshot(temporalCandidate, temporalCandidate.timestamp);
+      }
       this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
-      if (generation !== this.generation || this.disposed || this.currentState !== 'scanning') return;
+      if (generation !== this.generation || regionRevision !== this.regionRevision
+        || this.disposed || this.currentState !== 'scanning') return;
       if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
       const now = Date.now();
       for (const result of results) {
