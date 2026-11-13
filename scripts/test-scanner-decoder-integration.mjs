@@ -274,7 +274,7 @@ try {
         const localBend = 7 * phase * Math.sin((x / frame.width) * Math.PI * 2);
         const sourceX = (x - center - shift - localBend) / scale + center;
         const x0 = Math.floor(sourceX), x1 = Math.min(frame.width - 1, x0 + 1);
-        if (x0 < 0 || x1 >= frame.width) continue;
+        if (sourceX < 0 || sourceX > frame.width - 1) continue;
         const weight = sourceX - x0;
         luminance[y * frame.width + x] = Math.round(
           frame.luminance[y * frame.width + x0] * (1 - weight)
