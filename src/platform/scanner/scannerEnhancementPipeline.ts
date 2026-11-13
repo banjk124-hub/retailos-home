@@ -14,7 +14,7 @@ export type ScannerOrientationHints = {
 };
 
 export type ScannerEnhancementStage = 'baseline' | 'orthogonal' | 'deskew' | 'image' | 'geometry';
-export type ScannerEnhancementOrientation = 'upright' | 'rotated_90' | 'deskew';
+export type ScannerEnhancementOrientation = 'upright' | 'rotated_90' | 'deskew' | 'rotated_90_deskew';
 
 export type ScannerEnhancementCandidate = ScannerLuminanceFrame & {
   stage: ScannerEnhancementStage;
@@ -197,7 +197,7 @@ export function executeScannerEnhancementPipeline<T>(
     .map((candidate) => ({
       ...candidate,
       stage: 'deskew',
-      orientation: 'deskew',
+      orientation: candidate === rotatedDeskew ? 'rotated_90_deskew' : 'deskew',
     }));
 
   onStageCost?.(
@@ -258,17 +258,22 @@ export function executeScannerEnhancementPipeline<T>(
   // orientation. A tilted plane must not be invisible to geometry merely
   // because the barcode arrived rotated 90 degrees or required deskew.
   // The candidate budget is explicit: at most one geometry candidate for
-  // each of the four orientation surfaces (source, quarter-turn, and the
-  // two continuous-deskew surfaces). No ROI expansion or cross-product.
+  // each of two normalized orientation surfaces (upright and quarter-turned).
+  // Each surface prefers its deskewed representation when available. No
+  // Cartesian product of rotations, scales and transforms.
   const geometryStartedAt = now();
   const geometrySources: Array<{
     frame: ScannerLuminanceFrame;
     orientation: ScannerEnhancementOrientation;
   }> = [
-    { frame: source, orientation: 'upright' },
-    ...(rotated ? [{ frame: rotated, orientation: 'rotated_90' as const }] : []),
-    ...(uprightDeskew ? [{ frame: uprightDeskew, orientation: 'deskew' as const }] : []),
-    ...(rotatedDeskew ? [{ frame: rotatedDeskew, orientation: 'deskew' as const }] : []),
+    {
+      frame: uprightDeskew ?? source,
+      orientation: uprightDeskew ? 'deskew' : 'upright',
+    },
+    ...(rotated ? [{
+      frame: rotatedDeskew ?? rotated,
+      orientation: rotatedDeskew ? 'rotated_90_deskew' as const : 'rotated_90' as const,
+    }] : []),
   ];
   const geometryCandidates = geometrySources.flatMap(({ frame, orientation }) =>
     createScannerGeometryCandidates(frame).map((variant) => ({
