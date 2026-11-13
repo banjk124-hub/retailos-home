@@ -5,7 +5,7 @@ import {
   type ScannerLuminanceFrame,
 } from './scannerDeskew';
 import { rotateLuminance90Clockwise } from './scannerRotation';
-import { measureScannerImageQuality, createScannerImageEnhancements } from './scannerImageEnhancement';
+import { measureScannerImageQuality, createScannerImageEnhancements, type ScannerImageQuality } from './scannerImageEnhancement';
 import { createScannerGeometryCandidates } from './scannerGeometryCorrection';
 
 export type ScannerOrientationHints = {
@@ -27,6 +27,8 @@ export type ScannerEnhancementPipelineOptions = {
   cachedOrientationHints?: ScannerOrientationHints | null;
   /** Reuse only an estimate already measured for the same source ROI on this decode attempt. */
   reuseOrientationHints?: boolean;
+  /** Receives advisory quality observations only; never controls candidate selection. */
+  onImageQuality?: (quality: ScannerImageQuality) => void;
 };
 
 export type ScannerEnhancementPipelineResult<T> = {
@@ -226,6 +228,7 @@ export function executeScannerEnhancementPipeline<T>(
   const quality = measureScannerImageQuality(source);
   onStageCost?.('image_quality', now() - qualityStartedAt);
   if (quality) {
+    options.onImageQuality?.(quality);
     const enhancementStartedAt = now();
     const variants = createScannerImageEnhancements(source, quality);
     onStageCost?.('image_enhancement', now() - enhancementStartedAt);

@@ -162,6 +162,25 @@ try {
   assert.ok(stageCosts.some((item) => item.stage === 'deskew_reuse_orientation_and_rotate'));
   assert.ok(deskewResult.matchedAngleDegrees !== null);
 
+  const qualitySource = {
+    luminance: new Uint8ClampedArray(80 * 40).fill(250),
+    width: 80,
+    height: 40,
+  };
+  let observedQuality = null;
+  const qualityCandidateStages = [];
+  const qualityPipelineResult = executeScannerEnhancementPipeline(
+    qualitySource,
+    { onImageQuality: (quality) => { observedQuality = quality; } },
+    (candidate) => { qualityCandidateStages.push(candidate.stage); return null; },
+  );
+  assert.equal(qualityPipelineResult.output, null,
+    'quality analysis must not convert an undecodable frame into a successful decode');
+  assert.ok(observedQuality?.issues.includes('overexposed'),
+    'the pipeline must expose advisory quality observations after established orientation candidates miss');
+  assert.deepEqual(qualityCandidateStages.slice(0, 2), ['baseline', 'orthogonal'],
+    'quality analysis must not move ahead of the established baseline and orthogonal candidates');
+
   const missResult = executeScannerEnhancementPipeline(
     { luminance: new Uint8ClampedArray(80 * 40).fill(255), width: 80, height: 40 },
     {},
@@ -170,7 +189,7 @@ try {
   assert.equal(missResult.output, null,
     'a pipeline miss must remain a miss; it must not invent a decode or escape the supplied ROI');
 
-  console.log('Scanner unified enhancement pipeline tests passed: baseline-first, orthogonal fallback, confidence-gated deskew, reuse and early exit.');
+  console.log('Scanner unified enhancement pipeline tests passed: baseline-first, orthogonal fallback, confidence-gated deskew, reuse, quality observation and early exit.');
 } finally {
   await rm(tempRoot, { recursive: true, force: true });
 }
