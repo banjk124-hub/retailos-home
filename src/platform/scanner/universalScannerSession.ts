@@ -499,6 +499,7 @@ export class UniversalScannerSession implements ScannerSession {
               sharpness: quality.sharpness,
               edgeCoverage: quality.edgeCoverage,
               motionScore: quality.motionScore,
+              motionAvailable: quality.motionAvailable,
               luminanceStdDev: quality.luminanceStdDev,
               valid: quality.valid,
             },

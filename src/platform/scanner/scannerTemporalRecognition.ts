@@ -24,8 +24,10 @@ export type ScannerTemporalQuality = {
   sharpness: number;
   /** Fraction of sampled pixels with meaningful edge response. */
   edgeCoverage: number;
-  /** Frame-to-frame residual motion score. */
+  /** Frame-to-frame residual motion score; meaningful only when motionAvailable is true. */
   motionScore: number;
+  /** False when no same-ROI reference frame exists; unknown motion is not penalized. */
+  motionAvailable: boolean;
   /** Luminance standard deviation. */
   luminanceStdDev: number;
   /** True only when the source quality sample passed its validity gates. */
@@ -126,7 +128,8 @@ export class ScannerTemporalFrameBuffer {
       || width < 1 || height < 1 || pixelCount > SCANNER_TEMPORAL_POLICY.maxSnapshotPixels
       || !(pixels instanceof Uint8Array) || pixels.length !== pixelCount
       || !quality || ![quality.sharpness, quality.edgeCoverage, quality.motionScore,
-        quality.luminanceStdDev].every(Number.isFinite)) return false;
+        quality.luminanceStdDev].every(Number.isFinite)
+      || typeof quality.motionAvailable !== 'boolean') return false;
 
     if (typeof quality.valid !== 'boolean' || quality.sharpness < 0
       || quality.edgeCoverage < 0 || quality.edgeCoverage > 1
@@ -177,7 +180,9 @@ export class ScannerTemporalFrameBuffer {
       Math.log1p(Math.max(0, frame.quality.sharpness)) * 0.55
       + Math.min(1, frame.quality.edgeCoverage * 20) * 0.30
       + Math.min(1, frame.quality.luminanceStdDev / 64) * 0.15
-      - Math.min(1, frame.quality.motionScore / 32) * 0.35;
+      - (frame.quality.motionAvailable
+        ? Math.min(1, frame.quality.motionScore / 32) * 0.35
+        : 0);
     const best = eligible.reduce((winner, candidate) =>
       score(candidate) > score(winner) ? candidate : winner,
     );

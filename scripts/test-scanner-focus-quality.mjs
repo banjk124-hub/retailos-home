@@ -42,7 +42,8 @@ function boxBlur(input, radius = 6) {
 const sharpSample = measureScannerFocusQuality(sharp, width, height);
 const sharpStableSample = measureScannerFocusQuality(sharp, width, height, sharpSample.sampledPixels);
 const blurredPixels = boxBlur(sharp);
-const blurredSample = measureScannerFocusQuality(blurredPixels, width, height, blurredPixels);
+const blurredReference = measureScannerFocusQuality(blurredPixels, width, height);
+const blurredSample = measureScannerFocusQuality(blurredPixels, width, height, blurredReference.sampledPixels);
 const movingBlurSample = measureScannerFocusQuality(blurredPixels, width, height, sharpSample.sampledPixels);
 assert.equal(sharpSample.valid, true, 'textured barcode-like ROI produces a valid focus sample');
 assert.equal(blurredSample.valid, true, 'severely blurred but contrast-bearing ROI remains measurable');

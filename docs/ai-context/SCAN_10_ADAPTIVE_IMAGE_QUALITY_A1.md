@@ -34,7 +34,7 @@ The profile contains scalar values and issue labels only. It does not contain ca
 
 ## Metric semantics and limitations
 
-- `motionScore` is meaningful only when `motionAvailable` is true. The first observation, or an observation after the source ROI changes, has no valid temporal reference; a zero score in that case must not be interpreted as a stable scene.
+- `motionScore` is meaningful only when `motionAvailable` is true. The first observation, or an observation after the source ROI changes, has no valid temporal reference; a zero score in that case must not be interpreted as a stable scene. The passive blur monitor resets its baseline on such a sample, and temporal-frame ranking applies a motion penalty only when the reference is available.
 - Motion comparison requires the same canvas dimensions and the same source-frame dimensions plus crop coordinates. Moving the ROI invalidates the previous motion reference even when the crop dimensions remain unchanged.
 - Horizontal and vertical contrast are both retained. A barcode rotated by 90 degrees must not be treated as low contrast merely because one directional metric is small.
 - Exposure, contrast, noise and glare issue flags are advisory heuristics, not calibrated probabilities or decode-eligibility rules.
