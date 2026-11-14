@@ -561,7 +561,7 @@ export default function HomeScreen({
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
-  }, []);
+  }, [isBarcodeScannerOpen]);
   const handleNav = useCallback((id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
