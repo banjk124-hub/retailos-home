@@ -106,7 +106,7 @@ const checks = [
   {
     name: "Scanner WASM capability and shared pipeline contract tests",
     command: process.execPath,
-    args: ["scripts/test-scanner-decoder-capability-parity.mjs"],
+    args: ["scripts/test-scanner-wasm-capabilities.mjs"],
   },
   {
     name: "Scanner decoder adapter/factory contract tests",
