@@ -1,3 +1,4 @@
+import { downloadFile } from '../../../shared/downloadFile';
 import type { StocktakeEntry, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
 
 function pad(value: number): string {
@@ -21,13 +22,5 @@ export function createStocktakeFile(session: StocktakeSession, zone: StocktakeZo
 }
 
 export function downloadStocktakeText(fileName: string, content: string): void {
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadFile(new Blob([content], { type: 'text/plain;charset=utf-8' }), fileName);
 }
