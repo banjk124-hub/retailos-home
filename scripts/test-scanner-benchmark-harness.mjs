@@ -11,6 +11,9 @@ assert.match(main, /ZXingDecoderAdapter/);
 assert.match(main, /ZXingWasmDecoderAdapter/);
 assert.match(main, /scanRegion: item\.scanRegion/);
 assert.match(main, /adapter\.dispose\(\)/);
+assert.match(main, /initErrorName/);
+assert.match(main, /appendFailureRows/);
+assert.match(main, /geometryAvailable/);
 assert.match(main, /outcome: classify\(outputs, item\.expected\)/);
 assert.doesNotMatch(main, /getUserMedia|mediaDevices|requestCameraLease|UniversalScannerSession/,
   'the benchmark must not acquire cameras or create production sessions');
