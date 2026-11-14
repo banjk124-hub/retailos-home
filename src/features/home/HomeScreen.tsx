@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
@@ -14,7 +14,7 @@ import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVEN
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
-import BarcodeScanner from '../scanner/components/BarcodeScanner';
+const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
 import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
@@ -22,16 +22,21 @@ import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon
 import { LiquidDock } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
+import '../../styles/home.css';
+import '../../styles/home-ux.css';
+import '../../styles/home-engine.css';
+import '../../styles/home-redesign.css';
+import '../../styles/home-architecture.css';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
-import StocktakeModule from '../stocktake/components/StocktakeModule';
-import StocktakeImportModule from '../stocktake-import/components/StocktakeImportModule';
+const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
+const StocktakeImportModule = lazy(() => import('../stocktake-import/components/StocktakeImportModule'));
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
-import ScannerQaMonitor from './components/ScannerQaMonitor';
-import SettingsHub from './components/SettingsHub';
-import ScannerSettingsPanel from '../scanner/components/ScannerSettingsPanel';
+const ScannerQaMonitor = lazy(() => import('./components/ScannerQaMonitor'));
+const SettingsHub = lazy(() => import('./components/SettingsHub'));
+const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
 import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 
 type Props = {
@@ -759,12 +764,12 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
-    {showSettings && <SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} />}
-    {showScannerQa && <ScannerQaMonitor onClose={closeScannerQa} />}
-    {showScannerSettings && <ScannerSettingsPanel onClose={closeScannerSettings} />}
-    {isBarcodeScannerOpen && <AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
+    {showSettings && <Suspense fallback={null}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
+    {showScannerQa && <Suspense fallback={null}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
+    {showScannerSettings && <Suspense fallback={null}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
-    </AppErrorBoundary>}
+    </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
     }}>
@@ -893,8 +898,8 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} />}
-    {isStocktakeImportOpen && <StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} />}
+    {isStocktakeOpen && <Suspense fallback={null}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
+    {isStocktakeImportOpen && <Suspense fallback={null}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
