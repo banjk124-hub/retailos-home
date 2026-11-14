@@ -37,6 +37,8 @@ export type ModuleLibraryDefinition = {
   moduleIds: RetailModuleId[];
 };
 
+export type ModuleLibraryGroup = ModuleLibraryDefinition & { modules: RetailModule[] };
+
 export const MODULE_REGISTRY: RetailModule[] = [
   { id: 'inventory', title: 'Tồn kho', description: 'Tồn thực tế và định mức', tone: 'blue', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
   { id: 'price', title: 'Giá & vốn', description: 'Giá bán và giá vốn', tone: 'violet', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
@@ -57,9 +59,3 @@ export const MODULE_LIBRARIES: ModuleLibraryDefinition[] = [
   { id: 'stocktake', title: 'Kiểm kê', description: 'Kiểm kê trực tiếp và xuất file theo vùng', tone: 'violet', moduleIds: ['stocktake', 'stocktake-import'] },
 ];
 
-export function getModulesForLibrary(
-  library: ModuleLibraryDefinition,
-  modules: RetailModule[] = MODULE_REGISTRY,
-): RetailModule[] {
-  return modules.filter((module) => library.moduleIds.includes(module.id));
-}
