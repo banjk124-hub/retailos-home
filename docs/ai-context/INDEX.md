@@ -26,7 +26,7 @@ This is the navigation layer for repository documentation. Read the canonical do
 - `ARCHITECTURE.md`: accepted decisions/invariants; no repeated per-commit logs.
 - `IMPLEMENTATION_STATUS.md`: current verified state and outstanding acceptance gates.
 - `ROADMAP.md`: future sequence and exit criteria.
-- `AI_HANDOFF.md`: concise next-session handoff; historical PR narratives remain only where needed.
+- `AI_HANDOFF.md`: current handoff is at the top; older scanner PR narratives below are a historical archive, not current status.
 - `SESSION_LOG.md`: session handoffs; `CHANGELOG_AI.md`: implementation evidence. Avoid repeating full narratives in both.
 - Dated audit/spec files are retained when they preserve unique evidence, decisions or acceptance criteria. Do not delete them merely because they discuss the same subsystem.
 - When two documents cover one phase and have no inbound references, merge their distinct content into one history file and remove duplicate entry points.
