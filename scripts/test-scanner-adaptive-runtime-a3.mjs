@@ -45,6 +45,7 @@ try {
   controller.observe(45, 80);
   controller.observe(190, 300);
   assert.equal(controller.getBudget().mode, 'normal');
+  controller.observe(45, 80);
 
   // Sustained pressure switches once after the configured streak.
   controller.observe(125, 170);
