@@ -9,6 +9,7 @@ const scannerQa = readFileSync('src/features/home/components/ScannerQaMonitor.ts
 const mobileStyles = readFileSync('src/styles/mobile-tuning.css', 'utf8');
 const motionStyles = readFileSync('src/shared/motion/motion.css', 'utf8');
 const homeStyles = readFileSync('src/styles/home.css', 'utf8');
+const homeUxStyles = readFileSync('src/styles/home-ux.css', 'utf8');
 const responsiveStyles = readFileSync('src/styles/responsive.css', 'utf8');
 const performanceStyles = readFileSync('src/styles/performance.css', 'utf8');
 const loginStyles = readFileSync('src/styles/login-experience.css', 'utf8');
@@ -30,6 +31,7 @@ assert.doesNotMatch(responsiveStyles, /\.home-enter-active \.content-wrap>\*:nth
 assert.match(loginStyles, /animation: identity-panel-reveal[^;]*both/, 'The identity panel must start its reveal animation immediately.');
 assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\s(?:\d+(?:\.\d+)?|\.\d+)(?:ms|s)\s+both/, 'The identity panel must not have a pre-animation delay.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
+assert.doesNotMatch(homeUxStyles, /animation-delay/, 'Interactive Home overlays and barcode result rows must not wait before their animations start.');
 assert.match(performanceStyles, /\.scanner-qa-backdrop[\s\S]*backdrop-filter: none !important/, 'Mobile performance overrides must cover overlays rendered outside the app shell.');
 assert.match(performanceStyles, /\.auth-journey-recognition__backdrop[\s\S]*backdrop-filter: none !important/, 'The mobile identity transition must avoid full-screen backdrop blur work.');
 assert.ok(performanceStyles.includes('.spotlight-notifications'), 'The Home spotlight notification surface must be included in the mobile blur budget.');
