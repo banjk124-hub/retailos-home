@@ -54,11 +54,13 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
   const headingId = `module-loading-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   return (
     <div className="module-loading-backdrop">
-      <section className="module-loading-panel" role="dialog" aria-modal="true" aria-labelledby={headingId} aria-busy="true">
-        <span className="module-loading-indicator" aria-hidden="true" />
-        <h2 id={headingId}>Đang mở {title}…</h2>
-        <p>Đang tải giao diện chức năng.</p>
-        <button type="button" onClick={onClose}>Đóng</button>
+      <section className="module-loading-panel" aria-labelledby={headingId}>
+        <div role="status" aria-live="polite" aria-busy="true">
+          <span className="module-loading-indicator" aria-hidden="true" />
+          <h2 id={headingId}>Đang mở {title}…</h2>
+          <p>Đang tải giao diện chức năng.</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label={`Đóng trạng thái tải ${title}`}>Đóng</button>
       </section>
     </div>
   );
