@@ -27,6 +27,14 @@
 
 PR-09 removes the JS adapter, `@zxing/library`, JS-only integration fixtures and obsolete backend-specific checks. Backend-neutral session/adapter contracts, shared recognition pipeline, labelled corpus and WASM integration tests are retained. Physical-device optical acceptance remains a release validation gate.
 
+## Post-cleanup development baseline
+
+1. **WASM-native first:** prefer native ZXing-C++ capabilities and options when they satisfy the required recognition behavior.
+2. **Shared pipeline only for RetailOS-owned gaps:** retain ROI, geometry, continuous deskew, validation, temporal policy and diagnostics where they provide behavior the engine does not own.
+3. **No duplicate capability paths:** do not re-run shared rotation, inversion, downscale or denoise when WASM already owns an equivalent path.
+4. **Evidence-led optimization:** use the labelled corpus and device traces to measure exact matches, false positives, initialization, first-result latency, p50/p95 decode time and memory before changing policy.
+5. **Protect application contracts:** Home/Stocktake modules, camera lease, lifecycle/recovery, presentation and business workflows remain outside the decoder engine.
+
 ---
 
 # PR-07 — Complete ZXing-C++ WASM Capability Adoption
