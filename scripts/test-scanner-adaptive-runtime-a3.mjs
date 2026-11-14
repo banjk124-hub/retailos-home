@@ -94,6 +94,9 @@ try {
   const { executeScannerEnhancementPipeline } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
   ).href);
+  const { createScannerGeometryCandidates } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
+  ).href);
   const width = 240, height = 96;
   const pixels = new Uint8ClampedArray(width * height).fill(165);
   for (let y = 8; y < 88; y++) {
@@ -136,6 +139,40 @@ try {
   assert.equal(limitedImages[0], fullImages[0],
     'constrained mode preserves the highest-priority A2 image candidate');
 
+  const makeWarpedBars = () => {
+    const w = 240, h = 96;
+    const data = new Uint8ClampedArray(w * h).fill(255);
+    for (let y = 0; y < h; y++) {
+      const t = y / (h - 1);
+      const span = 150 + t * 26;
+      for (let x = 0; x < w; x++) {
+        const u = (x - 120) / span + 0.5;
+        if (u >= 0 && u < 1 && Math.floor(u * 30) % 2 === 0) data[y * w + x] = 0;
+      }
+    }
+    return { luminance: data, width: w, height: h };
+  };
+  const warped = makeWarpedBars();
+  assert.ok(createScannerGeometryCandidates(warped).length > 0,
+    'the geometry stress fixture must produce real rectification candidates');
+  const runGeometryBudget = (budget) => executeScannerEnhancementPipeline(warped, {
+    imageQuality: null,
+    processingBudget: budget,
+  }, () => null);
+  const fullGeometry = runGeometryBudget({
+    schemaVersion: 1, mode: 'normal', maxImageCandidates: 2,
+    maxGeometryCandidates: 4, reasons: ['test_full_budget'],
+  });
+  const constrainedGeometry = runGeometryBudget({
+    schemaVersion: 1, mode: 'constrained', maxImageCandidates: 1,
+    maxGeometryCandidates: 2, reasons: ['test_constrained_budget'],
+  });
+  assert.ok(fullGeometry.geometryCandidatesAttempted <= 4);
+  assert.ok(constrainedGeometry.geometryCandidatesAttempted <= 2,
+    'constrained runtime must respect the two-candidate geometry ceiling');
+  assert.ok(constrainedGeometry.geometryCandidatesAttempted <= fullGeometry.geometryCandidatesAttempted,
+    'constrained mode cannot increase geometry work');
+
   const fastPath = attemptWithBudget({
     schemaVersion: 1, mode: 'constrained', maxImageCandidates: 1,
     maxGeometryCandidates: 2, reasons: ['test_constrained_budget'],
@@ -154,6 +191,8 @@ try {
   assert.match(session, /decodeTemporalSnapshot\(temporalCandidate, temporalCandidate\.timestamp, processingBudget\)/,
     'T3 temporal fallback receives the same budget rather than being silently disabled');
   assert.match(adapter, /processingBudget\?: ScannerAdaptiveRuntimeBudget/);
+  assert.equal((adapter.match(/processingBudget,/g) ?? []).length, 2,
+    'both live-frame and temporal decoder pipelines must receive the runtime budget');
   assert.match(pipeline, /options\.processingBudget\?\.maxImageCandidates/);
   assert.match(pipeline, /options\.processingBudget\?\.maxGeometryCandidates/);
   assert.match(session, /const minDecodeIntervalMs = 70/,
