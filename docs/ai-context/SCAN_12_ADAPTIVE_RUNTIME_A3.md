@@ -23,7 +23,7 @@ A3 observes completed end-to-end decode duration and video-frame callback gaps, 
 - Camera constraints, focus, torch, preview, frame scheduling, lifecycle, and module presentation are not controlled by A3.
 
 ## Diagnostics
-The session logs a policy transition only when the mode changes. QA Monitor and JSON/CSV exports retain the current mode, image/geometry budgets and transition count. The collector allowlist excludes unknown fields and raw frame/payload data.
+The session logs a policy transition only when the mode changes, including the measured decode duration, frame gap and transition reason. QA Monitor and JSON/CSV exports retain the current mode, image/geometry budgets, transition count and pressure evidence. The collector allowlist excludes unknown fields and raw frame/payload data.
 
 ## Validation
 The A3 test suite exercises:
