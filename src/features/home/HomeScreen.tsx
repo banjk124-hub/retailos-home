@@ -118,7 +118,6 @@ export default function HomeScreen({
     error?: string;
   } | null>(null);
   const [search, setSearch] = useState(initialUiState.search);
-  const [isChromeIdle, setIsChromeIdle] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
@@ -130,9 +129,6 @@ export default function HomeScreen({
   });
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => new Date());
   const scrollSaveTimer = useRef<number | null>(null);
-  const chromeIdleTimer = useRef<number | null>(null);
-  const isChromeIdleRef = useRef(false);
-  const lastWheelActivityRef = useRef(0);
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
@@ -509,32 +505,6 @@ export default function HomeScreen({
     };
   }, [activeNav, search]);
 
-  useEffect(() => {
-    const scheduleChromeHide = (event?: Event) => {
-      if (event?.type === 'wheel') {
-        const now = performance.now();
-        if (now - lastWheelActivityRef.current < 250) return;
-        lastWheelActivityRef.current = now;
-      }
-      if (isChromeIdleRef.current) {
-        isChromeIdleRef.current = false;
-        setIsChromeIdle(false);
-      }
-      if (chromeIdleTimer.current !== null) window.clearTimeout(chromeIdleTimer.current);
-      chromeIdleTimer.current = window.setTimeout(() => {
-        isChromeIdleRef.current = true;
-        setIsChromeIdle(true);
-      }, 3500);
-    };
-    const interactionEvents: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'wheel'];
-    interactionEvents.forEach((eventName) => window.addEventListener(eventName, scheduleChromeHide, { passive: eventName !== 'keydown' }));
-    scheduleChromeHide();
-    return () => {
-      interactionEvents.forEach((eventName) => window.removeEventListener(eventName, scheduleChromeHide));
-      if (chromeIdleTimer.current !== null) window.clearTimeout(chromeIdleTimer.current);
-    };
-  }, []);
-
   const announce = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
@@ -586,7 +556,7 @@ export default function HomeScreen({
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
-      <header className={`topbar home-topbar ${isChromeIdle ? 'chrome-hidden' : ''}`} id="home">
+      <header className="topbar home-topbar" id="home">
         <div className="topbar-dock">
           <div className="home-topbar-identity">
             <Brand variant="compact" surface="light" />
@@ -763,7 +733,6 @@ export default function HomeScreen({
 
     </div>
     <LiquidDock
-      hidden={isChromeIdle}
       items={navItems.map((item) => ({
         ...item,
         icon: getHomeNavigationIcon(item.id),
