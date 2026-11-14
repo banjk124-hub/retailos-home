@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Scanner benchmark manifest and metrics core tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-benchmark-core.mjs"],
+  },
+  {
     name: "Home performance and snapshot-notice regression tests",
     command: process.execPath,
     args: ["scripts/test-home-performance.mjs"],
