@@ -27,6 +27,9 @@ assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle
 assert.match(moduleLibrary, /export const ModuleLibraryEngine = memo\(/, 'The static Home module library must not re-render on unrelated Home state changes.');
 assert.match(home, /const openLibrary = useCallback\([\s\S]*?\}, \[\]\)/, 'The module library open callback must remain stable between Home renders.');
 assert.match(home, /<ModuleLibraryEngine[\s\S]*?onOpen=\{openLibrary\}/, 'The memoized module library must receive the stable callback directly.');
+assert.match(home, /const selectedLibraryModules = useMemo\(/, 'The selected library module subset must be derived only when the selected library or search result changes.');
+assert.match(home, /selectedLibraryModules\.map\(/, 'The selected library dialog must reuse its memoized module subset.');
+assert.equal((home.match(/filteredModules\.filter\(\(module\) => selectedLibrary\.moduleIds\.includes\(module\.id\)\)/g) ?? []).length, 1, 'The selected library module filter must exist only inside its memoized derivation.');
 assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer events on primary navigation after an idle timeout.');
 assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-short\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
