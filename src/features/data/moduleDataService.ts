@@ -139,6 +139,15 @@ export function getCachedModuleSnapshot(moduleId: ModuleDataId): Promise<CachedM
   return withStore<CachedModuleSnapshot | undefined>('readonly', (store) => store.get(moduleId));
 }
 
+/** Read several snapshots through one database open and one readonly transaction. */
+export async function getCachedModuleSnapshots(
+  moduleIds: readonly ModuleDataId[] = MODULE_DATA_IDS,
+): Promise<CachedModuleSnapshot[]> {
+  const requested = new Set(moduleIds);
+  const snapshots = await withStore<CachedModuleSnapshot[]>('readonly', (store) => store.getAll());
+  return snapshots.filter((snapshot) => requested.has(snapshot.moduleId));
+}
+
 function putCachedSnapshot(snapshot: CachedModuleSnapshot): Promise<IDBValidKey> {
   return withStore<IDBValidKey>('readwrite', (store) => store.put(snapshot));
 }
