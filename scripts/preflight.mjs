@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Home performance and snapshot-notice regression tests",
+    command: process.execPath,
+    args: ["scripts/test-home-performance.mjs"],
+  },
+  {
     name: "Cross-platform overlay viewport and content-scroll layout tests",
     command: process.execPath,
     args: ["scripts/test-overlay-layout-contract.mjs"],
@@ -147,6 +152,11 @@ const checks = [
     name: "Scanner shared camera track constraint serialization tests",
     command: process.execPath,
     args: ["scripts/test-scanner-track-constraints.mjs"],
+  },
+  {
+    name: "Home cache batching and shared download lifecycle regression tests",
+    command: process.execPath,
+    args: ["scripts/test-home-cache-batching.mjs"],
   },
   {
     name: "Production build (TypeScript + Vite)",

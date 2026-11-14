@@ -7,6 +7,9 @@ const push = await readFile(new URL('../src/features/notifications/pushNotificat
 const prompt = await readFile(new URL('../src/shared/pwa/PwaUpdatePrompt.tsx', import.meta.url), 'utf8');
 assert.match(worker, /retailos-pwa-/);
 assert.match(worker, /ASSET_URLS\.has\(url\.pathname\)/);
+const installHandler = worker.slice(worker.indexOf("self.addEventListener('install'"), worker.indexOf("self.addEventListener('message'"));
+assert.match(installHandler, /cache\.addAll\(SHELL_URLS\)/);
+assert.doesNotMatch(installHandler, /ASSET_URLS|ASSET_PATHS/, 'Lazy module assets must be cached on demand, not precached at service-worker installation.');
 assert.match(worker, /caches\.delete\(key\)/);
 assert.match(worker, /request\.mode === 'navigate'/);
 assert.match(worker, /SKIP_WAITING/);

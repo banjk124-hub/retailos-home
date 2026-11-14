@@ -3,7 +3,6 @@ import {
   AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet, Info,
   FileText, History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
 } from 'lucide-react';
-import JSZip from 'jszip';
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import {
@@ -26,6 +25,7 @@ import {
 } from '../services/stocktakeImportStore';
 import './stocktake-import.css';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { downloadFile } from '../../../shared/downloadFile';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
@@ -42,6 +42,11 @@ function yieldToNextPaint(): Promise<void> {
   return new Promise((resolve) => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
   });
+}
+
+async function createZipArchive() {
+  const JSZip = (await import('jszip')).default;
+  return new JSZip();
 }
 
 function localDate(value: string): string {
@@ -71,14 +76,7 @@ function normalizeEditableQuantity(value: string): string {
 }
 
 function downloadBlob(fileName: string, blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  downloadFile(blob, fileName, 1500);
 }
 
 function downloadText(fileName: string, content: string): void {
@@ -474,7 +472,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setError('');
     try {
       await yieldToNextPaint();
-      const zip = new JSZip();
+      const zip = await createZipArchive();
       result.zones.forEach((zone) => zip.file(zone.fileName, zone.content));
       const blob = await zip.generateAsync({
         type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 },
@@ -786,7 +784,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     setError('');
                     try {
                       await yieldToNextPaint();
-                      const zip = new JSZip();
+                      const zip = await createZipArchive();
                       item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
                       const blob = await zip.generateAsync({ type: 'blob' });
                       downloadBlob('KIEM_KE_IMPORT.zip', blob);

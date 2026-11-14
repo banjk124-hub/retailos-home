@@ -114,58 +114,106 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-async function withStore<T>(
+async function withTransaction<T>(
   mode: IDBTransactionMode,
-  operation: (store: IDBObjectStore) => IDBRequest<T>,
+  operation: (store: IDBObjectStore) => Promise<T>,
 ): Promise<T> {
   const database = await openDatabase();
   try {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<T>((resolve, reject) => {
       const transaction = database.transaction(SNAPSHOT_STORE, mode);
-      const request = operation(transaction.objectStore(SNAPSHOT_STORE));
+      let operationResolved = false;
+      let transactionCompleted = false;
       let result: T;
-      request.onsuccess = () => { result = request.result; };
-      request.onerror = () => reject(request.error ?? new Error('Module data cache operation failed.'));
-      transaction.oncomplete = () => resolve(result);
-      transaction.onerror = () => reject(transaction.error ?? new Error('Module data cache transaction failed.'));
-      transaction.onabort = () => reject(transaction.error ?? new Error('Module data cache transaction was aborted.'));
+      let settled = false;
+      const fail = (error: unknown) => {
+        if (settled) return;
+        settled = true;
+        reject(error);
+      };
+      const completeIfReady = () => {
+        if (settled || !operationResolved || !transactionCompleted) return;
+        settled = true;
+        resolve(result);
+      };
+
+      transaction.oncomplete = () => {
+        transactionCompleted = true;
+        completeIfReady();
+      };
+      transaction.onerror = () => fail(transaction.error ?? new Error('Module data cache transaction failed.'));
+      transaction.onabort = () => fail(transaction.error ?? new Error('Module data cache transaction was aborted.'));
+
+      let operationResult: Promise<T>;
+      try {
+        operationResult = operation(transaction.objectStore(SNAPSHOT_STORE));
+      } catch (error) {
+        fail(error);
+        return;
+      }
+      operationResult.then((value) => {
+        result = value;
+        operationResolved = true;
+        completeIfReady();
+      }, fail);
     });
   } finally {
     database.close();
   }
 }
 
+async function withStore<T>(
+  mode: IDBTransactionMode,
+  operation: (store: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> {
+  return withTransaction(mode, (store) => new Promise<T>((resolve, reject) => {
+    const request = operation(store);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error ?? new Error('Module data cache operation failed.'));
+  }));
+}
 export function getCachedModuleSnapshot(moduleId: ModuleDataId): Promise<CachedModuleSnapshot | undefined> {
   return withStore<CachedModuleSnapshot | undefined>('readonly', (store) => store.get(moduleId));
 }
 
+/**
+ * Reads only requested module records through one IndexedDB connection and
+ * one readonly transaction, avoiding a database open for each Home notice source.
+ */
+export async function getCachedModuleSnapshots(
+  moduleIds: readonly ModuleDataId[],
+): Promise<CachedModuleSnapshot[]> {
+  const uniqueModuleIds = [...new Set(moduleIds)];
+  if (uniqueModuleIds.length === 0) return [];
+
+  return withTransaction('readonly', (store) => Promise.all(uniqueModuleIds.map((moduleId) =>
+    new Promise<CachedModuleSnapshot | undefined>((resolve, reject) => {
+      const request = store.get(moduleId);
+      request.onsuccess = () => resolve(request.result as CachedModuleSnapshot | undefined);
+      request.onerror = () => reject(request.error ?? new Error('Module data cache operation failed.'));
+    }),
+  )).then((snapshots) => snapshots.filter((snapshot): snapshot is CachedModuleSnapshot => snapshot !== undefined)));
+}
 function putCachedSnapshot(snapshot: CachedModuleSnapshot): Promise<IDBValidKey> {
   return withStore<IDBValidKey>('readwrite', (store) => store.put(snapshot));
 }
 
 async function deleteModuleSnapshotsExcept(authorizedModules: ModuleDataId[]): Promise<void> {
-  const database = await openDatabase();
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const transaction = database.transaction(SNAPSHOT_STORE, 'readwrite');
-      const request = transaction.objectStore(SNAPSHOT_STORE).openCursor();
-      request.onsuccess = () => {
-        const cursor = request.result;
-        if (!cursor) return;
-        const snapshot = cursor.value as CachedModuleSnapshot;
-        if (!authorizedModules.includes(snapshot.moduleId)) cursor.delete();
-        cursor.continue();
-      };
-      request.onerror = () => reject(request.error ?? new Error('Could not reconcile module cache access.'));
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error ?? new Error('Could not reconcile module cache access.'));
-      transaction.onabort = () => reject(transaction.error ?? new Error('Module cache reconciliation was aborted.'));
-    });
-  } finally {
-    database.close();
-  }
+  await withTransaction<void>('readwrite', (store) => new Promise<void>((resolve, reject) => {
+    const request = store.openCursor();
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) {
+        resolve();
+        return;
+      }
+      const snapshot = cursor.value as CachedModuleSnapshot;
+      if (!authorizedModules.includes(snapshot.moduleId)) cursor.delete();
+      cursor.continue();
+    };
+    request.onerror = () => reject(request.error ?? new Error('Could not reconcile module cache access.'));
+  }));
 }
-
 export function clearCachedModuleData(): Promise<void> {
   return withStore<undefined>('readwrite', (store) => store.clear()).then(() => undefined);
 }

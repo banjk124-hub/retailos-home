@@ -1,15 +1,13 @@
 import { memo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
-import type { ModuleLibraryDefinition, RetailModule } from '../moduleRegistry';
+import type { ModuleLibraryGroup } from '../moduleRegistry';
 import { GlassSurface } from '../../../shared/components/glass';
 import { MotionCard } from '../../../shared/motion';
 import { getLibraryIcon, getModuleIcon, MotionIcon } from '../../../shared/icons';
 
-type LibraryGroup = ModuleLibraryDefinition & { modules: RetailModule[] };
-
 type Props = {
-  groups: LibraryGroup[];
-  onOpen: (group: ModuleLibraryDefinition, trigger: HTMLButtonElement) => void;
+  groups: ModuleLibraryGroup[];
+  onOpen: (group: ModuleLibraryGroup, trigger: HTMLButtonElement) => void;
 };
 
 export const ModuleLibraryEngine = memo(function ModuleLibraryEngine({ groups, onOpen }: Props) {
@@ -26,13 +24,7 @@ export const ModuleLibraryEngine = memo(function ModuleLibraryEngine({ groups, o
               type="button"
               className={`library-engine__group library-engine__tone-${group.tone}`}
               aria-label={`Mở thư viện ${group.title}, ${group.modules.length} chức năng`}
-              onClick={(event) => onOpen({
-                id: group.id,
-                title: group.title,
-                description: group.description,
-                tone: group.tone,
-                moduleIds: group.moduleIds,
-              }, event.currentTarget)}
+              onClick={(event) => onOpen(group, event.currentTarget)}
             >
               <span className="library-engine__glow" aria-hidden="true" />
               <span className="library-engine__head">
