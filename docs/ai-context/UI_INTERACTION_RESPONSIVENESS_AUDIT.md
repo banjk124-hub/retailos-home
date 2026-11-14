@@ -40,9 +40,9 @@ The shared motion layer, Home entry styles, mobile login panel, Home notificatio
 
 ### 5. Active Stocktake entries were filtered and sorted on every render
 
-The active-zone entry state was already scoped and sorted by the storage loader, but the render path repeated the filter and sort whenever any Stocktake state changed.
+The active-zone entry state was already scoped and sorted by the storage loader, but the render path repeated the filter and sort whenever any Stocktake state changed. Review and history screens also mounted every entry and action log at once, which could create a large synchronous render for long-running inventory sessions.
 
-**Change:** Reuse the already scoped/sorted state array directly. Sorting remains at the data-loading boundary, not in the render path.
+**Change:** Reuse the already scoped/sorted state array directly. Sorting remains at the data-loading boundary, not in the render path. Review entries and history logs now render in bounded batches of 100 with a local “show more” action; the underlying records and export data remain unchanged.
 
 ### 6. Expensive derived validation ran during unrelated renders
 
@@ -67,6 +67,7 @@ The existing mobile performance rules targeted overlays through `.app-shell`, bu
 - Mobile blur-budget overrides cover modal siblings outside the app shell.
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
+- Stocktake review and history do not mount unbounded lists in one render.
 
 ## Audit still in progress
 
