@@ -30,7 +30,7 @@ assert.ok(validateBenchmarkManifest({ ...valid, cases: [valid.cases[0], valid.ca
 assert.equal(percentile([10, 20, 30, 40], 0.5), 25);
 
 const summary = summarizeBenchmarkRows([
-  { backend: 'zxing-js', trial: 1, expectedPositive: true, outcome: 'match', decodeMs: 10 },
+  { backend: 'zxing-js', trial: 1, expectedPositive: true, outcome: 'match', geometryAvailable: true, decodeMs: 10 },
   { backend: 'zxing-js', trial: 2, expectedPositive: true, outcome: 'miss', decodeMs: 30 },
   { backend: 'zxing-js', trial: 2, expectedPositive: false, outcome: 'false-positive', decodeMs: 20 },
 ]);
@@ -40,5 +40,7 @@ assert.equal(summary[0].falsePositiveRate, 1);
 assert.equal(summary[0].decodeP50Ms, 20);
 assert.equal(summary[0].firstTrialP50Ms, 10);
 assert.equal(summary[0].steadyDecodeP50Ms, 25);
+assert.equal(summary[0].geometryAvailableAttempts, 1);
+assert.equal(summary[0].geometryAvailabilityRate, 1 / 3);
 
 console.log('Scanner benchmark manifest and metrics core tests passed.');
