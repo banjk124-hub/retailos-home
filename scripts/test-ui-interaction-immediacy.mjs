@@ -23,7 +23,7 @@ assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-shor
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
 assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The mobile login panel must not wait before its entry animation starts.');
 assert.match(loginStyles, /animation: identity-panel-reveal[^;]*both/, 'The identity panel must start its reveal animation immediately.');
-assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\\s(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:ms|s)\\s+both/, 'The identity panel must not have a pre-animation delay.');
+assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\s(?:\d+(?:\.\d+)?|\.\d+)(?:ms|s)\s+both/, 'The identity panel must not have a pre-animation delay.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
 const topbarMotionStart = mobileStyles.indexOf('@keyframes topbar-dock-float');
 const topbarMotionEnd = mobileStyles.indexOf('@media (max-width: 700px)', topbarMotionStart);
