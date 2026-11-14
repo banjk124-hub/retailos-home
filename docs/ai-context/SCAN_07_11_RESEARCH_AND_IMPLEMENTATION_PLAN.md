@@ -73,7 +73,7 @@
 ### Geometry and ROI
 - `scannerGeometry.ts` maps module preview-content coordinates into source-frame-normalized coordinates, accounting for object-fit, object-position, visible content and horizontal mirroring.
 - `scannerRoi.ts` converts only the published source-frame ROI to integer pixels. It rejects absent, invalid or out-of-bounds geometry.
-- `zxingDecoder.ts` crops directly from the source frame; no full-frame decode and no centered fallback.
+- `zxingWasmDecoder.ts` crops directly from the source frame; no full-frame decode and no centered fallback.
 - Current PR #78 branch preserves native source pixels inside the strict ROI up to 2048 px ROI width and 1.5 MP native area, then applies the 1.5× baseline and bounded 1×/2× fallbacks. The old full-frame 1280 px width cap is removed.
 
 ### Image pipeline
