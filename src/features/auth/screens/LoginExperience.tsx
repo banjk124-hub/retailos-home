@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import '../../../styles/login-experience.css';
 import type { FormEvent } from 'react';
 import { getDepartment } from '../../../shared/config/departments';
 import type { EmployeeSession } from '../types';
