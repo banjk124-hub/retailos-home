@@ -32,3 +32,14 @@ jobs:
 
       - name: Run local-equivalent preflight
         run: npm run preflight
+
+      - name: Upload bundle analysis evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retailos-bundle-analysis
+          path: |
+            dist/bundle-report.md
+            dist/bundle-report.json
+            dist/.vite/manifest.json
+          if-no-files-found: warn
