@@ -1,4 +1,4 @@
-import JSZip from 'jszip';
+import type JSZip from 'jszip';
 
 export type ImportedStocktakeRow = {
   barcode: string;
@@ -461,11 +461,13 @@ export async function parseStocktakeWorkbook(
   importedAt = new Date(),
 ): Promise<StocktakeImportResult> {
   if (!/\.xlsx$/i.test(file.name)) throw new Error('Hiện chỉ hỗ trợ workbook .xlsx. File .xls cũ chưa được hỗ trợ.');
-  const fileBuffer = await file.arrayBuffer();
   if (!globalThis.crypto?.subtle) throw new Error('Trình duyệt không hỗ trợ SHA-256 để nhận diện file trùng. Hãy dùng phiên bản trình duyệt mới.');
-  const digest = await globalThis.crypto.subtle.digest('SHA-256', fileBuffer);
+  const [{ default: JSZip }, fileBuffer] = await Promise.all([import('jszip'), file.arrayBuffer()]);
+  const [digest, zip] = await Promise.all([
+    globalThis.crypto.subtle.digest('SHA-256', fileBuffer),
+    JSZip.loadAsync(fileBuffer),
+  ]);
   const fingerprint = Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
-  const zip = await JSZip.loadAsync(fileBuffer);
   const [sharedStrings, styleMetadata, sheets] = await Promise.all([
     readSharedStrings(zip), readStyles(zip), readWorkbookSheets(zip),
   ]);
