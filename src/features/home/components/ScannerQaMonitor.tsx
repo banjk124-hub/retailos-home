@@ -8,6 +8,7 @@ import {
   subscribeScannerDiagnostics,
   type ScannerDiagnosticEvent,
 } from '../../scanner/services/scannerDiagnosticCollector';
+import '../../../styles/scanner-qa-monitor.css';
 
 type Props = { onClose: () => void };
 

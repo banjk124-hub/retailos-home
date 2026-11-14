@@ -6,6 +6,7 @@ import {
   updateScannerSettings,
 } from '../services/scannerSettingsStore';
 import { previewScannerBeep } from '../services/scannerFeedback';
+import '../../../styles/scanner-settings.css';
 
 type Props = { onClose: () => void };
 

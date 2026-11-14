@@ -1,4 +1,5 @@
 import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
+import '../../scanner/scanner-transition.css';
 import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
 import { AlertTriangle, Camera, Flashlight, FlashlightOff, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';

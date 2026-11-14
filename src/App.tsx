@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import LoginExperience from './features/auth/screens/LoginExperience';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';
 import type { EmployeeSession } from './features/auth/types';
-import HomeScreen from './features/home/HomeScreen';
 import { getDepartment, type DepartmentConfig } from './shared/config/departments';
 import { ExperienceBackground } from './shared/components/ExperienceBackground';
 import { Brand, BrandMotion } from './shared/brand';
@@ -14,6 +13,8 @@ import { MOTION_CONFIG, useMotionState } from './shared/motion';
 import type { MotionOrigin } from './shared/motion';
 import type { CSSProperties } from 'react';
 import { releaseCameraStream } from './shared/services/cameraSession';
+
+const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -244,17 +245,19 @@ export default function App() {
     <AmbientBackground />
     <PageGlassDock />
     <div className="retailos-interface">
-      <div className={isLeavingHome ? 'app-transition-leave' : ''}>
-        <HomeScreen
+      <Suspense fallback={<div className="retailos-interface" aria-busy="true" />}>
+        <div className={isLeavingHome ? 'app-transition-leave' : ''}>
+          <HomeScreen
           employee={employee}
           department={department}
           onLogout={handleLogout}
           isEnteringHome={isEnteringHome}
           isOffline={isOffline}
           canInstall={canInstall}
-          onInstall={handleInstall}
-        />
-      </div>
+            onInstall={handleInstall}
+          />
+        </div>
+      </Suspense>
     </div>
   </div>;
 }

@@ -13,10 +13,15 @@ const attachAt = sessionSource.indexOf('this.video.srcObject = stream');
 const playAt = sessionSource.indexOf('await this.video.play()', attachAt);
 const frameReadyAt = sessionSource.indexOf('await waitForVideoFrameReady(this.video)', playAt);
 const previewReadyAt = sessionSource.indexOf('this.options.onPreviewReady?.()', frameReadyAt);
-const decoderAt = sessionSource.indexOf('await this.createDecoder()', previewReadyAt);
+const decoderAt = sessionSource.indexOf('await this.createDecoder(generation)', previewReadyAt);
+const decoderMethodAt = sessionSource.indexOf('private async createDecoder(generation');
+const decoderImportAt = sessionSource.indexOf("await import('./decoders/zxingDecoder')", decoderMethodAt);
 assert.ok(attachAt >= 0 && playAt > attachAt && frameReadyAt > playAt
-  && previewReadyAt > frameReadyAt && decoderAt > previewReadyAt,
-'startup must attach/play the stream, confirm a real frame, publish preview readiness, then initialize the decoder');
+  && previewReadyAt > frameReadyAt && decoderAt > previewReadyAt
+  && decoderMethodAt > decoderAt && decoderImportAt > decoderMethodAt,
+'startup must attach/play the stream, publish a usable preview, then dynamically load and initialize the decoder');
+assert.ok(!sessionSource.includes("import { ZXingDecoderAdapter } from './decoders/zxingDecoder'"),
+  'the heavy ZXing implementation must not be part of the scanner session static dependency graph');
 
 assert.match(sessionSource, /video\.readyState >= HTMLMediaElement\.HAVE_CURRENT_DATA/,
   'technical frame readiness must continue requiring decoded media data');

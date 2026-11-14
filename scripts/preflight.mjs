@@ -144,6 +144,31 @@ const checks = [
     args: [npmCli, "run", "build:pages"],
   },
   {
+    name: "Bundle code-splitting and feature-boundary tests",
+    command: process.execPath,
+    args: ["scripts/test-bundle-boundaries.mjs"],
+  },
+  {
+    name: "PWA service worker runtime behavior tests",
+    command: process.execPath,
+    args: ["scripts/test-pwa-worker-runtime.mjs"],
+  },
+  {
+    name: "PWA cache policy and update lifecycle tests",
+    command: process.execPath,
+    args: ["scripts/test-pwa-cache-policy.mjs"],
+  },
+  {
+    name: "PWA desktop, Android and iOS compatibility contract tests",
+    command: process.execPath,
+    args: ["scripts/test-pwa-platform-compatibility.mjs"],
+  },
+  {
+    name: "Production bundle report",
+    command: process.execPath,
+    args: ["scripts/report-bundle.mjs"],
+  },
+  {
     name: "Unstaged diff whitespace check",
     command: "git",
     args: ["diff", "--check"],

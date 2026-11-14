@@ -54,8 +54,11 @@ URL GitHub Pages của repository này dự kiến là `https://banjk124-hub.git
 ## PWA, cache và quyền thiết bị
 
 - `public/manifest.webmanifest`: metadata/cài đặt PWA; đường dẫn tương đối để hỗ trợ GitHub Pages project site.
-- `public/sw.js`: cache app shell, offline fallback và nhận/click Web Push. Khi đổi quy tắc cache, tăng `CACHE_NAME`.
-- `src/main.tsx`: đăng ký service worker trong production dưới base path của app.
+- `src/sw/service-worker.template.js`: nguồn worker; Vite sinh `dist/sw.js` theo từng build và nhúng danh sách asset có hash.
+- `vite.config.ts`: tạo build ID, asset manifest và bật Vite build manifest.
+- `src/shared/pwa/PwaUpdatePrompt.tsx`: đăng ký worker với `updateViaCache: 'none'`, kiểm tra cập nhật khi app trở lại foreground và chỉ kích hoạt sau thao tác xác nhận của người dùng.
+- Worker tách app shell khỏi immutable hashed assets, dọn cache của release cũ khi activate; không xóa IndexedDB nghiệp vụ.
+- Push notification dùng lại registration trung tâm, không tự đăng ký worker lần thứ hai.
 - Giao diện sáng được áp dụng nhất quán, không đổi theo cài đặt sáng/tối của hệ điều hành. App vẫn tôn trọng `prefers-reduced-motion`, Reduce Data và tín hiệu pin/thiết bị để giảm blur, animation và tải render. Web không có API nhiệt độ thiết bị đáng tin cậy trên các trình duyệt mục tiêu, nên tiết kiệm nhiệt dựa trên các tín hiệu tài nguyên/pin thay vì đọc nhiệt độ trực tiếp.
 - Token thương hiệu dùng chung (màu, liquid glass, bo góc, bóng và nhịp chuyển động) nằm tại `src/styles/theme.css`; `src/styles/adaptive-appearance.css` chứa chính sách hiệu năng/thích nghi. Ưu tiên native scroll-snap cho thao tác vuốt; carousel thư viện hỗ trợ giữ-kéo bằng chuột trên desktop.
 - Quyền camera/thông báo cần thao tác trực tiếp của người dùng. Quyền camera được lưu cho trang web theo cài đặt của trình duyệt, nhưng hệ điều hành/trình duyệt vẫn có thể yêu cầu xác nhận lại hoặc thu hồi quyền. Website không thể tự mở trang cài đặt Android/iOS.

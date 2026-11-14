@@ -1,3 +1,5 @@
+import { registerRetailOsServiceWorker } from '../../shared/pwa/serviceWorkerRegistration';
+
 type PushSetupResult = 'ready' | 'not-configured';
 
 function decodeApplicationServerKey(encodedKey: string): Uint8Array<ArrayBuffer> {
@@ -21,8 +23,7 @@ export async function subscribeForPushNotifications(): Promise<PushSetupResult> 
     throw new Error('Push notifications are not supported by this browser.');
   }
 
-  const serviceWorkerPath = `${import.meta.env.BASE_URL}sw.js`;
-  const registration = await navigator.serviceWorker.register(serviceWorkerPath);
+  const registration = await registerRetailOsServiceWorker();
   const readyRegistration = await navigator.serviceWorker.ready;
   const activeRegistration = readyRegistration.scope === registration.scope ? readyRegistration : registration;
   const subscription = await activeRegistration.pushManager.subscribe({

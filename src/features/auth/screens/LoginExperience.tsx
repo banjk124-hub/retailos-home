@@ -9,6 +9,7 @@ import { LoginForm, type LoginStatus } from '../components/LoginForm';
 import { LoginHero } from '../components/LoginHero';
 import { getMotionOrigin, MotionPage, useMotionState } from '../../../shared/motion';
 import type { MotionOrigin } from '../../../shared/motion';
+import '../../../styles/login-experience.css';
 
 type Props = {
   onAuthenticated: (session: EmployeeSession, origin?: MotionOrigin) => void;

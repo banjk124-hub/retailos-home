@@ -11,7 +11,6 @@ import type {
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
 import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
-import { ZXingDecoderAdapter } from './decoders/zxingDecoder';
 import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
 import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
@@ -413,8 +412,9 @@ export class UniversalScannerSession implements ScannerSession {
       this.lifecycle.ready();
       this.setState('initializing');
       const decoderInitStartedAt = performance.now();
-      const decoder = await this.createDecoder();
+      const decoder = await this.createDecoder(generation);
       this.logStage('decoder_init_ms', performance.now() - decoderInitStartedAt);
+      if (!decoder) return;
       if (this.disposed || generation !== this.generation) {
         await decoder.dispose();
         return;
@@ -434,7 +434,11 @@ export class UniversalScannerSession implements ScannerSession {
     }
   }
 
-  private async createDecoder(): Promise<ScannerDecoderAdapter> {
+  private async createDecoder(generation: number): Promise<ScannerDecoderAdapter | null> {
+    // Keep the camera preview responsive: load the heavy ZXing chunk only after
+    // the first usable video frame has been published to the feature UI.
+    const { ZXingDecoderAdapter } = await import('./decoders/zxingDecoder');
+    if (this.disposed || generation !== this.generation) return null;
     const decoder = new ZXingDecoderAdapter();
     try {
       await decoder.initialize({ formats: this.options.formats });

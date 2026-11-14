@@ -32,3 +32,36 @@ jobs:
 
       - name: Run local-equivalent preflight
         run: npm run preflight
+
+      - name: Check out PR base for bundle baseline
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: baseline
+
+      - name: Build PR-base baseline
+        if: github.event_name == 'pull_request'
+        run: |
+          npm ci --prefix baseline
+          npm run build:pages --prefix baseline
+
+      - name: Report and compare bundle baseline
+        if: github.event_name == 'pull_request'
+        run: |
+          REPORT_DIST_DIR=baseline/dist node scripts/report-bundle.mjs
+          node scripts/compare-bundle-reports.mjs
+
+      - name: Upload bundle analysis evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retailos-bundle-analysis
+          path: |
+            dist/bundle-report.md
+            dist/bundle-report.json
+            dist/bundle-comparison.md
+            dist/.vite/manifest.json
+            baseline/dist/bundle-report.md
+            baseline/dist/bundle-report.json
+          if-no-files-found: warn
