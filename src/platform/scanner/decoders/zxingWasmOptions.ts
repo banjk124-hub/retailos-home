@@ -35,3 +35,25 @@ export function createZXingWasmReaderOptions(
     characterSet: 'UTF8',
   };
 }
+
+/** Run ordered backend strategies and stop at the first accepted output. */
+export async function runOrderedBinarizerFallback<TBinarizer, TResult, TOutput>(
+  binarizers: readonly TBinarizer[],
+  decode: (binarizer: TBinarizer) => Promise<TResult>,
+  accept: (result: TResult) => TOutput | null,
+): Promise<TOutput | null> {
+  for (const binarizer of binarizers) {
+    const result = await decode(binarizer);
+    const output = accept(result);
+    if (output !== null) return output;
+  }
+  return null;
+}
+
+/** Invalid native reads are observable for diagnostics, never accepted output. */
+export function isZXingWasmReadResultValid(result: {
+  isValid?: boolean;
+  error?: unknown;
+}): boolean {
+  return result.isValid !== false && !Boolean(result.error);
+}
