@@ -29,7 +29,18 @@ self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     event.waitUntil((async () => {
       const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const otherClients = clients.filter((client) => client.id !== event.source?.id);
+      // GitHub Pages project sites share an origin. Only windows inside this
+      // RetailOS deployment may block an update; unrelated apps must not.
+      const retailOsClients = clients.filter((client) => {
+        try {
+          const clientUrl = new URL(client.url);
+          return clientUrl.origin === APP_BASE_URL.origin
+            && clientUrl.pathname.startsWith(APP_BASE_URL.pathname);
+        } catch {
+          return false;
+        }
+      });
+      const otherClients = retailOsClients.filter((client) => client.id !== event.source?.id);
       if (otherClients.length > 0) {
         event.source?.postMessage({ type: 'UPDATE_BLOCKED_MULTIPLE_CLIENTS' });
         return;
