@@ -440,6 +440,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
       decoded: this.diagnosticDecoded,
       roiHits: this.diagnosticRoiHits,
       roiUnavailable: this.diagnosticRoiUnavailable,
+      orthogonalRotationOwner: 'zxing-cpp-native',
       rotationAttempts: this.diagnosticRotationAttempts,
       rotationHits: this.diagnosticRotationHits,
       deskewAttempts: this.diagnosticDeskewAttempts,
