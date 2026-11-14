@@ -132,7 +132,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const beginZone = async (replace: boolean, requested = pendingZone) => {
-    if (!session || !requested) return;
+    if (!session || !requested || busy) return;
+    setBusy(true);
     try {
       const previous = requested.previous;
       let revision = 1;
@@ -164,6 +165,29 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       await refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể tạo vùng kiểm kê.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resumeZone = async (zone: StocktakeZone) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      setCurrentZone(zone);
+      await loadZoneEntries(zone);
+      await logStocktakeAction({
+        sessionId: zone.sessionId,
+        zoneId: zone.id,
+        action: 'ZONE_RESUMED',
+        details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.`,
+      });
+      await refresh();
+      setScreen(zone.status === 'exported' ? 'review' : 'scan');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể mở lại vùng kiểm kê.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -262,11 +286,18 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const openReview = async () => {
-    if (!currentZone || !session) return;
-    await loadZoneEntries(currentZone);
-    await logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_REVIEW_OPENED', details: `Mở kiểm tra dữ liệu vùng ${currentZone.zoneCode}, revision ${currentZone.revision}.` });
-    await refresh();
-    setScreen('review');
+    if (!currentZone || !session || busy) return;
+    setBusy(true);
+    try {
+      await loadZoneEntries(currentZone);
+      await logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_REVIEW_OPENED', details: `Mở kiểm tra dữ liệu vùng ${currentZone.zoneCode}, revision ${currentZone.revision}.` });
+      await refresh();
+      setScreen('review');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể mở kiểm tra dữ liệu vùng.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const exportCurrentZone = async () => {
@@ -304,6 +335,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setShowClearConfirm(false);
       return;
     }
+    setBusy(true);
     try {
       await stocktakeStore.clearAll();
       closeScanner();
@@ -315,7 +347,6 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setExports([]);
       setShowClearConfirm(false);
       setScreen('home');
-      setBusy(true);
       const fresh: StocktakeSession = {
         id: createStocktakeId('session'), employeeCode: resolvedEmployeeCode,
         employeeName: employee.name, department: employee.department,
@@ -360,7 +391,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
             <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({exports.filter((item) => item.sessionId === session?.id).length})</span><ChevronRight size={16} /></button>
           </div>
           <div className="stocktake-zone-history"><div className="stocktake-section-title">Vùng trong phiên</div>
-            {zones.filter((zone) => zone.sessionId === session?.id && zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); await logStocktakeAction({ sessionId: zone.sessionId, zoneId: zone.id, action: 'ZONE_RESUMED', details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.` }); await refresh(); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
+            {zones.filter((zone) => zone.sessionId === session?.id && zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" disabled={busy} onClick={() => { void resumeZone(zone); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
             {zones.filter((zone) => zone.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <button className="stocktake-danger-link" type="button" disabled={!session} onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa toàn bộ dữ liệu kiểm kê trên thiết bị</button>
