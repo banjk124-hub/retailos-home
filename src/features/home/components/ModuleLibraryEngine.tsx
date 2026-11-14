@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import type { ModuleLibraryDefinition, RetailModule } from '../moduleRegistry';
 import { GlassSurface } from '../../../shared/components/glass';
@@ -11,7 +12,7 @@ type Props = {
   onOpen: (group: ModuleLibraryDefinition, trigger: HTMLButtonElement) => void;
 };
 
-export function ModuleLibraryEngine({ groups, onOpen }: Props) {
+export const ModuleLibraryEngine = memo(function ModuleLibraryEngine({ groups, onOpen }: Props) {
   return (
     <div className="library-engine" aria-label="Nhóm chức năng">
       {groups.map((group, index) => {
@@ -64,4 +65,4 @@ export function ModuleLibraryEngine({ groups, onOpen }: Props) {
       })}
     </div>
   );
-}
+});
