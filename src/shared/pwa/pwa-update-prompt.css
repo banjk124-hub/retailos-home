@@ -1,0 +1,21 @@
+.pwa-update-prompt {
+  position: fixed; z-index: 10000;
+  inset: auto max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 720px; margin-inline: auto; padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,.72); border-radius: 18px;
+  background: rgba(255,255,255,.96); box-shadow: 0 12px 40px rgba(28,35,48,.2);
+  color: #242a35; backdrop-filter: blur(18px);
+}
+.pwa-update-prompt__copy { display: grid; gap: 4px; min-width: 0; }
+.pwa-update-prompt__copy strong { font-size: 14px; }
+.pwa-update-prompt__copy span { color: #687181; font-size: 12px; line-height: 1.45; }
+.pwa-update-prompt__actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.pwa-update-prompt__actions button { min-height: 38px; padding: 0 13px; border: 0; border-radius: 11px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.pwa-update-prompt__later { background: #f1f2f5; color: #4e5664; }
+.pwa-update-prompt__apply { background: #a92534; color: white; }
+.pwa-update-prompt__apply:disabled { opacity: .65; cursor: wait; }
+@media (max-width: 560px) {
+  .pwa-update-prompt { align-items: stretch; flex-direction: column; gap: 12px; }
+  .pwa-update-prompt__actions { justify-content: flex-end; }
+}
