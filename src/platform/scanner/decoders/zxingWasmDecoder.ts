@@ -23,6 +23,10 @@ const REVERSE_FORMAT_MAP = new Map<string, ScannerSymbology>(
 );
 // ZXing-C++ can report concrete variants for family-level formats.
 for (const variant of ['Code39Std', 'Code39Ext']) REVERSE_FORMAT_MAP.set(variant, 'CODE_39');
+for (const variant of ['ITF14']) REVERSE_FORMAT_MAP.set(variant, 'ITF');
+for (const variant of ['CompactPDF417', 'MicroPDF417']) REVERSE_FORMAT_MAP.set(variant, 'PDF_417');
+for (const variant of ['QRCodeModel1', 'QRCodeModel2']) REVERSE_FORMAT_MAP.set(variant, 'QR_CODE');
+for (const variant of ['AztecCode', 'AztecRune']) REVERSE_FORMAT_MAP.set(variant, 'AZTEC');
 for (const variant of ['DataBarOmni', 'DataBarStk', 'DataBarStkOmni']) REVERSE_FORMAT_MAP.set(variant, 'RSS_14');
 for (const variant of ['DataBarExpStk']) REVERSE_FORMAT_MAP.set(variant, 'RSS_EXPANDED');
 const WASM_OVERRIDES = {
