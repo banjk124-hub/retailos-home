@@ -89,7 +89,7 @@ Changed:
 
 The final Home-specific cascade pass also removed 1,193 additional bytes from `home-ux.css` and `home-redesign.css` by pruning retired `.hero-orb`, `.module-card`, `.metric-card`, `.sidebar` and `.mobile-nav` branches. Across the nine stylesheets with confirmed dead selectors, total source reduction is now 39,595 bytes (about 22.7% of their combined pre-cleanup source size).
 
-The exact-rule scan also found and removed three duplicate declarations in the same mobile breakpoint of `mobile-tuning.css` (spotlight float visibility, glass-chip visibility and calendar-day spacing). The Home CSS regression suite now guards these duplicates against reintroduction.
+The exact-rule scan also found and removed three duplicate declarations in the same mobile breakpoint of `mobile-tuning.css` (spotlight float visibility, glass-chip visibility and calendar-day spacing). The Home CSS regression suite now guards these duplicates against reintroduction. A final exact-rule scan across all 11 Home/global stylesheets now finds zero duplicate selector + media-context + declaration-block rules. Total stylesheet source is 150,139 bytes versus 189,892 bytes at baseline (-39,753 bytes, -20.9%).
 
 ## Direct dependency review
 
