@@ -134,6 +134,7 @@ async function runBackend(backend, cases, files, repeats) {
               expectedPositive: item.expected !== null,
               outcome: classify(outputs, item.expected),
               outputCount: outputs.length,
+              geometryAvailable: outputs.some((output) => Boolean(output.geometry)),
               detectedSymbology: outputs[0]?.symbology ?? null,
               decodeMs: performance.now() - started,
             });
@@ -149,6 +150,7 @@ async function runBackend(backend, cases, files, repeats) {
               expectedPositive: item.expected !== null,
               outcome: 'error',
               outputCount: 0,
+              geometryAvailable: false,
               detectedSymbology: null,
               errorName: error instanceof Error ? error.name : 'UnknownError',
               decodeMs: performance.now() - started,
