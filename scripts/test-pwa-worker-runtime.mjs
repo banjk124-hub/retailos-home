@@ -17,7 +17,10 @@ const cachesMock = {
     const entries = cacheStore.get(name);
     return {
       async addAll(urls) { for (const url of urls) entries.set(url, new Response('cached:' + url)); },
-      async put(request, response) { entries.set(cacheUrl(request), response); },
+      async put(request, response) {
+        if (rejectCacheWrites) throw new Error('simulated storage quota failure');
+        entries.set(cacheUrl(request), response);
+      },
       async match(request) { return entries.get(cacheUrl(request)); },
     };
   },
@@ -34,6 +37,7 @@ let windowClients = [];
 let skipWaitingCalls = 0;
 let claimCalls = 0;
 let fetchCalls = 0;
+let rejectCacheWrites = false;
 const selfMock = {
   location: { origin: 'https://retailos.test' },
   registration: { showNotification: async () => undefined },
@@ -123,6 +127,16 @@ listener('fetch')(cachedFetchEvent);
 assert.equal(await (await cachedFetchEvent.responsePromise).text(), 'cached-asset');
 assert.equal(fetchCalls, fetchCountBefore, 'allowlisted immutable asset is cache-first');
 
+// Cache Storage quota/write failures must not break successful network loads.
+rejectCacheWrites = true;
+const uncachedAssetEvent = {
+  request: { method: 'GET', url: appBase + 'assets/uncached.js', mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(uncachedAssetEvent);
+assert.match(await (await uncachedAssetEvent.responsePromise).text(), /^network:/,
+  'asset network response survives a cache write failure');
+
 const unlistedEvent = {
   request: { method: 'GET', url: appBase + 'unlisted.js', mode: 'cors' },
   respondWith() { throw new Error('unlisted resource must not be intercepted'); },
@@ -133,6 +147,12 @@ const navigationEvent = {
   request: { method: 'GET', url: appBase, mode: 'navigate' },
   respondWith(promise) { this.responsePromise = promise; },
 };
+// Even if the shell cache cannot be updated, a successful navigation is returned.
+context.fetch = async () => new Response('network-navigation');
+listener('fetch')(navigationEvent);
+assert.equal(await (await navigationEvent.responsePromise).text(), 'network-navigation');
+
+rejectCacheWrites = false;
 context.fetch = async () => { throw new Error('offline'); };
 listener('fetch')(navigationEvent);
 assert.equal(await (await navigationEvent.responsePromise).text(), 'cached:' + shellUrl);
