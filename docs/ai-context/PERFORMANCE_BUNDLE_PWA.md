@@ -18,6 +18,7 @@ This document records the production loading and update contracts introduced by 
 - Login remains the eager entry experience.
 - Authenticated `HomeScreen` is loaded with React lazy/Suspense after the identity transition.
 - Stocktake, Stocktake Import, Home barcode scanner, Settings, Scanner QA Monitor and Scanner Settings are separate lazy feature boundaries.
+- The ZXing decoder implementation is dynamically imported only after the first usable camera frame has been published. This keeps the heavy decoder chunk out of the scanner presentation's initial dependency graph and allows preview reveal while decoder code loads; SCANNING still waits for decoder initialization.
 - `jszip` and `pptxgenjs` remain dynamically imported by the export actions.
 - Feature CSS is imported by its owning lazy component where ownership is unambiguous. Shared tokens, reset, typography and cross-screen foundation styles remain in the app entry.
 - Do not add broad `manualChunks` rules without evidence from the generated manifest. Splitting a file is not equivalent to deferring its download.
