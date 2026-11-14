@@ -145,7 +145,7 @@ export default function HomeScreen({
   const [toast, setToast] = useState('');
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
-    || showSettings || showScannerQa || showScannerSettings
+    || isBarcodeScannerOpen || showSettings || showScannerQa || showScannerSettings
     || isStocktakeOpen || isStocktakeImportOpen || Boolean(barcodeLookup),
   );
   const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
