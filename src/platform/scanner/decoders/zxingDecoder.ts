@@ -319,7 +319,6 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           onImageQuality: (quality) => { this.lastImageQuality = quality; },
           onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
           processingBudget,
-          processingBudget,
         },
         (candidate) => this.decodeLuminance(
           candidate.luminance,
@@ -488,6 +487,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         imageQuality: sampledImageQuality,
         onImageQuality: (quality) => { this.lastImageQuality = quality; },
         onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
+        processingBudget,
       },
       (candidate) => this.decodeLuminance(
         candidate.luminance,
