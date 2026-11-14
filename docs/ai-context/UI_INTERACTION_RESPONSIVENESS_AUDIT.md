@@ -38,7 +38,13 @@ The shared motion layer, Home entry styles, mobile login panel, Home notificatio
 **Change:** Removed the pre-start delays from the affected UI entry paths, including the 160ms delay on the authenticated identity panel. Decorative brand and ambient animation timing is not changed. The topbar's continuous ambient motion now animates only transform/opacity; it no longer animates box-shadow or background-position on every frame.
 
 
-### 5. Expensive derived validation ran during unrelated renders
+### 5. Active Stocktake entries were filtered and sorted on every render
+
+The active-zone entry state was already scoped and sorted by the storage loader, but the render path repeated the filter and sort whenever any Stocktake state changed.
+
+**Change:** Reuse the already scoped/sorted state array directly. Sorting remains at the data-loading boundary, not in the render path.
+
+### 6. Expensive derived validation ran during unrelated renders
 
 Stocktake Import recalculated row-level validation for the active zone and every zone on each render, including renders caused only by notice, page or editing UI state. Scanner QA recalculated its aggregate summary whenever its filter/copy state changed and re-rendered every diagnostic row whenever a new event arrived, even though existing event objects are immutable.
 
