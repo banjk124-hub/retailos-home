@@ -4,7 +4,6 @@ const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const pkg = JSON.parse(await read('../package.json'));
 const lock = JSON.parse(await read('../package-lock.json'));
 const adapter = await read('../src/platform/scanner/decoders/zxingWasmDecoder.ts');
-const candidateFactory = await read('../src/platform/scanner/decoders/zxingWasmDecoderFactory.ts');
 const defaultFactory = await read('../src/platform/scanner/decoders/decoderFactory.ts');
 const session = await read('../src/platform/scanner/universalScannerSession.ts');
 const pipeline = await read('../src/platform/scanner/scannerEnhancementPipeline.ts');
@@ -34,11 +33,10 @@ assert.ok(pipeline.includes("orthogonalRotationOwner?: 'shared-pipeline' | 'deco
   'shared pipeline must support backend-native orthogonal rotation ownership');
 
 assert.ok(!/getUserMedia|requestAnimationFrame|requestVideoFrameCallback|srcObject/.test(adapter));
-assert.ok(candidateFactory.includes('zxingWasmDecoderFactory'));
-assert.ok(candidateFactory.includes("await import('./zxingWasmDecoder')"));
-assert.ok(defaultFactory.includes('new ZXingDecoderAdapter()'));
-assert.ok(!defaultFactory.includes('zxingWasmDecoder'));
-assert.ok(!defaultFactory.includes('ZXingWasmDecoderAdapter'));
+assert.ok(defaultFactory.includes("await import('./zxingWasmDecoder')"));
+assert.ok(defaultFactory.includes('new ZXingWasmDecoderAdapter()'));
+assert.ok(!defaultFactory.includes('zxingDecoder'));
+assert.ok(!defaultFactory.includes('ZXingDecoderAdapter'));
 assert.ok(!session.includes('zxingWasmDecoder'));
 assert.ok(!session.includes('ZXingWasmDecoderAdapter'));
 
