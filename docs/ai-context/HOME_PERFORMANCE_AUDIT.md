@@ -87,6 +87,8 @@ Changed:
 - Active controls, current spotlight/library components, panel surfaces, dock, notification/calendar overlays and reduced-motion/performance selectors were retained.
 - CSS contract tests now assert that retired layout selectors do not reappear in the globally loaded stylesheets.
 
+The final Home-specific cascade pass also removed 1,193 additional bytes from `home-ux.css` and `home-redesign.css` by pruning retired `.hero-orb`, `.module-card`, `.metric-card`, `.sidebar` and `.mobile-nav` branches. Across the nine stylesheets with confirmed dead selectors, total source reduction is now 39,595 bytes (about 22.7% of their combined pre-cleanup source size).
+
 ## Direct dependency review
 
 Direct runtime dependencies currently have identified source use:
