@@ -14,6 +14,9 @@ const local = createZXingWasmReaderOptions(['EAN13', 'Code128'], 'LocalAverage')
 const global = createZXingWasmReaderOptions(['EAN13', 'Code128'], 'GlobalHistogram');
 for (const options of [local, global]) {
   assert.deepEqual(options.formats, ['EAN13', 'Code128']);
+  // ZXing-C++ ODReader reverses every 1D scanline when tryHarder is true,
+  // so upside-down linear symbols (180°) do not require tryRotate.
+  // tryRotate stays false because the shared pipeline owns the 90° image candidate.
   assert.equal(options.tryHarder, true);
   assert.equal(options.tryRotate, false);
   assert.equal(options.tryInvert, false);
