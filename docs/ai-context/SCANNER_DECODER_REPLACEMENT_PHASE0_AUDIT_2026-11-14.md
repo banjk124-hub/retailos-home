@@ -54,7 +54,7 @@ The audit inventory is grouped by responsibility, rather than treating every fil
 | Feature consumers / QA | 5 | Home, Stocktake, Stocktake exit gate and Scanner QA Monitor |
 | Scanner-related styles | 3 | QA/settings styles and Stocktake scanner presentation styles |
 | Scanner tests | 24 | Recognition, validation, lifecycle, camera, presentation and diagnostics |
-| Scanner architecture / phase docs | 27 | Current architecture, dated audits, phase records and handoff/status docs |
+| Scanner architecture / phase docs | 26 | Current architecture, dated audits, phase records and handoff/status docs |
 
 The inventory is intentionally wider than the decoder replacement boundary. It captures dependencies that must be protected or reviewed, not candidates for wholesale replacement.
 
