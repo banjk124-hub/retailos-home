@@ -1,5 +1,6 @@
 import { ArrowLeft, ScanBarcode, Volume2, Vibrate } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { useScannerSettings } from '../hooks/useScannerSettings';
 import {
   isScannerVibrationSupported,
@@ -14,17 +15,15 @@ export default function ScannerSettingsPanel({ onClose }: Props) {
   const settings = useScannerSettings();
   const vibrationSupported = isScannerVibrationSupported();
   const backButtonRef = useRef<HTMLButtonElement>(null);
+  useBodyScrollLock(true);
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
     backButtonRef.current?.focus();
-    document.body.style.overflow = 'hidden';
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, [onClose]);

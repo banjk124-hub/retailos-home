@@ -16,6 +16,7 @@ import { getMotionOrigin, type MotionOrigin } from '../../../shared/motion';
 import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
 import './stocktake.css';
 import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
+import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type Screen = 'home' | 'scan' | 'review' | 'history' | 'exports';
@@ -43,6 +44,7 @@ function actionLabel(action: string): string {
 }
 
 export default function StocktakeModule({ employee, onClose }: Props) {
+  useBodyScrollLock(true);
   const scannerViewportStyle = useScannerViewportStyle();
   const [session, setSession] = useState<StocktakeSession | null>(null);
   const [zones, setZones] = useState<StocktakeZone[]>([]);

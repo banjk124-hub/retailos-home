@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { Activity, AlertTriangle, CheckCircle2, Clipboard, Download, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import {
   clearScannerDiagnostics,
@@ -44,6 +45,7 @@ function metricValue(event: ScannerDiagnosticEvent, key: string): unknown {
 }
 
 export default function ScannerQaMonitor({ onClose }: Props) {
+  useBodyScrollLock(true);
   const [events, setEvents] = useState(getScannerDiagnosticSnapshot());
   const [filter, setFilter] = useState<'all' | 'warn' | 'performance'>('all');
   const [copied, setCopied] = useState(false);
@@ -53,13 +55,10 @@ export default function ScannerQaMonitor({ onClose }: Props) {
     const unsubscribe = subscribeScannerDiagnostics(() => setEvents([...getScannerDiagnosticSnapshot()]));
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     return () => {
       uninstall();
       unsubscribe();
       window.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousOverflow;
     };
   }, [onClose]);
 

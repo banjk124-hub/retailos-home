@@ -25,6 +25,7 @@ import {
   type StocktakeImportHistoryItem,
 } from '../services/stocktakeImportStore';
 import './stocktake-import.css';
+import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
@@ -94,6 +95,7 @@ function rowsFromLegacyContent(content: string): ImportedStocktakeRow[] {
 }
 
 export default function StocktakeImportModule({ employee, onClose }: Props) {
+  useBodyScrollLock(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const outputTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [view, setView] = useState<View>('import');

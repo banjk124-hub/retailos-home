@@ -1,5 +1,7 @@
 import { Activity, ChevronRight, ScanBarcode, Settings, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import '../../../styles/scanner-settings.css';
 
 type Props = {
   onClose: () => void;
@@ -9,17 +11,15 @@ type Props = {
 
 export default function SettingsHub({ onClose, onOpenScannerSettings, onOpenScannerQa }: Props) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  useBodyScrollLock(true);
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
     closeButtonRef.current?.focus();
-    document.body.style.overflow = 'hidden';
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
     };
   }, [onClose]);

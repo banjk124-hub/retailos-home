@@ -9,6 +9,16 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Cross-platform overlay viewport and content-scroll layout tests",
+    command: process.execPath,
+    args: ["scripts/test-overlay-layout-contract.mjs"],
+  },
+  {
+    name: "Shared overlay body scroll-lock reference-count regression tests",
+    command: process.execPath,
+    args: ["scripts/test-body-scroll-lock.mjs"],
+  },
+  {
     name: "Stocktake offline file import regression tests",
     command: process.execPath,
     args: ["scripts/test-stocktake-import.mjs"],
