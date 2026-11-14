@@ -1,35 +1,46 @@
-# PR-07 — Adaptive Runtime & Performance
+# PR-07 — Legacy Decoder Capability Transfer to ZXing-C++ WASM
 
-**Branch:** `feat/scanner-adaptive-runtime-profiles`  
-**Base:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merge; current main at task start).  
-**Objective:** complete the missing device-profile layer and correct runtime performance telemetry without duplicating the already-merged A3 controller.
+**Branch:** `feat/scanner-wasm-capability-parity`  
+**Base:** `39505b4de4d756fa8b8861ca9a50d46b86fecc1b` (PR #114 merge).  
+**Target:** compare the current production ZXing JS decoder with the opt-in ZXing-C++ WASM decoder; transfer only missing behavior and remove only redundant implementations after evidence.
 
-## Audit baseline
-- PR #100 already merged A3: sustained decode-duration/frame-gap pressure reduces only optional fallback candidate budgets with hysteresis.
-- The shared hook still hardcoded `profile: 'HIGH'`; `ScannerProfileName` was `COMPACT | STANDARD | HIGH`, so Low/Mid/High device classification was absent.
-- Decode duration totals/maxima were not reset when the five-second diagnostics window reset its attempt count, making the reported average increasingly inaccurate.
+## Capability-transfer principle
+1. Inventory the old decoder's observable behavior and contracts.
+2. Compare the new backend against each behavior.
+3. Port missing behavior using the new architecture; do not copy backend-specific workarounds.
+4. Reuse capabilities already implemented in the shared pipeline; do not create duplicate processing stages.
+5. Validate parity with deterministic tests, the same labelled corpus and physical iOS/Android devices.
+6. Only after acceptance, perform reversible production cutover, then remove the old backend and its dependency/tests.
 
-## PR-07 scope
-- Classify each new scanner session as LOW/MID/HIGH from coarse browser capability hints (`deviceMemory`, `hardwareConcurrency`), without user-agent sniffing.
-- LOW when either available hint indicates constrained capability; HIGH only when both hints are strong; MID for mixed/intermediate hints; conservative LOW when both are unavailable.
-- Record the advisory profile and reason in the existing in-memory QA Monitor / JSON / CSV diagnostics.
-- Count both successful and failed decode attempts in the timing window, then reset duration totals/maxima with the rest of the five-second window.
-- Keep the existing A3 runtime controller as the sole adaptive processing-budget authority.
+## Confirmed existing shared capabilities — preserve, do not duplicate
+- Strict source-frame ROI, bounded scale candidates, baseline-first candidate iterator, orthogonal rotation, deskew, image enhancements, geometry correction, A2/A3 budgets.
+- Shared session temporal fallback, allowlist enforcement, payload validation, single/continuous result semantics and Home/Stocktake handoff.
+- Camera lease, preview-ready sequencing, frame scheduling, generation protection, recovery and technical lifecycle contract.
 
-## Hard invariants
-- Device profile alone does not reduce image/geometry candidate budgets.
-- No camera resolution/frame-rate, 70 ms decode interval, ROI, orientation order, baseline decode, T3 temporal fallback, symbology allowlist, validator, camera lease/lifecycle, UI presentation or business workflow changes.
-- No battery/thermal API assumptions, user-agent heuristics, persistent device identifiers or backend telemetry.
-- ZXing JS remains the production default; ZXing-C++ WASM remains opt-in.
+## PR-07 implementation scope
+- Restore legacy ordered HybridBinarizer → GlobalHistogramBinarizer behavior using ZXing-C++ LocalAverage → GlobalHistogram options.
+- Preserve legacy payload semantics explicitly with `textMode: Plain` and optional-checksum compatibility; keep RetailOS validator authoritative.
+- Surface invalid read results for diagnostics and reject them before DecoderOutput.
+- Restore A1 quality profile, A2 processing plan, pipeline-stage metrics and decoder diagnostics in the WASM path.
+- Add deterministic parity tests for options and diagnostic wiring.
+- Keep 180° one-dimensional reversal as a tracked parity gap: legacy ZXing JS handles this internally through OneDReader, while WASM currently disables internal rotation. Do not enable broad backend rotation until its duplicate 90° work and latency cost are measured.
 
-## Acceptance
-- [ ] Unit tests cover LOW/MID/HIGH classification, partial/missing/invalid hints and conservative fallback.
-- [ ] Hook passes the resolved profile into each new Home/Stocktake session; foreground recovery retains the same session profile contract.
-- [ ] QA Monitor and exports expose only bounded profile/reason fields.
-- [ ] Decode timing averages/maxima are per five-second window and include failed decode attempts.
-- [ ] Existing A3 hysteresis, baseline-first, 70 ms cadence, ROI, T3, validation and symbology tests remain green.
-- [ ] Full preflight, TypeScript, production build and GitHub Pages build pass.
-- [ ] Physical iOS Safari/PWA + Android Chrome/PWA QA records representative low/mid/high devices; no physical performance claim is inferred from CI.
+## Not in PR-07
+- Production default switch, removal of `@zxing/library`, deletion of `zxingDecoder.ts`, camera/session/lifecycle/UI/business-flow changes, worker migration, or broad recognition-policy reduction.
+- Device-profile-driven candidate budgets without physical measurement evidence.
+
+## Acceptance gates
+- [ ] Deterministic tests prove ordered binarizer fallback and invalid-result rejection.
+- [ ] Both backends use the same allowlist and shared recognition candidate iterator.
+- [ ] A1/A2/A3 and stage diagnostics are observable from WASM without exposing payloads or image pixels.
+- [ ] Same corpus tests cover all active symbologies, positive/negative controls, 180°/270° linear orientation, skew, curved carrier, glare, low contrast and malformed symbols.
+- [ ] Compare exact match, miss, wrong decode, false positive, p50/p95 duration, init time and memory where available.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA parity is documented.
+- [ ] Production default remains ZXing JS until all parity gates pass.
+
+## Later release sequence
+- **Production cutover PR:** select WASM as the default behind the existing factory, retain an immediate reversible rollback path, and run smoke tests on Home and Stocktake.
+- **Legacy cleanup PR:** only after cutover acceptance, remove ZXing JS adapter, dependency, backend-only workaround and obsolete tests; retain backend-neutral contract/corpus tests.
 
 ---
 
