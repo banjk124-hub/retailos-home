@@ -20,8 +20,8 @@ assert.match(adapter, /resolveScannerRoiCrop\\(options\\.scanRegion, dimensions\
 assert.match(adapter, /if \\(!crop\\) return \\[\\]/, 'invalid ROI must fail closed');
 assert.match(adapter, /measureScannerFocusQuality\\(/);
 assert.match(adapter, /createScannerTemporalSnapshot\\(/);
-assert.match(adapter, /createScannerImageQualityProfile\\(/);
 assert.match(adapter, /processingBudget: options\\.processingBudget/);
+assert.match(adapter, /reuseOrientationHints: !scale\\.baseline/);
 assert.doesNotMatch(adapter, /readBarcodes\\(image, this\\.options\\)/,
   'raw frame decode must not bypass the shared candidate pipeline');
 assert.match(pipeline, /executeScannerEnhancementPipelineAsync/);

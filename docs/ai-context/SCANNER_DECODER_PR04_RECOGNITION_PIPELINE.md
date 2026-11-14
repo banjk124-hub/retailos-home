@@ -21,7 +21,7 @@ The important limitation was deliberate but not yet production-parity complete: 
 - Add an asynchronous executor for the WASM reader. It awaits each candidate sequentially; no concurrent decode queue is introduced.
 - Route both WASM live-frame and temporal-snapshot recognition through that same candidate iterator.
 - Preserve original ROI and bounded scale loop outside the candidate transforms; no full-frame fallback.
-- Preserve focus sampling, scalar image-quality profile, temporal snapshot ownership and A3 optional candidate budget.
+- Preserve focus sampling, image-quality measurement, temporal snapshot ownership and A3 optional candidate budget.
 - Add a session-retirement guard so an async backend does not start another transform/decode after its owner is disposed.
 
 ## Recognition order (shared)

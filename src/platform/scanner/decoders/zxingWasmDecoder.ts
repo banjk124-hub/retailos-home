@@ -6,7 +6,6 @@ import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } fro
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot, type ScannerTemporalSnapshot } from '../scannerTemporalRecognition';
 import { measureScannerImageQuality } from '../scannerImageEnhancement';
-import { createScannerImageQualityProfile, type ScannerImageQualityProfile } from '../scannerImageQualityProfile';
 import { executeScannerEnhancementPipelineAsync, type ScannerOrientationHints } from '../scannerEnhancementPipeline';
 import { rgbaToLuminance } from './rgbaToLuminance';
 import type { DecoderDecodeOptions, DecoderInitOptions, DecoderOutput, ScannerDecoderAdapter } from './decoderAdapter';
@@ -58,8 +57,9 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   private lastFocusAt = 0;
   private previousFocusPixels: Uint8Array | null = null;
   private previousFocusKey: string | null = null;
+  private previousFocusWidth = 0;
+  private previousFocusHeight = 0;
   private cachedOrientationHints: ScannerOrientationHints | null = null;
-  private lastImageQualityProfile: ScannerImageQualityProfile | null = null;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing-C++ adapter has been disposed.');
@@ -107,25 +107,19 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
         if (scale.baseline && options.onFocusQuality && timestamp - this.lastFocusAt >= 500) {
           this.lastFocusAt = timestamp;
           const regionKey = `${dimensions.width}x${dimensions.height}:${crop.x},${crop.y},${crop.width},${crop.height}`;
-          const sameGeometry = this.previousFocusKey === regionKey;
+          const sameGeometry = this.previousFocusKey === regionKey
+            && this.previousFocusWidth === scale.width
+            && this.previousFocusHeight === scale.height;
           const focus = measureScannerFocusQuality(
             grayscale, scale.width, scale.height,
             sameGeometry ? this.previousFocusPixels : null,
           );
           this.previousFocusPixels = focus.sampledPixels;
           this.previousFocusKey = regionKey;
+          this.previousFocusWidth = scale.width;
+          this.previousFocusHeight = scale.height;
           options.onFocusQuality(focus);
           sampledQuality = measureScannerImageQuality({ luminance: grayscale, width: scale.width, height: scale.height });
-          if (sampledQuality) {
-            this.lastImageQualityProfile = createScannerImageQualityProfile({
-              timestamp, frameWidth: dimensions.width, frameHeight: dimensions.height,
-              roiX: crop.x, roiY: crop.y, roiWidth: crop.width, roiHeight: crop.height,
-              sampleWidth: scale.width, sampleHeight: scale.height,
-              focus, image: sampledQuality,
-            });
-          } else {
-            this.lastImageQualityProfile = null;
-          }
           if (focus.valid && options.onTemporalFrame) {
             const snapshot = createScannerTemporalSnapshot(grayscale, scale.width, scale.height);
             if (snapshot) options.onTemporalFrame(snapshot, focus);
@@ -136,7 +130,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
           { luminance: grayscale, width: scale.width, height: scale.height },
           {
             cachedOrientationHints: this.cachedOrientationHints,
-            reuseOrientationHints: false,
+            reuseOrientationHints: !scale.baseline,
             imageQuality: sampledQuality,
             processingBudget: options.processingBudget,
             shouldContinue: () => !this.disposed,
@@ -218,6 +212,8 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     this.options = null;
     this.previousFocusPixels = null;
     this.previousFocusKey = null;
+    this.previousFocusWidth = 0;
+    this.previousFocusHeight = 0;
     this.cachedOrientationHints = null;
   }
 }
