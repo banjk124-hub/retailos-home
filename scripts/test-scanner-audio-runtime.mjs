@@ -75,7 +75,15 @@ const assertGain = (actual, expected, message) => {
   assert.ok(Math.abs(actual - expected) < 1e-9, `${message}: expected ${expected}, received ${actual}`);
 };
 
-const storeSource = compile(await read('../src/features/scanner/services/scannerSettingsStore.ts'));
+const contractsSource = await read('../src/platform/scanner/contracts.ts');
+const formatsMatch = contractsSource.match(/SUPPORTED_BARCODE_FORMATS = \\[([\\s\\S]*?)\\] as const/);
+const formats = [...formatsMatch[1].matchAll(/'([A-Z0-9_]+)'/g)].map((match) => match[1]);
+let rawStoreSource = await read('../src/features/scanner/services/scannerSettingsStore.ts');
+rawStoreSource = rawStoreSource.replace(
+  "import { SUPPORTED_BARCODE_FORMATS, type SupportedBarcodeSymbology } from '../../../platform/scanner/contracts';",
+  `const SUPPORTED_BARCODE_FORMATS = ${JSON.stringify(formats)} as const; type SupportedBarcodeSymbology = typeof SUPPORTED_BARCODE_FORMATS[number];`,
+);
+const storeSource = compile(rawStoreSource);
 const storeUrl = asModuleUrl(storeSource);
 const store = await import(storeUrl);
 
