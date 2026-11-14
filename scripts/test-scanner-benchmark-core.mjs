@@ -27,6 +27,13 @@ assert.ok(validateBenchmarkManifest({ ...valid, cases: [{ ...valid.cases[0], sca
   .some((message) => message.includes('source-frame-normalized')));
 assert.ok(validateBenchmarkManifest({ ...valid, cases: [valid.cases[0], valid.cases[0]] })
   .some((message) => message.includes('duplicated')));
+assert.ok(validateBenchmarkManifest({
+  ...valid,
+  cases: [
+    valid.cases[0],
+    { ...valid.cases[0], id: 'ean13-front-002', image: 'another-folder/ean13-front-001.png' },
+  ],
+}).some((message) => message.includes('image basename is duplicated')));
 assert.equal(percentile([10, 20, 30, 40], 0.5), 25);
 
 const summary = summarizeBenchmarkRows([
