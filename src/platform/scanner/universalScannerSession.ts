@@ -17,6 +17,7 @@ import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
 import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
 import { ScannerFocusQualityMonitor, type ScannerFocusQualitySample } from './scannerFocusQuality';
 import { ScannerTemporalFrameBuffer } from './scannerTemporalRecognition';
+import { ScannerAdaptiveRuntimeController } from './scannerAdaptiveRuntimeController';
 
 type VideoReadiness = {
   readyState: number;
@@ -151,6 +152,8 @@ export class UniversalScannerSession implements ScannerSession {
   private torchCommand: Promise<ScannerTorchState> | null = null;
   private readonly focusQualityMonitor = new ScannerFocusQualityMonitor();
   private readonly temporalFrameBuffer = new ScannerTemporalFrameBuffer();
+  private readonly adaptiveRuntimeController = new ScannerAdaptiveRuntimeController();
+  private adaptiveRuntimeTransitions = 0;
   private regionRevision = 0;
   private focusQualityStartedAt = Date.now();
   private focusQualitySamples = 0;
@@ -322,6 +325,8 @@ export class UniversalScannerSession implements ScannerSession {
   private async startInternal(): Promise<void> {
     const generation = ++this.generation;
     this.temporalFrameBuffer.clear();
+    this.adaptiveRuntimeController.reset();
+    this.adaptiveRuntimeTransitions = 0;
     this.lifecycle.opening();
     this.setState('requesting');
     this.startAttemptStartedAt = performance.now();
@@ -461,8 +466,9 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async processFrame(timestamp: number, generation: number): Promise<void> {
+    const frameGapMs = this.lastFrameCallbackAt > 0 ? timestamp - this.lastFrameCallbackAt : 0;
     if (this.lastFrameCallbackAt > 0) {
-      this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, timestamp - this.lastFrameCallbackAt);
+      this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, frameGapMs);
     }
     this.lastFrameCallbackAt = timestamp;
     const minDecodeIntervalMs = 70;
@@ -476,6 +482,7 @@ export class UniversalScannerSession implements ScannerSession {
     const decodeStartedAt = performance.now();
     const regionRevision = this.regionRevision;
     const scanRegion = this.getScanRegion();
+    const processingBudget = this.adaptiveRuntimeController.getBudget();
     // Consume one historical frame before the current decode can append its own
     // observation. This prevents the fallback from decoding the same frame twice.
     const temporalCandidate = this.temporalFrameBuffer.takeBest(timestamp, generation, regionRevision);
@@ -484,6 +491,7 @@ export class UniversalScannerSession implements ScannerSession {
       let results = await this.decoder.decode(this.video, {
         timestamp,
         scanRegion,
+        processingBudget,
         onFocusQuality: (sample) => this.handleFocusQuality(sample, timestamp, generation),
         onTemporalFrame: (snapshot, quality) => {
           if (generation !== this.generation || regionRevision !== this.regionRevision
@@ -512,10 +520,24 @@ export class UniversalScannerSession implements ScannerSession {
       if (results.length === 0 && temporalCandidate && this.decoder
         && generation === this.generation && regionRevision === this.regionRevision
         && !this.disposed && this.currentState === 'scanning') {
-        results = await this.decoder.decodeTemporalSnapshot(temporalCandidate, temporalCandidate.timestamp);
+        results = await this.decoder.decodeTemporalSnapshot(temporalCandidate, temporalCandidate.timestamp, processingBudget);
       }
       // Include fallback cost in the session's end-to-end decode duration.
       const decodeDurationMs = performance.now() - decodeStartedAt;
+      const previousRuntimeMode = processingBudget.mode;
+      const nextRuntimeBudget = this.adaptiveRuntimeController.observe(decodeDurationMs, frameGapMs);
+      if (nextRuntimeBudget.mode !== previousRuntimeMode) {
+        this.adaptiveRuntimeTransitions += 1;
+        console.info('[RetailOS Scanner] Adaptive runtime policy', {
+          adaptiveRuntimeMode: nextRuntimeBudget.mode,
+          adaptiveRuntimeImageBudget: nextRuntimeBudget.maxImageCandidates,
+          adaptiveRuntimeGeometryBudget: nextRuntimeBudget.maxGeometryCandidates,
+          adaptiveRuntimeTransitions: this.adaptiveRuntimeTransitions,
+          decodeDurationMs: Number(decodeDurationMs.toFixed(1)),
+          frameGapMs: Number(frameGapMs.toFixed(1)),
+          reasons: nextRuntimeBudget.reasons,
+        });
+      }
       this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
       this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
       if (generation !== this.generation || regionRevision !== this.regionRevision
@@ -642,6 +664,10 @@ export class UniversalScannerSession implements ScannerSession {
       callbackErrors: this.diagnosticCallbackErrors,
       decodeDurationAverageMs: this.diagnosticFrames ? Number((this.diagnosticDecodeDurationTotalMs / this.diagnosticFrames).toFixed(1)) : 0,
       decodeDurationMaxMs: Number(this.diagnosticDecodeDurationMaxMs.toFixed(1)),
+      adaptiveRuntimeMode: this.adaptiveRuntimeController.getBudget().mode,
+      adaptiveRuntimeImageBudget: this.adaptiveRuntimeController.getBudget().maxImageCandidates,
+      adaptiveRuntimeGeometryBudget: this.adaptiveRuntimeController.getBudget().maxGeometryCandidates,
+      adaptiveRuntimeTransitions: this.adaptiveRuntimeTransitions,
       maxFrameCallbackGapMs: Number(this.diagnosticMaxFrameGapMs.toFixed(1)),
       longTasks: this.diagnosticLongTasks,
       layoutShiftScore: Number(this.diagnosticLayoutShiftScore.toFixed(4)),
