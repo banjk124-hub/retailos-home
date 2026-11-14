@@ -52,6 +52,12 @@ assert.match(stocktake, /visibleReviewEntries\.map/, 'Stocktake review must rend
 assert.match(stocktake, /visibleHistoryLogs\.map/, 'Stocktake history must render only the current bounded slice.');
 assert.doesNotMatch(stocktake, /currentEntries\.map\(/, 'Stocktake review must not mount every row at once.');
 assert.doesNotMatch(stocktake, /entries\.filter\(\(entry\) => entry\.zoneId === currentZone\?\.id\)\.sort/, 'Stocktake must not filter and sort the active entries again on every render.');
+assert.match(stocktake, /const currentSessionZones = useMemo\(/, 'Stocktake session zones must be derived once per zone/session snapshot.');
+assert.match(stocktake, /const currentSessionExports = useMemo\(/, 'Stocktake session exports must be derived once per export/session snapshot.');
+assert.match(stocktake, /visibleSessionZones\.map/, 'The Stocktake home screen must reuse its memoized visible zones.');
+assert.match(stocktake, /currentSessionZones\.map/, 'Stocktake history must reuse its memoized session zones.');
+assert.match(stocktake, /currentSessionExports\.map/, 'The exports screen must reuse its memoized session exports.');
+assert.doesNotMatch(stocktake, /\{zones\.filter|\{exports\.filter/, 'Stocktake render paths must not repeatedly filter session zones or exports.');
 assert.match(stocktakeImport, /const invalidCount = useMemo\(/, 'Stocktake Import row validation must not be recomputed on unrelated UI renders.');
 assert.match(stocktakeImport, /const invalidZones = useMemo\(/, 'Stocktake Import cross-zone validation must not be recomputed on unrelated UI renders.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
