@@ -3,7 +3,7 @@ import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
   ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode,
-  Search, ShieldCheck, Sparkles, Truck, Warehouse, X,
+  ShieldCheck, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
@@ -15,8 +15,8 @@ import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
-import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
-import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
+import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
+import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
 import { LiquidDock } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
@@ -87,6 +87,7 @@ export default function HomeScreen({
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
   const initialUiState = useRef(readHomeUiState()).current;
+  const searchRef = useRef(initialUiState.search);
   const [activeNav, setActiveNav] = useState(
     navItems.some((item) => item.id === initialUiState.activeNav && item.id !== 'settings')
       ? initialUiState.activeNav
@@ -124,7 +125,6 @@ export default function HomeScreen({
     records: BarcodeProductRecord[] | null;
     error?: string;
   } | null>(null);
-  const [search, setSearch] = useState(initialUiState.search);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
@@ -153,6 +153,7 @@ export default function HomeScreen({
   const noticeCloseButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
+  const [selectedLibraryModules, setSelectedLibraryModules] = useState<RetailModule[]>([]);
   const [isStocktakeOpen, setIsStocktakeOpen] = useState(false);
   const [isStocktakeImportOpen, setIsStocktakeImportOpen] = useState(false);
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
@@ -243,24 +244,6 @@ export default function HomeScreen({
     return () => mobileViewport.removeEventListener('change', updateSpotlightForViewport);
   }, []);
 
-  const filteredModules = useMemo(() => {
-    const query = search.trim().toLocaleLowerCase('vi');
-    return MODULE_REGISTRY.filter((module) =>
-      !query || `${module.title} ${module.description} ${module.group}`.toLocaleLowerCase('vi').includes(query),
-    );
-  }, [search]);
-  const visibleLibraries = useMemo(() => MODULE_LIBRARIES
-    .map((library) => ({
-      ...library,
-      modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)),
-    }))
-    .filter((library) => library.modules.length > 0), [filteredModules]);
-  const selectedLibraryModules = useMemo(
-    () => selectedLibrary
-      ? filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id))
-      : [],
-    [filteredModules, selectedLibrary],
-  );
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
     const mondayOffset = (today.getDay() + 6) % 7;
@@ -343,8 +326,9 @@ export default function HomeScreen({
       setIsNoticeClosing(false);
     }, 240);
   };
-  const openLibrary = useCallback((library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
+  const openLibrary = useCallback((library: ModuleLibraryDefinition, modules: RetailModule[], trigger: HTMLButtonElement) => {
     libraryTriggerRef.current = trigger;
+    setSelectedLibraryModules(modules);
     setLibraryOrigin(getMotionOrigin(trigger));
     setIsLibraryClosing(false);
     setSelectedLibrary(library);
@@ -472,8 +456,8 @@ export default function HomeScreen({
   }, [initialUiState]);
 
   useEffect(() => {
-    saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: window.scrollY });
-  }, [activeNav, search]);
+    saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
+  }, [activeNav]);
 
   useEffect(() => {
     let frame = 0;
@@ -504,12 +488,12 @@ export default function HomeScreen({
   }, []);
 
   useEffect(() => {
-    const persistCurrentUi = () => saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: window.scrollY });
+    const persistCurrentUi = () => saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
     const onScroll = () => {
       const currentY = Math.max(0, window.scrollY);
       if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
       scrollSaveTimer.current = window.setTimeout(() => {
-        saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: currentY });
+        saveHomeUiState({ activeNav, search: searchRef.current, scrollY: currentY });
       }, 140);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -519,8 +503,12 @@ export default function HomeScreen({
       window.removeEventListener('pagehide', persistCurrentUi);
       if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
     };
-  }, [activeNav, search]);
+  }, [activeNav]);
 
+  const handleSearchChange = useCallback((nextSearch: string) => {
+    searchRef.current = nextSearch;
+    saveHomeUiState({ ...readHomeUiState(), search: nextSearch });
+  }, []);
   const announce = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
@@ -735,17 +723,11 @@ export default function HomeScreen({
           </div>
         </section>
 
-        <section className="section-block app-library-section" id="modules">
-          <div className="section-heading app-library-heading">
-            <div className="module-heading-copy"><span className="library-eyebrow">KHÔNG GIAN CHỨC NĂNG</span><h2>Thư viện nghiệp vụ</h2><p>{filteredModules.length} chức năng trong {visibleLibraries.length} nhóm</p></div>
-            <label className="search-field home-search-field" aria-label="Tìm công cụ"><MotionIcon icon={Search} variant="search" active={Boolean(search)} size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm chức năng..." aria-label="Tìm công cụ" />{search && <button className="search-clear-button" type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><MotionIcon icon={X} variant="search" active size={15} /></button>}</label>
-          </div>
-          {visibleLibraries.length > 0 && <ModuleLibraryEngine
-            groups={visibleLibraries}
-            onOpen={openLibrary}
-          />}
-          {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
-        </section>
+        <HomeModuleLibrarySection
+          initialSearch={initialUiState.search}
+          onSearchChange={handleSearchChange}
+          onOpen={openLibrary}
+        />
 
         <section className="lower-grid" id="activity"><div className="panel-card activity-panel"><div className="panel-heading"><h2 className="icon-section-title" aria-label="Hoạt động"><Activity size={22} aria-hidden="true" /></h2></div><div className="activity-empty"><span className="activity-empty-icon"><Activity size={18} /></span><div><strong>Chưa có hoạt động</strong></div></div></div></section>
         <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><BrandMark /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
