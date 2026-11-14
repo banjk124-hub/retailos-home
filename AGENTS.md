@@ -34,8 +34,8 @@ Report: objective, files changed, behavior changed, tests actually run, results,
 
 
 ## Cross-session continuity contract (added 2026-11-05)
-- At session start, read `docs/ai-context/PROJECT_CONTEXT.md` first as the canonical project entry point, then read `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, and the relevant skill.
-- Keep `PROJECT_CONTEXT.md` for durable product facts/constraints; `ARCHITECTURE.md` for invariants and boundaries; `ROADMAP.md` for phase scope/acceptance gates; accepted durable decisions in `ARCHITECTURE.md`; `IMPLEMENTATION_STATUS.md` for verified state/history; `SESSION_LOG.md` for concise handoffs.
+- At session start, read `docs/ai-context/INDEX.md` as the navigation entry point, then read `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, and the relevant skill.
+- Keep document ownership aligned with `docs/ai-context/INDEX.md`: PROJECT_CONTEXT for durable product facts/current top-level state; ARCHITECTURE for invariants/decisions; ROADMAP for future scope; IMPLEMENTATION_STATUS for verified state; SESSION_LOG for concise handoffs; CHANGELOG_AI for implementation evidence.
 - Every implementation session must update status and handoff evidence in the same change set. If a phase or acceptance criterion changes, update roadmap. If an invariant/decision changes, record it explicitly.
 - Do not rely on chat history or model memory as the project source of truth. The repository documents and current source are authoritative.
 - If GitHub connector or local tooling cannot create/update a required document, record the limitation; do not claim the document was created.
