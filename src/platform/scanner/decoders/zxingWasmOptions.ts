@@ -19,7 +19,9 @@ export function createZXingWasmReaderOptions(
     // Rotation and scaling are explicit, bounded stages in the shared
     // recognition pipeline. Keep backend-internal duplicates disabled.
     tryRotate: false,
-    tryInvert: false,
+    // Native reversed-reflectance detection is not duplicated by the shared
+    // RetailOS pipeline; retain this WASM capability on the miss path.
+    tryInvert: true,
     tryDownscale: false,
     tryDenoise: false,
     maxNumberOfSymbols: 1,
