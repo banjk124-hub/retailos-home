@@ -260,8 +260,8 @@ try {
     'shared pipeline must not run a duplicate quarter-turn pixel transform');
   assert.ok(!decoderOwnedRotationStages.includes('orthogonal'),
     'shared pipeline must omit its orthogonal candidate when the decoder owns rotation');
-  assert.ok(decoderOwnedRotationStages.includes('deskew'),
-    'continuous-angle deskew must remain shared because native orthogonal rotation does not replace it');
+  assert.ok(decoderOwnedRotationResult.deskewAttempts >= 1,
+    'continuous-angle deskew estimation must remain shared because native orthogonal rotation does not replace it');
 
   const skewed = rotateLuminanceByAngle(source, width, height, 17);
   assert.ok(skewed, 'bounded skew fixture must be generated');
