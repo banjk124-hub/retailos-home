@@ -5,6 +5,9 @@ import { useScannerSettings } from '../hooks/useScannerSettings';
 import {
   isScannerVibrationSupported,
   updateScannerSettings,
+  SCANNER_SYMBOLOGY_OPTIONS,
+  getEnabledScannerSymbologies,
+  updateScannerSymbologyEnabled,
 } from '../services/scannerSettingsStore';
 import { previewScannerBeep } from '../services/scannerFeedback';
 import '../../../styles/scanner-settings.css';
@@ -29,6 +32,9 @@ export default function ScannerSettingsPanel({ onClose }: Props) {
   }, [onClose]);
 
   const volumeLabel = settings.beepVolume === 0 ? 'Tắt' : `${settings.beepVolume}%`;
+  const enabledSymbologyCount = getEnabledScannerSymbologies(settings).length;
+  const linearOptions = SCANNER_SYMBOLOGY_OPTIONS.filter((option) => option.group === 'linear');
+  const matrixOptions = SCANNER_SYMBOLOGY_OPTIONS.filter((option) => option.group === 'matrix');
 
   return <div className="scanner-settings-backdrop" onClick={(event) => {
     if (event.target === event.currentTarget) onClose();
@@ -40,9 +46,65 @@ export default function ScannerSettingsPanel({ onClose }: Props) {
         <div>
           <span className="scanner-settings-eyebrow">RETAILOS · SCANNER</span>
           <h2 id="scanner-settings-title">Cài đặt máy quét</h2>
-          <p>Phản hồi khi nhận barcode hợp lệ</p>
+          <p>Định dạng nhận diện và phản hồi khi quét thành công</p>
         </div>
       </header>
+
+      <section className="scanner-preference-card scanner-symbology-card" aria-labelledby="scanner-symbology-title">
+        <div className="scanner-preference-heading">
+          <span className="scanner-preference-icon"><ScanBarcode size={19} /></span>
+          <div>
+            <h3 id="scanner-symbology-title">Định dạng barcode</h3>
+            <p>{enabledSymbologyCount}/{SCANNER_SYMBOLOGY_OPTIONS.length} định dạng đang bật</p>
+          </div>
+        </div>
+        <p className="scanner-preference-note">Chỉ những định dạng đang bật mới được gửi vào decoder. Bốn định dạng hiện tại được bật mặc định; các định dạng mở rộng mặc định tắt.</p>
+        <div className="scanner-symbology-group">
+          <h4>MÃ TUYẾN TÍNH · 1D</h4>
+          {linearOptions.map((option) => {
+            const enabled = settings.symbologyEnabled[option.format];
+            const isLastEnabled = enabled && enabledSymbologyCount <= 1;
+            return <div className="scanner-symbology-row" key={option.format}>
+              <div className="scanner-symbology-copy">
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enabled}
+                aria-label={`${enabled ? 'Tắt' : 'Bật'} ${option.label}`}
+                className={`scanner-settings-switch scanner-symbology-switch ${enabled ? 'is-on' : ''}`}
+                disabled={isLastEnabled}
+                onClick={() => updateScannerSymbologyEnabled(option.format, !enabled)}
+              ><span /></button>
+            </div>;
+          })}
+        </div>
+        <div className="scanner-symbology-group">
+          <h4>MÃ MA TRẬN · 2D</h4>
+          {matrixOptions.map((option) => {
+            const enabled = settings.symbologyEnabled[option.format];
+            const isLastEnabled = enabled && enabledSymbologyCount <= 1;
+            return <div className="scanner-symbology-row" key={option.format}>
+              <div className="scanner-symbology-copy">
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enabled}
+                aria-label={`${enabled ? 'Tắt' : 'Bật'} ${option.label}`}
+                className={`scanner-settings-switch scanner-symbology-switch ${enabled ? 'is-on' : ''}`}
+                disabled={isLastEnabled}
+                onClick={() => updateScannerSymbologyEnabled(option.format, !enabled)}
+              ><span /></button>
+            </div>;
+          })}
+        </div>
+        <p className="scanner-preference-note">Ít nhất một định dạng phải được bật. Thay đổi áp dụng từ lần mở máy quét tiếp theo và được dùng chung cho Home, Kiểm kê.</p>
+      </section>
 
       <section className="scanner-preference-card" aria-labelledby="scanner-vibration-title">
         <div className="scanner-preference-heading">

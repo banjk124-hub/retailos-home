@@ -1,3 +1,36 @@
+# PR-06 — Configurable Scanner Symbology (active implementation)
+
+**Branch:** `feat/scanner-configurable-symbology`  
+**Base:** `fea2cd09b00cf819b09d8372e88394f34220d0a6` (PR #112 merge).  
+**Objective:** expose decoder-supported symbologies as app-owned, persistent ON/OFF preferences in Home Scanner Settings.
+
+## Product contract
+- Engine capability and app permission are separate: only app-enabled formats are passed to decoder initialization.
+- Defaults preserve the four current formats: EAN-8, EAN-13, CODE-128 and CODE-39 ON; all additional formats OFF.
+- Settings are device-local and extend the existing `retailos.scannerSettings.v1` record without discarding vibration/beep preferences.
+- Home and Stocktake share the same preferences.
+- A format toggle applies on the next scanner session; it never restarts an active camera session.
+- At least one format must remain enabled.
+- Session acceptance independently rejects adapter output outside the app allowlist.
+
+## Candidate format set
+EAN-8, EAN-13, UPC-A, UPC-E, CODE-128, CODE-39, CODE-93, ITF, Codabar, GS1 DataBar (RSS-14), GS1 DataBar Expanded, QR Code, Data Matrix, PDF417, Aztec, MaxiCode and Micro QR Code.
+
+## Protected
+No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence, strict ROI, enhancement/temporal pipeline, lifecycle/recovery, Home lookup, Stocktake form-fill/explicit-save, auth, storage backend or deployment contract changes.
+
+## Acceptance
+- [ ] Legacy preference migration retains vibration/beep and four existing defaults.
+- [ ] Every exposed format maps through ZXing JS and ZXing-C++ WASM.
+- [ ] Settings switches persist and enforce minimum-one-enabled behavior.
+- [ ] Both adapters receive only enabled formats; session acceptance fails closed for unrequested output.
+- [ ] Format-specific validation and existing EAN/CODE-128/CODE-39 regressions pass.
+- [ ] PR-05 benchmark accepts expanded corpus and derives adapter allowlist from positive manifest cases.
+- [ ] Full preflight, TypeScript, production build, Pages build, bundle/PWA checks pass.
+- [ ] Physical iOS Safari/PWA + Android Chrome/PWA verification is completed before release approval.
+
+---
+
 # Current scanner decoder replacement status — 2026-11-14
 
 **Current main:** `e5e85eda44b1de40d29e6b6fa3131514414fecb0` (PR #111 merged).

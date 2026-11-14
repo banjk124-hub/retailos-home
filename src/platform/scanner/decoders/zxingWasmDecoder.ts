@@ -11,11 +11,24 @@ import { rgbaToLuminance } from './rgbaToLuminance';
 import type { DecoderDecodeOptions, DecoderInitOptions, DecoderOutput, ScannerDecoderAdapter } from './decoderAdapter';
 
 const FORMAT_MAP: Partial<Record<ScannerSymbology, string>> = {
-  EAN_8: 'EAN8', EAN_13: 'EAN13', CODE_128: 'Code128', CODE_39: 'Code39',
+  EAN_8: 'EAN8', EAN_13: 'EAN13', UPC_A: 'UPCA', UPC_E: 'UPCE',
+  CODE_128: 'Code128', CODE_39: 'Code39', CODE_93: 'Code93',
+  ITF: 'ITF', CODABAR: 'Codabar', QR_CODE: 'QRCode',
+  DATA_MATRIX: 'DataMatrix', PDF_417: 'PDF417', AZTEC: 'Aztec',
+  RSS_14: 'DataBar', RSS_EXPANDED: 'DataBarExp',
+  MAXICODE: 'MaxiCode', MICRO_QR_CODE: 'MicroQRCode',
 };
 const REVERSE_FORMAT_MAP = new Map<string, ScannerSymbology>(
   Object.entries(FORMAT_MAP).map(([key, value]) => [value, key as ScannerSymbology]),
 );
+// ZXing-C++ can report concrete variants for family-level formats.
+for (const variant of ['Code39Std', 'Code39Ext']) REVERSE_FORMAT_MAP.set(variant, 'CODE_39');
+for (const variant of ['ITF14']) REVERSE_FORMAT_MAP.set(variant, 'ITF');
+for (const variant of ['CompactPDF417', 'MicroPDF417']) REVERSE_FORMAT_MAP.set(variant, 'PDF_417');
+for (const variant of ['QRCodeModel1', 'QRCodeModel2']) REVERSE_FORMAT_MAP.set(variant, 'QR_CODE');
+for (const variant of ['AztecCode', 'AztecRune']) REVERSE_FORMAT_MAP.set(variant, 'AZTEC');
+for (const variant of ['DataBarOmni', 'DataBarStk', 'DataBarStkOmni']) REVERSE_FORMAT_MAP.set(variant, 'RSS_14');
+for (const variant of ['DataBarExpStk']) REVERSE_FORMAT_MAP.set(variant, 'RSS_EXPANDED');
 const WASM_OVERRIDES = {
   locateFile(path: string, prefix: string): string {
     return path.endsWith('.wasm') ? readerWasmUrl : `${prefix}${path}`;

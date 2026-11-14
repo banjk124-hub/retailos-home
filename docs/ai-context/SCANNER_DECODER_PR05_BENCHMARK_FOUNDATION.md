@@ -57,7 +57,7 @@ The isolated page is served only through the Vite development server at `/script
 
 The harness:
 - instantiates the existing ZXing JS and ZXing-C++ WASM decoder adapters sequentially;
-- supplies the same source image, manifest ROI and active four-format allowlist to both;
+- supplies the same source image, manifest ROI and manifest-derived active-format allowlist to both;
 - measures backend initialization separately from per-image decode attempts;
 - supports repeated trials and selectable backend order;
 - scores exact payload + symbology matches, misses, wrong decodes, negative-control false positives and runtime errors;
@@ -113,7 +113,7 @@ The manifest validator rejects duplicate IDs, invalid formats, path traversal, m
 
 ## 5. Running the isolated harness\n\n1. Run `npm run dev -- --host 0.0.0.0`.\n2. Open `/scripts/scanner-benchmark/` on the desktop or target device using the same development server.\n3. Load a local manifest JSON and select all corresponding image files.\n4. Run at least three repeats, then repeat with backend order reversed.\n5. Export the JSON report and retain the manifest/corpus version alongside it.\n\nThe page supports multi-file selection and falls back from `createImageBitmap` to an `HTMLImageElement` decode path for browser compatibility. It does not request camera permission. Use a secure origin where the browser requires it for WASM or modern image APIs.\n\n## 6. Required capture matrix
 
-At minimum, collect EAN-8, EAN-13, CODE-128 and CODE-39 across:
+Collect each enabled symbology represented in the corpus, including EAN-8, EAN-13, UPC-A, UPC-E, CODE-128, CODE-39, CODE-93, ITF, Codabar, GS1 DataBar, GS1 DataBar Expanded, QR Code, Data Matrix, PDF417, Aztec, MaxiCode and Micro QR Code, across:
 - upright, 90°/180°/270° and representative in-plane skew;
 - barcode pixel height bands (record source pixels; do not infer physical distance);
 - center, each ROI edge, partial clipping and outside-ROI negative controls;
