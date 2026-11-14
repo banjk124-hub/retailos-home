@@ -17,4 +17,8 @@ assert.match(push, /registerRetailOsServiceWorker/);
 assert.match(prompt, /registerRetailOsServiceWorker/);
 assert.match(prompt, /controllerchange/);
 assert.match(prompt, /Hãy hoàn tất thao tác đang thực hiện/);
+assert.match(prompt, /registration\?\.removeEventListener\('updatefound'/,
+  'registration update listeners must be removed on unmount');
+assert.match(prompt, /installingWorker\?\.removeEventListener\('statechange'/,
+  'installing worker state listeners must be removed on unmount');
 console.log('PWA cache policy and update lifecycle tests passed.');
