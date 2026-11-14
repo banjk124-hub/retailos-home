@@ -525,6 +525,12 @@ export class UniversalScannerSession implements ScannerSession {
       }
       // Include fallback cost in the session's end-to-end decode duration.
       const decodeDurationMs = performance.now() - decodeStartedAt;
+      this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
+      this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
+      if (generation !== this.generation || regionRevision !== this.regionRevision
+        || this.disposed || this.currentState !== 'scanning') return;
+      // Stale work from a retired generation/ROI must never influence the
+      // active session's adaptive controller.
       const previousRuntimeMode = processingBudget.mode;
       const nextRuntimeBudget = this.adaptiveRuntimeController.observe(decodeDurationMs, frameGapMs);
       if (nextRuntimeBudget.mode !== previousRuntimeMode) {
@@ -539,10 +545,6 @@ export class UniversalScannerSession implements ScannerSession {
           reasons: nextRuntimeBudget.reasons,
         });
       }
-      this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
-      this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
-      if (generation !== this.generation || regionRevision !== this.regionRevision
-        || this.disposed || this.currentState !== 'scanning') return;
       if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
       const now = Date.now();
       for (const result of results) {
