@@ -1,4 +1,13 @@
-.app-shell .topbar-dock, .app-shell .topbar-dock::before, .app-shell .spotlight-tile-main, .app-shell .spotlight-orbit, .app-shell .spotlight-glow, .app-shell .spotlight-notifications-heading > i, .app-shell .spotlight-notification, .app-shell .dept-wave{
+/* Keep the Home surface calm; motion is reserved for direct interaction. */
+.app-shell .topbar-dock,
+.app-shell .topbar-dock::before,
+.app-shell .spotlight-tile-main,
+.app-shell .spotlight-orbit,
+.app-shell .spotlight-glow,
+.app-shell .spotlight-notifications-heading > i,
+.app-shell .spotlight-notification,
+.app-shell .dept-wave,
+.app-shell .hero-orb {
   animation: none;
 }
 
@@ -275,7 +284,13 @@
 .app-shell .app-library-module {
   animation: app-library-module-in 180ms ease-out both;
   transition-duration: 150ms;
-}.app-shell button, .app-shell .topbar-dock, .app-shell .spotlight-tile-main, .app-shell .app-library-card{
+}
+
+.app-shell button,
+.app-shell .topbar-dock,
+.app-shell .spotlight-tile-main,
+.app-shell .app-library-card,
+.app-shell .module-card {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
