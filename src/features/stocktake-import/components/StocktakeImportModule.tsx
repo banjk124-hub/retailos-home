@@ -137,8 +137,14 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     () => countUniqueProductCodes(activeZone?.rows ?? []),
     [activeZone],
   );
-  const activeZoneHasProductNames = Boolean(activeZone?.rows.some((row) => row.productName?.trim()));
-  const invalidCount = activeZone?.rows.filter((row) => getRowIssues(row).length > 0).length ?? 0;
+  const activeZoneHasProductNames = useMemo(
+    () => Boolean(activeZone?.rows.some((row) => row.productName?.trim())),
+    [activeZone],
+  );
+  const invalidCount = useMemo(
+    () => activeZone?.rows.reduce((count, row) => count + (getRowIssues(row).length > 0 ? 1 : 0), 0) ?? 0,
+    [activeZone],
+  );
   const outputReady = Boolean(activeZone && result && invalidCount === 0 &&
     !editingZone && !dirtyZones.includes(activeZone.zoneCode) && result.blockingIssues.length === 0);
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
@@ -147,7 +153,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const noticeTone = /không|chưa|lỗi|cần xác nhận|cần bổ sung|bị bỏ qua|không được/i.test(notice)
     ? 'warning'
     : /đang|khôi phục|phiên mới/i.test(notice) ? 'info' : 'success';
-  const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [];
+  const invalidZones = useMemo(
+    () => result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [],
+    [result],
+  );
   const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
   const refreshHistory = async () => {
