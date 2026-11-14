@@ -28,19 +28,6 @@ const modulePaths = [
 try {
   for (const relativePath of modulePaths) {
     let source = await readFile(path.join(root, relativePath), 'utf8');
-    if (relativePath === 'src/platform/scanner/decoders/decoderFactory.ts') {
-      assert.match(source, /import\('\.\/zxingWasmDecoder'\)/,
-        'production selection must point to the WASM engine');
-      // This fixture suite remains the legacy JS comparison baseline while
-      // the production factory is cut over to WASM. The adapter is retained
-      // temporarily for rollback and parity comparison, not runtime selection.
-      source = `export const defaultScannerDecoderFactory = {
-        async create() {
-          const { ZXingDecoderAdapter } = await import('./zxingDecoder');
-          return new ZXingDecoderAdapter();
-        },
-      };`;
-    }
     const compiled = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
     }).outputText
@@ -56,13 +43,21 @@ try {
         (_match, prefix, specifier, suffix) => prefix + (specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : specifier + '.js') + suffix,
       )
       .replace(
-        /import \{([^}]+)\} from ['"]@zxing\/library['"];?/,
-        (_match, names) => "import ZXing from '@zxing/library';\nconst { " + names + " } = ZXing;",
+        /import readerWasmUrl from ['"]zxing-wasm\/reader\/zxing_reader\.wasm\?url['"];?/,
+        `const readerWasmUrl = ${JSON.stringify(fileURLToPath(import.meta.resolve('zxing-wasm/reader/zxing_reader.wasm')))};`,
       );
     const outputPath = path.join(tempRoot, relativePath.replace(/\.ts$/, '.js'));
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(outputPath, compiled, 'utf8');
   }
+
+  globalThis.ImageData ??= class ImageData {
+    constructor(data, width, height) {
+      this.data = data;
+      this.width = width;
+      this.height = height;
+    }
+  };
 
   const canvasStats = { created: 0, draws: 0, lastCrop: null, forceBaselineMiss: false, forceOneXMiss: false, canvases: [] };
   globalThis.document = {
@@ -683,7 +678,7 @@ try {
     'missing ROI must not draw or decode a full frame');
   await invalidDecoder.dispose();
 
-  console.log('Production ZXing adapter integration passed: formats/orientations, strict ROI, 1.5x→1x→2x fallback, detached processing canvas, immutable video preview and camera stream contract.');
+  console.log('Production ZXing-C++ WASM adapter integration passed: formats/orientations, strict ROI, 1.5x→1x→2x fallback, detached processing canvas, immutable video preview and camera stream contract.');
 } finally {
   delete globalThis.document;
   await rm(tempRoot, { recursive: true, force: true });
