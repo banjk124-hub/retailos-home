@@ -19,7 +19,8 @@ This is the navigation layer for repository documentation. Read the canonical do
 |---|---|
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
-| Scanner recognition architecture | `SCANNER_RECOGNITION_PIPELINE.md` |
+| Scanner recognition architecture | `SCANNER_RECOGNITION_PIPELINE.md` (historical stage design; verify current implementation status against the Phase 0 audit) |
+| Scanner decoder replacement baseline and protected contracts | `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` |
 | Scanner implementation phase order | `ROADMAP.md` |
 | PWA bundle, service worker and cache behavior | `PERFORMANCE_BUNDLE_PWA.md` |
 | Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
