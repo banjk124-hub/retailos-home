@@ -52,6 +52,8 @@ assert.match(home, /action=\{dockAction\}/);
 assert.match(dock, /export const LiquidDock = memo\(function LiquidDock/);
 assert.match(home, /<HomeModuleLibrarySection[\s\S]*?onSearchChange=\{handleSearchChange\}/, 'Home must delegate module search to its isolated component.');
 assert.doesNotMatch(home, /useState\(initialUiState\.search\)|filteredModules|visibleLibraries|MODULE_REGISTRY/, 'HomeScreen must not own the high-frequency module search/filter state.');
+assert.match(home, /const \[initialUiState\] = useState\(readHomeUiState\)/, 'Home UI state must be read lazily once rather than on every render.');
+assert.doesNotMatch(home, /useRef\(readHomeUiState\(\)\)/);
 assert.match(librarySection, /export const HomeModuleLibrarySection = memo\(/, 'Module search must be isolated from unrelated Home state changes.');
 assert.match(librarySection, /useState\(initialSearch\)/, 'The module library section must own its search input state.');
 assert.match(librarySection, /const filteredModules = useMemo\(/, 'Module filtering must be memoized inside the isolated search component.');
