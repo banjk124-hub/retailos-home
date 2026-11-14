@@ -36,6 +36,15 @@ Changed:
 - Home dock item definitions are stable; its action and navigation callbacks are memoized.
 - LiquidDock is memoized so unrelated Home state changes do not re-render the dock. Its own context-driven motion preference and keyboard interaction updates remain active.
 
+### IndexedDB transaction lifecycle consolidation
+
+The first batch-read implementation avoided repeated connections but duplicated database-open, transaction-completion and error-handling code already present in the single-record and cache-reconciliation paths.
+
+Changed:
+- Added one `withTransaction` lifecycle helper that owns connection open/close, transaction completion, abort and error handling.
+- Routed the existing `withStore` single-request helper, Home's multi-record snapshot read and cache reconciliation cursor through the same transaction lifecycle.
+- This keeps one targeted transaction for Home while removing duplicated IndexedDB lifecycle handling rather than adding another parallel service path.
+
 ### Search and library render isolation
 
 Before:
