@@ -12,9 +12,9 @@ assert.ok(!home.includes('Promise.allSettled(MODULE_DATA_IDS.map(getCachedModule
 assert.ok(barcodeLookup.includes('getCachedModuleSnapshots(lookupSources.map(({ moduleId }) => moduleId))'), 'Barcode lookup must share the batch reader.');
 assert.ok(!barcodeLookup.includes('Promise.allSettled(lookupSources.map(({ moduleId }) => getCachedModuleSnapshot(moduleId)))'), 'Barcode lookup must not open one IndexedDB connection per source.');
 
-assert.ok(home.includes('const MemoizedStocktakeModule = memo(StocktakeModule)'), 'The expensive Stocktake tree must be memoized.');
-assert.ok(home.includes('const MemoizedStocktakeImportModule = memo(StocktakeImportModule)'), 'The Stocktake Import tree must be memoized.');
-assert.ok(home.includes('const MemoizedBarcodeScanner = memo(BarcodeScanner)'), 'The scanner presentation must be memoized.');
+assert.ok(home.includes('const MemoizedStocktakeModule = memo((props: React.ComponentProps<typeof StocktakeModule>)'), 'The expensive Stocktake tree must be memoized.');
+assert.ok(home.includes('const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>)'), 'The Stocktake Import tree must be memoized.');
+assert.ok(home.includes('const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>)'), 'The scanner presentation must be memoized.');
 assert.ok(home.includes('const MemoizedLiquidDock = memo(LiquidDock)'), 'The navigation dock must be memoized.');
 assert.ok(home.includes('const dockItems = navItems.map('), 'Dock navigation items must have stable identity.');
 assert.ok(home.includes('const openBarcodeScanner = useCallback('), 'The scanner dock action callback must be stable.');
