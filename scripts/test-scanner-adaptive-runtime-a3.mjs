@@ -183,7 +183,7 @@ try {
 
   const session = await readFile(path.join(root, 'src/platform/scanner/universalScannerSession.ts'), 'utf8');
   const adapter = await readFile(path.join(root, 'src/platform/scanner/decoders/decoderAdapter.ts'), 'utf8');
-  const decoder = await readFile(path.join(root, 'src/platform/scanner/decoders/zxingDecoder.ts'), 'utf8');
+  const decoder = await readFile(path.join(root, 'src/platform/scanner/decoders/zxingWasmDecoder.ts'), 'utf8');
   const pipeline = await readFile(path.join(root, 'src/platform/scanner/scannerEnhancementPipeline.ts'), 'utf8');
   assert.match(session, /new ScannerAdaptiveRuntimeController\(\)/);
   assert.match(session, /this\.adaptiveRuntimeController\.observe\(decodeDurationMs, frameGapMs\)/);
@@ -192,8 +192,10 @@ try {
   assert.match(session, /decodeTemporalSnapshot\(temporalCandidate, temporalCandidate\.timestamp, processingBudget\)/,
     'T3 temporal fallback receives the same budget rather than being silently disabled');
   assert.match(adapter, /processingBudget\?: ScannerAdaptiveRuntimeBudget/);
-  assert.equal((decoder.match(/processingBudget,/g) ?? []).length, 3,
-    'the live-frame budget must flow into its pipeline and the temporal fallback pipeline');
+  assert.match(decoder, /processingBudget: options\.processingBudget/,
+    'the live-frame budget must reach the WASM enhancement pipeline');
+  assert.match(decoder, /decodeTemporalSnapshot\([\s\S]*?processingBudget,/,
+    'the WASM adapter must preserve the temporal fallback budget contract');
   assert.match(pipeline, /options\.processingBudget\?\.maxImageCandidates/);
   assert.match(pipeline, /options\.processingBudget\?\.maxGeometryCandidates/);
   assert.match(session, /const minDecodeIntervalMs = 70/,
