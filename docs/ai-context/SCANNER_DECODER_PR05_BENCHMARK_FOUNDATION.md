@@ -61,7 +61,7 @@ The harness:
 - measures backend initialization separately from per-image decode attempts;
 - supports repeated trials and selectable backend order;
 - scores exact payload + symbology matches, misses, wrong decodes, negative-control false positives and runtime errors;
-- reports initialization duration, aggregate p50/p95, first-trial p50 and steady-trial p50/p95 adapter decode duration, plus optional browser heap observations;
+- reports initialization duration, aggregate p50/p95, first-trial p50 and steady-trial p50/p95 adapter decode duration, geometry availability, plus optional browser heap observations;
 - records the locked backend versions: `@zxing/library` 0.23.0 and `zxing-wasm` 3.1.6;
 - exports environment metadata and per-case outcomes without exporting expected/decoded barcode payloads or image pixels.
 
