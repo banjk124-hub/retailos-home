@@ -26,6 +26,7 @@ import {
 } from '../services/stocktakeImportStore';
 import './stocktake-import.css';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { downloadFile } from '../../../shared/downloadFile';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
@@ -71,14 +72,7 @@ function normalizeEditableQuantity(value: string): string {
 }
 
 function downloadBlob(fileName: string, blob: Blob): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+  downloadFile(blob, fileName, 1500);
 }
 
 function downloadText(fileName: string, content: string): void {
