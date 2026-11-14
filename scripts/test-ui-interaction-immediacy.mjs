@@ -18,11 +18,15 @@ assert.doesNotMatch(app, /Suspense\s+fallback=\{<div className="retailos-interfa
 assert.match(app, /home-loading-surface[\s\S]*aria-busy="true"/, 'The root HomeScreen lazy boundary must show immediate visible feedback.');
 assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 5, 'Settings, QA, scanner settings, Stocktake and Stocktake Import must provide immediate visible loading feedback.');
 assert.match(home, /function ModuleLoadingSurface[\s\S]*aria-busy="true"/, 'The shared loading fallback must be an accessible, visible busy surface.');
+const loadingSurface = home.slice(home.indexOf('function ModuleLoadingSurface'), home.indexOf('type SnapshotNoticeStatus'));
+assert.match(loadingSurface, /role="status" aria-live="polite" aria-busy="true"/, 'Lazy-loading feedback must be announced as a live status.');
+assert.doesNotMatch(loadingSurface, /aria-modal|role="dialog"/, 'A temporary loading status must not claim modal focus management it does not implement.');
 assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle\}/, 'Primary navigation and header actions must not require a wake-up tap before they can receive a click.');
 assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer events on primary navigation after an idle timeout.');
 assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-short\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
 assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The mobile login panel must not wait before its entry animation starts.');
+assert.doesNotMatch(responsiveStyles, /\.home-enter-active \.content-wrap>\*:nth-child\(\d\)\{\}/, 'Removing stagger delays must not leave empty responsive rules behind.');
 assert.match(loginStyles, /animation: identity-panel-reveal[^;]*both/, 'The identity panel must start its reveal animation immediately.');
 assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\s(?:\d+(?:\.\d+)?|\.\d+)(?:ms|s)\s+both/, 'The identity panel must not have a pre-animation delay.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
