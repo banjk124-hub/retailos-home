@@ -1,22 +1,22 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
   ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode,
-  Search, ShieldCheck, Sparkles, Truck, Warehouse, X,
+  ShieldCheck, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { GlassSurface } from '../../shared/components/glass';
-import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
+import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
-import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
+import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
-import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
-import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
+import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
+import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
 import { LiquidDock } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
@@ -40,6 +40,15 @@ const StocktakeImportModule = lazy(() => import('../stocktake-import/components/
 const ScannerQaMonitor = lazy(() => import('./components/ScannerQaMonitor'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
+ 
+// Isolate active feature trees from unrelated Home state updates.
+const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>) => <BarcodeScanner {...props} />);
+const MemoizedStocktakeModule = memo((props: React.ComponentProps<typeof StocktakeModule>) => <StocktakeModule {...props} />);
+const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>) => <StocktakeImportModule {...props} />);
+const MemoizedScannerQaMonitor = memo((props: React.ComponentProps<typeof ScannerQaMonitor>) => <ScannerQaMonitor {...props} />);
+const MemoizedSettingsHub = memo((props: React.ComponentProps<typeof SettingsHub>) => <SettingsHub {...props} />);
+const MemoizedScannerSettingsPanel = memo((props: React.ComponentProps<typeof ScannerSettingsPanel>) => <ScannerSettingsPanel {...props} />);
+
 
 type Props = {
   employee: EmployeeSession;
@@ -66,7 +75,7 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
   );
 }
 
-type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'partial' | 'unavailable';
+type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'unavailable';
 type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
 const navItems = [
@@ -76,17 +85,24 @@ const navItems = [
   { id: 'settings', label: 'Cài đặt' },
 ];
 
+const HOME_DOCK_ITEMS = navItems.map((item) => ({
+  ...item,
+  icon: getHomeNavigationIcon(item.id),
+}));
+
 export default function HomeScreen({
   employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall,
 }: Props) {
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
-  const initialUiState = useRef(readHomeUiState()).current;
+  const [initialUiState] = useState(readHomeUiState);
+  const searchRef = useRef(initialUiState.search);
   const [activeNav, setActiveNav] = useState(
     navItems.some((item) => item.id === initialUiState.activeNav && item.id !== 'settings')
       ? initialUiState.activeNav
       : 'home',
   );
+  const activeNavRef = useRef(activeNav);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
@@ -119,7 +135,6 @@ export default function HomeScreen({
     records: BarcodeProductRecord[] | null;
     error?: string;
   } | null>(null);
-  const [search, setSearch] = useState(initialUiState.search);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
@@ -148,8 +163,11 @@ export default function HomeScreen({
   const noticeCloseButtonRef = useRef<HTMLButtonElement>(null);
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
+  const [selectedLibraryModules, setSelectedLibraryModules] = useState<RetailModule[]>([]);
   const [isStocktakeOpen, setIsStocktakeOpen] = useState(false);
   const [isStocktakeImportOpen, setIsStocktakeImportOpen] = useState(false);
+  const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);
+  const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
@@ -164,9 +182,7 @@ export default function HomeScreen({
     ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
     : snapshotNoticeStatus === 'empty'
       ? 'Chưa có snapshot trên thiết bị. Cảnh báo sẽ xuất hiện sau khi dữ liệu được đồng bộ.'
-      : snapshotNoticeStatus === 'partial'
-        ? 'Không đọc được đầy đủ snapshot; danh sách cảnh báo có thể chưa đầy đủ.'
-        : snapshotNoticeStatus === 'unavailable'
+      : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
   const enablePushNotifications = async () => {
@@ -210,25 +226,17 @@ export default function HomeScreen({
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
       setSnapshotNoticeStatus('loading');
-      const results = await Promise.allSettled(MODULE_DATA_IDS.map(getCachedModuleSnapshot));
-      if (!isCurrent) return;
-      const snapshots = results.flatMap((result) => {
-        if (result.status === 'fulfilled') return result.value ? [result.value] : [];
-        return [];
-      });
-      const failedCount = results.filter((result) => result.status === 'rejected').length;
-      const cacheError = results.find((result) => result.status === 'rejected');
-      if (cacheError?.status === 'rejected') {
-        console.error('Không thể đọc một hoặc nhiều snapshot để tính thông báo:', cacheError.reason);
+      try {
+        const snapshots = await getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS);
+        if (!isCurrent) return;
+        setPriorityNotices(calculateSnapshotNotices(snapshots));
+        setSnapshotNoticeStatus(snapshots.length === 0 ? 'empty' : 'ready');
+      } catch (error) {
+        if (!isCurrent) return;
+        console.error('Không thể đọc snapshot để tính thông báo:', error);
+        setPriorityNotices([]);
+        setSnapshotNoticeStatus('unavailable');
       }
-      setPriorityNotices(calculateSnapshotNotices(snapshots));
-      setSnapshotNoticeStatus(failedCount === results.length
-        ? 'unavailable'
-        : failedCount > 0
-          ? 'partial'
-          : snapshots.length === 0
-            ? 'empty'
-            : 'ready');
     };
 
     void loadSnapshotNotices();
@@ -248,24 +256,6 @@ export default function HomeScreen({
     return () => mobileViewport.removeEventListener('change', updateSpotlightForViewport);
   }, []);
 
-  const filteredModules = useMemo(() => {
-    const query = search.trim().toLocaleLowerCase('vi');
-    return MODULE_REGISTRY.filter((module) =>
-      !query || `${module.title} ${module.description} ${module.group}`.toLocaleLowerCase('vi').includes(query),
-    );
-  }, [search]);
-  const visibleLibraries = useMemo(() => MODULE_LIBRARIES
-    .map((library) => ({
-      ...library,
-      modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)),
-    }))
-    .filter((library) => library.modules.length > 0), [filteredModules]);
-  const selectedLibraryModules = useMemo(
-    () => selectedLibrary
-      ? filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id))
-      : [],
-    [filteredModules, selectedLibrary],
-  );
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
     const mondayOffset = (today.getDay() + 6) % 7;
@@ -295,10 +285,22 @@ export default function HomeScreen({
   }, [calendarMonth]);
 
   useEffect(() => {
-    const updateCalendar = () => setCalendarNow(new Date());
-    const interval = window.setInterval(updateCalendar, 60_000);
-    return () => window.clearInterval(interval);
-  }, []);
+    const syncCalendarDate = () => {
+      const now = new Date();
+      setCalendarNow((current) => current.toDateString() === now.toDateString() ? current : now);
+    };
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    const timer = window.setTimeout(syncCalendarDate, Math.max(1, nextMidnight.getTime() - now.getTime()));
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') syncCalendarDate();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [calendarNow]);
 
   const closeCalendar = () => {
     if (calendarCloseTimer.current !== null) return;
@@ -336,8 +338,9 @@ export default function HomeScreen({
       setIsNoticeClosing(false);
     }, 240);
   };
-  const openLibrary = useCallback((library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
+  const openLibrary = useCallback((library: ModuleLibraryDefinition, modules: RetailModule[], trigger: HTMLButtonElement) => {
     libraryTriggerRef.current = trigger;
+    setSelectedLibraryModules(modules);
     setLibraryOrigin(getMotionOrigin(trigger));
     setIsLibraryClosing(false);
     setSelectedLibrary(library);
@@ -431,6 +434,7 @@ export default function HomeScreen({
 
   const openCalendar = () => {
     const today = new Date();
+    setCalendarNow((current) => current.toDateString() === today.toDateString() ? current : today);
     setSelectedCalendarDate(today);
     setCalendarMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     setIsCalendarClosing(false);
@@ -464,8 +468,9 @@ export default function HomeScreen({
   }, [initialUiState]);
 
   useEffect(() => {
-    saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: window.scrollY });
-  }, [activeNav, search]);
+    activeNavRef.current = activeNav;
+    saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
+  }, [activeNav]);
 
   useEffect(() => {
     let frame = 0;
@@ -486,38 +491,44 @@ export default function HomeScreen({
         frame = 0;
       });
     };
-
-    window.addEventListener('scroll', syncActiveSection, { passive: true });
-    syncActiveSection();
-    return () => {
-      window.removeEventListener('scroll', syncActiveSection);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  useEffect(() => {
-    const persistCurrentUi = () => saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: window.scrollY });
+    const persistCurrentUi = () => saveHomeUiState({
+      activeNav: activeNavRef.current,
+      search: searchRef.current,
+      scrollY: window.scrollY,
+    });
     const onScroll = () => {
+      syncActiveSection();
       const currentY = Math.max(0, window.scrollY);
       if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
       scrollSaveTimer.current = window.setTimeout(() => {
-        saveHomeUiState({ activeNav, search, activeFilter: 'Tất cả', scrollY: currentY });
+        saveHomeUiState({
+          activeNav: activeNavRef.current,
+          search: searchRef.current,
+          scrollY: currentY,
+        });
       }, 140);
     };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pagehide', persistCurrentUi);
+    syncActiveSection();
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pagehide', persistCurrentUi);
+      if (frame) window.cancelAnimationFrame(frame);
       if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
     };
-  }, [activeNav, search]);
+  }, []);
 
+  const handleSearchChange = useCallback((nextSearch: string) => {
+    searchRef.current = nextSearch;
+    saveHomeUiState({ activeNav: activeNavRef.current, search: nextSearch, scrollY: window.scrollY });
+  }, []);
   const announce = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
   };
-  const handleBarcodeDetected = (barcode: string) => {
+  const handleBarcodeDetected = useCallback((barcode: string) => {
     // Keep the scanner mounted for its short exit transition. The scanner
     // component closes the session immediately and notifies us after motion.
     cameraLeaseRequestRef.current = null;
@@ -538,14 +549,14 @@ export default function HomeScreen({
         ? { barcode, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
         : current);
     });
-  };
-  const closeBarcodeScanner = () => {
+  }, []);
+  const closeBarcodeScanner = useCallback(() => {
     cameraLeaseRequestRef.current?.cancel();
     cameraLeaseRequestRef.current = null;
     setScannerMotionOrigin(null);
     setIsBarcodeScannerOpen(false);
-  };
-  const openBarcodeScanner = (event: React.MouseEvent<HTMLButtonElement>) => {
+  }, []);
+  const openBarcodeScanner = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     if (isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
     // scanner will claim this lease as soon as its video element is available.
@@ -553,14 +564,19 @@ export default function HomeScreen({
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
-  };
-  const handleNav = (id: string) => {
+  }, [isBarcodeScannerOpen]);
+  const handleNav = useCallback((id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
-  };
+  }, [prefersReducedMotion]);
+  const dockAction = useMemo(() => isScannerSupportedDevice() ? {
+    label: 'Quét mã',
+    icon: ScanBarcode,
+    onSelect: openBarcodeScanner,
+  } : undefined, [openBarcodeScanner]);
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
@@ -722,17 +738,11 @@ export default function HomeScreen({
           </div>
         </section>
 
-        <section className="section-block app-library-section" id="modules">
-          <div className="section-heading app-library-heading">
-            <div className="module-heading-copy"><span className="library-eyebrow">KHÔNG GIAN CHỨC NĂNG</span><h2>Thư viện nghiệp vụ</h2><p>{filteredModules.length} chức năng trong {visibleLibraries.length} nhóm</p></div>
-            <label className="search-field home-search-field" aria-label="Tìm công cụ"><MotionIcon icon={Search} variant="search" active={Boolean(search)} size={17} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm chức năng..." aria-label="Tìm công cụ" />{search && <button className="search-clear-button" type="button" onClick={() => setSearch('')} aria-label="Xóa tìm kiếm"><MotionIcon icon={X} variant="search" active size={15} /></button>}</label>
-          </div>
-          {visibleLibraries.length > 0 && <ModuleLibraryEngine
-            groups={visibleLibraries}
-            onOpen={openLibrary}
-          />}
-          {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
-        </section>
+        <HomeModuleLibrarySection
+          initialSearch={initialUiState.search}
+          onSearchChange={handleSearchChange}
+          onOpen={openLibrary}
+        />
 
         <section className="lower-grid" id="activity"><div className="panel-card activity-panel"><div className="panel-heading"><h2 className="icon-section-title" aria-label="Hoạt động"><Activity size={22} aria-hidden="true" /></h2></div><div className="activity-empty"><span className="activity-empty-icon"><Activity size={18} /></span><div><strong>Chưa có hoạt động</strong></div></div></div></section>
         <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><BrandMark /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
@@ -741,23 +751,16 @@ export default function HomeScreen({
 
     </div>
     <LiquidDock
-      items={navItems.map((item) => ({
-        ...item,
-        icon: getHomeNavigationIcon(item.id),
-      }))}
+      items={HOME_DOCK_ITEMS}
       activeId={activeNav}
       onSelect={handleNav}
-      action={isScannerSupportedDevice() ? {
-        label: 'Quét mã',
-        icon: ScanBarcode,
-        onSelect: openBarcodeScanner,
-      } : undefined}
+      action={dockAction}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
-    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
-    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
+    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
+    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
-      <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
@@ -887,8 +890,8 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={() => setIsStocktakeOpen(false)} />}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
-    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={() => setIsStocktakeImportOpen(false)} />}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
+    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} /></Suspense>}
+    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
