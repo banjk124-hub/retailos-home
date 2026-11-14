@@ -1,4 +1,3 @@
-import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 
 const current = JSON.parse(await readFile('dist/bundle-report.json', 'utf8'));
