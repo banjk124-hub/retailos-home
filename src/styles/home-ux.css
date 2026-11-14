@@ -283,7 +283,6 @@
 
 .app-shell .app-library-module {
   animation: app-library-module-in 180ms ease-out both;
-  animation-delay: 0ms;
   transition-duration: 150ms;
 }
 
