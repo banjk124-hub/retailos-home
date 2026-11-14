@@ -222,3 +222,64 @@ button { font: inherit; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* Immediate feedback while a lazy-loaded feature chunk is resolving. */
+.module-loading-backdrop {
+  position: fixed;
+  z-index: 160;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(24, 17, 21, .48);
+}
+.module-loading-panel {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(100%, 340px);
+  padding: 26px 22px;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 22px;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 20px 56px rgba(37,12,18,.2);
+  color: #292127;
+  text-align: center;
+}
+.module-loading-indicator {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(229,31,45,.18);
+  border-top-color: #e51f2d;
+  border-radius: 50%;
+  animation: module-loading-spin 700ms linear infinite;
+}
+.module-loading-panel h2 {
+  margin: 2px 0 0;
+  font-size: 16px;
+  font-weight: 750;
+}
+.module-loading-panel p {
+  margin: 0;
+  color: #77737e;
+  font-size: 13px;
+}
+.module-loading-panel button {
+  min-height: 40px;
+  margin-top: 4px;
+  padding: 0 18px;
+  border: 1px solid rgba(229,31,45,.18);
+  border-radius: 12px;
+  background: #fff4f5;
+  color: #b91e32;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+@keyframes module-loading-spin {
+  to { transform: rotate(1turn); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .module-loading-indicator { animation: none; }
+}
