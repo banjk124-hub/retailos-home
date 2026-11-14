@@ -9,6 +9,7 @@ const stocktakeImport = await readFile(new URL('../src/features/stocktake-import
 const stocktakeImportParser = await readFile(new URL('../src/features/stocktake-import/services/stocktakeImportParser.ts', import.meta.url), 'utf8');
 const vite = await readFile(new URL('../vite.config.ts', import.meta.url), 'utf8');
 const scannerSession = await readFile(new URL('../src/platform/scanner/universalScannerSession.ts', import.meta.url), 'utf8');
+const scannerDecoderFactory = await readFile(new URL('../src/platform/scanner/decoders/decoderFactory.ts', import.meta.url), 'utf8');
 const bundleReport = await readFile(new URL('./report-bundle.mjs', import.meta.url), 'utf8');
 
 assert.match(app, /lazy\(\(\) => import\('\.\/features\/home\/HomeScreen'\)\)/);
@@ -30,13 +31,16 @@ assert.match(stocktakeImportParser, /Promise\.all\(\[import\('jszip'\), file\.ar
 assert.match(vite, /manifest:\s*true/);
 assert.match(vite, /retailosPwaArtifacts/);
 assert.doesNotMatch(main, /styles\/(?:home|login-experience|scanner-qa-monitor|scanner-settings)/);
-assert.doesNotMatch(scannerSession, /import\s*\{\s*ZXingDecoderAdapter\s*\}/,
-  'ZXing must not be statically imported into the scanner session');
-assert.match(scannerSession, /await import\('\.\/decoders\/zxingDecoder'\)/);
+assert.doesNotMatch(scannerSession, /zxingDecoder/,
+  'the platform session must not depend on the concrete decoder implementation');
+assert.match(scannerSession, /this\.decoderFactory\.create\(\)/,
+  'the platform session must create decoders through the injected factory contract');
+assert.match(scannerDecoderFactory, /await import\('\.\/zxingDecoder'\)/,
+  'the default factory must keep the concrete decoder in a deferred chunk');
 assert.ok(
   scannerSession.indexOf('this.options.onPreviewReady?.()')
     < scannerSession.indexOf('await this.createDecoder(generation)'),
-  'camera preview must be published before the deferred decoder import',
+  'camera preview must be published before the deferred decoder factory call',
 );
 assert.match(bundleReport, /function measureStaticClosure/);
 assert.match(bundleReport, /filter\(\(item\) => item\.isDynamicEntry\)/);
