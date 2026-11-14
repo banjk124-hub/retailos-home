@@ -22,7 +22,8 @@ const modulePaths = [
   'src/platform/scanner/decoders/decoderAdapter.ts',
   'src/platform/scanner/decoders/decoderFactory.ts',
   'src/platform/scanner/decoders/rgbaToLuminance.ts',
-  'src/platform/scanner/decoders/zxingDecoder.ts',
+  'src/platform/scanner/decoders/zxingWasmOptions.ts',
+  'src/platform/scanner/decoders/zxingWasmDecoder.ts',
 ];
 
 try {
