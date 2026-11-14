@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
 const stocktake = readFileSync('src/features/stocktake/components/StocktakeModule.tsx', 'utf8');
+const stocktakeImport = readFileSync('src/features/stocktake-import/components/StocktakeImportModule.tsx', 'utf8');
+const scannerQa = readFileSync('src/features/home/components/ScannerQaMonitor.tsx', 'utf8');
 const mobileStyles = readFileSync('src/styles/mobile-tuning.css', 'utf8');
 const motionStyles = readFileSync('src/shared/motion/motion.css', 'utf8');
 const homeStyles = readFileSync('src/styles/home.css', 'utf8');
@@ -17,6 +19,10 @@ assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-shor
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
 assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The mobile login panel must not wait before its entry animation starts.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
+assert.doesNotMatch(mobileStyles, /@keyframes topbar-dock-float[\\s\\S]*?\\}/, 'Topbar ambient motion must remain on composited properties rather than repaint-heavy box-shadow changes.');
+assert.match(stocktakeImport, /const invalidCount = useMemo\\(/, 'Stocktake Import row validation must not be recomputed on unrelated UI renders.');
+assert.match(stocktakeImport, /const invalidZones = useMemo\\(/, 'Stocktake Import cross-zone validation must not be recomputed on unrelated UI renders.');
+assert.match(scannerQa, /const \\{ accepted, errors, maxDuration \\} = useMemo\\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 
 function blockBetween(source, start, end) {
   const startIndex = source.indexOf(start);
