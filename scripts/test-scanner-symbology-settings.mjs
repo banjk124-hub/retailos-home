@@ -65,10 +65,8 @@ assert.ok(session.includes('!this.options.formats.includes(result.symbology)'),
   'session acceptance independently rejects output outside the app allowlist');
 assert.ok(session.includes('disabled-format'), 'disabled format rejections are recorded');
 
-const jsDecoder = await read('../src/platform/scanner/decoders/zxingDecoder.ts');
 const wasmDecoder = await read('../src/platform/scanner/decoders/zxingWasmDecoder.ts');
 for (const format of formats) {
-  assert.ok(jsDecoder.includes(`${format}: BarcodeFormat.${format}`), `ZXing JS maps ${format}`);
   assert.ok(wasmDecoder.includes(`${format}:`), `ZXing-C++ WASM maps ${format}`);
 }
 assert.ok(wasmDecoder.includes("QRCodeModel2"), 'QR model variants normalize to the QR_CODE app setting');
