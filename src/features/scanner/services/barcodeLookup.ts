@@ -85,7 +85,7 @@ function toProductRecord(row: Record<string, unknown>, source: string): BarcodeP
 }
 
 export async function lookupCachedBarcode(barcode: string): Promise<BarcodeLookupResult> {
-  let snapshots;
+  let snapshots: Awaited<ReturnType<typeof getCachedModuleSnapshots>>;
   try {
     snapshots = await getCachedModuleSnapshots(lookupSources.map(({ moduleId }) => moduleId));
   } catch (error) {
