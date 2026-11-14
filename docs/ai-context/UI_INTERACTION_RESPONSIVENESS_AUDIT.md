@@ -50,6 +50,12 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 **Change:** Memoized these derived values against the data snapshots they actually depend on. Scanner QA event rows are now memoized individually, so appending a new event does not re-render the existing 1,000-row history. This does not add asynchronous work or change validation rules.
 
+### 7. Stocktake Import did synchronous work before publishing action feedback
+
+Saving a zone validated and normalized every row, validated rows a second time, and rebuilt the output before setting the existing busy state. Confirming a merged import and building the ZIP also performed synchronous setup before the browser had an opportunity to paint the busy response. Copy waited for the Clipboard API before showing any acknowledgement.
+
+**Change:** Reused the existing `busy`/`busyAction` state before CPU-heavy work and added a local one-frame paint handoff before synchronous validation, merge and ZIP setup. Removed the duplicate row-validation pass. Copy now announces its pending action before awaiting Clipboard. No worker, service, queue or background job was added.
+
 ### 8. Static Home module groups re-rendered on unrelated Home state changes
 
 The module library received a new inline `onOpen` callback on every HomeScreen render. Even though its grouped data was memoized, notifications, calendar, toast and navigation state changes still caused the full group/card tree to render again.
@@ -86,6 +92,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 - Mobile blur-budget overrides cover modal siblings outside the app shell.
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
+- Stocktake Import paints its busy response before CPU-heavy validation, merge and ZIP setup; copy acknowledges before awaiting Clipboard.
 - Stocktake review and history do not mount unbounded lists in one render.
 - Stocktake session zones and exports are memoized rather than repeatedly filtered during render.
 - The complete Stocktake action log is not read during unrelated module refreshes.
