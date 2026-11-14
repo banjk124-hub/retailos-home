@@ -86,13 +86,14 @@ export default function HomeScreen({
 }: Props) {
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
-  const initialUiState = useRef(readHomeUiState()).current;
+  const [initialUiState] = useState(readHomeUiState);
   const searchRef = useRef(initialUiState.search);
   const [activeNav, setActiveNav] = useState(
     navItems.some((item) => item.id === initialUiState.activeNav && item.id !== 'settings')
       ? initialUiState.activeNav
       : 'home',
   );
+  const activeNavRef = useRef(activeNav);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
@@ -456,6 +457,7 @@ export default function HomeScreen({
   }, [initialUiState]);
 
   useEffect(() => {
+    activeNavRef.current = activeNav;
     saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
   }, [activeNav]);
 
@@ -507,7 +509,7 @@ export default function HomeScreen({
 
   const handleSearchChange = useCallback((nextSearch: string) => {
     searchRef.current = nextSearch;
-    saveHomeUiState({ ...readHomeUiState(), search: nextSearch });
+    saveHomeUiState({ activeNav: activeNavRef.current, search: nextSearch, scrollY: window.scrollY });
   }, []);
   const announce = (message: string) => {
     setToast(message);
