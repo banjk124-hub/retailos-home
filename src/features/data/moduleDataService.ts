@@ -139,6 +139,39 @@ export function getCachedModuleSnapshot(moduleId: ModuleDataId): Promise<CachedM
   return withStore<CachedModuleSnapshot | undefined>('readonly', (store) => store.get(moduleId));
 }
 
+/**
+ * Reads only requested module records through one IndexedDB connection and
+ * one readonly transaction, avoiding a database open for each Home notice source.
+ */
+export async function getCachedModuleSnapshots(
+  moduleIds: readonly ModuleDataId[],
+): Promise<CachedModuleSnapshot[]> {
+  const uniqueModuleIds = [...new Set(moduleIds)];
+  if (uniqueModuleIds.length === 0) return [];
+
+  const database = await openDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const transaction = database.transaction(SNAPSHOT_STORE, 'readonly');
+      const store = transaction.objectStore(SNAPSHOT_STORE);
+      const snapshots: CachedModuleSnapshot[] = [];
+
+      for (const moduleId of uniqueModuleIds) {
+        const request = store.get(moduleId);
+        request.onsuccess = () => {
+          if (request.result) snapshots.push(request.result as CachedModuleSnapshot);
+        };
+        request.onerror = () => reject(request.error ?? new Error('Module data cache operation failed.'));
+      }
+
+      transaction.oncomplete = () => resolve(snapshots);
+      transaction.onerror = () => reject(transaction.error ?? new Error('Module data cache transaction failed.'));
+      transaction.onabort = () => reject(transaction.error ?? new Error('Module data cache transaction was aborted.'));
+    });
+  } finally {
+    database.close();
+  }
+}
 function putCachedSnapshot(snapshot: CachedModuleSnapshot): Promise<IDBValidKey> {
   return withStore<IDBValidKey>('readwrite', (store) => store.put(snapshot));
 }
