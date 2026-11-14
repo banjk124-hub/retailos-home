@@ -56,6 +56,18 @@ The existing mobile performance rules targeted overlays through `.app-shell`, bu
 
 **Change:** Added direct mobile overrides for Scanner QA, Scanner Settings, barcode results, calendar, notice, library, Stocktake and identity-transition backdrops, plus the glass modal panels, Home's spotlight notification surface and the Stocktake Import sticky header. The visual surfaces retain their translucent backgrounds; only the expensive backdrop blur is disabled on mobile/coarse-pointer devices.
 
+## Intentional delays and remaining runtime risks
+
+The source sweep also found timers that are not input-to-first-feedback defects and should not be removed indiscriminately:
+
+- Login sets the submitting state before its 120ms local-auth timer; the button's submitting response begins immediately. The timer gives that state a paint opportunity before synchronous local validation.
+- The authenticated identity journey's hold duration is the transition itself. Its first visual response begins immediately; the 160ms child-panel stagger was removed.
+- Calendar, notification and notice close timers are exit-lifecycle cleanup. Their closing state and CSS exit animation begin in the click handler; the timers are fallback unmount boundaries.
+- The dock's keyboard-open suppression is separate from the removed idle auto-hide. It prevents a fixed dock from competing with the on-screen keyboard. Validate this behavior on physical iOS/Android before changing it.
+- Scanner decoding still performs synchronous ZXing work on the main thread within its existing bounded frame loop. Its cadence and decoder contract were intentionally left unchanged. Use the existing Scanner QA metrics (`decodeDurationMaxMs`, `maxFrameCallbackGapMs`, `longTasks`) during physical profiling before considering scanner-runtime changes.
+
+These are documented separately so future changes do not remove lifecycle safeguards or alter scanner behavior while trying to improve click responsiveness.
+
 ## Regression coverage
 
 `scripts/test-ui-interaction-immediacy.mjs` is registered in preflight. It guards:
