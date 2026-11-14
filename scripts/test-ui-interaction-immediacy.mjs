@@ -84,7 +84,7 @@ const confirmImport = blockBetween(stocktakeImport, 'const confirmPendingImport 
 assert.ok(confirmImport.indexOf('await yieldToNextPaint()') < confirmImport.indexOf('commitIncoming('), 'Confirming a large import must paint its busy state before synchronous merge work.');
 const exportAll = blockBetween(stocktakeImport, 'const exportAll = async', 'const clearHistory = async');
 assert.ok(exportAll.indexOf('setBusy(true)') < exportAll.indexOf('await yieldToNextPaint()'), 'ZIP export must publish its busy state before packaging.');
-assert.ok(exportAll.indexOf('await yieldToNextPaint()') < exportAll.indexOf('new JSZip()'), 'ZIP packaging must begin after the busy state has had a paint opportunity.');
+assert.ok(exportAll.indexOf('await yieldToNextPaint()') < exportAll.indexOf('await createZipArchive()'), 'ZIP packaging must begin after the busy state has had a paint opportunity.');
 const copyOutput = blockBetween(stocktakeImport, 'const copyOutput = async', 'const exportZone =');
 assert.ok(copyOutput.indexOf('setNotice(\'Đang sao chép nội dung TXT…\')') < copyOutput.indexOf('navigator.clipboard.writeText'), 'Copy must acknowledge the action before waiting for the Clipboard API.');
 assert.match(stocktakeImport, /key=\{zone\.zoneCode\} type="button" disabled=\{busy\}/, 'Zone navigation must not change the active edit target while a save is in progress.');
@@ -96,7 +96,7 @@ const historyExportStart = stocktakeImport.indexOf('setHistoryExportingId(item.i
 const historyExportEnd = stocktakeImport.indexOf('aria-label="Tải lại kết quả"', historyExportStart);
 const historyExport = stocktakeImport.slice(historyExportStart, historyExportEnd);
 assert.ok(historyExport.indexOf('setHistoryExportingId(item.id)') < historyExport.indexOf('await yieldToNextPaint()'), 'History ZIP export must publish its spinner before packaging.');
-assert.ok(historyExport.indexOf('await yieldToNextPaint()') < historyExport.indexOf('new JSZip()'), 'History ZIP packaging must begin after the spinner has had a paint opportunity.');
+assert.ok(historyExport.indexOf('await yieldToNextPaint()') < historyExport.indexOf('await createZipArchive()'), 'History ZIP packaging must begin after the spinner has had a paint opportunity.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 assert.match(scannerQa, /const ScannerQaEventRow = memo\(/, 'Existing diagnostic rows must not re-render when a new event is appended.');
 assert.match(scannerQa, /filtered\.map\(\(event\) => <ScannerQaEventRow/, 'Scanner QA must render diagnostics through memoized event rows.');
