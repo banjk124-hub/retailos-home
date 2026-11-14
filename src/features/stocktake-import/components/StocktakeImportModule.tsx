@@ -3,7 +3,6 @@ import {
   AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet, Info,
   FileText, History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
 } from 'lucide-react';
-import JSZip from 'jszip';
 import type { EmployeeSession } from '../../auth/types';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import {
@@ -42,6 +41,11 @@ function yieldToNextPaint(): Promise<void> {
   return new Promise((resolve) => {
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
   });
+}
+
+async function createZipArchive() {
+  const JSZip = (await import('jszip')).default;
+  return new JSZip();
 }
 
 function localDate(value: string): string {
@@ -474,7 +478,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setError('');
     try {
       await yieldToNextPaint();
-      const zip = new JSZip();
+      const zip = await createZipArchive();
       result.zones.forEach((zone) => zip.file(zone.fileName, zone.content));
       const blob = await zip.generateAsync({
         type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 },
@@ -786,7 +790,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     setError('');
                     try {
                       await yieldToNextPaint();
-                      const zip = new JSZip();
+                      const zip = await createZipArchive();
                       item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
                       const blob = await zip.generateAsync({ type: 'blob' });
                       downloadBlob('KIEM_KE_IMPORT.zip', blob);
