@@ -222,7 +222,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const saveEntry = async () => {
-    if (!session || !currentZone) return;
+    if (!session || !currentZone || busy) return;
     const normalizedBarcode = barcode.trim();
     const parsedQuantity = Number(quantity);
     if (!normalizedBarcode || /[\r\n,]/.test(normalizedBarcode)) {
@@ -233,6 +233,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setError('Số lượng phải là số lớn hơn 0.');
       return;
     }
+    setBusy(true);
     try {
       if (editingEntry) {
         const old = currentEntries.find((item) => item.id === editingEntry);
@@ -265,6 +266,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setError('');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể lưu dòng kiểm kê.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -276,13 +279,20 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const removeEntry = async (entry: StocktakeEntry) => {
-    if (!session || !window.confirm(`Xóa dòng ${entry.sequence} — ${entry.barcode}?`)) return;
-    await stocktakeStore.deleteEntry(entry.id);
-    await logStocktakeAction({
-      sessionId: session.id, zoneId: entry.zoneId, action: 'ENTRY_DELETED',
-      details: `Xóa dòng ${entry.sequence}: ${entry.barcode} × ${entry.quantity}.`,
-    });
-    if (currentZone) await loadZoneEntries(currentZone);
+    if (!session || busy || !window.confirm(`Xóa dòng ${entry.sequence} — ${entry.barcode}?`)) return;
+    setBusy(true);
+    try {
+      await stocktakeStore.deleteEntry(entry.id);
+      await logStocktakeAction({
+        sessionId: session.id, zoneId: entry.zoneId, action: 'ENTRY_DELETED',
+        details: `Xóa dòng ${entry.sequence}: ${entry.barcode} × ${entry.quantity}.`,
+      });
+      if (currentZone) await loadZoneEntries(currentZone);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể xóa dòng kiểm kê.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const openReview = async () => {
@@ -301,11 +311,12 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const exportCurrentZone = async () => {
-    if (!session || !currentZone) return;
+    if (!session || !currentZone || busy) return;
     if (currentEntries.length === 0) {
       setError('Vùng chưa có dữ liệu ARTICLE. Hãy quét hoặc thêm ít nhất một dòng.');
       return;
     }
+    setBusy(true);
     try {
       const exported = createStocktakeFile(session, currentZone, currentEntries);
       const record: StocktakeExport = {
@@ -326,6 +337,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setError('');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể xuất file kiểm kê.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -365,7 +378,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
   const downloadPreviousExport = (item: StocktakeExport) => downloadStocktakeText(item.fileName, item.fileContent);
 
-  if (busy) return <div className="stocktake-backdrop"><section className="stocktake-panel"><p>Đang mở dữ liệu kiểm kê…</p></section></div>;
+  if (busy) return <div className="stocktake-backdrop" role="status" aria-live="polite" aria-busy="true"><section className="stocktake-panel"><p>Đang xử lý dữ liệu kiểm kê…</p></section></div>;
 
   return (
     <div className="stocktake-backdrop" role="presentation">
