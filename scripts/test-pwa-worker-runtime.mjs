@@ -81,20 +81,36 @@ assert.equal(cacheStore.has('retailos-pwa-assets-old'), false, 'previous release
 assert.equal(claimCalls, 1, 'new worker claims clients only after activation');
 
 let blockedMessage = null;
-windowClients = [{ id: 'current' }, { id: 'other-tab' }];
-await runExtendable('message', {
+const sendUpdateRequest = () => runExtendable('message', {
   data: { type: 'SKIP_WAITING' },
   source: { id: 'current', postMessage: (message) => { blockedMessage = message; } },
 });
-assert.equal(skipWaitingCalls, 0, 'worker must not take over while another tab is open');
+
+// Same-origin windows belonging to another GitHub Pages project must not
+// block RetailOS updates.
+windowClients = [
+  { id: 'current', url: appBase },
+  { id: 'other-app', url: 'https://retailos.test/another-project/' },
+  { id: 'external-origin', url: 'https://example.test/retailos-home/' },
+];
+await sendUpdateRequest();
+assert.equal(skipWaitingCalls, 1, 'unrelated same-origin and external clients do not block updates');
+assert.equal(blockedMessage, null, 'unrelated clients do not emit a blocked notice');
+
+// A second RetailOS tab remains a hard safety lock.
+windowClients = [
+  { id: 'current', url: appBase },
+  { id: 'other-tab', url: appBase + 'stocktake' },
+];
+await sendUpdateRequest();
+assert.equal(skipWaitingCalls, 1, 'worker must not take over while another RetailOS tab is open');
 assert.equal(blockedMessage?.type, 'UPDATE_BLOCKED_MULTIPLE_CLIENTS');
 
-windowClients = [{ id: 'current' }];
-await runExtendable('message', {
-  data: { type: 'SKIP_WAITING' },
-  source: { id: 'current', postMessage: () => undefined },
-});
-assert.equal(skipWaitingCalls, 1, 'explicit update is accepted when no other tab remains');
+// Update can proceed after the other RetailOS tab closes.
+windowClients = [{ id: 'current', url: appBase }];
+blockedMessage = null;
+await sendUpdateRequest();
+assert.equal(skipWaitingCalls, 2, 'explicit update is accepted when no other RetailOS tab remains');
 
 const assetCache = await cachesMock.open('retailos-pwa-assets-runtime-test');
 await assetCache.put(assetUrl, new Response('cached-asset'));
