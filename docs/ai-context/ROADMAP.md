@@ -102,7 +102,7 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 # Current scanner decoder replacement status — 2026-11-14
 
 **Current main:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merged).
-**Current work:** PR-07 decoder capability transfer on `feat/scanner-wasm-capability-parity` (PR #115, Draft). PR #114 was merged separately as advisory device-profile diagnostics; it is not the decoder capability-parity gate.
+**Current work:** PR-07 complete WASM capability adoption on `feat/scanner-wasm-capability-parity` (PR #115, Draft). PR #114 was merged separately as advisory device-profile diagnostics; it is not the decoder capability-adoption gate.
 **Production default:** ZXing JS. ZXing-C++ WASM remains opt-in; no backend cutover is authorized or implied.
 
 ## Verified sequence
@@ -112,7 +112,7 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 - PR #111 — shared sync/async recognition candidate pipeline: merged; CI run #1010 passed.
 - PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision; merged through PR #112. Physical corpus/device measurements remain outstanding.
 - PR-06 — configurable symbology preferences and allowlist enforcement; merged through PR #113.
-- PR-07 — transfer confirmed legacy decoder behavior to the WASM candidate; PR #115, Draft. Physical corpus/device parity remains a release gate.
+- PR-07 — complete WASM capability adoption: native WASM strengths, legacy behavior transfer and shared RetailOS capability preservation; PR #115, Draft. Physical corpus/device validation remains a release gate.
 - PR #114 — advisory device-profile diagnostics; merged separately and not a production decoder cutover.
 
 ## Current evidence gap
