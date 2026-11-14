@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
+const app = readFileSync('src/App.tsx', 'utf8');
 const stocktake = readFileSync('src/features/stocktake/components/StocktakeModule.tsx', 'utf8');
 const stocktakeImport = readFileSync('src/features/stocktake-import/components/StocktakeImportModule.tsx', 'utf8');
 const scannerQa = readFileSync('src/features/home/components/ScannerQaMonitor.tsx', 'utf8');
@@ -11,6 +12,8 @@ const homeStyles = readFileSync('src/styles/home.css', 'utf8');
 const responsiveStyles = readFileSync('src/styles/responsive.css', 'utf8');
 
 assert.doesNotMatch(home, /Suspense\s+fallback=\{null\}/, 'Lazy-loaded UI must never disappear silently while its chunk is loading.');
+assert.doesNotMatch(app, /Suspense\\s+fallback=\\{<div className="retailos-interface" aria-busy="true" \/>\\}/, 'The root HomeScreen lazy boundary must not render a blank shell.');
+assert.match(app, /home-loading-surface[\\s\S]*aria-busy="true"/, 'The root HomeScreen lazy boundary must show immediate visible feedback.');
 assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 5, 'Settings, QA, scanner settings, Stocktake and Stocktake Import must provide immediate visible loading feedback.');
 assert.match(home, /function ModuleLoadingSurface[\s\S]*aria-busy="true"/, 'The shared loading fallback must be an accessible, visible busy surface.');
 assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle\}/, 'Primary navigation and header actions must not require a wake-up tap before they can receive a click.');
