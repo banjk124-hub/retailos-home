@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { downloadFile } from '../../../shared/downloadFile';
 import { Activity, AlertTriangle, CheckCircle2, Clipboard, Download, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import {
   clearScannerDiagnostics,
@@ -14,13 +15,7 @@ import '../../../styles/scanner-qa-monitor.css';
 type Props = { onClose: () => void };
 
 function downloadReport(content: string, filename: string, type: string): void {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadFile(new Blob([content], { type }), filename);
 }
 
 function metricNumber(event: ScannerDiagnosticEvent, key: string): number | null {
