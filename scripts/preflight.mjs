@@ -74,6 +74,11 @@ const checks = [
     args: ["scripts/test-scanner-torch.mjs"],
   },
   {
+    name: "Scanner configurable symbology preferences and validation tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-symbology-settings.mjs"],
+  },
+  {
     name: "Scanner settings and shared feedback regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-settings.mjs"],
