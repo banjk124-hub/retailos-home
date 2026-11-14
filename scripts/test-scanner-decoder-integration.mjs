@@ -35,6 +35,13 @@ try {
         /(from\s+['"])(\.\.?\/[^'"]+)(['"])/g,
         (_match, prefix, specifier, suffix) => prefix + (specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : specifier + '.js') + suffix,
       )
+      // Node ESM requires explicit extensions for relative dynamic imports too.
+      // The source TS import stays bundler-friendly; normalize only the isolated
+      // transpiled test graph to match its emitted .js filenames.
+      .replace(
+        /(import\(\s*['"])(\.\.?\/[^'"]+)(['"]\s*\))/g,
+        (_match, prefix, specifier, suffix) => prefix + (specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : specifier + '.js') + suffix,
+      )
       .replace(
         /import \{([^}]+)\} from ['"]@zxing\/library['"];?/,
         (_match, names) => "import ZXing from '@zxing/library';\nconst { " + names + " } = ZXing;",
