@@ -22,6 +22,12 @@ type Props = { employee: EmployeeSession; onClose: () => void };
 type Screen = 'home' | 'scan' | 'review' | 'history' | 'exports';
 const STOCKTAKE_LIST_PAGE_SIZE = 100;
 
+function yieldToNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
+  });
+}
+
 function localDate(value: string): string {
   return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 }
@@ -354,6 +360,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     }
     setBusy(true);
     try {
+      await yieldToNextPaint();
       const exported = createStocktakeFile(session, currentZone, currentEntries);
       const record: StocktakeExport = {
         id: createStocktakeId('export'), sessionId: session.id, zoneId: currentZone.id,
