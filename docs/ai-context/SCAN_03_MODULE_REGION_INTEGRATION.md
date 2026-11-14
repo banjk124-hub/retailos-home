@@ -42,7 +42,7 @@ Unsupported object-position syntax or unsupported video transforms fail closed b
 
 ## 5. Explicitly out of scope
 
-- No decoder crop or ROI-only decoding. `ZXingDecoderAdapter.decode()` continues to receive the full video source.
+- No decoder crop or ROI-only decoding. `ZXingWasmDecoderAdapter.decode()` continues to receive the full video source.
 - No rotation, deskew, perspective correction, barcode validation or result-delivery changes.
 - No camera acquisition, camera lease/refcount, startup/readiness, lifecycle/recovery or frame-loop changes.
 - No shared scanner UI, reticle, transition, presentation or exit ownership.
