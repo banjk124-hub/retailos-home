@@ -54,7 +54,7 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 The existing mobile performance rules targeted overlays through `.app-shell`, but HomeScreen renders several modal backdrops and the LiquidDock as siblings of that element. Their full-screen backdrop blur therefore bypassed the mobile performance policy.
 
-**Change:** Added direct mobile overrides for Scanner QA, Scanner Settings, barcode results, calendar, notice, library, Stocktake and identity-transition backdrops, plus the glass modal panels, Home's spotlight notification surface and the Stocktake Import sticky header. The visual surfaces retain their translucent backgrounds; only the expensive backdrop blur is disabled on mobile/coarse-pointer devices.
+**Change:** Added direct mobile overrides for Scanner QA, Scanner Settings, barcode results, calendar, notice, library, Stocktake and identity-transition backdrops, including the nested Stocktake confirmation dialog, plus the glass modal panels, Home's spotlight notification surface and the Stocktake Import sticky header. The visual surfaces retain their translucent backgrounds; only the expensive backdrop blur is disabled on mobile/coarse-pointer devices.
 
 ## Intentional delays and remaining runtime risks
 
