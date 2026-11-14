@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const worker = await readFile(new URL('../src/sw/service-worker.template.js', import.meta.url), 'utf8');
+const vite = await readFile(new URL('../vite.config.ts', import.meta.url), 'utf8');
+const prompt = await readFile(new URL('../src/shared/pwa/PwaUpdatePrompt.tsx', import.meta.url), 'utf8');
+assert.match(worker, /retailos-pwa-/);
+assert.match(worker, /ASSET_URLS\.has\(url\.pathname\)/);
+assert.match(worker, /caches\.delete\(key\)/);
+assert.match(worker, /request\.mode === 'navigate'/);
+assert.match(worker, /SKIP_WAITING/);
+assert.match(vite, /service-worker\.template/);
+assert.match(prompt, /updateViaCache:\s*'none'/);
+assert.match(prompt, /controllerchange/);
+assert.match(prompt, /Hãy hoàn tất thao tác đang thực hiện/);
+console.log('PWA cache policy and update lifecycle tests passed.');
