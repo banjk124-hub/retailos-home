@@ -44,3 +44,12 @@ export interface ScannerDecoderAdapter {
   decodeTemporalSnapshot(snapshot: ScannerTemporalSnapshot, timestamp: number, processingBudget?: ScannerAdaptiveRuntimeBudget): Promise<DecoderOutput[]>;
   dispose(): Promise<void> | void;
 }
+
+
+/**
+ * Creates an uninitialized decoder backend. The session owns initialization,
+ * disposal and generation checks; factories must not acquire camera resources.
+ */
+export interface ScannerDecoderFactory {
+  create(): Promise<ScannerDecoderAdapter>;
+}
