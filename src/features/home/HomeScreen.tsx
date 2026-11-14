@@ -2,8 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode,
-  Search, ShieldCheck, Sparkles, Truck, Warehouse, X,
+  Grid2X2, LogOut, PackageSearch, ScanBarcode, Search, ShieldCheck, Sparkles, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
