@@ -3,10 +3,13 @@ import { readFileSync } from 'node:fs';
 
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
 const stocktake = readFileSync('src/features/stocktake/components/StocktakeModule.tsx', 'utf8');
+const mobileStyles = readFileSync('src/styles/mobile-tuning.css', 'utf8');
 
 assert.doesNotMatch(home, /Suspense\s+fallback=\{null\}/, 'Lazy-loaded UI must never disappear silently while its chunk is loading.');
 assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 5, 'Settings, QA, scanner settings, Stocktake and Stocktake Import must provide immediate visible loading feedback.');
 assert.match(home, /function ModuleLoadingSurface[\s\S]*aria-busy="true"/, 'The shared loading fallback must be an accessible, visible busy surface.');
+assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle\}/, 'Primary navigation and header actions must not require a wake-up tap before they can receive a click.');
+assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer events on primary navigation after an idle timeout.');
 
 function blockBetween(source, start, end) {
   const startIndex = source.indexOf(start);
