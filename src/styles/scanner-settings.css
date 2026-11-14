@@ -43,3 +43,18 @@
 .scanner-settings-panel button:focus-visible,.scanner-volume-control input:focus-visible{outline:3px solid rgba(189,38,58,.38);outline-offset:3px}
 @media(max-width:520px){.scanner-settings-panel{width:100%;max-height:100%;border-radius:19px;padding:16px}.scanner-preference-card{padding:13px}.scanner-beep-preview-row{align-items:flex-start;flex-direction:column}.scanner-beep-preview{align-self:flex-end}}
 @media(prefers-reduced-motion:reduce){.scanner-settings-backdrop{-webkit-backdrop-filter:none;backdrop-filter:none}.scanner-settings-menu-item,.scanner-settings-switch,.scanner-settings-switch span{transition:none}}
+
+/* Configurable barcode symbologies — compact mobile-first native-style switches. */
+.scanner-symbology-card{gap:12px}
+.scanner-symbology-group{display:grid;gap:0;border:1px solid #eee5e7;border-radius:14px;background:#fff;overflow:hidden}
+.scanner-symbology-group h4{margin:0;padding:11px 12px;background:#faf7f8;color:#9a8d93;font-size:9px;font-weight:850;letter-spacing:1px}
+.scanner-symbology-row{display:flex;align-items:center;gap:12px;min-height:55px;padding:8px 12px;border-top:1px solid #f0e9eb}
+.scanner-symbology-copy{display:grid;gap:3px;min-width:0;flex:1}
+.scanner-symbology-copy strong{color:#44343b;font-size:12px;font-weight:760}
+.scanner-symbology-copy span{color:#92868b;font-size:10px;line-height:1.35}
+.scanner-symbology-switch{width:46px;height:28px;padding:3px}
+.scanner-symbology-switch span{width:22px;height:22px}
+.scanner-symbology-switch.is-on{background:#16a34a}
+.scanner-symbology-switch.is-on span{transform:translateX(18px)}
+.scanner-symbology-switch:disabled{opacity:.58;cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){.scanner-symbology-switch,.scanner-symbology-switch span{transition:none}}
