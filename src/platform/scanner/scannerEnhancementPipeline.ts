@@ -8,6 +8,7 @@ import { rotateLuminance90Clockwise } from './scannerRotation';
 import { measureScannerImageQuality, createScannerImageEnhancements, type ScannerImageQuality } from './scannerImageEnhancement';
 import { createScannerGeometryCandidates } from './scannerGeometryCorrection';
 import { createScannerAdaptiveProcessingPlan, type ScannerAdaptiveProcessingPlan } from './scannerAdaptiveProcessingController';
+import type { ScannerAdaptiveRuntimeBudget } from './scannerAdaptiveRuntimeController';
 
 export type ScannerOrientationHints = {
   upright: ScannerSkewEstimate | null;
@@ -34,6 +35,8 @@ export type ScannerEnhancementPipelineOptions = {
   imageQuality?: ScannerImageQuality | null;
   /** Emits the deterministic A2 policy selected for this fallback attempt. */
   onProcessingPlan?: (plan: ScannerAdaptiveProcessingPlan) => void;
+  /** A3 may reduce fallback work under sustained runtime pressure; never changes baseline. */
+  processingBudget?: ScannerAdaptiveRuntimeBudget;
 };
 
 export type ScannerEnhancementPipelineResult<T> = {
@@ -254,10 +257,14 @@ export function executeScannerEnhancementPipeline<T>(
     options.onImageQuality?.(quality);
     const enhancementStartedAt = now();
     const availableVariants = createScannerImageEnhancements(source, quality);
+    const imageCandidateBudget = Math.min(
+      processingPlan.maxImageCandidates,
+      options.processingBudget?.maxImageCandidates ?? processingPlan.maxImageCandidates,
+    );
     const variants = processingPlan.imageTransforms === null
-      ? availableVariants
+      ? availableVariants.slice(0, imageCandidateBudget)
       : availableVariants.filter((variant) => processingPlan.imageTransforms?.includes(variant.kind))
-        .slice(0, processingPlan.maxImageCandidates);
+        .slice(0, imageCandidateBudget);
     onStageCost?.('image_enhancement', now() - enhancementStartedAt);
     for (const variant of variants) {
       imageCandidatesAttempted++;
@@ -306,7 +313,11 @@ export function executeScannerEnhancementPipeline<T>(
   // Prefer the strongest geometric evidence, while retaining a hard upper
   // bound on the amount of rectified data sent through the decoder.
   geometryCandidates.sort((a, b) => b.confidence - a.confidence);
-  for (const variant of geometryCandidates.slice(0, processingPlan.geometryCandidateLimit)) {
+  const geometryCandidateBudget = Math.min(
+    processingPlan.geometryCandidateLimit,
+    options.processingBudget?.maxGeometryCandidates ?? processingPlan.geometryCandidateLimit,
+  );
+  for (const variant of geometryCandidates.slice(0, geometryCandidateBudget)) {
     geometryCandidatesAttempted++;
     const output = attempt({ ...variant, stage: 'geometry' });
     if (output !== null) {

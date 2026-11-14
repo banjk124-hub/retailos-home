@@ -240,8 +240,12 @@ try {
     await decoder.initialize({ formats: [format] });
     return decoder;
   }
-  async function decodeOnce(decoder, source, scanRegion = fullRegion) {
-    return decoder.decode(source, { timestamp: 1234, scanRegion });
+  async function decodeOnce(decoder, source, scanRegion = fullRegion, processingBudget) {
+    return decoder.decode(source, {
+      timestamp: 1234,
+      scanRegion,
+      ...(processingBudget ? { processingBudget } : {}),
+    });
   }
 
   const code39Frame = makeCode39Frame('RETAIL-39');
@@ -440,6 +444,40 @@ try {
   assert.equal(lowContrastResult[0]?.value, '12345',
     'production adapter must recover a low-contrast barcode at an intermediate angle');
   await lowContrastDecoder.dispose();
+
+  // A3 constrained mode may trim only optional fallback tails. It must retain
+  // practical sensitivity for upright, quarter-turned and low-contrast/skewed
+  // production fixtures while the baseline/orientation path stays untouched.
+  const constrainedBudget = {
+    schemaVersion: 1,
+    mode: 'constrained',
+    maxImageCandidates: 1,
+    maxGeometryCandidates: 2,
+    reasons: ['synthetic_runtime_pressure'],
+  };
+  const constrainedUprightDecoder = await createDecoder();
+  const constrainedUpright = await decodeOnce(
+    constrainedUprightDecoder, toSource(upright), fullRegion, constrainedBudget,
+  );
+  assert.equal(constrainedUpright[0]?.value, '12345',
+    'A3 constrained mode must preserve first-frame upright barcode sensitivity');
+  await constrainedUprightDecoder.dispose();
+
+  const constrainedQuarterTurnDecoder = await createDecoder();
+  const constrainedQuarterTurn = await decodeOnce(
+    constrainedQuarterTurnDecoder, toSource(rotateCW(upright)), fullRegion, constrainedBudget,
+  );
+  assert.equal(constrainedQuarterTurn[0]?.value, '12345',
+    'A3 constrained mode must preserve orthogonal-rotation recovery');
+  await constrainedQuarterTurnDecoder.dispose();
+
+  const constrainedLowContrastDecoder = await createDecoder();
+  const constrainedLowContrast = await decodeOnce(
+    constrainedLowContrastDecoder, toSource(lowContrastAngled), fullRegion, constrainedBudget,
+  );
+  assert.equal(constrainedLowContrast[0]?.value, '12345',
+    'A3 constrained mode must preserve low-contrast/intermediate-angle sensitivity');
+  await constrainedLowContrastDecoder.dispose();
 
   for (const [format, value, angle] of [
     ['EAN_8', '96385074', 27],

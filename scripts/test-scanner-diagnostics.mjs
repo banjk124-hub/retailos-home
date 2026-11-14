@@ -40,6 +40,13 @@ try {
     focusQualityStatus: 'sustained-blur-observed',
     cameraControlChanged: false,
     lastDeskewAngleDegrees: -17.25,
+    adaptiveRuntimeMode: 'constrained',
+    adaptiveRuntimeImageBudget: 1,
+    adaptiveRuntimeGeometryBudget: 2,
+    adaptiveRuntimeTransitions: 1,
+    adaptiveRuntimeDecodeMs: 125.5,
+    adaptiveRuntimeFrameGapMs: 240,
+    adaptiveRuntimeReason: 'sustained_runtime_pressure',
     adaptiveProcessingPlan: {
       schemaVersion: 1,
       mode: 'targeted',
@@ -82,6 +89,13 @@ try {
   })) {
     assert.equal(event.metrics[key], expected, `diagnostic collector retains ${key}`);
   }
+  assert.equal(event.metrics.adaptiveRuntimeMode, 'constrained');
+  assert.equal(event.metrics.adaptiveRuntimeImageBudget, 1);
+  assert.equal(event.metrics.adaptiveRuntimeGeometryBudget, 2);
+  assert.equal(event.metrics.adaptiveRuntimeTransitions, 1);
+  assert.equal(event.metrics.adaptiveRuntimeDecodeMs, 125.5);
+  assert.equal(event.metrics.adaptiveRuntimeFrameGapMs, 240);
+  assert.equal(event.metrics.adaptiveRuntimeReason, 'sustained_runtime_pressure');
   assert.deepEqual(event.metrics.adaptiveProcessingPlan, {
     schemaVersion: 1,
     mode: 'targeted',
@@ -122,7 +136,7 @@ try {
 
 const qaMonitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
 for (const key of [
-  'adaptiveProcessingPlan', 'adaptivePlan(event)', 'adaptiveMode', 'adaptiveTransforms', 'adaptiveReasons',
+  'adaptiveProcessingPlan', 'adaptivePlan(event)', 'adaptiveMode', 'adaptiveTransforms', 'adaptiveReasons', 'adaptiveRuntimeMode', 'adaptiveRuntimeImageBudget', 'adaptiveRuntimeGeometryBudget', 'adaptiveRuntimeTransitions', 'adaptiveRuntimeDecodeMs', 'adaptiveRuntimeFrameGapMs', 'adaptiveRuntimeReason',
   'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits',
   'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged', 'lastDeskewAngleDegrees',
 ]) {

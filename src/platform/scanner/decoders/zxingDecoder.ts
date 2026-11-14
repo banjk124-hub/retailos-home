@@ -23,6 +23,7 @@ import { createScannerTemporalSnapshot } from '../scannerTemporalRecognition';
 import { measureScannerImageQuality, type ScannerImageQuality } from '../scannerImageEnhancement';
 import { createScannerImageQualityProfile, type ScannerImageQualityProfile } from '../scannerImageQualityProfile';
 import type { ScannerAdaptiveProcessingPlan } from '../scannerAdaptiveProcessingController';
+import type { ScannerAdaptiveRuntimeBudget } from '../scannerAdaptiveRuntimeController';
 
 const FORMAT_MAP: Record<ScannerSymbology, BarcodeFormat> = {
   EAN_8: BarcodeFormat.EAN_8,
@@ -201,7 +202,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
 
   async decode(
     source: CanvasImageSource,
-    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion, onFocusQuality, onTemporalFrame }: DecoderDecodeOptions,
+    { timestamp = typeof performance !== 'undefined' ? performance.now() : Date.now(), scanRegion, onFocusQuality, onTemporalFrame, processingBudget }: DecoderDecodeOptions,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !this.canvas || !this.context) {
       throw new Error('ZXing adapter has not been initialized.');
@@ -275,6 +276,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
             width: crop.width,
             height: crop.height,
           } : undefined,
+          processingBudget,
         );
         if (output) {
           this.diagnosticScaleHits += 1;
@@ -297,6 +299,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
   async decodeTemporalSnapshot(
     snapshot: import('../scannerTemporalRecognition').ScannerTemporalSnapshot,
     timestamp: number,
+    processingBudget?: ScannerAdaptiveRuntimeBudget,
   ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.reader || !Number.isFinite(timestamp)
       || !(snapshot.pixels instanceof Uint8Array)
@@ -316,6 +319,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
           reuseOrientationHints: true,
           onImageQuality: (quality) => { this.lastImageQuality = quality; },
           onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
+          processingBudget,
         },
         (candidate) => this.decodeLuminance(
           candidate.luminance,
@@ -404,6 +408,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       width: number;
       height: number;
     },
+    processingBudget?: ScannerAdaptiveRuntimeBudget,
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
@@ -484,6 +489,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
         imageQuality: sampledImageQuality,
         onImageQuality: (quality) => { this.lastImageQuality = quality; },
         onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
+        processingBudget,
       },
       (candidate) => this.decodeLuminance(
         candidate.luminance,

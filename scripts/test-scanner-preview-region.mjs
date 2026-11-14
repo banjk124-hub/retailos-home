@@ -191,10 +191,15 @@ const stubs = {
   './scannerTemporalRecognition': makeDataModule(
     'export class ScannerTemporalFrameBuffer { push() { return true; } clear() {} }',
   ),
+  './scannerAdaptiveRuntimeController': makeDataModule(
+    'export class ScannerAdaptiveRuntimeController { getBudget() { return { schemaVersion: 1, mode: "normal", maxImageCandidates: 2, maxGeometryCandidates: 4, reasons: ["test"] }; } observe() { return this.getBudget(); } reset() {} }',
+  ),
 };
 let sessionJs = compileModule(sessionSource);
 for (const [specifier, stubUrl] of Object.entries(stubs)) {
-  sessionJs = sessionJs.replace(`from '${specifier}';`, `from '${stubUrl}';`);
+  sessionJs = sessionJs
+    .replaceAll(`from '${specifier}';`, `from '${stubUrl}';`)
+    .replaceAll(`from "${specifier}";`, `from "${stubUrl}";`);
 }
 const sessionUrl = 'data:text/javascript;base64,' + Buffer.from(sessionJs).toString('base64');
 const { UniversalScannerSession } = await import(sessionUrl);
