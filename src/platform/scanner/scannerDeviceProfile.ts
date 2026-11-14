@@ -1,15 +1,13 @@
+import type { ScannerProfileName, ScannerProfileReason } from './contracts';
+
 /**
  * Coarse, privacy-safe scanner device classification.
  *
  * These hints are advisory only. They never change camera constraints,
  * decode cadence, ROI coverage, supported formats or recognition ordering.
  */
-export type ScannerDeviceProfile = 'LOW' | 'MID' | 'HIGH';
-export type ScannerDeviceProfileReason =
-  | 'limited_capability_hint'
-  | 'strong_capability_hints'
-  | 'mixed_or_mid_capability_hints'
-  | 'unknown_capability_conservative_fallback';
+export type ScannerDeviceProfile = ScannerProfileName;
+export type ScannerDeviceProfileReason = ScannerProfileReason;
 
 export type ScannerDeviceProfileHints = {
   /** Coarse device memory estimate in GiB; may be unavailable in Safari. */

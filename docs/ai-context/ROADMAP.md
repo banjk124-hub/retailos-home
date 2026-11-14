@@ -33,8 +33,9 @@
 
 ---
 
-# PR-06 — Configurable Scanner Symbology (active implementation)
+# PR-06 — Configurable Scanner Symbology (merged)
 
+**PR:** #113 — merged at `429214b6b3988fc118e72679484c728b1f409e7c`; CI run #1026 passed.  
 **Branch:** `feat/scanner-configurable-symbology`  
 **Base:** `fea2cd09b00cf819b09d8372e88394f34220d0a6` (PR #112 merge).  
 **Objective:** expose decoder-supported symbologies as app-owned, persistent ON/OFF preferences in Home Scanner Settings.
@@ -68,8 +69,8 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 
 # Current scanner decoder replacement status — 2026-11-14
 
-**Current main:** `e5e85eda44b1de40d29e6b6fa3131514414fecb0` (PR #111 merged).
-**Current work:** PR-05 benchmark foundation on `feat/scanner-decoder-benchmark-foundation`.
+**Current main:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merged).
+**Current work:** PR-07 adaptive device profile foundation on `feat/scanner-adaptive-runtime-profiles` (PR #114, Draft).
 **Production default:** ZXing JS. ZXing-C++ WASM remains opt-in; no backend cutover is authorized or implied.
 
 ## Verified sequence
@@ -77,7 +78,8 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 - PR #108–#109 — injectable decoder factory and contract validation: merged.
 - PR #110 — opt-in ZXing-C++ WASM candidate: merged; production default unchanged.
 - PR #111 — shared sync/async recognition candidate pipeline: merged; CI run #1010 passed.
-- PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision. Physical corpus/device measurements remain outstanding.
+- PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision; merged through PR #112. Physical corpus/device measurements remain outstanding.
+- PR-06 — configurable symbology preferences and allowlist enforcement; merged through PR #113.
 
 ## Current evidence gap
 CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not select a production backend or remove recognition stages until those measurements exist.

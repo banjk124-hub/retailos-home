@@ -24,10 +24,10 @@ Use a canonical module registry, derive library groups and search results from i
 
 
 ## ADR-012 — Scanner-first adaptive resource profiles and shared engine completion
-**Status:** Partially implemented. The runtime-pressure controller (A3) was merged by PR #100 at `913c0a59c234d55a22cdc0479beb8ce4ca78f6ba`. PR-07 adds advisory Low/Mid/High capability classification and corrected windowed timing diagnostics. This remains a SCAN-07 closure gap; do not claim adaptive Low/Mid/High support.
+**Status:** A3 runtime-pressure controller merged by PR #100 at `913c0a59c234d55a22cdc0479beb8ce4ca78f6ba`. PR-07 (#114, Draft) implements advisory Low/Mid/High capability classification and corrected windowed timing diagnostics. Physical-device calibration and profile-specific policy tuning remain open.
 
 ### Context
-The shared scanner is already separated into feature-owned UI, a React bridge, a platform session, camera leases and a decoder adapter. However, the hook currently passes `profile: 'HIGH'` unconditionally. The former profile type exposed `COMPACT | STANDARD | HIGH`, and the hook passed `HIGH` unconditionally; neither represented device classification.
+The shared scanner is already separated into feature-owned UI, a React bridge, a platform session, camera leases and decoder adapters. Before PR-07, the hook passed `profile: 'HIGH'` unconditionally and the former profile type exposed `COMPACT | STANDARD | HIGH`; neither represented device classification.
 
 ### Decision
 - Re-scope Phase 1.2I as Shared Scanner Engine Completion.
