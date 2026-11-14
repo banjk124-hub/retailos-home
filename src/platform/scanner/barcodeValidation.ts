@@ -77,7 +77,7 @@ export function validateBarcodePayload(
       if (!/^\d{2,}$/.test(normalized) || normalized.length % 2 !== 0) return invalid('invalid-length');
       return { valid: true, reason: 'accepted' };
     case 'CODABAR':
-      if (!/^[0-9$+:/.\-]+$/.test(normalized)) return invalid('invalid-character');
+      if (!/^[0-9$+:\x2F.\-]+$/.test(normalized)) return invalid('invalid-character');
       return { valid: true, reason: 'accepted' };
     case 'RSS_14':
       if (!/^\d{14}$/.test(normalized)) return invalid('invalid-length');
