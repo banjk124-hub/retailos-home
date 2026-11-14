@@ -83,6 +83,7 @@ export function summarizeBenchmarkRows(rows) {
     const durations = subset.map((row) => row.decodeMs).filter(Number.isFinite);
     const firstTrialDurations = subset.filter((row) => row.trial === 1).map((row) => row.decodeMs);
     const steadyDurations = subset.filter((row) => row.trial > 1).map((row) => row.decodeMs);
+    const geometryAvailableAttempts = subset.filter((row) => row.geometryAvailable).length;
     return {
       backend,
       attempts: subset.length,
@@ -93,6 +94,8 @@ export function summarizeBenchmarkRows(rows) {
       wrongDecodes: positive.filter((row) => row.outcome === 'wrong-decode').length,
       falsePositives,
       errors: subset.filter((row) => row.outcome === 'error').length,
+      geometryAvailableAttempts,
+      geometryAvailabilityRate: subset.length ? geometryAvailableAttempts / subset.length : null,
       exactMatchRate: positive.length ? matched / positive.length : null,
       falsePositiveRate: negative.length ? falsePositives / negative.length : null,
       decodeP50Ms: percentile(durations, 0.5),
