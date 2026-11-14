@@ -191,8 +191,8 @@ try {
   assert.match(session, /decodeTemporalSnapshot\(temporalCandidate, temporalCandidate\.timestamp, processingBudget\)/,
     'T3 temporal fallback receives the same budget rather than being silently disabled');
   assert.match(adapter, /processingBudget\?: ScannerAdaptiveRuntimeBudget/);
-  assert.equal((adapter.match(/processingBudget,/g) ?? []).length, 2,
-    'both live-frame and temporal decoder pipelines must receive the runtime budget');
+  assert.equal((adapter.match(/processingBudget,/g) ?? []).length, 3,
+    'the live-frame budget must flow into its pipeline and the temporal fallback pipeline');
   assert.match(pipeline, /options\.processingBudget\?\.maxImageCandidates/);
   assert.match(pipeline, /options\.processingBudget\?\.maxGeometryCandidates/);
   assert.match(session, /const minDecodeIntervalMs = 70/,
