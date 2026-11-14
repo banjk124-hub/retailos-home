@@ -550,7 +550,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       <section className="stocktake-import-panel" role="dialog" aria-modal="true"
         aria-labelledby="stocktake-import-title" aria-busy={busy}>
         <header className="stocktake-import-header">
-          <button className="stocktake-import-icon-button" type="button"
+          <button className="stocktake-import-icon-button" type="button" disabled={busy}
             onClick={view === 'history' ? () => setView('import') : () => {
               if (hasDirtyZones) { setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi đóng module.'); return; }
               onClose();
@@ -562,7 +562,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             <span className="stocktake-import-eyebrow">RETAILOS · KIỂM KÊ</span>
             <h2 id="stocktake-import-title">{view === 'history' ? 'Lịch sử xuất file' : 'Xuất file'}</h2>
           </div>
-          <button className="stocktake-import-icon-button" type="button"
+          <button className="stocktake-import-icon-button" type="button" disabled={busy}
             onClick={() => {
               if (hasDirtyZones) { setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi mở lịch sử.'); return; }
               setView('history'); setError('');
@@ -664,7 +664,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     downloaded: 'Đã tải TXT', zipped: 'Đã xuất ZIP', dirty: 'Chưa lưu',
                     invalid: rowErrors ? rowErrors + ' lỗi' : 'File lỗi',
                   };
-                  return <button key={zone.zoneCode} type="button"
+                  return <button key={zone.zoneCode} type="button" disabled={busy}
                     className={selectedZone === index ? 'is-active' : ''}
                     aria-current={selectedZone === index ? 'true' : undefined}
                     onClick={() => selectZone(index)}>
@@ -677,7 +677,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               {activeZone && <section key={activeZone.zoneCode} className="stocktake-import-zone-workspace" aria-label={'Dữ liệu vùng ' + activeZone.zoneCode}>
                 {previewOpen ? <section className="stocktake-import-preview-screen" aria-label={'Xem trước TXT vùng ' + activeZone.zoneCode}>
                   <header className="stocktake-import-preview-screen-heading">
-                    <button type="button" onClick={() => setPreviewOpen(false)}><ArrowLeft size={16} /> Quay lại bảng</button>
+                    <button type="button" disabled={busy} onClick={() => setPreviewOpen(false)}><ArrowLeft size={16} /> Quay lại bảng</button>
                     <div><span className="stocktake-import-eyebrow">BẢN XUẤT TXT</span><strong>{activeZone.fileName}</strong><small>{activeZone.rows.length} dòng · {activeZoneUniqueProducts} mã hàng</small></div>
                     <span className="stocktake-import-state is-ready">Chỉ xem</span>
                   </header>
@@ -692,10 +692,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                   <div className="stocktake-import-zone-actions">
                     {!editingZone
                       ? <>
-                        <button type="button" className="stocktake-import-preview-trigger" onClick={() => setPreviewOpen(true)}><FileText size={15} /> Xem TXT</button>
-                        <button type="button" disabled={!outputReady} onClick={() => void copyOutput()}><Copy size={15} /> Sao chép</button>
-                        <button type="button" disabled={!outputReady} onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
-                        <button type="button" onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
+                        <button type="button" className="stocktake-import-preview-trigger" disabled={busy} onClick={() => setPreviewOpen(true)}><FileText size={15} /> Xem TXT</button>
+                        <button type="button" disabled={busy || !outputReady} onClick={() => void copyOutput()}><Copy size={15} /> Sao chép</button>
+                        <button type="button" disabled={busy || !outputReady} onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
+                        <button type="button" disabled={busy} onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
                       </>
                       : <>
                         <button type="button" disabled={busy} onClick={cancelEdit}><X size={15} /> Hủy</button>
@@ -735,12 +735,12 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                               {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFileId ? ' · ' + row.sourceFileId.slice(0, 8) : ''}</small>}
                             </td>
                             <td>{editingZone
-                              ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
+                              ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} disabled={busy} value={row.barcode}
                                   onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
                               : <span className="stocktake-import-cell-value">{row.barcode || '—'}</span>}</td>
                             {activeZoneHasProductNames && <td><span className="stocktake-import-cell-value stocktake-import-product-name">{row.productName || '—'}</span></td>}
                             <td>{editingZone
-                              ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} inputMode="decimal"
+                              ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} disabled={busy} inputMode="decimal"
                                   value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
                               : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
                             <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
@@ -756,9 +756,9 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                   {activeZone.rows.length > PAGE_SIZE && <div className="stocktake-import-pagination">
                     <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activeZone.rows.length)} / {activeZone.rows.length} dòng</span>
                     <div>
-                      <button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
+                      <button type="button" disabled={busy || page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
                       <strong>{page + 1}/{pageCount}</strong>
-                      <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
+                      <button type="button" disabled={busy || page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
                     </div>
                   </div>}
                 </div>
