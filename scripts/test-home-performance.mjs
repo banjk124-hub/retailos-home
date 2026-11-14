@@ -40,13 +40,13 @@ assert.match(librarySection, /useState\(initialSearch\)/, 'The module library se
 assert.match(librarySection, /const filteredModules = useMemo\(/, 'Module filtering must be memoized inside the isolated search component.');
 assert.doesNotMatch(registry, /function getModulesForLibrary\(/, 'Unused module-library filtering helper must not remain beside the canonical registry.');
 assert.doesNotMatch(homeState, /activeFilter/, 'Unused Home filter state must not remain in persisted UI state.');
-assert.doesNotMatch(homeStyles, /\\.(?:sidebar|workspace-switcher|welcome-section|hero-card|metrics-grid|module-grid|module-card|activity-row|attention-item|mobile-nav)\\b/, 'Unused legacy Home layout selectors must not remain in the Home stylesheet.');
-assert.equal((homeStyles.match(/\\.notification-popover\\{/g) ?? []).length, 1, 'The duplicated notification popover rule must have one canonical declaration.');
-assert.match(homeStyles, /\\.app-shell\\{/);
-assert.match(homeStyles, /\\.notification-popover\\{/);
-assert.match(homeStyles, /\\.toast-message\\{/);
-assert.doesNotMatch(homeEngineStyles, /\\.app-shell \\.lower-grid \\{ grid-template-columns:minmax\\(0,1fr\\); \\}/, 'Redundant lower-grid breakpoint overrides must not remain.');
-assert.doesNotMatch(homeArchitectureStyles, /@media \\(min-width: 701px\\) and \\(max-width: 1099px\\) \\{\\s*\\.app-shell \\.topbar\\.home-topbar/, 'The tablet breakpoint must not repeat the base topbar width.');
+assert.doesNotMatch(homeStyles, /\.(?:sidebar|workspace-switcher|welcome-section|hero-card|metrics-grid|module-grid|module-card|activity-row|attention-item|mobile-nav)\b/, 'Unused legacy Home layout selectors must not remain in the Home stylesheet.');
+assert.equal((homeStyles.match(/\.notification-popover\{/g) ?? []).length, 1, 'The duplicated notification popover rule must have one canonical declaration.');
+assert.match(homeStyles, /\.app-shell\{/);
+assert.match(homeStyles, /\.notification-popover\{/);
+assert.match(homeStyles, /\.toast-message\{/);
+assert.doesNotMatch(homeEngineStyles, /\.app-shell \.lower-grid \{ grid-template-columns:minmax\(0,1fr\); \}/, 'Redundant lower-grid breakpoint overrides must not remain.');
+assert.doesNotMatch(homeArchitectureStyles, /@media \(min-width: 701px\) and \(max-width: 1099px\) \{\s*\.app-shell \.topbar\.home-topbar/, 'The tablet breakpoint must not repeat the base topbar width.');
 
 assert.match(rules, /HOME_NOTICE_MODULE_IDS:[\s\S]*?'inventory'[\s\S]*?'product-dates'[\s\S]*?'sales'/);
 assert.match(rules, /function countRows\(/);
