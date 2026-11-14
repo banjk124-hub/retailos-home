@@ -15,7 +15,15 @@ const SHELL_URLS = [
 const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).pathname));
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_URLS)));
+  event.waitUntil((async () => {
+    try {
+      const cache = await caches.open(SHELL_CACHE);
+      await cache.addAll(SHELL_URLS);
+    } catch (error) {
+      await caches.delete(SHELL_CACHE);
+      throw error;
+    }
+  })());
 });
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
@@ -53,7 +61,8 @@ self.addEventListener('fetch', (event) => {
           const cache = await caches.open(SHELL_CACHE);
           await cache.put(APP_SHELL_URL, response.clone());
         }
-        return response;
+        if (response.ok) return response;
+        return (await caches.match(APP_SHELL_URL)) || response;
       } catch {
         return (await caches.match(APP_SHELL_URL)) || Response.error();
       }
