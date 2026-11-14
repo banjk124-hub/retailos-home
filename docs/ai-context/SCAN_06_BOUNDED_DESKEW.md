@@ -37,7 +37,7 @@ This is in-plane orientation recovery. It does not claim perspective/keystone co
 - Synthetic Code 128 angle sweep through positive and negative intermediate angles, including large rotations up to ±75° and exact 90°.
 - Low-contrast Code 128 fixture (40/255 source contrast) at an intermediate angle is estimated, contrast-normalized, corrected and decoded by the helper and production adapter.
 - Deskew helper tests verify estimate accuracy, correction and decode.
-- Production `ZXingDecoderAdapter` integration tests verify the same angle sweep, 90°/270°, combined quarter-turn plus residual skew, strict ROI crop and no full-frame fallback.
+- Production `ZXingWasmDecoderAdapter` integration tests verify the same angle sweep, 90°/270°, combined quarter-turn plus residual skew, strict ROI crop and no full-frame fallback.
 - Negative tests cover blank/invalid frames and out-of-range rotation input.
 - Preflight must include the estimator, production adapter integration, TypeScript, production build and Pages build.
 
