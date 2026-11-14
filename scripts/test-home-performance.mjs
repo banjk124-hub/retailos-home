@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [service, rules, home, dock, librarySection, registry, homeState, homeStyles, homeEngineStyles, homeArchitectureStyles, packageJson, packageLock, themeStyles, interactionStyles, mobileTuningStyles, performanceStyles, adaptiveStyles, responsiveStyles] = await Promise.all([
+const [service, rules, home, dock, librarySection, registry, homeState, homeStyles, homeEngineStyles, homeArchitectureStyles, packageJson, packageLock, themeStyles, interactionStyles, mobileTuningStyles, performanceStyles, adaptiveStyles, responsiveStyles, homeUxStyles, homeRedesignStyles] = await Promise.all([
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/home/snapshotNoticeRules.ts'),
   read('../src/features/home/HomeScreen.tsx'),
@@ -22,6 +22,8 @@ const [service, rules, home, dock, librarySection, registry, homeState, homeStyl
   read('../src/styles/performance.css'),
   read('../src/styles/adaptive-appearance.css'),
   read('../src/styles/responsive.css'),
+  read('../src/styles/home-ux.css'),
+  read('../src/styles/home-redesign.css'),
 ]);
 
 const transactionHelper = service.slice(
@@ -72,6 +74,8 @@ assert.match(homeStyles, /\.notification-popover\{/);
 assert.match(homeStyles, /\.toast-message\{/);
 const globalHomeStyles = [themeStyles, interactionStyles, mobileTuningStyles, performanceStyles, adaptiveStyles, responsiveStyles].join('\n');
 assert.doesNotMatch(globalHomeStyles, /\.(?:sidebar|welcome-section|welcome-copy|hero-card|hero-content|hero-visual|hero-orb|metrics-grid|metric-card|metric-grid|module-grid|module-card|module-toolbar|filter-pill|activity-row|attention-item|mobile-nav|workspace-switcher|profile-row|main-area|breadcrumb|system-status|top-profile|date-chip|user-context-chip|side-nav-item|panel-footer-button)\b/, 'Retired Home layouts must not remain in globally loaded stylesheets.');
+const homeFeatureStyles = [homeUxStyles, homeRedesignStyles].join('\n');
+assert.doesNotMatch(homeFeatureStyles, /\.(?:sidebar|hero-card|hero-orb|metric-card|module-card|mobile-nav)\b/, 'Retired Home selectors must not remain in feature stylesheets.');
 assert.match(globalHomeStyles, /\.icon-button/);
 assert.match(globalHomeStyles, /\.topbar-dock/);
 assert.match(globalHomeStyles, /\.spotlight-glass-tile/);
