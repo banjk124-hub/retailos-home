@@ -50,7 +50,13 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 **Change:** Memoized these derived values against the data snapshots they actually depend on. Scanner QA event rows are now memoized individually, so appending a new event does not re-render the existing 1,000-row history. This does not add asynchronous work or change validation rules.
 
-### 7. Mobile blur-budget overrides missed sibling overlays
+### 8. Static Home module groups re-rendered on unrelated Home state changes
+
+The module library received a new inline `onOpen` callback on every HomeScreen render. Even though its grouped data was memoized, notifications, calendar, toast and navigation state changes still caused the full group/card tree to render again.
+
+**Change:** Memoized the presentational `ModuleLibraryEngine` and stabilized its open callback with `useCallback`. Search changes still update the grouped data and correctly re-render the library; unrelated Home state changes no longer do.
+
+### 9. Mobile blur-budget overrides missed sibling overlays
 
 The existing mobile performance rules targeted overlays through `.app-shell`, but HomeScreen renders several modal backdrops and the LiquidDock as siblings of that element. Their full-screen backdrop blur therefore bypassed the mobile performance policy.
 
@@ -74,6 +80,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 
 - No silent root or nested lazy fallback while a feature chunk loads.
 - No auto-hidden primary chrome/wake-tap behavior.
+- Static Home module groups are memoized against stable data and callback props.
 - No stagger delay on the audited page, dock, Home, mobile login, authenticated identity panel, notice, interactive card and barcode result entry paths.
 - Topbar ambient keyframes avoid repaint-heavy properties.
 - Mobile blur-budget overrides cover modal siblings outside the app shell.
@@ -110,7 +117,7 @@ Physical QA is not inferred from CI compatibility-contract tests. Record device 
 
 The changes above are confirmed source-level findings, not a declaration that every interaction path is already clean. Remaining audit areas:
 
-- HomeScreen render cost and state fan-out during search, navigation, overlay handoff and notification updates.
+- Remaining HomeScreen render fan-out outside the memoized module-library boundary, especially search, navigation, overlay handoff and notification updates.
 - Physical profiling of large Stocktake datasets and Stocktake Import tables on low/mid-range devices.
 - Scanner presentation open/close handoff and camera lifecycle boundaries.
 - Shared GlassSurface, overlay stacking, pointer hit-testing and CSS compositing on mobile Safari/Chrome.
