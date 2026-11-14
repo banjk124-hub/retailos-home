@@ -423,7 +423,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
   const downloadPreviousExport = (item: StocktakeExport) => downloadStocktakeText(item.fileName, item.fileContent);
 
-  if (busy) return <div className="stocktake-backdrop" role="status" aria-live="polite" aria-busy="true"><section className="stocktake-panel"><p>Đang xử lý dữ liệu kiểm kê…</p></section></div>;
+  if (busy) return <div className="stocktake-backdrop" role="status" aria-live="polite" aria-busy="true"><section className="stocktake-panel stocktake-busy-panel"><span className="stocktake-busy-indicator" aria-hidden="true" /><p>Đang xử lý dữ liệu kiểm kê…</p></section></div>;
 
   return (
     <div className="stocktake-backdrop" role="presentation">
