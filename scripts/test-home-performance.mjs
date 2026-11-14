@@ -80,6 +80,9 @@ assert.doesNotMatch(homeFeatureStyles, /\.(?:sidebar|hero-card|hero-orb|metric-c
 assert.match(globalHomeStyles, /\.icon-button/);
 assert.match(globalHomeStyles, /\.topbar-dock/);
 assert.match(globalHomeStyles, /\.spotlight-glass-tile/);
+assert.equal((mobileTuningStyles.match(/\.app-shell \.spotlight-tile-float\s*\{\s*display:\s*none;\s*\}/g) ?? []).length, 1, 'Mobile spotlight float visibility must have one canonical rule per media context.');
+assert.equal((mobileTuningStyles.match(/\.app-shell \.spotlight-glass-chip\s*\{\s*display:\s*none;\s*\}/g) ?? []).length, 1, 'Mobile spotlight chip visibility must not be duplicated.');
+assert.equal((mobileTuningStyles.match(/\.app-shell \.calendar-day\s*\{\s*gap:\s*3px;\s*padding:\s*4px 1px;\s*\}/g) ?? []).length, 1, 'Mobile calendar-day spacing must not be duplicated.');
 assert.doesNotMatch(homeEngineStyles, /\.app-shell \.lower-grid \{ grid-template-columns:minmax\(0,1fr\); \}/, 'Redundant lower-grid breakpoint overrides must not remain.');
 assert.doesNotMatch(homeArchitectureStyles, /@media \(min-width: 701px\) and \(max-width: 1099px\) \{\s*\.app-shell \.topbar\.home-topbar/, 'The tablet breakpoint must not repeat the base topbar width.');
 
