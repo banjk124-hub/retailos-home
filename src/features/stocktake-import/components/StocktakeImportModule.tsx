@@ -608,8 +608,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <h3 id="stocktake-import-new-session-title">Tạo phiên xử lý mới?</h3>
               <p>Phiên đang mở sẽ được đóng khỏi workspace. Lịch sử đã lưu vẫn được giữ nguyên và có thể khôi phục sau.</p>
               <div className="stocktake-import-review-actions">
-                <button type="button" onClick={() => setShowNewSessionConfirm(false)}>Quay lại</button>
-                <button type="button" onClick={resetActiveSession}>Tạo phiên mới</button>
+                <button type="button" disabled={busy} onClick={() => setShowNewSessionConfirm(false)}>Quay lại</button>
+                <button type="button" disabled={busy} onClick={resetActiveSession}>Tạo phiên mới</button>
               </div>
             </section>
           </div>}
