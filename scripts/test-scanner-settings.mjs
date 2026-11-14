@@ -10,7 +10,7 @@ globalThis.localStorage = {
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const contractsSource = await read('../src/platform/scanner/contracts.ts');
-const formatsMatch = contractsSource.match(/SUPPORTED_BARCODE_FORMATS = \\[([\\s\\S]*?)\\] as const/);
+const formatsMatch = contractsSource.match(/SUPPORTED_BARCODE_FORMATS = \[([\s\S]*?)\] as const/);
 const formats = [...formatsMatch[1].matchAll(/'([A-Z0-9_]+)'/g)].map((match) => match[1]);
 let storeSource = await read('../src/features/scanner/services/scannerSettingsStore.ts');
 storeSource = storeSource.replace(
