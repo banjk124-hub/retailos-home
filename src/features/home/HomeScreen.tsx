@@ -260,6 +260,12 @@ export default function HomeScreen({
       modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)),
     }))
     .filter((library) => library.modules.length > 0), [filteredModules]);
+  const selectedLibraryModules = useMemo(
+    () => selectedLibrary
+      ? filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id))
+      : [],
+    [filteredModules, selectedLibrary],
+  );
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
     const mondayOffset = (today.getDay() + 6) % 7;
@@ -835,12 +841,12 @@ export default function HomeScreen({
           <header className="app-library-modal-header">
             <div className="app-library-modal-identity">
               <span className="app-library-icon"><MotionIcon icon={LibraryIcon} variant="module" size={22} /></span>
-              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).length} chức năng</p></div>
+              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{selectedLibraryModules.length} chức năng</p></div>
             </div>
             <button ref={libraryCloseButtonRef} type="button" className="icon-button" aria-label="Đóng thư viện" onClick={closeLibrary}><X size={18} /></button>
           </header>
           <div className="app-library-modules">
-            {filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).map((module) => {
+            {selectedLibraryModules.map((module) => {
               const ModuleIcon = getModuleIcon(module.id);
               return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => {
                 if (module.id === 'stocktake') {
