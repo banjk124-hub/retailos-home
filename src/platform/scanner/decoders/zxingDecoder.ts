@@ -276,6 +276,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
             width: crop.width,
             height: crop.height,
           } : undefined,
+          processingBudget,
         );
         if (output) {
           this.diagnosticScaleHits += 1;
@@ -407,6 +408,7 @@ export class ZXingDecoderAdapter implements ScannerDecoderAdapter {
       width: number;
       height: number;
     },
+    processingBudget?: ScannerAdaptiveRuntimeBudget,
   ): DecoderOutput | null {
     if (!this.reader || !this.canvas || !this.context) return null;
     const imageReadStartedAt = performance.now();
