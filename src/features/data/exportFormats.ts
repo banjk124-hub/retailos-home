@@ -1,3 +1,5 @@
+import { downloadFile } from '../../shared/downloadFile';
+
 export type ExportTable = {
   columns: string[];
   rows: Array<Record<string, unknown>>;
@@ -157,15 +159,7 @@ export async function downloadPptx(
 }
 
 export function downloadBlob(blob: Blob, fileName: string, type = 'application/octet-stream'): void {
-  const url = URL.createObjectURL(new Blob([blob], { type }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.style.display = 'none';
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadFile(new Blob([blob], { type }), fileName);
 }
 
 export function createTextReport(title: string, snapshotDate: string, table: ExportTable): string {
