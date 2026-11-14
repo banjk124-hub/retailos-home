@@ -52,9 +52,9 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 ### 7. Stocktake Import did synchronous work before publishing action feedback
 
-Saving a zone validated and normalized every row, validated rows a second time, and rebuilt the output before setting the existing busy state. Confirming a merged import and building the ZIP also performed synchronous setup before the browser had an opportunity to paint the busy response. Copy waited for the Clipboard API before showing any acknowledgement.
+Saving a zone validated and normalized every row, validated rows a second time, and rebuilt the output before setting the existing busy state. Confirming a merged import and building the current-session or historical ZIP also performed synchronous setup before the browser had an opportunity to paint the busy response. Copy waited for the Clipboard API before showing any acknowledgement.
 
-**Change:** Reused the existing `busy`/`busyAction` state before CPU-heavy work and added a local one-frame paint handoff before synchronous validation, merge and ZIP setup. Removed the duplicate row-validation pass. Copy now announces its pending action before awaiting Clipboard. During a save, zone navigation, row inputs and conflicting actions are disabled so the active edit target cannot change mid-write. No worker, service, queue or background job was added.
+**Change:** Reused the existing `busy`/`busyAction` state before CPU-heavy work and added a local one-frame paint handoff before synchronous validation, merge and both current-session and history ZIP setup. Removed the duplicate row-validation pass. Copy now announces its pending action before awaiting Clipboard. During a save, zone navigation, row inputs and conflicting actions are disabled so the active edit target cannot change mid-write. No worker, service, queue or background job was added.
 
 ### 8. Static Home module groups re-rendered on unrelated Home state changes
 
