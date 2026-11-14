@@ -64,6 +64,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   private options: ReaderOptions | null = null;
   private decoding = false;
   private disposed = false;
+  private lastUnexpectedErrorLogAt = 0;
   private lastFocusAt = 0;
   private previousFocusPixels: Uint8Array | null = null;
   private previousFocusKey: string | null = null;
@@ -499,6 +500,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     this.lastImageQuality = null;
     this.lastImageQualityProfile = null;
     this.lastAdaptiveProcessingPlan = null;
+    this.cachedOrientationHints = null;
     this.lastFocusAt = 0;
     this.previousFocusPixels = null;
     this.previousFocusKey = null;
