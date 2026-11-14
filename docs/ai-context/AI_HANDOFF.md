@@ -39,7 +39,7 @@
 # AI handoff — unified scanner recognition pipeline (2026-11-11)
 
 **Repository:** banjk124-hub/retailos-home
-**Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
+**Main baseline:** PR #116 merged at `807fd2ba0c4c23be6925238d0b1289f19a84ccfb`.
 **Active branch:** `chore/scanner-wasm-legacy-cleanup` (PR-09).
 **Current task:** complete the WASM-only decoder cutover cleanup: remove the retired ZXing JS adapter/dependency and obsolete test/benchmark paths while preserving shared scanner contracts.
 **Status:** PR #116 WASM cutover is merged and CI run #1060 passed. PR-09 cleanup is in progress; final CI and physical iOS/Android optical/workflow validation are pending.
