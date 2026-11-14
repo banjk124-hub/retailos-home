@@ -785,6 +785,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     setHistoryExportingId(item.id);
                     setError('');
                     try {
+                      await yieldToNextPaint();
                       const zip = new JSZip();
                       item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
                       const blob = await zip.generateAsync({ type: 'blob' });
