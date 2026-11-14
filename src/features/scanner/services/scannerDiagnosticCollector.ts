@@ -16,7 +16,7 @@ const ALLOWED_KEYS = new Set([
   'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore', 'validationRejectReasons',
   'averageDecodeMs', 'maxDecodeMs', 'samples', 'stages', 'sourceWidth', 'sourceHeight',
   'frames', 'decoded', 'roiHits', 'roiUnavailable', 'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits', 'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits', 'lastScaleFactor', 'lastDeskewAngleDegrees', 'notFound', 'checksumErrors', 'formatErrors',
-  'unexpectedErrors', 'valueLength', 'symbology', 'mode', 'adaptiveProcessingPlan', 'focusStatus', 'focusModes', 'focusRequestMs', 'focusErrorName', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged',
+  'unexpectedErrors', 'valueLength', 'symbology', 'mode', 'adaptiveProcessingPlan', 'adaptiveRuntimeMode', 'adaptiveRuntimeImageBudget', 'adaptiveRuntimeGeometryBudget', 'adaptiveRuntimeTransitions', 'focusStatus', 'focusModes', 'focusRequestMs', 'focusErrorName', 'focusSharpness', 'focusSharpnessMin', 'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents', 'focusQualityStatus', 'cameraControlChanged',
   'width', 'height', 'frameRate', 'facingMode', 'focusMode', 'exposureMode', 'whiteBalanceMode', 'pageLifecycle', 'frameCallbackObserved',
   'videoReadyMs', 'videoReadyState', 'videoWidth', 'videoHeight', 'trackEvent', 'trackMuted', 'trackReadyState',
 ]);
