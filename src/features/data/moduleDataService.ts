@@ -151,7 +151,7 @@ export async function getCachedModuleSnapshots(
 
   const database = await openDatabase();
   try {
-    return await new Promise((resolve, reject) => {
+    return await new Promise<CachedModuleSnapshot[]>((resolve, reject) => {
       const transaction = database.transaction(SNAPSHOT_STORE, 'readonly');
       const store = transaction.objectStore(SNAPSHOT_STORE);
       const snapshots: CachedModuleSnapshot[] = [];
