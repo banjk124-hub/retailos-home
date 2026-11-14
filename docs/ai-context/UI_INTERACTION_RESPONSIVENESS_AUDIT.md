@@ -54,7 +54,7 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 The module library received a new inline `onOpen` callback on every HomeScreen render. Even though its grouped data was memoized, notifications, calendar, toast and navigation state changes still caused the full group/card tree to render again.
 
-**Change:** Memoized the presentational `ModuleLibraryEngine` and stabilized its open callback with `useCallback`. Search changes still update the grouped data and correctly re-render the library; unrelated Home state changes no longer do.
+**Change:** Memoized the presentational `ModuleLibraryEngine` and stabilized its open callback with `useCallback`. The selected library's module subset is also memoized instead of filtering the full module registry twice on every render. Search changes still update the grouped data and correctly re-render the library; unrelated Home state changes no longer do.
 
 ### 9. Mobile blur-budget overrides missed sibling overlays
 
