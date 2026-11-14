@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { ModuleLibraryEngine } from './ModuleLibraryEngine';
 import { MODULE_LIBRARIES, MODULE_REGISTRY, type ModuleLibraryDefinition, type ModuleLibraryGroup, type RetailModule } from '../moduleRegistry';
 import { MotionIcon } from '../../../shared/icons';
@@ -51,7 +51,7 @@ export function HomeModuleLibrarySection({ initialSearch, onSearchChange, onOpen
           />
           {search && (
             <button className="search-clear-button" type="button" onClick={() => updateSearch('')} aria-label="Xóa tìm kiếm">
-              <MotionIcon icon={Search} variant="search" active size={15} />
+              <MotionIcon icon={X} variant="search" active size={15} />
             </button>
           )}
         </label>
