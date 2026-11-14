@@ -16,22 +16,24 @@ const storeCompiled = ts.transpileModule(storeSource, {
 const storeUrl = 'data:text/javascript;base64,' + Buffer.from(storeCompiled).toString('base64');
 const store = await import(storeUrl);
 
-assert.deepEqual(store.getScannerSettings(), {
-  vibrationEnabled: true,
-  beepVolume: 50,
-}, 'scanner feedback defaults preserve the current beep level and enabled haptic preference');
+assert.equal(store.getScannerSettings().vibrationEnabled, true,
+  'scanner feedback defaults preserve enabled haptics');
+assert.equal(store.getScannerSettings().beepVolume, 50,
+  'scanner feedback defaults preserve the current beep level');
+assert.deepEqual(store.getEnabledScannerSymbologies(), ['EAN_8', 'EAN_13', 'CODE_128', 'CODE_39'],
+  'the four existing barcode formats remain enabled by default');
 
 let notifications = 0;
 const unsubscribe = store.subscribeScannerSettings(() => { notifications += 1; });
-assert.deepEqual(store.updateScannerSettings({ vibrationEnabled: false, beepVolume: 80 }), {
-  vibrationEnabled: false,
-  beepVolume: 80,
-});
+store.updateScannerSettings({ vibrationEnabled: false, beepVolume: 80 });
+assert.equal(store.getScannerSettings().vibrationEnabled, false);
+assert.equal(store.getScannerSettings().beepVolume, 80);
 assert.equal(notifications, 1, 'settings subscribers receive preference changes');
-assert.deepEqual(JSON.parse(stored.get('retailos.scannerSettings.v1')), {
-  vibrationEnabled: false,
-  beepVolume: 80,
-}, 'preferences persist to the versioned device-local storage key');
+const persisted = JSON.parse(stored.get('retailos.scannerSettings.v1'));
+assert.equal(persisted.vibrationEnabled, false);
+assert.equal(persisted.beepVolume, 80);
+assert.equal(persisted.symbologyEnabled.EAN_8, true,
+  'existing preferences persist alongside the new symbology settings');
 
 store.updateScannerSettings({ beepVolume: 73 });
 assert.equal(store.getScannerSettings().beepVolume, 70, 'volume snaps to the nearest 10-point step');
