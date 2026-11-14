@@ -29,6 +29,16 @@ const modulePaths = [
 try {
   for (const relativePath of modulePaths) {
     let source = await readFile(path.join(root, relativePath), 'utf8');
+    if (relativePath === 'src/platform/scanner/decoders/zxingWasmDecoder.ts') {
+      source = source.replace(
+        /import readerWasmUrl from ['"]zxing-wasm\/reader\/zxing_reader\.wasm\?url['"];?\s*/,
+        '',
+      );
+      source = source.replace(
+        /const WASM_OVERRIDES = \{[\s\S]*?\n\};/,
+        'const WASM_OVERRIDES = { wasmBinary: globalThis.__retailosZXingWasmBinary };',
+      );
+    }
     const compiled = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
     }).outputText
@@ -43,14 +53,17 @@ try {
         /(import\(\s*['"])(\.\.?\/[^'"]+)(['"]\s*\))/g,
         (_match, prefix, specifier, suffix) => prefix + (specifier.endsWith('.js') || specifier.endsWith('.mjs') ? specifier : specifier + '.js') + suffix,
       )
-      .replace(
-        /import readerWasmUrl from ['"]zxing-wasm\/reader\/zxing_reader\.wasm\?url['"];?/,
-        `const readerWasmUrl = ${JSON.stringify(fileURLToPath(import.meta.resolve('zxing-wasm/reader/zxing_reader.wasm')))};`,
-      );
+;
     const outputPath = path.join(tempRoot, relativePath.replace(/\.ts$/, '.js'));
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(outputPath, compiled, 'utf8');
   }
+
+  const wasmBuffer = await readFile(path.join(root, 'node_modules/zxing-wasm/dist/reader/zxing_reader.wasm'));
+  globalThis.__retailosZXingWasmBinary = wasmBuffer.buffer.slice(
+    wasmBuffer.byteOffset,
+    wasmBuffer.byteOffset + wasmBuffer.byteLength,
+  );
 
   globalThis.ImageData ??= class ImageData {
     constructor(data, width, height) {
@@ -682,5 +695,6 @@ try {
   console.log('Production ZXing-C++ WASM adapter integration passed: formats/orientations, strict ROI, 1.5x→1x→2x fallback, detached processing canvas, immutable video preview and camera stream contract.');
 } finally {
   delete globalThis.document;
+  delete globalThis.__retailosZXingWasmBinary;
   await rm(tempRoot, { recursive: true, force: true });
 }
