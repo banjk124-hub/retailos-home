@@ -11,61 +11,47 @@ export type SnapshotNotice = {
   snapshotDate: string;
 };
 
-type SnapshotRow = {
-  name: string;
-  quantity?: number;
-  minimumQuantity?: number;
-  expiryDate?: string;
-  salesAmount?: number;
-  salesTarget?: number;
-};
-
 function asRecord(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? value as Record<string, unknown>
     : undefined;
 }
 
-function readRows(data: unknown): SnapshotRow[] {
+function readRows(data: unknown): unknown[] {
   const value = asRecord(data);
   const rows = Array.isArray(data) ? data : value?.rows;
-  if (!Array.isArray(rows)) return [];
-
-  return rows.flatMap((row): SnapshotRow[] => {
-    const record = asRecord(row);
-    if (!record) return [];
-
-    const name = typeof record.name === 'string' ? record.name
-      : typeof record.productName === 'string' ? record.productName
-        : typeof record.itemName === 'string' ? record.itemName
-          : '';
-    const quantity = typeof record.quantity === 'number' ? record.quantity
-      : typeof record.stock === 'number' ? record.stock
-        : undefined;
-    const minimumQuantity = typeof record.minimumQuantity === 'number' ? record.minimumQuantity
-      : typeof record.reorderPoint === 'number' ? record.reorderPoint
-        : undefined;
-    const expiryDate = typeof record.expiryDate === 'string' ? record.expiryDate
-      : typeof record.expirationDate === 'string' ? record.expirationDate
-        : undefined;
-    const salesAmount = typeof record.salesAmount === 'number' ? record.salesAmount
-      : typeof record.amount === 'number' ? record.amount
-        : undefined;
-    const salesTarget = typeof record.salesTarget === 'number' ? record.salesTarget
-      : typeof record.target === 'number' ? record.target
-        : undefined;
-
-    return [{ name: name || 'Sản phẩm', quantity, minimumQuantity, expiryDate, salesAmount, salesTarget }];
-  });
+  return Array.isArray(rows) ? rows : [];
 }
 
+function readNumber(record: Record<string, unknown>, primary: string, fallback: string): number | undefined {
+  return typeof record[primary] === 'number' ? record[primary] as number
+    : typeof record[fallback] === 'number' ? record[fallback] as number
+      : undefined;
+}
+
+function countRows(data: unknown, matches: (record: Record<string, unknown>) => boolean): number {
+  let count = 0;
+  for (const row of readRows(data)) {
+    const record = asRecord(row);
+    if (record && matches(record)) count += 1;
+  }
+  return count;
+}
+
+export const HOME_NOTICE_MODULE_IDS: readonly ModuleDataId[] = [
+  'inventory',
+  'product-dates',
+  'sales',
+];
 export function calculateSnapshotNotices(snapshots: CachedModuleSnapshot[], now = new Date()): SnapshotNotice[] {
   const notices: SnapshotNotice[] = [];
   const inventory = snapshots.find((snapshot) => snapshot.moduleId === 'inventory');
   if (inventory) {
-    const lowStockCount = readRows(inventory.data).filter((row) =>
-      row.quantity !== undefined && row.minimumQuantity !== undefined && row.quantity <= row.minimumQuantity,
-    ).length;
+    const lowStockCount = countRows(inventory.data, (record) => {
+      const quantity = readNumber(record, 'quantity', 'stock');
+      const minimumQuantity = readNumber(record, 'minimumQuantity', 'reorderPoint');
+      return quantity !== undefined && minimumQuantity !== undefined && quantity <= minimumQuantity;
+    });
     if (lowStockCount > 0) {
       notices.push({
         id: 'low-stock',
@@ -84,11 +70,14 @@ export function calculateSnapshotNotices(snapshots: CachedModuleSnapshot[], now 
   if (productDates) {
     const cutoff = new Date(now);
     cutoff.setDate(cutoff.getDate() + 7);
-    const dueCount = readRows(productDates.data).filter((row) => {
-      if (!row.expiryDate) return false;
-      const expiryDate = new Date(row.expiryDate);
+    const dueCount = countRows(productDates.data, (record) => {
+      const expiryDateValue = typeof record.expiryDate === 'string' ? record.expiryDate
+        : typeof record.expirationDate === 'string' ? record.expirationDate
+          : undefined;
+      if (!expiryDateValue) return false;
+      const expiryDate = new Date(expiryDateValue);
       return Number.isFinite(expiryDate.getTime()) && expiryDate <= cutoff;
-    }).length;
+    });
     if (dueCount > 0) {
       notices.push({
         id: 'product-dates',
@@ -105,9 +94,11 @@ export function calculateSnapshotNotices(snapshots: CachedModuleSnapshot[], now 
 
   const sales = snapshots.find((snapshot) => snapshot.moduleId === 'sales');
   if (sales) {
-    const belowTargetCount = readRows(sales.data).filter((row) =>
-      row.salesAmount !== undefined && row.salesTarget !== undefined && row.salesAmount < row.salesTarget,
-    ).length;
+    const belowTargetCount = countRows(sales.data, (record) => {
+      const salesAmount = readNumber(record, 'salesAmount', 'amount');
+      const salesTarget = readNumber(record, 'salesTarget', 'target');
+      return salesAmount !== undefined && salesTarget !== undefined && salesAmount < salesTarget;
+    });
     if (belowTargetCount > 0) {
       notices.push({
         id: 'sales-target',
