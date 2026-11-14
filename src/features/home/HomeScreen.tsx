@@ -40,13 +40,13 @@ const ScannerQaMonitor = lazy(() => import('./components/ScannerQaMonitor'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
 
-// Keep expensive feature trees isolated from unrelated Home state updates.
-const MemoizedBarcodeScanner = memo(BarcodeScanner);
-const MemoizedStocktakeModule = memo(StocktakeModule);
-const MemoizedStocktakeImportModule = memo(StocktakeImportModule);
-const MemoizedScannerQaMonitor = memo(ScannerQaMonitor);
-const MemoizedSettingsHub = memo(SettingsHub);
-const MemoizedScannerSettingsPanel = memo(ScannerSettingsPanel);
+// Keep expensive lazy feature trees isolated from unrelated Home state updates.
+const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>) => <BarcodeScanner {...props} />);
+const MemoizedStocktakeModule = memo((props: React.ComponentProps<typeof StocktakeModule>) => <StocktakeModule {...props} />);
+const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>) => <StocktakeImportModule {...props} />);
+const MemoizedScannerQaMonitor = memo((props: React.ComponentProps<typeof ScannerQaMonitor>) => <ScannerQaMonitor {...props} />);
+const MemoizedSettingsHub = memo((props: React.ComponentProps<typeof SettingsHub>) => <SettingsHub {...props} />);
+const MemoizedScannerSettingsPanel = memo((props: React.ComponentProps<typeof ScannerSettingsPanel>) => <ScannerSettingsPanel {...props} />);
 const MemoizedLiquidDock = memo(LiquidDock);
 
 type Props = {
