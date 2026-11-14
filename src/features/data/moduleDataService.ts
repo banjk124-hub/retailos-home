@@ -135,17 +135,43 @@ async function withStore<T>(
   }
 }
 
+async function withStoreBatch<T>(
+  mode: IDBTransactionMode,
+  operation: (store: IDBObjectStore) => IDBRequest<T>[],
+): Promise<T[]> {
+  const database = await openDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const transaction = database.transaction(SNAPSHOT_STORE, mode);
+      const requests = operation(transaction.objectStore(SNAPSHOT_STORE));
+      const results = new Array<T>(requests.length);
+      requests.forEach((request, index) => {
+        request.onsuccess = () => { results[index] = request.result; };
+        request.onerror = () => reject(request.error ?? new Error('Module data cache batch read failed.'));
+      });
+      transaction.oncomplete = () => resolve(results);
+      transaction.onerror = () => reject(transaction.error ?? new Error('Module data cache batch transaction failed.'));
+      transaction.onabort = () => reject(transaction.error ?? new Error('Module data cache batch transaction was aborted.'));
+    });
+  } finally {
+    database.close();
+  }
+}
+
 export function getCachedModuleSnapshot(moduleId: ModuleDataId): Promise<CachedModuleSnapshot | undefined> {
   return withStore<CachedModuleSnapshot | undefined>('readonly', (store) => store.get(moduleId));
 }
 
-/** Read several snapshots through one database open and one readonly transaction. */
+/** Read only the requested snapshots through one database open and one readonly transaction. */
 export async function getCachedModuleSnapshots(
   moduleIds: readonly ModuleDataId[] = MODULE_DATA_IDS,
 ): Promise<CachedModuleSnapshot[]> {
-  const requested = new Set(moduleIds);
-  const snapshots = await withStore<CachedModuleSnapshot[]>('readonly', (store) => store.getAll());
-  return snapshots.filter((snapshot) => requested.has(snapshot.moduleId));
+  const ids = [...new Set(moduleIds)];
+  const snapshots = await withStoreBatch<CachedModuleSnapshot | undefined>(
+    'readonly',
+    (store) => ids.map((moduleId) => store.get(moduleId)),
+  );
+  return snapshots.filter((snapshot): snapshot is CachedModuleSnapshot => snapshot !== undefined);
 }
 
 function putCachedSnapshot(snapshot: CachedModuleSnapshot): Promise<IDBValidKey> {
