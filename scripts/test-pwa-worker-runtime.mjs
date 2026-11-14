@@ -6,7 +6,7 @@ const template = await readFile(new URL('../src/sw/service-worker.template.js', 
 const source = template
   .replace('__BUILD_ID__', 'runtime-test')
   .replace('__APP_BASE__', '/retailos-home/')
-  .replace('__ASSET_PATHS__', JSON.stringify(['assets/app.js', 'assets/app.css', 'images/background.webp']));
+  .replace('__ASSET_PATHS__', JSON.stringify(['assets/app.js', 'assets/app.css', 'assets/uncached.js', 'images/background.webp']));
 
 const listeners = new Map();
 const cacheStore = new Map();
