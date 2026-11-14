@@ -67,6 +67,17 @@ Changed:
 - Removed redundant lower-grid breakpoint declarations and the duplicate tablet topbar width override.
 - Did not flatten the five Home stylesheets or remove other repeated selectors whose breakpoint/state cascade still needs inspection.
 
+### Globally loaded legacy CSS
+
+The same retired Home layouts were still referenced by the globally imported `theme.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css` and `responsive.css`.
+
+Changed:
+- Removed dead selector rules and pruned dead branches from grouped `:is()`, `:where()` and comma-separated selectors while retaining active selectors in mixed rules.
+- Removed 22,044 additional source bytes across the six global stylesheets. The largest reductions were `mobile-tuning.css` (87,143 → 76,215 bytes) and `responsive.css` (12,331 → 5,612 bytes).
+- Across the Home-only and global stylesheets, 38,402 source CSS bytes were removed (about 26.9% of their combined pre-cleanup source size).
+- Active controls, current spotlight/library components, panel surfaces, dock, notification/calendar overlays and reduced-motion/performance selectors were retained.
+- CSS contract tests now assert that retired layout selectors do not reappear in the globally loaded stylesheets.
+
 ## Direct dependency review
 
 Direct runtime dependencies currently have identified source use:
