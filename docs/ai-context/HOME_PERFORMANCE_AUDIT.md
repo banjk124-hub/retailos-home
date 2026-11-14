@@ -76,7 +76,7 @@ Direct runtime dependencies currently have identified source use:
 - `jszip`: Stocktake Import OOXML parsing and export generation.
 - `pptxgenjs`: export generation.
 
-- Removed unused dev dependency `@playwright/test`: repository search found no test imports, Playwright config, CLI script or workflow use. Its isolated `playwright` and `playwright-core` lock entries were removed with it.
+- Removed unused dev dependency `@playwright/test`: repository search found no maintained test imports, Playwright config, CLI script or workflow use. Historical implementation notes record a one-off manual Playwright 1.64.1 Chromium visual-QA session, but no current project automation depends on the package. Its isolated `playwright` and `playwright-core` lock entries were removed with it; re-add Playwright when a maintained E2E suite is introduced.
 - Recomputed lockfile dependency reachability from all remaining root dependencies and devDependencies: every remaining package entry is reachable; no orphan package entry remains.
 
 This is not yet a full transitive dependency-pruning pass. Do not remove transitive packages directly from the lockfile; only change top-level dependencies through package metadata and a reproducible lockfile update after proving no runtime/test/build path needs them.
