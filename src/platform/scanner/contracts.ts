@@ -5,7 +5,12 @@
  * implementation, or feature presentation dependencies.
  */
 
-export const SUPPORTED_BARCODE_FORMATS = ['EAN_8', 'EAN_13', 'CODE_128', 'CODE_39'] as const;
+export const SUPPORTED_BARCODE_FORMATS = [
+  'EAN_8', 'EAN_13', 'UPC_A', 'UPC_E',
+  'CODE_128', 'CODE_39', 'CODE_93', 'ITF', 'CODABAR',
+  'QR_CODE', 'DATA_MATRIX', 'PDF_417', 'AZTEC',
+  'RSS_14', 'RSS_EXPANDED', 'MAXICODE', 'MICRO_QR_CODE',
+] as const;
 
 export type SupportedBarcodeSymbology = (typeof SUPPORTED_BARCODE_FORMATS)[number];
 
