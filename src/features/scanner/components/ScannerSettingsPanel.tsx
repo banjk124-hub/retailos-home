@@ -1,3 +1,4 @@
+import '../../../styles/scanner-settings.css';
 import { ArrowLeft, ScanBarcode, Volume2, Vibrate } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useScannerSettings } from '../hooks/useScannerSettings';
