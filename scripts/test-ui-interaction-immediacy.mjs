@@ -55,6 +55,13 @@ function blockBetween(source, start, end) {
   return source.slice(startIndex, endIndex);
 }
 
+const refresh = blockBetween(stocktake, 'const refresh = useCallback', 'useEffect(() =>');
+assert.doesNotMatch(refresh, /getLogs/, 'Opening or refreshing Stocktake must not eagerly read the full action history.');
+const openHistory = blockBetween(stocktake, 'const openHistory = async', 'const beginZone = async');
+assert.ok(openHistory.indexOf('setBusy(true)') < openHistory.indexOf('await stocktakeStore.getLogs()'), 'History loading must acknowledge the tap before reading IndexedDB.');
+assert.ok(openHistory.indexOf('await stocktakeStore.getLogs()') < openHistory.indexOf("setScreen('history')"), 'History must only open after its requested records are available.');
+assert.match(stocktake, /void openHistory\(\)/, 'The history navigation must use the explicit on-demand loader.');
+
 const beginZone = blockBetween(stocktake, 'const beginZone = async', 'const resumeZone = async');
 assert.ok(beginZone.indexOf('setBusy(true)') < beginZone.indexOf('await '), 'Starting a zone must show immediate busy feedback before storage work.');
 assert.match(beginZone, /finally\s*\{\s*setBusy\(false\)/, 'Starting a zone must always release the busy state.');
