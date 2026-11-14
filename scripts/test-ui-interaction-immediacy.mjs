@@ -63,6 +63,18 @@ assert.match(stocktake, /currentSessionExports\.map/, 'The exports screen must r
 assert.doesNotMatch(stocktake, /\{zones\.filter|\{exports\.filter/, 'Stocktake render paths must not repeatedly filter session zones or exports.');
 assert.match(stocktakeImport, /const invalidCount = useMemo\(/, 'Stocktake Import row validation must not be recomputed on unrelated UI renders.');
 assert.match(stocktakeImport, /const invalidZones = useMemo\(/, 'Stocktake Import cross-zone validation must not be recomputed on unrelated UI renders.');
+assert.match(stocktakeImport, /function yieldToNextPaint\(\)/, 'CPU-heavy local actions must use a one-frame paint handoff rather than blocking their first feedback.');
+const saveImport = blockBetween(stocktakeImport, 'const saveActiveZone = async', 'const copyOutput = async');
+assert.ok(saveImport.indexOf('setBusy(true)') < saveImport.indexOf('await yieldToNextPaint()'), 'Stocktake Import save must publish its busy state before local validation.');
+assert.ok(saveImport.indexOf('await yieldToNextPaint()') < saveImport.indexOf('activeZone.rows.map'), 'Stocktake Import save must yield a paint before validating every row.');
+assert.doesNotMatch(saveImport, /validateRow\(row\)\.length/, 'Stocktake Import save must not validate the same normalized rows twice.');
+const confirmImport = blockBetween(stocktakeImport, 'const confirmPendingImport = async', 'const resetActiveSession =');
+assert.ok(confirmImport.indexOf('await yieldToNextPaint()') < confirmImport.indexOf('commitIncoming('), 'Confirming a large import must paint its busy state before synchronous merge work.');
+const exportAll = blockBetween(stocktakeImport, 'const exportAll = async', 'const clearHistory = async');
+assert.ok(exportAll.indexOf('setBusy(true)') < exportAll.indexOf('await yieldToNextPaint()'), 'ZIP export must publish its busy state before packaging.');
+assert.ok(exportAll.indexOf('await yieldToNextPaint()') < exportAll.indexOf('new JSZip()'), 'ZIP packaging must begin after the busy state has had a paint opportunity.');
+const copyOutput = blockBetween(stocktakeImport, 'const copyOutput = async', 'const exportZone =');
+assert.ok(copyOutput.indexOf('setNotice(\'Đang sao chép nội dung TXT…\')') < copyOutput.indexOf('navigator.clipboard.writeText'), 'Copy must acknowledge the action before waiting for the Clipboard API.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 assert.match(scannerQa, /const ScannerQaEventRow = memo\(/, 'Existing diagnostic rows must not re-render when a new event is appended.');
 assert.match(scannerQa, /filtered\.map\(\(event\) => <ScannerQaEventRow/, 'Scanner QA must render diagnostics through memoized event rows.');
