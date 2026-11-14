@@ -49,7 +49,7 @@
 1. `docs/ai-context/SCANNER_RECOGNITION_PIPELINE.md` — authoritative recognition architecture and extension contract.
 2. `docs/ai-context/ROADMAP.md` — active sequence and next stages.
 3. `src/platform/scanner/scannerEnhancementPipeline.ts` and `src/platform/scanner/decoders/zxingWasmDecoder.ts`.
-4. `scripts/test-scanner-enhancement-pipeline.mjs`, `test-scanner-decoder-integration.mjs`, `test-scanner-zxing-wasm.mjs`, `test-scanner-decoder-capability-parity.mjs` and `test-scanner-roi-decoder.mjs`.
+4. `scripts/test-scanner-enhancement-pipeline.mjs`, `test-scanner-decoder-integration.mjs`, `test-scanner-zxing-wasm.mjs`, `test-scanner-wasm-capabilities.mjs` and `test-scanner-roi-decoder.mjs`.
 
 ## Non-negotiable invariants
 
