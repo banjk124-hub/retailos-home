@@ -50,6 +50,20 @@ type Props = {
   canInstall: boolean;
   onInstall: () => Promise<void> | void;
 };
+function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () => void }) {
+  const headingId = `module-loading-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  return (
+    <div className="module-loading-backdrop">
+      <section className="module-loading-panel" role="dialog" aria-modal="true" aria-labelledby={headingId} aria-busy="true">
+        <span className="module-loading-indicator" aria-hidden="true" />
+        <h2 id={headingId}>Đang mở {title}…</h2>
+        <p>Đang tải giao diện chức năng.</p>
+        <button type="button" onClick={onClose}>Đóng</button>
+      </section>
+    </div>
+  );
+}
+
 type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'partial' | 'unavailable';
 type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
@@ -762,9 +776,9 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
-    {showSettings && <Suspense fallback={null}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
-    {showScannerQa && <Suspense fallback={null}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
-    {showScannerSettings && <Suspense fallback={null}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
+    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
+    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
@@ -896,8 +910,8 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <Suspense fallback={null}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
-    {isStocktakeImportOpen && <Suspense fallback={null}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
+    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={() => setIsStocktakeOpen(false)} />}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
+    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={() => setIsStocktakeImportOpen(false)} />}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
