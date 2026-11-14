@@ -23,7 +23,7 @@ Canonical details: `UI_OVERLAY_ARCHITECTURE.md` and `UI_OVERLAY_ACCEPTANCE.md`.
 
 ---
 
-# Scanner roadmap — unified recognition pipeline (2026-11-13)
+# Historical scanner roadmap snapshot — unified recognition pipeline (2026-11-13)
 
 **Current main:** `8604bdee8c37e78ac758bf7e71ff44eb9141a605` (post-merge of PR #82 and PR #83).
 **Current work:** Gate 3 Geometry Correction on `feat/scanner-geometry-correction-gate3`.
