@@ -144,6 +144,11 @@ const checks = [
     args: [npmCli, "run", "build:pages"],
   },
   {
+    name: "Bundle code-splitting and feature-boundary tests",
+    command: process.execPath,
+    args: ["scripts/test-bundle-boundaries.mjs"],
+  },
+  {
     name: "PWA cache policy and update lifecycle tests",
     command: process.execPath,
     args: ["scripts/test-pwa-cache-policy.mjs"],
