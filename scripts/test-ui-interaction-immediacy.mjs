@@ -5,6 +5,7 @@ const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
 const moduleLibrary = readFileSync('src/features/home/components/ModuleLibraryEngine.tsx', 'utf8');
 const app = readFileSync('src/App.tsx', 'utf8');
 const stocktake = readFileSync('src/features/stocktake/components/StocktakeModule.tsx', 'utf8');
+const stocktakeStyles = readFileSync('src/features/stocktake/components/stocktake.css', 'utf8');
 const stocktakeImport = readFileSync('src/features/stocktake-import/components/StocktakeImportModule.tsx', 'utf8');
 const scannerQa = readFileSync('src/features/home/components/ScannerQaMonitor.tsx', 'utf8');
 const mobileStyles = readFileSync('src/styles/mobile-tuning.css', 'utf8');
@@ -52,6 +53,8 @@ assert.doesNotMatch(topbarMotion, /box-shadow|background-position/, 'Topbar ambi
 assert.match(stocktake, /const currentEntries = entries;/, 'Stocktake active entries must reuse the already scoped and sorted state snapshot.');
 assert.match(stocktake, /const STOCKTAKE_LIST_PAGE_SIZE = 100/, 'Large Stocktake lists must use a bounded render window.');
 assert.match(stocktake, /function yieldToNextPaint\(\)/, 'Large Stocktake export must allow its busy response to paint before file generation.');
+assert.match(stocktake, /stocktake-busy-indicator/, 'Stocktake busy feedback must include an immediate visual activity indicator.');
+assert.match(stocktakeStyles, /stocktake-busy-indicator[^}]*animation:stocktake-busy-spin/, 'Stocktake processing animation must start without a pre-animation delay.');
 const stocktakeExport = blockBetween(stocktake, 'const exportCurrentZone = async', 'const clearAll = async');
 assert.ok(stocktakeExport.indexOf('setBusy(true)') < stocktakeExport.indexOf('await yieldToNextPaint()'), 'Stocktake export must publish its busy state before building the file.');
 assert.ok(stocktakeExport.indexOf('await yieldToNextPaint()') < stocktakeExport.indexOf('createStocktakeFile('), 'Stocktake export must yield a paint before synchronous file generation.');
