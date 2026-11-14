@@ -2674,12 +2674,12 @@ button:not(:disabled):active {
   right: 0;
 }
 @keyframes topbar-dock-float {
-  0%, 100% { transform: translateY(0); box-shadow: 0 12px 34px rgba(105,34,42,.11), inset 0 1px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(255,255,255,.48); }
-  50% { transform: translateY(-2px); box-shadow: 0 15px 38px rgba(105,34,42,.14), inset 0 1px 0 #fff, inset 0 -1px 0 rgba(255,255,255,.5); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
 }
 @keyframes topbar-dock-shimmer {
-  0%, 35% { background-position: 100% 0; opacity: .24; }
-  70%, 100% { background-position: -100% 0; opacity: .62; }
+  0%, 35% { opacity: .24; }
+  70%, 100% { opacity: .48; }
 }
 @media (max-width: 700px) {
   .app-shell .topbar {
