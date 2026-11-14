@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [service, rules, home, dock, librarySection, registry, homeState, homeStyles, homeEngineStyles, homeArchitectureStyles, packageJson, packageLock] = await Promise.all([
+const [service, rules, home, dock, librarySection, registry, homeState, homeStyles, homeEngineStyles, homeArchitectureStyles, packageJson, packageLock, themeStyles, interactionStyles, mobileTuningStyles, performanceStyles, adaptiveStyles, responsiveStyles] = await Promise.all([
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/home/snapshotNoticeRules.ts'),
   read('../src/features/home/HomeScreen.tsx'),
@@ -16,6 +16,12 @@ const [service, rules, home, dock, librarySection, registry, homeState, homeStyl
   read('../src/styles/home-architecture.css'),
   read('../package.json'),
   read('../package-lock.json'),
+  read('../src/styles/theme.css'),
+  read('../src/styles/interactions.css'),
+  read('../src/styles/mobile-tuning.css'),
+  read('../src/styles/performance.css'),
+  read('../src/styles/adaptive-appearance.css'),
+  read('../src/styles/responsive.css'),
 ]);
 
 const batchReader = service.slice(
@@ -54,6 +60,11 @@ assert.equal((homeStyles.match(/\.notification-popover\{/g) ?? []).length, 1, 'T
 assert.match(homeStyles, /\.app-shell\{/);
 assert.match(homeStyles, /\.notification-popover\{/);
 assert.match(homeStyles, /\.toast-message\{/);
+const globalHomeStyles = [themeStyles, interactionStyles, mobileTuningStyles, performanceStyles, adaptiveStyles, responsiveStyles].join('\n');
+assert.doesNotMatch(globalHomeStyles, /\.(?:sidebar|welcome-section|welcome-copy|hero-card|hero-content|hero-visual|hero-orb|metrics-grid|metric-card|metric-grid|module-grid|module-card|module-toolbar|filter-pill|activity-row|attention-item|mobile-nav|workspace-switcher|profile-row|main-area|breadcrumb|system-status|top-profile|date-chip|user-context-chip|side-nav-item|panel-footer-button)\b/, 'Retired Home layouts must not remain in globally loaded stylesheets.');
+assert.match(globalHomeStyles, /\.icon-button/);
+assert.match(globalHomeStyles, /\.topbar-dock/);
+assert.match(globalHomeStyles, /\.spotlight-glass-tile/);
 assert.doesNotMatch(homeEngineStyles, /\.app-shell \.lower-grid \{ grid-template-columns:minmax\(0,1fr\); \}/, 'Redundant lower-grid breakpoint overrides must not remain.');
 assert.doesNotMatch(homeArchitectureStyles, /@media \(min-width: 701px\) and \(max-width: 1099px\) \{\s*\.app-shell \.topbar\.home-topbar/, 'The tablet breakpoint must not repeat the base topbar width.');
 
