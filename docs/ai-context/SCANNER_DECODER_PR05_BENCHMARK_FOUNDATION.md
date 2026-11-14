@@ -11,6 +11,19 @@ PR #107–#111 established source inventory, decoder factory injection, opt-in W
 
 PR-05 therefore does not add another recognition algorithm. It supplies a dev-only browser harness and a versioned manifest contract so the two existing adapters can be measured on identical images and strict ROI definitions.
 
+## 1.1 Historical benchmark work
+
+PR #7 (closed without merge) previously proposed a still-image harness for Native BarcodeDetector versus the then-current ZXing adapter. Its files are not present in current `main`, and its decoder contract predates the current adapter factory, WASM candidate and shared recognition pipeline.
+
+PR-05 does not copy that implementation unchanged:
+- the old harness targeted Native BarcodeDetector, not the current ZXing JS versus ZXing-C++ WASM decision;
+- it called the older adapter shape without the current required strict source-frame ROI contract;
+- its CSV included expected payloads and raw decoded values, while PR-05 exports only match/outcome metadata.
+
+The previous PR remains useful as historical design evidence for paired still-image runs, repeated attempts, device metadata and local-only fixture handling. PR-05 carries those ideas forward under the current decoder contract and privacy boundary.
+
+Historical reference: https://github.com/banjk124-hub/retailos-home/pull/7
+
 ## 2. Candidate API evaluation
 
 ### Direct `zxing-wasm/reader` — selected for the candidate adapter
