@@ -127,7 +127,7 @@ No changes to camera acquisition/lease, camera constraints, autofocus, first-fra
 
 ## ADR-034 — Enable Code 39 as a supported retail barcode format (2026-11-11)
 
-**Status:** Implemented on branch `fix/scanner-engine-remediation-code39`; pending PR review and CI.
+**Status:** Accepted and merged in the scanner remediation sequence; CODE_39 is mapped by the current ZXing-C++ WASM adapter.
 
 ### Context
 - The WASM adapter maps `CODE_39` through its explicit forward/reverse symbology mapping; ZXing JS is no longer a runtime dependency.
@@ -678,7 +678,7 @@ The prior orthogonal-only extension ran every third valid ROI frame and did not 
 - Physical iOS Safari/PWA and Android Chrome/PWA QA is required before release acceptance.
 
 ### Acceptance
-See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and `scripts/test-scanner-rotation.mjs`.
+See `docs/ai-context/SCAN_05_ORTHOGONAL_ROTATION.md` and the WASM production integration suite `scripts/test-scanner-decoder-integration.mjs`.
 
 ## ADR-027 — Continuous in-plane orientation correction (2026-11-10)
 
@@ -701,7 +701,7 @@ The previous estimator used one global Sobel structure tensor and accepted only 
 - Measure physical accuracy, overall scanner response time, stage cost and UI responsiveness on iOS/Android before release acceptance.
 
 ### Acceptance
-See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and `scripts/test-scanner-deskew.mjs`.
+See `docs/ai-context/SCAN_06_BOUNDED_DESKEW.md` and the WASM production integration suite `scripts/test-scanner-decoder-integration.mjs`.
 
 
 ## ADR-028 — Separate business workflow identity from snapshot identity and add local Stocktake import (2026-11-10)
