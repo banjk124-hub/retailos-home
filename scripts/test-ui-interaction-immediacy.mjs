@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
+const moduleLibrary = readFileSync('src/features/home/components/ModuleLibraryEngine.tsx', 'utf8');
 const app = readFileSync('src/App.tsx', 'utf8');
 const stocktake = readFileSync('src/features/stocktake/components/StocktakeModule.tsx', 'utf8');
 const stocktakeImport = readFileSync('src/features/stocktake-import/components/StocktakeImportModule.tsx', 'utf8');
@@ -23,6 +24,9 @@ const loadingSurface = home.slice(home.indexOf('function ModuleLoadingSurface'),
 assert.match(loadingSurface, /role="status" aria-live="polite" aria-busy="true"/, 'Lazy-loading feedback must be announced as a live status.');
 assert.doesNotMatch(loadingSurface, /aria-modal|role="dialog"/, 'A temporary loading status must not claim modal focus management it does not implement.');
 assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle\}/, 'Primary navigation and header actions must not require a wake-up tap before they can receive a click.');
+assert.match(moduleLibrary, /export const ModuleLibraryEngine = memo\(/, 'The static Home module library must not re-render on unrelated Home state changes.');
+assert.match(home, /const openLibrary = useCallback\([\s\S]*?\}, \[\]\)/, 'The module library open callback must remain stable between Home renders.');
+assert.match(home, /<ModuleLibraryEngine[\s\S]*?onOpen=\{openLibrary\}/, 'The memoized module library must receive the stable callback directly.');
 assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer events on primary navigation after an idle timeout.');
 assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-short\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
