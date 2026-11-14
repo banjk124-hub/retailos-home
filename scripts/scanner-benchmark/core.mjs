@@ -16,6 +16,7 @@ export function validateBenchmarkManifest(manifest) {
   }
 
   const ids = new Set();
+  const imageNames = new Set();
   manifest.cases.forEach((item, index) => {
     const prefix = `cases[${index}]`;
     if (!item || typeof item !== 'object' || Array.isArray(item)) {
@@ -30,9 +31,13 @@ export function validateBenchmarkManifest(manifest) {
       errors.push(`${prefix}.image is required.`);
     } else if (item.image.startsWith('/') || item.image.split(/[\\/]/).includes('..')) {
       errors.push(`${prefix}.image must be a relative file path without parent traversal.`);
+    } else {
+      const imageName = item.image.split(/[\\/]/).pop().toLowerCase();
+      if (imageNames.has(imageName)) errors.push(`${prefix}.image basename is duplicated: ${imageName}.`);
+      else imageNames.add(imageName);
     }
 
-    if (!['physical', 'synthetic'].includes(item.captureKind)) {
+    if (!['physical', 'synthetic'].includes(item.captureKind))
       errors.push(`${prefix}.captureKind must be physical or synthetic.`);
     }
 
