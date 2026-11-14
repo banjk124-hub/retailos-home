@@ -76,3 +76,12 @@ Required release validation after deployment:
 11. Scanner lifecycle, camera resume and stocktake persistence regression suites remain green.
 
 Real-device transfer, camera behavior and rendering performance must be measured after deployment. CI bundle sizes and VM worker tests do not prove iOS/Android runtime behavior; A4 is not device-accepted until this matrix is executed on physical devices.
+
+
+## Home and module render isolation follow-up
+
+Home startup notice calculation and barcode lookup use `getCachedModuleSnapshots()` to read the required records with one IndexedDB database open and one readonly transaction. The single-record `getCachedModuleSnapshot()` API remains available for callers that need one record.
+
+Home memoizes its lazy feature boundaries (scanner, Stocktake, Stocktake Import, Settings, Scanner QA and Scanner Settings). Stable callbacks are passed to these boundaries so unrelated Home state changes do not force the feature subtree to render again. LiquidDock receives a stable item list and is memoized; its active item still updates when navigation changes.
+
+This is a render-isolation optimization, not a claim that the entire Home page has been split into independent components. Remaining Home render fan-out and CSS cascade debt are tracked in `HOME_PERFORMANCE_DEBT_AUDIT.md`. Verify actual React commits and browser frame timing on physical desktop, Android and iOS devices before claiming a measured latency improvement.
