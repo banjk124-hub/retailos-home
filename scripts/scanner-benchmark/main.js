@@ -106,74 +106,124 @@ async function runBackend(backend, cases, files, repeats) {
   const rows = [];
   const initStarted = performance.now();
   let initMs = null;
-  let memoryBefore = memorySnapshot();
+  let initErrorName = null;
+  let disposeErrorName = null;
+  const memoryBefore = memorySnapshot();
   let memoryAfter = null;
+
+  const appendFailureRows = (item, errorName, imageSize = {}) => {
+    for (let trial = 1; trial <= repeats; trial += 1) {
+      rows.push({
+        caseId: item.id,
+        captureKind: item.captureKind,
+        labels: item.labels,
+        ...imageSize,
+        backend,
+        trial,
+        expectedPositive: item.expected !== null,
+        outcome: 'error',
+        outputCount: 0,
+        geometryAvailable: false,
+        detectedSymbology: null,
+        errorName,
+        decodeMs: 0,
+      });
+    }
+  };
+
   try {
-    await adapter.initialize({ formats: ['EAN_8', 'EAN_13', 'CODE_128', 'CODE_39'] });
-    initMs = performance.now() - initStarted;
-    for (const item of cases) {
-      const file = files.get(item.image) || files.get(item.image.split(/[\\/]/).pop());
-      if (!file) throw new Error(`Missing image file for case ${item.id}: ${item.image}`);
-      const loaded = await loadImageSource(file);
-      try {
-        for (let trial = 1; trial <= repeats; trial += 1) {
-          const started = performance.now();
-          try {
-            const outputs = await adapter.decode(loaded.source, {
-              timestamp: performance.now(),
-              scanRegion: item.scanRegion,
-            });
-            rows.push({
-              caseId: item.id,
-              captureKind: item.captureKind,
-              labels: item.labels,
-              imageWidth: loaded.width,
-              imageHeight: loaded.height,
-              backend,
-              trial,
-              expectedPositive: item.expected !== null,
-              outcome: classify(outputs, item.expected),
-              outputCount: outputs.length,
-              geometryAvailable: outputs.some((output) => Boolean(output.geometry)),
-              detectedSymbology: outputs[0]?.symbology ?? null,
-              decodeMs: performance.now() - started,
-            });
-          } catch (error) {
-            rows.push({
-              caseId: item.id,
-              captureKind: item.captureKind,
-              labels: item.labels,
-              imageWidth: loaded.width,
-              imageHeight: loaded.height,
-              backend,
-              trial,
-              expectedPositive: item.expected !== null,
-              outcome: 'error',
-              outputCount: 0,
-              geometryAvailable: false,
-              detectedSymbology: null,
-              errorName: error instanceof Error ? error.name : 'UnknownError',
-              decodeMs: performance.now() - started,
-            });
-          }
+    try {
+      await adapter.initialize({ formats: ['EAN_8', 'EAN_13', 'CODE_128', 'CODE_39'] });
+      initMs = performance.now() - initStarted;
+    } catch (error) {
+      initMs = performance.now() - initStarted;
+      initErrorName = error instanceof Error ? error.name : 'UnknownError';
+      for (const item of cases) appendFailureRows(item, initErrorName);
+    }
+
+    if (!initErrorName) {
+      for (const item of cases) {
+        const file = files.get(item.image) || files.get(item.image.split(/[\\/]/).pop());
+        if (!file) {
+          appendFailureRows(item, 'MissingImageError');
+          continue;
         }
-      } finally {
-        loaded.dispose();
+
+        let loaded;
+        try {
+          loaded = await loadImageSource(file);
+        } catch (error) {
+          appendFailureRows(item, error instanceof Error ? error.name : 'ImageLoadError');
+          continue;
+        }
+
+        try {
+          for (let trial = 1; trial <= repeats; trial += 1) {
+            const started = performance.now();
+            try {
+              const outputs = await adapter.decode(loaded.source, {
+                timestamp: performance.now(),
+                scanRegion: item.scanRegion,
+              });
+              rows.push({
+                caseId: item.id,
+                captureKind: item.captureKind,
+                labels: item.labels,
+                imageWidth: loaded.width,
+                imageHeight: loaded.height,
+                backend,
+                trial,
+                expectedPositive: item.expected !== null,
+                outcome: classify(outputs, item.expected),
+                outputCount: outputs.length,
+                geometryAvailable: outputs.some((output) => Boolean(output.geometry)),
+                detectedSymbology: outputs[0]?.symbology ?? null,
+                decodeMs: performance.now() - started,
+              });
+            } catch (error) {
+              rows.push({
+                caseId: item.id,
+                captureKind: item.captureKind,
+                labels: item.labels,
+                imageWidth: loaded.width,
+                imageHeight: loaded.height,
+                backend,
+                trial,
+                expectedPositive: item.expected !== null,
+                outcome: 'error',
+                outputCount: 0,
+                geometryAvailable: false,
+                detectedSymbology: null,
+                errorName: error instanceof Error ? error.name : 'UnknownError',
+                decodeMs: performance.now() - started,
+              });
+            }
+          }
+        } finally {
+          loaded.dispose();
+        }
       }
     }
   } finally {
-    await adapter.dispose();
+    try {
+      await adapter.dispose();
+    } catch (error) {
+      disposeErrorName = error instanceof Error ? error.name : 'UnknownError';
+    }
     memoryAfter = memorySnapshot();
   }
+
   return {
     backend,
+    backendVersion: backend === 'zxing-js' ? '0.23.0' : '3.1.6',
     initMs,
+    initErrorName,
+    disposeErrorName,
     memoryBeforeBytes: memoryBefore,
     memoryAfterBytes: memoryAfter,
     rows,
   };
 }
-
 function downloadReport() {
   if (!latestReport) return;
   const blob = new Blob([JSON.stringify(latestReport, null, 2)], { type: 'application/json' });
