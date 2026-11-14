@@ -88,7 +88,7 @@ RetailOS is a mobile-first operational PWA for a supermarket branch. It aims to 
 ## Cross-AI continuity
 - Navigation entry point: `docs/ai-context/INDEX.md`. `AI_HANDOFF.md` is a task handoff, not the canonical index.
 - Durable context is maintained in repository documents, not in chat-only summaries. Every task branch must keep project context, architecture, roadmap, decisions, implementation status and session handoff synchronized with code.
-- Current engineering focus (2026-11-05): Scanner Phase 1.2 correctness/lifecycle before performance tuning. See `IMPLEMENTATION_STATUS.md` and `ROADMAP.md` for verified status.
+- Historical scanner engineering focus (2026-11-05): Scanner Phase 1.2 correctness/lifecycle before performance tuning. Current active work is tracked in the top-level repository state and the relevant feature roadmap.
 
 
 ## Canonical AI entry point and session protocol (2026-11-05)
