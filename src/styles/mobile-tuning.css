@@ -1665,10 +1665,10 @@ button:not(:disabled):active {
   .app-shell .spotlight-tile-icon svg { width: 15px; height: 15px; }
   .app-shell .spotlight-tile-main strong { font-size: 21px; }
   .app-shell .calendar-week { gap: 2px; margin-top: 7px; padding-top: 6px; }
-  .app-shell .calendar-day { gap: 3px; padding: 4px 1px; }
+  
   .app-shell .calendar-open-hint { margin-top: 6px; padding-top: 5px; font-size: 8px; }
-  .app-shell .spotlight-tile-float { display: none; }
-  .app-shell .spotlight-glass-chip { display: none; }
+  
+  
   .app-shell .spotlight-orbit.orbit-one { width: 235px; height: 108px; }
   .app-shell .spotlight-orbit.orbit-two { width: 195px; height: 120px; }
 }
