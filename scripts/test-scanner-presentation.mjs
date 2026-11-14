@@ -15,13 +15,16 @@ const frameReadyAt = sessionSource.indexOf('await waitForVideoFrameReady(this.vi
 const previewReadyAt = sessionSource.indexOf('this.options.onPreviewReady?.()', frameReadyAt);
 const decoderAt = sessionSource.indexOf('await this.createDecoder(generation)', previewReadyAt);
 const decoderMethodAt = sessionSource.indexOf('private async createDecoder(generation');
-const decoderImportAt = sessionSource.indexOf("await import('./decoders/zxingDecoder')", decoderMethodAt);
+const factoryCreateAt = sessionSource.indexOf('await this.decoderFactory.create()', decoderMethodAt);
+const decoderFactorySource = await read('../src/platform/scanner/decoders/decoderFactory.ts');
 assert.ok(attachAt >= 0 && playAt > attachAt && frameReadyAt > playAt
   && previewReadyAt > frameReadyAt && decoderAt > previewReadyAt
-  && decoderMethodAt > decoderAt && decoderImportAt > decoderMethodAt,
-'startup must attach/play the stream, publish a usable preview, then dynamically load and initialize the decoder');
-assert.ok(!sessionSource.includes("import { ZXingDecoderAdapter } from './decoders/zxingDecoder'"),
-  'the heavy ZXing implementation must not be part of the scanner session static dependency graph');
+  && decoderMethodAt > decoderAt && factoryCreateAt > decoderMethodAt,
+'startup must attach/play the stream, publish a usable preview, then create and initialize the decoder through its factory');
+assert.match(decoderFactorySource, /await import\('\.\/zxingDecoder'\)/,
+  'the default factory must preserve deferred loading of the concrete decoder chunk');
+assert.doesNotMatch(sessionSource, /zxingDecoder/,
+  'the platform session must not depend on the concrete decoder implementation');
 
 assert.match(sessionSource, /video\.readyState >= HTMLMediaElement\.HAVE_CURRENT_DATA/,
   'technical frame readiness must continue requiring decoded media data');
