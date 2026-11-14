@@ -16,7 +16,7 @@ function retailosPwaArtifacts(): Plugin {
     },
     generateBundle(_options, bundle) {
       const assetFiles = Object.keys(bundle).filter((file) =>
-        /^assets\\//.test(file) && /\\.(?:js|css|woff2?|ttf|otf|png|jpe?g|svg|webp|avif)$/i.test(file)
+        /^assets\//.test(file) && /\.(?:js|css|woff2?|ttf|otf|png|jpe?g|svg|webp|avif)$/i.test(file)
       ).sort();
       const buildId = createHash('sha256').update(assetFiles.join('|')).digest('hex').slice(0, 12);
       const template = readFileSync(resolve(projectRoot, 'src/sw/service-worker.template.js'), 'utf8');
