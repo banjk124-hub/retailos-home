@@ -66,10 +66,13 @@ function normalizeSymbologySettings(value: unknown): Record<SupportedBarcodeSymb
     ? value as Partial<Record<SupportedBarcodeSymbology, unknown>>
     : {};
   const defaults = createDefaultSymbologySettings();
-  return Object.fromEntries(SUPPORTED_BARCODE_FORMATS.map((format) => [
+  const normalized = Object.fromEntries(SUPPORTED_BARCODE_FORMATS.map((format) => [
     format,
     typeof input[format] === 'boolean' ? input[format] : defaults[format],
   ])) as Record<SupportedBarcodeSymbology, boolean>;
+  // Corrupt/externally edited preferences must not create an empty decoder allowlist.
+  if (!SUPPORTED_BARCODE_FORMATS.some((format) => normalized[format])) return defaults;
+  return normalized;
 }
 
 function normalizeSettings(value: unknown): ScannerSettings {
