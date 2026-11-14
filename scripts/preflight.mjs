@@ -104,6 +104,11 @@ const checks = [
     args: ["scripts/test-scanner-adaptive-processing-a2.mjs"],
   },
   {
+    name: "Scanner A3 adaptive runtime performance and stability tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-adaptive-runtime-a3.mjs"],
+  },
+  {
     name: "Scanner bounded deskew regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-deskew.mjs"],
