@@ -23,7 +23,11 @@
 - Surface invalid read results for diagnostics and reject them before DecoderOutput.
 - Restore A1 quality profile, A2 processing plan, pipeline-stage metrics and decoder diagnostics in the WASM path.
 - Add deterministic parity tests for options and diagnostic wiring.
-- Keep 180° one-dimensional reversal as a tracked parity gap: legacy ZXing JS handles this internally through OneDReader, while WASM currently disables internal rotation. Do not enable broad backend rotation until its duplicate 90° work and latency cost are measured.
+- **180° one-dimensional reversal is already supported by the pinned WASM engine**: `tryHarder: true` makes ZXing-C++ scan both normal and reversed scanline patterns in `ODReader.cpp`; this is separate from `tryRotate`, which handles orthogonal 90°/270° image rotation. Keep `tryRotate: false` to avoid duplicating the shared 90° candidate. Evidence and exact pinned source are recorded in `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md`. The 180°/270° retail-corpus parity gate remains required; source proof is not a physical-corpus result.
+
+## Capability evidence — 180° linear reversal
+
+The previous gap classification was incorrect. The exact ZXing-C++ source bundled by `zxing-wasm@3.1.6` proves that the backend already handles reversed one-dimensional scanlines when `tryHarder` is enabled. This is documented in `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md`. No custom 180° image transform is required; do not add duplicate processing. Keep the real labelled-corpus orientation test as an acceptance gate.
 
 ## Not in PR-07
 - Production default switch, removal of `@zxing/library`, deletion of `zxingDecoder.ts`, camera/session/lifecycle/UI/business-flow changes, worker migration, or broad recognition-policy reduction.
