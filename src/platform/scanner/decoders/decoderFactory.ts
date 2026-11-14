@@ -1,15 +1,15 @@
 import type { ScannerDecoderAdapter, ScannerDecoderFactory } from './decoderAdapter';
 
 /**
- * Default production backend selection.
+ * Production backend selection.
  *
- * Keep the concrete decoder behind this lazy factory so UniversalScannerSession
- * depends only on the adapter contract. The dynamic import is intentionally
- * deferred until the session has published its first usable camera preview.
+ * The session and feature modules depend only on ScannerDecoderAdapter.
+ * ZXing-C++ WASM is loaded lazily after the camera preview is ready, keeping
+ * WASM initialization out of the initial application bundle and camera startup.
  */
 export const defaultScannerDecoderFactory: ScannerDecoderFactory = {
   async create(): Promise<ScannerDecoderAdapter> {
-    const { ZXingDecoderAdapter } = await import('./zxingDecoder');
-    return new ZXingDecoderAdapter();
+    const { ZXingWasmDecoderAdapter } = await import('./zxingWasmDecoder');
+    return new ZXingWasmDecoderAdapter();
   },
 };
