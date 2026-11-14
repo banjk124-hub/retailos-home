@@ -1,33 +1,50 @@
-# PR-07 — Legacy Decoder Capability Transfer to ZXing-C++ WASM
+# PR-07 — Complete ZXing-C++ WASM Capability Adoption
 
 **Branch:** `feat/scanner-wasm-capability-parity`  
 **Base:** `39505b4de4d756fa8b8861ca9a50d46b86fecc1b` (PR #114 merge).  
-**Target:** compare the current production ZXing JS decoder with the opt-in ZXing-C++ WASM decoder; transfer only missing behavior and remove only redundant implementations after evidence.
+**Target:** complete the capability inventory and adoption of the new ZXing-C++ WASM engine while preserving RetailOS shared recognition, session and feature contracts.
 
-## Capability-transfer principle
-1. Inventory the old decoder's observable behavior and contracts.
-2. Compare the new backend against each behavior.
-3. Port missing behavior using the new architecture; do not copy backend-specific workarounds.
-4. Reuse capabilities already implemented in the shared pipeline; do not create duplicate processing stages.
-5. Validate parity with deterministic tests, the same labelled corpus and physical iOS/Android devices.
-6. Only after acceptance, perform reversible production cutover, then remove the old backend and its dependency/tests.
+## Correct migration principle
 
-## Confirmed existing shared capabilities — preserve, do not duplicate
-- Strict source-frame ROI, bounded scale candidates, baseline-first candidate iterator, orthogonal rotation, deskew, image enhancements, geometry correction, A2/A3 budgets.
-- Shared session temporal fallback, allowlist enforcement, payload validation, single/continuous result semantics and Home/Stocktake handoff.
-- Camera lease, preview-ready sequencing, frame scheduling, generation protection, recovery and technical lifecycle contract.
+This is not a task to copy only missing legacy features, nor to constrain WASM to behave exactly like ZXing JS. For every relevant capability, explicitly decide whether to:
+1. Use the new engine's native capability directly.
+2. Enable/configure/extend a native capability that is not sufficiently used.
+3. Transfer a legacy observable behavior the new engine does not provide.
+4. Preserve a RetailOS shared capability once, without backend duplication.
+5. Defer a capability only with a documented technical reason and evidence gate.
+
+Complete adoption means no relevant capability is unclassified or silently lost. It does not mean enabling every option without measuring cost, correctness and overlap.
+
+## Capability matrix
+
+The canonical capability-by-capability inventory, option decisions, legacy transfer map, WASM-only strengths and acceptance gates are documented in [SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md](SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md).
+
+Key implementation decisions in this PR:
+- Keep strict RetailOS allowlist, LocalAverage → GlobalHistogram fallback, Plain/UTF8 payload contract, optional-checksum behavior and invalid-read rejection.
+- Keep `tryHarder: true`; the pinned WASM engine natively reverses 1D scanlines for 180° linear symbols.
+- Enable native inverted-reflectance detection with `tryInvert: true`; this capability is not duplicated by the shared RetailOS pipeline.
+- Keep backend `tryRotate` and `tryDownscale` disabled for now because bounded orientation and scale candidates are already shared. Revisit only with corpus evidence of a gap or benefit.
+- Keep experimental denoise disabled until supported formats and measured fixtures justify it.
+- Keep the WASM adapter opt-in; production remains on ZXing JS.
+
+## Shared RetailOS capabilities — preserve one owner
+
+Strict feature-owned ROI, coordinate mapping, bounded scale candidates, baseline-first candidate ordering, orthogonal rotation, deskew, image enhancement, geometry correction, A1/A2/A3 policies, temporal fallback, validation, single/continuous semantics, Home/Stocktake handoff, camera lease, lifecycle/recovery and presentation remain outside the decoder backend.
 
 ## PR-07 implementation scope
-- Restore legacy ordered HybridBinarizer → GlobalHistogramBinarizer behavior using ZXing-C++ LocalAverage → GlobalHistogram options.
-- Preserve legacy payload semantics explicitly with `textMode: Plain` and optional-checksum compatibility; keep RetailOS validator authoritative.
+
+- Add the complete WASM capability adoption matrix and evidence boundary.
+- Restore legacy ordered HybridBinarizer → GlobalHistogramBinarizer behavior using LocalAverage → GlobalHistogram.
+- Preserve legacy Plain/UTF8 payload and optional-checksum semantics; keep RetailOS validation authoritative.
+- Enable native WASM inverted-reflectance recognition.
 - Surface invalid read results for diagnostics and reject them before DecoderOutput.
-- Restore A1 quality profile, A2 processing plan, pipeline-stage metrics and decoder diagnostics in the WASM path.
-- Add deterministic parity tests for options and diagnostic wiring.
-- **180° one-dimensional reversal is already supported by the pinned WASM engine**: `tryHarder: true` makes ZXing-C++ scan both normal and reversed scanline patterns in `ODReader.cpp`; this is separate from `tryRotate`, which handles orthogonal 90°/270° image rotation. Keep `tryRotate: false` to avoid duplicating the shared 90° candidate. Evidence and exact pinned source are recorded in `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md`. The 180°/270° retail-corpus parity gate remains required; source proof is not a physical-corpus result.
+- Preserve shared A1/A2/A3, temporal fallback and pipeline-stage diagnostics.
+- Ensure diagnostics window rollover resets counters only; it must not reset recognition hints, focus history or latest quality state.
+- Add regression guards for option policy and diagnostics isolation.
 
 ## Capability evidence — 180° linear reversal
 
-The previous gap classification was incorrect. The exact ZXing-C++ source bundled by `zxing-wasm@3.1.6` proves that the backend already handles reversed one-dimensional scanlines when `tryHarder` is enabled. This is documented in `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md`. No custom 180° image transform is required; do not add duplicate processing. Keep the real labelled-corpus orientation test as an acceptance gate.
+The pinned WASM implementation contains the native 180° scanline reversal algorithm. RetailOS enables the relevant `tryHarder` path. This is distinct from full-image `tryRotate`; no duplicate 180° image transform is required. See [SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md](SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md). Source proof does not replace the labelled optical corpus or physical device QA.
 
 ## Not in PR-07
 - Production default switch, removal of `@zxing/library`, deletion of `zxingDecoder.ts`, camera/session/lifecycle/UI/business-flow changes, worker migration, or broad recognition-policy reduction.
