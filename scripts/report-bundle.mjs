@@ -48,20 +48,43 @@ if (manifest) {
       + [...css].reduce((n, file) => n + (fileStats.get(file)?.raw ?? 0), 0);
     const gzip = [...keys].reduce((n, key) => n + (records.get(key)?.gzip ?? 0), 0)
       + [...css].reduce((n, file) => n + (fileStats.get(file)?.gzip ?? 0), 0);
-    return { file: entry.file, raw, gzip, staticModules: keys.size, cssFiles: [...css] };
+    return { file: entry.file, raw, gzip, staticModules: keys.size,
+      cssFiles: [...css], moduleKeys: [...keys] };
   }
+  const initialStaticKeys = new Set();
+  const initialCssFiles = new Set();
   for (const entry of [...records.values()].filter((item) => item.isEntry)) {
-    entries.push(measureStaticClosure(entry));
+    const measured = measureStaticClosure(entry);
+    measured.moduleKeys.forEach((key) => initialStaticKeys.add(key));
+    measured.cssFiles.forEach((file) => initialCssFiles.add(file));
+    entries.push({
+      file: measured.file, raw: measured.raw, gzip: measured.gzip,
+      staticModules: measured.staticModules, cssFiles: measured.cssFiles,
+    });
   }
-  // A dynamic import can itself have static dependencies and feature CSS.
-  // Report its complete first-load closure, not only the entry chunk file.
+  // Show both the complete closure and bytes added beyond the eager app entry.
+  // Shared dependencies already downloaded at startup must not be counted twice
+  // when estimating the incremental cost of opening a lazy feature.
   dynamicEntries.push(...[...records.values()]
     .filter((item) => item.isDynamicEntry)
-    .map((entry) => ({
-      ...measureStaticClosure(entry),
-      chunkRaw: entry.raw,
-      chunkGzip: entry.gzip,
-    })));
+    .map((entry) => {
+      const measured = measureStaticClosure(entry);
+      const incrementalKeys = measured.moduleKeys.filter((key) => !initialStaticKeys.has(key));
+      const incrementalCss = measured.cssFiles.filter((file) => !initialCssFiles.has(file));
+      return {
+        file: measured.file,
+        raw: measured.raw,
+        gzip: measured.gzip,
+        staticModules: measured.staticModules,
+        cssFiles: measured.cssFiles,
+        incrementalRaw: incrementalKeys.reduce((n, key) => n + (records.get(key)?.raw ?? 0), 0)
+          + incrementalCss.reduce((n, file) => n + (fileStats.get(file)?.raw ?? 0), 0),
+        incrementalGzip: incrementalKeys.reduce((n, key) => n + (records.get(key)?.gzip ?? 0), 0)
+          + incrementalCss.reduce((n, file) => n + (fileStats.get(file)?.gzip ?? 0), 0),
+        chunkRaw: entry.raw,
+        chunkGzip: entry.gzip,
+      };
+    }));
 } else {
   const html = await readFile(path.join(root, 'index.html'), 'utf8');
   const entryPaths = [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/g)]
@@ -109,9 +132,9 @@ const report = [
   '|---|---:|---:|---:|',
   ...entries.map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
   '', '## Dynamic entry points', '',
-  '| Dynamic boundary | Entry chunk raw | Entry chunk gzip | Static closure raw | Static closure gzip | Static modules |',
-  '|---|---:|---:|---:|---:|---:|',
-  ...dynamicEntries.map((item) => '| ' + item.file + ' | ' + item.chunkRaw.toLocaleString('en-US') + ' | ' + item.chunkGzip.toLocaleString('en-US') + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
+  '| Dynamic boundary | Entry chunk raw | Entry chunk gzip | Incremental raw | Incremental gzip | Full closure raw | Full closure gzip | Static modules |',
+  '|---|---:|---:|---:|---:|---:|---:|---:|',
+  ...dynamicEntries.map((item) => '| ' + item.file + ' | ' + item.chunkRaw.toLocaleString('en-US') + ' | ' + item.chunkGzip.toLocaleString('en-US') + ' | ' + item.incrementalRaw.toLocaleString('en-US') + ' | ' + item.incrementalGzip.toLocaleString('en-US') + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
   '', '## Largest emitted files', '',
   '| File | Raw bytes | Gzip bytes |',
   '|---|---:|---:|',
