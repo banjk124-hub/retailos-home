@@ -82,7 +82,7 @@ assert.equal(monitor.observe(blurredSample, 14500), true,
   'a later sustained blur can be reported again after the diagnostic cooldown');
 
 const adapter = await readFile(
-  new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
+  new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url),
   'utf8',
 );
 const session = await readFile(
@@ -91,7 +91,7 @@ const session = await readFile(
 );
 assert.match(adapter, /measureScannerFocusQuality/,
   'the decoder measures sharpness from its existing grayscale ROI readback');
-assert.match(adapter, /candidate\.baseline \? onFocusQuality : undefined/,
+assert.match(adapter, /scale\.baseline && options\.onFocusQuality/,
   'focus quality is sampled only from the baseline scale, not every fallback');
 assert.doesNotMatch(session, /prepareForScanning|reapplyContinuousAutofocus/,
   'the session must never issue focus commands after preview readiness');
