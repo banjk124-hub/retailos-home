@@ -159,6 +159,11 @@ const checks = [
     args: ["scripts/test-pwa-cache-policy.mjs"],
   },
   {
+    name: "PWA desktop, Android and iOS compatibility contract tests",
+    command: process.execPath,
+    args: ["scripts/test-pwa-platform-compatibility.mjs"],
+  },
+  {
     name: "Production bundle report",
     command: process.execPath,
     args: ["scripts/report-bundle.mjs"],
