@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { SUPPORTED_BARCODE_FORMATS, type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerSourceScanRegion, type ScannerTorchState } from '../../../platform/scanner/contracts';
+import { type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerSourceScanRegion, type ScannerTorchState } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
+import { getEnabledScannerSymbologies } from '../services/scannerSettingsStore';
 import { unlockScannerAudio } from '../services/scannerAudio';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../../platform/scanner/contracts';
@@ -108,7 +109,7 @@ export function useScannerEngine({
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
       profile: 'HIGH',
-      formats: [...SUPPORTED_BARCODE_FORMATS],
+      formats: getEnabledScannerSymbologies(),
       mode,
       sameCodeCooldownMs: scanCooldownMs,
       lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
