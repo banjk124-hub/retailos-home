@@ -24,9 +24,15 @@ assert.ok(adapter.includes('measureScannerFocusQuality('));
 assert.ok(adapter.includes('createScannerTemporalSnapshot('));
 assert.ok(adapter.includes('processingBudget: options.processingBudget'));
 assert.ok(adapter.includes('reuseOrientationHints: !scale.baseline'));
+assert.ok(adapter.includes("orthogonalRotationOwner: 'decoder'"),
+  'WASM must delegate orthogonal rotation to the native engine at every pipeline entry');
+
 assert.ok(!adapter.includes('readBarcodes(image, this.options)'),
   'raw frame decode must not bypass the shared candidate pipeline');
 assert.ok(pipeline.includes('export async function executeScannerEnhancementPipelineAsync'));
+assert.ok(pipeline.includes("orthogonalRotationOwner?: 'shared-pipeline' | 'decoder'"),
+  'shared pipeline must support backend-native orthogonal rotation ownership');
+
 assert.ok(!/getUserMedia|requestAnimationFrame|requestVideoFrameCallback|srcObject/.test(adapter));
 assert.ok(candidateFactory.includes('zxingWasmDecoderFactory'));
 assert.ok(candidateFactory.includes("await import('./zxingWasmDecoder')"));
