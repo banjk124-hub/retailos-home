@@ -37,7 +37,7 @@ export function validateBenchmarkManifest(manifest) {
       else imageNames.add(imageName);
     }
 
-    if (!['physical', 'synthetic'].includes(item.captureKind))
+    if (!['physical', 'synthetic'].includes(item.captureKind)) {
       errors.push(`${prefix}.captureKind must be physical or synthetic.`);
     }
 
