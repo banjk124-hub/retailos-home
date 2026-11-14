@@ -33,9 +33,9 @@ Starting/resuming a zone, opening review, saving/deleting an entry, exporting an
 
 ### 4. Interactive entry animations had explicit pre-start delays
 
-The shared motion layer, Home entry styles, mobile login panel, Home notifications and older library card styles included stagger delays. Those delays postpone the start of the animation itself.
+The shared motion layer, Home entry styles, mobile login panel, Home notifications, older library card styles and the authenticated identity panel included stagger delays. Those delays postpone the start of the animation itself.
 
-**Change:** Removed the pre-start delays from the affected UI entry paths. Decorative brand and ambient animation timing is not changed. The topbar's continuous ambient motion now animates only transform/opacity; it no longer animates box-shadow or background-position on every frame.
+**Change:** Removed the pre-start delays from the affected UI entry paths, including the 160ms delay on the authenticated identity panel. Decorative brand and ambient animation timing is not changed. The topbar's continuous ambient motion now animates only transform/opacity; it no longer animates box-shadow or background-position on every frame.
 
 
 ### 5. Expensive derived validation ran during unrelated renders
@@ -50,7 +50,7 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 - No silent root or nested lazy fallback while a feature chunk loads.
 - No auto-hidden primary chrome/wake-tap behavior.
-- No stagger delay on the audited page, dock, Home, mobile login, notice and interactive card entry paths.
+- No stagger delay on the audited page, dock, Home, mobile login, authenticated identity panel, notice and interactive card entry paths.
 - Topbar ambient keyframes avoid repaint-heavy properties.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
 
