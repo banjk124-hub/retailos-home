@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import StocktakeScanner from './StocktakeScanner';
@@ -121,10 +121,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     return () => { active = false; };
   }, [resolvedEmployeeCode, employee.name, employee.department, refresh]);
 
-  const currentEntries = useMemo(
-    () => entries.filter((entry) => entry.zoneId === currentZone?.id).sort((a, b) => a.sequence - b.sequence),
-    [entries, currentZone],
-  );
+  // loadZoneEntries already scopes and sorts entries for the active zone.
+  const currentEntries = entries;
 
   const loadZoneEntries = async (zone: StocktakeZone) => {
     const allEntries = await stocktakeStore.getEntries();
