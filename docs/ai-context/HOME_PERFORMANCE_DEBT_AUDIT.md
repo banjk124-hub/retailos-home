@@ -6,7 +6,7 @@ This follow-up targets Home's impact on downstream lazy modules, repeated Indexe
 
 ## Confirmed changes in this branch
 
-- Added `getCachedModuleSnapshots()`: reads the small module snapshot store with one database open and one readonly transaction instead of opening the database once per module.
+- Added `getCachedModuleSnapshots()`: reads only the requested snapshot keys through one database open and one readonly transaction instead of opening the database once per module.
 - Home startup notice calculation now uses the batch reader for its eight known module IDs.
 - Barcode lookup now uses the same batch reader for its four source modules.
 - Memoized the lazy scanner, Stocktake, Stocktake Import, Settings, Scanner QA and Scanner Settings component boundaries. Stable callbacks are passed so Home state changes do not automatically re-render these feature trees.
@@ -24,7 +24,7 @@ Do not split the entire file by line count alone. Use React Profiler and browser
 
 ### IndexedDB snapshot reads
 
-Previously Home called the single-record API eight times through `Promise.allSettled`, and barcode lookup called it four times. Each call independently opened and closed the same IndexedDB database. The new batch reader reduces each operation to one database open and one readonly transaction. The single-record API remains intact for existing callers.
+Previously Home called the single-record API eight times through `Promise.allSettled`, and barcode lookup called it four times. Each call independently opened and closed the same IndexedDB database. The new batch reader reduces each operation to one database open and one readonly transaction while fetching only the requested keys (eight for Home, four for barcode lookup). The single-record API remains intact for existing callers.
 
 The batch operation is transaction-level: if the database read itself fails, the whole batch fails and Home reports the snapshot state as unavailable. Missing individual snapshot records remain normal and are not treated as read errors.
 
