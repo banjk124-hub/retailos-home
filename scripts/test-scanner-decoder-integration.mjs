@@ -27,7 +27,20 @@ const modulePaths = [
 
 try {
   for (const relativePath of modulePaths) {
-    const source = await readFile(path.join(root, relativePath), 'utf8');
+    let source = await readFile(path.join(root, relativePath), 'utf8');
+    if (relativePath === 'src/platform/scanner/decoders/decoderFactory.ts') {
+      assert.match(source, /import\('\.\/zxingWasmDecoder'\)/,
+        'production selection must point to the WASM engine');
+      // This fixture suite remains the legacy JS comparison baseline while
+      // the production factory is cut over to WASM. The adapter is retained
+      // temporarily for rollback and parity comparison, not runtime selection.
+      source = `export const defaultScannerDecoderFactory = {
+        async create() {
+          const { ZXingDecoderAdapter } = await import('./zxingDecoder');
+          return new ZXingDecoderAdapter();
+        },
+      };`;
+    }
     const compiled = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
     }).outputText

@@ -35,8 +35,12 @@ assert.doesNotMatch(scannerSession, /zxingDecoder/,
   'the platform session must not depend on the concrete decoder implementation');
 assert.match(scannerSession, /this\.decoderFactory\.create\(\)/,
   'the platform session must create decoders through the injected factory contract');
-assert.match(scannerDecoderFactory, /await import\('\.\/zxingDecoder'\)/,
-  'the default factory must keep the concrete decoder in a deferred chunk');
+assert.match(scannerDecoderFactory, /await import\('\.\/zxingWasmDecoder'\)/,
+  'the production factory must keep the ZXing-C++ WASM decoder in a deferred chunk');
+assert.match(scannerDecoderFactory, /new ZXingWasmDecoderAdapter\(\)/,
+  'the deferred production decoder chunk must instantiate the WASM adapter');
+assert.doesNotMatch(scannerDecoderFactory, /zxingDecoder|ZXingDecoderAdapter/,
+  'the production factory must not retain the legacy JS selection path');
 assert.ok(
   scannerSession.indexOf('this.options.onPreviewReady?.()')
     < scannerSession.indexOf('await this.createDecoder(generation)'),

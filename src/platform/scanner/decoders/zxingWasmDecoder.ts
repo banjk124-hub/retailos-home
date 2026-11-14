@@ -57,7 +57,7 @@ function frameDimensions(source: CanvasImageSource): { width: number; height: nu
 
 
 export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
-  readonly id = 'zxing-cpp-wasm-candidate';
+  readonly id = 'zxing-cpp-wasm';
   private canvas: HTMLCanvasElement | null = null;
   private context: CanvasRenderingContext2D | null = null;
   private formats: ScannerSymbology[] = [];
