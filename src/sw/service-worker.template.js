@@ -14,6 +14,11 @@ const SHELL_URLS = [
 ];
 const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).pathname));
 
+async function matchAppShell() {
+  try { return await caches.match(APP_SHELL_URL) || null; }
+  catch { return null; }
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     try {
@@ -77,9 +82,9 @@ self.addEventListener('fetch', (event) => {
           } catch { /* Keep the successful network response. */ }
           return response;
         }
-        return (await caches.match(APP_SHELL_URL)) || response;
+        return (await matchAppShell()) || response;
       } catch {
-        return (await caches.match(APP_SHELL_URL)) || Response.error();
+        return (await matchAppShell()) || Response.error();
       }
     })());
     return;
