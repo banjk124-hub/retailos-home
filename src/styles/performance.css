@@ -50,6 +50,27 @@
   .app-shell .spotlight-tile-main {
     animation: none;
   }
+
+  /* These overlays render as HomeScreen siblings, not descendants of .app-shell.
+     Keep the mobile blur budget consistent across every modal surface. */
+  :is(
+    .scanner-qa-backdrop,
+    .scanner-settings-backdrop,
+    .barcode-result-backdrop,
+    .calendar-modal-backdrop,
+    .notice-detail-backdrop,
+    .app-library-backdrop,
+    .stocktake-backdrop,
+    .auth-journey-recognition__backdrop
+  ) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  :is(.barcode-result-card, .calendar-modal, .notice-detail-modal, .app-library-modal) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 }
 
 @media (max-width: 700px) {
