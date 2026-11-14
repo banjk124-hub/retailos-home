@@ -28,9 +28,11 @@ export default function PwaUpdatePrompt() {
         registration = await registerRetailOsServiceWorker();
         if (disposed) return;
         revealWaitingWorker();
-        registration.addEventListener('updatefound', () => {
+        const observeInstallingWorker = () => {
           registration?.installing?.addEventListener('statechange', revealWaitingWorker);
-        });
+        };
+        registration.addEventListener('updatefound', observeInstallingWorker);
+        observeInstallingWorker();
         window.addEventListener('online', checkForUpdate);
         document.addEventListener('visibilitychange', checkForUpdate);
         checkForUpdate();
