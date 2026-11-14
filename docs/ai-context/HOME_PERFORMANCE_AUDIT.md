@@ -113,6 +113,13 @@ CI #956 compared the source before global legacy-selector pruning with the branc
 - Home incremental dynamic closure: 29,963 B gzip → 26,818 B gzip.
 - Initial entrypoint remained effectively unchanged at 92,132 B → 92,181 B gzip (+49 B, +0.1%). This is expected because Home CSS is loaded with the lazy Home boundary and Playwright is dev-only.
 
-CI #962 is measuring the additional global CSS pruning. Bundle reports estimate transfer size; they do not measure browser style recalculation, JavaScript parse time, React render duration or tap-to-feedback latency.
+CI #962 validated the additional global CSS pruning:
+
+- Initial entrypoint gzip: 92,132 B → 88,584 B (-3,548 B, -3.9%).
+- Total emitted gzip estimate: 345,608 B → 338,943 B (-6,665 B, -1.9%).
+- Total emitted raw bytes: 1,286,752 B → 1,251,555 B (-35,197 B, -2.7%).
+- Initial global CSS chunk: 166,123 B raw / 30,631 B gzip → 147,247 B raw / 27,038 B gzip.
+
+Bundle reports estimate transfer size; they do not measure browser style recalculation, JavaScript parse time, React render duration or tap-to-feedback latency.
 
 Automated source-contract tests are not physical-device performance acceptance. Record actual browser/device traces before claiming that end-user lag is resolved.
