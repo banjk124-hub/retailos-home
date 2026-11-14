@@ -79,6 +79,11 @@ assert.ok(exportAll.indexOf('setBusy(true)') < exportAll.indexOf('await yieldToN
 assert.ok(exportAll.indexOf('await yieldToNextPaint()') < exportAll.indexOf('new JSZip()'), 'ZIP packaging must begin after the busy state has had a paint opportunity.');
 const copyOutput = blockBetween(stocktakeImport, 'const copyOutput = async', 'const exportZone =');
 assert.ok(copyOutput.indexOf('setNotice(\'Đang sao chép nội dung TXT…\')') < copyOutput.indexOf('navigator.clipboard.writeText'), 'Copy must acknowledge the action before waiting for the Clipboard API.');
+assert.match(stocktakeImport, /key=\{zone\.zoneCode\} type="button" disabled=\{busy\}/, 'Zone navigation must not change the active edit target while a save is in progress.');
+assert.match(stocktakeImport, /aria-label=\{\'Mã hàng dòng \' \+ row\.sourceRow\} disabled=\{busy\}/, 'Barcode fields must not accept edits while the active zone is being saved.');
+assert.match(stocktakeImport, /aria-label=\{\'Kết quả thực tế dòng \' \+ row\.sourceRow\} disabled=\{busy\}/, 'Quantity fields must not accept edits while the active zone is being saved.');
+assert.match(stocktakeImport, /onClick=\{resetActiveSession\}>Tạo phiên mới/, 'The new-session confirmation action must remain present.');
+assert.match(stocktakeImport, /disabled=\{busy\} onClick=\{resetActiveSession\}/, 'Session reset must not race with another pending write.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 assert.match(scannerQa, /const ScannerQaEventRow = memo\(/, 'Existing diagnostic rows must not re-render when a new event is appended.');
 assert.match(scannerQa, /filtered\.map\(\(event\) => <ScannerQaEventRow/, 'Scanner QA must render diagnostics through memoized event rows.');
