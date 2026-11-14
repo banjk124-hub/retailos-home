@@ -26,9 +26,9 @@ Every capability is classified into one of five dispositions:
 | Global histogram binarization | `GlobalHistogram` only after LocalAverage miss | **Transfer — implemented** | Preserves the legacy ordered fallback without running both algorithms when the first succeeds. |
 | Reversed-reflectance / inverted symbols | `tryInvert: true` | **Native — enabled in this PR** | Useful native capability not duplicated by the shared RetailOS transforms. Runs as backend detection fallback; validate with positive and negative inverted fixtures and measure miss-path cost. |
 | 180° linear scanline reversal | `tryHarder: true`; pinned `ODReader.cpp` reverses scanline patterns | **Native — use directly** | Do not add a duplicate 180° image transform. Source proof is not a substitute for the labelled corpus. |
-| 90°/180°/270° full-image rotation | `tryRotate: false` | **Shared / deferred** | Shared pipeline owns bounded orthogonal candidates. Avoid multiplying backend and shared transforms. Revisit only if the labelled corpus shows a specific orientation gap, especially matrix formats or 270° cases. |
-| Internal downscaling | `tryDownscale: false` | **Shared / deferred** | RetailOS already owns bounded ROI sizing and 1.5× / 1× / 2× candidates. Native downscale may be tested as a separate candidate policy, not stacked blindly. |
-| Native denoising | `tryDenoise: false` | **Deferred** | Experimental and documented for 2D symbologies; current active retail allowlist is linear. Revisit only with supported 2D formats, representative noise fixtures and device-cost evidence. |
+| 90°/180°/270° full-image rotation | `tryRotate: true` | **Native — adopted** | ZXing-C++ owns all three orthogonal directions. The WASM path tells the shared iterator to omit its duplicate 90° pixel transform. Shared continuous-angle deskew and geometry correction remain active. The JS adapter retains its existing shared rotation path. |
+| Internal downscaling | `tryDownscale: true`; native threshold/factor retained from pinned defaults pending tuning | **Native — adopted** | Lets ZXing-C++ downscale high-resolution inputs internally. RetailOS 1.5× baseline and 1×/2× recovery candidates are retained for now because the native path is downscale-only and does not replace the 2× upsample path; compare per-candidate hit rate and latency before retiring any overlapping fallback. |
+| Native denoising | `tryDenoise: true` only when the active allowlist contains QRCode/DataMatrix/PDF417/Aztec/MaxiCode/MicroQRCode | **Native — conditional adoption** | The pinned API limits this experimental morphological-closing path to 2D symbologies. It stays off for linear-only sessions and is enabled when a supported 2D format is actually requested. Validate noisy 2D fixtures and latency before making a broader default claim. |
 | Binarizers beyond LocalAverage/GlobalHistogram | `FixedThreshold`, `BoolCast` available in API, not selected | **Deferred** | Potential speed/threshold alternatives need controlled corpus evidence; do not replace current accuracy path by assumption. |
 | Multiple symbols per image | `maxNumberOfSymbols: 1` | **Contract-aligned** | Current session and consumer contract accepts one result. Multi-symbol scanning requires a separate product/consumer contract and duplicate/order policy. |
 | Text decoding | `textMode: Plain`, `characterSet: UTF8` | **Transfer — implemented** | Preserves the prior plain text payload boundary. ECI/HRI/Escaped/Hex modes remain available but would change payload semantics and require explicit consumers/tests. |
@@ -44,8 +44,8 @@ Every capability is classified into one of five dispositions:
 These are not missing WASM features and must not be reimplemented inside the WASM adapter:
 
 - Feature-owned strict ROI and source-frame coordinate mapping; invalid/missing ROI fails closed.
-- Bounded ROI sizing and baseline-first scale candidates.
-- Shared orientation candidate ordering, quarter-turn transform and bounded in-plane deskew.
+- Bounded ROI sizing and baseline-first scale candidates. WASM also enables native downscaling for large inputs; shared 1×/2× candidates remain until measurements show which fallback is redundant.
+- Shared baseline-first candidate ordering, continuous-angle deskew and bounded geometry correction. Orthogonal rotation is delegated to WASM for the WASM adapter; the JS adapter continues using the shared quarter-turn candidate.
 - Image-quality observation, glare-aware enhancement policy and bounded geometry correction.
 - A1 quality profile, A2 optional processing plan and A3 runtime candidate budget.
 - Temporal snapshot ownership/fallback and accepted-result ordering.
@@ -77,7 +77,7 @@ Current Home/Stocktake consumers require validated text + symbology, not symbol 
 
 Automated source/contract tests are necessary but not optical parity evidence. Required before decoder cutover:
 
-- [ ] Tests prove option policy, strict allowlist, LocalAverage → GlobalHistogram fallback, invalid-result rejection and diagnostic-window isolation.
+- [ ] Tests prove native 90°/180°/270° rotation ownership, native downscale enablement, conditional 2D denoise, strict allowlist, LocalAverage → GlobalHistogram fallback, invalid-result rejection and diagnostic-window isolation.
 - [ ] Tests cover disposal during initialization/decode, no output after disposal and temporal fallback behavior.
 - [ ] Same labelled image corpus runs against both adapters, with each active symbology and positive/negative controls.
 - [ ] Orientation set includes 0°/90°/180°/270°, including inverted-reflectance symbols.
@@ -91,7 +91,7 @@ Automated source/contract tests are necessary but not optical parity evidence. R
 - No production default switch and no deletion of `@zxing/library` or `zxingDecoder.ts`.
 - No camera/session/lifecycle/presentation/business-flow changes.
 - No Worker migration or threading redesign.
-- No speculative enabling of every ReaderOptions flag.
+- No speculative enabling of every ReaderOptions flag; native capabilities are enabled according to supported formats and measured cost.
 - No claim of physical parity from TypeScript/build CI alone.
 
 ## 8. Upstream references
