@@ -554,7 +554,7 @@
   .barcode-result-card { max-height: 90dvh; padding: 16px; border-radius: 19px; }
   .barcode-result-record dl > div { grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: 8px; padding: 8px 9px; }
   .barcode-scanner-hint { margin: 9px 0; }
-  .barcode-result-backdrop { padding: max(10px, env(safe-area-inset-top)) 12px max(10px, env(safe-area-inset-bottom)); }
+  .barcode-result-backdrop { padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
   .barcode-result-card { max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px); }
   .app-shell .home-spotlight {
     gap: 9px;
