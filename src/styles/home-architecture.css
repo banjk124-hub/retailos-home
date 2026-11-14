@@ -67,6 +67,9 @@
   }
 }
 @media (min-width: 701px) and (max-width: 1099px) {
+  .app-shell .topbar.home-topbar {
+    width: calc(100% - 44px);
+  }
   .app-shell .spotlight-main-content {
     width: 100%;
   }
