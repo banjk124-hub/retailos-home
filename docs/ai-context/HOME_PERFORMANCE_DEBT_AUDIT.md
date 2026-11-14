@@ -12,6 +12,7 @@ This follow-up targets Home's impact on downstream lazy modules, repeated Indexe
 - Memoized the lazy scanner, Stocktake, Stocktake Import, Settings, Scanner QA and Scanner Settings component boundaries. Stable callbacks are passed so Home state changes do not automatically re-render these feature trees.
 - Stabilized the LiquidDock item list at module scope, memoized the dock, and stabilized its navigation callback.
 - Removed five unused Lucide icon imports from HomeScreen.
+- Consolidated repeated Blob/object-URL download mechanics from Stocktake, Stocktake Import, Scanner QA and snapshot export into `src/shared/downloadFile.ts`, preserving the Stocktake Import 1,500 ms URL cleanup delay and existing MIME types.
 
 ## Confirmed technical-debt findings
 
