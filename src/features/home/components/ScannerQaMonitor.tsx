@@ -95,7 +95,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
   useBodyScrollLock(true);
   const [events, setEvents] = useState(getScannerDiagnosticSnapshot());
   const [filter, setFilter] = useState<'all' | 'warn' | 'performance'>('all');
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<'idle' | 'copying' | 'copied'>('idle');
 
   useEffect(() => {
     const uninstall = installScannerDiagnosticCollector();
@@ -140,12 +140,14 @@ export default function ScannerQaMonitor({ onClose }: Props) {
     downloadReport(rows.join('\n'), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`, 'text/csv;charset=utf-8');
   };
   const copyReport = async () => {
+    if (copyState === 'copying') return;
+    setCopyState('copying');
     try {
       await navigator.clipboard.writeText(exportScannerDiagnostics());
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      setCopyState('copied');
+      window.setTimeout(() => setCopyState('idle'), 1800);
     } catch {
-      setCopied(false);
+      setCopyState('idle');
     }
   };
 
@@ -183,7 +185,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
       <footer className="scanner-qa-footer">
         <span><RefreshCw size={13} /> Live · tối đa 1.000 sự kiện gần nhất</span>
         <div>
-          <button type="button" onClick={copyReport}><Clipboard size={15} />{copied ? 'Đã sao chép' : 'Copy JSON'}</button>
+          <button type="button" disabled={copyState === 'copying'} aria-busy={copyState === 'copying'} onClick={copyReport}><Clipboard size={15} />{copyState === 'copying' ? 'Đang sao chép…' : copyState === 'copied' ? 'Đã sao chép' : 'Copy JSON'}</button>
           <button type="button" onClick={exportCsv}><Download size={15} />CSV</button>
           <button type="button" className="scanner-qa-export" onClick={exportJson}><Download size={15} />Xuất JSON</button>
         </div>
