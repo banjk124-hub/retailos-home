@@ -4,6 +4,11 @@ import { readFileSync } from 'node:fs';
 const dataService = readFileSync('src/features/data/moduleDataService.ts', 'utf8');
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
 const barcodeLookup = readFileSync('src/features/scanner/services/barcodeLookup.ts', 'utf8');
+const downloadFile = readFileSync('src/shared/downloadFile.ts', 'utf8');
+const stocktakeExport = readFileSync('src/features/stocktake/services/stocktakeExport.ts', 'utf8');
+const stocktakeImport = readFileSync('src/features/stocktake-import/components/StocktakeImportModule.tsx', 'utf8');
+const scannerQa = readFileSync('src/features/home/components/ScannerQaMonitor.tsx', 'utf8');
+const exportFormats = readFileSync('src/features/data/exportFormats.ts', 'utf8');
 
 assert.ok(dataService.includes('export async function getCachedModuleSnapshots('), 'The shared batch reader must be exported.');
 assert.ok(dataService.includes('async function withStoreBatch<T>('), 'The batch reader must reuse one transaction for multiple requests.');
@@ -29,5 +34,18 @@ assert.ok(home.includes('<MemoizedStocktakeImportModule employee={employee} onCl
 
 assert.ok(home.includes('const handleBarcodeDetected = useCallback('), 'Barcode callback must remain stable for the memoized scanner.');
 assert.ok(home.includes('const closeBarcodeScanner = useCallback('), 'Scanner close callback must remain stable.');
+
+assert.ok(downloadFile.includes('URL.createObjectURL(blob)'), 'The shared download helper must own object URL creation.');
+assert.ok(downloadFile.includes('URL.revokeObjectURL(url)'), 'The shared download helper must own object URL cleanup.');
+for (const [name, source] of [
+  ['Stocktake export', stocktakeExport],
+  ['Stocktake Import', stocktakeImport],
+  ['Scanner QA', scannerQa],
+  ['Snapshot export', exportFormats],
+]) {
+  assert.ok(source.includes("from '../../../shared/downloadFile'") || source.includes("from '../../shared/downloadFile'"), `${name} must use the shared download helper.`);
+  assert.ok(!source.includes('URL.createObjectURL('), `${name} must not duplicate object URL lifecycle code.`);
+}
+assert.ok(stocktakeImport.includes('downloadFile(blob, fileName, 1500)'), 'Stocktake Import must preserve its existing longer URL cleanup delay.');
 
 console.log('PASS: Home render isolation and batched IndexedDB snapshot reads.');
