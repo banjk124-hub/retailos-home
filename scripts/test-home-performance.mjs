@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [service, rules, home, dock, librarySection, registry, homeState, homeStyles, homeEngineStyles, homeArchitectureStyles] = await Promise.all([
+const [service, rules, home, dock, librarySection, registry, homeState, homeStyles, homeEngineStyles, homeArchitectureStyles, packageJson, packageLock] = await Promise.all([
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/home/snapshotNoticeRules.ts'),
   read('../src/features/home/HomeScreen.tsx'),
@@ -14,6 +14,8 @@ const [service, rules, home, dock, librarySection, registry, homeState, homeStyl
   read('../src/styles/home.css'),
   read('../src/styles/home-engine.css'),
   read('../src/styles/home-architecture.css'),
+  read('../package.json'),
+  read('../package-lock.json'),
 ]);
 
 const batchReader = service.slice(
@@ -40,6 +42,12 @@ assert.match(librarySection, /useState\(initialSearch\)/, 'The module library se
 assert.match(librarySection, /const filteredModules = useMemo\(/, 'Module filtering must be memoized inside the isolated search component.');
 assert.doesNotMatch(registry, /function getModulesForLibrary\(/, 'Unused module-library filtering helper must not remain beside the canonical registry.');
 assert.doesNotMatch(homeState, /activeFilter/, 'Unused Home filter state must not remain in persisted UI state.');
+const packageMetadata = JSON.parse(packageJson);
+const lockMetadata = JSON.parse(packageLock);
+assert.equal(packageMetadata.devDependencies?.['@playwright/test'], undefined, 'Unused Playwright test tooling must not remain a direct dependency.');
+assert.equal(lockMetadata.packages?.['node_modules/@playwright/test'], undefined, 'Unused Playwright test package must not remain in the lockfile.');
+assert.equal(lockMetadata.packages?.['node_modules/playwright'], undefined, 'Unused Playwright runtime package must not remain in the lockfile.');
+assert.equal(lockMetadata.packages?.['node_modules/playwright-core'], undefined, 'Unused Playwright core package must not remain in the lockfile.');
 assert.doesNotMatch(homeStyles, /\.(?:sidebar|workspace-switcher|welcome-section|hero-card|metrics-grid|module-grid|module-card|activity-row|attention-item|mobile-nav)\b/, 'Unused legacy Home layout selectors must not remain in the Home stylesheet.');
 assert.equal((homeStyles.match(/\.notification-popover\{/g) ?? []).length, 1, 'The duplicated notification popover rule must have one canonical declaration.');
 assert.match(homeStyles, /\.app-shell\{/);
