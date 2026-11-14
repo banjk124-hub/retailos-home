@@ -23,13 +23,14 @@ Key implementation decisions in this PR:
 - Keep strict RetailOS allowlist, LocalAverage → GlobalHistogram fallback, Plain/UTF8 payload contract, optional-checksum behavior and invalid-read rejection.
 - Keep `tryHarder: true`; the pinned WASM engine natively reverses 1D scanlines for 180° linear symbols.
 - Enable native inverted-reflectance detection with `tryInvert: true`; this capability is not duplicated by the shared RetailOS pipeline.
-- Keep backend `tryRotate` and `tryDownscale` disabled for now because bounded orientation and scale candidates are already shared. Revisit only with corpus evidence of a gap or benefit.
-- Keep experimental denoise disabled until supported formats and measured fixtures justify it.
+- Enable native `tryRotate: true` for WASM 90°/180°/270° recognition; tell the shared pipeline to omit its duplicate orthogonal transform while retaining continuous deskew and geometry correction.
+- Enable native `tryDownscale: true` for high-resolution inputs. Keep shared 1×/2× recovery temporarily because native downscale does not replace the 2× upsample path; use corpus/latency evidence to retire redundant candidates.
+- Enable experimental `tryDenoise` only when the active allowlist includes supported 2D symbologies; keep it off for linear-only sessions.
 - Keep the WASM adapter opt-in; production remains on ZXing JS.
 
 ## Shared RetailOS capabilities — preserve one owner
 
-Strict feature-owned ROI, coordinate mapping, bounded scale candidates, baseline-first candidate ordering, orthogonal rotation, deskew, image enhancement, geometry correction, A1/A2/A3 policies, temporal fallback, validation, single/continuous semantics, Home/Stocktake handoff, camera lease, lifecycle/recovery and presentation remain outside the decoder backend.
+Strict feature-owned ROI, coordinate mapping, bounded scale candidates, baseline-first candidate ordering, continuous deskew, image enhancement, geometry correction, A1/A2/A3 policies, temporal fallback, validation, single/continuous semantics, Home/Stocktake handoff, camera lease, lifecycle/recovery and presentation remain outside the decoder backend.
 
 ## PR-07 implementation scope
 
