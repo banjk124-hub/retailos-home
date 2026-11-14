@@ -18,9 +18,11 @@ assert.match(adapterSource, /decodeTemporalSnapshot\(/);
 assert.match(adapterSource, /dispose\(\): Promise<void> \| void/);
 
 assert.match(factorySource, /defaultScannerDecoderFactory:\s*ScannerDecoderFactory/);
-assert.match(factorySource, /await import\('\.\/zxingDecoder'\)/,
-  'the concrete backend must remain dynamically imported');
-assert.match(factorySource, /return new ZXingDecoderAdapter\(\)/);
+assert.match(factorySource, /await import\('\.\/zxingWasmDecoder'\)/,
+  'the production factory must lazily load the ZXing-C++ WASM backend');
+assert.match(factorySource, /return new ZXingWasmDecoderAdapter\(\)/);
+assert.doesNotMatch(factorySource, /zxingDecoder|ZXingDecoderAdapter/,
+  'the production factory must not retain a legacy JS selection path');
 assert.doesNotMatch(sessionSource, /zxingDecoder|ZXingDecoderAdapter/,
   'UniversalScannerSession must not import, name or instantiate a concrete backend');
 assert.match(sessionSource, /private readonly decoderFactory: ScannerDecoderFactory = defaultScannerDecoderFactory/);
