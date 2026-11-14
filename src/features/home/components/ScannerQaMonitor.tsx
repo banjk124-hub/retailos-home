@@ -1,4 +1,3 @@
-import '../../../styles/scanner-qa-monitor.css';
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, AlertTriangle, CheckCircle2, Clipboard, Download, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import {
@@ -9,6 +8,7 @@ import {
   subscribeScannerDiagnostics,
   type ScannerDiagnosticEvent,
 } from '../../scanner/services/scannerDiagnosticCollector';
+import '../../../styles/scanner-qa-monitor.css';
 
 type Props = { onClose: () => void };
 
