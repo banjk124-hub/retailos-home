@@ -14,6 +14,11 @@ const checks = [
     args: ["scripts/test-scanner-benchmark-core.mjs"],
   },
   {
+    name: "Scanner dev-only benchmark harness isolation tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-benchmark-harness.mjs"],
+  },
+  {
     name: "Home performance and snapshot-notice regression tests",
     command: process.execPath,
     args: ["scripts/test-home-performance.mjs"],
