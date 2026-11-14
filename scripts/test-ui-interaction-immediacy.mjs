@@ -19,10 +19,14 @@ assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-shor
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
 assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The mobile login panel must not wait before its entry animation starts.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
-assert.doesNotMatch(mobileStyles, /@keyframes topbar-dock-float[\\s\\S]*?\\}/, 'Topbar ambient motion must remain on composited properties rather than repaint-heavy box-shadow changes.');
-assert.match(stocktakeImport, /const invalidCount = useMemo\\(/, 'Stocktake Import row validation must not be recomputed on unrelated UI renders.');
-assert.match(stocktakeImport, /const invalidZones = useMemo\\(/, 'Stocktake Import cross-zone validation must not be recomputed on unrelated UI renders.');
-assert.match(scannerQa, /const \\{ accepted, errors, maxDuration \\} = useMemo\\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
+const topbarMotionStart = mobileStyles.indexOf('@keyframes topbar-dock-float');
+const topbarMotionEnd = mobileStyles.indexOf('@media (max-width: 700px)', topbarMotionStart);
+const topbarMotion = mobileStyles.slice(topbarMotionStart, topbarMotionEnd);
+assert.ok(topbarMotionStart >= 0 && topbarMotionEnd > topbarMotionStart, 'Topbar ambient motion keyframes must remain present.');
+assert.doesNotMatch(topbarMotion, /box-shadow|background-position/, 'Topbar ambient motion must remain on composited properties rather than repaint-heavy box-shadow/background-position changes.');
+assert.match(stocktakeImport, /const invalidCount = useMemo\(/, 'Stocktake Import row validation must not be recomputed on unrelated UI renders.');
+assert.match(stocktakeImport, /const invalidZones = useMemo\(/, 'Stocktake Import cross-zone validation must not be recomputed on unrelated UI renders.');
+assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 
 function blockBetween(source, start, end) {
   const startIndex = source.indexOf(start);
