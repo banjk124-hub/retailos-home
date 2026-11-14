@@ -55,10 +55,6 @@
   animation: motion-fade-up var(--motion-phase-duration, var(--motion-duration-emphasized)) var(--motion-phase-easing, var(--motion-ease-enter)) both;
 }
 
-.motion-page[data-motion-active="true"] > :nth-child(2) {
-  animation-delay: var(--motion-stagger-short);
-}
-
 .motion-presence[data-motion-preset="presence"],
 .motion-presence[data-motion-phase="reveal"] {
   animation: motion-fade-up var(--motion-phase-duration, var(--motion-duration-standard)) var(--motion-phase-easing, var(--motion-ease-enter)) both;
@@ -127,7 +123,6 @@
 
 .motion-presence[data-motion-preset="dock"] {
   animation: motion-fade-up var(--motion-duration-transition) var(--motion-ease-enter) both;
-  animation-delay: var(--motion-stagger-short);
 }
 
 .ro-icon-motion svg {
