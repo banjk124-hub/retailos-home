@@ -81,6 +81,8 @@ export function summarizeBenchmarkRows(rows) {
     const matched = positive.filter((row) => row.outcome === 'match').length;
     const falsePositives = negative.filter((row) => row.outcome === 'false-positive').length;
     const durations = subset.map((row) => row.decodeMs).filter(Number.isFinite);
+    const firstTrialDurations = subset.filter((row) => row.trial === 1).map((row) => row.decodeMs);
+    const steadyDurations = subset.filter((row) => row.trial > 1).map((row) => row.decodeMs);
     return {
       backend,
       attempts: subset.length,
@@ -95,6 +97,9 @@ export function summarizeBenchmarkRows(rows) {
       falsePositiveRate: negative.length ? falsePositives / negative.length : null,
       decodeP50Ms: percentile(durations, 0.5),
       decodeP95Ms: percentile(durations, 0.95),
+      firstTrialP50Ms: percentile(firstTrialDurations, 0.5),
+      steadyDecodeP50Ms: percentile(steadyDurations, 0.5),
+      steadyDecodeP95Ms: percentile(steadyDurations, 0.95),
     };
   });
 }
