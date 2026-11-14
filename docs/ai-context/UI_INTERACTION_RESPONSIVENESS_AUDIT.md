@@ -21,9 +21,9 @@ Home used a 3.5-second idle timer to hide the topbar and LiquidDock. The hidden 
 
 ### 2. Lazy-loaded surfaces could appear blank
 
-Settings, Scanner QA Monitor, Scanner Settings, Stocktake and Stocktake Import used `Suspense fallback={null}`. When a feature chunk was not ready, the click updated state but no visible response was rendered until the chunk arrived.
+The root authenticated `HomeScreen` boundary also used an empty `aria-busy` shell, so the handoff from the identity screen could become visually blank while the Home chunk loaded. Settings, Scanner QA Monitor, Scanner Settings, Stocktake and Stocktake Import used `Suspense fallback={null}`. When a feature chunk was not ready, the click updated state but no visible response was rendered until the chunk arrived.
 
-**Change:** Added one small presentation-only loading surface at the existing lazy boundaries, with an accessible busy state and a close action. No new loading service or async layer was introduced.
+**Change:** Added immediate visible loading feedback at the root HomeScreen boundary and one small presentation-only loading surface at the five existing Home lazy boundaries, with accessible busy states and close actions where applicable. No new loading service or async layer was introduced.
 
 ### 3. Stocktake transitions waited on storage before acknowledging the action
 
@@ -35,15 +35,23 @@ Starting/resuming a zone, opening review, saving/deleting an entry, exporting an
 
 The shared motion layer, Home entry styles, mobile login panel, Home notifications and older library card styles included stagger delays. Those delays postpone the start of the animation itself.
 
-**Change:** Removed the pre-start delays from the affected UI entry paths. Decorative brand and ambient animation timing is not changed.
+**Change:** Removed the pre-start delays from the affected UI entry paths. Decorative brand and ambient animation timing is not changed. The topbar's continuous ambient motion now animates only transform/opacity; it no longer animates box-shadow or background-position on every frame.
+
+
+### 5. Expensive derived validation ran during unrelated renders
+
+Stocktake Import recalculated row-level validation for the active zone and every zone on each render, including renders caused only by notice, page or editing UI state. Scanner QA similarly recalculated its aggregate summary whenever its filter/copy state changed.
+
+**Change:** Memoized these derived values against the data snapshots they actually depend on. This does not add asynchronous work or change validation rules.
 
 ## Regression coverage
 
 `scripts/test-ui-interaction-immediacy.mjs` is registered in preflight. It guards:
 
-- No silent `Suspense fallback={null}` on the audited lazy surfaces.
+- No silent root or nested lazy fallback while a feature chunk loads.
 - No auto-hidden primary chrome/wake-tap behavior.
 - No stagger delay on the audited page, dock, Home, mobile login, notice and interactive card entry paths.
+- Topbar ambient keyframes avoid repaint-heavy properties.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
 
 ## Audit still in progress
