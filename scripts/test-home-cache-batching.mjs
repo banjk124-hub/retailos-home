@@ -18,6 +18,9 @@ assert.ok(home.includes('const MemoizedBarcodeScanner = memo(BarcodeScanner)'), 
 assert.ok(home.includes('const MemoizedLiquidDock = memo(LiquidDock)'), 'The navigation dock must be memoized.');
 assert.ok(home.includes('const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);'), 'Stocktake close callback must remain stable.');
 assert.ok(home.includes('const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);'), 'Stocktake Import close callback must remain stable.');
+assert.ok(home.includes('<MemoizedStocktakeModule employee={employee} onClose={closeStocktake} />'), 'Stocktake must receive the stable close callback.');
+assert.ok(home.includes('<MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} />'), 'Stocktake Import must receive the stable close callback.');
+
 assert.ok(home.includes('const handleBarcodeDetected = useCallback('), 'Barcode callback must remain stable for the memoized scanner.');
 assert.ok(home.includes('const closeBarcodeScanner = useCallback('), 'Scanner close callback must remain stable.');
 
