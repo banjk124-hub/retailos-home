@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
@@ -39,6 +39,14 @@ const StocktakeImportModule = lazy(() => import('../stocktake-import/components/
 const ScannerQaMonitor = lazy(() => import('./components/ScannerQaMonitor'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
+
+// Keep expensive feature trees isolated from unrelated Home state updates.
+const MemoizedBarcodeScanner = memo(BarcodeScanner);
+const MemoizedStocktakeModule = memo(StocktakeModule);
+const MemoizedStocktakeImportModule = memo(StocktakeImportModule);
+const MemoizedScannerQaMonitor = memo(ScannerQaMonitor);
+const MemoizedSettingsHub = memo(SettingsHub);
+const MemoizedScannerSettingsPanel = memo(ScannerSettingsPanel);
 
 type Props = {
   employee: EmployeeSession;
@@ -96,6 +104,8 @@ export default function HomeScreen({
     setShowSettings(false);
     setActiveNav('home');
   }, []);
+  const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);
+  const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);
   const openScannerQa = useCallback(() => {
     setShowSettings(false);
     setShowScannerQa(true);
@@ -508,7 +518,7 @@ export default function HomeScreen({
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
   };
-  const handleBarcodeDetected = (barcode: string) => {
+  const handleBarcodeDetected = useCallback((barcode: string) => {
     // Keep the scanner mounted for its short exit transition. The scanner
     // component closes the session immediately and notifies us after motion.
     cameraLeaseRequestRef.current = null;
@@ -529,13 +539,13 @@ export default function HomeScreen({
         ? { barcode, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
         : current);
     });
-  };
-  const closeBarcodeScanner = () => {
+  }, []);
+  const closeBarcodeScanner = useCallback(() => {
     cameraLeaseRequestRef.current?.cancel();
     cameraLeaseRequestRef.current = null;
     setScannerMotionOrigin(null);
     setIsBarcodeScannerOpen(false);
-  };
+  }, []);
   const openBarcodeScanner = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
@@ -744,11 +754,11 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
-    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
-    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
+    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
+    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
-      <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
@@ -878,8 +888,8 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={() => setIsStocktakeOpen(false)} />}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
-    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={() => setIsStocktakeImportOpen(false)} />}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
+    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
+    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
