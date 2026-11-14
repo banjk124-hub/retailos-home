@@ -3,7 +3,7 @@
 ## PR-08 — Production cutover to ZXing-C++ WASM (in progress)
 
 **Branch:** `feat/scanner-wasm-production-cutover`  
-**Base:** PR #115 merge `6dadb3a2c4ee74945c64607a5e10004fa9057cf`.  
+**Base:** PR #115 merge `6dadb3a2c4aee74945c64607a5e10004fa9057cf`.  
 **Target:** make the adopted WASM engine the sole production decoder selection through the existing backend-neutral factory, while preserving the established module/session contracts.
 
 ### Runtime ownership and integration
