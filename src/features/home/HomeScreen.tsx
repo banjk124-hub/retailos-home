@@ -76,6 +76,11 @@ const navItems = [
   { id: 'settings', label: 'Cài đặt' },
 ];
 
+const HOME_DOCK_ITEMS = navItems.map((item) => ({
+  ...item,
+  icon: getHomeNavigationIcon(item.id),
+}));
+
 export default function HomeScreen({
   employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall,
 }: Props) {
@@ -548,7 +553,7 @@ export default function HomeScreen({
     setScannerMotionOrigin(null);
     setIsBarcodeScannerOpen(false);
   };
-  const openBarcodeScanner = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const openBarcodeScanner = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     if (isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
     // scanner will claim this lease as soon as its video element is available.
@@ -556,14 +561,19 @@ export default function HomeScreen({
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
-  };
-  const handleNav = (id: string) => {
+  }, []);
+  const handleNav = useCallback((id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
-  };
+  }, [prefersReducedMotion]);
+  const dockAction = useMemo(() => isScannerSupportedDevice() ? {
+    label: 'Quét mã',
+    icon: ScanBarcode,
+    onSelect: openBarcodeScanner,
+  } : undefined, [openBarcodeScanner]);
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
@@ -744,17 +754,10 @@ export default function HomeScreen({
 
     </div>
     <LiquidDock
-      items={navItems.map((item) => ({
-        ...item,
-        icon: getHomeNavigationIcon(item.id),
-      }))}
+      items={HOME_DOCK_ITEMS}
       activeId={activeNav}
       onSelect={handleNav}
-      action={isScannerSupportedDevice() ? {
-        label: 'Quét mã',
-        icon: ScanBarcode,
-        onSelect: openBarcodeScanner,
-      } : undefined}
+      action={dockAction}
     />
     {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
