@@ -14,14 +14,12 @@ const local = createZXingWasmReaderOptions(['EAN13', 'Code128'], 'LocalAverage')
 const global = createZXingWasmReaderOptions(['EAN13', 'Code128'], 'GlobalHistogram');
 for (const options of [local, global]) {
   assert.deepEqual(options.formats, ['EAN13', 'Code128']);
-  // ZXing-C++ ODReader reverses every 1D scanline when tryHarder is true,
-  // so upside-down linear symbols (180°) do not require tryRotate.
-  // tryRotate stays false because the shared pipeline owns the 90° image candidate.
+  // WASM owns orthogonal rotation; the shared pipeline keeps continuous deskew.
   assert.equal(options.tryHarder, true);
-  assert.equal(options.tryRotate, false);
+  assert.equal(options.tryRotate, true, 'WASM must search 90°/180°/270° natively');
   assert.equal(options.tryInvert, true, 'WASM native inverted-symbol detection must remain enabled');
-  assert.equal(options.tryDownscale, false);
-  assert.equal(options.tryDenoise, false);
+  assert.equal(options.tryDownscale, true, 'WASM native high-resolution downscale must be enabled');
+  assert.equal(options.tryDenoise, false, '2D-only denoise must stay off for a linear-only allowlist');
   assert.equal(options.maxNumberOfSymbols, 1);
   assert.equal(options.textMode, 'Plain');
   assert.equal(options.validateOptionalChecksum, false);
@@ -30,6 +28,10 @@ for (const options of [local, global]) {
 }
 assert.equal(local.binarizer, 'LocalAverage');
 assert.equal(global.binarizer, 'GlobalHistogram');
+const matrixOptions = createZXingWasmReaderOptions(['QRCode', 'DataMatrix']);
+assert.equal(matrixOptions.tryDenoise, true,
+  'native experimental denoise must be enabled when a supported 2D symbology is active');
+
 
 const attempts = [];
 const fallbackOutput = await runOrderedBinarizerFallback(
