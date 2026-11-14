@@ -97,7 +97,7 @@ Example:
 
 The manifest validator rejects duplicate IDs, invalid formats, path traversal, missing labels and invalid/out-of-bounds source-frame ROIs. Negative cases use `expected: null`; any decoder output is scored as a false positive.
 
-## 5. Required capture matrix
+## 5. Running the isolated harness\n\n1. Run `npm run dev -- --host 0.0.0.0`.\n2. Open `/scripts/scanner-benchmark/` on the desktop or target device using the same development server.\n3. Load a local manifest JSON and select all corresponding image files.\n4. Run at least three repeats, then repeat with backend order reversed.\n5. Export the JSON report and retain the manifest/corpus version alongside it.\n\nThe page supports multi-file selection and falls back from `createImageBitmap` to an `HTMLImageElement` decode path for browser compatibility. It does not request camera permission. Use a secure origin where the browser requires it for WASM or modern image APIs.\n\n## 6. Required capture matrix
 
 At minimum, collect EAN-8, EAN-13, CODE-128 and CODE-39 across:
 - upright, 90°/180°/270° and representative in-plane skew;
@@ -110,7 +110,7 @@ At minimum, collect EAN-8, EAN-13, CODE-128 and CODE-39 across:
 
 Record device/browser/OS, actual camera track settings, source resolution, ROI, capture conditions and sample counts. Do not record employee identity, camera device IDs or persistent device identifiers.
 
-## 6. Decision metrics and acceptance
+## 7. Decision metrics and acceptance
 
 Report separately for each backend, device/browser and condition:
 - exact-match rate on positive cases;
@@ -124,7 +124,7 @@ Do not aggregate all conditions into one headline percentage if the sample mix d
 
 **Backend selection remains blocked** until a labelled physical corpus and iOS/Android device evidence exist. CI only validates harness contracts and does not create physical-device evidence.
 
-## 7. Protected scope
+## 8. Protected scope
 
 No changes to:
 - production decoder default or factory selection;
@@ -133,7 +133,7 @@ No changes to:
 - Home/Stocktake presentation, lookup, form-fill or explicit-save behavior;
 - auth, backend, storage, service worker, deployment or business workflows.
 
-## 8. Validation boundary and next work
+## 9. Validation boundary and next work
 
 - Automated CI validates manifest scoring and the dev-only harness contract.
 - Manual browser runs must use the same manifest/images and be performed on target physical devices.
