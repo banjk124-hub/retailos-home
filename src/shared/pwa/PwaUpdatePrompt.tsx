@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import './pwa-update-prompt.css';
+import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 
 export default function PwaUpdatePrompt() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
@@ -17,13 +18,14 @@ export default function PwaUpdatePrompt() {
       if (!disposed && registration?.waiting) setWaitingWorker(registration.waiting);
     };
     const checkForUpdate = () => {
-      if (document.visibilityState === 'visible') void registration?.update().catch(() => undefined);
+      if (document.visibilityState === 'visible') {
+        void registration?.update().then(revealWaitingWorker).catch(() => undefined);
+        revealWaitingWorker();
+      }
     };
     const register = async () => {
       try {
-        registration = await navigator.serviceWorker.register(
-          import.meta.env.BASE_URL + 'sw.js', { updateViaCache: 'none' }
-        );
+        registration = await registerRetailOsServiceWorker();
         if (disposed) return;
         revealWaitingWorker();
         registration.addEventListener('updatefound', () => {
