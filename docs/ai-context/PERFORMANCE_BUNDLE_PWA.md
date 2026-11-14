@@ -10,7 +10,7 @@ This document records the production loading and update contracts introduced by 
 - `npm run preflight` produces `dist/bundle-report.md` and `dist/bundle-report.json` after the Pages build.
 - CI builds the exact PR base SHA with its original toolchain, reconstructs the legacy entry closure from `index.html`, and compares it with the current manifest-based build.
 - CI uploads baseline/current reports and the before/after comparison as the `retailos-bundle-analysis` artifact.
-- The report distinguishes static entry closure from dynamic entry chunks. Per-file gzip sums are estimates, not browser transfer measurements.
+- The report distinguishes initial static entry closure, each dynamic entry chunk, its incremental bytes beyond the eager entry, and its full static dependency/CSS closure. Shared eager dependencies are excluded from incremental estimates to avoid double-counting. Per-file gzip sums are estimates, not browser transfer measurements.
 - Use browser Network/Performance traces for actual transferred bytes, parse/compile time, FCP and LCP.
 
 ## Loading boundaries (P1–P2)
