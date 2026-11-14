@@ -126,7 +126,7 @@ async function runBackend(backend, cases, files, repeats) {
         geometryAvailable: false,
         detectedSymbology: null,
         errorName,
-        decodeMs: 0,
+        decodeMs: null,
       });
     }
   };
