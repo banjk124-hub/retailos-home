@@ -327,6 +327,7 @@ export class UniversalScannerSession implements ScannerSession {
     this.temporalFrameBuffer.clear();
     this.adaptiveRuntimeController.reset();
     this.adaptiveRuntimeTransitions = 0;
+    this.lastFrameCallbackAt = 0;
     this.lifecycle.opening();
     this.setState('requesting');
     this.startAttemptStartedAt = performance.now();
