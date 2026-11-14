@@ -28,7 +28,7 @@ Both Home and Stocktake consume:
 - `useScannerEngine`
 - `UniversalScannerSession`
 - Shared `cameraSession.ts` lease and reference-counted stream
-- Shared `ZXingDecoderAdapter`
+- Shared `ZXingWasmDecoderAdapter`
 - Shared ROI, orientation, deskew, barcode validation and Torch track controls
 
 Feature-owned differences remain:
