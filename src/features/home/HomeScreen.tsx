@@ -551,7 +551,7 @@ export default function HomeScreen({
     setScannerMotionOrigin(null);
     setIsBarcodeScannerOpen(false);
   }, []);
-  const openBarcodeScanner = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const openBarcodeScanner = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     if (isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
     // scanner will claim this lease as soon as its video element is available.
@@ -559,7 +559,12 @@ export default function HomeScreen({
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
-  };
+  }, [isBarcodeScannerOpen]);
+  const scannerAction = useMemo(() => isScannerSupportedDevice() ? {
+    label: 'Quét mã',
+    icon: ScanBarcode,
+    onSelect: openBarcodeScanner,
+  } : undefined, [openBarcodeScanner]);
   const handleNav = useCallback((id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
@@ -750,11 +755,7 @@ export default function HomeScreen({
       items={dockItems}
       activeId={activeNav}
       onSelect={handleNav}
-      action={isScannerSupportedDevice() ? {
-        label: 'Quét mã',
-        icon: ScanBarcode,
-        onSelect: openBarcodeScanner,
-      } : undefined}
+      action={scannerAction}
     />
     {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
