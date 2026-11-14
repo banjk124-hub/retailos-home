@@ -20,6 +20,7 @@ const modulePaths = [
   'src/platform/scanner/scannerImageQualityProfile.ts',
   'src/platform/scanner/scannerTemporalRecognition.ts',
   'src/platform/scanner/decoders/decoderAdapter.ts',
+  'src/platform/scanner/decoders/decoderFactory.ts',
   'src/platform/scanner/decoders/rgbaToLuminance.ts',
   'src/platform/scanner/decoders/zxingDecoder.ts',
 ];
@@ -100,8 +101,8 @@ try {
   assert.ok(SUPPORTED_BARCODE_FORMATS.includes('CODE_39'),
     'production retail allowlist must enable Code 39');
 
-  const { ZXingDecoderAdapter } = await import(pathToFileURL(
-    path.join(tempRoot, 'src/platform/scanner/decoders/zxingDecoder.js'),
+  const { defaultScannerDecoderFactory } = await import(pathToFileURL(
+    path.join(tempRoot, 'src/platform/scanner/decoders/decoderFactory.js'),
   ).href);
   const { createScannerGeometryCandidates } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerGeometryCorrection.js'),
@@ -236,7 +237,7 @@ try {
     rect: { x: 0, y: 0, width: 1, height: 1 },
   };
   async function createDecoder(format = 'CODE_128') {
-    const decoder = new ZXingDecoderAdapter();
+    const decoder = await defaultScannerDecoderFactory.create();
     await decoder.initialize({ formats: [format] });
     return decoder;
   }
