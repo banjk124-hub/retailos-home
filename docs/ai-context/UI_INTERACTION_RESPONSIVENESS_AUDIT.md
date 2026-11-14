@@ -40,9 +40,9 @@ The shared motion layer, Home entry styles, mobile login panel, Home notificatio
 
 ### 5. Expensive derived validation ran during unrelated renders
 
-Stocktake Import recalculated row-level validation for the active zone and every zone on each render, including renders caused only by notice, page or editing UI state. Scanner QA similarly recalculated its aggregate summary whenever its filter/copy state changed.
+Stocktake Import recalculated row-level validation for the active zone and every zone on each render, including renders caused only by notice, page or editing UI state. Scanner QA recalculated its aggregate summary whenever its filter/copy state changed and re-rendered every diagnostic row whenever a new event arrived, even though existing event objects are immutable.
 
-**Change:** Memoized these derived values against the data snapshots they actually depend on. This does not add asynchronous work or change validation rules.
+**Change:** Memoized these derived values against the data snapshots they actually depend on. Scanner QA event rows are now memoized individually, so appending a new event does not re-render the existing 1,000-row history. This does not add asynchronous work or change validation rules.
 
 ## Regression coverage
 
@@ -52,6 +52,7 @@ Stocktake Import recalculated row-level validation for the active zone and every
 - No auto-hidden primary chrome/wake-tap behavior.
 - No stagger delay on the audited page, dock, Home, mobile login, authenticated identity panel, notice and interactive card entry paths.
 - Topbar ambient keyframes avoid repaint-heavy properties.
+- Existing Scanner QA event rows are memoized when new diagnostic records arrive.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
 
 ## Audit still in progress
