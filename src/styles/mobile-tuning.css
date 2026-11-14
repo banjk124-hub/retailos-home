@@ -1164,7 +1164,9 @@ button:not(:disabled):active {
   inset: 0;
   display: grid;
   place-items: center;
-  padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   background:
     radial-gradient(ellipse at 50% 45%, rgba(255,226,229,.16), transparent 58%),
     rgba(43, 20, 25, .3);
@@ -1176,8 +1178,11 @@ button:not(:disabled):active {
   position: relative;
   isolation: isolate;
   width: min(100%, 420px);
-  max-height: 100%;
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
+  min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 20px;
   border: 1px solid rgba(255,255,255,.76);
   border-radius: 24px;
