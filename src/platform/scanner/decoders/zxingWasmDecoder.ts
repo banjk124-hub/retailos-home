@@ -10,7 +10,7 @@ import { createScannerImageQualityProfile, type ScannerImageQualityProfile } fro
 import type { ScannerAdaptiveProcessingPlan } from '../scannerAdaptiveProcessingController';
 import { executeScannerEnhancementPipelineAsync, type ScannerOrientationHints, type ScannerEnhancementPipelineResult } from '../scannerEnhancementPipeline';
 import { rgbaToLuminance } from './rgbaToLuminance';
-import { createZXingWasmReaderOptions, type ZXingWasmBinarizer } from './zxingWasmOptions';
+import { createZXingWasmReaderOptions, isZXingWasmReadResultValid, runOrderedBinarizerFallback, type ZXingWasmBinarizer } from './zxingWasmOptions';
 import type { DecoderDecodeOptions, DecoderInitOptions, DecoderOutput, ScannerDecoderAdapter } from './decoderAdapter';
 
 const FORMAT_MAP: Partial<Record<ScannerSymbology, string>> = {
@@ -338,28 +338,29 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     // HybridBinarizer-equivalent LocalAverage first, GlobalHistogram only on miss.
     const imageData = new ImageData(rgba, width, height);
     const binarizers: readonly ZXingWasmBinarizer[] = ['LocalAverage', 'GlobalHistogram'];
-    for (const binarizer of binarizers) {
-      if (this.disposed || !this.options) return null;
-      const startedAt = performance.now();
-      const results = await readBarcodes(
-        imageData,
-        createZXingWasmReaderOptions(this.options.formats ?? [], binarizer, this.options),
-      );
-      this.recordStageCost(
-        binarizer === 'LocalAverage' ? 'zxing_decode_hybrid_equivalent' : 'zxing_decode_global_histogram',
-        performance.now() - startedAt,
-      );
-      if (this.disposed) return null;
-      const output = this.toOutput(results, timestamp);
-      if (output) return output;
-    }
-    return null;
+    return runOrderedBinarizerFallback(
+      binarizers,
+      async (binarizer) => {
+        if (this.disposed || !this.options) return [];
+        const startedAt = performance.now();
+        const results = await readBarcodes(
+          imageData,
+          createZXingWasmReaderOptions(this.options.formats ?? [], binarizer, this.options),
+        );
+        this.recordStageCost(
+          binarizer === 'LocalAverage' ? 'zxing_decode_hybrid_equivalent' : 'zxing_decode_global_histogram',
+          performance.now() - startedAt,
+        );
+        return results;
+      },
+      (results) => this.disposed ? null : this.toOutput(results, timestamp),
+    );
   }
 
   private toOutput(results: Awaited<ReturnType<typeof readBarcodes>>, timestamp: number): DecoderOutput | null {
     if (results.length === 0) this.diagnosticNotFound += 1;
     for (const result of results) {
-      if (result.isValid === false || Boolean(result.error)) {
+      if (!isZXingWasmReadResultValid(result)) {
         const reason = String(result.error ?? '').toLowerCase();
         if (reason.includes('checksum')) this.diagnosticChecksum += 1;
         else if (reason.includes('format')) this.diagnosticFormat += 1;
