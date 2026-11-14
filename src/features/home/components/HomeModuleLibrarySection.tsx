@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { ModuleLibraryEngine } from './ModuleLibraryEngine';
 import { MODULE_LIBRARIES, MODULE_REGISTRY, type ModuleLibraryDefinition, type ModuleLibraryGroup, type RetailModule } from '../moduleRegistry';
@@ -10,7 +10,7 @@ type Props = {
   onOpen: (library: ModuleLibraryDefinition, modules: RetailModule[], trigger: HTMLButtonElement) => void;
 };
 
-export function HomeModuleLibrarySection({ initialSearch, onSearchChange, onOpen }: Props) {
+export const HomeModuleLibrarySection = memo(function HomeModuleLibrarySection({ initialSearch, onSearchChange, onOpen }: Props) {
   const [search, setSearch] = useState(initialSearch);
   const filteredModules = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('vi');
@@ -66,4 +66,4 @@ export function HomeModuleLibrarySection({ initialSearch, onSearchChange, onOpen
       )}
     </section>
   );
-}
+});
