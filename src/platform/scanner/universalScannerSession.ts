@@ -540,9 +540,9 @@ export class UniversalScannerSession implements ScannerSession {
           adaptiveRuntimeImageBudget: nextRuntimeBudget.maxImageCandidates,
           adaptiveRuntimeGeometryBudget: nextRuntimeBudget.maxGeometryCandidates,
           adaptiveRuntimeTransitions: this.adaptiveRuntimeTransitions,
-          decodeDurationMs: Number(decodeDurationMs.toFixed(1)),
-          frameGapMs: Number(frameGapMs.toFixed(1)),
-          reasons: nextRuntimeBudget.reasons,
+          adaptiveRuntimeDecodeMs: Number(decodeDurationMs.toFixed(1)),
+          adaptiveRuntimeFrameGapMs: Number(frameGapMs.toFixed(1)),
+          adaptiveRuntimeReason: nextRuntimeBudget.reasons[0] ?? 'unknown',
         });
       }
       if (results.length > 0) this.diagnosticFramesWithSymbols += 1;
