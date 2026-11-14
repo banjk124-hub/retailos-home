@@ -36,6 +36,22 @@ Changed:
 - Home dock item definitions are stable; its action and navigation callbacks are memoized.
 - LiquidDock is memoized so unrelated Home state changes do not re-render the dock. Its own context-driven motion preference and keyboard interaction updates remain active.
 
+### Search and library render isolation
+
+Before:
+- The search input state and module filtering lived in `HomeScreen`.
+- Every search keystroke updated the 895-line HomeScreen component, causing its header, spotlight, calendar, overlays and dock subtree to be reconciled along with the module list.
+- The library engine was memoized, but the surrounding Home component still owned the high-frequency search state.
+
+Changed:
+- Extracted `HomeModuleLibrarySection` as a memoized feature component with its own search state and derived module groups.
+- Home now receives only a stable callback that updates the persisted search value; typing no longer updates HomeScreen state.
+- The selected library captures the already-filtered module list when opened instead of recalculating it from Home's search state.
+- Moved the shared `ModuleLibraryGroup` type into the canonical module registry and stopped rebuilding a partial library object in the click handler.
+- Removed the unused `getModulesForLibrary` helper after repository search found no callers.
+- Removed the unused `activeFilter` field from persisted Home UI state. Existing localStorage records remain readable because unknown legacy properties are ignored.
+- Changed the initial Home UI state read to a lazy `useState` initializer; `readHomeUiState()` is no longer evaluated as a `useRef` argument on every Home render.
+
 ## Direct dependency review
 
 Direct runtime dependencies currently have identified source use:
