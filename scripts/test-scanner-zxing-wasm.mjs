@@ -12,6 +12,7 @@ assert.equal(pkg.dependencies['zxing-wasm'], '3.1.6');
 assert.equal(lock.packages[''].dependencies['zxing-wasm'], '3.1.6');
 assert.equal(lock.packages['node_modules/zxing-wasm'].version, '3.1.6');
 assert.ok(adapter.includes("from 'zxing-wasm/reader'"));
+assert.ok(adapter.includes("readonly id = 'zxing-cpp-wasm'"), 'production diagnostics must identify the active WASM engine without the experimental candidate label');
 assert.ok(adapter.includes("zxing-wasm/reader/zxing_reader.wasm?url"));
 assert.ok(adapter.includes('fireImmediately: true'));
 assert.ok(adapter.includes('executeScannerEnhancementPipelineAsync('));
