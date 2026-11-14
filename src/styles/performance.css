@@ -16,19 +16,56 @@
   .page-glass-highlight {
     display: none;
     animation: none;
-  }.app-shell :is(.panel-card, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .spotlight-notifications, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal){
+  }
+
+  .app-shell :is(
+    .metric-card,
+    .module-card,
+    .panel-card,
+    .user-context-chip,
+    .date-chip,
+    .toast-message,
+    .spotlight-glass-tile,
+    .spotlight-glass-chip,
+    .spotlight-notification,
+    .spotlight-notifications,
+    .notification-popover,
+    .calendar-modal,
+    .app-library-modal,
+    .notice-detail-modal
+  ) {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
-  }.app-shell .topbar-dock{
+  }
+
+  .app-shell .topbar-dock,
+  .app-shell .mobile-nav {
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     backdrop-filter: blur(20px) saturate(160%);
-  }.app-shell :is(.spotlight-orbit, .spotlight-glow, .dept-wave){
+  }
+
+  .app-shell :is(.spotlight-orbit, .spotlight-glow, .hero-orb, .dept-wave) {
     animation: none !important;
   }
 
   .app-shell .spotlight-tile-main {
     animation: none;
-  }:is(.scanner-qa-backdrop, .scanner-settings-backdrop, .barcode-result-backdrop, .calendar-modal-backdrop, .notice-detail-backdrop, .app-library-backdrop, .stocktake-backdrop, .stocktake-confirm-backdrop, .auth-journey-recognition__backdrop, .stocktake-import-header){
+  }
+
+  /* These overlays render as HomeScreen siblings, not descendants of .app-shell.
+     Keep the mobile blur budget consistent across every modal surface. */
+  :is(
+    .scanner-qa-backdrop,
+    .scanner-settings-backdrop,
+    .barcode-result-backdrop,
+    .calendar-modal-backdrop,
+    .notice-detail-backdrop,
+    .app-library-backdrop,
+    .stocktake-backdrop,
+    .stocktake-confirm-backdrop,
+    .auth-journey-recognition__backdrop,
+    .stocktake-import-header
+  ) {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
@@ -39,12 +76,16 @@
   }
 }
 
-@media (max-width: 700px) {.app-shell :is(.panel-card, .spotlight-notification){
+@media (max-width: 700px) {
+  .app-shell :is(.metric-card, .module-card, .panel-card, .spotlight-notification, .mobile-nav) {
     box-shadow: 0 5px 16px rgba(74, 32, 38, .055), inset 0 1px 0 rgba(255, 255, 255, .72);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {.ambient-background, .page-glass-dock, .app-shell :is(.spotlight-orbit, .spotlight-glow, .dept-wave, .spotlight-tile-main){
+@media (prefers-reduced-motion: reduce) {
+  .ambient-background,
+  .page-glass-dock,
+  .app-shell :is(.spotlight-orbit, .spotlight-glow, .hero-orb, .dept-wave, .spotlight-tile-main) {
     animation: none !important;
   }
 }
