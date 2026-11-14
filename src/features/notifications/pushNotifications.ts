@@ -21,8 +21,8 @@ export async function subscribeForPushNotifications(): Promise<PushSetupResult> 
     throw new Error('Push notifications are not supported by this browser.');
   }
 
-  const serviceWorkerPath = `${import.meta.env.BASE_URL}sw.js`;
-  const registration = await navigator.serviceWorker.register(serviceWorkerPath);
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration) throw new Error('Service Worker chưa sẵn sàng. Hãy tải lại RetailOS rồi thử bật thông báo.');
   const readyRegistration = await navigator.serviceWorker.ready;
   const activeRegistration = readyRegistration.scope === registration.scope ? readyRegistration : registration;
   const subscription = await activeRegistration.pushManager.subscribe({
