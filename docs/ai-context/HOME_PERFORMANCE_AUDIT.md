@@ -129,21 +129,19 @@ This is not yet a full transitive dependency-pruning pass. Do not remove transit
 
 ## Bundle evidence
 
-CI #956 compared the source before global legacy-selector pruning with the branch containing Home-only CSS cleanup and the dependency/search changes:
+CI #984 validated the final Home CSS cleanup, dependency split and shared IndexedDB transaction helper:
 
-- Total emitted gzip estimate: 345,607 B baseline → 342,555 B current (-3,052 B, -0.9%).
-- Total emitted raw bytes: 1,286,752 B → 1,270,431 B (-16,321 B, -1.3%).
-- Home stylesheet chunk: 61,671 B raw / 12,954 B gzip → 45,292 B raw / 9,814 B gzip.
-- Home incremental dynamic closure: 29,963 B gzip → 26,818 B gzip.
-- Initial entrypoint remained effectively unchanged at 92,132 B → 92,181 B gzip (+49 B, +0.1%). This is expected because Home CSS is loaded with the lazy Home boundary and Playwright is dev-only.
+- Initial entrypoint gzip: 92,132 B baseline → 88,664 B current (-3,468 B, -3.8%).
+- Total emitted gzip estimate: 345,606 B → 339,229 B (-6,377 B, -1.8%).
+- Total emitted raw bytes: 1,286,752 B → 1,251,236 B (-35,516 B, -2.8%).
+- Initial global CSS: 30,631 B gzip → 27,033 B gzip (-3,598 B, -11.7%).
+- Home-only CSS: 12,954 B gzip → 9,624 B gzip (-3,330 B, -25.7%).
 
-CI #962 validated the additional global CSS pruning:
+Stocktake Import before/after:
+- `StocktakeImportModule` entry JS: 148,323 B raw / 46,164 B gzip → 51,074 B raw / 16,203 B gzip (-64.9% gzip).
+- JSZip is now a separate 97,686 B raw / 30,296 B gzip dynamic chunk. It is loaded on XLSX parse or ZIP/XLSX export, not when the Stocktake Import UI first opens.
+- Stocktake Import's static incremental closure is 52,182 B gzip; the JSZip dynamic chunk is outside that initial static closure.
 
-- Initial entrypoint gzip: 92,132 B → 88,584 B (-3,548 B, -3.9%).
-- Total emitted gzip estimate: 345,608 B → 338,943 B (-6,665 B, -1.9%).
-- Total emitted raw bytes: 1,286,752 B → 1,251,555 B (-35,197 B, -2.7%).
-- Initial global CSS chunk: 166,123 B raw / 30,631 B gzip → 147,247 B raw / 27,038 B gzip.
-
-Bundle reports estimate transfer size; they do not measure browser style recalculation, JavaScript parse time, React render duration or tap-to-feedback latency.
+Gzip values are per-file estimates. They measure transfer payload, not browser parse/execute time, React render duration, style recalculation or interaction latency. Physical browser/device traces remain authoritative.
 
 Automated source-contract tests are not physical-device performance acceptance. Record actual browser/device traces before claiming that end-user lag is resolved.
