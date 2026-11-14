@@ -28,6 +28,7 @@
     .spotlight-glass-tile,
     .spotlight-glass-chip,
     .spotlight-notification,
+    .spotlight-notifications,
     .notification-popover,
     .calendar-modal,
     .app-library-modal,
@@ -61,7 +62,8 @@
     .notice-detail-backdrop,
     .app-library-backdrop,
     .stocktake-backdrop,
-    .auth-journey-recognition__backdrop
+    .auth-journey-recognition__backdrop,
+    .stocktake-import-header
   ) {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
