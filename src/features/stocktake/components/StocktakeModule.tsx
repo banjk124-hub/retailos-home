@@ -78,11 +78,10 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
 
   const refresh = useCallback(async () => {
-    const [allZones, allLogs, allExports] = await Promise.all([
-      stocktakeStore.getZones(), stocktakeStore.getLogs(), stocktakeStore.getExports(),
+    const [allZones, allExports] = await Promise.all([
+      stocktakeStore.getZones(), stocktakeStore.getExports(),
     ]);
     setZones(allZones);
-    setLogs(allLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp)));
     setExports(allExports.sort((a, b) => b.exportedAt.localeCompare(a.exportedAt)));
   }, []);
 
@@ -136,6 +135,21 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const loadZoneEntries = async (zone: StocktakeZone) => {
     const allEntries = await stocktakeStore.getEntries();
     setEntries(allEntries.filter((entry) => entry.zoneId === zone.id).sort((a, b) => a.sequence - b.sequence));
+  };
+
+  const openHistory = async () => {
+    if (!session || busy) return;
+    setBusy(true);
+    try {
+      const allLogs = await stocktakeStore.getLogs();
+      setLogs(allLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp)));
+      setHistoryVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
+      setScreen('history');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể tải nhật ký kiểm kê.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const beginZone = async (replace: boolean, requested = pendingZone) => {
@@ -412,7 +426,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
             <button className="stocktake-primary" type="submit"><ScanBarcode size={18} /> Bắt đầu vùng</button>
           </form>
           <div className="stocktake-shortcuts">
-            <button type="button" onClick={() => setScreen('history')}><History size={18} /><span>Lịch sử thao tác</span><ChevronRight size={16} /></button>
+            <button type="button" disabled={busy} onClick={() => { void openHistory(); }}><History size={18} /><span>Lịch sử thao tác</span><ChevronRight size={16} /></button>
             <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({exports.filter((item) => item.sessionId === session?.id).length})</span><ChevronRight size={16} /></button>
           </div>
           <div className="stocktake-zone-history"><div className="stocktake-section-title">Vùng trong phiên</div>
