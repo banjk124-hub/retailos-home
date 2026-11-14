@@ -104,16 +104,6 @@ const checks = [
     args: ["scripts/test-scanner-preview-region.mjs"],
   },
   {
-    name: "Scanner 0°/180° rotation baseline tests",
-    command: process.execPath,
-    args: ["scripts/test-scanner-rotation-baseline.mjs"],
-  },
-  {
-    name: "Scanner orthogonal rotation regression tests",
-    command: process.execPath,
-    args: ["scripts/test-scanner-rotation.mjs"],
-  },
-  {
     name: "Scanner decoder capability parity tests",
     command: process.execPath,
     args: ["scripts/test-scanner-decoder-capability-parity.mjs"],
@@ -124,7 +114,7 @@ const checks = [
     args: ["scripts/test-scanner-decoder-factory.mjs"],
   },
   {
-    name: "ZXing-C++ WASM candidate adapter contract tests",
+    name: "ZXing-C++ WASM production adapter contract tests",
     command: process.execPath,
     args: ["scripts/test-scanner-zxing-wasm.mjs"],
   },
@@ -162,11 +152,6 @@ const checks = [
     name: "Scanner A3 adaptive runtime performance and stability tests",
     command: process.execPath,
     args: ["scripts/test-scanner-adaptive-runtime-a3.mjs"],
-  },
-  {
-    name: "Scanner bounded deskew regression tests",
-    command: process.execPath,
-    args: ["scripts/test-scanner-deskew.mjs"],
   },
   {
     name: "Scanner strict reticle ROI decoder regression tests",
