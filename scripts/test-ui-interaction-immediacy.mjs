@@ -10,6 +10,7 @@ const mobileStyles = readFileSync('src/styles/mobile-tuning.css', 'utf8');
 const motionStyles = readFileSync('src/shared/motion/motion.css', 'utf8');
 const homeStyles = readFileSync('src/styles/home.css', 'utf8');
 const responsiveStyles = readFileSync('src/styles/responsive.css', 'utf8');
+const loginStyles = readFileSync('src/styles/login-experience.css', 'utf8');
 
 assert.doesNotMatch(home, /Suspense\s+fallback=\{null\}/, 'Lazy-loaded UI must never disappear silently while its chunk is loading.');
 assert.doesNotMatch(app, /Suspense\s+fallback=\{<div className="retailos-interface" aria-busy="true" \/>\}/, 'The root HomeScreen lazy boundary must not render a blank shell.');
@@ -21,6 +22,8 @@ assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer
 assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-short\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
 assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The mobile login panel must not wait before its entry animation starts.');
+assert.match(loginStyles, /animation: identity-panel-reveal[^;]*both/, 'The identity panel must start its reveal animation immediately.');
+assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\\s(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:ms|s)\\s+both/, 'The identity panel must not have a pre-animation delay.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
 const topbarMotionStart = mobileStyles.indexOf('@keyframes topbar-dock-float');
 const topbarMotionEnd = mobileStyles.indexOf('@media (max-width: 700px)', topbarMotionStart);
