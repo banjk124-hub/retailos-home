@@ -18,7 +18,17 @@ self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_URLS)));
 });
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data?.type === 'SKIP_WAITING') {
+    event.waitUntil((async () => {
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const otherClients = clients.filter((client) => client.id !== event.source?.id);
+      if (otherClients.length > 0) {
+        event.source?.postMessage({ type: 'UPDATE_BLOCKED_MULTIPLE_CLIENTS' });
+        return;
+      }
+      await self.skipWaiting();
+    })());
+  }
 });
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
@@ -50,9 +60,10 @@ self.addEventListener('fetch', (event) => {
     })());
     return;
   }
-  if (!ASSET_URLS.has(url.pathname)) return;
+  const isShellAsset = SHELL_URLS.includes(url.href);
+  if (!isShellAsset && !ASSET_URLS.has(url.pathname)) return;
   event.respondWith((async () => {
-    const cache = await caches.open(ASSET_CACHE);
+    const cache = await caches.open(isShellAsset ? SHELL_CACHE : ASSET_CACHE);
     const cached = await cache.match(request);
     if (cached) return cached;
     try {
