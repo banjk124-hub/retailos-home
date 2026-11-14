@@ -21,5 +21,5 @@ assert.match(exportFormats, /await import\('pptxgenjs'\)/);
 assert.match(vite, /manifest:\s*true/);
 assert.match(vite, /retailosPwaArtifacts/);
 assert.doesNotMatch(main, /styles\/(?:home|login-experience|scanner-qa-monitor|scanner-settings)/);
-await assert.rejects(access(new URL('../public/sw.js', import.meta.url)), 'legacy static worker must not remain in public');
+await assert.rejects(access(new URL('../public/sw.js', import.meta.url)), { code: 'ENOENT' }, 'legacy static worker must not remain in public');
 console.log('Bundle boundaries and lazy-loading contract tests passed.');
