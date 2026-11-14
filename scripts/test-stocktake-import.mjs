@@ -228,7 +228,7 @@ assert.match(component, /readOnly/);
 assert.match(component, /setSelectionRange/);
 assert.match(component, /stopPropagation/);
 assert.match(component, /navigator\.clipboard/);
-assert.match(component, /disabled={busy \|\| !outputReady}/, "Copy and TXT export actions must also be locked while another write is pending.");
+assert.equal((component.match(/disabled={busy \|\| !outputReady}/g) ?? []).length, 2, "Copy and TXT export actions must both be locked while another write is pending.");
 assert.match(component, /textarea ref={outputTextareaRef}/);
 assert.match(component, /activeZone\.content/);
 assert.match(component, /navigator\.clipboard\.writeText\(activeZone\.content\)/);
