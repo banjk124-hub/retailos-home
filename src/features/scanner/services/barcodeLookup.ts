@@ -1,4 +1,4 @@
-import { getCachedModuleSnapshot, type CachedModuleSnapshot } from '../../data/moduleDataService';
+import { getCachedModuleSnapshots } from '../../data/moduleDataService';
 
 const lookupSources = [
   { moduleId: 'products', label: 'Danh mục hàng hóa' },
@@ -85,21 +85,21 @@ function toProductRecord(row: Record<string, unknown>, source: string): BarcodeP
 }
 
 export async function lookupCachedBarcode(barcode: string): Promise<BarcodeLookupResult> {
-  const results = await Promise.allSettled(lookupSources.map(({ moduleId }) => getCachedModuleSnapshot(moduleId)));
-  const failedReads = results.flatMap((result, index) => result.status === 'rejected'
-    ? [{ moduleId: lookupSources[index].moduleId, source: lookupSources[index].label, reason: result.reason }]
-    : []);
-  if (failedReads.length > 0) {
-    console.error('Không thể đọc snapshot để tra cứu mã vạch:', failedReads);
+  let snapshots: Awaited<ReturnType<typeof getCachedModuleSnapshots>>;
+  try {
+    snapshots = await getCachedModuleSnapshots(lookupSources.map(({ moduleId }) => moduleId));
+  } catch (error) {
+    console.error('Không thể đọc snapshot để tra cứu mã vạch:', error);
+    return { records: [], failedSources: lookupSources.map(({ label }) => label) };
   }
 
-  const records = results.flatMap((result, index) => {
-    if (result.status !== 'fulfilled') return [];
-    const snapshot: CachedModuleSnapshot | undefined = result.value;
+  const snapshotsById = new Map(snapshots.map((snapshot) => [snapshot.moduleId, snapshot]));
+  const records = lookupSources.flatMap(({ moduleId, label }) => {
+    const snapshot = snapshotsById.get(moduleId);
     if (!snapshot) return [];
     return getRows(snapshot.data)
       .filter((row) => rowMatchesCode(row, barcode))
-      .map((row) => toProductRecord(row, lookupSources[index].label));
+      .map((row) => toProductRecord(row, label));
   });
-  return { records, failedSources: failedReads.map(({ source }) => source) };
+  return { records, failedSources: [] };
 }
