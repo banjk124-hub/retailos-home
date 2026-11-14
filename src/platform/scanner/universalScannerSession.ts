@@ -10,7 +10,8 @@ import type {
 } from './contracts';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
-import type { ScannerDecoderAdapter } from './decoders/decoderAdapter';
+import type { ScannerDecoderAdapter, ScannerDecoderFactory } from './decoders/decoderAdapter';
+import { defaultScannerDecoderFactory } from './decoders/decoderFactory';
 import { validateBarcodePayload } from './barcodeValidation';
 import { ScannerLifecycleAdapter } from './scannerLifecycleAdapter';
 import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
@@ -201,6 +202,7 @@ export class UniversalScannerSession implements ScannerSession {
     private readonly options: ScannerOpenOptions,
     private initialCameraLeaseRequest?: CameraLeaseRequest,
     cameraRequest: ScannerCameraRequest = DEFAULT_SCANNER_CAMERA_REQUEST,
+    private readonly decoderFactory: ScannerDecoderFactory = defaultScannerDecoderFactory,
   ) {
     // The tap-origin request is authoritative for the initial session. Keep
     // its immutable intent on the session so a fresh recovery session can
@@ -435,11 +437,13 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   private async createDecoder(generation: number): Promise<ScannerDecoderAdapter | null> {
-    // Keep the camera preview responsive: load the heavy ZXing chunk only after
-    // the first usable video frame has been published to the feature UI.
-    const { ZXingDecoderAdapter } = await import('./decoders/zxingDecoder');
-    if (this.disposed || generation !== this.generation) return null;
-    const decoder = new ZXingDecoderAdapter();
+    // The selected backend is created only after preview-ready. Keep the
+    // session dependent on the factory contract, not a concrete decoder.
+    const decoder = await this.decoderFactory.create();
+    if (this.disposed || generation !== this.generation) {
+      await decoder.dispose();
+      return null;
+    }
     try {
       await decoder.initialize({ formats: this.options.formats });
       return decoder;
