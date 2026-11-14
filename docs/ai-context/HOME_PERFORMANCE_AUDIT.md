@@ -52,6 +52,19 @@ Changed:
 - Removed the unused `activeFilter` field from persisted Home UI state. Existing localStorage records remain readable because unknown legacy properties are ignored.
 - Changed the initial Home UI state read to a lazy `useState` initializer; `readHomeUiState()` is no longer evaluated as a `useRef` argument on every Home render.
 
+### Home CSS dead-code and cascade cleanup
+
+Before:
+- The Home-only `home.css` stylesheet was 22,209 source bytes and still contained legacy sidebar, welcome/hero, metric-card, old module-grid, activity-row and attention-list layouts that no longer exist in the current Home markup.
+- The notification popover base rule was duplicated byte-for-byte.
+- Responsive `lower-grid` declarations repeated the same one-column definition already set by the base rule. The tablet topbar width also repeated the architecture stylesheet's base width.
+
+Changed:
+- Removed 16,358 bytes of selectors confirmed to have no current Home markup owner; retained the active shell, topbar, notification, search, library, activity panel, footer, toast and selected-module styles.
+- Removed the exact duplicate notification popover rule.
+- Removed redundant lower-grid breakpoint declarations and the duplicate tablet topbar width override.
+- Did not flatten the five Home stylesheets or remove other repeated selectors whose breakpoint/state cascade still needs inspection.
+
 ## Direct dependency review
 
 Direct runtime dependencies currently have identified source use:
