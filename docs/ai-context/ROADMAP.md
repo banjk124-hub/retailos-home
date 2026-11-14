@@ -1,35 +1,68 @@
-# PR-07 — Adaptive Runtime & Performance
+# PR-07 — Complete ZXing-C++ WASM Capability Adoption
 
-**Branch:** `feat/scanner-adaptive-runtime-profiles`  
-**Base:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merge; current main at task start).  
-**Objective:** complete the missing device-profile layer and correct runtime performance telemetry without duplicating the already-merged A3 controller.
+**Branch:** `feat/scanner-wasm-capability-parity`  
+**Base:** `39505b4de4d756fa8b8861ca9a50d46b86fecc1b` (PR #114 merge).  
+**Target:** complete the capability inventory and adoption of the new ZXing-C++ WASM engine while preserving RetailOS shared recognition, session and feature contracts.
 
-## Audit baseline
-- PR #100 already merged A3: sustained decode-duration/frame-gap pressure reduces only optional fallback candidate budgets with hysteresis.
-- The shared hook still hardcoded `profile: 'HIGH'`; `ScannerProfileName` was `COMPACT | STANDARD | HIGH`, so Low/Mid/High device classification was absent.
-- Decode duration totals/maxima were not reset when the five-second diagnostics window reset its attempt count, making the reported average increasingly inaccurate.
+## Correct migration principle
 
-## PR-07 scope
-- Classify each new scanner session as LOW/MID/HIGH from coarse browser capability hints (`deviceMemory`, `hardwareConcurrency`), without user-agent sniffing.
-- LOW when either available hint indicates constrained capability; HIGH only when both hints are strong; MID for mixed/intermediate hints; conservative LOW when both are unavailable.
-- Record the advisory profile and reason in the existing in-memory QA Monitor / JSON / CSV diagnostics.
-- Count both successful and failed decode attempts in the timing window, then reset duration totals/maxima with the rest of the five-second window.
-- Keep the existing A3 runtime controller as the sole adaptive processing-budget authority.
+This is not a task to copy only missing legacy features, nor to constrain WASM to behave exactly like ZXing JS. For every relevant capability, explicitly decide whether to:
+1. Use the new engine's native capability directly.
+2. Enable/configure/extend a native capability that is not sufficiently used.
+3. Transfer a legacy observable behavior the new engine does not provide.
+4. Preserve a RetailOS shared capability once, without backend duplication.
+5. Defer a capability only with a documented technical reason and evidence gate.
 
-## Hard invariants
-- Device profile alone does not reduce image/geometry candidate budgets.
-- No camera resolution/frame-rate, 70 ms decode interval, ROI, orientation order, baseline decode, T3 temporal fallback, symbology allowlist, validator, camera lease/lifecycle, UI presentation or business workflow changes.
-- No battery/thermal API assumptions, user-agent heuristics, persistent device identifiers or backend telemetry.
-- ZXing JS remains the production default; ZXing-C++ WASM remains opt-in.
+Complete adoption means no relevant capability is unclassified or silently lost. It does not mean enabling every option without measuring cost, correctness and overlap.
 
-## Acceptance
-- [ ] Unit tests cover LOW/MID/HIGH classification, partial/missing/invalid hints and conservative fallback.
-- [ ] Hook passes the resolved profile into each new Home/Stocktake session; foreground recovery retains the same session profile contract.
-- [ ] QA Monitor and exports expose only bounded profile/reason fields.
-- [ ] Decode timing averages/maxima are per five-second window and include failed decode attempts.
-- [ ] Existing A3 hysteresis, baseline-first, 70 ms cadence, ROI, T3, validation and symbology tests remain green.
-- [ ] Full preflight, TypeScript, production build and GitHub Pages build pass.
-- [ ] Physical iOS Safari/PWA + Android Chrome/PWA QA records representative low/mid/high devices; no physical performance claim is inferred from CI.
+## Capability matrix
+
+The canonical capability-by-capability inventory, option decisions, legacy transfer map, WASM-only strengths and acceptance gates are documented in [SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md](SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md).
+
+Key implementation decisions in this PR:
+- Keep strict RetailOS allowlist, LocalAverage → GlobalHistogram fallback, Plain/UTF8 payload contract, optional-checksum behavior and invalid-read rejection.
+- Keep `tryHarder: true`; the pinned WASM engine natively reverses 1D scanlines for 180° linear symbols.
+- Enable native inverted-reflectance detection with `tryInvert: true`; this capability is not duplicated by the shared RetailOS pipeline.
+- Enable native `tryRotate: true` for WASM 90°/180°/270° recognition; tell the shared pipeline to omit its duplicate orthogonal transform while retaining continuous deskew and geometry correction.
+- Enable native `tryDownscale: true` for high-resolution inputs. Keep shared 1×/2× recovery temporarily because native downscale does not replace the 2× upsample path; use corpus/latency evidence to retire redundant candidates.
+- Enable experimental `tryDenoise` only when the active allowlist includes supported 2D symbologies; keep it off for linear-only sessions.
+- Keep the WASM adapter opt-in; production remains on ZXing JS.
+
+## Shared RetailOS capabilities — preserve one owner
+
+Strict feature-owned ROI, coordinate mapping, bounded scale candidates, baseline-first candidate ordering, continuous deskew, image enhancement, geometry correction, A1/A2/A3 policies, temporal fallback, validation, single/continuous semantics, Home/Stocktake handoff, camera lease, lifecycle/recovery and presentation remain outside the decoder backend.
+
+## PR-07 implementation scope
+
+- Add the complete WASM capability adoption matrix and evidence boundary.
+- Restore legacy ordered HybridBinarizer → GlobalHistogramBinarizer behavior using LocalAverage → GlobalHistogram.
+- Preserve legacy Plain/UTF8 payload and optional-checksum semantics; keep RetailOS validation authoritative.
+- Enable native WASM inverted-reflectance recognition.
+- Surface invalid read results for diagnostics and reject them before DecoderOutput.
+- Preserve shared A1/A2/A3, temporal fallback and pipeline-stage diagnostics.
+- Ensure diagnostics window rollover resets counters only; it must not reset recognition hints, focus history or latest quality state.
+- Add regression guards for option policy and diagnostics isolation.
+
+## Capability evidence — 180° linear reversal
+
+The pinned WASM implementation contains the native 180° scanline reversal algorithm. RetailOS enables the relevant `tryHarder` path. This is distinct from full-image `tryRotate`; no duplicate 180° image transform is required. See [SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md](SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md). Source proof does not replace the labelled optical corpus or physical device QA.
+
+## Not in PR-07
+- Production default switch, removal of `@zxing/library`, deletion of `zxingDecoder.ts`, camera/session/lifecycle/UI/business-flow changes, worker migration, or broad recognition-policy reduction.
+- Device-profile-driven candidate budgets without physical measurement evidence.
+
+## Acceptance gates
+- [ ] Deterministic tests prove ordered binarizer fallback and invalid-result rejection.
+- [ ] Both backends use the same allowlist and shared recognition candidate iterator.
+- [ ] A1/A2/A3 and stage diagnostics are observable from WASM without exposing payloads or image pixels.
+- [ ] Same corpus tests cover all active symbologies, positive/negative controls, 180°/270° linear orientation, skew, curved carrier, glare, low contrast and malformed symbols.
+- [ ] Compare exact match, miss, wrong decode, false positive, p50/p95 duration, init time and memory where available.
+- [ ] Physical iOS Safari/PWA and Android Chrome/PWA parity is documented.
+- [ ] Production default remains ZXing JS until all parity gates pass.
+
+## Later release sequence
+- **Production cutover PR:** select WASM as the default behind the existing factory, retain an immediate reversible rollback path, and run smoke tests on Home and Stocktake.
+- **Legacy cleanup PR:** only after cutover acceptance, remove ZXing JS adapter, dependency, backend-only workaround and obsolete tests; retain backend-neutral contract/corpus tests.
 
 ---
 
@@ -70,7 +103,7 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 # Current scanner decoder replacement status — 2026-11-14
 
 **Current main:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merged).
-**Current work:** PR-07 adaptive device profile foundation on `feat/scanner-adaptive-runtime-profiles` (PR #114, Draft).
+**Current work:** PR-07 complete WASM capability adoption on `feat/scanner-wasm-capability-parity` (PR #115, Draft). PR #114 was merged separately as advisory device-profile diagnostics; it is not the decoder capability-adoption gate.
 **Production default:** ZXing JS. ZXing-C++ WASM remains opt-in; no backend cutover is authorized or implied.
 
 ## Verified sequence
@@ -80,6 +113,8 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 - PR #111 — shared sync/async recognition candidate pipeline: merged; CI run #1010 passed.
 - PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision; merged through PR #112. Physical corpus/device measurements remain outstanding.
 - PR-06 — configurable symbology preferences and allowlist enforcement; merged through PR #113.
+- PR-07 — complete WASM capability adoption: native WASM strengths, legacy behavior transfer and shared RetailOS capability preservation; PR #115, Draft. Physical corpus/device validation remains a release gate.
+- PR #114 — advisory device-profile diagnostics; merged separately and not a production decoder cutover.
 
 ## Current evidence gap
 CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not select a production backend or remove recognition stages until those measurements exist.

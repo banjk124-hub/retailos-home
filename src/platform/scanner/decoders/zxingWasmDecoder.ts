@@ -5,9 +5,12 @@ import { resolveScannerRoiCrop } from '../scannerRoi';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot, type ScannerTemporalSnapshot } from '../scannerTemporalRecognition';
-import { measureScannerImageQuality } from '../scannerImageEnhancement';
-import { executeScannerEnhancementPipelineAsync, type ScannerOrientationHints } from '../scannerEnhancementPipeline';
+import { measureScannerImageQuality, type ScannerImageQuality } from '../scannerImageEnhancement';
+import { createScannerImageQualityProfile, type ScannerImageQualityProfile } from '../scannerImageQualityProfile';
+import type { ScannerAdaptiveProcessingPlan } from '../scannerAdaptiveProcessingController';
+import { executeScannerEnhancementPipelineAsync, type ScannerOrientationHints, type ScannerEnhancementPipelineResult } from '../scannerEnhancementPipeline';
 import { rgbaToLuminance } from './rgbaToLuminance';
+import { createZXingWasmReaderOptions, isZXingWasmReadResultValid, runOrderedBinarizerFallback, type ZXingWasmBinarizer } from './zxingWasmOptions';
 import type { DecoderDecodeOptions, DecoderInitOptions, DecoderOutput, ScannerDecoderAdapter } from './decoderAdapter';
 
 const FORMAT_MAP: Partial<Record<ScannerSymbology, string>> = {
@@ -51,13 +54,7 @@ function frameDimensions(source: CanvasImageSource): { width: number; height: nu
   }
   return { width, height };
 }
-function readerOptions(formats: ScannerSymbology[]): ReaderOptions {
-  return {
-    formats: formats.map((format) => FORMAT_MAP[format]).filter((value): value is string => Boolean(value)) as NonNullable<ReaderOptions['formats']>,
-    tryHarder: true, tryRotate: false, tryInvert: false, tryDownscale: false, tryDenoise: false,
-    maxNumberOfSymbols: 1, validateOptionalChecksum: true, characterSet: 'UTF8',
-  };
-}
+
 
 export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   readonly id = 'zxing-cpp-wasm-candidate';
@@ -67,12 +64,49 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   private options: ReaderOptions | null = null;
   private decoding = false;
   private disposed = false;
+  private lastUnexpectedErrorLogAt = 0;
   private lastFocusAt = 0;
   private previousFocusPixels: Uint8Array | null = null;
   private previousFocusKey: string | null = null;
   private previousFocusWidth = 0;
   private previousFocusHeight = 0;
   private cachedOrientationHints: ScannerOrientationHints | null = null;
+
+  private diagnosticStartedAt = Date.now();
+  private diagnosticFrames = 0;
+  private diagnosticDecoded = 0;
+  private diagnosticNotFound = 0;
+  private diagnosticChecksum = 0;
+  private diagnosticFormat = 0;
+  private diagnosticUnexpected = 0;
+  private diagnosticRoiHits = 0;
+  private diagnosticRoiUnavailable = 0;
+  private diagnosticRotationAttempts = 0;
+  private diagnosticRotationHits = 0;
+  private diagnosticDeskewAttempts = 0;
+  private diagnosticDeskewEstimateMisses = 0;
+  private diagnosticDeskewHits = 0;
+  private diagnosticGeometryAttempts = 0;
+  private diagnosticGeometryHits = 0;
+  private diagnosticLastGeometryTransform: string | null = null;
+  private diagnosticScaleAttempts = 0;
+  private diagnosticScaleHits = 0;
+  private diagnosticLastScaleFactor = 0;
+  private diagnosticLastDeskewAngleDegrees = 0;
+  private lastImageQuality: ScannerImageQuality | null = null;
+  private lastImageQualityProfile: ScannerImageQualityProfile | null = null;
+  private lastAdaptiveProcessingPlan: ScannerAdaptiveProcessingPlan | null = null;
+  private lastFrameWidth = 0;
+  private lastFrameHeight = 0;
+  private lastRoiWidth = 0;
+  private lastRoiHeight = 0;
+  private diagnosticRoiSourceScale = 1;
+
+  private decodeCostStartedAt = 0;
+  private decodeCostCount = 0;
+  private decodeCostTotalMs = 0;
+  private decodeCostMaxMs = 0;
+  private stageCosts: Record<string, { count: number; totalMs: number; maxMs: number }> = {};
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing-C++ adapter has been disposed.');
@@ -91,7 +125,9 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     this.canvas = canvas;
     this.context = context;
     this.formats = requested;
-    this.options = readerOptions(requested);
+    this.options = createZXingWasmReaderOptions(
+      requested.map((format) => FORMAT_MAP[format]).filter((value): value is string => Boolean(value)),
+    );
   }
 
   async decode(source: CanvasImageSource, options: DecoderDecodeOptions): Promise<DecoderOutput[]> {
@@ -100,39 +136,95 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     }
     if (this.decoding) return [];
     this.decoding = true;
+    const decodeStartedAt = performance.now();
     const timestamp = options.timestamp ?? (typeof performance !== 'undefined' ? performance.now() : Date.now());
     try {
       const dimensions = frameDimensions(source);
+      this.lastFrameWidth = dimensions.width;
+      this.lastFrameHeight = dimensions.height;
       const crop = resolveScannerRoiCrop(options.scanRegion, dimensions.width, dimensions.height);
-      if (!crop) return [];
+      if (!crop) {
+        this.diagnosticRoiUnavailable += 1;
+        this.emitDiagnostics();
+        return [];
+      }
       const base = resolveScannerRoiBaseDimensions(crop.width, crop.height);
-      if (!base) return [];
+      if (!base) {
+        this.diagnosticRoiUnavailable += 1;
+        this.emitDiagnostics();
+        return [];
+      }
+
+      this.diagnosticFrames += 1;
+      this.lastRoiWidth = crop.width;
+      this.lastRoiHeight = crop.height;
+      this.diagnosticRoiSourceScale = base.sourceScale;
 
       for (const scale of resolveScannerRoiScaleCandidates(base.width, base.height)) {
         if (this.disposed || !this.canvas || !this.context || !this.options) return [];
         this.canvas.width = scale.width;
         this.canvas.height = scale.height;
-        this.context.drawImage(source, crop.x, crop.y, crop.width, crop.height, 0, 0, scale.width, scale.height);
-        const image = this.context.getImageData(0, 0, scale.width, scale.height);
-        const grayscale = rgbaToLuminance(image.data, scale.width, scale.height);
 
-        let sampledQuality = undefined as ReturnType<typeof measureScannerImageQuality> | undefined;
+        const roiDrawStartedAt = performance.now();
+        this.context.drawImage(source, crop.x, crop.y, crop.width, crop.height, 0, 0, scale.width, scale.height);
+        this.recordStageCost(
+          scale.baseline ? 'roi_draw_baseline_1_5x' : 'roi_draw_multiscale',
+          performance.now() - roiDrawStartedAt,
+        );
+        this.diagnosticScaleAttempts += 1;
+        this.diagnosticLastScaleFactor = scale.scale;
+
+        const imageReadStartedAt = performance.now();
+        const image = this.context.getImageData(0, 0, scale.width, scale.height);
+        this.recordStageCost('image_data_read', performance.now() - imageReadStartedAt);
+        const grayscaleStartedAt = performance.now();
+        const grayscale = rgbaToLuminance(image.data, scale.width, scale.height);
+        this.recordStageCost('grayscale', performance.now() - grayscaleStartedAt);
+
+        let sampledQuality: ScannerImageQuality | null | undefined;
         if (scale.baseline && options.onFocusQuality && timestamp - this.lastFocusAt >= 500) {
           this.lastFocusAt = timestamp;
           const regionKey = `${dimensions.width}x${dimensions.height}:${crop.x},${crop.y},${crop.width},${crop.height}`;
           const sameGeometry = this.previousFocusKey === regionKey
             && this.previousFocusWidth === scale.width
             && this.previousFocusHeight === scale.height;
+          const focusStartedAt = performance.now();
           const focus = measureScannerFocusQuality(
             grayscale, scale.width, scale.height,
             sameGeometry ? this.previousFocusPixels : null,
           );
+          this.recordStageCost('focus_quality', performance.now() - focusStartedAt);
           this.previousFocusPixels = focus.sampledPixels;
           this.previousFocusKey = regionKey;
           this.previousFocusWidth = scale.width;
           this.previousFocusHeight = scale.height;
           options.onFocusQuality(focus);
-          sampledQuality = measureScannerImageQuality({ luminance: grayscale, width: scale.width, height: scale.height });
+
+          const qualityStartedAt = performance.now();
+          sampledQuality = measureScannerImageQuality({
+            luminance: grayscale, width: scale.width, height: scale.height,
+          });
+          this.recordStageCost('image_quality', performance.now() - qualityStartedAt);
+          this.lastImageQuality = sampledQuality;
+          if (sampledQuality) {
+            const profileStartedAt = performance.now();
+            this.lastImageQualityProfile = createScannerImageQualityProfile({
+              timestamp,
+              frameWidth: dimensions.width,
+              frameHeight: dimensions.height,
+              roiX: crop.x,
+              roiY: crop.y,
+              roiWidth: crop.width,
+              roiHeight: crop.height,
+              sampleWidth: scale.width,
+              sampleHeight: scale.height,
+              focus,
+              image: sampledQuality,
+            });
+            this.recordStageCost('quality_profile', performance.now() - profileStartedAt);
+          } else {
+            this.lastImageQualityProfile = null;
+          }
           if (focus.valid && options.onTemporalFrame) {
             const snapshot = createScannerTemporalSnapshot(grayscale, scale.width, scale.height);
             if (snapshot) options.onTemporalFrame(snapshot, focus);
@@ -144,18 +236,39 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
           {
             cachedOrientationHints: this.cachedOrientationHints,
             reuseOrientationHints: !scale.baseline,
+            orthogonalRotationOwner: 'decoder',
             imageQuality: sampledQuality,
+            onImageQuality: (quality) => { this.lastImageQuality = quality; },
+            onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
             processingBudget: options.processingBudget,
             shouldContinue: () => !this.disposed,
           },
           (candidate) => this.decodeLuminance(candidate.luminance, candidate.width, candidate.height, timestamp),
+          (stage, durationMs) => this.recordStageCost(stage, durationMs),
         );
         this.cachedOrientationHints = pipelineResult.orientationHints;
+        this.recordPipelineDiagnostics(pipelineResult);
         if (this.disposed) return [];
-        if (pipelineResult.output) return [pipelineResult.output];
+        if (pipelineResult.output) {
+          this.diagnosticScaleHits += 1;
+          this.diagnosticDecoded += 1;
+          this.diagnosticRoiHits += 1;
+          this.emitDiagnostics();
+          return [pipelineResult.output];
+        }
       }
+      this.emitDiagnostics();
       return [];
+    } catch (error) {
+      this.diagnosticUnexpected += 1;
+      const now = Date.now();
+      if (now - this.lastUnexpectedErrorLogAt >= 5_000) {
+        this.lastUnexpectedErrorLogAt = now;
+        console.warn('[RetailOS Scanner] Unexpected ZXing-C++ decode failure:', error);
+      }
+      throw error;
     } finally {
+      this.recordDecodeCost(performance.now() - decodeStartedAt);
       this.decoding = false;
     }
   }
@@ -170,21 +283,34 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
       || snapshot.width < 1 || snapshot.height < 1 || snapshot.pixels.length !== snapshot.width * snapshot.height
       || snapshot.pixels.length > 640 * 360 || this.decoding) return [];
     this.decoding = true;
+    const startedAt = performance.now();
     try {
       const pipelineResult = await executeScannerEnhancementPipelineAsync(
         { luminance: new Uint8ClampedArray(snapshot.pixels), width: snapshot.width, height: snapshot.height },
         {
           cachedOrientationHints: this.cachedOrientationHints,
           reuseOrientationHints: true,
+          orthogonalRotationOwner: 'decoder',
+          onImageQuality: (quality) => { this.lastImageQuality = quality; },
+          onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
           processingBudget,
           shouldContinue: () => !this.disposed,
         },
         (candidate) => this.decodeLuminance(candidate.luminance, candidate.width, candidate.height, timestamp),
+        (stage, durationMs) => this.recordStageCost(stage, durationMs),
       );
       this.cachedOrientationHints = pipelineResult.orientationHints;
+      this.recordPipelineDiagnostics(pipelineResult);
       if (this.disposed || !pipelineResult.output) return [];
+      this.diagnosticDecoded += 1;
+      this.diagnosticRoiHits += 1;
       return [pipelineResult.output];
+    } catch (error) {
+      this.diagnosticUnexpected += 1;
+      throw error;
     } finally {
+      this.recordStageCost('temporal_fallback_total', performance.now() - startedAt);
+      this.emitDiagnostics();
       this.decoding = false;
     }
   }
@@ -198,23 +324,185 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     if (this.disposed || !this.options || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
       || width < 1 || height < 1 || luminance.length !== width * height
       || luminance.length > 1_500_000) return null;
+
+    const rgbaStartedAt = performance.now();
     const rgba = new Uint8ClampedArray(luminance.length * 4);
     for (let index = 0; index < luminance.length; index += 1) {
       const value = luminance[index], offset = index * 4;
-      rgba[offset] = value; rgba[offset + 1] = value; rgba[offset + 2] = value; rgba[offset + 3] = 255;
+      rgba[offset] = value;
+      rgba[offset + 1] = value;
+      rgba[offset + 2] = value;
+      rgba[offset + 3] = 255;
     }
-    const results = await readBarcodes(new ImageData(rgba, width, height), this.options);
-    if (this.disposed) return null;
-    return this.toOutput(results, timestamp);
+    this.recordStageCost('rgba_expand', performance.now() - rgbaStartedAt);
+
+    // Match the legacy decoder's ordered binarizer policy:
+    // HybridBinarizer-equivalent LocalAverage first, GlobalHistogram only on miss.
+    const imageData = new ImageData(rgba, width, height);
+    const binarizers: readonly ZXingWasmBinarizer[] = ['LocalAverage', 'GlobalHistogram'];
+    return runOrderedBinarizerFallback(
+      binarizers,
+      async (binarizer) => {
+        if (this.disposed || !this.options) return [];
+        const startedAt = performance.now();
+        const results = await readBarcodes(
+          imageData,
+          createZXingWasmReaderOptions(this.options.formats ?? [], binarizer, this.options),
+        );
+        this.recordStageCost(
+          binarizer === 'LocalAverage' ? 'zxing_decode_hybrid_equivalent' : 'zxing_decode_global_histogram',
+          performance.now() - startedAt,
+        );
+        return results;
+      },
+      (results) => this.disposed ? null : this.toOutput(results, timestamp),
+    );
   }
 
   private toOutput(results: Awaited<ReturnType<typeof readBarcodes>>, timestamp: number): DecoderOutput | null {
+    if (results.length === 0) this.diagnosticNotFound += 1;
     for (const result of results) {
+      if (!isZXingWasmReadResultValid(result)) {
+        const reason = String(result.error ?? '').toLowerCase();
+        if (reason.includes('checksum')) this.diagnosticChecksum += 1;
+        else if (reason.includes('format')) this.diagnosticFormat += 1;
+        else this.diagnosticFormat += 1;
+        continue;
+      }
       const symbology = REVERSE_FORMAT_MAP.get(String(result.format));
-      if (!symbology || !this.formats.includes(symbology) || typeof result.text !== 'string' || !result.text.length) continue;
-      return { value: result.text, symbology, timestamp, decoder: { id: this.id, version: String(ZXING_WASM_VERSION) } };
+      if (!symbology || !this.formats.includes(symbology)
+        || typeof result.text !== 'string' || !result.text.length) continue;
+      return {
+        value: result.text,
+        symbology,
+        timestamp,
+        decoder: { id: this.id, version: String(ZXING_WASM_VERSION) },
+      };
     }
     return null;
+  }
+
+  private recordPipelineDiagnostics(result: ScannerEnhancementPipelineResult<DecoderOutput>): void {
+    if (result.rotationAttempted) this.diagnosticRotationAttempts += 1;
+    if (result.matchedStage === 'orthogonal') this.diagnosticRotationHits += 1;
+    this.diagnosticDeskewAttempts += result.deskewAttempts;
+    this.diagnosticDeskewEstimateMisses += result.deskewEstimateMisses;
+    if (result.lastDeskewAngleDegrees !== null) {
+      this.diagnosticLastDeskewAngleDegrees = result.lastDeskewAngleDegrees;
+    }
+    if (result.matchedStage === 'deskew') this.diagnosticDeskewHits += 1;
+    this.diagnosticGeometryAttempts += result.geometryCandidatesAttempted;
+    if (result.matchedStage === 'geometry') {
+      this.diagnosticGeometryHits += 1;
+      this.diagnosticLastGeometryTransform = result.matchedTransform;
+    }
+  }
+
+  private recordDecodeCost(durationMs: number): void {
+    this.decodeCostCount += 1;
+    this.decodeCostTotalMs += durationMs;
+    this.decodeCostMaxMs = Math.max(this.decodeCostMaxMs, durationMs);
+    if (!this.decodeCostStartedAt) this.decodeCostStartedAt = Date.now();
+    if (Date.now() - this.decodeCostStartedAt < 5_000) return;
+    const stages = Object.fromEntries(Object.entries(this.stageCosts).map(([stage, value]) => [stage, {
+      samples: value.count,
+      averageMs: Number((value.totalMs / value.count).toFixed(2)),
+      maxMs: Number(value.maxMs.toFixed(2)),
+    }]));
+    console.info('[RetailOS Scanner] Decoder processing cost', {
+      decoder: this.id,
+      averageDecodeMs: Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)),
+      maxDecodeMs: Number(this.decodeCostMaxMs.toFixed(1)),
+      samples: this.decodeCostCount,
+      stages,
+    });
+    this.decodeCostStartedAt = Date.now();
+    this.decodeCostCount = 0;
+    this.decodeCostTotalMs = 0;
+    this.decodeCostMaxMs = 0;
+    this.stageCosts = {};
+  }
+
+  private recordStageCost(stage: string, durationMs: number): void {
+    const current = this.stageCosts[stage] ?? { count: 0, totalMs: 0, maxMs: 0 };
+    current.count += 1;
+    current.totalMs += durationMs;
+    current.maxMs = Math.max(current.maxMs, durationMs);
+    this.stageCosts[stage] = current;
+  }
+
+  private emitDiagnostics(): void {
+    const now = Date.now();
+    if (now - this.diagnosticStartedAt < 5_000) return;
+    console.info('[RetailOS Scanner] Multi-format diagnostics', {
+      decoder: this.id,
+      frames: this.diagnosticFrames,
+      decoded: this.diagnosticDecoded,
+      roiHits: this.diagnosticRoiHits,
+      roiUnavailable: this.diagnosticRoiUnavailable,
+      orthogonalRotationOwner: 'zxing-cpp-native',
+      rotationAttempts: this.diagnosticRotationAttempts,
+      rotationHits: this.diagnosticRotationHits,
+      deskewAttempts: this.diagnosticDeskewAttempts,
+      deskewEstimateMisses: this.diagnosticDeskewEstimateMisses,
+      deskewHits: this.diagnosticDeskewHits,
+      geometryAttempts: this.diagnosticGeometryAttempts,
+      geometryHits: this.diagnosticGeometryHits,
+      lastGeometryTransform: this.diagnosticLastGeometryTransform,
+      scaleAttempts: this.diagnosticScaleAttempts,
+      scaleHits: this.diagnosticScaleHits,
+      lastScaleFactor: Number(this.diagnosticLastScaleFactor.toFixed(2)),
+      lastDeskewAngleDegrees: Number(this.diagnosticLastDeskewAngleDegrees.toFixed(2)),
+      imageQuality: this.lastImageQuality ? {
+        dynamicRange: Number(this.lastImageQuality.dynamicRange.toFixed(1)),
+        meanLuminance: Number(this.lastImageQuality.meanLuminance.toFixed(1)),
+        horizontalContrast: Number(this.lastImageQuality.contrast.toFixed(1)),
+        verticalContrast: Number(this.lastImageQuality.verticalContrast.toFixed(1)),
+        edgeStrength: Number(this.lastImageQuality.edgeStrength.toFixed(1)),
+        horizontalNoise: Number(this.lastImageQuality.noise.toFixed(1)),
+        verticalNoise: Number(this.lastImageQuality.verticalNoise.toFixed(1)),
+        specularGlareFraction: Number(this.lastImageQuality.specularGlareFraction.toFixed(3)),
+        glareBandCoverage: Number(this.lastImageQuality.glareBandCoverage.toFixed(3)),
+        glareBandOrientation: this.lastImageQuality.glareBandOrientation,
+        issues: this.lastImageQuality.issues,
+      } : null,
+      qualityProfile: this.lastImageQualityProfile,
+      adaptiveProcessingPlan: this.lastAdaptiveProcessingPlan,
+      notFound: this.diagnosticNotFound,
+      checksumErrors: this.diagnosticChecksum,
+      formatErrors: this.diagnosticFormat,
+      unexpectedErrors: this.diagnosticUnexpected,
+      sourceWidth: this.lastFrameWidth,
+      sourceHeight: this.lastFrameHeight,
+      roiWidth: this.lastRoiWidth,
+      roiHeight: this.lastRoiHeight,
+      roiSourceScale: Number(this.diagnosticRoiSourceScale.toFixed(3)),
+      averageDecodeMs: this.decodeCostCount ? Number((this.decodeCostTotalMs / this.decodeCostCount).toFixed(1)) : 0,
+    });
+    this.diagnosticStartedAt = now;
+    this.diagnosticFrames = 0;
+    this.diagnosticDecoded = 0;
+    this.diagnosticNotFound = 0;
+    this.diagnosticChecksum = 0;
+    this.diagnosticFormat = 0;
+    this.diagnosticUnexpected = 0;
+    this.diagnosticRoiHits = 0;
+    this.diagnosticRoiUnavailable = 0;
+    this.diagnosticRotationAttempts = 0;
+    this.diagnosticRotationHits = 0;
+    this.diagnosticDeskewAttempts = 0;
+    this.diagnosticDeskewEstimateMisses = 0;
+    this.diagnosticDeskewHits = 0;
+    this.diagnosticGeometryAttempts = 0;
+    this.diagnosticGeometryHits = 0;
+    this.diagnosticLastGeometryTransform = null;
+    this.diagnosticScaleAttempts = 0;
+    this.diagnosticScaleHits = 0;
+    this.diagnosticLastScaleFactor = 0;
+    this.diagnosticLastDeskewAngleDegrees = 0;
+    this.diagnosticRoiSourceScale = 1;
+    // Window rollover resets counters only. Recognition history and the latest
+    // quality observations are runtime state, not diagnostics, and must survive.
   }
 
   dispose(): void {
@@ -228,5 +516,9 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     this.previousFocusWidth = 0;
     this.previousFocusHeight = 0;
     this.cachedOrientationHints = null;
+    this.lastImageQuality = null;
+    this.lastImageQualityProfile = null;
+    this.lastAdaptiveProcessingPlan = null;
+    this.stageCosts = {};
   }
 }

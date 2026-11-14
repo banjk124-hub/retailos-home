@@ -16,16 +16,23 @@ assert.ok(adapter.includes("from 'zxing-wasm/reader'"));
 assert.ok(adapter.includes("zxing-wasm/reader/zxing_reader.wasm?url"));
 assert.ok(adapter.includes('fireImmediately: true'));
 assert.ok(adapter.includes('executeScannerEnhancementPipelineAsync('));
+assert.ok(adapter.includes("['LocalAverage', 'GlobalHistogram']"), 'WASM must preserve the legacy ordered binarizer fallback');
 assert.ok(adapter.includes('decodeTemporalSnapshot('));
 assert.ok(adapter.includes('resolveScannerRoiCrop(options.scanRegion, dimensions.width, dimensions.height)'));
-assert.ok(adapter.includes('if (!crop) return []'), 'invalid ROI must fail closed');
+assert.ok(/if \(!crop\) \{[\s\S]*?return \[\];/.test(adapter), 'invalid ROI must fail closed before candidate decoding');
 assert.ok(adapter.includes('measureScannerFocusQuality('));
 assert.ok(adapter.includes('createScannerTemporalSnapshot('));
 assert.ok(adapter.includes('processingBudget: options.processingBudget'));
 assert.ok(adapter.includes('reuseOrientationHints: !scale.baseline'));
+assert.ok(adapter.includes("orthogonalRotationOwner: 'decoder'"),
+  'WASM must delegate orthogonal rotation to the native engine at every pipeline entry');
+
 assert.ok(!adapter.includes('readBarcodes(image, this.options)'),
   'raw frame decode must not bypass the shared candidate pipeline');
 assert.ok(pipeline.includes('export async function executeScannerEnhancementPipelineAsync'));
+assert.ok(pipeline.includes("orthogonalRotationOwner?: 'shared-pipeline' | 'decoder'"),
+  'shared pipeline must support backend-native orthogonal rotation ownership');
+
 assert.ok(!/getUserMedia|requestAnimationFrame|requestVideoFrameCallback|srcObject/.test(adapter));
 assert.ok(candidateFactory.includes('zxingWasmDecoderFactory'));
 assert.ok(candidateFactory.includes("await import('./zxingWasmDecoder')"));

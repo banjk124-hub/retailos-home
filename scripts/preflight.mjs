@@ -114,6 +114,11 @@ const checks = [
     args: ["scripts/test-scanner-rotation.mjs"],
   },
   {
+    name: "Scanner decoder capability parity tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-decoder-capability-parity.mjs"],
+  },
+  {
     name: "Scanner decoder adapter/factory contract tests",
     command: process.execPath,
     args: ["scripts/test-scanner-decoder-factory.mjs"],
