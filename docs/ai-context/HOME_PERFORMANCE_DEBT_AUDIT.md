@@ -46,7 +46,7 @@ Every direct runtime dependency in `package.json` has a current use:
 - `jszip`: Stocktake Import archive parsing/export and snapshot XLSX export.
 - `pptxgenjs`: snapshot PowerPoint export, loaded dynamically at export time.
 
-The build/test dependencies are referenced by the Vite config, TypeScript build, Playwright/test scripts or Node tooling. No direct dependency was removed because there is no proven unused package. `jszip` and `pptxgenjs` must remain deferred from the eager login/Home path.
+The build/test dependencies are not part of the production runtime. `@playwright/test` has no source import or maintained E2E script in the current tree, but the implementation history documents its use for real browser UI QA; retain it until that QA workflow is replaced or explicitly retired. TypeScript, React type packages, the Vite React plugin and Vite are used by the build/toolchain. No direct dependency was removed because there is no proven unused package. `jszip` and `pptxgenjs` must remain deferred from the eager login/Home path.
 
 ## Remaining work and acceptance gates
 
