@@ -24,14 +24,22 @@ const [service, rules, home, dock, librarySection, registry, homeState, homeStyl
   read('../src/styles/responsive.css'),
 ]);
 
+const transactionHelper = service.slice(
+  service.indexOf('async function withTransaction'),
+  service.indexOf('\nasync function withStore'),
+);
 const batchReader = service.slice(
   service.indexOf('export async function getCachedModuleSnapshots'),
   service.indexOf('\nfunction putCachedSnapshot'),
 );
-assert.match(batchReader, /const database = await openDatabase\(\)/);
-assert.match(batchReader, /database\.transaction\(SNAPSHOT_STORE, 'readonly'\)/);
+assert.match(transactionHelper, /const database = await openDatabase\(\)/);
+assert.match(transactionHelper, /database\.transaction\(SNAPSHOT_STORE, mode\)/);
+assert.match(transactionHelper, /transaction\.oncomplete/);
+assert.match(transactionHelper, /transaction\.onabort/);
+assert.match(batchReader, /withTransaction\('readonly'/);
 assert.match(batchReader, /store\.get\(moduleId\)/);
-assert.doesNotMatch(batchReader, /getAll\(/);
+assert.doesNotMatch(batchReader, /openDatabase|database\.transaction|getAll\(/);
+assert.match(service, /await withTransaction<void>\('readwrite'/);
 
 assert.match(home, /getCachedModuleSnapshots\(HOME_NOTICE_MODULE_IDS\)/);
 assert.doesNotMatch(home, /MODULE_DATA_IDS\.map\(getCachedModuleSnapshot\)/);
