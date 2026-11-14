@@ -91,6 +91,10 @@ The final Home-specific cascade pass also removed 1,193 additional bytes from `h
 
 The exact-rule scan also found and removed three duplicate declarations in the same mobile breakpoint of `mobile-tuning.css` (spotlight float visibility, glass-chip visibility and calendar-day spacing). The Home CSS regression suite now guards these duplicates against reintroduction. A final exact-rule scan across all 11 Home/global stylesheets now finds zero duplicate selector + media-context + declaration-block rules. Total stylesheet source is 150,139 bytes versus 189,892 bytes at baseline (-39,753 bytes, -20.9%).
 
+### PWA lazy-asset cache audit
+
+The service worker includes the built asset path list for cache eligibility, but it does not prefetch every module during install. Installation caches only the app shell; JavaScript/CSS assets are fetched and cached on demand after the browser requests them. Activation removes prior build-specific asset caches. Therefore, the service worker is not eagerly downloading Stocktake, scanner or other lazy module chunks as part of Home startup. Added a contract test to preserve this behavior.
+
 ### Stocktake Import dependency split
 
 The bundle report showed `StocktakeImportModule` at 148,323 B raw / 46,164 B gzip, with an 82,335 B incremental gzip closure. The module statically imported JSZip from both the UI component and workbook parser even though the archive library is needed only when parsing an XLSX file or generating ZIP output.
