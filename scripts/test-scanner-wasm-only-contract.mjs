@@ -19,6 +19,7 @@ assert.equal(pkg.dependencies['zxing-wasm'], '3.1.6',
 
 await assert.rejects(
   access(path.join(root, 'src/platform/scanner/decoders/zxingDecoder.ts')),
+  { code: 'ENOENT' },
   'the legacy ZXing JS adapter source must be deleted',
 );
 
