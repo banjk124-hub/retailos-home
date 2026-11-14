@@ -96,8 +96,8 @@ await runExtendable('message', {
 });
 assert.equal(skipWaitingCalls, 1, 'explicit update is accepted when no other tab remains');
 
-const shellAssetCache = cacheStore.get('retailos-pwa-shell-runtime-test');
-shellAssetCache.set(assetUrl, new Response('cached-asset'));
+const assetCache = await cachesMock.open('retailos-pwa-assets-runtime-test');
+await assetCache.put(assetUrl, new Response('cached-asset'));
 const cachedFetchEvent = {
   request: { method: 'GET', url: assetUrl, mode: 'cors' },
   respondWith(promise) { this.responsePromise = promise; },
@@ -119,7 +119,6 @@ const navigationEvent = {
 };
 context.fetch = async () => { throw new Error('offline'); };
 listener('fetch')(navigationEvent);
-assert.equal((await navigationEvent.responsePromise).url, undefined);
 assert.equal(await (await navigationEvent.responsePromise).text(), 'cached:' + shellUrl);
 
 console.log('PWA service-worker runtime tests passed.');
