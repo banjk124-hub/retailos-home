@@ -24,16 +24,16 @@ export default function PwaUpdatePrompt() {
         revealWaitingWorker();
       }
     };
+    const observeInstallingWorker = () => {
+      installingWorker?.removeEventListener('statechange', revealWaitingWorker);
+      installingWorker = registration?.installing ?? null;
+      installingWorker?.addEventListener('statechange', revealWaitingWorker);
+    };
     const register = async () => {
       try {
         registration = await registerRetailOsServiceWorker();
         if (disposed) return;
         revealWaitingWorker();
-        const observeInstallingWorker = () => {
-          installingWorker?.removeEventListener('statechange', revealWaitingWorker);
-          installingWorker = registration?.installing ?? null;
-          installingWorker?.addEventListener('statechange', revealWaitingWorker);
-        };
         registration.addEventListener('updatefound', observeInstallingWorker);
         observeInstallingWorker();
         window.addEventListener('online', checkForUpdate);
