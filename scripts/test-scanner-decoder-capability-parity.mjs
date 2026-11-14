@@ -19,7 +19,7 @@ for (const options of [local, global]) {
   // tryRotate stays false because the shared pipeline owns the 90° image candidate.
   assert.equal(options.tryHarder, true);
   assert.equal(options.tryRotate, false);
-  assert.equal(options.tryInvert, false);
+  assert.equal(options.tryInvert, true, 'WASM native inverted-symbol detection must remain enabled');
   assert.equal(options.tryDownscale, false);
   assert.equal(options.tryDenoise, false);
   assert.equal(options.maxNumberOfSymbols, 1);
@@ -49,5 +49,24 @@ assert.match(wasm, /recordStageCost\(stage, durationMs\)/,
   'WASM must retain per-stage timing metrics');
 assert.match(wasm, /\[RetailOS Scanner\] Multi-format diagnostics/,
   'WASM must emit backend-neutral recognition diagnostics');
+
+const diagnosticsStart = wasm.indexOf('  private emitDiagnostics(): void {');
+const diagnosticsEnd = wasm.indexOf('\n  dispose(): void {', diagnosticsStart);
+assert.ok(diagnosticsStart >= 0 && diagnosticsEnd > diagnosticsStart,
+  'WASM diagnostics emitter must remain an explicit method');
+const diagnosticsMethod = wasm.slice(diagnosticsStart, diagnosticsEnd);
+for (const stateField of [
+  'cachedOrientationHints', 'lastFocusAt', 'previousFocusPixels',
+  'previousFocusKey', 'previousFocusWidth', 'previousFocusHeight',
+  'lastImageQuality', 'lastImageQualityProfile', 'lastAdaptiveProcessingPlan',
+]) {
+  assert.doesNotMatch(
+    diagnosticsMethod,
+    new RegExp('this\\.' + stateField + '\\s*='),
+    `diagnostics window rollover must not reset recognition state: ${stateField}`,
+  );
+}
+assert.match(diagnosticsMethod, /this\.diagnosticFrames = 0/);
+assert.match(diagnosticsMethod, /this\.diagnosticDecoded = 0/);
 
 console.log('Scanner decoder capability parity tests passed.');
