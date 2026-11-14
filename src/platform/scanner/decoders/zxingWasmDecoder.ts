@@ -5,6 +5,8 @@ import { resolveScannerRoiCrop } from '../scannerRoi';
 import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot, type ScannerTemporalSnapshot } from '../scannerTemporalRecognition';
+import { measureScannerImageQuality } from '../scannerImageEnhancement';
+import { executeScannerEnhancementPipelineAsync, type ScannerOrientationHints } from '../scannerEnhancementPipeline';
 import { rgbaToLuminance } from './rgbaToLuminance';
 import type { DecoderDecodeOptions, DecoderInitOptions, DecoderOutput, ScannerDecoderAdapter } from './decoderAdapter';
 
@@ -31,7 +33,9 @@ function frameDimensions(source: CanvasImageSource): { width: number; height: nu
   const frame = source as CanvasImageSource & { videoWidth?: number; videoHeight?: number; naturalWidth?: number; naturalHeight?: number; displayWidth?: number; displayHeight?: number; width?: number; height?: number };
   const width = frame.videoWidth || frame.naturalWidth || frame.displayWidth || frame.width || 0;
   const height = frame.videoHeight || frame.naturalHeight || frame.displayHeight || frame.height || 0;
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) throw new Error('ZXing-C++ received invalid frame dimensions.');
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    throw new Error('ZXing-C++ received invalid frame dimensions.');
+  }
   return { width, height };
 }
 function readerOptions(formats: ScannerSymbology[]): ReaderOptions {
@@ -42,11 +46,6 @@ function readerOptions(formats: ScannerSymbology[]): ReaderOptions {
   };
 }
 
-/**
- * Opt-in ZXing-C++ WASM baseline adapter. This deliberately does not port the
- * existing enhancement/deskew pipeline; PR-03 is candidate integration only.
- * Keep the production ZXing JS factory as default pending parity benchmarks.
- */
 export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   readonly id = 'zxing-cpp-wasm-candidate';
   private canvas: HTMLCanvasElement | null = null;
@@ -58,13 +57,21 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   private lastFocusAt = 0;
   private previousFocusPixels: Uint8Array | null = null;
   private previousFocusKey: string | null = null;
+  private previousFocusWidth = 0;
+  private previousFocusHeight = 0;
+  private cachedOrientationHints: ScannerOrientationHints | null = null;
 
   async initialize({ formats }: DecoderInitOptions): Promise<void> {
     if (this.disposed) throw new Error('ZXing-C++ adapter has been disposed.');
     const requested = [...new Set(formats)];
-    const unsupported = requested.filter((format) => !(SUPPORTED_BARCODE_FORMATS as readonly string[]).includes(format) || !FORMAT_MAP[format]);
-    if (!requested.length || unsupported.length) throw new Error(`Unsupported or empty barcode format allowlist: ${unsupported.join(', ')}.`);
+    const unsupported = requested.filter((format) =>
+      !(SUPPORTED_BARCODE_FORMATS as readonly string[]).includes(format) || !FORMAT_MAP[format],
+    );
+    if (!requested.length || unsupported.length) {
+      throw new Error(`Unsupported or empty barcode format allowlist: ${unsupported.join(', ')}.`);
+    }
     await ensureWasmReady();
+    if (this.disposed) throw new Error('ZXing-C++ adapter was disposed during initialization.');
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) throw new Error('Unable to create a 2D canvas context for ZXing-C++.');
@@ -75,7 +82,9 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   }
 
   async decode(source: CanvasImageSource, options: DecoderDecodeOptions): Promise<DecoderOutput[]> {
-    if (this.disposed || !this.canvas || !this.context || !this.options) throw new Error('ZXing-C++ adapter has not been initialized.');
+    if (this.disposed || !this.canvas || !this.context || !this.options) {
+      throw new Error('ZXing-C++ adapter has not been initialized.');
+    }
     if (this.decoding) return [];
     this.decoding = true;
     const timestamp = options.timestamp ?? (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -85,27 +94,52 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
       if (!crop) return [];
       const base = resolveScannerRoiBaseDimensions(crop.width, crop.height);
       if (!base) return [];
-      for (const candidate of resolveScannerRoiScaleCandidates(base.width, base.height)) {
+
+      for (const scale of resolveScannerRoiScaleCandidates(base.width, base.height)) {
         if (this.disposed || !this.canvas || !this.context || !this.options) return [];
-        this.canvas.width = candidate.width;
-        this.canvas.height = candidate.height;
-        this.context.drawImage(source, crop.x, crop.y, crop.width, crop.height, 0, 0, candidate.width, candidate.height);
-        const image = this.context.getImageData(0, 0, candidate.width, candidate.height);
-        if (candidate.baseline && options.onFocusQuality && timestamp - this.lastFocusAt >= 500) {
+        this.canvas.width = scale.width;
+        this.canvas.height = scale.height;
+        this.context.drawImage(source, crop.x, crop.y, crop.width, crop.height, 0, 0, scale.width, scale.height);
+        const image = this.context.getImageData(0, 0, scale.width, scale.height);
+        const grayscale = rgbaToLuminance(image.data, scale.width, scale.height);
+
+        let sampledQuality = undefined as ReturnType<typeof measureScannerImageQuality> | undefined;
+        if (scale.baseline && options.onFocusQuality && timestamp - this.lastFocusAt >= 500) {
           this.lastFocusAt = timestamp;
-          const key = `${dimensions.width}x${dimensions.height}:${crop.x},${crop.y},${crop.width},${crop.height}`;
-          const grayscale = rgbaToLuminance(image.data, candidate.width, candidate.height);
-          const focus = measureScannerFocusQuality(grayscale, candidate.width, candidate.height, key === this.previousFocusKey ? this.previousFocusPixels : null);
+          const regionKey = `${dimensions.width}x${dimensions.height}:${crop.x},${crop.y},${crop.width},${crop.height}`;
+          const sameGeometry = this.previousFocusKey === regionKey
+            && this.previousFocusWidth === scale.width
+            && this.previousFocusHeight === scale.height;
+          const focus = measureScannerFocusQuality(
+            grayscale, scale.width, scale.height,
+            sameGeometry ? this.previousFocusPixels : null,
+          );
           this.previousFocusPixels = focus.sampledPixels;
-          this.previousFocusKey = key;
+          this.previousFocusKey = regionKey;
+          this.previousFocusWidth = scale.width;
+          this.previousFocusHeight = scale.height;
           options.onFocusQuality(focus);
+          sampledQuality = measureScannerImageQuality({ luminance: grayscale, width: scale.width, height: scale.height });
           if (focus.valid && options.onTemporalFrame) {
-            const snapshot = createScannerTemporalSnapshot(grayscale, candidate.width, candidate.height);
+            const snapshot = createScannerTemporalSnapshot(grayscale, scale.width, scale.height);
             if (snapshot) options.onTemporalFrame(snapshot, focus);
           }
         }
-        const output = this.toOutput(await readBarcodes(image, this.options), timestamp);
-        if (output) return [output];
+
+        const pipelineResult = await executeScannerEnhancementPipelineAsync(
+          { luminance: grayscale, width: scale.width, height: scale.height },
+          {
+            cachedOrientationHints: this.cachedOrientationHints,
+            reuseOrientationHints: !scale.baseline,
+            imageQuality: sampledQuality,
+            processingBudget: options.processingBudget,
+            shouldContinue: () => !this.disposed,
+          },
+          (candidate) => this.decodeLuminance(candidate.luminance, candidate.width, candidate.height, timestamp),
+        );
+        this.cachedOrientationHints = pipelineResult.orientationHints;
+        if (this.disposed) return [];
+        if (pipelineResult.output) return [pipelineResult.output];
       }
       return [];
     } finally {
@@ -113,23 +147,52 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     }
   }
 
-  async decodeTemporalSnapshot(snapshot: ScannerTemporalSnapshot, timestamp: number): Promise<DecoderOutput[]> {
+  async decodeTemporalSnapshot(
+    snapshot: ScannerTemporalSnapshot,
+    timestamp: number,
+    processingBudget?: import('../scannerAdaptiveRuntimeController').ScannerAdaptiveRuntimeBudget,
+  ): Promise<DecoderOutput[]> {
     if (this.disposed || !this.options || !Number.isFinite(timestamp)
       || !(snapshot.pixels instanceof Uint8Array) || !Number.isSafeInteger(snapshot.width) || !Number.isSafeInteger(snapshot.height)
       || snapshot.width < 1 || snapshot.height < 1 || snapshot.pixels.length !== snapshot.width * snapshot.height
       || snapshot.pixels.length > 640 * 360 || this.decoding) return [];
     this.decoding = true;
     try {
-      const rgba = new Uint8ClampedArray(snapshot.pixels.length * 4);
-      for (let i = 0; i < snapshot.pixels.length; i += 1) {
-        const value = snapshot.pixels[i], offset = i * 4;
-        rgba[offset] = value; rgba[offset + 1] = value; rgba[offset + 2] = value; rgba[offset + 3] = 255;
-      }
-      const output = this.toOutput(await readBarcodes(new ImageData(rgba, snapshot.width, snapshot.height), this.options), timestamp);
-      return output ? [output] : [];
+      const pipelineResult = await executeScannerEnhancementPipelineAsync(
+        { luminance: new Uint8ClampedArray(snapshot.pixels), width: snapshot.width, height: snapshot.height },
+        {
+          cachedOrientationHints: this.cachedOrientationHints,
+          reuseOrientationHints: true,
+          processingBudget,
+          shouldContinue: () => !this.disposed,
+        },
+        (candidate) => this.decodeLuminance(candidate.luminance, candidate.width, candidate.height, timestamp),
+      );
+      this.cachedOrientationHints = pipelineResult.orientationHints;
+      if (this.disposed || !pipelineResult.output) return [];
+      return [pipelineResult.output];
     } finally {
       this.decoding = false;
     }
+  }
+
+  private async decodeLuminance(
+    luminance: Uint8ClampedArray,
+    width: number,
+    height: number,
+    timestamp: number,
+  ): Promise<DecoderOutput | null> {
+    if (this.disposed || !this.options || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
+      || width < 1 || height < 1 || luminance.length !== width * height
+      || luminance.length > 1_500_000) return null;
+    const rgba = new Uint8ClampedArray(luminance.length * 4);
+    for (let index = 0; index < luminance.length; index += 1) {
+      const value = luminance[index], offset = index * 4;
+      rgba[offset] = value; rgba[offset + 1] = value; rgba[offset + 2] = value; rgba[offset + 3] = 255;
+    }
+    const results = await readBarcodes(new ImageData(rgba, width, height), this.options);
+    if (this.disposed) return null;
+    return this.toOutput(results, timestamp);
   }
 
   private toOutput(results: Awaited<ReturnType<typeof readBarcodes>>, timestamp: number): DecoderOutput | null {
@@ -149,6 +212,8 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     this.options = null;
     this.previousFocusPixels = null;
     this.previousFocusKey = null;
-    this.decoding = false;
+    this.previousFocusWidth = 0;
+    this.previousFocusHeight = 0;
+    this.cachedOrientationHints = null;
   }
 }

@@ -33,7 +33,7 @@ try {
   const { rotateLuminanceByAngle, estimateScannerSkewAngle } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerDeskew.js'),
   ).href);
-  const { executeScannerEnhancementPipeline } = await import(pathToFileURL(
+  const { executeScannerEnhancementPipeline, executeScannerEnhancementPipelineAsync } = await import(pathToFileURL(
     path.join(tempRoot, 'src/platform/scanner/scannerEnhancementPipeline.js'),
   ).href);
 
@@ -349,6 +349,54 @@ try {
   );
   assert.equal(missResult.output, null,
     'a pipeline miss must remain a miss; it must not invent a decode or escape the supplied ROI');
+
+
+  // Async WASM backends consume the same lazy candidate iterator and policy.
+  // The first successful candidate must short-circuit before later transforms.
+  const asyncAttempts = [];
+  let activeDecoders = 0;
+  let maxConcurrentDecoders = 0;
+  const asyncOrthogonal = await executeScannerEnhancementPipelineAsync(
+    upright,
+    {},
+    async (candidate) => {
+      activeDecoders += 1;
+      maxConcurrentDecoders = Math.max(maxConcurrentDecoders, activeDecoders);
+      await Promise.resolve();
+      asyncAttempts.push(candidate.stage);
+      activeDecoders -= 1;
+      return candidate.stage === 'orthogonal' ? 'async-orthogonal-hit' : null;
+    },
+  );
+  assert.equal(asyncOrthogonal.output, 'async-orthogonal-hit');
+  assert.deepEqual(asyncAttempts, ['baseline', 'orthogonal']);
+  assert.equal(maxConcurrentDecoders, 1,
+    'async candidate decoding must remain serialized');
+
+  const syncSequence = [];
+  const asyncSequence = [];
+  const syncGeometry = executeScannerEnhancementPipeline(
+    perspectiveFixture, {}, (candidate) => { syncSequence.push(candidate.stage); return null; },
+  );
+  const asyncGeometry = await executeScannerEnhancementPipelineAsync(
+    perspectiveFixture, {}, async (candidate) => { asyncSequence.push(candidate.stage); return null; },
+  );
+  assert.equal(syncGeometry.output, null);
+  assert.equal(asyncGeometry.output, null);
+  assert.deepEqual(asyncSequence, syncSequence,
+    'sync JS and async WASM backends must receive the exact same ordered candidate sequence');
+  assert.equal(asyncGeometry.geometryCandidatesAttempted, syncGeometry.geometryCandidatesAttempted,
+    'async candidate budgets must match the existing synchronous pipeline');
+
+  let asyncDecodeCount = 0;
+  const aborted = await executeScannerEnhancementPipelineAsync(
+    upright,
+    { shouldContinue: () => false },
+    async () => { asyncDecodeCount += 1; return null; },
+  );
+  assert.equal(asyncDecodeCount, 0,
+    'a retired scanner session must not start another asynchronous decode candidate');
+  assert.equal(aborted.output, null);
 
   console.log('Scanner unified enhancement pipeline tests passed: baseline-first, orthogonal fallback, confidence-gated deskew, reuse, quality observation and early exit.');
 } finally {
