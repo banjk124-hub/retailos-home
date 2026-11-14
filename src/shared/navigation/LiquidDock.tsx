@@ -1,4 +1,4 @@
-import type { CSSProperties, KeyboardEvent } from 'react';
+import { memo, type CSSProperties, type KeyboardEvent } from 'react';
 import { GlassSurface } from '../components/glass';
 import { MotionIcon } from '../icons';
 import { useMotionState } from '../motion';
@@ -7,7 +7,7 @@ import { LiquidDockItem } from './LiquidDockItem';
 import type { LiquidDockProps } from './LiquidDock.types';
 import { useDockInteraction } from './useDockInteraction';
 
-export function LiquidDock({
+export const LiquidDock = memo(function LiquidDock({
   items,
   activeId,
   onSelect,
@@ -119,4 +119,4 @@ export function LiquidDock({
       </span>
     </GlassSurface>
   );
-}
+});
