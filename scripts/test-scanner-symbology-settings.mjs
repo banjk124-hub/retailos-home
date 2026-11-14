@@ -94,5 +94,5 @@ assert.equal(validateBarcodePayload('ABC123', 'CODE_93').valid, true, 'printable
 assert.equal(validateBarcodePayload('HELLO-123', 'CODE_39').valid, true, 'legacy Code 39 remains valid');
 assert.equal(validateBarcodePayload('hello', 'CODE_39').reason, 'invalid-character', 'Code 39 keeps its uppercase alphabet policy');
 assert.equal(validateBarcodePayload('retail-qr', 'QR_CODE').valid, true, 'QR payload is treated as opaque text');
-assert.equal(validateBarcodePayload('ABC\\u0000', 'QR_CODE').reason, 'control-character', 'unsafe control characters are rejected');
+assert.equal(validateBarcodePayload('ABC' + String.fromCharCode(0), 'QR_CODE').reason, 'control-character', 'unsafe control characters are rejected');
 console.log('Scanner configurable symbology settings, migration, allowlist and validation tests passed.');
