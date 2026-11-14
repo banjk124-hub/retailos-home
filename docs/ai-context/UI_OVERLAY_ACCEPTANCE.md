@@ -11,7 +11,7 @@
 - [x] Library and notice detail layouts respect safe areas and bounded dynamic viewport height.
 - [x] Long notice content scrolls inside its panel.
 - [x] Barcode lookup result respects horizontal safe areas in landscape.
-- [x] Full preflight, TypeScript, production build, Pages build and bundle comparison passed on source head `a7cb890cccd5a57719cdb9bb702ed12edbc7402a` (Actions run #835). Documentation consolidation followed; final-head CI is still required.
+- [x] Full preflight, TypeScript, production build, Pages build and bundle comparison passed on PR source/docs head `ae537b049a9f4a80d5f2160fd75ba39f15e0327a` (Actions run #844). The subsequent `5b31cfd` change only records this CI result in documentation.
 
 ## Physical acceptance matrix
 
