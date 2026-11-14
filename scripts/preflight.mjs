@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Home performance and snapshot-notice regression tests",
+    command: process.execPath,
+    args: ["scripts/test-home-performance.mjs"],
+  },
+  {
     name: "Cross-platform overlay viewport and content-scroll layout tests",
     command: process.execPath,
     args: ["scripts/test-overlay-layout-contract.mjs"],
