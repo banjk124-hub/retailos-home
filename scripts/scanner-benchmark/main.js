@@ -1,4 +1,3 @@
-import { ZXingDecoderAdapter } from '../../src/platform/scanner/decoders/zxingDecoder.ts';
 import { ZXingWasmDecoderAdapter } from '../../src/platform/scanner/decoders/zxingWasmDecoder.ts';
 import {
   BENCHMARK_BACKENDS,
@@ -101,8 +100,7 @@ function classify(outputs, expected) {
 }
 
 async function runBackend(backend, cases, files, repeats) {
-  const Adapter = backend === 'zxing-js' ? ZXingDecoderAdapter : ZXingWasmDecoderAdapter;
-  const adapter = new Adapter();
+  const adapter = new ZXingWasmDecoderAdapter();
   const rows = [];
   const initStarted = performance.now();
   let initMs = null;
@@ -219,7 +217,7 @@ async function runBackend(backend, cases, files, repeats) {
 
   return {
     backend,
-    backendVersion: backend === 'zxing-js' ? '0.23.0' : '3.1.6',
+    backendVersion: '3.1.6',
     initMs,
     initErrorName,
     disposeErrorName,
@@ -257,7 +255,7 @@ runButton.addEventListener('click', async () => {
   }
 
   const repeats = Math.min(10, Math.max(1, Number.parseInt(byId('repeats').value, 10) || 1));
-  const order = byId('reverse').checked ? [...BENCHMARK_BACKENDS].reverse() : [...BENCHMARK_BACKENDS];
+  const order = [...BENCHMARK_BACKENDS];
   const runStartedAt = new Date().toISOString();
   const backendReports = [];
   try {
