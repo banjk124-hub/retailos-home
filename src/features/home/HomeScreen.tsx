@@ -330,12 +330,12 @@ export default function HomeScreen({
       setIsNoticeClosing(false);
     }, 240);
   };
-  const openLibrary = (library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
+  const openLibrary = useCallback((library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
     libraryTriggerRef.current = trigger;
     setLibraryOrigin(getMotionOrigin(trigger));
     setIsLibraryClosing(false);
     setSelectedLibrary(library);
-  };
+  }, []);
   const closeLibrary = () => {
     if (isLibraryClosing) return;
     if (prefersReducedMotion) {
@@ -723,7 +723,7 @@ export default function HomeScreen({
           </div>
           {visibleLibraries.length > 0 && <ModuleLibraryEngine
             groups={visibleLibraries}
-            onOpen={(library, trigger) => openLibrary(library, trigger)}
+            onOpen={openLibrary}
           />}
           {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
         </section>
