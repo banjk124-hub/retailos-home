@@ -1,4 +1,17 @@
-# Current scanner state — unified recognition pipeline (2026-11-11)
+# Current repository state — 2026-11-14
+
+- Production baseline: `main` at PR #101 merge commit `f884b7222bb806d7e588d7d231f261c10fc3f086`.
+- Active work: PR #102, branch `fix/ux-cross-platform-core-audit`, targeting `main`; Draft and not merged/deployed.
+- Current scope: shared overlay scroll-lock lifecycle, safe-area/dynamic-viewport layout, Home/Settings/Scanner/Stocktake overlay consistency, and documentation consolidation.
+- Current overlay contract: `UI_OVERLAY_ARCHITECTURE.md`; device acceptance: `UI_OVERLAY_ACCEPTANCE.md`.
+- Automated preflight includes body-scroll-lock and overlay layout regression tests. CI and physical-device results must be checked against the latest PR head, not copied from an earlier commit.
+- Physical Desktop Chrome/Edge, Android Chrome/PWA and iOS Safari/Home Screen PWA acceptance remains pending. CI does not substitute for device testing.
+- Module registry currently marks inventory, price, products, orders, delivery, sales and product-dates as `integrating`; Stocktake and Stocktake Import are marked `ready`. Do not infer a completed workflow from snapshot availability.
+- No merge, deployment or production mutation is authorized by this work.
+
+---
+
+# Historical scanner state snapshot — 2026-11-11
 
 - Main baseline: PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
 - Active branch: `feat/scanner-unified-enhancement-pipeline`; PR A+B combined into one review.
@@ -73,9 +86,9 @@ RetailOS is a mobile-first operational PWA for a supermarket branch. It aims to 
 
 
 ## Cross-AI continuity
-- Canonical entry point: `docs/ai-context/AI_HANDOFF.md`; it defines reading order, session start/end, conflict resolution and completion criteria.
+- Navigation entry point: `docs/ai-context/INDEX.md`. `AI_HANDOFF.md` is a task handoff, not the canonical index.
 - Durable context is maintained in repository documents, not in chat-only summaries. Every task branch must keep project context, architecture, roadmap, decisions, implementation status and session handoff synchronized with code.
-- Current engineering focus (2026-11-05): Scanner Phase 1.2 correctness/lifecycle before performance tuning. See `IMPLEMENTATION_STATUS.md` and `ROADMAP.md` for verified status.
+- Historical scanner engineering focus (2026-11-05): Scanner Phase 1.2 correctness/lifecycle before performance tuning. Current active work is tracked in the top-level repository state and the relevant feature roadmap.
 
 
 ## Canonical AI entry point and session protocol (2026-11-05)

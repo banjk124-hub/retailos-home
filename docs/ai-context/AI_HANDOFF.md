@@ -1,3 +1,41 @@
+# Current handoff — UI overlay stabilization (2026-11-14)
+
+**Repository:** `banjk124-hub/retailos-home`  
+**PR:** [#102](https://github.com/banjk124-hub/retailos-home/pull/102)  
+**Branch:** `fix/ux-cross-platform-core-audit`  
+**Base:** `main`, based on merged PR #101.  
+**Release state:** Draft; no merge/deployment.
+
+## Read first
+1. `AGENTS.md`
+2. `docs/ai-context/INDEX.md`
+3. `docs/ai-context/UI_OVERLAY_ARCHITECTURE.md`
+4. `docs/ai-context/UI_OVERLAY_ACCEPTANCE.md`
+5. Current PR diff and latest-head GitHub Actions run.
+
+## Current implementation
+- Shared reference-counted body scroll lock, including Home's full-screen Barcode Scanner state.
+- Settings, Scanner QA, Scanner Settings, Stocktake and Stocktake Import use coordinated lock ownership.
+- Home calendar, library, notice and barcode-result overlays have safe-area/dynamic-viewport regression coverage.
+- Settings Hub directly imports its required lazy stylesheet.
+- Two unreferenced Login Phase 2 records are consolidated in `docs/implementation/LOGIN_PHASE2_HISTORY.md`; source history retained in two distinct subsections.
+
+## Current gates
+1. Confirm the latest PR head and final-head CI.
+2. Review all changed source and docs for accidental scope expansion.
+3. Complete physical device acceptance matrix in `UI_OVERLAY_ACCEPTANCE.md`.
+4. Address reproducible cross-platform defects only; preserve scanner camera/decoder and business data contracts.
+5. Keep Draft until explicit approval for merge/deploy.
+
+## Known limitations
+- Focus trap/dialog stack is not implemented.
+- CI source-contract checks do not prove iOS touch-scroll behavior or visual layout.
+- Do not claim physical device acceptance without user/device evidence.
+
+---
+
+# Historical scanner handoff archive
+
 # AI handoff — unified scanner recognition pipeline (2026-11-11)
 
 **Repository:** banjk124-hub/retailos-home

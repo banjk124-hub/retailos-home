@@ -32,6 +32,7 @@ import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
+import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
 const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
@@ -142,6 +143,11 @@ export default function HomeScreen({
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [toast, setToast] = useState('');
+  useBodyScrollLock(
+    showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
+    || isBarcodeScannerOpen || showSettings || showScannerQa || showScannerSettings
+    || isStocktakeOpen || isStocktakeImportOpen || Boolean(barcodeLookup),
+  );
   const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
     ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
     : snapshotNoticeStatus === 'empty'
@@ -352,15 +358,12 @@ export default function HomeScreen({
 
   useEffect(() => {
     if (!showCalendar) return;
-    const previousOverflow = document.body.style.overflow;
     calendarCloseRef.current?.focus();
-    document.body.style.overflow = 'hidden';
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeCalendar();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
       calendarButtonRef.current?.focus();
     };
@@ -368,15 +371,12 @@ export default function HomeScreen({
 
   useEffect(() => {
     if (!selectedNotice) return;
-    const previousOverflow = document.body.style.overflow;
     noticeCloseButtonRef.current?.focus();
-    document.body.style.overflow = 'hidden';
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeNotice();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
       if (noticeTriggerRef.current?.isConnected) noticeTriggerRef.current.focus();
       else notificationsButtonRef.current?.focus();
@@ -385,15 +385,12 @@ export default function HomeScreen({
 
   useEffect(() => {
     if (!selectedLibrary) return;
-    const previousOverflow = document.body.style.overflow;
     libraryCloseButtonRef.current?.focus();
-    document.body.style.overflow = 'hidden';
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') closeLibrary();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => {
-      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', closeOnEscape);
       if (libraryTriggerRef.current?.isConnected) libraryTriggerRef.current.focus();
     };

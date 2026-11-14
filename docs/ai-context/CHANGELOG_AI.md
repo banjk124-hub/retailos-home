@@ -111,3 +111,14 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Reconciled current audio values after PR #57 (50% gain 0.30, max gain 0.60, approximately 140 ms).
 - Corrected scanner handoff, roadmap, architecture and acceptance documentation; clarified that the aggregate camera request contract remains declarative.
 - PR #75 remains Draft/unmerged/undeployed pending review. CI #577 passed full preflight and builds. Code 39 upright/180° integration passes; a synthetic 17° deskew fixture did not decode, so angled Code 39 remains unverified. No camera/lifecycle/ROI/presentation/business-flow changes.
+
+
+### 2026-11-14 — Cross-platform overlay lifecycle and documentation cleanup (PR #102)
+
+- Intent: finish the shared UI/overlay audit on top of merged PR #101 without changing scanner camera or retail data contracts.
+- Files: HomeScreen, shared body-scroll-lock service/hook, SettingsHub, Scanner QA, Scanner Settings, Stocktake and Stocktake Import; Home overlay CSS; preflight regression tests; UI overlay architecture/acceptance/index and AI context documents.
+- Behavior: Home's full-screen Barcode Scanner now participates in body scroll locking. Calendar and barcode-result overlays respect dynamic viewport and horizontal safe areas. Shared lock manager remains reference-counted and idempotent.
+- Documentation: added one overlay architecture source of truth and a cross-platform acceptance matrix; merged two unreferenced Login Phase 2 history files into one file while preserving distinct snapshots.
+- Checks: earlier CI #832 passed on an earlier source tree. Latest PR-head CI after these changes must be checked separately.
+- Unverified: physical desktop, Android and iOS device/browser acceptance; modal focus trap.
+- Risks / rollback: revert the focused PR commits if the overlay lock causes a reproducible page-position or camera regression; camera/decoder, persistence and deployment files are out of scope.

@@ -566,3 +566,17 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Explicitly deferred runtime consumption of `ScannerModuleConfig.cameraRequest`: current shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. Per-module requests need a separate shared-stream/lease and recovery design.
 - No camera acquisition, constraints/autofocus, lifecycle/recovery, cadence, strict ROI, Home/Stocktake presentation or business workflow changes were made.
 - PR #75 is open and Draft. Final CI #577 passed full preflight, Code 39 validation + upright/180° production-adapter tests, diagnostic privacy/export tests, TypeScript, production and Pages builds. A synthetic 17° Code 39 fixture did not decode through existing deskew; angled Code 39 remains unverified. No merge/deploy has occurred.
+
+
+---
+
+### 2026-11-14 — PR #102 cross-platform overlay audit and documentation consolidation
+
+- Audited current PR #102 branch against merged PR #101 baseline.
+- Found Home full-screen Barcode Scanner was missing from Home's body scroll-lock active state; added it and extended overlay contract tests.
+- Updated calendar backdrop to scroll in short viewports, respect all safe-area edges and bound its panel by dynamic viewport height.
+- Corrected mobile barcode-result backdrop horizontal safe-area padding in landscape.
+- Added current overlay architecture, physical acceptance matrix and documentation index.
+- Consolidated two unreferenced Login Phase 2 documents into one historical file while preserving their separate change/verification records; removed the two old entry points.
+- Updated project context, architecture ADR, implementation status, handoff, roadmap, changelog and session log.
+- Final-head CI and physical device QA must be rechecked; no merge/deploy performed.

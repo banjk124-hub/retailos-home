@@ -1,4 +1,29 @@
-# Scanner roadmap — unified recognition pipeline (2026-11-13)
+# Cross-feature UI stabilization track — 2026-11-14
+
+**PR:** #102, branch `fix/ux-cross-platform-core-audit`, Draft. This track is separate from the scanner recognition roadmap below.
+
+## Scope
+1. Stabilize shared overlay scroll-lock ownership.
+2. Ensure full-screen Home Barcode Scanner locks the background page.
+3. Make calendar, notice, library and barcode-result overlays resilient to dynamic viewport and safe-area changes.
+4. Keep lazy-loaded feature styles owned by their component boundary.
+5. Verify desktop, Android and iOS through the physical acceptance matrix.
+
+## Exit criteria
+- [x] Shared lock service and regression tests implemented.
+- [x] Home scanner lock state wired and source-contract test added.
+- [x] Calendar and barcode-result safe-area/viewport regressions covered.
+- [x] Full CI passed on source/docs head `ae537b049a9f4a80d5f2160fd75ba39f15e0327a` (run #844); later commits are documentation-only.
+- [ ] Desktop Chrome/Edge physical/browser acceptance.
+- [ ] Android Chrome and installed PWA acceptance.
+- [ ] iOS Safari tab and Home Screen PWA acceptance.
+- [ ] Accessibility review for focus containment and keyboard navigation.
+
+Canonical details: `UI_OVERLAY_ARCHITECTURE.md` and `UI_OVERLAY_ACCEPTANCE.md`.
+
+---
+
+# Historical scanner roadmap snapshot — unified recognition pipeline (2026-11-13)
 
 **Current main:** `8604bdee8c37e78ac758bf7e71ff44eb9141a605` (post-merge of PR #82 and PR #83).
 **Current work:** Gate 3 Geometry Correction on `feat/scanner-geometry-correction-gate3`.

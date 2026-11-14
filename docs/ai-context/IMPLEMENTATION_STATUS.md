@@ -1,4 +1,25 @@
-# Scanner implementation status — unified recognition pipeline (2026-11-11)
+# Current UI overlay implementation — 2026-11-14
+
+**PR:** #102 — `fix/ux-cross-platform-core-audit` (Draft, not merged/deployed).  
+**Canonical docs:** `UI_OVERLAY_ARCHITECTURE.md`, `UI_OVERLAY_ACCEPTANCE.md`.
+
+## Implemented in the PR branch
+- Reference-counted shared body scroll lock with idempotent release and original inline overflow restoration.
+- Home owns scroll lock for modal states and includes full-screen Barcode Scanner.
+- Settings Hub, Scanner QA, Scanner Settings, Stocktake and Stocktake Import participate in the shared lock lifecycle.
+- Settings Hub imports the stylesheet it needs instead of depending on another lazy chunk to load it.
+- Library, notice, calendar and barcode-result overlays use safe-area/dynamic-viewport-aware constraints and scrollable backdrops/content where needed.
+- Source-level regression tests cover lock ownership and viewport contracts.
+
+## Verification state
+- CI #844 passed full preflight, TypeScript, production build, Pages build and bundle comparison on source/docs head `ae537b049a9f4a80d5f2160fd75ba39f15e0327a`.
+- The later PR commits through `acc45a1` only clarify/record documentation; executable source is unchanged after the passing CI run.
+- Physical QA across Desktop Chrome/Edge, Android Chrome/PWA and iOS Safari/Home Screen PWA remains pending.
+- Focus trapping is a known accessibility gap; semantic dialog labels and open/close focus behavior exist in selected flows but do not constitute full focus containment.
+
+---
+
+# Historical scanner implementation status snapshot — unified recognition pipeline (2026-11-11)
 
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
 **Active branch:** `feat/scanner-unified-enhancement-pipeline` — PR A+B combined.
