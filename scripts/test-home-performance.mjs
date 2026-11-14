@@ -42,6 +42,7 @@ assert.match(batchReader, /withTransaction\('readonly'/);
 assert.match(batchReader, /store\.get\(moduleId\)/);
 assert.doesNotMatch(batchReader, /openDatabase|database\.transaction|getAll\(/);
 assert.match(service, /await withTransaction<void>\('readwrite'/);
+assert.equal((service.match(/database\.transaction\(/g) ?? []).length, 1, 'IndexedDB transaction creation must have one shared lifecycle owner.');
 
 assert.match(home, /getCachedModuleSnapshots\(HOME_NOTICE_MODULE_IDS\)/);
 assert.doesNotMatch(home, /MODULE_DATA_IDS\.map\(getCachedModuleSnapshot\)/);
