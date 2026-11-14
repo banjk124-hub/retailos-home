@@ -3,11 +3,14 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [service, rules, home, dock] = await Promise.all([
+const [service, rules, home, dock, librarySection, registry, homeState] = await Promise.all([
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/home/snapshotNoticeRules.ts'),
   read('../src/features/home/HomeScreen.tsx'),
   read('../src/shared/navigation/LiquidDock.tsx'),
+  read('../src/features/home/components/HomeModuleLibrarySection.tsx'),
+  read('../src/features/home/moduleRegistry.ts'),
+  read('../src/features/home/homeStateStore.ts'),
 ]);
 
 const batchReader = service.slice(
@@ -27,6 +30,13 @@ assert.match(home, /visibilitychange/);
 assert.match(home, /items=\{HOME_DOCK_ITEMS\}/);
 assert.match(home, /action=\{dockAction\}/);
 assert.match(dock, /export const LiquidDock = memo\(function LiquidDock/);
+assert.match(home, /<HomeModuleLibrarySection[\s\S]*?onSearchChange=\{handleSearchChange\}/, 'Home must delegate module search to its isolated component.');
+assert.doesNotMatch(home, /useState\(initialUiState\.search\)|filteredModules|visibleLibraries|MODULE_REGISTRY/, 'HomeScreen must not own the high-frequency module search/filter state.');
+assert.match(librarySection, /export const HomeModuleLibrarySection = memo\(/, 'Module search must be isolated from unrelated Home state changes.');
+assert.match(librarySection, /useState\(initialSearch\)/, 'The module library section must own its search input state.');
+assert.match(librarySection, /const filteredModules = useMemo\(/, 'Module filtering must be memoized inside the isolated search component.');
+assert.doesNotMatch(registry, /function getModulesForLibrary\(/, 'Unused module-library filtering helper must not remain beside the canonical registry.');
+assert.doesNotMatch(homeState, /activeFilter/, 'Unused Home filter state must not remain in persisted UI state.');
 
 assert.match(rules, /HOME_NOTICE_MODULE_IDS:[\s\S]*?'inventory'[\s\S]*?'product-dates'[\s\S]*?'sales'/);
 assert.match(rules, /function countRows\(/);
