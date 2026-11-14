@@ -329,6 +329,10 @@ export class UniversalScannerSession implements ScannerSession {
     this.adaptiveRuntimeController.reset();
     this.adaptiveRuntimeTransitions = 0;
     this.lastFrameCallbackAt = 0;
+    console.info('[RetailOS Scanner] Device runtime profile', {
+      deviceProfile: this.options.profile,
+      deviceProfileReason: this.options.profileReason ?? 'unknown_capability_conservative_fallback',
+    });
     this.lifecycle.opening();
     this.setState('requesting');
     this.startAttemptStartedAt = performance.now();
@@ -496,6 +500,17 @@ export class UniversalScannerSession implements ScannerSession {
     // observation. This prevents the fallback from decoding the same frame twice.
     const temporalCandidate = this.temporalFrameBuffer.takeBest(timestamp, generation, regionRevision);
     this.diagnosticFrames += 1;
+    let decodeDurationMs = 0;
+    let decodeDurationRecorded = false;
+    const recordDecodeDuration = (): number => {
+      if (!decodeDurationRecorded) {
+        decodeDurationMs = performance.now() - decodeStartedAt;
+        this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
+        this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
+        decodeDurationRecorded = true;
+      }
+      return decodeDurationMs;
+    };
     try {
       let results = await this.decoder.decode(this.video, {
         timestamp,
@@ -532,9 +547,9 @@ export class UniversalScannerSession implements ScannerSession {
         results = await this.decoder.decodeTemporalSnapshot(temporalCandidate, temporalCandidate.timestamp, processingBudget);
       }
       // Include fallback cost in the session's end-to-end decode duration.
-      const decodeDurationMs = performance.now() - decodeStartedAt;
-      this.diagnosticDecodeDurationTotalMs += decodeDurationMs;
-      this.diagnosticDecodeDurationMaxMs = Math.max(this.diagnosticDecodeDurationMaxMs, decodeDurationMs);
+      // Record before stale-generation checks so every completed attempt is
+      // represented in the current diagnostic window.
+      decodeDurationMs = recordDecodeDuration();
       if (generation !== this.generation || regionRevision !== this.regionRevision
         || this.disposed || this.currentState !== 'scanning') return;
       // Stale work from a retired generation/ROI must never influence the
@@ -544,6 +559,7 @@ export class UniversalScannerSession implements ScannerSession {
       if (nextRuntimeBudget.mode !== previousRuntimeMode) {
         this.adaptiveRuntimeTransitions += 1;
         console.info('[RetailOS Scanner] Adaptive runtime policy', {
+          deviceProfile: this.options.profile,
           adaptiveRuntimeMode: nextRuntimeBudget.mode,
           adaptiveRuntimeImageBudget: nextRuntimeBudget.maxImageCandidates,
           adaptiveRuntimeGeometryBudget: nextRuntimeBudget.maxGeometryCandidates,
@@ -595,6 +611,8 @@ export class UniversalScannerSession implements ScannerSession {
         this.deliverResult(result, value);
       }
     } catch (cause) {
+      // Failed decoder attempts still consume runtime and belong in the timing average.
+      recordDecodeDuration();
       this.diagnosticErrors += 1;
       if (generation === this.generation && !this.disposed) {
         this.options.onError?.({
@@ -605,6 +623,7 @@ export class UniversalScannerSession implements ScannerSession {
         });
       }
     } finally {
+      recordDecodeDuration();
       this.emitDiagnostics();
       this.decoding = false;
       this.scheduleNextFrame(generation);
@@ -682,6 +701,8 @@ export class UniversalScannerSession implements ScannerSession {
       callbackErrors: this.diagnosticCallbackErrors,
       decodeDurationAverageMs: this.diagnosticFrames ? Number((this.diagnosticDecodeDurationTotalMs / this.diagnosticFrames).toFixed(1)) : 0,
       decodeDurationMaxMs: Number(this.diagnosticDecodeDurationMaxMs.toFixed(1)),
+      deviceProfile: this.options.profile,
+      deviceProfileReason: this.options.profileReason ?? 'unknown_capability_conservative_fallback',
       adaptiveRuntimeMode: this.adaptiveRuntimeController.getBudget().mode,
       adaptiveRuntimeImageBudget: this.adaptiveRuntimeController.getBudget().maxImageCandidates,
       adaptiveRuntimeGeometryBudget: this.adaptiveRuntimeController.getBudget().maxGeometryCandidates,
@@ -693,6 +714,8 @@ export class UniversalScannerSession implements ScannerSession {
     });
     this.diagnosticStartedAt = now;
     this.diagnosticFrames = 0;
+    this.diagnosticDecodeDurationTotalMs = 0;
+    this.diagnosticDecodeDurationMaxMs = 0;
     this.diagnosticFramesWithSymbols = 0;
     this.diagnosticAccepted = 0;
     this.diagnosticRejected = 0;

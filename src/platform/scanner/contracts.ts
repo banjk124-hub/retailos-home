@@ -33,7 +33,12 @@ export type ScannerSymbology =
   | 'MAXICODE'
   | 'MICRO_QR_CODE';
 
-export type ScannerProfileName = 'COMPACT' | 'STANDARD' | 'HIGH';
+export type ScannerProfileName = 'LOW' | 'MID' | 'HIGH';
+export type ScannerProfileReason =
+  | 'limited_capability_hint'
+  | 'strong_capability_hints'
+  | 'mixed_or_mid_capability_hints'
+  | 'unknown_capability_conservative_fallback';
 
 /**
  * A rectangle expressed in normalized coordinates.
@@ -199,7 +204,9 @@ export type ScannerCapabilities = {
 };
 
 export type ScannerOpenOptions = {
+  /** Advisory device capability tier; runtime pressure remains the adaptation authority. */
   profile: ScannerProfileName;
+  profileReason?: ScannerProfileReason;
   formats: ScannerSymbology[];
   mode: 'single' | 'continuous';
   sameCodeCooldownMs?: number;

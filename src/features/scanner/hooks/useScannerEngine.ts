@@ -7,6 +7,7 @@ import { unlockScannerAudio } from '../services/scannerAudio';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../../platform/scanner/contracts';
 import { ScannerPageLifecycleCoordinator } from '../../../platform/scanner/scannerPageLifecycleCoordinator';
+import { detectScannerDeviceProfile } from '../../../platform/scanner/scannerDeviceProfile';
 
 export type ScannerMode = 'single' | 'continuous';
 
@@ -106,9 +107,11 @@ export function useScannerEngine({
 
   const createSession = useCallback((video: HTMLVideoElement): ScannerSession => {
     setTorch(EMPTY_TORCH_STATE);
+    const deviceProfile = detectScannerDeviceProfile();
     let session: ScannerSession;
     session = new UniversalScannerSession(video, {
-      profile: 'HIGH',
+      profile: deviceProfile.profile,
+      profileReason: deviceProfile.reason,
       formats: getEnabledScannerSymbologies(),
       mode,
       sameCodeCooldownMs: scanCooldownMs,

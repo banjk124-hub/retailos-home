@@ -149,6 +149,11 @@ const checks = [
     args: ["scripts/test-scanner-adaptive-processing-a2.mjs"],
   },
   {
+    name: "Scanner adaptive device profile classification tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-device-profile.mjs"],
+  },
+  {
     name: "Scanner A3 adaptive runtime performance and stability tests",
     command: process.execPath,
     args: ["scripts/test-scanner-adaptive-runtime-a3.mjs"],
