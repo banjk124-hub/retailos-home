@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import LoginExperience from './features/auth/screens/LoginExperience';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';
 import type { EmployeeSession } from './features/auth/types';
-import HomeScreen from './features/home/HomeScreen';
+const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 import { getDepartment, type DepartmentConfig } from './shared/config/departments';
 import { ExperienceBackground } from './shared/components/ExperienceBackground';
 import { Brand, BrandMotion } from './shared/brand';
@@ -244,6 +244,7 @@ export default function App() {
     <AmbientBackground />
     <PageGlassDock />
     <div className="retailos-interface">
+      <Suspense fallback={<div className="retailos-interface" aria-busy="true" />}>
       <div className={isLeavingHome ? 'app-transition-leave' : ''}>
         <HomeScreen
           employee={employee}
@@ -255,6 +256,7 @@ export default function App() {
           onInstall={handleInstall}
         />
       </div>
+      </Suspense>
     </div>
   </div>;
 }
