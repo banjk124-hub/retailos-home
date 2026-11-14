@@ -64,7 +64,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
   const filtered = useMemo(() => events.filter((event) => {
     if (filter === 'warn') return event.level === 'warn';
-    if (filter === 'performance') return /Performance stage|Decoder processing cost|Runtime diagnostics|Multi-format diagnostics|UI commit|Camera focus|Camera settings|Video readiness|Camera track|Page lifecycle/.test(event.category);
+    if (filter === 'performance') return /Performance stage|Decoder processing cost|Runtime diagnostics|Multi-format diagnostics|Adaptive runtime policy|UI commit|Camera focus|Camera settings|Video readiness|Camera track|Page lifecycle/.test(event.category);
     return true;
   }).slice().reverse(), [events]);
 
@@ -126,6 +126,12 @@ export default function ScannerQaMonitor({ onClose }: Props) {
             <div className="scanner-qa-event-copy">
               <strong>{event.category}</strong>
               <time>{new Date(event.timestamp).toLocaleTimeString('vi-VN')}</time>
+              {typeof event.metrics.adaptiveRuntimeMode === 'string' && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
+                <span>A3 runtime: <b>{String(event.metrics.adaptiveRuntimeMode)}</b></span>
+                <span>Image budget: <b>{String(event.metrics.adaptiveRuntimeImageBudget ?? '—')}</b></span>
+                <span>Geometry budget: <b>{String(event.metrics.adaptiveRuntimeGeometryBudget ?? '—')}</b></span>
+                <span>Transitions: <b>{String(event.metrics.adaptiveRuntimeTransitions ?? 0)}</b></span>
+              </div>}
               {adaptivePlan(event) && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
                 <span>A2 mode: <b>{String(adaptivePlan(event)?.mode ?? '—')}</b></span>
                 <span>Transforms: <b>{Array.isArray(adaptivePlan(event)?.imageTransforms) ? (adaptivePlan(event)?.imageTransforms as string[]).join(', ') || 'none' : 'legacy policy'}</b></span>
