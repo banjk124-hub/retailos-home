@@ -47,6 +47,7 @@ const MemoizedStocktakeImportModule = memo(StocktakeImportModule);
 const MemoizedScannerQaMonitor = memo(ScannerQaMonitor);
 const MemoizedSettingsHub = memo(SettingsHub);
 const MemoizedScannerSettingsPanel = memo(ScannerSettingsPanel);
+const MemoizedLiquidDock = memo(LiquidDock);
 
 type Props = {
   employee: EmployeeSession;
@@ -82,6 +83,10 @@ const navItems = [
   { id: 'activity', label: 'Hoạt động' },
   { id: 'settings', label: 'Cài đặt' },
 ];
+const dockItems = navItems.map((item) => ({
+  ...item,
+  icon: getHomeNavigationIcon(item.id),
+}));
 
 export default function HomeScreen({
   employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall,
@@ -555,13 +560,13 @@ export default function HomeScreen({
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
   };
-  const handleNav = (id: string) => {
+  const handleNav = useCallback((id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
     else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
-  };
+  }, [prefersReducedMotion]);
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
@@ -741,11 +746,8 @@ export default function HomeScreen({
     </main>
 
     </div>
-    <LiquidDock
-      items={navItems.map((item) => ({
-        ...item,
-        icon: getHomeNavigationIcon(item.id),
-      }))}
+    <MemoizedLiquidDock
+      items={dockItems}
       activeId={activeNav}
       onSelect={handleNav}
       action={isScannerSupportedDevice() ? {
