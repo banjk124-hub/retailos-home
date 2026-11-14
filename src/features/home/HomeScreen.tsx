@@ -10,7 +10,7 @@ import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { GlassSurface } from '../../shared/components/glass';
-import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
+import { getCachedModuleSnapshots, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
@@ -210,25 +210,17 @@ export default function HomeScreen({
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
       setSnapshotNoticeStatus('loading');
-      const results = await Promise.allSettled(MODULE_DATA_IDS.map(getCachedModuleSnapshot));
-      if (!isCurrent) return;
-      const snapshots = results.flatMap((result) => {
-        if (result.status === 'fulfilled') return result.value ? [result.value] : [];
-        return [];
-      });
-      const failedCount = results.filter((result) => result.status === 'rejected').length;
-      const cacheError = results.find((result) => result.status === 'rejected');
-      if (cacheError?.status === 'rejected') {
-        console.error('Không thể đọc một hoặc nhiều snapshot để tính thông báo:', cacheError.reason);
+      try {
+        const snapshots = await getCachedModuleSnapshots(MODULE_DATA_IDS);
+        if (!isCurrent) return;
+        setPriorityNotices(calculateSnapshotNotices(snapshots));
+        setSnapshotNoticeStatus(snapshots.length === 0 ? 'empty' : 'ready');
+      } catch (error) {
+        if (!isCurrent) return;
+        console.error('Không thể đọc snapshot để tính thông báo:', error);
+        setPriorityNotices([]);
+        setSnapshotNoticeStatus('unavailable');
       }
-      setPriorityNotices(calculateSnapshotNotices(snapshots));
-      setSnapshotNoticeStatus(failedCount === results.length
-        ? 'unavailable'
-        : failedCount > 0
-          ? 'partial'
-          : snapshots.length === 0
-            ? 'empty'
-            : 'ready');
     };
 
     void loadSnapshotNotices();
