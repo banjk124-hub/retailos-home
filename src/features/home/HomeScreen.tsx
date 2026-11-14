@@ -10,9 +10,9 @@ import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { GlassSurface } from '../../shared/components/glass';
-import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
+import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
-import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
+import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
@@ -66,7 +66,7 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
   );
 }
 
-type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'partial' | 'unavailable';
+type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'unavailable';
 type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
 const navItems = [
@@ -164,9 +164,7 @@ export default function HomeScreen({
     ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
     : snapshotNoticeStatus === 'empty'
       ? 'Chưa có snapshot trên thiết bị. Cảnh báo sẽ xuất hiện sau khi dữ liệu được đồng bộ.'
-      : snapshotNoticeStatus === 'partial'
-        ? 'Không đọc được đầy đủ snapshot; danh sách cảnh báo có thể chưa đầy đủ.'
-        : snapshotNoticeStatus === 'unavailable'
+      : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
   const enablePushNotifications = async () => {
@@ -210,25 +208,17 @@ export default function HomeScreen({
     let isCurrent = true;
     const loadSnapshotNotices = async () => {
       setSnapshotNoticeStatus('loading');
-      const results = await Promise.allSettled(MODULE_DATA_IDS.map(getCachedModuleSnapshot));
-      if (!isCurrent) return;
-      const snapshots = results.flatMap((result) => {
-        if (result.status === 'fulfilled') return result.value ? [result.value] : [];
-        return [];
-      });
-      const failedCount = results.filter((result) => result.status === 'rejected').length;
-      const cacheError = results.find((result) => result.status === 'rejected');
-      if (cacheError?.status === 'rejected') {
-        console.error('Không thể đọc một hoặc nhiều snapshot để tính thông báo:', cacheError.reason);
+      try {
+        const snapshots = await getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS);
+        if (!isCurrent) return;
+        setPriorityNotices(calculateSnapshotNotices(snapshots));
+        setSnapshotNoticeStatus(snapshots.length === 0 ? 'empty' : 'ready');
+      } catch (error) {
+        if (!isCurrent) return;
+        console.error('Không thể đọc snapshot để tính thông báo:', error);
+        setPriorityNotices([]);
+        setSnapshotNoticeStatus('unavailable');
       }
-      setPriorityNotices(calculateSnapshotNotices(snapshots));
-      setSnapshotNoticeStatus(failedCount === results.length
-        ? 'unavailable'
-        : failedCount > 0
-          ? 'partial'
-          : snapshots.length === 0
-            ? 'empty'
-            : 'ready');
     };
 
     void loadSnapshotNotices();
@@ -295,10 +285,22 @@ export default function HomeScreen({
   }, [calendarMonth]);
 
   useEffect(() => {
-    const updateCalendar = () => setCalendarNow(new Date());
-    const interval = window.setInterval(updateCalendar, 60_000);
-    return () => window.clearInterval(interval);
-  }, []);
+    const syncCalendarDate = () => {
+      const now = new Date();
+      setCalendarNow((current) => current.toDateString() === now.toDateString() ? current : now);
+    };
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    const timer = window.setTimeout(syncCalendarDate, Math.max(1, nextMidnight.getTime() - now.getTime()));
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') syncCalendarDate();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [calendarNow]);
 
   const closeCalendar = () => {
     if (calendarCloseTimer.current !== null) return;
@@ -431,6 +433,7 @@ export default function HomeScreen({
 
   const openCalendar = () => {
     const today = new Date();
+    setCalendarNow((current) => current.toDateString() === today.toDateString() ? current : today);
     setSelectedCalendarDate(today);
     setCalendarMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     setIsCalendarClosing(false);
