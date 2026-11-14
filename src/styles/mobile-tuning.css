@@ -319,11 +319,6 @@ button:not(:disabled):active {
   .topbar {
     transition: transform 320ms var(--motion-standard), opacity 260ms ease, box-shadow 260ms ease;
   }
-  .topbar.chrome-hidden {
-    transform: translateY(-110%);
-    opacity: 0;
-    pointer-events: none;
-  }
   .mobile-nav {
     background:
       linear-gradient(145deg, rgba(255,255,255,.64), rgba(255,247,249,.48));
@@ -335,11 +330,6 @@ button:not(:disabled):active {
     backdrop-filter: blur(20px) saturate(155%);
     -webkit-backdrop-filter: blur(20px) saturate(155%);
     transition: transform 320ms var(--motion-standard), opacity 260ms ease, box-shadow 260ms ease;
-  }
-  .mobile-nav.chrome-hidden {
-    transform: translate3d(0, calc(100% + 24px), 0);
-    opacity: 0;
-    pointer-events: none;
   }
 }
 
@@ -1391,11 +1381,6 @@ button:not(:disabled):active {
   -webkit-backdrop-filter: blur(18px) saturate(145%);
   transition: transform 320ms var(--motion-standard), opacity 260ms ease;
 }
-.app-shell .topbar.chrome-hidden {
-  transform: translateY(calc(-100% - 18px));
-  opacity: 0;
-  pointer-events: none;
-}
 .topbar-identity {
   min-width: 0;
   display: flex;
@@ -1890,7 +1875,6 @@ button:not(:disabled):active {
   -webkit-backdrop-filter: blur(20px) saturate(155%);
   cursor: pointer;
   animation: spotlight-notification-in 420ms var(--motion-standard) both;
-  animation-delay: calc(var(--notice-index, 0) * 90ms);
   transition: transform 190ms var(--motion-standard), background 190ms ease, box-shadow 190ms ease;
 }
 .spotlight-notification:hover {
@@ -2177,7 +2161,6 @@ button:not(:disabled):active {
   text-align: left;
   cursor: pointer;
   animation: app-library-card-in 480ms cubic-bezier(.2,.75,.25,1) both;
-  animation-delay: calc(var(--library-index, 0) * 65ms);
   transition: transform 240ms cubic-bezier(.2,.75,.25,1), box-shadow 240ms, border-color 240ms, background 240ms;
 }
 .app-library-card::before {
@@ -2333,7 +2316,6 @@ button:not(:disabled):active {
   text-align: left;
   cursor: pointer;
   animation: motion-fade-up var(--motion-duration-emphasized) var(--motion-ease-spatial) both;
-  animation-delay: var(--motion-stagger-short);
   transition: transform 220ms, border-color 220ms, box-shadow 220ms, background 220ms;
 }
 .app-library-module:hover {
@@ -2691,16 +2673,13 @@ button:not(:disabled):active {
   top: calc(100% + 9px);
   right: 0;
 }
-.app-shell .topbar.chrome-hidden .topbar-dock {
-  animation-play-state: paused;
-}
 @keyframes topbar-dock-float {
-  0%, 100% { transform: translateY(0); box-shadow: 0 12px 34px rgba(105,34,42,.11), inset 0 1px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(255,255,255,.48); }
-  50% { transform: translateY(-2px); box-shadow: 0 15px 38px rgba(105,34,42,.14), inset 0 1px 0 #fff, inset 0 -1px 0 rgba(255,255,255,.5); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
 }
 @keyframes topbar-dock-shimmer {
-  0%, 35% { background-position: 100% 0; opacity: .24; }
-  70%, 100% { background-position: -100% 0; opacity: .62; }
+  0%, 35% { opacity: .24; }
+  70%, 100% { opacity: .48; }
 }
 @media (max-width: 700px) {
   .app-shell .topbar {

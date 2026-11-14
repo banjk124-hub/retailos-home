@@ -99,7 +99,6 @@
 .app-shell .app-library-card {
   min-height: 145px;
   animation: app-library-card-in 220ms ease-out both;
-  animation-delay: 0ms;
   transition-duration: 160ms;
 }
 
@@ -284,7 +283,6 @@
 
 .app-shell .app-library-module {
   animation: app-library-module-in 180ms ease-out both;
-  animation-delay: 0ms;
   transition-duration: 150ms;
 }
 
@@ -448,8 +446,6 @@
 }
 .barcode-result-records { overflow-y: auto; overscroll-behavior: contain; margin: 13px -3px 0; padding: 0 3px; }
 .barcode-result-record { animation: barcode-record-in 220ms var(--brand-motion-ease) both; }
-.barcode-result-record:nth-child(2) { animation-delay: 45ms; }
-.barcode-result-record:nth-child(3) { animation-delay: 90ms; }
 .barcode-lookup-loading {
   display: flex;
   min-height: 105px;

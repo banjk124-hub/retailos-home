@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { Activity, AlertTriangle, CheckCircle2, Clipboard, Download, RefreshCw, ShieldCheck, Trash2, X } from 'lucide-react';
 import {
@@ -44,11 +44,58 @@ function metricValue(event: ScannerDiagnosticEvent, key: string): unknown {
   return event.metrics[key];
 }
 
+const VISIBLE_METRIC_KEYS = new Set([
+  'stage', 'durationMs', 'phase', 'phaseCommitIntervalMs', 'pageLifecycle',
+  'focusStatus', 'focusModes', 'focusRequestMs', 'focusSharpness', 'focusSharpnessMin',
+  'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents',
+  'focusQualityStatus', 'cameraControlChanged', 'width', 'height', 'frameRate', 'facingMode',
+  'focusMode', 'videoReadyMs', 'videoReadyState', 'videoWidth', 'videoHeight', 'trackEvent',
+  'trackMuted', 'trackReadyState', 'frameCallbackObserved', 'decodeAttempts',
+  'framesWithSymbols', 'accepted', 'rejectedByValidation', 'decoderErrors',
+  'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks',
+  'layoutShiftScore', 'averageDecodeMs', 'maxDecodeMs', 'samples', 'roiUnavailable',
+  'roiWidth', 'roiHeight', 'roiSourceScale', 'rotationAttempts', 'rotationHits',
+  'deskewAttempts', 'deskewEstimateMisses', 'deskewHits', 'scaleAttempts', 'scaleHits',
+  'lastScaleFactor', 'lastDeskewAngleDegrees', 'adaptiveRuntimeMode',
+  'adaptiveRuntimeImageBudget', 'adaptiveRuntimeGeometryBudget', 'adaptiveRuntimeTransitions',
+  'adaptiveRuntimeDecodeMs', 'adaptiveRuntimeFrameGapMs', 'adaptiveRuntimeReason',
+]);
+
+const ScannerQaEventRow = memo(function ScannerQaEventRow({ event }: { event: ScannerDiagnosticEvent }) {
+  const plan = adaptivePlan(event);
+  const visibleMetrics = Object.entries(event.metrics)
+    .filter(([key, value]) => value !== undefined && VISIBLE_METRIC_KEYS.has(key))
+    .slice(0, 12);
+
+  return <article className="scanner-qa-event">
+    <div className={event.level === 'warn' ? 'scanner-qa-event-mark is-warn' : 'scanner-qa-event-mark'}>{event.level === 'warn' ? <AlertTriangle size={14} /> : <CheckCircle2 size={14} />}</div>
+    <div className="scanner-qa-event-copy">
+      <strong>{event.category}</strong>
+      <time>{new Date(event.timestamp).toLocaleTimeString('vi-VN')}</time>
+      {typeof event.metrics.adaptiveRuntimeMode === 'string' && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
+        <span>A3 runtime: <b>{String(event.metrics.adaptiveRuntimeMode)}</b></span>
+        <span>Image budget: <b>{String(event.metrics.adaptiveRuntimeImageBudget ?? '—')}</b></span>
+        <span>Geometry budget: <b>{String(event.metrics.adaptiveRuntimeGeometryBudget ?? '—')}</b></span>
+        <span>Transitions: <b>{String(event.metrics.adaptiveRuntimeTransitions ?? 0)}</b></span>
+        <span>Reason: <b>{String(event.metrics.adaptiveRuntimeReason ?? '—')}</b></span>
+        <span>Decode: <b>{String(event.metrics.adaptiveRuntimeDecodeMs ?? '—')} ms</b></span>
+        <span>Frame gap: <b>{String(event.metrics.adaptiveRuntimeFrameGapMs ?? '—')} ms</b></span>
+      </div>}
+      {plan && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
+        <span>A2 mode: <b>{String(plan.mode ?? '—')}</b></span>
+        <span>Transforms: <b>{Array.isArray(plan.imageTransforms) ? (plan.imageTransforms as string[]).join(', ') || 'none' : 'legacy policy'}</b></span>
+        <span>Reasons: <b>{Array.isArray(plan.reasons) ? (plan.reasons as string[]).join(', ') : '—'}</b></span>
+      </div>}
+      <div className="scanner-qa-metrics">{visibleMetrics.map(([key, value]) => <span key={key}>{key}: <b>{typeof value === 'number' ? Number(value.toFixed(2)) : String(value)}</b></span>)}</div>
+    </div>
+  </article>;
+});
+
 export default function ScannerQaMonitor({ onClose }: Props) {
   useBodyScrollLock(true);
   const [events, setEvents] = useState(getScannerDiagnosticSnapshot());
   const [filter, setFilter] = useState<'all' | 'warn' | 'performance'>('all');
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState<'idle' | 'copying' | 'copied'>('idle');
 
   useEffect(() => {
     const uninstall = installScannerDiagnosticCollector();
@@ -68,13 +115,22 @@ export default function ScannerQaMonitor({ onClose }: Props) {
     return true;
   }).slice().reverse(), [events]);
 
-  const durations = events.flatMap((event) => {
-    const value = metricNumber(event, 'durationMs');
-    return value === null ? [] : [value];
-  });
-  const accepted = events.reduce((sum, event) => sum + (metricNumber(event, 'accepted') ?? 0), 0);
-  const errors = events.filter((event) => event.level === 'warn' || /error/i.test(event.category)).length;
-  const maxDuration = durations.length ? Math.max(...durations) : null;
+  const { accepted, errors, maxDuration } = useMemo(() => {
+    const durations: number[] = [];
+    let acceptedCount = 0;
+    let errorCount = 0;
+    for (const event of events) {
+      const duration = metricNumber(event, 'durationMs');
+      if (duration !== null) durations.push(duration);
+      acceptedCount += metricNumber(event, 'accepted') ?? 0;
+      if (event.level === 'warn' || /error/i.test(event.category)) errorCount += 1;
+    }
+    return {
+      accepted: acceptedCount,
+      errors: errorCount,
+      maxDuration: durations.length ? Math.max(...durations) : null,
+    };
+  }, [events]);
 
   const exportJson = () => downloadReport(exportScannerDiagnostics(), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, 'application/json');
   const exportCsv = () => {
@@ -84,12 +140,14 @@ export default function ScannerQaMonitor({ onClose }: Props) {
     downloadReport(rows.join('\n'), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`, 'text/csv;charset=utf-8');
   };
   const copyReport = async () => {
+    if (copyState === 'copying') return;
+    setCopyState('copying');
     try {
       await navigator.clipboard.writeText(exportScannerDiagnostics());
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1800);
+      setCopyState('copied');
+      window.setTimeout(() => setCopyState('idle'), 1800);
     } catch {
-      setCopied(false);
+      setCopyState('idle');
     }
   };
 
@@ -121,34 +179,13 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
       <div className="scanner-qa-events" aria-live="polite">
         {filtered.length === 0 ? <div className="scanner-qa-empty"><Activity size={25} /><strong>Chưa có dữ liệu đo</strong><span>Mở máy quét và thực hiện thao tác để bắt đầu ghi nhận.</span></div>
-          : filtered.map((event) => <article className="scanner-qa-event" key={event.id}>
-            <div className={event.level === 'warn' ? 'scanner-qa-event-mark is-warn' : 'scanner-qa-event-mark'}>{event.level === 'warn' ? <AlertTriangle size={14} /> : <CheckCircle2 size={14} />}</div>
-            <div className="scanner-qa-event-copy">
-              <strong>{event.category}</strong>
-              <time>{new Date(event.timestamp).toLocaleTimeString('vi-VN')}</time>
-              {typeof event.metrics.adaptiveRuntimeMode === 'string' && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
-                <span>A3 runtime: <b>{String(event.metrics.adaptiveRuntimeMode)}</b></span>
-                <span>Image budget: <b>{String(event.metrics.adaptiveRuntimeImageBudget ?? '—')}</b></span>
-                <span>Geometry budget: <b>{String(event.metrics.adaptiveRuntimeGeometryBudget ?? '—')}</b></span>
-                <span>Transitions: <b>{String(event.metrics.adaptiveRuntimeTransitions ?? 0)}</b></span>
-                <span>Reason: <b>{String(event.metrics.adaptiveRuntimeReason ?? '—')}</b></span>
-                <span>Decode: <b>{String(event.metrics.adaptiveRuntimeDecodeMs ?? '—')} ms</b></span>
-                <span>Frame gap: <b>{String(event.metrics.adaptiveRuntimeFrameGapMs ?? '—')} ms</b></span>
-              </div>}
-              {adaptivePlan(event) && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
-                <span>A2 mode: <b>{String(adaptivePlan(event)?.mode ?? '—')}</b></span>
-                <span>Transforms: <b>{Array.isArray(adaptivePlan(event)?.imageTransforms) ? (adaptivePlan(event)?.imageTransforms as string[]).join(', ') || 'none' : 'legacy policy'}</b></span>
-                <span>Reasons: <b>{Array.isArray(adaptivePlan(event)?.reasons) ? (adaptivePlan(event)?.reasons as string[]).join(', ') : '—'}</b></span>
-              </div>}
-              <div className="scanner-qa-metrics">{Object.entries(event.metrics).filter(([key, value]) => value !== undefined && ['stage','durationMs','phase','phaseCommitIntervalMs','pageLifecycle','focusStatus','focusModes','focusRequestMs','focusSharpness','focusSharpnessMin','focusEdgeCoverage','focusMotionScore','focusQualitySamples','focusSustainedBlurEvents','focusQualityStatus','cameraControlChanged','width','height','frameRate','facingMode','focusMode','videoReadyMs','videoReadyState','videoWidth','videoHeight','trackEvent','trackMuted','trackReadyState','frameCallbackObserved','decodeAttempts','framesWithSymbols','accepted','rejectedByValidation','decoderErrors','decodeDurationAverageMs','decodeDurationMaxMs','maxFrameCallbackGapMs','longTasks','layoutShiftScore','averageDecodeMs','maxDecodeMs','samples','roiUnavailable','roiWidth','roiHeight','roiSourceScale','rotationAttempts','rotationHits','deskewAttempts','deskewEstimateMisses','deskewHits','scaleAttempts','scaleHits','lastScaleFactor','lastDeskewAngleDegrees','adaptiveRuntimeMode','adaptiveRuntimeImageBudget','adaptiveRuntimeGeometryBudget','adaptiveRuntimeTransitions','adaptiveRuntimeDecodeMs','adaptiveRuntimeFrameGapMs','adaptiveRuntimeReason'].includes(key)).slice(0, 12).map(([key, value]) => <span key={key}>{key}: <b>{typeof value === 'number' ? Number(value.toFixed(2)) : String(value)}</b></span>)}</div>
-            </div>
-          </article>)}
+          : filtered.map((event) => <ScannerQaEventRow key={event.id} event={event} />)}
       </div>
 
       <footer className="scanner-qa-footer">
         <span><RefreshCw size={13} /> Live · tối đa 1.000 sự kiện gần nhất</span>
         <div>
-          <button type="button" onClick={copyReport}><Clipboard size={15} />{copied ? 'Đã sao chép' : 'Copy JSON'}</button>
+          <button type="button" disabled={copyState === 'copying'} aria-busy={copyState === 'copying'} onClick={copyReport}><Clipboard size={15} />{copyState === 'copying' ? 'Đang sao chép…' : copyState === 'copied' ? 'Đã sao chép' : 'Copy JSON'}</button>
           <button type="button" onClick={exportCsv}><Download size={15} />CSV</button>
           <button type="button" className="scanner-qa-export" onClick={exportJson}><Download size={15} />Xuất JSON</button>
         </div>

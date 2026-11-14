@@ -87,3 +87,8 @@
     flex: 1 1 0;
   }
 }
+
+
+.stocktake-busy-panel{display:grid;justify-items:center;gap:12px}
+.stocktake-busy-indicator{width:25px;height:25px;border:2px solid rgba(196,38,54,.16);border-top-color:#c52636;border-radius:50%;animation:stocktake-busy-spin 700ms linear infinite}
+@keyframes stocktake-busy-spin{to{transform:rotate(1turn)}}

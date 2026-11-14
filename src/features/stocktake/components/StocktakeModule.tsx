@@ -20,6 +20,13 @@ import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type Screen = 'home' | 'scan' | 'review' | 'history' | 'exports';
+const STOCKTAKE_LIST_PAGE_SIZE = 100;
+
+function yieldToNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
+  });
+}
 
 function localDate(value: string): string {
   return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
@@ -70,16 +77,17 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [manualEntry, setManualEntry] = useState(false);
   const [busy, setBusy] = useState(true);
+  const [reviewVisibleCount, setReviewVisibleCount] = useState(STOCKTAKE_LIST_PAGE_SIZE);
+  const [historyVisibleCount, setHistoryVisibleCount] = useState(STOCKTAKE_LIST_PAGE_SIZE);
   const [error, setError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
 
   const refresh = useCallback(async () => {
-    const [allZones, allLogs, allExports] = await Promise.all([
-      stocktakeStore.getZones(), stocktakeStore.getLogs(), stocktakeStore.getExports(),
+    const [allZones, allExports] = await Promise.all([
+      stocktakeStore.getZones(), stocktakeStore.getExports(),
     ]);
     setZones(allZones);
-    setLogs(allLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp)));
     setExports(allExports.sort((a, b) => b.exportedAt.localeCompare(a.exportedAt)));
   }, []);
 
@@ -121,18 +129,50 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     return () => { active = false; };
   }, [resolvedEmployeeCode, employee.name, employee.department, refresh]);
 
-  const currentEntries = useMemo(
-    () => entries.filter((entry) => entry.zoneId === currentZone?.id).sort((a, b) => a.sequence - b.sequence),
-    [entries, currentZone],
+  // loadZoneEntries already scopes and sorts entries for the active zone.
+  const currentEntries = entries;
+  const visibleReviewEntries = currentEntries.slice(0, reviewVisibleCount);
+  const currentSessionLogs = useMemo(
+    () => logs.filter((log) => log.sessionId === session?.id),
+    [logs, session?.id],
   );
+  const currentSessionZones = useMemo(
+    () => zones.filter((zone) => zone.sessionId === session?.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    [zones, session?.id],
+  );
+  const visibleSessionZones = useMemo(
+    () => currentSessionZones.filter((zone) => zone.status !== 'superseded'),
+    [currentSessionZones],
+  );
+  const currentSessionExports = useMemo(
+    () => exports.filter((item) => item.sessionId === session?.id),
+    [exports, session?.id],
+  );
+  const visibleHistoryLogs = currentSessionLogs.slice(0, historyVisibleCount);
 
   const loadZoneEntries = async (zone: StocktakeZone) => {
     const allEntries = await stocktakeStore.getEntries();
     setEntries(allEntries.filter((entry) => entry.zoneId === zone.id).sort((a, b) => a.sequence - b.sequence));
   };
 
+  const openHistory = async () => {
+    if (!session || busy) return;
+    setBusy(true);
+    try {
+      const allLogs = await stocktakeStore.getLogs();
+      setLogs(allLogs.sort((a, b) => b.timestamp.localeCompare(a.timestamp)));
+      setHistoryVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
+      setScreen('history');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể tải nhật ký kiểm kê.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const beginZone = async (replace: boolean, requested = pendingZone) => {
-    if (!session || !requested) return;
+    if (!session || !requested || busy) return;
+    setBusy(true);
     try {
       const previous = requested.previous;
       let revision = 1;
@@ -158,12 +198,37 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       });
       setCurrentZone(zone);
       setEntries([]);
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
       setPendingZone(null);
       setZoneInput('');
       setScreen('scan');
       await refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể tạo vùng kiểm kê.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resumeZone = async (zone: StocktakeZone) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      setCurrentZone(zone);
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
+      await loadZoneEntries(zone);
+      await logStocktakeAction({
+        sessionId: zone.sessionId,
+        zoneId: zone.id,
+        action: 'ZONE_RESUMED',
+        details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.`,
+      });
+      await refresh();
+      setScreen(zone.status === 'exported' ? 'review' : 'scan');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể mở lại vùng kiểm kê.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -198,7 +263,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const saveEntry = async () => {
-    if (!session || !currentZone) return;
+    if (!session || !currentZone || busy) return;
     const normalizedBarcode = barcode.trim();
     const parsedQuantity = Number(quantity);
     if (!normalizedBarcode || /[\r\n,]/.test(normalizedBarcode)) {
@@ -209,6 +274,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setError('Số lượng phải là số lớn hơn 0.');
       return;
     }
+    setBusy(true);
     try {
       if (editingEntry) {
         const old = currentEntries.find((item) => item.id === editingEntry);
@@ -241,6 +307,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setError('');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể lưu dòng kiểm kê.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -252,30 +320,47 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   };
 
   const removeEntry = async (entry: StocktakeEntry) => {
-    if (!session || !window.confirm(`Xóa dòng ${entry.sequence} — ${entry.barcode}?`)) return;
-    await stocktakeStore.deleteEntry(entry.id);
-    await logStocktakeAction({
-      sessionId: session.id, zoneId: entry.zoneId, action: 'ENTRY_DELETED',
-      details: `Xóa dòng ${entry.sequence}: ${entry.barcode} × ${entry.quantity}.`,
-    });
-    if (currentZone) await loadZoneEntries(currentZone);
+    if (!session || busy || !window.confirm(`Xóa dòng ${entry.sequence} — ${entry.barcode}?`)) return;
+    setBusy(true);
+    try {
+      await stocktakeStore.deleteEntry(entry.id);
+      await logStocktakeAction({
+        sessionId: session.id, zoneId: entry.zoneId, action: 'ENTRY_DELETED',
+        details: `Xóa dòng ${entry.sequence}: ${entry.barcode} × ${entry.quantity}.`,
+      });
+      if (currentZone) await loadZoneEntries(currentZone);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể xóa dòng kiểm kê.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const openReview = async () => {
-    if (!currentZone || !session) return;
-    await loadZoneEntries(currentZone);
-    await logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_REVIEW_OPENED', details: `Mở kiểm tra dữ liệu vùng ${currentZone.zoneCode}, revision ${currentZone.revision}.` });
-    await refresh();
-    setScreen('review');
+    if (!currentZone || !session || busy) return;
+    setBusy(true);
+    try {
+      await loadZoneEntries(currentZone);
+      await logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_REVIEW_OPENED', details: `Mở kiểm tra dữ liệu vùng ${currentZone.zoneCode}, revision ${currentZone.revision}.` });
+      await refresh();
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
+      setScreen('review');
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể mở kiểm tra dữ liệu vùng.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   const exportCurrentZone = async () => {
-    if (!session || !currentZone) return;
+    if (!session || !currentZone || busy) return;
     if (currentEntries.length === 0) {
       setError('Vùng chưa có dữ liệu ARTICLE. Hãy quét hoặc thêm ít nhất một dòng.');
       return;
     }
+    setBusy(true);
     try {
+      await yieldToNextPaint();
       const exported = createStocktakeFile(session, currentZone, currentEntries);
       const record: StocktakeExport = {
         id: createStocktakeId('export'), sessionId: session.id, zoneId: currentZone.id,
@@ -295,6 +380,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setError('');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể xuất file kiểm kê.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -304,18 +391,20 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setShowClearConfirm(false);
       return;
     }
+    setBusy(true);
     try {
       await stocktakeStore.clearAll();
       closeScanner();
       setSession(null);
       setCurrentZone(null);
       setEntries([]);
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
+      setHistoryVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
       setZones([]);
       setLogs([]);
       setExports([]);
       setShowClearConfirm(false);
       setScreen('home');
-      setBusy(true);
       const fresh: StocktakeSession = {
         id: createStocktakeId('session'), employeeCode: resolvedEmployeeCode,
         employeeName: employee.name, department: employee.department,
@@ -334,7 +423,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
   const downloadPreviousExport = (item: StocktakeExport) => downloadStocktakeText(item.fileName, item.fileContent);
 
-  if (busy) return <div className="stocktake-backdrop"><section className="stocktake-panel"><p>Đang mở dữ liệu kiểm kê…</p></section></div>;
+  if (busy) return <div className="stocktake-backdrop" role="status" aria-live="polite" aria-busy="true"><section className="stocktake-panel stocktake-busy-panel"><span className="stocktake-busy-indicator" aria-hidden="true" /><p>Đang xử lý dữ liệu kiểm kê…</p></section></div>;
 
   return (
     <div className="stocktake-backdrop" role="presentation">
@@ -356,12 +445,12 @@ export default function StocktakeModule({ employee, onClose }: Props) {
             <button className="stocktake-primary" type="submit"><ScanBarcode size={18} /> Bắt đầu vùng</button>
           </form>
           <div className="stocktake-shortcuts">
-            <button type="button" onClick={() => setScreen('history')}><History size={18} /><span>Lịch sử thao tác</span><ChevronRight size={16} /></button>
-            <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({exports.filter((item) => item.sessionId === session?.id).length})</span><ChevronRight size={16} /></button>
+            <button type="button" disabled={busy} onClick={() => { void openHistory(); }}><History size={18} /><span>Lịch sử thao tác</span><ChevronRight size={16} /></button>
+            <button type="button" onClick={() => setScreen('exports')}><FileText size={18} /><span>File đã xuất ({currentSessionExports.length})</span><ChevronRight size={16} /></button>
           </div>
           <div className="stocktake-zone-history"><div className="stocktake-section-title">Vùng trong phiên</div>
-            {zones.filter((zone) => zone.sessionId === session?.id && zone.status !== 'superseded').sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <button key={zone.id} type="button" onClick={async () => { setCurrentZone(zone); await loadZoneEntries(zone); await logStocktakeAction({ sessionId: zone.sessionId, zoneId: zone.id, action: 'ZONE_RESUMED', details: `Mở lại vùng ${zone.zoneCode}, revision ${zone.revision}.` }); await refresh(); setScreen(zone.status === 'exported' ? 'review' : 'scan'); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
-            {zones.filter((zone) => zone.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
+            {visibleSessionZones.map((zone) => <button key={zone.id} type="button" disabled={busy} onClick={() => { void resumeZone(zone); }}><span><strong>{zone.zoneCode}</strong><small>Revision {zone.revision} · {localDate(zone.createdAt)}</small></span><em>{zone.status === 'exported' ? 'Đã xuất' : 'Bản nháp'}</em><ChevronRight size={16} /></button>)}
+            {currentSessionZones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <button className="stocktake-danger-link" type="button" disabled={!session} onClick={() => setShowClearConfirm(true)}><Trash2 size={15} /> Xóa toàn bộ dữ liệu kiểm kê trên thiết bị</button>
         </>}
@@ -387,8 +476,12 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           <div className="stocktake-review-note">Kiểm tra và chỉnh sửa từng dòng trước khi xuất. Barcode trùng nhau được giữ nguyên thành các dòng riêng.</div>
           {currentZone.status !== 'exported' && <button className="stocktake-secondary" type="button" onClick={() => { setEditingEntry(null); setBarcode(''); setQuantity('1'); setManualEntry(true); setScreen('scan'); }}><Plus size={16} /> Thêm dòng thủ công</button>}
           <div className="stocktake-review-list">
-            {currentEntries.map((entry) => <div className="stocktake-review-row" key={entry.id}><div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div><b>{entry.quantity}</b>{currentZone.status !== 'exported' && <><button type="button" onClick={() => { editEntry(entry); setScreen('scan'); }} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button><button type="button" onClick={() => void removeEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button></>}</div>)}
+            {visibleReviewEntries.map((entry) => <div className="stocktake-review-row" key={entry.id}><div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div><b>{entry.quantity}</b>{currentZone.status !== 'exported' && <><button type="button" onClick={() => { editEntry(entry); setScreen('scan'); }} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button><button type="button" onClick={() => void removeEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button></>}</div>)}
             {currentEntries.length === 0 && <p className="stocktake-muted">Chưa có dòng ARTICLE.</p>}
+            {currentEntries.length > visibleReviewEntries.length && <>
+              <p className="stocktake-muted">Đang hiển thị {visibleReviewEntries.length} / {currentEntries.length} dòng.</p>
+              <button className="stocktake-secondary" type="button" onClick={() => setReviewVisibleCount((count) => Math.min(currentEntries.length, count + STOCKTAKE_LIST_PAGE_SIZE))}>Xem thêm {Math.min(STOCKTAKE_LIST_PAGE_SIZE, currentEntries.length - visibleReviewEntries.length)} dòng</button>
+            </>}
           </div>
           <div className="stocktake-export-preview"><small>XEM TRƯỚC ĐỊNH DẠNG FILE</small><code>NHAN VIEN,{session?.employeeCode},YYYY/MM/DD,HH:mm:ss<br />ADRESSE,{currentZone.prefix},{currentZone.number}<br />{currentEntries.slice(0,3).map((entry) => `ARTICLE,${entry.barcode},${entry.quantity}`).join('\n')}{currentEntries.length > 3 ? '\n…' : ''}</code></div>
           {currentZone.status === 'exported' ? <p className="stocktake-review-note">Revision này đã xuất file và được khóa để bảo toàn dữ liệu. Muốn làm lại, nhập lại mã vùng tại màn hình chính để tạo revision mới.</p> : <button className="stocktake-primary" type="button" disabled={currentEntries.length === 0} onClick={() => { if (window.confirm(`Xác nhận xuất ${currentZone.zoneCode} với ${currentEntries.length} dòng? File sẽ được tải về thiết bị.`)) void exportCurrentZone(); }}><Download size={18} /> Xác nhận xuất file</button>}
@@ -397,19 +490,20 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
         {screen === 'history' && <>
           <div className="stocktake-history-zones"><div className="stocktake-section-title">TẤT CẢ VÙNG VÀ PHIÊN BẢN</div>
-            {zones.filter((zone) => zone.sessionId === session?.id).sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map((zone) => <article key={zone.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{zone.zoneCode} · Revision {zone.revision}</strong><p>{zone.status === 'superseded' ? 'Đã được thay thế' : zone.status === 'exported' ? 'Đã xuất · bản khóa' : 'Bản nháp'}</p><small>{localDate(zone.createdAt)}</small></div></article>)}
-            {zones.filter((zone) => zone.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
+            {currentSessionZones.map((zone) => <article key={zone.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{zone.zoneCode} · Revision {zone.revision}</strong><p>{zone.status === 'superseded' ? 'Đã được thay thế' : zone.status === 'exported' ? 'Đã xuất · bản khóa' : 'Bản nháp'}</p><small>{localDate(zone.createdAt)}</small></div></article>)}
+            {currentSessionZones.length === 0 && <p className="stocktake-muted">Chưa có vùng kiểm kê.</p>}
           </div>
           <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
           <div className="stocktake-history-list">
-            {logs.filter((log) => log.sessionId === session?.id).map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{actionLabel(log.action)}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
-            {logs.filter((log) => log.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
+            {visibleHistoryLogs.map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{actionLabel(log.action)}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
+            {currentSessionLogs.length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
+            {currentSessionLogs.length > visibleHistoryLogs.length && <button className="stocktake-secondary" type="button" onClick={() => setHistoryVisibleCount((count) => Math.min(currentSessionLogs.length, count + STOCKTAKE_LIST_PAGE_SIZE))}>Xem thêm {Math.min(STOCKTAKE_LIST_PAGE_SIZE, currentSessionLogs.length - visibleHistoryLogs.length)} nhật ký</button>}
           </div>
         </>}
 
         {screen === 'exports' && <div className="stocktake-history-list">
-          {exports.filter((item) => item.sessionId === session?.id).map((item) => <article key={item.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{item.fileName}</strong><p>{item.zoneCode} · Revision {item.revision} · {item.entryCount} dòng</p><small>{localDate(item.exportedAt)}</small></div><button type="button" onClick={() => downloadPreviousExport(item)} aria-label="Tải lại file"><Download size={16} /></button></article>)}
-          {exports.filter((item) => item.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có file xuất.</p>}
+          {currentSessionExports.map((item) => <article key={item.id}><span className="stocktake-history-icon"><FileText size={15} /></span><div><strong>{item.fileName}</strong><p>{item.zoneCode} · Revision {item.revision} · {item.entryCount} dòng</p><small>{localDate(item.exportedAt)}</small></div><button type="button" onClick={() => downloadPreviousExport(item)} aria-label="Tải lại file"><Download size={16} /></button></article>)}
+          {currentSessionExports.length === 0 && <p className="stocktake-muted">Chưa có file xuất.</p>}
         </div>}
 
         <footer className="stocktake-footer"><span>Dữ liệu được lưu cục bộ trên thiết bị</span><span>RetailOS</span></footer>

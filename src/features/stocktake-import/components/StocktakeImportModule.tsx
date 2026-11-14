@@ -38,6 +38,12 @@ type PendingImportReview = {
 };
 const PAGE_SIZE = 100;
 
+function yieldToNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
+  });
+}
+
 function localDate(value: string): string {
   return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 }
@@ -137,8 +143,14 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     () => countUniqueProductCodes(activeZone?.rows ?? []),
     [activeZone],
   );
-  const activeZoneHasProductNames = Boolean(activeZone?.rows.some((row) => row.productName?.trim()));
-  const invalidCount = activeZone?.rows.filter((row) => getRowIssues(row).length > 0).length ?? 0;
+  const activeZoneHasProductNames = useMemo(
+    () => Boolean(activeZone?.rows.some((row) => row.productName?.trim())),
+    [activeZone],
+  );
+  const invalidCount = useMemo(
+    () => activeZone?.rows.reduce((count, row) => count + (getRowIssues(row).length > 0 ? 1 : 0), 0) ?? 0,
+    [activeZone],
+  );
   const outputReady = Boolean(activeZone && result && invalidCount === 0 &&
     !editingZone && !dirtyZones.includes(activeZone.zoneCode) && result.blockingIssues.length === 0);
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
@@ -147,7 +159,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const noticeTone = /không|chưa|lỗi|cần xác nhận|cần bổ sung|bị bỏ qua|không được/i.test(notice)
     ? 'warning'
     : /đang|khôi phục|phiên mới/i.test(notice) ? 'info' : 'success';
-  const invalidZones = result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [];
+  const invalidZones = useMemo(
+    () => result?.zones.filter((zone) => zone.rows.some((row) => getRowIssues(row).length > 0)) ?? [],
+    [result],
+  );
   const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
   const refreshHistory = async () => {
@@ -262,6 +277,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setBusyAction('import');
     setError('');
     try {
+      await yieldToNextPaint();
       if (pending.incoming.length) await commitIncoming(pending.incoming, mergeConflicts, {
         duplicateFiles: pending.duplicateFiles,
         sameNameDifferentContent: pending.sameNameDifferentContent,
@@ -365,28 +381,29 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const saveActiveZone = async () => {
     if (!result || !activeZone) return;
-    const normalizedRows = activeZone.rows.map((row) => {
-      const quantity = normalizeEditableQuantity(row.quantity);
-      const updated = { ...row, quantity };
-      const retainedIssues = row.issues.filter((issue) =>
-        issue.startsWith('Cột MÃ VẠCH') || issue.startsWith('Không thể diễn giải kết quả thực tế:'));
-      return { ...updated, issues: [...new Set([...validateRow(updated), ...retainedIssues])] };
-    });
-    const invalid = normalizedRows.filter((row) => row.issues.length > 0 || validateRow(row).length > 0);
-    if (invalid.length > 0) {
-      setError('Vùng ' + activeZone.zoneCode + ' còn ' + invalid.length + ' dòng chưa hợp lệ. Hãy bổ sung mã hàng và kết quả thực tế.');
-      return;
-    }
-    const updatedResult: StocktakeImportResult = {
-      ...result,
-      zones: result.zones.map((zone, index) => index === selectedZone
-        ? { ...zone, rows: normalizedRows, content: buildStocktakeOutput(employeeCode, zone.zoneCode, normalizedRows, new Date(result.importedAt)) }
-        : zone),
-    };
     setBusy(true);
     setBusyAction('save');
     setError('');
     try {
+      await yieldToNextPaint();
+      const normalizedRows = activeZone.rows.map((row) => {
+        const quantity = normalizeEditableQuantity(row.quantity);
+        const updated = { ...row, quantity };
+        const retainedIssues = row.issues.filter((issue) =>
+          issue.startsWith('Cột MÃ VẠCH') || issue.startsWith('Không thể diễn giải kết quả thực tế:'));
+        return { ...updated, issues: [...new Set([...validateRow(updated), ...retainedIssues])] };
+      });
+      const invalid = normalizedRows.filter((row) => row.issues.length > 0);
+      if (invalid.length > 0) {
+        setError('Vùng ' + activeZone.zoneCode + ' còn ' + invalid.length + ' dòng chưa hợp lệ. Hãy bổ sung mã hàng và kết quả thực tế.');
+        return;
+      }
+      const updatedResult: StocktakeImportResult = {
+        ...result,
+        zones: result.zones.map((zone, index) => index === selectedZone
+          ? { ...zone, rows: normalizedRows, content: buildStocktakeOutput(employeeCode, zone.zoneCode, normalizedRows, new Date(result.importedAt)) }
+          : zone),
+      };
       const id = await stocktakeImportStore.saveResult(updatedResult, historyId);
       setResult(updatedResult);
       setHistoryId(id);
@@ -412,6 +429,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       return;
     }
     const textarea = outputTextareaRef.current;
+    setNotice('Đang sao chép nội dung TXT…');
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard API không khả dụng.');
       await navigator.clipboard.writeText(activeZone.content);
@@ -455,6 +473,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setBusyAction('zip');
     setError('');
     try {
+      await yieldToNextPaint();
       const zip = new JSZip();
       result.zones.forEach((zone) => zip.file(zone.fileName, zone.content));
       const blob = await zip.generateAsync({
@@ -531,7 +550,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       <section className="stocktake-import-panel" role="dialog" aria-modal="true"
         aria-labelledby="stocktake-import-title" aria-busy={busy}>
         <header className="stocktake-import-header">
-          <button className="stocktake-import-icon-button" type="button"
+          <button className="stocktake-import-icon-button" type="button" disabled={busy}
             onClick={view === 'history' ? () => setView('import') : () => {
               if (hasDirtyZones) { setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi đóng module.'); return; }
               onClose();
@@ -543,7 +562,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             <span className="stocktake-import-eyebrow">RETAILOS · KIỂM KÊ</span>
             <h2 id="stocktake-import-title">{view === 'history' ? 'Lịch sử xuất file' : 'Xuất file'}</h2>
           </div>
-          <button className="stocktake-import-icon-button" type="button"
+          <button className="stocktake-import-icon-button" type="button" disabled={busy}
             onClick={() => {
               if (hasDirtyZones) { setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi mở lịch sử.'); return; }
               setView('history'); setError('');
@@ -572,6 +591,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 <strong>Vùng trùng · dữ liệu đang chờ xác nhận</strong>
                 {pendingImport.zoneConflicts.map((zone) => <small key={zone.zoneCode}>{zone.zoneCode}: phiên hiện tại {zone.existingRows} dòng · nguồn bổ sung {zone.incomingRows} dòng{zone.duplicateWithinBatch ? ' · xuất hiện ở nhiều file trong lượt này' : ''}</small>)}
               </div>}
+              {busyAction === 'import' && <p className="stocktake-import-unsaved" role="status" aria-live="polite">Đang cập nhật phiên xử lý…</p>}
               <div className="stocktake-import-review-actions">
                 <button type="button" disabled={busy} onClick={() => { setPendingImport(null); setNotice('Đã hủy nhập bổ sung. Phiên hiện tại không thay đổi.'); }}>Hủy bổ sung</button>
                 {pendingImport.zoneConflicts.length > 0
@@ -588,8 +608,8 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               <h3 id="stocktake-import-new-session-title">Tạo phiên xử lý mới?</h3>
               <p>Phiên đang mở sẽ được đóng khỏi workspace. Lịch sử đã lưu vẫn được giữ nguyên và có thể khôi phục sau.</p>
               <div className="stocktake-import-review-actions">
-                <button type="button" onClick={() => setShowNewSessionConfirm(false)}>Quay lại</button>
-                <button type="button" onClick={resetActiveSession}>Tạo phiên mới</button>
+                <button type="button" disabled={busy} onClick={() => setShowNewSessionConfirm(false)}>Quay lại</button>
+                <button type="button" disabled={busy} onClick={resetActiveSession}>Tạo phiên mới</button>
               </div>
             </section>
           </div>}
@@ -644,7 +664,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     downloaded: 'Đã tải TXT', zipped: 'Đã xuất ZIP', dirty: 'Chưa lưu',
                     invalid: rowErrors ? rowErrors + ' lỗi' : 'File lỗi',
                   };
-                  return <button key={zone.zoneCode} type="button"
+                  return <button key={zone.zoneCode} type="button" disabled={busy}
                     className={selectedZone === index ? 'is-active' : ''}
                     aria-current={selectedZone === index ? 'true' : undefined}
                     onClick={() => selectZone(index)}>
@@ -657,7 +677,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
               {activeZone && <section key={activeZone.zoneCode} className="stocktake-import-zone-workspace" aria-label={'Dữ liệu vùng ' + activeZone.zoneCode}>
                 {previewOpen ? <section className="stocktake-import-preview-screen" aria-label={'Xem trước TXT vùng ' + activeZone.zoneCode}>
                   <header className="stocktake-import-preview-screen-heading">
-                    <button type="button" onClick={() => setPreviewOpen(false)}><ArrowLeft size={16} /> Quay lại bảng</button>
+                    <button type="button" disabled={busy} onClick={() => setPreviewOpen(false)}><ArrowLeft size={16} /> Quay lại bảng</button>
                     <div><span className="stocktake-import-eyebrow">BẢN XUẤT TXT</span><strong>{activeZone.fileName}</strong><small>{activeZone.rows.length} dòng · {activeZoneUniqueProducts} mã hàng</small></div>
                     <span className="stocktake-import-state is-ready">Chỉ xem</span>
                   </header>
@@ -672,10 +692,10 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                   <div className="stocktake-import-zone-actions">
                     {!editingZone
                       ? <>
-                        <button type="button" className="stocktake-import-preview-trigger" onClick={() => setPreviewOpen(true)}><FileText size={15} /> Xem TXT</button>
-                        <button type="button" disabled={!outputReady} onClick={() => void copyOutput()}><Copy size={15} /> Sao chép</button>
-                        <button type="button" disabled={!outputReady} onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
-                        <button type="button" onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
+                        <button type="button" className="stocktake-import-preview-trigger" disabled={busy} onClick={() => setPreviewOpen(true)}><FileText size={15} /> Xem TXT</button>
+                        <button type="button" disabled={busy || !outputReady} onClick={() => void copyOutput()}><Copy size={15} /> Sao chép</button>
+                        <button type="button" disabled={busy || !outputReady} onClick={() => exportZone(selectedZone)}><Download size={15} /> Tải TXT</button>
+                        <button type="button" disabled={busy} onClick={beginEdit}><Pencil size={15} /> Chỉnh sửa</button>
                       </>
                       : <>
                         <button type="button" disabled={busy} onClick={cancelEdit}><X size={15} /> Hủy</button>
@@ -715,12 +735,12 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                               {result.sourceFiles && result.sourceFiles.length > 1 && row.sourceFileName && <small>{row.sourceFileName}{row.sourceFileId ? ' · ' + row.sourceFileId.slice(0, 8) : ''}</small>}
                             </td>
                             <td>{editingZone
-                              ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} value={row.barcode}
+                              ? <input aria-label={'Mã hàng dòng ' + row.sourceRow} disabled={busy} value={row.barcode}
                                   onChange={(event) => updateRow(rowIndex, 'barcode', event.target.value)} />
                               : <span className="stocktake-import-cell-value">{row.barcode || '—'}</span>}</td>
                             {activeZoneHasProductNames && <td><span className="stocktake-import-cell-value stocktake-import-product-name">{row.productName || '—'}</span></td>}
                             <td>{editingZone
-                              ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} inputMode="decimal"
+                              ? <input aria-label={'Kết quả thực tế dòng ' + row.sourceRow} disabled={busy} inputMode="decimal"
                                   value={row.quantity} onChange={(event) => updateRow(rowIndex, 'quantity', event.target.value)} />
                               : <strong className="stocktake-import-cell-value">{row.quantity || '—'}</strong>}</td>
                             <td><span className="stocktake-import-source-tag">{row.barcodeSource}</span></td>
@@ -736,9 +756,9 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                   {activeZone.rows.length > PAGE_SIZE && <div className="stocktake-import-pagination">
                     <span>{page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activeZone.rows.length)} / {activeZone.rows.length} dòng</span>
                     <div>
-                      <button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
+                      <button type="button" disabled={busy || page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}><ChevronLeft size={16} /> Trước</button>
                       <strong>{page + 1}/{pageCount}</strong>
-                      <button type="button" disabled={page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
+                      <button type="button" disabled={busy || page >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Tiếp <ChevronRight size={16} /></button>
                     </div>
                   </div>}
                 </div>
@@ -765,6 +785,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                     setHistoryExportingId(item.id);
                     setError('');
                     try {
+                      await yieldToNextPaint();
                       const zip = new JSZip();
                       item.files.forEach((file) => zip.file(buildZoneFileName(file.zoneCode), file.content));
                       const blob = await zip.generateAsync({ type: 'blob' });

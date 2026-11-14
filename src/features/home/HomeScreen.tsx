@@ -50,6 +50,22 @@ type Props = {
   canInstall: boolean;
   onInstall: () => Promise<void> | void;
 };
+function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () => void }) {
+  const headingId = `module-loading-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  return (
+    <div className="module-loading-backdrop">
+      <section className="module-loading-panel" aria-labelledby={headingId}>
+        <div role="status" aria-live="polite" aria-busy="true">
+          <span className="module-loading-indicator" aria-hidden="true" />
+          <h2 id={headingId}>Đang mở {title}…</h2>
+          <p>Đang tải giao diện chức năng.</p>
+        </div>
+        <button type="button" onClick={onClose} aria-label={`Đóng trạng thái tải ${title}`}>Đóng</button>
+      </section>
+    </div>
+  );
+}
+
 type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'partial' | 'unavailable';
 type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
@@ -104,7 +120,6 @@ export default function HomeScreen({
     error?: string;
   } | null>(null);
   const [search, setSearch] = useState(initialUiState.search);
-  const [isChromeIdle, setIsChromeIdle] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
@@ -116,9 +131,6 @@ export default function HomeScreen({
   });
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => new Date());
   const scrollSaveTimer = useRef<number | null>(null);
-  const chromeIdleTimer = useRef<number | null>(null);
-  const isChromeIdleRef = useRef(false);
-  const lastWheelActivityRef = useRef(0);
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
@@ -248,6 +260,12 @@ export default function HomeScreen({
       modules: filteredModules.filter((module) => library.moduleIds.includes(module.id)),
     }))
     .filter((library) => library.modules.length > 0), [filteredModules]);
+  const selectedLibraryModules = useMemo(
+    () => selectedLibrary
+      ? filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id))
+      : [],
+    [filteredModules, selectedLibrary],
+  );
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
     const mondayOffset = (today.getDay() + 6) % 7;
@@ -318,12 +336,12 @@ export default function HomeScreen({
       setIsNoticeClosing(false);
     }, 240);
   };
-  const openLibrary = (library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
+  const openLibrary = useCallback((library: ModuleLibraryDefinition, trigger: HTMLButtonElement) => {
     libraryTriggerRef.current = trigger;
     setLibraryOrigin(getMotionOrigin(trigger));
     setIsLibraryClosing(false);
     setSelectedLibrary(library);
-  };
+  }, []);
   const closeLibrary = () => {
     if (isLibraryClosing) return;
     if (prefersReducedMotion) {
@@ -495,32 +513,6 @@ export default function HomeScreen({
     };
   }, [activeNav, search]);
 
-  useEffect(() => {
-    const scheduleChromeHide = (event?: Event) => {
-      if (event?.type === 'wheel') {
-        const now = performance.now();
-        if (now - lastWheelActivityRef.current < 250) return;
-        lastWheelActivityRef.current = now;
-      }
-      if (isChromeIdleRef.current) {
-        isChromeIdleRef.current = false;
-        setIsChromeIdle(false);
-      }
-      if (chromeIdleTimer.current !== null) window.clearTimeout(chromeIdleTimer.current);
-      chromeIdleTimer.current = window.setTimeout(() => {
-        isChromeIdleRef.current = true;
-        setIsChromeIdle(true);
-      }, 3500);
-    };
-    const interactionEvents: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'wheel'];
-    interactionEvents.forEach((eventName) => window.addEventListener(eventName, scheduleChromeHide, { passive: eventName !== 'keydown' }));
-    scheduleChromeHide();
-    return () => {
-      interactionEvents.forEach((eventName) => window.removeEventListener(eventName, scheduleChromeHide));
-      if (chromeIdleTimer.current !== null) window.clearTimeout(chromeIdleTimer.current);
-    };
-  }, []);
-
   const announce = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
@@ -572,7 +564,7 @@ export default function HomeScreen({
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
-      <header className={`topbar home-topbar ${isChromeIdle ? 'chrome-hidden' : ''}`} id="home">
+      <header className="topbar home-topbar" id="home">
         <div className="topbar-dock">
           <div className="home-topbar-identity">
             <Brand variant="compact" surface="light" />
@@ -737,7 +729,7 @@ export default function HomeScreen({
           </div>
           {visibleLibraries.length > 0 && <ModuleLibraryEngine
             groups={visibleLibraries}
-            onOpen={(library, trigger) => openLibrary(library, trigger)}
+            onOpen={openLibrary}
           />}
           {visibleLibraries.length === 0 && <div className="empty-state app-library-empty"><Search size={22} /><strong>Không có kết quả</strong><span>Thử từ khóa khác.</span></div>}
         </section>
@@ -749,7 +741,6 @@ export default function HomeScreen({
 
     </div>
     <LiquidDock
-      hidden={isChromeIdle}
       items={navItems.map((item) => ({
         ...item,
         icon: getHomeNavigationIcon(item.id),
@@ -762,9 +753,9 @@ export default function HomeScreen({
         onSelect: openBarcodeScanner,
       } : undefined}
     />
-    {showSettings && <Suspense fallback={null}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
-    {showScannerQa && <Suspense fallback={null}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
-    {showScannerSettings && <Suspense fallback={null}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><SettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
+    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><ScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
+    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><ScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <BarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
@@ -850,12 +841,12 @@ export default function HomeScreen({
           <header className="app-library-modal-header">
             <div className="app-library-modal-identity">
               <span className="app-library-icon"><MotionIcon icon={LibraryIcon} variant="module" size={22} /></span>
-              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).length} chức năng</p></div>
+              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{selectedLibraryModules.length} chức năng</p></div>
             </div>
             <button ref={libraryCloseButtonRef} type="button" className="icon-button" aria-label="Đóng thư viện" onClick={closeLibrary}><X size={18} /></button>
           </header>
           <div className="app-library-modules">
-            {filteredModules.filter((module) => selectedLibrary.moduleIds.includes(module.id)).map((module) => {
+            {selectedLibraryModules.map((module) => {
               const ModuleIcon = getModuleIcon(module.id);
               return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => {
                 if (module.id === 'stocktake') {
@@ -896,8 +887,8 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <Suspense fallback={null}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
-    {isStocktakeImportOpen && <Suspense fallback={null}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
+    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={() => setIsStocktakeOpen(false)} />}><StocktakeModule employee={employee} onClose={() => setIsStocktakeOpen(false)} /></Suspense>}
+    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={() => setIsStocktakeImportOpen(false)} />}><StocktakeImportModule employee={employee} onClose={() => setIsStocktakeImportOpen(false)} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }

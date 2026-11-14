@@ -14,6 +14,11 @@ const checks = [
     args: ["scripts/test-overlay-layout-contract.mjs"],
   },
   {
+    name: "UI interaction immediacy and lazy-loading feedback contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-interaction-immediacy.mjs"],
+  },
+  {
     name: "Shared overlay body scroll-lock reference-count regression tests",
     command: process.execPath,
     args: ["scripts/test-body-scroll-lock.mjs"],
