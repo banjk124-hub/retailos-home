@@ -1,3 +1,33 @@
+## ADR-029 — Shared cross-feature overlay scroll-lock and viewport contract (2026-11-14)
+
+**Status:** Implemented on Draft PR #102; automated regression coverage added. Physical desktop/Android/iOS acceptance is pending.
+
+### Context
+Home and several lazy-loaded feature surfaces independently captured and restored `document.body.style.overflow`. Independent snapshot/restore logic could release a lock still owned by another active overlay. The Home full-screen Barcode Scanner was not included in the Home-owned lock state. Calendar and result surfaces also needed consistent dynamic-viewport and safe-area handling.
+
+### Decision
+- Use `src/shared/services/bodyScrollLock.js` as the only body scroll-lock coordinator. It reference-counts active owners per document, restores the original inline overflow only after the final release and returns an idempotent release callback.
+- Use `useBodyScrollLock(active)` from `src/shared/hooks/useBodyScrollLock.ts` in React surfaces.
+- Home owns the lock across modal states, including the full-screen Barcode Scanner, lookup, calendar, notice, library, Settings, QA, Stocktake and Stocktake Import. Child surfaces may acquire nested locks safely.
+- Notification popover remains non-modal and does not lock page scrolling.
+- Modal/backdrop layouts must account for safe areas, dynamic viewport height, reachable overflow and independent inner scrolling.
+- Feature components own their presentation and business state; shared lock manager does not own camera/session lifecycle or modal close policy.
+
+### Protected contracts
+No changes to scanner camera lease, camera lifecycle, decoder, barcode validation, Stocktake IndexedDB schema/persistence, Stocktake Import history/output format, authentication, Apps Script data contracts, service worker or deployment configuration.
+
+### Verification
+- Regression tests: `scripts/test-body-scroll-lock.mjs` and `scripts/test-overlay-layout-contract.mjs`, both registered in preflight.
+- Full CI status must be read from the latest PR #102 head. Prior CI runs are not evidence for later commits.
+- Physical acceptance matrix: `docs/ai-context/UI_OVERLAY_ACCEPTANCE.md`.
+
+### Known limitations
+- A reusable focus-trap/dialog-stack manager is not implemented.
+- Body overflow locking and touch-scroll behavior still require physical iOS Safari/Home Screen PWA validation.
+- This ADR does not claim complete WCAG modal conformance or device acceptance.
+
+---
+
 ## ADR-018 — Capability-gated camera Torch; investigation tooling retired (2026-11-09)
 
 **Status:** Accepted. Production behavior remains capability-gated. Temporary diagnostics and compatibility probing were removed by PR #55; GitHub Actions run #42572378379 passed full preflight. User confirms PR #55 was merged and deployed.
