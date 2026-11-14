@@ -40,7 +40,7 @@ function metricValue(event: ScannerDiagnosticEvent, key: string): unknown {
 }
 
 const VISIBLE_METRIC_KEYS = new Set([
-  'stage', 'durationMs', 'phase', 'phaseCommitIntervalMs', 'pageLifecycle',
+  'stage', 'durationMs', 'phase', 'phaseCommitIntervalMs', 'pageLifecycle', 'deviceProfile', 'deviceProfileReason',
   'focusStatus', 'focusModes', 'focusRequestMs', 'focusSharpness', 'focusSharpnessMin',
   'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents',
   'focusQualityStatus', 'cameraControlChanged', 'width', 'height', 'frameRate', 'facingMode',
@@ -68,6 +68,7 @@ const ScannerQaEventRow = memo(function ScannerQaEventRow({ event }: { event: Sc
       <strong>{event.category}</strong>
       <time>{new Date(event.timestamp).toLocaleTimeString('vi-VN')}</time>
       {typeof event.metrics.adaptiveRuntimeMode === 'string' && <div className="scanner-qa-metrics scanner-qa-adaptive-plan">
+        <span>Device profile: <b>{String(event.metrics.deviceProfile ?? '—')}</b></span>
         <span>A3 runtime: <b>{String(event.metrics.adaptiveRuntimeMode)}</b></span>
         <span>Image budget: <b>{String(event.metrics.adaptiveRuntimeImageBudget ?? '—')}</b></span>
         <span>Geometry budget: <b>{String(event.metrics.adaptiveRuntimeGeometryBudget ?? '—')}</b></span>
@@ -106,7 +107,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
   const filtered = useMemo(() => events.filter((event) => {
     if (filter === 'warn') return event.level === 'warn';
-    if (filter === 'performance') return /Performance stage|Decoder processing cost|Runtime diagnostics|Multi-format diagnostics|Adaptive runtime policy|UI commit|Camera focus|Camera settings|Video readiness|Camera track|Page lifecycle/.test(event.category);
+    if (filter === 'performance') return /Performance stage|Decoder processing cost|Runtime diagnostics|Multi-format diagnostics|Adaptive runtime policy|Device runtime profile|UI commit|Camera focus|Camera settings|Video readiness|Camera track|Page lifecycle/.test(event.category);
     return true;
   }).slice().reverse(), [events]);
 
@@ -129,7 +130,7 @@ export default function ScannerQaMonitor({ onClose }: Props) {
 
   const exportJson = () => downloadReport(exportScannerDiagnostics(), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, 'application/json');
   const exportCsv = () => {
-    const columns = ['timestamp', 'level', 'category', 'stage', 'durationMs', 'phase', 'decodeAttempts', 'accepted', 'rejectedByValidation', 'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore','focusStatus','focusModes','focusRequestMs','focusSharpness','focusSharpnessMin','focusEdgeCoverage','focusMotionScore','focusQualitySamples','focusSustainedBlurEvents','focusQualityStatus','cameraControlChanged','videoReadyMs','videoReadyState','videoWidth','videoHeight','pageLifecycle','trackEvent','trackMuted','trackReadyState','roiUnavailable','roiWidth','roiHeight','roiSourceScale','rotationAttempts','rotationHits','deskewAttempts','deskewEstimateMisses','deskewHits','scaleAttempts','scaleHits','lastScaleFactor','lastDeskewAngleDegrees','adaptiveMode','adaptiveTransforms','adaptiveReasons','adaptiveRuntimeMode','adaptiveRuntimeImageBudget','adaptiveRuntimeGeometryBudget','adaptiveRuntimeTransitions','adaptiveRuntimeDecodeMs','adaptiveRuntimeFrameGapMs','adaptiveRuntimeReason'];
+    const columns = ['timestamp', 'level', 'category', 'stage', 'durationMs', 'phase', 'decodeAttempts', 'accepted', 'rejectedByValidation', 'decodeDurationAverageMs', 'decodeDurationMaxMs', 'maxFrameCallbackGapMs', 'longTasks', 'layoutShiftScore','focusStatus','focusModes','focusRequestMs','focusSharpness','focusSharpnessMin','focusEdgeCoverage','focusMotionScore','focusQualitySamples','focusSustainedBlurEvents','focusQualityStatus','cameraControlChanged','videoReadyMs','videoReadyState','videoWidth','videoHeight','pageLifecycle','trackEvent','trackMuted','trackReadyState','roiUnavailable','roiWidth','roiHeight','roiSourceScale','rotationAttempts','rotationHits','deskewAttempts','deskewEstimateMisses','deskewHits','scaleAttempts','scaleHits','lastScaleFactor','lastDeskewAngleDegrees','adaptiveMode','adaptiveTransforms','adaptiveReasons','deviceProfile','deviceProfileReason','adaptiveRuntimeMode','adaptiveRuntimeImageBudget','adaptiveRuntimeGeometryBudget','adaptiveRuntimeTransitions','adaptiveRuntimeDecodeMs','adaptiveRuntimeFrameGapMs','adaptiveRuntimeReason'];
     const quote = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
     const rows = [columns.join(','), ...events.map((event) => columns.map((column) => quote(column === 'timestamp' ? event.timestamp : column === 'level' ? event.level : column === 'category' ? event.category : metricValue(event, column))).join(','))];
     downloadReport(rows.join('\n'), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`, 'text/csv;charset=utf-8');

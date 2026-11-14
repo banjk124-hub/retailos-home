@@ -24,18 +24,21 @@ Use a canonical module registry, derive library groups and search results from i
 
 
 ## ADR-012 — Scanner-first adaptive resource profiles and shared engine completion
-**Status:** Proposed; documentation/architecture direction only (2026-11-08). **2026-11-11 update:** still not implemented. `useScannerEngine` passes `HIGH` unconditionally and the session does not consume the profile. This remains a SCAN-07 closure gap; do not claim adaptive Low/Mid/High support.
+**Status:** A3 runtime-pressure controller merged by PR #100 at `913c0a59c234d55a22cdc0479beb8ce4ca78f6ba`. PR-07 (#114, Draft) implements advisory Low/Mid/High capability classification and corrected windowed timing diagnostics. Physical-device calibration and profile-specific policy tuning remain open.
 
 ### Context
-The shared scanner is already separated into feature-owned UI, a React bridge, a platform session, camera leases and a decoder adapter. However, the hook currently passes `profile: 'HIGH'` unconditionally. The profile type currently exposes `COMPACT | STANDARD | HIGH`, not the requested Low/Mid/High policy. This is not adaptive device classification.
+The shared scanner is already separated into feature-owned UI, a React bridge, a platform session, camera leases and decoder adapters. Before PR-07, the hook passed `profile: 'HIGH'` unconditionally and the former profile type exposed `COMPACT | STANDARD | HIGH`; neither represented device classification.
 
 ### Decision
 - Re-scope Phase 1.2I as Shared Scanner Engine Completion.
 - Define scanner-first Low/Mid/High resource profiles in Phase 1.2J; defer app-wide activation until scanner policy is measured and proven.
-- Resource adaptation may change optional visual/processing intensity only. Barcode allowlist/validation, scan accuracy, session ownership, callback delivery, persistence and feature workflows are hard invariants.
+- Use Low/Mid/High as an advisory scanner device profile, derived only from coarse `deviceMemory` and `hardwareConcurrency` hints when available.
+- LOW is selected when either available hint indicates constrained capability; HIGH requires both independent hints to be strong; unknown devices fall back conservatively to LOW.
+- Keep A3's measured runtime-pressure controller as the only processing-budget authority. Device tier alone does not reduce fallback budgets; tier-specific tuning requires representative physical-device measurements.
+- Barcode allowlist/validation, baseline-first recognition, scan accuracy, session ownership, callback delivery, persistence and feature workflows are hard invariants.
 - Home and Stocktake presentation remain independently owned while sharing the engine.
 - Do not assume universal battery/temperature telemetry in iOS Safari or Android Chrome. Use privacy-safe runtime proxies with hysteresis and conservative fallback; do not claim direct thermal measurement.
-- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified Low. Such changes require measured scan-accuracy and per-stage processing-cost evidence.
+- Never lower camera resolution, decode cadence, ROI coverage or recovery paths merely because a device is classified LOW. Such changes require measured scan-accuracy and per-stage processing-cost evidence.
 
 ### Consequences
 - Profile selection is advisory and must degrade safely when capability data is missing.

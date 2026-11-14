@@ -1,5 +1,41 @@
-# PR-06 — Configurable Scanner Symbology (active implementation)
+# PR-07 — Adaptive Runtime & Performance
 
+**Branch:** `feat/scanner-adaptive-runtime-profiles`  
+**Base:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merge; current main at task start).  
+**Objective:** complete the missing device-profile layer and correct runtime performance telemetry without duplicating the already-merged A3 controller.
+
+## Audit baseline
+- PR #100 already merged A3: sustained decode-duration/frame-gap pressure reduces only optional fallback candidate budgets with hysteresis.
+- The shared hook still hardcoded `profile: 'HIGH'`; `ScannerProfileName` was `COMPACT | STANDARD | HIGH`, so Low/Mid/High device classification was absent.
+- Decode duration totals/maxima were not reset when the five-second diagnostics window reset its attempt count, making the reported average increasingly inaccurate.
+
+## PR-07 scope
+- Classify each new scanner session as LOW/MID/HIGH from coarse browser capability hints (`deviceMemory`, `hardwareConcurrency`), without user-agent sniffing.
+- LOW when either available hint indicates constrained capability; HIGH only when both hints are strong; MID for mixed/intermediate hints; conservative LOW when both are unavailable.
+- Record the advisory profile and reason in the existing in-memory QA Monitor / JSON / CSV diagnostics.
+- Count both successful and failed decode attempts in the timing window, then reset duration totals/maxima with the rest of the five-second window.
+- Keep the existing A3 runtime controller as the sole adaptive processing-budget authority.
+
+## Hard invariants
+- Device profile alone does not reduce image/geometry candidate budgets.
+- No camera resolution/frame-rate, 70 ms decode interval, ROI, orientation order, baseline decode, T3 temporal fallback, symbology allowlist, validator, camera lease/lifecycle, UI presentation or business workflow changes.
+- No battery/thermal API assumptions, user-agent heuristics, persistent device identifiers or backend telemetry.
+- ZXing JS remains the production default; ZXing-C++ WASM remains opt-in.
+
+## Acceptance
+- [ ] Unit tests cover LOW/MID/HIGH classification, partial/missing/invalid hints and conservative fallback.
+- [ ] Hook passes the resolved profile into each new Home/Stocktake session; foreground recovery retains the same session profile contract.
+- [ ] QA Monitor and exports expose only bounded profile/reason fields.
+- [ ] Decode timing averages/maxima are per five-second window and include failed decode attempts.
+- [ ] Existing A3 hysteresis, baseline-first, 70 ms cadence, ROI, T3, validation and symbology tests remain green.
+- [ ] Full preflight, TypeScript, production build and GitHub Pages build pass.
+- [ ] Physical iOS Safari/PWA + Android Chrome/PWA QA records representative low/mid/high devices; no physical performance claim is inferred from CI.
+
+---
+
+# PR-06 — Configurable Scanner Symbology (merged)
+
+**PR:** #113 — merged at `429214b6b3988fc118e72679484c728b1f409e7c`; CI run #1026 passed.  
 **Branch:** `feat/scanner-configurable-symbology`  
 **Base:** `fea2cd09b00cf819b09d8372e88394f34220d0a6` (PR #112 merge).  
 **Objective:** expose decoder-supported symbologies as app-owned, persistent ON/OFF preferences in Home Scanner Settings.
@@ -33,8 +69,8 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 
 # Current scanner decoder replacement status — 2026-11-14
 
-**Current main:** `e5e85eda44b1de40d29e6b6fa3131514414fecb0` (PR #111 merged).
-**Current work:** PR-05 benchmark foundation on `feat/scanner-decoder-benchmark-foundation`.
+**Current main:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merged).
+**Current work:** PR-07 adaptive device profile foundation on `feat/scanner-adaptive-runtime-profiles` (PR #114, Draft).
 **Production default:** ZXing JS. ZXing-C++ WASM remains opt-in; no backend cutover is authorized or implied.
 
 ## Verified sequence
@@ -42,7 +78,8 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 - PR #108–#109 — injectable decoder factory and contract validation: merged.
 - PR #110 — opt-in ZXing-C++ WASM candidate: merged; production default unchanged.
 - PR #111 — shared sync/async recognition candidate pipeline: merged; CI run #1010 passed.
-- PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision. Physical corpus/device measurements remain outstanding.
+- PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision; merged through PR #112. Physical corpus/device measurements remain outstanding.
+- PR-06 — configurable symbology preferences and allowlist enforcement; merged through PR #113.
 
 ## Current evidence gap
 CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not select a production backend or remove recognition stages until those measurements exist.
