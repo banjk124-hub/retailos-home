@@ -52,6 +52,8 @@ Changed:
 - Removed the unused `activeFilter` field from persisted Home UI state. Existing localStorage records remain readable because unknown legacy properties are ignored.
 - Changed the initial Home UI state read to a lazy `useState` initializer; `readHomeUiState()` is no longer evaluated as a `useRef` argument on every Home render.
 
+- The Home screen also had two independent `scroll` listeners: one tracked the active section and one persisted scroll position. Consolidated them into one passive listener while retaining requestAnimationFrame coalescing for layout reads and the existing 140 ms persistence debounce.
+
 ### Home CSS dead-code and cascade cleanup
 
 Before:
