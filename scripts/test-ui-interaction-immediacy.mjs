@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
 const moduleLibrary = readFileSync('src/features/home/components/ModuleLibraryEngine.tsx', 'utf8');
+const homeModuleLibrary = readFileSync('src/features/home/components/HomeModuleLibrarySection.tsx', 'utf8');
 const app = readFileSync('src/App.tsx', 'utf8');
 const stocktake = readFileSync('src/features/stocktake/components/StocktakeModule.tsx', 'utf8');
 const stocktakeStyles = readFileSync('src/features/stocktake/components/stocktake.css', 'utf8');
@@ -27,10 +28,14 @@ assert.doesNotMatch(loadingSurface, /aria-modal|role="dialog"/, 'A temporary loa
 assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle\}/, 'Primary navigation and header actions must not require a wake-up tap before they can receive a click.');
 assert.match(moduleLibrary, /export const ModuleLibraryEngine = memo\(/, 'The static Home module library must not re-render on unrelated Home state changes.');
 assert.match(home, /const openLibrary = useCallback\([\s\S]*?\}, \[\]\)/, 'The module library open callback must remain stable between Home renders.');
-assert.match(home, /<ModuleLibraryEngine[\s\S]*?onOpen=\{openLibrary\}/, 'The memoized module library must receive the stable callback directly.');
-assert.match(home, /const selectedLibraryModules = useMemo\(/, 'The selected library module subset must be derived only when the selected library or search result changes.');
-assert.match(home, /selectedLibraryModules\.map\(/, 'The selected library dialog must reuse its memoized module subset.');
-assert.equal((home.match(/filteredModules\.filter\(\(module\) => selectedLibrary\.moduleIds\.includes\(module\.id\)\)/g) ?? []).length, 1, 'The selected library module filter must exist only inside its memoized derivation.');
+assert.match(homeModuleLibrary, /<ModuleLibraryEngine[\s\S]*?onOpen=\{handleOpen\}/, 'The memoized module library must receive the stable callback directly.');
+assert.match(home, /const \[selectedLibraryModules, setSelectedLibraryModules\] = useState<RetailModule\[]>\(\[\]\)/, 'Selected library modules must be captured when a library is opened, not recomputed on every Home render.');
+assert.match(home, /<HomeModuleLibrarySection[\s\S]*?onOpen=\{openLibrary\}/, 'Home must delegate module search to the isolated library section.');
+assert.match(homeModuleLibrary, /export const HomeModuleLibrarySection = memo\(/, 'Module search must not re-render when unrelated Home state changes.');
+assert.match(homeModuleLibrary, /useState\(initialSearch\)/, 'Search state must be owned by the module-library section.');
+assert.match(homeModuleLibrary, /const filteredModules = useMemo\(/, 'Module filtering must be derived inside the isolated search component.');
+assert.match(moduleLibrary, /onOpen\(group, event\.currentTarget\)/, 'The library engine must pass its canonical group instead of rebuilding metadata.');
+assert.doesNotMatch(home, /filteredModules|visibleLibraries|MODULE_REGISTRY/, 'HomeScreen must not own module search/filter derivation.');
 assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer events on primary navigation after an idle timeout.');
 assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-short\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
@@ -79,7 +84,7 @@ const confirmImport = blockBetween(stocktakeImport, 'const confirmPendingImport 
 assert.ok(confirmImport.indexOf('await yieldToNextPaint()') < confirmImport.indexOf('commitIncoming('), 'Confirming a large import must paint its busy state before synchronous merge work.');
 const exportAll = blockBetween(stocktakeImport, 'const exportAll = async', 'const clearHistory = async');
 assert.ok(exportAll.indexOf('setBusy(true)') < exportAll.indexOf('await yieldToNextPaint()'), 'ZIP export must publish its busy state before packaging.');
-assert.ok(exportAll.indexOf('await yieldToNextPaint()') < exportAll.indexOf('new JSZip()'), 'ZIP packaging must begin after the busy state has had a paint opportunity.');
+assert.ok(exportAll.indexOf('await yieldToNextPaint()') < exportAll.indexOf('await createZipArchive()'), 'ZIP packaging must begin after the busy state has had a paint opportunity.');
 const copyOutput = blockBetween(stocktakeImport, 'const copyOutput = async', 'const exportZone =');
 assert.ok(copyOutput.indexOf('setNotice(\'Đang sao chép nội dung TXT…\')') < copyOutput.indexOf('navigator.clipboard.writeText'), 'Copy must acknowledge the action before waiting for the Clipboard API.');
 assert.match(stocktakeImport, /key=\{zone\.zoneCode\} type="button" disabled=\{busy\}/, 'Zone navigation must not change the active edit target while a save is in progress.');
@@ -91,7 +96,7 @@ const historyExportStart = stocktakeImport.indexOf('setHistoryExportingId(item.i
 const historyExportEnd = stocktakeImport.indexOf('aria-label="Tải lại kết quả"', historyExportStart);
 const historyExport = stocktakeImport.slice(historyExportStart, historyExportEnd);
 assert.ok(historyExport.indexOf('setHistoryExportingId(item.id)') < historyExport.indexOf('await yieldToNextPaint()'), 'History ZIP export must publish its spinner before packaging.');
-assert.ok(historyExport.indexOf('await yieldToNextPaint()') < historyExport.indexOf('new JSZip()'), 'History ZIP packaging must begin after the spinner has had a paint opportunity.');
+assert.ok(historyExport.indexOf('await yieldToNextPaint()') < historyExport.indexOf('await createZipArchive()'), 'History ZIP packaging must begin after the spinner has had a paint opportunity.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 assert.match(scannerQa, /const ScannerQaEventRow = memo\(/, 'Existing diagnostic rows must not re-render when a new event is appended.');
 assert.match(scannerQa, /filtered\.map\(\(event\) => <ScannerQaEventRow/, 'Scanner QA must render diagnostics through memoized event rows.');
