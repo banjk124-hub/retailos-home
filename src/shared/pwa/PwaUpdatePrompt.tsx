@@ -13,6 +13,7 @@ export default function PwaUpdatePrompt() {
     let registration: ServiceWorkerRegistration | null = null;
     let hasReloaded = false;
     let disposed = false;
+    let installingWorker: ServiceWorker | null = null;
 
     const revealWaitingWorker = () => {
       if (!disposed && registration?.waiting) setWaitingWorker(registration.waiting);
@@ -29,7 +30,9 @@ export default function PwaUpdatePrompt() {
         if (disposed) return;
         revealWaitingWorker();
         const observeInstallingWorker = () => {
-          registration?.installing?.addEventListener('statechange', revealWaitingWorker);
+          installingWorker?.removeEventListener('statechange', revealWaitingWorker);
+          installingWorker = registration?.installing ?? null;
+          installingWorker?.addEventListener('statechange', revealWaitingWorker);
         };
         registration.addEventListener('updatefound', observeInstallingWorker);
         observeInstallingWorker();
@@ -57,6 +60,9 @@ export default function PwaUpdatePrompt() {
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
     return () => {
       disposed = true;
+      registration?.removeEventListener('updatefound', observeInstallingWorker);
+      installingWorker?.removeEventListener('statechange', revealWaitingWorker);
+      installingWorker = null;
       window.removeEventListener('online', checkForUpdate);
       document.removeEventListener('visibilitychange', checkForUpdate);
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
