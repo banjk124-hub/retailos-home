@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111827" />
+    <title>RetailOS Scanner Decoder Benchmark</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0b1220; color: #e5e7eb; }
+      body { max-width: 960px; margin: 0 auto; padding: 28px 18px 64px; }
+      h1 { font-size: 1.55rem; margin: 0 0 8px; }
+      p { color: #aab4c5; line-height: 1.55; }
+      .panel { background: #121d30; border: 1px solid #26364e; border-radius: 14px; padding: 18px; margin: 16px 0; }
+      label { display: block; font-weight: 600; margin: 12px 0 6px; }
+      input, button { font: inherit; }
+      input[type=file], input[type=number] { display: block; width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #34445d; border-radius: 8px; background: #0d1728; color: #e5e7eb; }
+      button { border: 0; border-radius: 9px; padding: 11px 18px; background: #e11d48; color: white; font-weight: 700; cursor: pointer; }
+      button:disabled { opacity: .5; cursor: wait; }
+      pre { overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #080e19; padding: 14px; border-radius: 9px; color: #cbd5e1; }
+      .hint { font-size: .9rem; }
+      .row { display: grid; grid-template-columns: 1fr 140px; gap: 14px; align-items: end; }
+      @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <h1>RetailOS — Decoder Benchmark Lab</h1>
+    <p>Dev-only tool. Runs the existing ZXing JS and ZXing-C++ WASM adapters against the same labelled images and strict source-frame ROI. It does not access the camera or alter production backend selection.</p>
+    <section class="panel">
+      <label for="manifest">1. Corpus manifest (JSON)</label>
+      <input id="manifest" type="file" accept="application/json,.json" />
+      <label for="images">2. Image files (select all corpus images)</label>
+      <input id="images" type="file" accept="image/*" multiple />
+      <div class="row">
+        <div>
+          <label for="repeats">3. Repeats per image</label>
+          <input id="repeats" type="number" min="1" max="10" value="3" />
+        </div>
+        <div>
+          <label><input id="reverse" type="checkbox" /> Reverse backend order</label>
+          <button id="run" disabled>Run benchmark</button>
+        </div>
+      </div>
+      <p class="hint">Ground-truth payloads are used only in memory for exact-match scoring. The exported report never includes barcode payloads or image pixels.</p>
+    </section>
+    <section class="panel">
+      <strong id="status">Waiting for a manifest and image files.</strong>
+      <pre id="report">No benchmark has been run.</pre>
+      <button id="download" disabled>Export JSON report</button>
+    </section>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

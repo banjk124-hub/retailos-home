@@ -1,3 +1,28 @@
+# Current scanner decoder replacement status — 2026-11-14
+
+**Current main:** `e5e85eda44b1de40d29e6b6fa3131514414fecb0` (PR #111 merged).
+**Current work:** PR-05 benchmark foundation on `feat/scanner-decoder-benchmark-foundation`.
+**Production default:** ZXing JS. ZXing-C++ WASM remains opt-in; no backend cutover is authorized or implied.
+
+## Verified sequence
+- PR #107 — Phase 0 source/dependency audit: merged.
+- PR #108–#109 — injectable decoder factory and contract validation: merged.
+- PR #110 — opt-in ZXing-C++ WASM candidate: merged; production default unchanged.
+- PR #111 — shared sync/async recognition candidate pipeline: merged; CI run #1010 passed.
+- PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision. Physical corpus/device measurements remain outstanding.
+
+## Current evidence gap
+CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not select a production backend or remove recognition stages until those measurements exist.
+
+## PR-05 exit boundary
+- [ ] Full preflight, TypeScript, production build and GitHub Pages build pass.
+- [ ] Dev-only benchmark page is excluded from production entry points/bundle.
+- [ ] The same labelled images, active-format allowlist and strict source-frame ROI can be run through both adapters.
+- [ ] Positive and negative controls, exact-match scoring, errors, initialization time and p50/p95 adapter duration are exported without barcode payloads.
+- [ ] Physical corpus and iOS Safari/PWA + Android Chrome/PWA runs are collected separately after the harness is merged and available.
+- [ ] No default backend switch, camera/session/lifecycle/UI or business workflow changes.
+
+---
 # Cross-feature UI stabilization track — 2026-11-14
 
 **PR:** #102, branch `fix/ux-cross-platform-core-audit`, Draft. This track is separate from the scanner recognition roadmap below.
