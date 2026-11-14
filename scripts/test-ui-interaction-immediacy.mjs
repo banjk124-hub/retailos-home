@@ -51,6 +51,10 @@ assert.ok(topbarMotionStart >= 0 && topbarMotionEnd > topbarMotionStart, 'Topbar
 assert.doesNotMatch(topbarMotion, /box-shadow|background-position/, 'Topbar ambient motion must remain on composited properties rather than repaint-heavy box-shadow/background-position changes.');
 assert.match(stocktake, /const currentEntries = entries;/, 'Stocktake active entries must reuse the already scoped and sorted state snapshot.');
 assert.match(stocktake, /const STOCKTAKE_LIST_PAGE_SIZE = 100/, 'Large Stocktake lists must use a bounded render window.');
+assert.match(stocktake, /function yieldToNextPaint\(\)/, 'Large Stocktake export must allow its busy response to paint before file generation.');
+const stocktakeExport = blockBetween(stocktake, 'const exportCurrentZone = async', 'const clearAll = async');
+assert.ok(stocktakeExport.indexOf('setBusy(true)') < stocktakeExport.indexOf('await yieldToNextPaint()'), 'Stocktake export must publish its busy state before building the file.');
+assert.ok(stocktakeExport.indexOf('await yieldToNextPaint()') < stocktakeExport.indexOf('createStocktakeFile('), 'Stocktake export must yield a paint before synchronous file generation.');
 assert.match(stocktake, /visibleReviewEntries\.map/, 'Stocktake review must render only the current bounded slice.');
 assert.match(stocktake, /visibleHistoryLogs\.map/, 'Stocktake history must render only the current bounded slice.');
 assert.doesNotMatch(stocktake, /currentEntries\.map\(/, 'Stocktake review must not mount every row at once.');
