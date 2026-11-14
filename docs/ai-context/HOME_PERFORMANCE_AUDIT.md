@@ -103,4 +103,16 @@ This is not yet a full transitive dependency-pruning pass. Do not remove transit
 - Compare before/after initial entry gzip, Home dynamic closure, parse/compile cost, long tasks, interaction latency and render duration. Bundle gzip alone is not a runtime-performance proof.
 - Keep scanner camera/decoder contracts, auth/session, module IDs, Apps Script payloads, IndexedDB schemas, service-worker lifecycle and GitHub Pages base path unchanged.
 
+## Bundle evidence
+
+CI #956 compared the source before global legacy-selector pruning with the branch containing Home-only CSS cleanup and the dependency/search changes:
+
+- Total emitted gzip estimate: 345,607 B baseline → 342,555 B current (-3,052 B, -0.9%).
+- Total emitted raw bytes: 1,286,752 B → 1,270,431 B (-16,321 B, -1.3%).
+- Home stylesheet chunk: 61,671 B raw / 12,954 B gzip → 45,292 B raw / 9,814 B gzip.
+- Home incremental dynamic closure: 29,963 B gzip → 26,818 B gzip.
+- Initial entrypoint remained effectively unchanged at 92,132 B → 92,181 B gzip (+49 B, +0.1%). This is expected because Home CSS is loaded with the lazy Home boundary and Playwright is dev-only.
+
+CI #962 is measuring the additional global CSS pruning. Bundle reports estimate transfer size; they do not measure browser style recalculation, JavaScript parse time, React render duration or tap-to-feedback latency.
+
 Automated source-contract tests are not physical-device performance acceptance. Record actual browser/device traces before claiming that end-user lag is resolved.
