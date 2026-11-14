@@ -10,6 +10,7 @@ const mobileStyles = readFileSync('src/styles/mobile-tuning.css', 'utf8');
 const motionStyles = readFileSync('src/shared/motion/motion.css', 'utf8');
 const homeStyles = readFileSync('src/styles/home.css', 'utf8');
 const responsiveStyles = readFileSync('src/styles/responsive.css', 'utf8');
+const performanceStyles = readFileSync('src/styles/performance.css', 'utf8');
 const loginStyles = readFileSync('src/styles/login-experience.css', 'utf8');
 
 assert.doesNotMatch(home, /Suspense\s+fallback=\{null\}/, 'Lazy-loaded UI must never disappear silently while its chunk is loading.');
@@ -25,6 +26,8 @@ assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The
 assert.match(loginStyles, /animation: identity-panel-reveal[^;]*both/, 'The identity panel must start its reveal animation immediately.');
 assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\s(?:\d+(?:\.\d+)?|\.\d+)(?:ms|s)\s+both/, 'The identity panel must not have a pre-animation delay.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
+assert.match(performanceStyles, /\.scanner-qa-backdrop[\\s\\S]*backdrop-filter: none !important/, 'Mobile performance overrides must cover overlays rendered outside the app shell.');
+assert.match(performanceStyles, /\.auth-journey-recognition__backdrop[\\s\\S]*backdrop-filter: none !important/, 'The mobile identity transition must avoid full-screen backdrop blur work.');
 const topbarMotionStart = mobileStyles.indexOf('@keyframes topbar-dock-float');
 const topbarMotionEnd = mobileStyles.indexOf('@media (max-width: 700px)', topbarMotionStart);
 const topbarMotion = mobileStyles.slice(topbarMotionStart, topbarMotionEnd);
