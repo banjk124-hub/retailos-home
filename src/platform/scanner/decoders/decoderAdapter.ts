@@ -1,6 +1,7 @@
 import type { ScannerGeometry, ScannerSourceScanRegion, ScannerSymbology } from '../contracts';
 import type { ScannerFocusQualitySample } from '../scannerFocusQuality';
 import type { ScannerTemporalSnapshot } from '../scannerTemporalRecognition';
+import type { ScannerAdaptiveRuntimeBudget } from '../scannerAdaptiveRuntimeController';
 
 /** A decoded value before it is accepted by the shared scanner policy. */
 export type DecoderOutput = {
@@ -26,6 +27,8 @@ export type DecoderDecodeOptions = {
   onFocusQuality?: (sample: ScannerFocusQualitySample) => void;
   /** Low-rate copied grayscale ROI snapshot; never exposes the live canvas. */
   onTemporalFrame?: (snapshot: ScannerTemporalSnapshot, quality: ScannerFocusQualitySample) => void;
+  /** A3 runtime budget only bounds optional fallback candidates; baseline and T3 remain intact. */
+  processingBudget?: ScannerAdaptiveRuntimeBudget;
 };
 
 /**
@@ -38,6 +41,6 @@ export interface ScannerDecoderAdapter {
   /** Strict ROI input: missing or invalid geometry must not trigger full-frame decoding. */
   decode(source: CanvasImageSource, options: DecoderDecodeOptions): Promise<DecoderOutput[]>;
   /** Decode an owned historical grayscale ROI snapshot through the same enhancement/validation boundary. */
-  decodeTemporalSnapshot(snapshot: ScannerTemporalSnapshot, timestamp: number): Promise<DecoderOutput[]>;
+  decodeTemporalSnapshot(snapshot: ScannerTemporalSnapshot, timestamp: number, processingBudget?: ScannerAdaptiveRuntimeBudget): Promise<DecoderOutput[]>;
   dispose(): Promise<void> | void;
 }
