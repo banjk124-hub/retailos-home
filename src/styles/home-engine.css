@@ -226,6 +226,7 @@
   .app-shell .library-engine { grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
   .app-shell .library-engine__group { min-height:228px; padding:22px; }
   .app-shell .home-spotlight { min-height:270px; }
+  .app-shell .lower-grid { grid-template-columns:minmax(0,1fr); }
 }
 @media (min-width:701px) and (max-width:1099px) {
   .app-shell .content-wrap.home-content { padding:24px 24px 110px; }
@@ -258,6 +259,7 @@
   .app-shell .library-engine__modules { gap:5px; margin-top:12px; }
   .app-shell .library-engine__modules > span { font-size:10px; padding:5px 7px; min-height:28px; }
   .app-shell .library-engine__footer { padding-top:14px; }
+  .app-shell .lower-grid { grid-template-columns:minmax(0,1fr); }
   .app-shell .topbar.home-topbar { margin:0; border-radius:0 0 22px 22px; }
   .app-shell .topbar-dock { padding:10px 13px; gap:10px; }
   .app-shell .topbar-actions { gap:6px; }
