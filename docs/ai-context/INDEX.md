@@ -1,6 +1,6 @@
 # Documentation index
 
-- `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` — input-to-first-feedback contract, confirmed causes and remaining audit scope.
+- `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` — input-to-first-feedback contract, confirmed causes and remaining audit scope.\n- `HOME_PERFORMANCE_DEBT_AUDIT.md` — Home render isolation, snapshot I/O, CSS cascade and dependency audit.
 
 This is the navigation layer for repository documentation. Read the canonical document for a topic; do not copy the same implementation history into several files.
 
