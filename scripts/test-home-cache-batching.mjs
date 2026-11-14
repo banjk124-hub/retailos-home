@@ -16,6 +16,11 @@ assert.ok(home.includes('const MemoizedStocktakeModule = memo(StocktakeModule)')
 assert.ok(home.includes('const MemoizedStocktakeImportModule = memo(StocktakeImportModule)'), 'The Stocktake Import tree must be memoized.');
 assert.ok(home.includes('const MemoizedBarcodeScanner = memo(BarcodeScanner)'), 'The scanner presentation must be memoized.');
 assert.ok(home.includes('const MemoizedLiquidDock = memo(LiquidDock)'), 'The navigation dock must be memoized.');
+assert.ok(home.includes('const dockItems = navItems.map('), 'Dock navigation items must have stable identity.');
+assert.ok(home.includes('const openBarcodeScanner = useCallback('), 'The scanner dock action callback must be stable.');
+assert.ok(home.includes('const scannerAction = useMemo('), 'The scanner dock action object must have stable identity.');
+assert.ok(home.includes('action={scannerAction}'), 'The memoized dock must receive the stable scanner action object.');
+
 assert.ok(home.includes('const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);'), 'Stocktake close callback must remain stable.');
 assert.ok(home.includes('const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);'), 'Stocktake Import close callback must remain stable.');
 assert.ok(home.includes('<MemoizedStocktakeModule employee={employee} onClose={closeStocktake} />'), 'Stocktake must receive the stable close callback.');
