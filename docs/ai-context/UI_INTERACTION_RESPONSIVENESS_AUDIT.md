@@ -33,9 +33,9 @@ Starting/resuming a zone, opening review, saving/deleting an entry, exporting an
 
 ### 4. Interactive entry animations had explicit pre-start delays
 
-The shared motion layer, Home entry styles, mobile login panel, Home notifications, older library card styles and the authenticated identity panel included stagger delays. Those delays postpone the start of the animation itself.
+The shared motion layer, Home entry styles, mobile login panel, Home notifications, older library card styles, barcode result rows and the authenticated identity panel included stagger delays. Those delays postpone the start of the animation itself.
 
-**Change:** Removed the pre-start delays from the affected UI entry paths, including the 160ms delay on the authenticated identity panel. Decorative brand and ambient animation timing is not changed. The topbar's continuous ambient motion now animates only transform/opacity; it no longer animates box-shadow or background-position on every frame.
+**Change:** Removed the pre-start delays from the affected UI entry paths, including the 160ms delay on the authenticated identity panel and the 45ms/90ms stagger on barcode result rows. Redundant 0ms delays were also removed. Decorative brand and ambient animation timing is not changed. The topbar's continuous ambient motion now animates only transform/opacity; it no longer animates box-shadow or background-position on every frame.
 
 
 ### 5. Active Stocktake entries were filtered and sorted on every render
@@ -74,7 +74,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 
 - No silent root or nested lazy fallback while a feature chunk loads.
 - No auto-hidden primary chrome/wake-tap behavior.
-- No stagger delay on the audited page, dock, Home, mobile login, authenticated identity panel, notice and interactive card entry paths.
+- No stagger delay on the audited page, dock, Home, mobile login, authenticated identity panel, notice, interactive card and barcode result entry paths.
 - Topbar ambient keyframes avoid repaint-heavy properties.
 - Mobile blur-budget overrides cover modal siblings outside the app shell.
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
@@ -87,7 +87,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 The changes above are confirmed source-level findings, not a declaration that every interaction path is already clean. Remaining audit areas:
 
 - HomeScreen render cost and state fan-out during search, navigation, overlay handoff and notification updates.
-- Large Stocktake entry sets and Stocktake Import validation/render cost.
+- Physical profiling of large Stocktake datasets and Stocktake Import tables on low/mid-range devices.
 - Scanner presentation open/close handoff and camera lifecycle boundaries.
 - Shared GlassSurface, overlay stacking, pointer hit-testing and CSS compositing on mobile Safari/Chrome.
 - Desktop, Android Chrome/PWA, iOS Safari and iOS Home Screen PWA physical acceptance.
