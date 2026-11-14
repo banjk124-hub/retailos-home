@@ -92,6 +92,10 @@ assert.ok(historyExport.indexOf('await yieldToNextPaint()') < historyExport.inde
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 assert.match(scannerQa, /const ScannerQaEventRow = memo\(/, 'Existing diagnostic rows must not re-render when a new event is appended.');
 assert.match(scannerQa, /filtered\.map\(\(event\) => <ScannerQaEventRow/, 'Scanner QA must render diagnostics through memoized event rows.');
+const scannerCopy = blockBetween(scannerQa, 'const copyReport = async', 'return <div className="scanner-qa-backdrop"');
+assert.ok(scannerCopy.indexOf("setCopyState('copying')") < scannerCopy.indexOf('navigator.clipboard.writeText'), 'Scanner QA copy must acknowledge the action before awaiting Clipboard.');
+assert.match(scannerQa, /disabled=\{copyState === 'copying'\} aria-busy=\{copyState === 'copying'\}/, 'Scanner QA copy must prevent duplicate clicks while Clipboard is pending.');
+assert.match(scannerQa, /copyState === 'copying' \? 'Đang sao chép…'/, 'Scanner QA must show immediate pending copy feedback.');
 
 function blockBetween(source, start, end) {
   const startIndex = source.indexOf(start);
