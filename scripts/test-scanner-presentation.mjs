@@ -20,7 +20,7 @@ assert.ok(attachAt >= 0 && playAt > attachAt && frameReadyAt > playAt
   && previewReadyAt > frameReadyAt && decoderAt > previewReadyAt
   && decoderMethodAt > decoderAt && decoderImportAt > decoderMethodAt,
 'startup must attach/play the stream, publish a usable preview, then dynamically load and initialize the decoder');
-assert.doesNotMatch(sessionSource, /import \\{\\s*ZXingDecoderAdapter\\s*\\} from ['\"]\\.\\/decoders\\/zxingDecoder/,
+assert.ok(!sessionSource.includes("import { ZXingDecoderAdapter } from './decoders/zxingDecoder'"),
   'the heavy ZXing implementation must not be part of the scanner session static dependency graph');
 
 assert.match(sessionSource, /video\.readyState >= HTMLMediaElement\.HAVE_CURRENT_DATA/,
