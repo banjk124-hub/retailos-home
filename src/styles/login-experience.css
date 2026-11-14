@@ -317,7 +317,7 @@
   box-shadow: 0 24px 60px rgba(13,9,12,.34), inset 0 1px 0 rgba(255,255,255,.18);
   opacity: 0;
   transform: translateY(12px) scale(.985);
-  animation: identity-panel-reveal var(--motion-duration-emphasized) var(--motion-ease-enter) 160ms both;
+  animation: identity-panel-reveal var(--motion-duration-emphasized) var(--motion-ease-enter) both;
 }
 .auth-journey-recognition__brand { display: inline-flex; justify-self: center; }
 .auth-journey-recognition__identity {
