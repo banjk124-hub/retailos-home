@@ -26,12 +26,13 @@ This document records the production loading and update contracts introduced by 
 ## Service worker lifecycle (P3–P4)
 
 - `src/sw/service-worker.template.js` is the only maintained worker source. Vite emits `dist/sw.js` and injects a deployment-specific build ID, app base path and current hashed asset allowlist.
-- The worker is registered centrally by `PwaUpdatePrompt` with `updateViaCache: 'none'`.
+- The worker is registered centrally by `PwaUpdatePrompt` with `updateViaCache: 'none'` and the Vite `BASE_URL`, so the GitHub Pages project path is preserved on desktop, Android and iOS.
 - Update checks run at startup, when the app returns to the foreground, and when connectivity returns.
-- A newly installed worker waits. The user must explicitly accept an update; the worker then verifies there are no other open RetailOS windows before calling `skipWaiting()`. This prevents one tab from replacing assets while another tab is still using the old application.
+- A newly installed worker waits. The user must explicitly accept an update; the worker then verifies there are no other open RetailOS windows **inside this RetailOS project path** before calling `skipWaiting()`. Other GitHub Pages projects on the same origin do not block this deployment. This prevents one RetailOS tab from replacing assets while another RetailOS tab is still using the old application.
 - On activation, only RetailOS-owned old cache namespaces are deleted. IndexedDB databases and business snapshots are not touched.
-- Navigation uses Network First with cached app-shell fallback.
-- Build-manifest JS/CSS/font/image assets and same-origin public media are included in the current release allowlist and use Cache First. Old hashed assets are not copied into the new release cache.
+- Navigation uses Network First with cached app-shell fallback. Cache writes are best-effort: Cache Storage quota/write failures must not discard a successful network response.
+- Cache Storage read failures fall through to network. If the device is offline and the shell cache is unavailable, navigation cannot be guaranteed.
+- Build-manifest JS/CSS/font/image assets and same-origin public media are included in the current release allowlist and use Cache First. Assets are cached on first successful use, not all precached at install. A module/chunk never opened before going offline may therefore still require a network connection. Old hashed assets are not copied into the new release cache.
 - Push subscriptions reuse the centrally registered worker. Feature code must not register the same worker independently with different options.
 
 ## Protected contracts
@@ -39,6 +40,7 @@ This document records the production loading and update contracts introduced by 
 - No change to scanner camera ownership, lifecycle, decoder validation, temporal recognition, adaptive A1–A3 policies, ROI, or module presentation ownership.
 - No change to Stocktake persistence, IndexedDB schema, import history, or explicit save semantics.
 - No automatic worker takeover or reload without user acceptance.
+- Update observers are removed on component unmount; the shared registration promise prevents duplicate registration during React StrictMode remounts.
 - No deployment or merge is implied by this implementation branch.
 
 ## Validation and acceptance (P5)
@@ -50,15 +52,27 @@ Required automated validation:
 - Bundle manifest/report generation.
 - PWA cache policy tests.
 
-Required release validation after deployment:
-1. Fresh install: worker installs and controls the app without an unsolicited reload.
-2. Second release: update prompt appears after worker update is detected.
-3. One open tab: accepting update activates the new worker and reloads once.
-4. Multiple tabs: update is blocked with a clear message until other RetailOS windows close.
-5. Offline: cached app shell and current hashed assets remain available.
-6. Old cache namespaces, including legacy `retailos-shell-v10`, are removed after successful activation.
-7. Push subscription still uses the active registration.
-8. Login, Home, Stocktake, Stocktake Import, scanner, Settings and QA Monitor load their lazy chunks on demand.
-9. Scanner lifecycle and stocktake persistence regression suites remain green.
+## Cross-platform acceptance matrix
 
-Real-device transfer and rendering performance must be measured after deployment; CI bundle sizes alone do not prove runtime improvement.
+The app shell, Vite base path, service-worker registration contract, iOS viewport safe-area behavior, responsive update prompt and inline scanner video behavior are covered by the automated compatibility contract test. This is source-level coverage, not proof of real-device behavior.
+
+| Platform | Browser / installation mode | Required device acceptance |
+|---|---|---|
+| Desktop | Chrome and Edge; browser tab and installed PWA where available | Fresh install, update prompt, one-tab update, multi-tab lock, offline shell, lazy feature loading, push where supported |
+| Android | Chrome tab and installed PWA | Camera permission and preview, background/resume, update prompt, multiple tabs, offline cached features, push permission and click-through |
+| iOS / iPadOS | Safari tab and Home Screen web app | Safe-area layout, standalone launch, camera inline preview, background/resume, update detection/acceptance, offline cached features; verify push only on supported installed-web-app versions |
+
+Required release validation after deployment:
+1. Fresh install on each platform: worker installs and controls the app without an unsolicited reload.
+2. Publish a second release: update prompt appears after worker update is detected.
+3. One open RetailOS tab: accepting update activates the new worker and reloads once.
+4. Multiple RetailOS tabs/windows: update is blocked with a clear message until other RetailOS windows close.
+5. Open a module once, then go offline: app shell and previously fetched allowlisted assets remain available.
+6. Open a never-before-loaded lazy module while offline: verify graceful error/retry behavior; do not claim this chunk is precached.
+7. Open another same-origin project path: it must not block a RetailOS update.
+8. Old cache namespaces, including legacy `retailos-shell-v10`, are removed after successful activation.
+9. Push subscription and notification click-through still use the active registration on supported platforms.
+10. Login, Home, Stocktake, Stocktake Import, scanner, Settings and QA Monitor load their lazy chunks on demand.
+11. Scanner lifecycle, camera resume and stocktake persistence regression suites remain green.
+
+Real-device transfer, camera behavior and rendering performance must be measured after deployment. CI bundle sizes and VM worker tests do not prove iOS/Android runtime behavior; A4 is not device-accepted until this matrix is executed on physical devices.
