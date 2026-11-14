@@ -497,15 +497,8 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     this.diagnosticLastScaleFactor = 0;
     this.diagnosticLastDeskewAngleDegrees = 0;
     this.diagnosticRoiSourceScale = 1;
-    this.lastImageQuality = null;
-    this.lastImageQualityProfile = null;
-    this.lastAdaptiveProcessingPlan = null;
-    this.cachedOrientationHints = null;
-    this.lastFocusAt = 0;
-    this.previousFocusPixels = null;
-    this.previousFocusKey = null;
-    this.previousFocusWidth = 0;
-    this.previousFocusHeight = 0;
+    // Window rollover resets counters only. Recognition history and the latest
+    // quality observations are runtime state, not diagnostics, and must survive.
   }
 
   dispose(): void {
