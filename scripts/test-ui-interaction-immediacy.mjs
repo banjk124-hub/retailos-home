@@ -84,6 +84,11 @@ assert.match(stocktakeImport, /aria-label=\{\'Mã hàng dòng \' \+ row\.sourceR
 assert.match(stocktakeImport, /aria-label=\{\'Kết quả thực tế dòng \' \+ row\.sourceRow\} disabled=\{busy\}/, 'Quantity fields must not accept edits while the active zone is being saved.');
 assert.match(stocktakeImport, /onClick=\{resetActiveSession\}>Tạo phiên mới/, 'The new-session confirmation action must remain present.');
 assert.match(stocktakeImport, /disabled=\{busy\} onClick=\{resetActiveSession\}/, 'Session reset must not race with another pending write.');
+const historyExportStart = stocktakeImport.indexOf('setHistoryExportingId(item.id)');
+const historyExportEnd = stocktakeImport.indexOf('aria-label="Tải lại kết quả"', historyExportStart);
+const historyExport = stocktakeImport.slice(historyExportStart, historyExportEnd);
+assert.ok(historyExport.indexOf('setHistoryExportingId(item.id)') < historyExport.indexOf('await yieldToNextPaint()'), 'History ZIP export must publish its spinner before packaging.');
+assert.ok(historyExport.indexOf('await yieldToNextPaint()') < historyExport.indexOf('new JSZip()'), 'History ZIP packaging must begin after the spinner has had a paint opportunity.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
 assert.match(scannerQa, /const ScannerQaEventRow = memo\(/, 'Existing diagnostic rows must not re-render when a new event is appended.');
 assert.match(scannerQa, /filtered\.map\(\(event\) => <ScannerQaEventRow/, 'Scanner QA must render diagnostics through memoized event rows.');
