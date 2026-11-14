@@ -104,7 +104,7 @@ const checks = [
     args: ["scripts/test-scanner-preview-region.mjs"],
   },
   {
-    name: "Scanner decoder capability parity tests",
+    name: "Scanner WASM capability and shared pipeline contract tests",
     command: process.execPath,
     args: ["scripts/test-scanner-decoder-capability-parity.mjs"],
   },
@@ -112,6 +112,11 @@ const checks = [
     name: "Scanner decoder adapter/factory contract tests",
     command: process.execPath,
     args: ["scripts/test-scanner-decoder-factory.mjs"],
+  },
+  {
+    name: "Scanner WASM-only architecture and legacy cleanup contract tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-wasm-only-contract.mjs"],
   },
   {
     name: "ZXing-C++ WASM production adapter contract tests",
