@@ -92,7 +92,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 - Mobile blur-budget overrides cover modal siblings outside the app shell.
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
 - Scanner QA Copy JSON acknowledges immediately and locks duplicate clicks until Clipboard resolves.
-- Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state. Large TXT export yields one paint after showing busy feedback and before synchronous file generation.
+- Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state. Large TXT export yields one paint after showing busy feedback and before synchronous file generation. The busy surface includes a spinner whose animation begins on mount.
 - Stocktake Import paints its busy response before CPU-heavy validation, merge and ZIP setup; copy acknowledges before awaiting Clipboard.
 - Stocktake review and history do not mount unbounded lists in one render.
 - Stocktake session zones and exports are memoized rather than repeatedly filtered during render.
