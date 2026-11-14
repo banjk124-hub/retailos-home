@@ -26,8 +26,8 @@ assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The
 assert.match(loginStyles, /animation: identity-panel-reveal[^;]*both/, 'The identity panel must start its reveal animation immediately.');
 assert.doesNotMatch(loginStyles, /animation: identity-panel-reveal[^;]*\s(?:\d+(?:\.\d+)?|\.\d+)(?:ms|s)\s+both/, 'The identity panel must not have a pre-animation delay.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
-assert.match(performanceStyles, /\.scanner-qa-backdrop[\\s\\S]*backdrop-filter: none !important/, 'Mobile performance overrides must cover overlays rendered outside the app shell.');
-assert.match(performanceStyles, /\.auth-journey-recognition__backdrop[\\s\\S]*backdrop-filter: none !important/, 'The mobile identity transition must avoid full-screen backdrop blur work.');
+assert.match(performanceStyles, /\.scanner-qa-backdrop[\s\S]*backdrop-filter: none !important/, 'Mobile performance overrides must cover overlays rendered outside the app shell.');
+assert.match(performanceStyles, /\.auth-journey-recognition__backdrop[\s\S]*backdrop-filter: none !important/, 'The mobile identity transition must avoid full-screen backdrop blur work.');
 const topbarMotionStart = mobileStyles.indexOf('@keyframes topbar-dock-float');
 const topbarMotionEnd = mobileStyles.indexOf('@media (max-width: 700px)', topbarMotionStart);
 const topbarMotion = mobileStyles.slice(topbarMotionStart, topbarMotionEnd);
