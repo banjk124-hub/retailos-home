@@ -16,8 +16,8 @@ function retailosPwaArtifacts(): Plugin {
       publicDirectory = config.publicDir || '';
     },
     generateBundle(_options, bundle) {
-      const isCacheableAsset = (file: string) => /\\.(?:js|css|woff2?|ttf|otf|png|jpe?g|svg|webp|avif)$/i.test(file);
-      const bundledAssets = Object.keys(bundle).filter((file) => /^assets\\//.test(file) && isCacheableAsset(file));
+      const isCacheableAsset = (file: string) => /\.(?:js|css|woff2?|ttf|otf|png|jpe?g|svg|webp|avif)$/i.test(file);
+      const bundledAssets = Object.keys(bundle).filter((file) => /^assets\//.test(file) && isCacheableAsset(file));
       const publicAssets: string[] = [];
       const collectPublicAssets = (directory: string) => {
         if (!directory || !publicDirectory) return;
