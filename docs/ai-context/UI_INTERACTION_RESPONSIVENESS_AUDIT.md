@@ -46,9 +46,9 @@ The active-zone entry state was already scoped and sorted by the storage loader,
 
 ### 6. Expensive derived validation ran during unrelated renders
 
-Stocktake Import recalculated row-level validation for the active zone and every zone on each render, including renders caused only by notice, page or editing UI state. Scanner QA recalculated its aggregate summary whenever its filter/copy state changed and re-rendered every diagnostic row whenever a new event arrived, even though existing event objects are immutable.
+Stocktake Import recalculated row-level validation for the active zone and every zone on each render, including renders caused only by notice, page or editing UI state. Scanner QA recalculated its aggregate summary whenever its filter/copy state changed and re-rendered every diagnostic row whenever a new event arrived, even though existing event objects are immutable. Its Copy JSON action also waited for the Clipboard promise before showing any response.
 
-**Change:** Memoized these derived values against the data snapshots they actually depend on. Scanner QA event rows are now memoized individually, so appending a new event does not re-render the existing 1,000-row history. This does not add asynchronous work or change validation rules.
+**Change:** Memoized these derived values against the data snapshots they actually depend on. Scanner QA event rows are now memoized individually, so appending a new event does not re-render the existing 1,000-row history. Copy JSON now enters an immediate pending state and prevents duplicate clicks while Clipboard is pending. This does not add asynchronous work or change validation rules.
 
 ### 7. Stocktake Import did synchronous work before publishing action feedback
 
@@ -91,6 +91,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 - Topbar ambient keyframes avoid repaint-heavy properties.
 - Mobile blur-budget overrides cover modal siblings outside the app shell.
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
+- Scanner QA Copy JSON acknowledges immediately and locks duplicate clicks until Clipboard resolves.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state. Large TXT export yields one paint after showing busy feedback and before synchronous file generation.
 - Stocktake Import paints its busy response before CPU-heavy validation, merge and ZIP setup; copy acknowledges before awaiting Clipboard.
 - Stocktake review and history do not mount unbounded lists in one render.
