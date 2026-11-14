@@ -76,7 +76,7 @@ const assertGain = (actual, expected, message) => {
 };
 
 const contractsSource = await read('../src/platform/scanner/contracts.ts');
-const formatsMatch = contractsSource.match(/SUPPORTED_BARCODE_FORMATS = \\[([\\s\\S]*?)\\] as const/);
+const formatsMatch = contractsSource.match(/SUPPORTED_BARCODE_FORMATS = \[([\s\S]*?)\] as const/);
 const formats = [...formatsMatch[1].matchAll(/'([A-Z0-9_]+)'/g)].map((match) => match[1]);
 let rawStoreSource = await read('../src/features/scanner/services/scannerSettingsStore.ts');
 rawStoreSource = rawStoreSource.replace(
