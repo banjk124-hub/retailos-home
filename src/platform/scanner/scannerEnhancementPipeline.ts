@@ -24,6 +24,8 @@ export type ScannerEnhancementCandidate = ScannerLuminanceFrame & {
 };
 export type ScannerEnhancementPipelineOptions = {
   cachedOrientationHints?: ScannerOrientationHints | null;
+  /** Which layer owns 90°/180°/270° recognition. Decoder-native avoids duplicate pixel rotation. */
+  orthogonalRotationOwner?: 'shared-pipeline' | 'decoder';
   reuseOrientationHints?: boolean;
   onImageQuality?: (quality: ScannerImageQuality) => void;
   imageQuality?: ScannerImageQuality | null;
@@ -39,6 +41,7 @@ export type ScannerEnhancementPipelineResult<T> = {
   matchedAngleDegrees: number | null;
   lastDeskewAngleDegrees: number | null;
   rotationAttempted: boolean;
+  rotationDelegatedToDecoder: boolean;
   deskewAttempts: number;
   deskewEstimateMisses: number;
   reusedOrientation: boolean;
@@ -60,6 +63,7 @@ function createState(options: ScannerEnhancementPipelineOptions): PipelineState 
     matchedAngleDegrees: null,
     lastDeskewAngleDegrees: null,
     rotationAttempted: false,
+    rotationDelegatedToDecoder: options.orthogonalRotationOwner === 'decoder',
     deskewAttempts: 0,
     deskewEstimateMisses: 0,
     reusedOrientation: false,
@@ -100,12 +104,15 @@ function* iterateScannerEnhancementCandidates(
 ): Generator<ScannerEnhancementCandidate> {
   yield { ...source, stage: 'baseline', orientation: 'upright' };
 
-  const rotationStartedAt = now();
-  const rotated = rotateLuminance90Clockwise(source.luminance, source.width, source.height);
-  onStageCost?.('rotation_90_clockwise', now() - rotationStartedAt);
-  if (rotated) {
-    state.rotationAttempted = true;
-    yield { ...rotated, stage: 'orthogonal', orientation: 'rotated_90' };
+  let rotated: ReturnType<typeof rotateLuminance90Clockwise> = null;
+  if (options.orthogonalRotationOwner !== 'decoder') {
+    const rotationStartedAt = now();
+    rotated = rotateLuminance90Clockwise(source.luminance, source.width, source.height);
+    onStageCost?.('rotation_90_clockwise', now() - rotationStartedAt);
+    if (rotated) {
+      state.rotationAttempted = true;
+      yield { ...rotated, stage: 'orthogonal', orientation: 'rotated_90' };
+    }
   }
 
   const deskewStartedAt = now();
