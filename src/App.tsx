@@ -246,15 +246,15 @@ export default function App() {
     <div className="retailos-interface">
       <Suspense fallback={<div className="retailos-interface" aria-busy="true" />}>
         <div className={isLeavingHome ? 'app-transition-leave' : ''}>
-        <HomeScreen
+          <HomeScreen
           employee={employee}
           department={department}
           onLogout={handleLogout}
           isEnteringHome={isEnteringHome}
           isOffline={isOffline}
           canInstall={canInstall}
-          onInstall={handleInstall}
-        />
+            onInstall={handleInstall}
+          />
         </div>
       </Suspense>
     </div>
