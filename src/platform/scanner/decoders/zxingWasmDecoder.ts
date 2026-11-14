@@ -236,6 +236,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
           {
             cachedOrientationHints: this.cachedOrientationHints,
             reuseOrientationHints: !scale.baseline,
+            orthogonalRotationOwner: 'decoder',
             imageQuality: sampledQuality,
             onImageQuality: (quality) => { this.lastImageQuality = quality; },
             onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
@@ -289,6 +290,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
         {
           cachedOrientationHints: this.cachedOrientationHints,
           reuseOrientationHints: true,
+          orthogonalRotationOwner: 'decoder',
           onImageQuality: (quality) => { this.lastImageQuality = quality; },
           onProcessingPlan: (plan) => { this.lastAdaptiveProcessingPlan = plan; },
           processingBudget,
