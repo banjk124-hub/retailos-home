@@ -1,5 +1,5 @@
 export const BENCHMARK_SYMBOLOGIES = Object.freeze(['EAN_8', 'EAN_13', 'UPC_A', 'UPC_E', 'CODE_128', 'CODE_39', 'CODE_93', 'ITF', 'CODABAR', 'QR_CODE', 'DATA_MATRIX', 'PDF_417', 'AZTEC', 'RSS_14', 'RSS_EXPANDED', 'MAXICODE', 'MICRO_QR_CODE']);
-export const BENCHMARK_BACKENDS = Object.freeze(['zxing-js', 'zxing-wasm']);
+export const BENCHMARK_BACKENDS = Object.freeze(['zxing-wasm']);
 
 export function validateBenchmarkManifest(manifest) {
   const errors = [];
