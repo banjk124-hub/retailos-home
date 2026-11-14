@@ -1,4 +1,4 @@
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import path from 'node:path';
 
