@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
@@ -18,7 +17,7 @@ function retailosPwaArtifacts(): Plugin {
       const assetFiles = Object.keys(bundle).filter((file) =>
         /^assets\//.test(file) && /\.(?:js|css|woff2?|ttf|otf|png|jpe?g|svg|webp|avif)$/i.test(file)
       ).sort();
-      const buildId = createHash('sha256').update(assetFiles.join('|')).digest('hex').slice(0, 12);
+      const buildId = (process.env.GITHUB_SHA || Date.now().toString(36)).slice(0, 12);
       const template = readFileSync(resolve(projectRoot, 'src/sw/service-worker.template.js'), 'utf8');
       const worker = template
         .replace('__BUILD_ID__', buildId)
