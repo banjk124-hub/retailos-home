@@ -8,7 +8,7 @@ const compiled = ts.transpileModule(optionsSource, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { createZXingWasmReaderOptions } = await import(moduleUrl);
+const { createZXingWasmReaderOptions, runOrderedBinarizerFallback, isZXingWasmReadResultValid } = await import(moduleUrl);
 
 const local = createZXingWasmReaderOptions(['EAN13', 'Code128'], 'LocalAverage');
 const global = createZXingWasmReaderOptions(['EAN13', 'Code128'], 'GlobalHistogram');
@@ -30,6 +30,31 @@ for (const options of [local, global]) {
 }
 assert.equal(local.binarizer, 'LocalAverage');
 assert.equal(global.binarizer, 'GlobalHistogram');
+
+const attempts = [];
+const fallbackOutput = await runOrderedBinarizerFallback(
+  ['LocalAverage', 'GlobalHistogram'],
+  async (binarizer) => {
+    attempts.push(binarizer);
+    return binarizer === 'LocalAverage' ? [] : [{ text: '8938505974195' }];
+  },
+  (results) => results[0]?.text ?? null,
+);
+assert.deepEqual(attempts, ['LocalAverage', 'GlobalHistogram']);
+assert.equal(fallbackOutput, '8938505974195');
+
+const firstHitAttempts = [];
+const firstHit = await runOrderedBinarizerFallback(
+  ['LocalAverage', 'GlobalHistogram'],
+  async (binarizer) => { firstHitAttempts.push(binarizer); return [{ text: 'first-hit' }]; },
+  (results) => results[0]?.text ?? null,
+);
+assert.equal(firstHit, 'first-hit');
+assert.deepEqual(firstHitAttempts, ['LocalAverage'], 'fallback must stop after the first accepted result');
+
+assert.equal(isZXingWasmReadResultValid({ isValid: true, text: '123' }), true);
+assert.equal(isZXingWasmReadResultValid({ isValid: false, text: '123' }), false);
+assert.equal(isZXingWasmReadResultValid({ error: 'ChecksumError' }), false);
 
 const wasm = await read('../src/platform/scanner/decoders/zxingWasmDecoder.ts');
 const legacy = await read('../src/platform/scanner/decoders/zxingDecoder.ts');
