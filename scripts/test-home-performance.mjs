@@ -30,6 +30,7 @@ assert.doesNotMatch(batchReader, /getAll\(/);
 assert.match(home, /getCachedModuleSnapshots\(HOME_NOTICE_MODULE_IDS\)/);
 assert.doesNotMatch(home, /MODULE_DATA_IDS\.map\(getCachedModuleSnapshot\)/);
 assert.doesNotMatch(home, /setInterval\(updateCalendar,\s*60_000\)/);
+assert.equal((home.match(/window\.addEventListener\('scroll'/g) ?? []).length, 1, 'Home must share one scroll listener for active-section tracking and UI persistence.');
 assert.match(home, /nextMidnight/);
 assert.match(home, /visibilitychange/);
 assert.match(home, /items=\{HOME_DOCK_ITEMS\}/);
