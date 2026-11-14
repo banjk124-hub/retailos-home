@@ -21,8 +21,12 @@ assert.ok(attachAt >= 0 && playAt > attachAt && frameReadyAt > playAt
   && previewReadyAt > frameReadyAt && decoderAt > previewReadyAt
   && decoderMethodAt > decoderAt && factoryCreateAt > decoderMethodAt,
 'startup must attach/play the stream, publish a usable preview, then create and initialize the decoder through its factory');
-assert.match(decoderFactorySource, /await import\('\.\/zxingDecoder'\)/,
-  'the default factory must preserve deferred loading of the concrete decoder chunk');
+assert.match(decoderFactorySource, /await import\('\.\/zxingWasmDecoder'\)/,
+  'the production factory must preserve deferred loading of the ZXing-C++ WASM decoder chunk');
+assert.match(decoderFactorySource, /new ZXingWasmDecoderAdapter\(\)/,
+  'the deferred production decoder chunk must instantiate the WASM adapter');
+assert.doesNotMatch(decoderFactorySource, /zxingDecoder|ZXingDecoderAdapter/,
+  'the production factory must not retain a legacy JS selection path');
 assert.doesNotMatch(sessionSource, /zxingDecoder/,
   'the platform session must not depend on the concrete decoder implementation');
 
