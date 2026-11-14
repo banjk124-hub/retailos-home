@@ -104,6 +104,11 @@ const checks = [
     args: ["scripts/test-scanner-decoder-factory.mjs"],
   },
   {
+    name: "ZXing-C++ WASM candidate adapter contract tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-zxing-wasm.mjs"],
+  },
+  {
     name: "Scanner production decoder integration tests",
     command: process.execPath,
     args: ["scripts/test-scanner-decoder-integration.mjs"],
