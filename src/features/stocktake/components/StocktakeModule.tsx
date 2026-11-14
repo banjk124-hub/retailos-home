@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import StocktakeScanner from './StocktakeScanner';
@@ -20,6 +20,7 @@ import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type Screen = 'home' | 'scan' | 'review' | 'history' | 'exports';
+const STOCKTAKE_LIST_PAGE_SIZE = 100;
 
 function localDate(value: string): string {
   return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
@@ -70,6 +71,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [manualEntry, setManualEntry] = useState(false);
   const [busy, setBusy] = useState(true);
+  const [reviewVisibleCount, setReviewVisibleCount] = useState(STOCKTAKE_LIST_PAGE_SIZE);
+  const [historyVisibleCount, setHistoryVisibleCount] = useState(STOCKTAKE_LIST_PAGE_SIZE);
   const [error, setError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
@@ -123,6 +126,12 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
   // loadZoneEntries already scopes and sorts entries for the active zone.
   const currentEntries = entries;
+  const visibleReviewEntries = currentEntries.slice(0, reviewVisibleCount);
+  const currentSessionLogs = useMemo(
+    () => logs.filter((log) => log.sessionId === session?.id),
+    [logs, session?.id],
+  );
+  const visibleHistoryLogs = currentSessionLogs.slice(0, historyVisibleCount);
 
   const loadZoneEntries = async (zone: StocktakeZone) => {
     const allEntries = await stocktakeStore.getEntries();
@@ -157,6 +166,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       });
       setCurrentZone(zone);
       setEntries([]);
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
       setPendingZone(null);
       setZoneInput('');
       setScreen('scan');
@@ -173,6 +183,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     setBusy(true);
     try {
       setCurrentZone(zone);
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
       await loadZoneEntries(zone);
       await logStocktakeAction({
         sessionId: zone.sessionId,
@@ -300,6 +311,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       await loadZoneEntries(currentZone);
       await logStocktakeAction({ sessionId: session.id, zoneId: currentZone.id, action: 'ZONE_REVIEW_OPENED', details: `Mở kiểm tra dữ liệu vùng ${currentZone.zoneCode}, revision ${currentZone.revision}.` });
       await refresh();
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
       setScreen('review');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Không thể mở kiểm tra dữ liệu vùng.');
@@ -353,6 +365,8 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setSession(null);
       setCurrentZone(null);
       setEntries([]);
+      setReviewVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
+      setHistoryVisibleCount(STOCKTAKE_LIST_PAGE_SIZE);
       setZones([]);
       setLogs([]);
       setExports([]);
@@ -429,8 +443,12 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           <div className="stocktake-review-note">Kiểm tra và chỉnh sửa từng dòng trước khi xuất. Barcode trùng nhau được giữ nguyên thành các dòng riêng.</div>
           {currentZone.status !== 'exported' && <button className="stocktake-secondary" type="button" onClick={() => { setEditingEntry(null); setBarcode(''); setQuantity('1'); setManualEntry(true); setScreen('scan'); }}><Plus size={16} /> Thêm dòng thủ công</button>}
           <div className="stocktake-review-list">
-            {currentEntries.map((entry) => <div className="stocktake-review-row" key={entry.id}><div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div><b>{entry.quantity}</b>{currentZone.status !== 'exported' && <><button type="button" onClick={() => { editEntry(entry); setScreen('scan'); }} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button><button type="button" onClick={() => void removeEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button></>}</div>)}
+            {visibleReviewEntries.map((entry) => <div className="stocktake-review-row" key={entry.id}><div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div><b>{entry.quantity}</b>{currentZone.status !== 'exported' && <><button type="button" onClick={() => { editEntry(entry); setScreen('scan'); }} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button><button type="button" onClick={() => void removeEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button></>}</div>)}
             {currentEntries.length === 0 && <p className="stocktake-muted">Chưa có dòng ARTICLE.</p>}
+            {currentEntries.length > visibleReviewEntries.length && <>
+              <p className="stocktake-muted">Đang hiển thị {visibleReviewEntries.length} / {currentEntries.length} dòng.</p>
+              <button className="stocktake-secondary" type="button" onClick={() => setReviewVisibleCount((count) => Math.min(currentEntries.length, count + STOCKTAKE_LIST_PAGE_SIZE))}>Xem thêm {Math.min(STOCKTAKE_LIST_PAGE_SIZE, currentEntries.length - visibleReviewEntries.length)} dòng</button>
+            </>}
           </div>
           <div className="stocktake-export-preview"><small>XEM TRƯỚC ĐỊNH DẠNG FILE</small><code>NHAN VIEN,{session?.employeeCode},YYYY/MM/DD,HH:mm:ss<br />ADRESSE,{currentZone.prefix},{currentZone.number}<br />{currentEntries.slice(0,3).map((entry) => `ARTICLE,${entry.barcode},${entry.quantity}`).join('\n')}{currentEntries.length > 3 ? '\n…' : ''}</code></div>
           {currentZone.status === 'exported' ? <p className="stocktake-review-note">Revision này đã xuất file và được khóa để bảo toàn dữ liệu. Muốn làm lại, nhập lại mã vùng tại màn hình chính để tạo revision mới.</p> : <button className="stocktake-primary" type="button" disabled={currentEntries.length === 0} onClick={() => { if (window.confirm(`Xác nhận xuất ${currentZone.zoneCode} với ${currentEntries.length} dòng? File sẽ được tải về thiết bị.`)) void exportCurrentZone(); }}><Download size={18} /> Xác nhận xuất file</button>}
@@ -444,8 +462,9 @@ export default function StocktakeModule({ employee, onClose }: Props) {
           </div>
           <div className="stocktake-section-title stocktake-history-log-heading">NHẬT KÝ THAO TÁC</div>
           <div className="stocktake-history-list">
-            {logs.filter((log) => log.sessionId === session?.id).map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{actionLabel(log.action)}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
-            {logs.filter((log) => log.sessionId === session?.id).length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
+            {visibleHistoryLogs.map((log) => <article key={log.id}><span className="stocktake-history-icon"><Clock3 size={15} /></span><div><strong>{actionLabel(log.action)}</strong><p>{log.details}</p><small>{localDate(log.timestamp)}</small></div></article>)}
+            {currentSessionLogs.length === 0 && <p className="stocktake-muted">Chưa có lịch sử thao tác.</p>}
+            {currentSessionLogs.length > visibleHistoryLogs.length && <button className="stocktake-secondary" type="button" onClick={() => setHistoryVisibleCount((count) => Math.min(currentSessionLogs.length, count + STOCKTAKE_LIST_PAGE_SIZE))}>Xem thêm {Math.min(STOCKTAKE_LIST_PAGE_SIZE, currentSessionLogs.length - visibleHistoryLogs.length)} nhật ký</button>}
           </div>
         </>}
 
