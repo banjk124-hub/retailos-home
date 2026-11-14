@@ -34,5 +34,8 @@ assert.ok(
 assert.match(bundleReport, /function measureStaticClosure/);
 assert.match(bundleReport, /filter\(\(item\) => item\.isDynamicEntry\)/);
 assert.match(bundleReport, /chunkRaw: entry\.raw/);
+assert.match(bundleReport, /incrementalRaw/);
+assert.match(bundleReport, /initialStaticKeys/,
+  'lazy feature transfer must exclude eager dependencies already loaded at startup');
 await assert.rejects(access(new URL('../public/sw.js', import.meta.url)), { code: 'ENOENT' }, 'legacy static worker must not remain in public');
 console.log('Bundle boundaries and lazy-loading contract tests passed.');
