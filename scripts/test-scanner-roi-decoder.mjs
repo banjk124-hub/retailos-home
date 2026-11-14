@@ -63,7 +63,7 @@ const adapterSource = await readFile(
   'utf8',
 );
 const decoderSource = await readFile(
-  new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
+  new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url),
   'utf8',
 );
 const sessionSource = await readFile(
