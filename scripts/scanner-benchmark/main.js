@@ -61,6 +61,37 @@ function memorySnapshot() {
   return null;
 }
 
+async function loadImageSource(file) {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(file);
+      return { source: bitmap, width: bitmap.width, height: bitmap.height, dispose: () => bitmap.close() };
+    } catch {
+      // Fall through to the HTMLImageElement path for browser-specific file decoder gaps.
+    }
+  }
+  const url = URL.createObjectURL(file);
+  const image = new Image();
+  image.decoding = 'async';
+  image.src = url;
+  try {
+    if (typeof image.decode === 'function') await image.decode();
+    else await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+    });
+    return {
+      source: image,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      dispose: () => URL.revokeObjectURL(url),
+    };
+  } catch (error) {
+    URL.revokeObjectURL(url);
+    throw error;
+  }
+}
+
 function classify(outputs, expected) {
   if (expected === null) return outputs.length ? 'false-positive' : 'true-negative';
   const exact = outputs.some((output) => output.value === expected.value
@@ -83,17 +114,21 @@ async function runBackend(backend, cases, files, repeats) {
     for (const item of cases) {
       const file = files.get(item.image) || files.get(item.image.split(/[\\/]/).pop());
       if (!file) throw new Error(`Missing image file for case ${item.id}: ${item.image}`);
-      const bitmap = await createImageBitmap(file);
+      const loaded = await loadImageSource(file);
       try {
         for (let trial = 1; trial <= repeats; trial += 1) {
           const started = performance.now();
           try {
-            const outputs = await adapter.decode(bitmap, {
+            const outputs = await adapter.decode(loaded.source, {
               timestamp: performance.now(),
               scanRegion: item.scanRegion,
             });
             rows.push({
               caseId: item.id,
+              captureKind: item.captureKind,
+              labels: item.labels,
+              imageWidth: loaded.width,
+              imageHeight: loaded.height,
               backend,
               trial,
               expectedPositive: item.expected !== null,
@@ -105,6 +140,10 @@ async function runBackend(backend, cases, files, repeats) {
           } catch (error) {
             rows.push({
               caseId: item.id,
+              captureKind: item.captureKind,
+              labels: item.labels,
+              imageWidth: loaded.width,
+              imageHeight: loaded.height,
               backend,
               trial,
               expectedPositive: item.expected !== null,
@@ -117,12 +156,12 @@ async function runBackend(backend, cases, files, repeats) {
           }
         }
       } finally {
-        bitmap.close();
+        loaded.dispose();
       }
     }
   } finally {
-    memoryAfter = memorySnapshot();
     await adapter.dispose();
+    memoryAfter = memorySnapshot();
   }
   return {
     backend,
@@ -141,7 +180,7 @@ function downloadReport() {
   anchor.href = url;
   anchor.download = `retailos-scanner-benchmark-${Date.now()}.json`;
   anchor.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 runButton.addEventListener('click', async () => {
