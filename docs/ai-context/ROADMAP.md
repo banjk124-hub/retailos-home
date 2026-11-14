@@ -13,7 +13,7 @@
 - [x] Shared lock service and regression tests implemented.
 - [x] Home scanner lock state wired and source-contract test added.
 - [x] Calendar and barcode-result safe-area/viewport regressions covered.
-- [ ] Latest PR-head CI passes after documentation consolidation.
+- [x] Full CI passed on source/docs head `ae537b049a9f4a80d5f2160fd75ba39f15e0327a` (run #844); later commits are documentation-only.
 - [ ] Desktop Chrome/Edge physical/browser acceptance.
 - [ ] Android Chrome and installed PWA acceptance.
 - [ ] iOS Safari tab and Home Screen PWA acceptance.
