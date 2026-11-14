@@ -82,6 +82,30 @@ These are documented separately so future changes do not remove lifecycle safegu
 - Stocktake review and history do not mount unbounded lists in one render.
 - The complete Stocktake action log is not read during unrelated module refreshes.
 
+## Physical acceptance protocol
+
+Run this matrix on the deployed PR build, not only in the development server. Test both a cold first open (feature chunk not cached) and a warm repeat open.
+
+| Surface / action | Required first response | Completion / regression check |
+|---|---|---|
+| Topbar and LiquidDock after more than 3.5s idle | The first tap activates the intended control; no wake-up tap | Verify desktop and touch layouts |
+| Home section navigation and search | Active state / filtered result updates on the first input | Typing remains responsive while filtering |
+| Calendar, notifications, notice detail, library and barcode result | Entry or exit animation starts on the initiating click, without a pre-start delay | Backdrop, scroll lock, close and outside-click behavior remain correct |
+| Settings, Scanner QA, Scanner Settings, Stocktake and Stocktake Import | A visible loading status appears on the first frame while a cold chunk resolves | No blank overlay; close action remains usable |
+| Stocktake start/resume/review/history/save/delete/export/clear | Busy status appears before IndexedDB work | Data, revision, history and exported file contents remain unchanged |
+| Mobile keyboard and dock | Dock hides while an editable field owns focus and returns after blur | No lost focus, extra tap or viewport jump |
+| Scanner while decoding | Close and other available controls remain responsive | Record `decodeDurationMaxMs`, `maxFrameCallbackGapMs` and `longTasks` in Scanner QA |
+
+### Timing acceptance
+
+- For a local or warm interaction, target input-to-first-visible-response at no more than one display frame at p95: 16.7ms at 60Hz or 8.3ms at 120Hz.
+- For a cold lazy module or storage-backed action, the loading/busy state must be committed on the first frame; chunk download or IndexedDB completion is measured separately.
+- Do not include the animation's run duration in input latency. Measure from the input event to the beginning of the relevant animation/transition or first visible state change.
+- Run each action at least 20 times per device class. Record p50/p95 and any missed first tap; one missed first tap is a failure.
+- Repeat with `prefers-reduced-motion` enabled. The response must remain immediate even when the animation itself is suppressed.
+
+Physical QA is not inferred from CI compatibility-contract tests. Record device model, OS version, browser/PWA mode, refresh rate when known, and cold/warm state before marking a row accepted.
+
 ## Audit still in progress
 
 The changes above are confirmed source-level findings, not a declaration that every interaction path is already clean. Remaining audit areas:
