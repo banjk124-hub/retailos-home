@@ -245,7 +245,7 @@ export default function App() {
     <PageGlassDock />
     <div className="retailos-interface">
       <Suspense fallback={<div className="retailos-interface" aria-busy="true" />}>
-      <div className={isLeavingHome ? 'app-transition-leave' : ''}>
+        <div className={isLeavingHome ? 'app-transition-leave' : ''}>
         <HomeScreen
           employee={employee}
           department={department}
@@ -255,7 +255,7 @@ export default function App() {
           canInstall={canInstall}
           onInstall={handleInstall}
         />
-      </div>
+        </div>
       </Suspense>
     </div>
   </div>;
