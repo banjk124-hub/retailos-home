@@ -191,6 +191,9 @@ const stubs = {
   './scannerTemporalRecognition': makeDataModule(
     'export class ScannerTemporalFrameBuffer { push() { return true; } clear() {} }',
   ),
+  './scannerAdaptiveRuntimeController': makeDataModule(
+    'export class ScannerAdaptiveRuntimeController { getBudget() { return { schemaVersion: 1, mode: "normal", maxImageCandidates: 2, maxGeometryCandidates: 4, reasons: ["test"] }; } observe() { return this.getBudget(); } reset() {} }',
+  ),
 };
 let sessionJs = compileModule(sessionSource);
 for (const [specifier, stubUrl] of Object.entries(stubs)) {
