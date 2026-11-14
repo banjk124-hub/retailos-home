@@ -1,9 +1,13 @@
+# Scanner decoder benchmark foundation — historical baseline
+
+**Current policy:** production and the dev-only benchmark now use ZXing-C++ WASM only. The two-engine comparison described below was used during migration and is retained here as historical decision context; it is not an active runtime or benchmark path.
+
 # Scanner Decoder PR-05 — Benchmark & Evidence Foundation
 
 **Base:** `main` after PR #111, merge commit `e5e85eda44b1de40d29e6b6fa3131514414fecb0`.
 **Branch:** `feat/scanner-decoder-benchmark-foundation`.
 **Purpose:** backfill the capability-evaluation and repeatable measurement gate before any decoder default switch or recognition-policy reduction.
-**Runtime policy:** no production runtime changes; ZXing JS remains the default and ZXing-C++ WASM remains opt-in.
+**Historical runtime policy at PR-05:** no production runtime changes; ZXing JS was the default and ZXing-C++ WASM was opt-in.
 
 ## 1. Audit conclusion
 
