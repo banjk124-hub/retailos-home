@@ -610,3 +610,43 @@
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Root lazy boundary: never leave the authenticated shell visually empty. */
+.home-loading-surface {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse at 85% 10%, rgba(255,190,196,.3), transparent 38%),
+    linear-gradient(145deg, #fffafa, #f6f3f4 62%, #fff);
+}
+.home-loading-surface__panel {
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  width: min(100%, 320px);
+  padding: 28px 22px;
+  border: 1px solid rgba(255,255,255,.92);
+  border-radius: 24px;
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 18px 48px rgba(72,25,34,.08), inset 0 1px 0 #fff;
+  color: #292127;
+  text-align: center;
+}
+.home-loading-surface__indicator {
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(229,31,45,.18);
+  border-top-color: #e51f2d;
+  border-radius: 50%;
+  animation: home-loading-spin 700ms linear infinite;
+}
+.home-loading-surface__panel strong { font-size: 16px; font-weight: 750; }
+.home-loading-surface__panel > span:last-child { color: #77737e; font-size: 13px; }
+@keyframes home-loading-spin { to { transform: rotate(1turn); } }
+@media (prefers-reduced-motion: reduce) {
+  .home-loading-surface__indicator { animation: none; }
+}
