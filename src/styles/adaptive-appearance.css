@@ -1,23 +1,13 @@
-:root[data-power-mode="conserve"] .ambient-background,
-:root[data-power-mode="conserve"] .page-glass-dock,
-:root[data-power-mode="conserve"] .spotlight-brand-scene,
-:root[data-power-mode="conserve"] .spotlight-orbit,
-:root[data-power-mode="conserve"] .spotlight-glow,
-:root[data-power-mode="conserve"] .hero-orb,
-:root[data-power-mode="conserve"] .dept-wave {
+:root[data-power-mode="conserve"] .ambient-background, :root[data-power-mode="conserve"] .page-glass-dock, :root[data-power-mode="conserve"] .spotlight-brand-scene, :root[data-power-mode="conserve"] .spotlight-orbit, :root[data-power-mode="conserve"] .spotlight-glow, :root[data-power-mode="conserve"] .dept-wave{
   animation: none !important;
 }
 
 :root[data-power-mode="conserve"] .ambient-background {
   display: none;
-}
-
-:root[data-power-mode="conserve"] .app-shell :is(.metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal) {
+}:root[data-power-mode="conserve"] .app-shell :is(.panel-card, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal){
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-}
-
-:root[data-power-mode="conserve"] :is(.app-shell, .barcode-result-backdrop, .barcode-scanner, .barcode-result-card, .barcode-scanner-card, .topbar-dock, .mobile-nav, .notification-popover) {
+}:root[data-power-mode="conserve"] :is(.app-shell, .barcode-result-backdrop, .barcode-scanner, .barcode-result-card, .barcode-scanner-card, .topbar-dock, .notification-popover){
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
@@ -32,26 +22,19 @@
   scroll-behavior: smooth;
   scroll-padding-inline: 4px;
   touch-action: pan-x pan-y;
-}
-
-.app-shell :is(button, a, .app-library-page-card, .module-card) {
+}.app-shell :is(button, a, .app-library-page-card){
   -webkit-tap-highlight-color: transparent;
   transition-timing-function: var(--brand-motion-ease);
-}
-
-.app-shell :is(button, .app-library-page-card, .module-card):active {
+}.app-shell :is(button, .app-library-page-card):active{
   transform: scale(.975);
   transition-duration: var(--brand-motion-interaction);
 }
 
 @media (max-width: 700px) {
   .app-shell { min-width: 0; overflow-x: clip; }
-  .content-wrap { width: 100%; min-width: 0; }
-  .app-shell :is(button, a, input, select, .filter-pill) { min-height: 44px; }
+  .content-wrap { width: 100%; min-width: 0; }.app-shell :is(button, a, input, select){ min-height: 44px; }
   .app-shell .topbar-actions { gap: 6px; }
   .app-shell .topbar-action-button { width: 42px; height: 42px; }
-  .app-shell .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .app-shell .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .app-shell .app-library-track { scroll-snap-type: x mandatory; cursor: auto; }
   .app-shell .app-library-page-card { flex-basis: min(88vw, 390px); scroll-snap-stop: always; }
   .barcode-flow-steps { padding: 8px; }
@@ -109,13 +92,7 @@
   color: var(--color-error);
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .app-shell :is(
-    .topbar, .topbar-dock, .mobile-nav, .notification-popover, .app-library-modal,
-    .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card,
-    .app-library-page-card, .metric-card, .module-card, .panel-card,
-    .user-context-chip, .date-chip, .toast-message
-  ) {
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {.app-shell :is(.topbar, .topbar-dock, .notification-popover, .app-library-modal, .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card, .app-library-page-card, .panel-card, .toast-message){
     background-color: rgba(255,255,255,.96);
   }
 }
@@ -138,9 +115,7 @@
   color: rgba(255,255,255,.9);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .app-library-page-card:hover,
-  .module-card:hover { transform: translateY(-4px); }
+@media (hover: hover) and (pointer: fine) {.app-library-page-card:hover{ transform: translateY(-4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
