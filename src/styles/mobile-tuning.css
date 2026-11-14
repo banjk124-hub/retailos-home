@@ -319,11 +319,6 @@ button:not(:disabled):active {
   .topbar {
     transition: transform 320ms var(--motion-standard), opacity 260ms ease, box-shadow 260ms ease;
   }
-  .topbar.chrome-hidden {
-    transform: translateY(-110%);
-    opacity: 0;
-    pointer-events: none;
-  }
   .mobile-nav {
     background:
       linear-gradient(145deg, rgba(255,255,255,.64), rgba(255,247,249,.48));
@@ -335,11 +330,6 @@ button:not(:disabled):active {
     backdrop-filter: blur(20px) saturate(155%);
     -webkit-backdrop-filter: blur(20px) saturate(155%);
     transition: transform 320ms var(--motion-standard), opacity 260ms ease, box-shadow 260ms ease;
-  }
-  .mobile-nav.chrome-hidden {
-    transform: translate3d(0, calc(100% + 24px), 0);
-    opacity: 0;
-    pointer-events: none;
   }
 }
 
@@ -1390,11 +1380,6 @@ button:not(:disabled):active {
   backdrop-filter: blur(18px) saturate(145%);
   -webkit-backdrop-filter: blur(18px) saturate(145%);
   transition: transform 320ms var(--motion-standard), opacity 260ms ease;
-}
-.app-shell .topbar.chrome-hidden {
-  transform: translateY(calc(-100% - 18px));
-  opacity: 0;
-  pointer-events: none;
 }
 .topbar-identity {
   min-width: 0;
@@ -2690,9 +2675,6 @@ button:not(:disabled):active {
   z-index: 5;
   top: calc(100% + 9px);
   right: 0;
-}
-.app-shell .topbar.chrome-hidden .topbar-dock {
-  animation-play-state: paused;
 }
 @keyframes topbar-dock-float {
   0%, 100% { transform: translateY(0); box-shadow: 0 12px 34px rgba(105,34,42,.11), inset 0 1px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(255,255,255,.48); }
