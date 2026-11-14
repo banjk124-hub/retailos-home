@@ -19,6 +19,11 @@ const checks = [
     args: ["scripts/test-ui-interaction-immediacy.mjs"],
   },
   {
+    name: "Home and barcode IndexedDB snapshot batching tests",
+    command: process.execPath,
+    args: ["scripts/test-home-cache-batching.mjs"],
+  },
+  {
     name: "Shared overlay body scroll-lock reference-count regression tests",
     command: process.execPath,
     args: ["scripts/test-body-scroll-lock.mjs"],
