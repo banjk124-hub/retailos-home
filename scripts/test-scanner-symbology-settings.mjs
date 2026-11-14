@@ -71,6 +71,9 @@ for (const format of formats) {
   assert.ok(jsDecoder.includes(`${format}: BarcodeFormat.${format}`), `ZXing JS maps ${format}`);
   assert.ok(wasmDecoder.includes(`${format}:`), `ZXing-C++ WASM maps ${format}`);
 }
+assert.ok(wasmDecoder.includes("QRCodeModel2"), 'QR model variants normalize to the QR_CODE app setting');
+assert.ok(wasmDecoder.includes("MicroPDF417"), 'PDF417 variants normalize to the PDF_417 app setting');
+assert.ok(wasmDecoder.includes("ITF14"), 'ITF-14 variant normalizes to the ITF app setting');
 const panel = await read('../src/features/scanner/components/ScannerSettingsPanel.tsx');
 assert.ok(panel.includes('role="switch"'), 'symbology options use accessible switches');
 assert.ok(panel.includes('updateScannerSymbologyEnabled'), 'switches update the persisted preference store');
