@@ -19,7 +19,7 @@
 
 ---
 
-# Scanner implementation status — unified recognition pipeline (2026-11-11)
+# Historical scanner implementation status snapshot — unified recognition pipeline (2026-11-11)
 
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
 **Active branch:** `feat/scanner-unified-enhancement-pipeline` — PR A+B combined.
