@@ -69,10 +69,14 @@ self.addEventListener('fetch', (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open(SHELL_CACHE);
-          await cache.put(APP_SHELL_URL, response.clone());
+          // Cache writes are best-effort: storage pressure must never turn a
+          // successful online navigation into a failed page load.
+          try {
+            const cache = await caches.open(SHELL_CACHE);
+            await cache.put(APP_SHELL_URL, response.clone());
+          } catch { /* Keep the successful network response. */ }
+          return response;
         }
-        if (response.ok) return response;
         return (await caches.match(APP_SHELL_URL)) || response;
       } catch {
         return (await caches.match(APP_SHELL_URL)) || Response.error();
@@ -83,12 +87,18 @@ self.addEventListener('fetch', (event) => {
   const isShellAsset = SHELL_URLS.includes(url.href);
   if (!isShellAsset && !ASSET_URLS.has(url.pathname)) return;
   event.respondWith((async () => {
-    const cache = await caches.open(isShellAsset ? SHELL_CACHE : ASSET_CACHE);
-    const cached = await cache.match(request);
-    if (cached) return cached;
+    let cache = null;
+    try {
+      cache = await caches.open(isShellAsset ? SHELL_CACHE : ASSET_CACHE);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+    } catch { /* Fall through to network if Cache Storage is unavailable. */ }
     try {
       const response = await fetch(request);
-      if (response.ok) await cache.put(request, response.clone());
+      if (response.ok && cache) {
+        try { await cache.put(request, response.clone()); }
+        catch { /* Cache quota/write failures must not discard network assets. */ }
+      }
       return response;
     } catch { return Response.error(); }
   })());
