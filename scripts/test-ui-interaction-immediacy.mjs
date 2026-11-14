@@ -13,9 +13,9 @@ assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 5, 
 assert.match(home, /function ModuleLoadingSurface[\s\S]*aria-busy="true"/, 'The shared loading fallback must be an accessible, visible busy surface.');
 assert.doesNotMatch(home, /isChromeIdle|scheduleChromeHide|hidden=\{isChromeIdle\}/, 'Primary navigation and header actions must not require a wake-up tap before they can receive a click.');
 assert.doesNotMatch(mobileStyles, /chrome-hidden/, 'CSS must not disable pointer events on primary navigation after an idle timeout.');
-assert.doesNotMatch(motionStyles, /animation-delay:\\s*var\\(--motion-stagger-short\\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
+assert.doesNotMatch(motionStyles, /animation-delay:\s*var\(--motion-stagger-short\)/, 'Shared page and dock entry motion must start in the first rendered frame.');
 assert.doesNotMatch(homeStyles, /home-enter-active[^}]*animation-delay/, 'Home content must not wait for stagger timers before its entry animation starts.');
-assert.doesNotMatch(responsiveStyles, /animation:panel-in\\s+[^;]*\\s\\.1s\\s/, 'The mobile login panel must not wait before its entry animation starts.');
+assert.doesNotMatch(responsiveStyles, /animation:panel-in\s+[^;]*\s\.1s\s/, 'The mobile login panel must not wait before its entry animation starts.');
 assert.doesNotMatch(mobileStyles, /animation-delay/, 'Interactive Home cards and notices must not have pre-animation stagger delays.');
 
 function blockBetween(source, start, end) {
