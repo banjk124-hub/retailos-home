@@ -1,3 +1,24 @@
+# Current UI overlay implementation — 2026-11-14
+
+**PR:** #102 — `fix/ux-cross-platform-core-audit` (Draft, not merged/deployed).  
+**Canonical docs:** `UI_OVERLAY_ARCHITECTURE.md`, `UI_OVERLAY_ACCEPTANCE.md`.
+
+## Implemented in the PR branch
+- Reference-counted shared body scroll lock with idempotent release and original inline overflow restoration.
+- Home owns scroll lock for modal states and includes full-screen Barcode Scanner.
+- Settings Hub, Scanner QA, Scanner Settings, Stocktake and Stocktake Import participate in the shared lock lifecycle.
+- Settings Hub imports the stylesheet it needs instead of depending on another lazy chunk to load it.
+- Library, notice, calendar and barcode-result overlays use safe-area/dynamic-viewport-aware constraints and scrollable backdrops/content where needed.
+- Source-level regression tests cover lock ownership and viewport contracts.
+
+## Verification state
+- CI #832 passed on an earlier source tree before subsequent scanner lock, calendar/landscape and documentation updates. It is not final-head validation.
+- Final-head CI must be checked after the documentation changes below.
+- Physical QA across Desktop Chrome/Edge, Android Chrome/PWA and iOS Safari/Home Screen PWA remains pending.
+- Focus trapping is a known accessibility gap; semantic dialog labels and open/close focus behavior exist in selected flows but do not constitute full focus containment.
+
+---
+
 # Scanner implementation status — unified recognition pipeline (2026-11-11)
 
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
