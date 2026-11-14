@@ -32,7 +32,7 @@ Both source PRs were created from `main` commit `3262edfe37ac4de2b34fcb24d747bf1
 
 ## CSS scope
 
-The audited Home stylesheet cleanup from PR #104 is included in this review branch because its interaction-immediacy regression contracts depend on the current Home presentation rules. It remains a physical-QA gate, not an accepted production change. Verify desktop, Android Chrome/PWA and iOS Safari/Home Screen PWA before merge. If any visual or interaction regression appears, revert the relevant stylesheet hunk rather than broadening the cascade rewrite.
+The broad Home stylesheet cleanup from PR #104 is intentionally excluded from this branch. All 11 affected stylesheets remain at the common main baseline. CSS cleanup should be handled as a separate change after selector-usage, cascade and computed-style review, followed by physical QA on desktop, Android Chrome/PWA and iOS Safari/Home Screen PWA.
 
 ## Error semantics
 
