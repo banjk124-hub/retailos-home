@@ -31,7 +31,7 @@ const topbarMotion = mobileStyles.slice(topbarMotionStart, topbarMotionEnd);
 assert.ok(topbarMotionStart >= 0 && topbarMotionEnd > topbarMotionStart, 'Topbar ambient motion keyframes must remain present.');
 assert.doesNotMatch(topbarMotion, /box-shadow|background-position/, 'Topbar ambient motion must remain on composited properties rather than repaint-heavy box-shadow/background-position changes.');
 assert.match(stocktake, /const currentEntries = entries;/, 'Stocktake active entries must reuse the already scoped and sorted state snapshot.');
-assert.doesNotMatch(stocktake, /entries\\.filter\\(\\(entry\\) => entry\\.zoneId === currentZone\\?\\.id\\)\\.sort/, 'Stocktake must not filter and sort the active entries again on every render.');
+assert.doesNotMatch(stocktake, /entries\.filter\(\(entry\) => entry\.zoneId === currentZone\?\.id\)\.sort/, 'Stocktake must not filter and sort the active entries again on every render.');
 assert.match(stocktakeImport, /const invalidCount = useMemo\(/, 'Stocktake Import row validation must not be recomputed on unrelated UI renders.');
 assert.match(stocktakeImport, /const invalidZones = useMemo\(/, 'Stocktake Import cross-zone validation must not be recomputed on unrelated UI renders.');
 assert.match(scannerQa, /const \{ accepted, errors, maxDuration \} = useMemo\(/, 'Scanner QA summary calculations must be memoized independently of filter/copy state.');
