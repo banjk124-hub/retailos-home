@@ -38,6 +38,12 @@ type PendingImportReview = {
 };
 const PAGE_SIZE = 100;
 
+function yieldToNextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve()));
+  });
+}
+
 function localDate(value: string): string {
   return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
 }
@@ -271,6 +277,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setBusyAction('import');
     setError('');
     try {
+      await yieldToNextPaint();
       if (pending.incoming.length) await commitIncoming(pending.incoming, mergeConflicts, {
         duplicateFiles: pending.duplicateFiles,
         sameNameDifferentContent: pending.sameNameDifferentContent,
@@ -374,28 +381,29 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   const saveActiveZone = async () => {
     if (!result || !activeZone) return;
-    const normalizedRows = activeZone.rows.map((row) => {
-      const quantity = normalizeEditableQuantity(row.quantity);
-      const updated = { ...row, quantity };
-      const retainedIssues = row.issues.filter((issue) =>
-        issue.startsWith('Cột MÃ VẠCH') || issue.startsWith('Không thể diễn giải kết quả thực tế:'));
-      return { ...updated, issues: [...new Set([...validateRow(updated), ...retainedIssues])] };
-    });
-    const invalid = normalizedRows.filter((row) => row.issues.length > 0 || validateRow(row).length > 0);
-    if (invalid.length > 0) {
-      setError('Vùng ' + activeZone.zoneCode + ' còn ' + invalid.length + ' dòng chưa hợp lệ. Hãy bổ sung mã hàng và kết quả thực tế.');
-      return;
-    }
-    const updatedResult: StocktakeImportResult = {
-      ...result,
-      zones: result.zones.map((zone, index) => index === selectedZone
-        ? { ...zone, rows: normalizedRows, content: buildStocktakeOutput(employeeCode, zone.zoneCode, normalizedRows, new Date(result.importedAt)) }
-        : zone),
-    };
     setBusy(true);
     setBusyAction('save');
     setError('');
     try {
+      await yieldToNextPaint();
+      const normalizedRows = activeZone.rows.map((row) => {
+        const quantity = normalizeEditableQuantity(row.quantity);
+        const updated = { ...row, quantity };
+        const retainedIssues = row.issues.filter((issue) =>
+          issue.startsWith('Cột MÃ VẠCH') || issue.startsWith('Không thể diễn giải kết quả thực tế:'));
+        return { ...updated, issues: [...new Set([...validateRow(updated), ...retainedIssues])] };
+      });
+      const invalid = normalizedRows.filter((row) => row.issues.length > 0);
+      if (invalid.length > 0) {
+        setError('Vùng ' + activeZone.zoneCode + ' còn ' + invalid.length + ' dòng chưa hợp lệ. Hãy bổ sung mã hàng và kết quả thực tế.');
+        return;
+      }
+      const updatedResult: StocktakeImportResult = {
+        ...result,
+        zones: result.zones.map((zone, index) => index === selectedZone
+          ? { ...zone, rows: normalizedRows, content: buildStocktakeOutput(employeeCode, zone.zoneCode, normalizedRows, new Date(result.importedAt)) }
+          : zone),
+      };
       const id = await stocktakeImportStore.saveResult(updatedResult, historyId);
       setResult(updatedResult);
       setHistoryId(id);
@@ -421,6 +429,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       return;
     }
     const textarea = outputTextareaRef.current;
+    setNotice('Đang sao chép nội dung TXT…');
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard API không khả dụng.');
       await navigator.clipboard.writeText(activeZone.content);
@@ -464,6 +473,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     setBusyAction('zip');
     setError('');
     try {
+      await yieldToNextPaint();
       const zip = new JSZip();
       result.zones.forEach((zone) => zip.file(zone.fileName, zone.content));
       const blob = await zip.generateAsync({
@@ -581,6 +591,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
                 <strong>Vùng trùng · dữ liệu đang chờ xác nhận</strong>
                 {pendingImport.zoneConflicts.map((zone) => <small key={zone.zoneCode}>{zone.zoneCode}: phiên hiện tại {zone.existingRows} dòng · nguồn bổ sung {zone.incomingRows} dòng{zone.duplicateWithinBatch ? ' · xuất hiện ở nhiều file trong lượt này' : ''}</small>)}
               </div>}
+              {busyAction === 'import' && <p className="stocktake-import-unsaved" role="status" aria-live="polite">Đang cập nhật phiên xử lý…</p>}
               <div className="stocktake-import-review-actions">
                 <button type="button" disabled={busy} onClick={() => { setPendingImport(null); setNotice('Đã hủy nhập bổ sung. Phiên hiện tại không thay đổi.'); }}>Hủy bổ sung</button>
                 {pendingImport.zoneConflicts.length > 0
