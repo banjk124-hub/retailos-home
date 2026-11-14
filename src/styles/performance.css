@@ -62,6 +62,7 @@
     .notice-detail-backdrop,
     .app-library-backdrop,
     .stocktake-backdrop,
+    .stocktake-confirm-backdrop,
     .auth-journey-recognition__backdrop,
     .stocktake-import-header
   ) {
