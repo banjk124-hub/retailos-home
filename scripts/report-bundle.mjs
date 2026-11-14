@@ -41,16 +41,27 @@ if (manifest) {
     for (const dependency of manifest[entryKey].imports ?? []) closure(dependency, seen);
     return seen;
   }
-  for (const entry of [...records.values()].filter((item) => item.isEntry)) {
+  function measureStaticClosure(entry) {
     const keys = closure(entry.key);
     const css = new Set([...keys].flatMap((key) => manifest[key]?.css ?? []));
     const raw = [...keys].reduce((n, key) => n + (records.get(key)?.raw ?? 0), 0)
       + [...css].reduce((n, file) => n + (fileStats.get(file)?.raw ?? 0), 0);
     const gzip = [...keys].reduce((n, key) => n + (records.get(key)?.gzip ?? 0), 0)
       + [...css].reduce((n, file) => n + (fileStats.get(file)?.gzip ?? 0), 0);
-    entries.push({ file: entry.file, raw, gzip, staticModules: keys.size, cssFiles: [...css] });
+    return { file: entry.file, raw, gzip, staticModules: keys.size, cssFiles: [...css] };
   }
-  dynamicEntries.push(...[...records.values()].filter((item) => item.isDynamicEntry));
+  for (const entry of [...records.values()].filter((item) => item.isEntry)) {
+    entries.push(measureStaticClosure(entry));
+  }
+  // A dynamic import can itself have static dependencies and feature CSS.
+  // Report its complete first-load closure, not only the entry chunk file.
+  dynamicEntries.push(...[...records.values()]
+    .filter((item) => item.isDynamicEntry)
+    .map((entry) => ({
+      ...measureStaticClosure(entry),
+      chunkRaw: entry.raw,
+      chunkGzip: entry.gzip,
+    })));
 } else {
   const html = await readFile(path.join(root, 'index.html'), 'utf8');
   const entryPaths = [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))["']/g)]
@@ -98,9 +109,9 @@ const report = [
   '|---|---:|---:|---:|',
   ...entries.map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
   '', '## Dynamic entry points', '',
-  '| Chunk | Raw bytes | Gzip bytes |',
-  '|---|---:|---:|',
-  ...dynamicEntries.map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' |'),
+  '| Dynamic boundary | Entry chunk raw | Entry chunk gzip | Static closure raw | Static closure gzip | Static modules |',
+  '|---|---:|---:|---:|---:|---:|',
+  ...dynamicEntries.map((item) => '| ' + item.file + ' | ' + item.chunkRaw.toLocaleString('en-US') + ' | ' + item.chunkGzip.toLocaleString('en-US') + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
   '', '## Largest emitted files', '',
   '| File | Raw bytes | Gzip bytes |',
   '|---|---:|---:|',
