@@ -12,8 +12,8 @@
 - Source-level regression tests cover lock ownership and viewport contracts.
 
 ## Verification state
-- CI #832 passed on an earlier source tree before subsequent scanner lock, calendar/landscape and documentation updates. It is not final-head validation.
-- Final-head CI must be checked after the documentation changes below.
+- CI #844 passed full preflight, TypeScript, production build, Pages build and bundle comparison on source/docs head `ae537b049a9f4a80d5f2160fd75ba39f15e0327a`.
+- The later PR commits through `acc45a1` only clarify/record documentation; executable source is unchanged after the passing CI run.
 - Physical QA across Desktop Chrome/Edge, Android Chrome/PWA and iOS Safari/Home Screen PWA remains pending.
 - Focus trapping is a known accessibility gap; semantic dialog labels and open/close focus behavior exist in selected flows but do not constitute full focus containment.
 
