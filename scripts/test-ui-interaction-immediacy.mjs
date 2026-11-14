@@ -34,9 +34,21 @@ const resumeZone = blockBetween(stocktake, 'const resumeZone = async', 'const su
 assert.ok(resumeZone.indexOf('setBusy(true)') < resumeZone.indexOf('await '), 'Resuming a zone must show immediate busy feedback before storage work.');
 assert.match(resumeZone, /finally\s*\{\s*setBusy\(false\)/, 'Resuming a zone must always release the busy state.');
 
+const saveEntry = blockBetween(stocktake, 'const saveEntry = async', 'const editEntry =');
+assert.ok(saveEntry.indexOf('setBusy(true)') < saveEntry.indexOf('await '), 'Saving an entry must show immediate feedback before storage work.');
+assert.match(saveEntry, /finally\s*\{\s*setBusy\(false\)/, 'Saving an entry must always release the busy state.');
+
+const removeEntry = blockBetween(stocktake, 'const removeEntry = async', 'const openReview = async');
+assert.ok(removeEntry.indexOf('setBusy(true)') < removeEntry.indexOf('await '), 'Deleting an entry must show immediate feedback before storage work.');
+assert.match(removeEntry, /finally\s*\{\s*setBusy\(false\)/, 'Deleting an entry must always release the busy state.');
+
 const openReview = blockBetween(stocktake, 'const openReview = async', 'const exportCurrentZone = async');
 assert.ok(openReview.indexOf('setBusy(true)') < openReview.indexOf('await '), 'Opening review must acknowledge the tap before storage work.');
 assert.match(openReview, /finally\s*\{\s*setBusy\(false\)/, 'Opening review must always release the busy state.');
+
+const exportZone = blockBetween(stocktake, 'const exportCurrentZone = async', 'const clearAll = async');
+assert.ok(exportZone.indexOf('setBusy(true)') < exportZone.indexOf('await '), 'Exporting a zone must show immediate feedback before storage work.');
+assert.match(exportZone, /finally\s*\{\s*setBusy\(false\)/, 'Exporting a zone must always release the busy state.');
 
 const clearAll = blockBetween(stocktake, 'const clearAll = async', 'const downloadPreviousExport');
 assert.ok(clearAll.indexOf('setBusy(true)') < clearAll.indexOf('await stocktakeStore.clearAll()'), 'Clearing Stocktake must show feedback before clearing storage.');
