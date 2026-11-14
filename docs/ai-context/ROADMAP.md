@@ -17,7 +17,7 @@
 ### Cutover acceptance gates
 
 - [x] CI preflight, TypeScript, production build, Pages build and PWA/bundle checks pass on the cutover head (run #1060).
-- [ ] Production factory test proves WASM is selected; session tests prove format allowlist and lifecycle ownership remain unchanged.
+- [x] Production factory test proves WASM is selected; session tests prove format allowlist and lifecycle ownership remain unchanged (CI run #1060).
 - [ ] Real labelled corpus covers all active formats, 0°/90°/180°/270°, inversion, low contrast, glare, noise, curved carrier, residual skew, malformed and negative samples.
 - [ ] Compare exact matches, misses, wrong decodes, false positives, initialization time, first-result latency and p50/p95 decode duration.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA, including a low-end Android device.
@@ -25,7 +25,7 @@
 
 ### Legacy cleanup boundary
 
-PR-09 performs the separate legacy cleanup: remove the JS adapter, `@zxing/library`, JS-only integration fixtures and obsolete backend-specific checks. Keep the backend-neutral session/adapter contracts, shared recognition pipeline, labelled corpus and WASM integration tests. Physical-device optical acceptance remains a release validation gate.
+PR-09 removes the JS adapter, `@zxing/library`, JS-only integration fixtures and obsolete backend-specific checks. Backend-neutral session/adapter contracts, shared recognition pipeline, labelled corpus and WASM integration tests are retained. Physical-device optical acceptance remains a release validation gate.
 
 ---
 
@@ -133,7 +133,7 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 
 # Current scanner decoder replacement status — 2026-11-14
 
-**Current main:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merged).
+**Current main before PR-09:** `807fd2ba0c4c23be6925238d0b1289f19a84ccfb` (PR #116 merge commit).
 **Current work:** PR-09 WASM-only legacy cleanup on `chore/scanner-wasm-legacy-cleanup`; PR #116 production cutover and PR #115 capability adoption are merged. PR #114 remains advisory device-profile diagnostics.
 **Production default on main:** ZXing-C++ WASM through the shared lazy factory. CI run #1060 passed; physical iOS/Android optical and workflow validation remains a separate release gate.
 
@@ -150,7 +150,7 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 - PR #114 — advisory device-profile diagnostics; merged separately and not a production decoder cutover.
 
 ## Current evidence gap
-CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not select a production backend or remove recognition stages until those measurements exist.
+CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not remove shared recognition stages or tune production policy until those measurements exist.
 
 ## PR-05 exit boundary
 - [ ] Full preflight, TypeScript, production build and GitHub Pages build pass.
