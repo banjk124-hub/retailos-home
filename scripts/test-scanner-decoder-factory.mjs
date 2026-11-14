@@ -8,6 +8,9 @@ const makeDataModule = (source) => 'data:text/javascript;base64,' + Buffer.from(
 const adapterSource = await read('../src/platform/scanner/decoders/decoderAdapter.ts');
 const factorySource = await read('../src/platform/scanner/decoders/decoderFactory.ts');
 const sessionSource = await read('../src/platform/scanner/universalScannerSession.ts');
+const engineHookSource = await read('../src/features/scanner/hooks/useScannerEngine.ts');
+const homeScannerSource = await read('../src/features/scanner/components/BarcodeScanner.tsx');
+const stocktakeScannerSource = await read('../src/features/stocktake/components/StocktakeScanner.tsx');
 
 assert.match(adapterSource, /export interface ScannerDecoderAdapter/);
 assert.match(adapterSource, /export interface ScannerDecoderFactory\s*\{\s*create\(\): Promise<ScannerDecoderAdapter>;/,
@@ -28,6 +31,14 @@ assert.doesNotMatch(sessionSource, /zxingDecoder|ZXingDecoderAdapter/,
 assert.match(sessionSource, /private readonly decoderFactory: ScannerDecoderFactory = defaultScannerDecoderFactory/);
 assert.match(sessionSource, /const decoder = await this\.decoderFactory\.create\(\)/);
 assert.match(sessionSource, /await decoder\.initialize\(\{ formats: this\.options\.formats \}\)/);
+assert.match(engineHookSource, /new UniversalScannerSession\(video/,
+  'the shared feature hook must construct the backend-neutral scanner session');
+assert.match(engineHookSource, /formats: getEnabledScannerSymbologies\(\)/,
+  'the active module-owned symbology preferences must reach the session');
+assert.match(homeScannerSource, /useScannerEngine\(/,
+  'Home Scanner must use the shared engine hook');
+assert.match(stocktakeScannerSource, /useScannerEngine\(/,
+  'Stocktake Scanner must use the same shared engine hook');
 
 const previewReadyAt = sessionSource.indexOf('this.options.onPreviewReady?.()');
 const createAt = sessionSource.indexOf('await this.createDecoder(generation)', previewReadyAt);
