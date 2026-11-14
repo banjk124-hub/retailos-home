@@ -130,7 +130,7 @@ No changes to camera acquisition/lease, camera constraints, autofocus, first-fra
 **Status:** Implemented on branch `fix/scanner-engine-remediation-code39`; pending PR review and CI.
 
 ### Context
-- `@zxing/library` 0.23.0 already exposes `BarcodeFormat.CODE_39`, and the adapter already had a forward/reverse format mapping.
+- The WASM adapter maps `CODE_39` through its explicit forward/reverse symbology mapping; ZXing JS is no longer a runtime dependency.
 - RetailOS had not enabled Code 39 in `SUPPORTED_BARCODE_FORMATS`; decoder initialization rejected it and payload validation classified it as unsupported.
 
 ### Decision
