@@ -62,7 +62,7 @@ assert.match(legacy, /\[HybridBinarizer, GlobalHistogramBinarizer\]/,
   'legacy decoder confirms ordered Hybrid then GlobalHistogram attempts');
 assert.match(wasm, /\['LocalAverage', 'GlobalHistogram'\]/,
   'WASM backend must preserve the same two-stage binarizer fallback');
-assert.match(wasm, /result\.isValid === false \|\| Boolean\(result\.error\)/,
+assert.match(wasm, /isZXingWasmReadResultValid\(result\)/,
   'WASM must reject invalid/error results before session validation');
 assert.match(wasm, /onProcessingPlan:/,
   'WASM must retain A1/A2 processing-plan diagnostics');
