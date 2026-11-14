@@ -4,7 +4,6 @@ import { clearLastLoginName, saveLastLoginName } from './features/auth/services/
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';
 import type { EmployeeSession } from './features/auth/types';
-const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 import { getDepartment, type DepartmentConfig } from './shared/config/departments';
 import { ExperienceBackground } from './shared/components/ExperienceBackground';
 import { Brand, BrandMotion } from './shared/brand';
@@ -14,6 +13,8 @@ import { MOTION_CONFIG, useMotionState } from './shared/motion';
 import type { MotionOrigin } from './shared/motion';
 import type { CSSProperties } from 'react';
 import { releaseCameraStream } from './shared/services/cameraSession';
+
+const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
