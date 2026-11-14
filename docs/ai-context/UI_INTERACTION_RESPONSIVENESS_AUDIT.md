@@ -50,6 +50,12 @@ Stocktake Import recalculated row-level validation for the active zone and every
 
 **Change:** Memoized these derived values against the data snapshots they actually depend on. Scanner QA event rows are now memoized individually, so appending a new event does not re-render the existing 1,000-row history. This does not add asynchronous work or change validation rules.
 
+### 7. Mobile blur-budget overrides missed sibling overlays
+
+The existing mobile performance rules targeted overlays through `.app-shell`, but HomeScreen renders several modal backdrops and the LiquidDock as siblings of that element. Their full-screen backdrop blur therefore bypassed the mobile performance policy.
+
+**Change:** Added direct mobile overrides for Scanner QA, Scanner Settings, barcode results, calendar, notice, library, Stocktake and identity-transition backdrops, plus the glass modal panels. The visual surfaces retain their translucent backgrounds; only the expensive backdrop blur is disabled on mobile/coarse-pointer devices.
+
 ## Regression coverage
 
 `scripts/test-ui-interaction-immediacy.mjs` is registered in preflight. It guards:
@@ -58,6 +64,7 @@ Stocktake Import recalculated row-level validation for the active zone and every
 - No auto-hidden primary chrome/wake-tap behavior.
 - No stagger delay on the audited page, dock, Home, mobile login, authenticated identity panel, notice and interactive card entry paths.
 - Topbar ambient keyframes avoid repaint-heavy properties.
+- Mobile blur-budget overrides cover modal siblings outside the app shell.
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
 
