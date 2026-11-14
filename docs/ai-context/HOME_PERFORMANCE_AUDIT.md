@@ -91,6 +91,17 @@ The final Home-specific cascade pass also removed 1,193 additional bytes from `h
 
 The exact-rule scan also found and removed three duplicate declarations in the same mobile breakpoint of `mobile-tuning.css` (spotlight float visibility, glass-chip visibility and calendar-day spacing). The Home CSS regression suite now guards these duplicates against reintroduction. A final exact-rule scan across all 11 Home/global stylesheets now finds zero duplicate selector + media-context + declaration-block rules. Total stylesheet source is 150,139 bytes versus 189,892 bytes at baseline (-39,753 bytes, -20.9%).
 
+### Stocktake Import dependency split
+
+The bundle report showed `StocktakeImportModule` at 148,323 B raw / 46,164 B gzip, with an 82,335 B incremental gzip closure. The module statically imported JSZip from both the UI component and workbook parser even though the archive library is needed only when parsing an XLSX file or generating ZIP output.
+
+Changed:
+- The parser now uses a type-only JSZip import and dynamically loads the implementation only when `parseStocktakeWorkbook` is called.
+- Workbook bytes and the JSZip module are requested concurrently; hashing and archive loading also run concurrently.
+- ZIP export uses one local `createZipArchive` helper that dynamically imports JSZip after the existing busy state has yielded a paint.
+- The module can now render its import/history UI without eagerly downloading JSZip. The same dynamic dependency is shared by the parser, ZIP export and existing XLSX export path.
+- No new service, worker or runtime dependency was added.
+
 ## Direct dependency review
 
 Direct runtime dependencies currently have identified source use:
