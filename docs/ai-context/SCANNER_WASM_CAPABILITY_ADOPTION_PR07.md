@@ -1,3 +1,5 @@
+**Historical status note (2026-11-14):** This document records the PR-07 migration stage. PR-08 subsequently switched the production factory to ZXing-C++ WASM, and PR-09 removes the retired ZXing JS adapter/dependency. Current runtime and benchmark are WASM-only; physical optical/device acceptance remains a separate release gate.
+
 # PR-07 — ZXing-C++ WASM capability adoption matrix
 
 **Branch:** `feat/scanner-wasm-capability-parity`  
@@ -84,11 +86,11 @@ Automated source/contract tests are necessary but not optical parity evidence. R
 - [ ] Optical set includes small/distant symbols, skew, curved carriers, low contrast, blur/motion, glare/occlusion and ROI-edge cases.
 - [ ] Record exact match, miss, wrong decode, false positive, p50/p95 decode duration, initialization time and peak memory where measurable.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA validation; include a low-end Android device.
-- [ ] Keep ZXing JS as production default until all gates pass and explicit cutover approval is given.
+- At the PR-07 stage, keep ZXing JS as production default until the separate cutover gate is approved; this was superseded by merged PR-08.
 
 ## 7. Explicit non-goals for this PR
 
-- No production default switch and no deletion of `@zxing/library` or `zxingDecoder.ts`.
+- At the PR-07 stage, no production default switch or deletion of `@zxing/library` / `zxingDecoder.ts`; these were reserved for PR-08 and PR-09.
 - No camera/session/lifecycle/presentation/business-flow changes.
 - No Worker migration or threading redesign.
 - No speculative enabling of every ReaderOptions flag; native capabilities are enabled according to supported formats and measured cost.

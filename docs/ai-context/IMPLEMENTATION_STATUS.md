@@ -1,3 +1,12 @@
+# Current scanner decoder status — 2026-11-14
+
+- Production decoder: ZXing-C++ WASM (`zxing-wasm` 3.1.6), loaded lazily through `defaultScannerDecoderFactory`.
+- Legacy ZXing JS adapter and `@zxing/library` are removed by PR-09; no production fallback or dual-engine selection remains.
+- Backend-neutral adapter/session contracts, shared enhancement pipeline, strict ROI, validation, temporal recognition, diagnostics and module-owned presentation remain in place.
+- CI run #1060 passed after PR-08 cutover. Real iOS Safari/PWA and Android Chrome/PWA optical/workflow validation remains outstanding and must be recorded separately.
+
+---
+
 # Current UI overlay implementation — 2026-11-14
 
 **PR:** #102 — `fix/ux-cross-platform-core-audit` (Draft, not merged/deployed).  
@@ -22,7 +31,7 @@
 # Historical scanner implementation status snapshot — unified recognition pipeline (2026-11-11)
 
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
-**Active branch:** `feat/scanner-unified-enhancement-pipeline` — PR A+B combined.
+**Historical branch:** `feat/scanner-unified-enhancement-pipeline` — PR A+B combined; this work is now merged and superseded by the WASM-only adapter.
 **Verification:** GitHub Actions run #690 passed full preflight, TypeScript, production and Pages builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; subsequent `8f6e0ae` changed documentation only. Physical-device QA remains pending; do not treat the branch as production-ready until device gates are recorded.
 
 ## Implemented in main
@@ -35,10 +44,10 @@
 - PR #76: camera intent wired through the shared lease and recovery path.
 - PR #79: optional initial focus preference only; no post-preview focus writes/re-arm; focus quality remains diagnostic only.
 
-## PR A+B — source changes on active branch
+## PR A+B — historical source changes
 
 - Added `src/platform/scanner/scannerEnhancementPipeline.ts` as the single candidate orchestrator.
-- `zxingDecoder.ts` now delegates baseline → orthogonal → deskew ordering and early exit to that pipeline.
+- The legacy `zxingDecoder.ts` delegated baseline → orthogonal → deskew ordering and early exit to the shared pipeline; those capabilities were adopted by `zxingWasmDecoder.ts` before the legacy adapter was removed in PR-09.
 - Preserved current scale candidate order, Hybrid + GlobalHistogram binarizers, focus sampling on baseline only, diagnostics and fallback orientation reuse.
 - Added a dedicated pipeline regression suite and registered it in `npm run preflight`.
 - Updated rotation/deskew source-contract tests to assert the new ownership boundary.
@@ -76,7 +85,7 @@ Implement SCAN-08 inside the same pipeline as optional image-quality-driven cand
 **Historical branch:** `fix/scanner-engine-remediation-code39`; PR #75 is closed/merged.
 
 - Code 39 was present in the broad `ScannerSymbology` type and ZXing `FORMAT_MAP`, but absent from `SUPPORTED_BARCODE_FORMATS` and rejected by `validateBarcodePayload()`. This branch enables it end-to-end and adds production-adapter tests.
-- Rotation/deskew counters were emitted by `zxingDecoder.ts` but filtered out by `scannerDiagnosticCollector.ts`. This branch adds the missing safe keys and QA Monitor/CSV presentation.
+- Historical note: rotation/deskew counters originated in the JS adapter; the WASM adapter now emits the corresponding backend-neutral stage metrics.
 - Diagnostic privacy tests ensure payload-like fields and camera identifiers remain excluded.
 - Current audio source: 50% = gain 0.30; 100% = gain 0.60; approximately 140 ms. Historical PR #56 values 0.24/0.48 are superseded by merged PR #57.
 - `ScannerModuleConfig.cameraRequest` is not a runtime input. The shared camera lease still uses the fixed environment / 1280×720 / 30 FPS request. This is explicitly deferred; do not bypass the shared lease.
@@ -437,7 +446,7 @@ Last updated: 2026-11-04
 - Reviewed current `main`: `3c75f4886c2adeeaa216fd030f11f3bf8b5fd198`.
 - Created isolated work branch: `phase/1.2-scanner-foundation-and-project-continuity`; no merge or deployment performed.
 - Confirmed source risks: scanner start only guards while startup is pending, not when a decoder is already attached; lifecycle events can request overlapping restarts; decoder has no explicit whitelist for EAN-13/EAN-8/CODE-128; decoded text is passed directly to the feature callback without a format/payload validation boundary.
-- Confirmed `package.json` has `build` and `build:pages` but no test/lint script. `@zxing/library ^0.23.0` is the direct ZXing decoder dependency; `@zxing/browser` is not used.
+- Confirmed `package.json` has `build` and `build:pages` but no test/lint script. At that historical stage, `@zxing/library ^0.23.0` was the direct ZXing decoder dependency; it has since been removed in favor of ZXing-C++ WASM.
 - Governance objective: establish repository-based AI handoff, phase roadmap, decision log and session protocol so a different AI/chat can continue from source-controlled state.
 - Verification limitation: this session has inspected GitHub source only. It has not inspected the user's local working tree, run npm scripts, run tests, or performed real Android/iOS device QA. Do not mark implementation or validation complete until those checks occur.
 - Next action: implement Phase 1.2A correctness/lifecycle in small increments; inspect local `git status --short` and baseline before local checkout; validate with tests/build; update this record with exact evidence.
@@ -635,7 +644,7 @@ First synchronize and review this documentation-only branch, run repository CI/p
 
 ### Patch 2 verification update — GitHub Actions run #84 (2026-11-07)
 - Workflow run: `42393062148`; job “TypeScript and production builds” completed with conclusion `success`.
-- `npm ci`: passed. npm emitted an existing EBADENGINE warning because `@zxing/library@0.23.0` declares Node >=24 while the repository CI workflow currently selects Node 22. Installation continued and this run's checks passed; runtime-version policy is not changed in this patch.
+- `npm ci`: passed. npm emitted an existing EBADENGINE warning because The removed `@zxing/library@0.23.0` package declared Node >=24 while the repository CI workflow selected Node 22; this warning no longer applies after PR-09.
 - `npm run preflight`: passed, including:
   - Scanner barcode/luminance/camera regression suite, including the deliberately pending autofocus integration case.
   - TypeScript + Vite production build.

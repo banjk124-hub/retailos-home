@@ -50,10 +50,10 @@ assert.equal(createScannerImageQualityProfile({ ...input, focus: { ...focus, sha
 assert.equal(createScannerImageQualityProfile({ ...input, sampleWidth: 2000, sampleHeight: 1000 }), null);
 assert.equal(createScannerImageQualityProfile({ ...input, image: { ...image, darkFraction: 1.5 } }), null);
 assert.equal(createScannerImageQualityProfile({ ...input, roiX: 1800, roiY: 900 }), null);
-const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url), 'utf8');
+const adapter = await readFile(new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url), 'utf8');
 const pipeline = await readFile(new URL('../src/platform/scanner/scannerEnhancementPipeline.ts', import.meta.url), 'utf8');
-assert.match(adapter, /timestamp - this\.lastFocusQualitySampleAt >= 500/);
-assert.match(adapter, /lastFocusQualityRegionKey === focusRegionKey/);
+assert.match(adapter, /timestamp - this\.lastFocusAt >= 500/);
+assert.match(adapter, /previousFocusKey === regionKey/);
 assert.match(adapter, /createScannerImageQualityProfile\(/);
 assert.match(adapter, /qualityProfile: this\.lastImageQualityProfile/);
 assert.match(pipeline, /options\.imageQuality !== undefined/);

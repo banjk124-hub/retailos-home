@@ -59,9 +59,6 @@ assert.equal(isZXingWasmReadResultValid({ isValid: false, text: '123' }), false)
 assert.equal(isZXingWasmReadResultValid({ error: 'ChecksumError' }), false);
 
 const wasm = await read('../src/platform/scanner/decoders/zxingWasmDecoder.ts');
-const legacy = await read('../src/platform/scanner/decoders/zxingDecoder.ts');
-assert.match(legacy, /\[HybridBinarizer, GlobalHistogramBinarizer\]/,
-  'legacy decoder confirms ordered Hybrid then GlobalHistogram attempts');
 assert.match(wasm, /\['LocalAverage', 'GlobalHistogram'\]/,
   'WASM backend must preserve the same two-stage binarizer fallback');
 assert.match(wasm, /isZXingWasmReadResultValid\(result\)/,
@@ -104,4 +101,4 @@ for (const stateField of [
 assert.match(diagnosticsMethod, /this\.diagnosticFrames = 0/);
 assert.match(diagnosticsMethod, /this\.diagnosticDecoded = 0/);
 
-console.log('Scanner decoder capability parity tests passed.');
+console.log('ZXing-C++ WASM capability and shared recognition-pipeline tests passed.');

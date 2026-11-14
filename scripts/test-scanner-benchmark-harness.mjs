@@ -7,8 +7,9 @@ const core = await readFile(new URL('./scanner-benchmark/core.mjs', import.meta.
 
 assert.match(html, /type="module" src="\.\/main\.js"/);
 assert.match(html, /type="file" accept="application\/json/);
-assert.match(main, /ZXingDecoderAdapter/);
 assert.match(main, /ZXingWasmDecoderAdapter/);
+assert.doesNotMatch(main, /ZXingDecoderAdapter|zxing-js/,
+  'the benchmark must exercise only the production WASM engine');
 assert.match(main, /scanRegion: item\.scanRegion/);
 assert.match(main, /adapter\.dispose\(\)/);
 assert.match(main, /initErrorName/);

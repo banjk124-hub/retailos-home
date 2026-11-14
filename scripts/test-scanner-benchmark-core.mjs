@@ -37,9 +37,9 @@ assert.ok(validateBenchmarkManifest({
 assert.equal(percentile([10, 20, 30, 40], 0.5), 25);
 
 const summary = summarizeBenchmarkRows([
-  { backend: 'zxing-js', trial: 1, expectedPositive: true, outcome: 'match', geometryAvailable: true, decodeMs: 10 },
-  { backend: 'zxing-js', trial: 2, expectedPositive: true, outcome: 'miss', decodeMs: 30 },
-  { backend: 'zxing-js', trial: 2, expectedPositive: false, outcome: 'false-positive', decodeMs: 20 },
+  { backend: 'zxing-wasm', trial: 1, expectedPositive: true, outcome: 'match', geometryAvailable: true, decodeMs: 10 },
+  { backend: 'zxing-wasm', trial: 2, expectedPositive: true, outcome: 'miss', decodeMs: 30 },
+  { backend: 'zxing-wasm', trial: 2, expectedPositive: false, outcome: 'false-positive', decodeMs: 20 },
 ]);
 assert.equal(summary[0].exactMatches, 1);
 assert.equal(summary[0].exactMatchRate, 0.5);

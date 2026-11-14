@@ -63,7 +63,7 @@ const adapterSource = await readFile(
   'utf8',
 );
 const decoderSource = await readFile(
-  new URL('../src/platform/scanner/decoders/zxingDecoder.ts', import.meta.url),
+  new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url),
   'utf8',
 );
 const sessionSource = await readFile(
@@ -73,7 +73,7 @@ const sessionSource = await readFile(
 assert.match(adapterSource, /scanRegion:\s*ScannerSourceScanRegion \| null/);
 assert.match(sessionSource, /const scanRegion = this\.getScanRegion\(\);[\s\S]*?this\.decoder\.decode\(this\.video,\s*\{[\s\S]*?scanRegion,/,
   'each decode must use the immutable ROI snapshot captured before asynchronous decoder work');
-assert.match(decoderSource, /resolveScannerRoiCrop\(scanRegion, dimensions\.width, dimensions\.height\)/);
+assert.match(decoderSource, /resolveScannerRoiCrop\(options\.scanRegion, dimensions\.width, dimensions\.height\)/);
 assert.match(decoderSource, /if \(!crop\)\s*\{[\s\S]*?return \[\];/);
 assert.doesNotMatch(decoderSource, /drawImage\(source,\s*0,\s*0,\s*width,\s*height/);
 assert.doesNotMatch(decoderSource, /ROI_WIDTH_RATIO|ROI_HEIGHT_RATIO/,

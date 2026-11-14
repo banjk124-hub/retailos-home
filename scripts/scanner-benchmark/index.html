@@ -24,7 +24,7 @@
   </head>
   <body>
     <h1>RetailOS — Decoder Benchmark Lab</h1>
-    <p>Dev-only tool. Runs the existing ZXing JS and ZXing-C++ WASM adapters against the same labelled images and strict source-frame ROI. It does not access the camera or alter production backend selection.</p>
+    <p>Dev-only tool. Runs the production ZXing-C++ WASM adapter against labelled images and strict source-frame ROI. It does not access the camera or alter production scanner sessions.</p>
     <section class="panel">
       <label for="manifest">1. Corpus manifest (JSON)</label>
       <input id="manifest" type="file" accept="application/json,.json" />
@@ -36,7 +36,6 @@
           <input id="repeats" type="number" min="1" max="10" value="3" />
         </div>
         <div>
-          <label><input id="reverse" type="checkbox" /> Reverse backend order</label>
           <button id="run" disabled>Run benchmark</button>
         </div>
       </div>

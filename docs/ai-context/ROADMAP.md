@@ -1,8 +1,8 @@
 # Scanner runtime roadmap — 2026-11-14
 
-## PR-08 — Production cutover to ZXing-C++ WASM (in progress)
+## PR-08 — Production cutover to ZXing-C++ WASM (merged)
 
-**Branch:** `feat/scanner-wasm-production-cutover`  
+**Branch:** `feat/scanner-wasm-production-cutover` (merged via PR #116)  
 **Base:** PR #115 merge `6dadb3a2c4aee74945c64607a5e10004fa9057cf`.  
 **Target:** make the adopted WASM engine the sole production decoder selection through the existing backend-neutral factory, while preserving the established module/session contracts.
 
@@ -12,12 +12,12 @@
 - `useScannerEngine` creates `UniversalScannerSession`; the session receives the shared `defaultScannerDecoderFactory`.
 - The default factory now selects `ZXingWasmDecoderAdapter` lazily. Modules continue to provide only enabled symbologies and feature-owned ROI; they do not select or know concrete decoder implementations.
 - The adapter remains behind `ScannerDecoderAdapter`; camera lease, preview readiness, frame cadence, lifecycle/recovery, validation, temporal policy, feedback and feature handoff remain session/module-owned.
-- Remove the redundant opt-in WASM factory. Keep the legacy JS adapter and dependency temporarily as a rollback/parity reference until WASM optical and physical-device acceptance is recorded.
+- Remove the redundant opt-in WASM factory. The production default is now the WASM adapter; the legacy JS adapter and dependency are removed separately in PR-09 cleanup.
 
 ### Cutover acceptance gates
 
-- [ ] CI preflight, TypeScript, production build, Pages build and PWA/bundle checks pass on the cutover head.
-- [ ] Production factory test proves WASM is selected; session tests prove format allowlist and lifecycle ownership remain unchanged.
+- [x] CI preflight, TypeScript, production build, Pages build and PWA/bundle checks pass on the cutover head (run #1060).
+- [x] Production factory test proves WASM is selected; session tests prove format allowlist and lifecycle ownership remain unchanged (CI run #1060).
 - [ ] Real labelled corpus covers all active formats, 0°/90°/180°/270°, inversion, low contrast, glare, noise, curved carrier, residual skew, malformed and negative samples.
 - [ ] Compare exact matches, misses, wrong decodes, false positives, initialization time, first-result latency and p50/p95 decode duration.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA QA, including a low-end Android device.
@@ -25,7 +25,15 @@
 
 ### Legacy cleanup boundary
 
-Do not delete `zxingDecoder.ts` or `@zxing/library` in the cutover change. They remain only as a reversible comparison/rollback baseline until the above evidence is accepted. Then perform a separate cleanup change that removes the JS adapter, dependency, obsolete integration fixtures and backend-specific workaround code while retaining backend-neutral contracts and the labelled corpus. No module should contain a concrete decoder import.
+PR-09 removes the JS adapter, `@zxing/library`, JS-only integration fixtures and obsolete backend-specific checks. Backend-neutral session/adapter contracts, shared recognition pipeline, labelled corpus and WASM integration tests are retained. Physical-device optical acceptance remains a release validation gate.
+
+## Post-cleanup development baseline
+
+1. **WASM-native first:** prefer native ZXing-C++ capabilities and options when they satisfy the required recognition behavior.
+2. **Shared pipeline only for RetailOS-owned gaps:** retain ROI, geometry, continuous deskew, validation, temporal policy and diagnostics where they provide behavior the engine does not own.
+3. **No duplicate capability paths:** do not re-run shared rotation, inversion, downscale or denoise when WASM already owns an equivalent path.
+4. **Evidence-led optimization:** use the labelled corpus and device traces to measure exact matches, false positives, initialization, first-result latency, p50/p95 decode time and memory before changing policy.
+5. **Protect application contracts:** Home/Stocktake modules, camera lease, lifecycle/recovery, presentation and business workflows remain outside the decoder engine.
 
 ---
 
@@ -57,7 +65,7 @@ Key implementation decisions in this PR:
 - Enable native `tryRotate: true` for WASM 90°/180°/270° recognition; tell the shared pipeline to omit its duplicate orthogonal transform while retaining continuous deskew and geometry correction.
 - Enable native `tryDownscale: true` for high-resolution inputs. Keep shared 1×/2× recovery temporarily because native downscale does not replace the 2× upsample path; use corpus/latency evidence to retire redundant candidates.
 - Enable experimental `tryDenoise` only when the active allowlist includes supported 2D symbologies; keep it off for linear-only sessions.
-- Keep the WASM adapter opt-in; production remains on ZXing JS.
+- At the time of PR-07, WASM remained opt-in; production cutover was reserved for PR-08.
 
 ## Shared RetailOS capabilities — preserve one owner
 
@@ -84,12 +92,12 @@ The pinned WASM implementation contains the native 180° scanline reversal algor
 
 ## Acceptance gates
 - [ ] Deterministic tests prove ordered binarizer fallback and invalid-result rejection.
-- [ ] Both backends use the same allowlist and shared recognition candidate iterator.
+- [x] The production WASM adapter enforces the app allowlist and uses the shared recognition pipeline.
 - [ ] A1/A2/A3 and stage diagnostics are observable from WASM without exposing payloads or image pixels.
 - [ ] Same corpus tests cover all active symbologies, positive/negative controls, 180°/270° linear orientation, skew, curved carrier, glare, low contrast and malformed symbols.
 - [ ] Compare exact match, miss, wrong decode, false positive, p50/p95 duration, init time and memory where available.
 - [ ] Physical iOS Safari/PWA and Android Chrome/PWA parity is documented.
-- [ ] Production default remains ZXing JS until all parity gates pass.
+- [x] Production default was switched to ZXing-C++ WASM in PR-08.
 
 ## Later release sequence
 - **Production cutover PR:** select WASM as the default behind the existing factory, retain an immediate reversible rollback path, and run smoke tests on Home and Stocktake.
@@ -121,7 +129,7 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 
 ## Acceptance
 - [ ] Legacy preference migration retains vibration/beep and four existing defaults.
-- [ ] Every exposed format maps through ZXing JS and ZXing-C++ WASM.
+- [x] Every exposed format is mapped by the ZXing-C++ WASM adapter and normalized to the app symbology contract.
 - [ ] Settings switches persist and enforce minimum-one-enabled behavior.
 - [ ] Both adapters receive only enabled formats; session acceptance fails closed for unrequested output.
 - [ ] Format-specific validation and existing EAN/CODE-128/CODE-39 regressions pass.
@@ -133,9 +141,9 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 
 # Current scanner decoder replacement status — 2026-11-14
 
-**Current main:** `429214b6b3988fc118e72679484c728b1f409e7c` (PR #113 merged).
-**Current work:** PR-08 production cutover to ZXing-C++ WASM on `feat/scanner-wasm-production-cutover`; PR #115 capability adoption is merged. PR #114 remains advisory device-profile diagnostics.
-**Production default on main before PR-08 merge:** ZXing JS. PR-08 changes the default factory to ZXing-C++ WASM on its feature branch; production deployment remains gated by CI and optical/device QA.
+**Current main before PR-09:** `807fd2ba0c4c23be6925238d0b1289f19a84ccfb` (PR #116 merge commit).
+**Current work:** PR-09 WASM-only legacy cleanup on `chore/scanner-wasm-legacy-cleanup`; PR #116 production cutover and PR #115 capability adoption are merged. PR #114 remains advisory device-profile diagnostics.
+**Production default on main:** ZXing-C++ WASM through the shared lazy factory. CI run #1060 passed; physical iOS/Android optical and workflow validation remains a separate release gate.
 
 ## Verified sequence
 - PR #107 — Phase 0 source/dependency audit: merged.
@@ -145,11 +153,12 @@ No camera acquisition/lease, autofocus, Torch, preview readiness, frame cadence,
 - PR-05 — isolated adapter benchmark harness, corpus manifest contract and API capability decision; merged through PR #112. Physical corpus/device measurements remain outstanding.
 - PR-06 — configurable symbology preferences and allowlist enforcement; merged through PR #113.
 - PR-07 — complete WASM capability adoption: merged through PR #115; CI run #1053 passed. Physical corpus/device validation remains a release gate.
-- PR-08 — production default factory selects WASM on the feature branch; legacy JS adapter retained temporarily for rollback and parity comparison.
+- PR-08 — production default factory selects WASM; merged through PR #116 (merge commit `807fd2ba0c4c23be6925238d0b1289f19a84ccfb`); CI run #1060 passed.
+- PR-09 — remove legacy ZXing JS adapter/dependency, obsolete tests and dual-engine benchmark path; retain WASM-only verification.
 - PR #114 — advisory device-profile diagnostics; merged separately and not a production decoder cutover.
 
 ## Current evidence gap
-CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not select a production backend or remove recognition stages until those measurements exist.
+CI validates code contracts and synthetic orchestration. It does not establish real-label success rate, false-positive rate, iOS/Android parity, device p50/p95 latency, memory high-water mark or overall first-result latency. Do not remove shared recognition stages or tune production policy until those measurements exist.
 
 ## PR-05 exit boundary
 - [ ] Full preflight, TypeScript, production build and GitHub Pages build pass.
@@ -458,7 +467,7 @@ Status: active working plan; verify source and status before starting a phase.
 
 Scope:
 - Centralize accepted symbologies: EAN-13, EAN-8, CODE-128.
-- Use `@zxing/library` as the sole barcode decoder dependency; keep the camera lifecycle and frame scheduling in the shared scanner runtime.
+- Use `zxing-wasm` (ZXing-C++ WASM) as the sole barcode decoder dependency; keep camera lifecycle and frame scheduling in the shared scanner runtime.
 - Add a pure barcode validation boundary based on decoded format and payload.
 - Preserve CODE-128 as a string; do not coerce to numeric.
 - Make start idempotent and serialize start/stop/pause/resume transitions.

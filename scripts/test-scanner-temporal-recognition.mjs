@@ -31,7 +31,7 @@ try {
   assert.match(source, /does not delay them/);
 
   const sessionSource = await readFile(path.join(root, 'src/platform/scanner/universalScannerSession.ts'), 'utf8');
-  const decoderSource = await readFile(path.join(root, 'src/platform/scanner/decoders/zxingDecoder.ts'), 'utf8');
+  const decoderSource = await readFile(path.join(root, 'src/platform/scanner/decoders/zxingWasmDecoder.ts'), 'utf8');
   assert.match(sessionSource, /onTemporalFrame:/);
   assert.match(sessionSource, /regionRevision !== this\.regionRevision/);
   assert.match(sessionSource, /temporalFrameBuffer\.clear\(\)/);
@@ -40,7 +40,7 @@ try {
   assert.match(sessionSource, /regionRevision !== this\.regionRevision[\s\S]*?currentState !== 'scanning'/);
   assert.match(decoderSource, /decodeTemporalSnapshot\(/);
   assert.match(decoderSource, /createScannerTemporalSnapshot\(grayscale/);
-  assert.match(decoderSource, /candidate\.baseline \? onTemporalFrame : undefined/);
+  assert.match(decoderSource, /if \(focus\.valid && options\.onTemporalFrame\)/);
 
   const sourcePixels = new Uint8Array(800 * 500);
   sourcePixels[0] = 17;

@@ -336,7 +336,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
     }
     this.recordStageCost('rgba_expand', performance.now() - rgbaStartedAt);
 
-    // Match the legacy decoder's ordered binarizer policy:
+    // Apply the RetailOS ordered binarizer policy:
     // HybridBinarizer-equivalent LocalAverage first, GlobalHistogram only on miss.
     const imageData = new ImageData(rgba, width, height);
     const binarizers: readonly ZXingWasmBinarizer[] = ['LocalAverage', 'GlobalHistogram'];

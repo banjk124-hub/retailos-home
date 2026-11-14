@@ -1,7 +1,7 @@
 import type { ScannerDecoderAdapter, ScannerDecoderFactory } from './decoderAdapter';
 
 /**
- * Production backend selection.
+ * Production decoder factory.
  *
  * The session and feature modules depend only on ScannerDecoderAdapter.
  * ZXing-C++ WASM is loaded lazily after the camera preview is ready, keeping

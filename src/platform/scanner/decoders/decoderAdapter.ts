@@ -35,11 +35,10 @@ export type DecoderDecodeOptions = {
  * Decoder execution boundary. Implementations must not acquire camera streams,
  * mutate video elements, schedule frames, or own feature UI/business logic.
  *
- * The optional quality/temporal callbacks and temporal-snapshot method preserve
- * the current recognition-pipeline integration for this contract phase. They
- * are transitional policy hooks, not requirements for backend-specific APIs;
- * the later recognition-pipeline migration will separate them from the core
- * backend contract after parity tests are in place.
+ * Quality/temporal callbacks and temporal-snapshot decoding are stable parts of
+ * the RetailOS recognition contract. They pass bounded grayscale observations
+ * between the shared session and decoder without exposing live camera/canvas
+ * ownership or moving feature policy into the engine.
  */
 export interface ScannerDecoderAdapter {
   readonly id: string;

@@ -1,8 +1,8 @@
 import type { ReaderOptions } from 'zxing-wasm/reader';
 
 /**
- * The two binarizers used by the previous ZXing JS backend.
- * LocalAverage is ZXing-C++'s HybridBinarizer-equivalent mode.
+ * RetailOS's ordered binarizer strategy for the production ZXing-C++ engine.
+ * LocalAverage provides the HybridBinarizer-equivalent local-threshold path.
  */
 export type ZXingWasmBinarizer = 'LocalAverage' | 'GlobalHistogram';
 
