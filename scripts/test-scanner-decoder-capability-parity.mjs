@@ -75,6 +75,14 @@ assert.match(wasm, /recordStageCost\(stage, durationMs\)/,
 assert.match(wasm, /\[RetailOS Scanner\] Multi-format diagnostics/,
   'WASM must emit backend-neutral recognition diagnostics');
 
+assert.match(wasm, /if \(this\.disposed \|\| !this\.options \|\| !Number\.isFinite\(timestamp\)/,
+  'temporal fallback must fail closed after disposal or invalid snapshots');
+assert.match(wasm, /if \(this\.disposed \|\| !pipelineResult\.output\) return \[\];/,
+  'temporal fallback must not deliver output after disposal');
+assert.match(wasm, /this\.disposed = true;/);
+assert.match(wasm, /this\.canvas = null;/);
+assert.match(wasm, /this\.context = null;/);
+
 const diagnosticsStart = wasm.indexOf('  private emitDiagnostics(): void {');
 const diagnosticsEnd = wasm.indexOf('\n  dispose(): void {', diagnosticsStart);
 assert.ok(diagnosticsStart >= 0 && diagnosticsEnd > diagnosticsStart,
