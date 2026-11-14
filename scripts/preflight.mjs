@@ -99,6 +99,11 @@ const checks = [
     args: ["scripts/test-scanner-rotation.mjs"],
   },
   {
+    name: "Scanner decoder adapter/factory contract tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-decoder-factory.mjs"],
+  },
+  {
     name: "Scanner production decoder integration tests",
     command: process.execPath,
     args: ["scripts/test-scanner-decoder-integration.mjs"],

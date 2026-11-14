@@ -173,8 +173,8 @@ const stubs = {
   '../../shared/services/cameraSession': makeDataModule(
     'export async function acquireCameraLease() { throw new Error("not expected"); } export function subscribeCameraTrackEnded() { return () => {}; }',
   ),
-  './decoders/zxingDecoder': makeDataModule(
-    'export class ZXingDecoderAdapter { async initialize() {} async decode() { return []; } async dispose() {} }',
+  './decoders/decoderFactory': makeDataModule(
+    'export const defaultScannerDecoderFactory = { async create() { return { async initialize() {}, async decode() { return []; }, async decodeTemporalSnapshot() { return []; }, async dispose() {} }; } };',
   ),
   './barcodeValidation': makeDataModule(
     'export function validateBarcodePayload(value) { return { valid: true, value, reason: "" }; }',

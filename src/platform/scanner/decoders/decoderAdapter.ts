@@ -32,8 +32,14 @@ export type DecoderDecodeOptions = {
 };
 
 /**
- * Decoder-only boundary. Implementations must not acquire camera streams,
+ * Decoder execution boundary. Implementations must not acquire camera streams,
  * mutate video elements, schedule frames, or own feature UI/business logic.
+ *
+ * The optional quality/temporal callbacks and temporal-snapshot method preserve
+ * the current recognition-pipeline integration for this contract phase. They
+ * are transitional policy hooks, not requirements for backend-specific APIs;
+ * the later recognition-pipeline migration will separate them from the core
+ * backend contract after parity tests are in place.
  */
 export interface ScannerDecoderAdapter {
   readonly id: string;
@@ -43,4 +49,13 @@ export interface ScannerDecoderAdapter {
   /** Decode an owned historical grayscale ROI snapshot through the same enhancement/validation boundary. */
   decodeTemporalSnapshot(snapshot: ScannerTemporalSnapshot, timestamp: number, processingBudget?: ScannerAdaptiveRuntimeBudget): Promise<DecoderOutput[]>;
   dispose(): Promise<void> | void;
+}
+
+
+/**
+ * Creates an uninitialized decoder backend. The session owns initialization,
+ * disposal and generation checks; factories must not acquire camera resources.
+ */
+export interface ScannerDecoderFactory {
+  create(): Promise<ScannerDecoderAdapter>;
 }
