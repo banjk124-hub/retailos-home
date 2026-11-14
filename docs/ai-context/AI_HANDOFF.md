@@ -48,7 +48,7 @@
 
 1. `docs/ai-context/SCANNER_RECOGNITION_PIPELINE.md` — authoritative recognition architecture and extension contract.
 2. `docs/ai-context/ROADMAP.md` — active sequence and next stages.
-3. `src/platform/scanner/scannerEnhancementPipeline.ts` and `src/platform/scanner/decoders/zxingDecoder.ts`.
+3. `src/platform/scanner/scannerEnhancementPipeline.ts` and `src/platform/scanner/decoders/zxingWasmDecoder.ts`.
 4. `scripts/test-scanner-enhancement-pipeline.mjs`, `test-scanner-decoder-integration.mjs`, `test-scanner-deskew.mjs` and `test-scanner-rotation.mjs`.
 
 ## Non-negotiable invariants
@@ -188,7 +188,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 
 ## Current technical reference
 
-1. src/platform/scanner/decoders/zxingDecoder.ts — upright → 90° fast path → continuous deskew candidates; both binarizers.
+1. src/platform/scanner/decoders/zxingWasmDecoder.ts — upright → 90° fast path → continuous deskew candidates; both binarizers.
 2. src/platform/scanner/scannerDeskew.ts — orientation estimator, contrast normalization and bounded bilinear transform.
 3. src/platform/scanner/scannerRotation.ts — exact 90° ROI transform.
 4. src/platform/scanner/universalScannerSession.ts — 70 ms minimum decode interval and serialized frame processing.
@@ -413,7 +413,7 @@ If any item is missing or contradicts the current source, stop treating this han
 - Latest active work branch: `phase-1-2e-scanner-feedback` (Phase 1.2E scan confirmation feedback), based on pushed main commit `ef7b6ff14e2cdfeeee24a7d6349f19b7b3405c1a`.
 - Previous Phase 1.2 foundation branch has been merged into `main` and deployed; Phase 1.2E remains unmerged and undeployed.
 - This branch is intentionally separate from `main`; do not merge or deploy without explicit user approval.
-- Scanner stack uses `@zxing/library ^0.23.0` as its only decoder dependency; ZBar and browser-native decoding are not part of the runtime.
+- Scanner runtime uses `zxing-wasm 3.1.6` (ZXing-C++ WASM) as its sole barcode decoder. ZXing JS, ZBar and browser-native decoding are not part of the runtime.
 - Current package scripts observed: `dev`, `build`, `build:pages`, `preview`, `preview:pages`. No test or lint script was defined at the time of review.
 - Main contains the Phase 1.2 scanner foundation: explicit EAN-13/EAN-8/CODE-128 whitelist and payload validation. The active Phase 1.2E branch adds a louder accepted-result beep and best-effort 25 ms vibration where supported.
 - Scanner engine has a live-controls guard and handles a single-scan result arriving before ZXing returns its controls. Phase 1.2E local TypeScript/build and device verification are still pending.
@@ -548,7 +548,7 @@ This is the latest task snapshot and supersedes older “active task” labels a
 ### Patch 2 verification update — 2026-11-07
 - GitHub Actions run #84 (`42393062148`) passed the full `npm run preflight`, including the new delayed-`applyConstraints()` regression, TypeScript/production build, Pages build and diff checks.
 - Non-blocking regression behavior is now verified in CI: camera lease acquisition resolves while the mocked autofocus Promise remains pending, and the ended listener is already installed.
-- CI emitted a non-fatal EBADENGINE warning: `@zxing/library@0.23.0` declares Node >=24 while the current workflow uses Node 22. Vite also emitted its existing large-chunk warning. Neither caused failure.
+- Historical CI warning from the removed `@zxing/library` dependency; it no longer applies after the WASM-only dependency cleanup.
 - Local Windows/PowerShell execution and physical iOS Safari/PWA + Android Chrome/PWA QA are still required. Do not treat CI as device verification.
 
 
