@@ -14,7 +14,6 @@ import { getCachedModuleSnapshot, MODULE_DATA_IDS, MODULE_SNAPSHOTS_UPDATED_EVEN
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
-const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { ModuleLibraryEngine } from './components/ModuleLibraryEngine';
 import { MODULE_REGISTRY, MODULE_LIBRARIES, type ModuleLibraryDefinition } from './moduleRegistry';
@@ -29,15 +28,17 @@ import '../../styles/home-redesign.css';
 import '../../styles/home-architecture.css';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
-const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
-const StocktakeImportModule = lazy(() => import('../stocktake-import/components/StocktakeImportModule'));
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
+import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
+
+const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
+const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
+const StocktakeImportModule = lazy(() => import('../stocktake-import/components/StocktakeImportModule'));
 const ScannerQaMonitor = lazy(() => import('./components/ScannerQaMonitor'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
-import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 
 type Props = {
   employee: EmployeeSession;
