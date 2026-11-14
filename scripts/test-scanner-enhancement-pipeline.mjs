@@ -245,6 +245,24 @@ try {
   assert.equal(orthogonalResult.deskewAttempts, 0,
     'deskew work must not run after a valid quarter-turn decode');
 
+  const decoderOwnedRotationStages = [];
+  const decoderOwnedRotationResult = executeScannerEnhancementPipeline(
+    upright,
+    { orthogonalRotationOwner: 'decoder' },
+    (candidate) => {
+      decoderOwnedRotationStages.push(candidate.stage);
+      return null;
+    },
+  );
+  assert.equal(decoderOwnedRotationResult.rotationDelegatedToDecoder, true,
+    'WASM-capable backends must be marked as the orthogonal rotation owner');
+  assert.equal(decoderOwnedRotationResult.rotationAttempted, false,
+    'shared pipeline must not run a duplicate quarter-turn pixel transform');
+  assert.ok(!decoderOwnedRotationStages.includes('orthogonal'),
+    'shared pipeline must omit its orthogonal candidate when the decoder owns rotation');
+  assert.ok(decoderOwnedRotationStages.includes('deskew'),
+    'continuous-angle deskew must remain shared because native orthogonal rotation does not replace it');
+
   const skewed = rotateLuminanceByAngle(source, width, height, 17);
   assert.ok(skewed, 'bounded skew fixture must be generated');
   const estimate = estimateScannerSkewAngle(skewed.luminance, skewed.width, skewed.height);
