@@ -18,14 +18,19 @@ const modulePaths = [
 try {
   for (const relativePath of modulePaths) {
     const source = await readFile(path.join(root, relativePath), 'utf8');
-    const compiled = ts.transpileModule(source, {
+    let compiled = ts.transpileModule(source, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
-    }).outputText.replace(
-      /(from\\s+['"])(\\.\\.?\\/[^'"]+)(['"])/g,
-      (_match, prefix, specifier, suffix) =>
-        prefix + (specifier.endsWith('.js') ? specifier : specifier + '.js') + suffix,
-    );
-    const outputPath = path.join(tempRoot, relativePath.replace(/\\.ts$/, '.js'));
+    }).outputText;
+    for (const specifier of [
+      './scannerImageEnhancement', './scannerRotation', './scannerDeskew',
+      './scannerGeometryCorrection', './scannerAdaptiveProcessingController',
+      './scannerAdaptiveRuntimeController',
+    ]) {
+      compiled = compiled
+        .replaceAll(`from '${specifier}'`, `from '${specifier}.js'`)
+        .replaceAll(`from "${specifier}"`, `from "${specifier}.js"`);
+    }
+    const outputPath = path.join(tempRoot, relativePath.slice(0, -3) + '.js');
     await mkdir(path.dirname(outputPath), { recursive: true });
     await writeFile(outputPath, compiled, 'utf8');
   }
