@@ -68,13 +68,22 @@ export default function ScannerQaMonitor({ onClose }: Props) {
     return true;
   }).slice().reverse(), [events]);
 
-  const durations = events.flatMap((event) => {
-    const value = metricNumber(event, 'durationMs');
-    return value === null ? [] : [value];
-  });
-  const accepted = events.reduce((sum, event) => sum + (metricNumber(event, 'accepted') ?? 0), 0);
-  const errors = events.filter((event) => event.level === 'warn' || /error/i.test(event.category)).length;
-  const maxDuration = durations.length ? Math.max(...durations) : null;
+  const { accepted, errors, maxDuration } = useMemo(() => {
+    const durations: number[] = [];
+    let acceptedCount = 0;
+    let errorCount = 0;
+    for (const event of events) {
+      const duration = metricNumber(event, 'durationMs');
+      if (duration !== null) durations.push(duration);
+      acceptedCount += metricNumber(event, 'accepted') ?? 0;
+      if (event.level === 'warn' || /error/i.test(event.category)) errorCount += 1;
+    }
+    return {
+      accepted: acceptedCount,
+      errors: errorCount,
+      maxDuration: durations.length ? Math.max(...durations) : null,
+    };
+  }, [events]);
 
   const exportJson = () => downloadReport(exportScannerDiagnostics(), `retailos-scanner-qa-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, 'application/json');
   const exportCsv = () => {
