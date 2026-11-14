@@ -40,16 +40,16 @@
 
 **Repository:** banjk124-hub/retailos-home
 **Main baseline:** PR #79 merged at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
-**Active branch:** `feat/scanner-unified-enhancement-pipeline`.
-**Current task:** PR A+B combined — centralize existing SCAN-05/06 candidate orchestration while preserving SCAN-07 bounded sampling and all production contracts.
-**Status:** CI #690 passed full preflight/builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474`; later `8f6e0ae` is docs-only. Physical-device QA pending. No merge or deployment has been performed.
+**Active branch:** `chore/scanner-wasm-legacy-cleanup` (PR-09).
+**Current task:** complete the WASM-only decoder cutover cleanup: remove the retired ZXing JS adapter/dependency and obsolete test/benchmark paths while preserving shared scanner contracts.
+**Status:** PR #116 WASM cutover is merged and CI run #1060 passed. PR-09 cleanup is in progress; final CI and physical iOS/Android optical/workflow validation are pending.
 
 ## Read first
 
 1. `docs/ai-context/SCANNER_RECOGNITION_PIPELINE.md` — authoritative recognition architecture and extension contract.
 2. `docs/ai-context/ROADMAP.md` — active sequence and next stages.
 3. `src/platform/scanner/scannerEnhancementPipeline.ts` and `src/platform/scanner/decoders/zxingWasmDecoder.ts`.
-4. `scripts/test-scanner-enhancement-pipeline.mjs`, `test-scanner-decoder-integration.mjs`, `test-scanner-deskew.mjs` and `test-scanner-rotation.mjs`.
+4. `scripts/test-scanner-enhancement-pipeline.mjs`, `test-scanner-decoder-integration.mjs`, `test-scanner-zxing-wasm.mjs`, `test-scanner-decoder-capability-parity.mjs` and `test-scanner-roi-decoder.mjs`.
 
 ## Non-negotiable invariants
 
