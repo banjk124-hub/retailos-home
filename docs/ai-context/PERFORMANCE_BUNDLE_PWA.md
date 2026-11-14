@@ -8,7 +8,8 @@ This document records the production loading and update contracts introduced by 
 
 - Vite emits `.vite/manifest.json` for dependency-graph inspection.
 - `npm run preflight` produces `dist/bundle-report.md` and `dist/bundle-report.json` after the Pages build.
-- CI uploads the report and manifest as the `retailos-bundle-analysis` artifact.
+- CI builds the exact PR base SHA with its original toolchain, reconstructs the legacy entry closure from `index.html`, and compares it with the current manifest-based build.
+- CI uploads baseline/current reports and the before/after comparison as the `retailos-bundle-analysis` artifact.
 - The report distinguishes static entry closure from dynamic entry chunks. Per-file gzip sums are estimates, not browser transfer measurements.
 - Use browser Network/Performance traces for actual transferred bytes, parse/compile time, FCP and LCP.
 
@@ -29,7 +30,7 @@ This document records the production loading and update contracts introduced by 
 - A newly installed worker waits. The user must explicitly accept an update; the worker then verifies there are no other open RetailOS windows before calling `skipWaiting()`. This prevents one tab from replacing assets while another tab is still using the old application.
 - On activation, only RetailOS-owned old cache namespaces are deleted. IndexedDB databases and business snapshots are not touched.
 - Navigation uses Network First with cached app-shell fallback.
-- Build-manifest JS/CSS/font/image assets use Cache First and are limited to the current release allowlist. Old hashed assets are not copied into the new release cache.
+- Build-manifest JS/CSS/font/image assets and same-origin public media are included in the current release allowlist and use Cache First. Old hashed assets are not copied into the new release cache.
 - Push subscriptions reuse the centrally registered worker. Feature code must not register the same worker independently with different options.
 
 ## Protected contracts
