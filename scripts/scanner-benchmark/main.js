@@ -133,7 +133,11 @@ async function runBackend(backend, cases, files, repeats) {
 
   try {
     try {
-      await adapter.initialize({ formats: ['EAN_8', 'EAN_13', 'CODE_128', 'CODE_39'] });
+      const formats = [...new Set(cases
+        .filter((item) => item.expected !== null)
+        .map((item) => item.expected.symbology))];
+      if (!formats.length) throw new Error('Benchmark corpus needs at least one positive case to define the decoder format allowlist.');
+      await adapter.initialize({ formats });
       initMs = performance.now() - initStarted;
     } catch (error) {
       initMs = performance.now() - initStarted;
