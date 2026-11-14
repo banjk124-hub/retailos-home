@@ -40,9 +40,9 @@ The shared motion layer, Home entry styles, mobile login panel, Home notificatio
 
 ### 5. Active Stocktake entries were filtered and sorted on every render
 
-The active-zone entry state was already scoped and sorted by the storage loader, but the render path repeated the filter and sort whenever any Stocktake state changed. Review and history screens also mounted every entry and action log at once, which could create a large synchronous render for long-running inventory sessions.
+The active-zone entry state was already scoped and sorted by the storage loader, but the render path repeated the filter and sort whenever any Stocktake state changed. Review and history screens also mounted every entry and action log at once, which could create a large synchronous render for long-running inventory sessions. The module's general refresh path also read the complete action-log store even when the user only needed the home, scan or review screen.
 
-**Change:** Reuse the already scoped/sorted state array directly. Sorting remains at the data-loading boundary, not in the render path. Review entries and history logs now render in bounded batches of 100 with a local “show more” action; the underlying records and export data remain unchanged.
+**Change:** Reuse the already scoped/sorted state array directly. Sorting remains at the data-loading boundary, not in the render path. Review entries and history logs now render in bounded batches of 100 with a local “show more” action; the underlying records and export data remain unchanged. The full action log is loaded only when the user opens History, with the existing busy state shown before the IndexedDB read.
 
 ### 6. Expensive derived validation ran during unrelated renders
 
@@ -80,6 +80,7 @@ These are documented separately so future changes do not remove lifecycle safegu
 - Existing Scanner QA event rows are memoized when new diagnostic records arrive.
 - Stocktake async actions acknowledge work before their first awaited storage operation and always release the existing busy state.
 - Stocktake review and history do not mount unbounded lists in one render.
+- The complete Stocktake action log is not read during unrelated module refreshes.
 
 ## Audit still in progress
 
