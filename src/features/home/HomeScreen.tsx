@@ -480,32 +480,34 @@ export default function HomeScreen({
         frame = 0;
       });
     };
-
-    window.addEventListener('scroll', syncActiveSection, { passive: true });
-    syncActiveSection();
-    return () => {
-      window.removeEventListener('scroll', syncActiveSection);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  useEffect(() => {
-    const persistCurrentUi = () => saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
+    const persistCurrentUi = () => saveHomeUiState({
+      activeNav: activeNavRef.current,
+      search: searchRef.current,
+      scrollY: window.scrollY,
+    });
     const onScroll = () => {
+      syncActiveSection();
       const currentY = Math.max(0, window.scrollY);
       if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
       scrollSaveTimer.current = window.setTimeout(() => {
-        saveHomeUiState({ activeNav, search: searchRef.current, scrollY: currentY });
+        saveHomeUiState({
+          activeNav: activeNavRef.current,
+          search: searchRef.current,
+          scrollY: currentY,
+        });
       }, 140);
     };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pagehide', persistCurrentUi);
+    syncActiveSection();
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pagehide', persistCurrentUi);
+      if (frame) window.cancelAnimationFrame(frame);
       if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
     };
-  }, [activeNav]);
+  }, []);
 
   const handleSearchChange = useCallback((nextSearch: string) => {
     searchRef.current = nextSearch;
