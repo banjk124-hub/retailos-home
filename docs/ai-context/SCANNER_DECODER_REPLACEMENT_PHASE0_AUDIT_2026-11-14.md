@@ -540,3 +540,36 @@ Do not remove multiple stages in one change. Compare baseline-only, backend opti
 - **Phase 7 — Production cutover:** one production backend, reversible PR/commit rollback, then remove legacy JS decoder only after acceptance.
 
 **Phase 0 recommendation:** accept the source map and protected-contract baseline as the starting point. Do not begin Phase 2 or alter production scanner runtime until Phase 1 has verified the candidate API and a repeatable barcode corpus/baseline has been established.
+
+
+## Phase 3 capability-transfer addendum — 2026-11-14
+
+This addendum compares the production `ZXingDecoderAdapter` with the opt-in `ZXingWasmDecoderAdapter` after PR #111 shared the candidate pipeline. It does not authorize production cutover.
+
+### Confirmed parity already present — do not duplicate
+- Strict feature-owned ROI crop and bounded ROI dimensions.
+- Shared 1.5× baseline / 1× / 2× scale candidates.
+- Shared lazy baseline-first rotation, deskew, image enhancement and geometry-correction candidate ordering.
+- Shared A2 processing plan and A3 runtime candidate budgets.
+- Shared focus-quality measurement and temporal snapshot creation at baseline cadence.
+- Shared temporal snapshot consumption and session-side validation, allowlist enforcement, single/continuous behavior and Home/Stocktake delivery.
+- All 17 RetailOS symbology mappings and variant normalization in the WASM adapter.
+
+### Gaps / behavior differences to close or explicitly accept
+- Legacy JS tries `HybridBinarizer` then `GlobalHistogramBinarizer` for each candidate. WASM previously made one `readBarcodes` call using only its default LocalAverage binarizer. Transfer the ordered LocalAverage → GlobalHistogram fallback; LocalAverage is documented by zxing-wasm as the HybridBinarizer-equivalent mode.
+- WASM previously relied on the package default `textMode: HRI`, while the old JS adapter returns `getText()`. Set `textMode: Plain` explicitly to preserve the raw text contract, especially control/GS1 payload handling.
+- WASM previously set `validateOptionalChecksum: true`, unlike the old adapter's default optional-checksum behavior. Set it to false for compatibility; RetailOS payload validation remains authoritative.
+- WASM previously omitted `returnErrors` and accepted any non-empty result text. Request error results for diagnostics and reject `isValid === false` / non-empty error results before emitting DecoderOutput.
+- WASM previously omitted A1 quality-profile / A2 plan callbacks and the legacy decoder's rotation, deskew, geometry, scale, and per-stage timing diagnostics. Restore equivalent bounded diagnostics without moving recognition policy into the backend.
+- 180° one-dimensional reversal is a separate parity question: the old integration fixture exercises reversed CODE-39 through ZXing JS, while WASM sets `tryRotate: false`. Keep internal rotation disabled until the shared corpus proves whether the explicit shared candidates cover the required orientation; add a 180° parity case before deciding whether to add a bounded candidate or enable backend rotation.
+
+### Explicitly not transferred
+- ZXing JS console-warning suppression for its own NotFoundException logging; this is a backend-specific workaround.
+- Any concrete camera, lifecycle, UI or module workflow behavior; those remain in the shared session and feature owners.
+- Redundant decoder-internal rotation/downscale/denoise while the shared candidate pipeline owns those stages.
+
+### Current status after PR #114 merge
+PR #114 is merged separately and resolves advisory LOW/MID/HIGH device-profile metadata and the session timing-window correction. That work does not establish decoder parity, change the selected decoder backend, or authorize cutover. PR #115 is the capability-transfer implementation branch.
+
+### Release boundary
+The capability-parity code and deterministic tests do not replace physical optical parity. The same labelled corpus must run through both adapters, followed by iOS Safari/PWA and Android Chrome/PWA QA. Only then can production cutover be proposed; remove `@zxing/library`, `zxingDecoder.ts` and JS-only tests only after the selected WASM backend is accepted and rollback evidence exists.
