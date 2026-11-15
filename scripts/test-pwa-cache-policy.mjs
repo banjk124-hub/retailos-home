@@ -193,15 +193,32 @@ const settingsHub = await read('../src/features/home/components/SettingsHub.tsx'
 const dockItem = await read('../src/shared/navigation/LiquidDockItem.tsx');
 assert.match(updateStore, /localStorage\.setItem\(STORAGE_KEY/,
   'update deferral metadata must persist beyond the current React page session');
+assert.match(updateStore, /inCenter/);
+assert.match(updateStore, /return entry\?\.inCenter \? 1 : 0/,
+  'the Settings badge must only represent an update explicitly deferred into Update Center');
 assert.match(updateStore, /retailos\.pwa\.update-center\.v1/);
-assert.match(prompt, /status: 'deferred'/,
-  'deferral must be persisted for the exact candidate BUILD_ID');
+assert.match(prompt, /persistCandidate\('deferred', true\)/,
+  'deferral must be persisted for the exact candidate BUILD_ID and explicitly pinned to Update Center');
 assert.match(prompt, /onClick=\{tryActivate\}/,
   'activation must be reachable only through an explicit user action');
-assert.doesNotMatch(prompt, /tryActivate\(\);/,
-  'staging completion and blocker-clear events must never auto-activate');
-assert.match(prompt, /retailos:update-center-open/,
-  'the Settings Update Center must be able to reopen a deferred candidate');
+assert.match(prompt, /onClick=\{tryActivate\}/,
+  'activation must remain behind an explicit user click');
+assert.match(prompt, /action === 'download' \|\| action === 'activate'/,
+  'Update Center activation commands must be explicit UI actions, not lifecycle side effects');
+assert.doesNotMatch(prompt, /RetailOS sẽ tự thử lại/,
+  'activation failures must not promise or trigger automatic retries');
+assert.match(prompt, /retailos:update-center-action/,
+  'Update Center actions must be routed to the existing Service Worker lifecycle');
+assert.match(settingsHub, /function UpdateCenterView/,
+  'Settings must provide a dedicated Update Center view, not merely reopen the prompt');
+assert.match(settingsHub, /current\.currentVersion/);
+assert.match(settingsHub, /current\.lastError/);
+assert.match(settingsHub, /requestUpdateAction\('activate'\)/);
+assert.match(settingsHub, /requestUpdateAction\('download'\)/);
+assert.match(homeScreen, /pendingUpdate\?\.buildId === __RETAILOS_BUILD_ID__/,
+  'the pending entry must be cleared only after the primary Home surface reports healthy boot');
+assert.match(prompt, /persistCandidate\('deferred', true\)/,
+  'only explicit defer/collapse actions pin the candidate into Update Center');
 assert.match(prompt, /isBusinessBusy/);
 assert.match(prompt, /is-modal/);
 assert.match(prompt, /is-busy/);
