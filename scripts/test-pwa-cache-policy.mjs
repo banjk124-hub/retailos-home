@@ -129,6 +129,11 @@ assert.doesNotMatch(prompt, /Bản mới đã được tải và xác minh/);
 assert.match(updateSafety, /registerPwaUpdateBlocker/);
 assert.match(updateSafety, /dirtyFormFields/);
 assert.match(updateSafety, /markPwaUpdateFormSaved/);
+const savedFormHandler = updateSafety.slice(updateSafety.indexOf('export function markPwaUpdateFormSaved'));
+assert.match(savedFormHandler, /fieldBaselines\.set\(control, currentFieldValue\(control\)\)/,
+  'a successful save must advance dirty-field baselines to the saved values');
+assert.match(updateSafety, /if \(event\.defaultPrevented\)/,
+  'a cancelled native form reset must not clear unsaved-field blockers');
 assert.match(updateSafety, /data-retailos-update-safe/);
 assert.match(dataService, /registerPwaUpdateBlocker\('module-data-lifecycle'/);
 assert.match(dataService, /beginModuleDataOperation/);
