@@ -3,7 +3,7 @@ export type PwaUpdateBlocker = () => string | null;
 const blockers = new Map<string, PwaUpdateBlocker>();
 
 function signalSafetyChange() {
-  window.dispatchEvent(new Event('retailos:update-safety-changed'));
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('retailos:update-safety-changed'));
 }
 
 /** Register a module-owned critical operation that must finish before app reload. */
