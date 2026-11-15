@@ -13,7 +13,7 @@ import { MOTION_CONFIG, useMotionState } from './shared/motion';
 import type { MotionOrigin } from './shared/motion';
 import type { CSSProperties } from 'react';
 import { releaseCameraStream } from './shared/services/cameraSession';
-import { registerPwaUpdateBlocker } from './shared/pwa/updateSafety';
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from './shared/pwa/updateSafety';
 
 const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 
@@ -116,6 +116,8 @@ export default function App() {
   const [canInstall, setCanInstall] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
+  const transitionStateRef = useRef({ isEnteringHome, isLeavingHome });
+  transitionStateRef.current = { isEnteringHome, isLeavingHome };
 
   const handleAuthenticated = useCallback((session: EmployeeSession, origin?: MotionOrigin) => {
     saveSession(session);
@@ -206,11 +208,16 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => registerPwaUpdateBlocker('app-transition', () => (
-    isEnteringHome || isLeavingHome
+  useEffect(() => registerPwaUpdateBlocker('app-transition', () => {
+    const { isEnteringHome: entering, isLeavingHome: leaving } = transitionStateRef.current;
+    return entering || leaving
       ? 'RetailOS đang chuyển màn hình. Bản mới sẽ tự kích hoạt sau khi chuyển cảnh hoàn tất.'
-      : null
-  )), [isEnteringHome, isLeavingHome]);
+      : null;
+  }), []);
+
+  useEffect(() => {
+    notifyPwaUpdateSafetyChanged();
+  }, [isEnteringHome, isLeavingHome]);
 
   if (!employee) return <div className="retailos-scene">
     <ExperienceBackground experience="login" />
