@@ -38,7 +38,13 @@ function requestWorkerMessage(worker: ServiceWorker, message: unknown, timeoutMs
       channel.port1.close();
       resolve(event.data);
     };
-    worker.postMessage(message, [channel.port2]);
+    try {
+      worker.postMessage(message, [channel.port2]);
+    } catch {
+      window.clearTimeout(timeout);
+      channel.port1.close();
+      resolve(null);
+    }
   });
 }
 
@@ -55,6 +61,7 @@ export default function PwaUpdatePrompt() {
   const isApplyingUpdate = useRef(false);
   const hasReloaded = useRef(false);
   const dismissedBuildId = useRef<string | null>(null);
+  const retryInfoRef = useRef<() => void>(() => undefined);
 
   const tryActivate = useCallback(() => {
     const worker = waitingWorkerRef.current;
@@ -66,7 +73,14 @@ export default function PwaUpdatePrompt() {
     isApplyingUpdate.current = true;
     setPhase('activating');
     setNotice('Đã tải và xác minh đầy đủ. RetailOS đang chuyển sang phiên bản mới an toàn.');
-    worker.postMessage({ type: 'ACTIVATE_RELEASE' });
+    try {
+      worker.postMessage({ type: 'ACTIVATE_RELEASE' });
+    } catch {
+      activationRequestedRef.current = false;
+      isApplyingUpdate.current = false;
+      setPhase('staged');
+      setNotice('Chưa thể chuyển phiên bản ở thời điểm này. RetailOS sẽ tự thử lại khi có thể.');
+    }
   }, []);
 
   const startDownload = useCallback(() => {
@@ -111,7 +125,13 @@ export default function PwaUpdatePrompt() {
         tryActivate();
       }
     };
-    worker.postMessage({ type: 'STAGE_RELEASE' }, [channel.port2]);
+    try {
+      worker.postMessage({ type: 'STAGE_RELEASE' }, [channel.port2]);
+    } catch {
+      channel.port1.close();
+      setPhase('error');
+      setNotice('Không thể bắt đầu tải phiên bản. Bản hiện tại vẫn hoạt động bình thường.');
+    }
   }, [manifest, phase, tryActivate]);
 
   useEffect(() => {
@@ -164,6 +184,11 @@ export default function PwaUpdatePrompt() {
       setManifest(nextManifest);
       setPhase('available');
       setNotice('');
+    };
+
+    retryInfoRef.current = () => {
+      const candidate = registration?.waiting;
+      if (candidate) void loadCandidateInfo(candidate);
     };
 
     const revealWaitingWorker = () => {
@@ -246,6 +271,7 @@ export default function PwaUpdatePrompt() {
       window.removeEventListener('focus', retrySafeActivation);
       document.removeEventListener('visibilitychange', retrySafeActivation);
       observer.disconnect();
+      retryInfoRef.current = () => undefined;
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
@@ -338,6 +364,9 @@ export default function PwaUpdatePrompt() {
             }}>Để sau</button>
             <button type="button" className="pwa-update-prompt__apply" onClick={startDownload}>Thử tải lại</button>
           </>
+        )}
+        {phase === 'error' && !manifest && (
+          <button type="button" className="pwa-update-prompt__apply" onClick={() => retryInfoRef.current()}>Thử kiểm tra lại</button>
         )}
         {phase === 'loading-info' && <span className="pwa-update-prompt__loading">Đang kiểm tra thông tin phiên bản…</span>}
         {phase === 'downloading' && <span className="pwa-update-prompt__loading">Không đóng ứng dụng trong khi tải</span>}
