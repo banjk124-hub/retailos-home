@@ -110,3 +110,12 @@
 @media(prefers-reduced-motion:reduce) { .pwa-update-prompt { animation:none; } }
 
 .update-center-blocked { margin:12px 0 0; padding:10px 12px; border:1px solid rgba(169,37,52,.18); border-radius:11px; background:#fff5f5; color:#a92534; font-size:11px; line-height:1.5; }
+
+/* Deferred confirmation remains visible long enough to show where the update went. */
+.pwa-update-deferred { position:fixed; z-index:10000; right:max(12px,env(safe-area-inset-right)); bottom:max(12px,env(safe-area-inset-bottom)); display:flex; align-items:center; gap:10px; max-width:min(360px,calc(100% - 24px)); padding:10px 12px; border:1px solid rgba(255,255,255,.86); border-radius:16px; background:rgba(255,255,255,.97); box-shadow:0 10px 34px rgba(28,35,48,.2); color:#30252a; animation:pwa-update-enter 160ms ease-out both; }
+.pwa-update-deferred__mark { display:grid; place-items:center; width:30px; height:30px; flex:0 0 auto; border-radius:10px; background:#f9e9eb; color:#b52537; font-size:19px; }
+.pwa-update-deferred__copy { display:grid; gap:2px; min-width:0; flex:1; }
+.pwa-update-deferred__copy strong { font-size:11px; }
+.pwa-update-deferred__copy small { color:#83777c; font-size:10px; }
+.pwa-update-deferred button { min-height:32px; padding:0 11px; border:0; border-radius:10px; background:#b52537; color:#fff; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+@media(prefers-reduced-motion:reduce) { .pwa-update-deferred { animation:none; } }
