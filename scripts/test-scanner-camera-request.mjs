@@ -69,10 +69,15 @@ const contractsUrl = 'data:text/javascript;base64,' + Buffer.from(contractsJs).t
 const resolverUrl = moduleUrl;
 const diagnosticsJs = 'export function getSafeCameraSettings(){return {}};';
 const diagnosticsUrl = 'data:text/javascript;base64,' + Buffer.from(diagnosticsJs).toString('base64');
+const updateSafetyJs = 'export function registerPwaUpdateBlocker(){return () => {}}; export function notifyPwaUpdateSafetyChanged(){};';
+const updateSafetyUrl = 'data:text/javascript;base64,' + Buffer.from(updateSafetyJs).toString('base64');
 const cameraSessionJs = cameraSessionSource
   .replace("from './cameraDiagnostics';", `from '${diagnosticsUrl}';`)
   .replace("from '../../platform/scanner/contracts';", `from '${contractsUrl}';`)
-  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${resolverUrl}';`);
+  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${resolverUrl}';`)
+  // cameraSession is loaded from a data URL in this isolated harness, so its
+  // browser-only PWA safety dependency must be stubbed like the other imports.
+  .replace("from '../pwa/updateSafety';", `from '${updateSafetyUrl}';`);
 const cameraSessionUrl = 'data:text/javascript;base64,' + Buffer.from(ts.transpileModule(cameraSessionJs, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText).toString('base64');

@@ -58,6 +58,7 @@ type Props = {
   isOffline: boolean;
   canInstall: boolean;
   onInstall: () => Promise<void> | void;
+  onBootReady: () => void;
 };
 function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () => void }) {
   const headingId = `module-loading-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -91,8 +92,11 @@ const HOME_DOCK_ITEMS = navItems.map((item) => ({
 }));
 
 export default function HomeScreen({
-  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall,
+  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall, onBootReady,
 }: Props) {
+  useEffect(() => {
+    onBootReady();
+  }, [onBootReady]);
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
   const [initialUiState] = useState(readHomeUiState);

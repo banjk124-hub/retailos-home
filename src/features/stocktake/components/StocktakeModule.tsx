@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import StocktakeScanner from './StocktakeScanner';
@@ -17,6 +17,7 @@ import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabili
 import './stocktake.css';
 import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type Screen = 'home' | 'scan' | 'review' | 'history' | 'exports';
@@ -81,6 +82,13 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [historyVisibleCount, setHistoryVisibleCount] = useState(STOCKTAKE_LIST_PAGE_SIZE);
   const [error, setError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const pwaUpdateStateRef = useRef({
+    busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput,
+  });
+  pwaUpdateStateRef.current = {
+    busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput,
+  };
+
   const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
 
   const refresh = useCallback(async () => {
@@ -128,6 +136,21 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     void initialize();
     return () => { active = false; };
   }, [resolvedEmployeeCode, employee.name, employee.department, refresh]);
+
+  useLayoutEffect(() => registerPwaUpdateBlocker('stocktake', () => {
+    const state = pwaUpdateStateRef.current;
+    if (state.busy) return 'Stocktake đang ghi hoặc đọc dữ liệu kiểm kê.';
+    if (state.scannerOpen) return 'Máy quét đang hoạt động. Hãy đóng phiên quét trước khi cập nhật.';
+    if (state.pendingZone || state.showClearConfirm) return 'Stocktake đang chờ xác nhận thao tác.';
+    if (state.editingEntry || state.manualEntry || state.barcode.trim() || state.quantity !== '1' || state.zoneInput.trim()) {
+      return 'Stocktake có nội dung nhập hoặc chỉnh sửa chưa hoàn tất.';
+    }
+    return null;
+  }), []);
+
+  useEffect(() => {
+    notifyPwaUpdateSafetyChanged();
+  }, [busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput]);
 
   // loadZoneEntries already scopes and sorts entries for the active zone.
   const currentEntries = entries;

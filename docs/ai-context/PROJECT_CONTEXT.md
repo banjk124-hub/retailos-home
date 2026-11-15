@@ -1,13 +1,13 @@
 # Current repository state — 2026-11-15
 
-- Production baseline: `main` at PR #118 merge commit `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.
-- Active work: Draft PR #119, branch `feat/pwa-offline-release-architecture`, targeting `main`; not merged or deployed.
-- Canonical PWA runtime/release contract: `PWA_RUNTIME_RELEASE.md`; bundle analysis: `PERFORMANCE_BUNDLE_PWA.md`.
-- The active branch stages all application runtime assets, including ZXing WASM, before a new Service Worker can become update-ready; incomplete downloads must preserve the old release.
-- Application releases and business-data/snapshot refreshes are independent. Data-only refreshes must not trigger app reloads or Service Worker replacement.
-- Previous release caches remain until the matching new build reports healthy startup; failed boot routes back to the previous cached shell/assets.
-- Scanner camera/session/decoder behavior and business data contracts are outside PR #119. Physical Android/iOS scanner and offline acceptance remains pending.
-- No merge, deployment or production mutation is authorized by this work. CI and physical-device evidence must be checked against the latest PR head.
+- Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
+- Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119 (`5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094`). PR #120 was superseded and its documentation changes are incorporated into PR #121. Runtime changes are not merged/deployed.
+- Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
+- This branch replaces update-time install precache with metadata-only discovery and user-approved candidate staging. Build-bound manifest/release notes, response and cache read-back size/SHA-256 verification, offline staged-byte revalidation before activation, primary-surface boot health acknowledgement, progress, staged resume, automatic activation and safe handoff are implemented in source.
+- App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
+- First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
+- Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
+- CI #1126 exposed missing final `index.html`; CI #1162 exposed manifest/final-chunk byte mismatch. Both were corrected with `enforce: 'post'` and `generateBundle` hook `order: 'post'`. RetailOS CI #1184 then passed full preflight, TypeScript, production/Pages builds, manifest integrity, worker/platform tests, main-only production deployment guard and bundle comparison on final PR head `1212b8f7`. Production Pages deployment is guarded to `main` for push and manual dispatch; feature branches cannot replace the production site. Final PR review and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
 
 
 # Historical scanner state snapshot — 2026-11-11

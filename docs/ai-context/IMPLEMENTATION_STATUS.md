@@ -1,18 +1,46 @@
 # Current PWA runtime and release status — 2026-11-15
 
-**Branch:** `feat/pwa-offline-release-architecture`  
-**Base:** `main` at `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.  
-**Status:** implementation and source-level regression updates are in progress; final CI and physical-device acceptance are pending.
+**Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
+**Baseline:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` after PR #119. PR #120 was closed as superseded; its documentation changes are included in this branch.  
+**Status:** RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including full preflight, TypeScript, production/Pages builds, PWA runtime/cache-policy/platform tests, main-only deploy guard regression and bundle comparison. PR review and physical-device acceptance remain pending. No merge or deployment.
 
-- Vite release manifest now includes emitted WASM and all Vite-emitted runtime assets/public files (excluding source maps).
-- Service Worker install stages and verifies shell plus complete asset inventory before it can enter the waiting state.
-- Active navigation is pinned to the current release; a deployed network HTML file cannot leak into the old active release.
-- Previous release caches are retained through new-build boot probation. Matching-build health confirms cleanup; boot failure can route back to the previous cached shell and assets.
-- Data snapshots and business records remain outside release caches and retain independent refresh semantics.
-- Required next gates: PWA policy/runtime tests, full preflight, TypeScript, production/Pages builds, PR-head CI, then physical Android/iOS offline and update tests.
-- No merge, deployment or physical-device acceptance is claimed.
+## Implemented in this branch
 
-Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
+- Vite generates a build-bound `release-manifest.json` from the actual output inventory and `release-notes.json`.
+- Each shell/runtime resource carries byte size and SHA-256; package version and release-notes version are checked for parity.
+- Update Service Worker install no longer downloads the candidate payload. It stages automatically only for a first install with no active worker.
+- Waiting worker exposes metadata-only discovery; full candidate payload staging begins only after the user approves.
+- Candidate shell/assets are staged in release-specific caches, in bounded batches of two with storage-budget preflight. Each response is checked for status, size and SHA-256; every cache write is then read back and rechecked before the staged marker is persisted. Activation independently revalidates staged bytes from cache (offline-capable) and rejects/removes a corrupted candidate before `skipWaiting`.
+- Download progress, retryable failure, concurrent-stage joining after page reload and staged-resume behavior are implemented.
+- Successful staging triggers automatic activation when app-wide safety blockers and the multi-window guard permit it. No second user confirmation.
+- Shared update-safety blockers cover camera leases, Stocktake, Stocktake Import, app transitions and module snapshot sync/IndexedDB cleanup and push subscription setup. Generic form dirty tracking advances baselines after successful async saves and preserves blockers when native reset is cancelled; future modules can register non-DOM blockers. If cache bytes fail revalidation, the worker deletes only candidate caches and the UI clears stale staged/activation flags before allowing a fresh consented retry.
+- Boot health is reported after the login surface commits or HomeScreen mounts, not when the update prompt mounts. Root render failures before primary-surface readiness can still trigger rollback. Previous-release health/rollback behavior and data lifecycle separation remain protected; healthy boot retains the active-release pointer while clearing obsolete rollback/staging markers.
+- A one-time compatibility bridge treats the old PR #119 client's explicit `SKIP_WAITING` action as consent to stage. That legacy UI cannot show the new release notes/progress until it loads this version.
+
+## Changed runtime and regression areas
+
+- Build/release: `vite.config.ts`, `release-notes.json`, `package.json`, `package-lock.json`.
+- Worker/update UI: `src/sw/service-worker.template.js`, `src/shared/pwa/PwaUpdatePrompt.tsx`, `pwa-update-prompt.css`, `updateSafety.ts`, `serviceWorkerRegistration.ts`.
+- Safety integration: shared `cameraSession.ts`, `moduleDataService.ts`, `pushNotifications.ts`, `App.tsx`, Stocktake and Stocktake Import modules.
+- Tests: PWA policy, worker runtime and platform compatibility regression scripts.
+- Production GitHub Pages build/deploy jobs are restricted to `main` even for manual workflow dispatch; platform regression tests protect this guard.
+- Canonical design/status/handoff/ADR/roadmap documents are synchronized in the same branch.
+
+## Build failure and correction
+
+- CI #1126 (`ecbc32fc`) passed regression suites and TypeScript but failed because the release plugin ran before Vite emitted `index.html`. `enforce: 'post'` fixed that ordering.
+- CI #1162 then passed TypeScript, production build, Pages build and the worker runtime test, but PWA cache-policy found the manifest's HomeScreen chunk size (59,043 bytes) differed from the final emitted file (60,023 bytes). This proves the manifest hook still ran before all output mutations had completed.
+- Second correction: the plugin now declares `generateBundle` as an explicit hook object with `order: 'post'`; the regression test requires that exact ordering. The integrity checks remain fail-closed and continue comparing every manifest size/hash with actual `dist` bytes.
+- Final evidence: RetailOS CI #1184 completed successfully on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`. Production and Pages builds, final manifest byte/hash parity, worker runtime, platform contracts, main-only deployment guard and bundle baseline comparison all passed.
+
+## Required verification still pending
+
+1. Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, Desktop and low-end Android acceptance for defer, consent, progress, interrupted download, resume, offline, safe handoff and rollback.
+2. Verify first-install and one-time legacy migration behavior on devices already running PR #119.
+3. Complete final human review of the PR diff before merge consideration.
+
+Automated CI #1170 is green; physical acceptance, merge and deployment are not claimed. Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
+
 
 ---
 

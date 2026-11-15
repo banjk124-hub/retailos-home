@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet, Info,
   FileText, History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
@@ -26,6 +26,7 @@ import {
 import './stocktake-import.css';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { downloadFile } from '../../../shared/downloadFile';
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
@@ -163,6 +164,15 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   );
   const canExportAll = Boolean(result && !hasDirtyZones && invalidZones.length === 0 && result.blockingIssues.length === 0 && !busy && !editingZone);
 
+  const pwaUpdateStateRef = useRef({
+    busy, historyBusy, historyExportingId, editingZone, hasDirtyZones, pendingImport,
+    result, historyPersisted, showClearConfirm, showNewSessionConfirm,
+  });
+  pwaUpdateStateRef.current = {
+    busy, historyBusy, historyExportingId, editingZone, hasDirtyZones, pendingImport,
+    result, historyPersisted, showClearConfirm, showNewSessionConfirm,
+  };
+
   const refreshHistory = async () => {
     setHistoryBusy(true);
     try {
@@ -175,6 +185,26 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   };
 
   useEffect(() => { void refreshHistory(); }, []);
+
+  useLayoutEffect(() => registerPwaUpdateBlocker('stocktake-import', () => {
+    const state = pwaUpdateStateRef.current;
+    if (state.busy || state.historyBusy || state.historyExportingId) {
+      return 'Stocktake Import đang xử lý hoặc đồng bộ lịch sử trên thiết bị.';
+    }
+    if (state.editingZone || state.hasDirtyZones) return 'Stocktake Import có vùng đang chỉnh sửa hoặc chưa lưu.';
+    if (state.pendingImport) return 'Đang chờ xác nhận dữ liệu nhập bổ sung.';
+    if (state.result && !state.historyPersisted) {
+      return 'Phiên nhập hiện tại chưa được lưu thành công vào lịch sử trên thiết bị.';
+    }
+    if (state.showClearConfirm || state.showNewSessionConfirm) {
+      return 'Đang chờ xác nhận thao tác trong Stocktake Import.';
+    }
+    return null;
+  }), []);
+
+  useEffect(() => {
+    notifyPwaUpdateSafetyChanged();
+  }, [busy, historyBusy, historyExportingId, editingZone, hasDirtyZones, pendingImport, result, historyPersisted, showClearConfirm, showNewSessionConfirm]);
 
   useEffect(() => {
     if (!notice) return undefined;

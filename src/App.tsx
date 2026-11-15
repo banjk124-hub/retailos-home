@@ -1,4 +1,6 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+declare const __RETAILOS_BUILD_ID__: string;
 import LoginExperience from './features/auth/screens/LoginExperience';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
@@ -13,6 +15,7 @@ import { MOTION_CONFIG, useMotionState } from './shared/motion';
 import type { MotionOrigin } from './shared/motion';
 import type { CSSProperties } from 'react';
 import { releaseCameraStream } from './shared/services/cameraSession';
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from './shared/pwa/updateSafety';
 
 const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 
@@ -115,6 +118,17 @@ export default function App() {
   const [canInstall, setCanInstall] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null);
+  const transitionStateRef = useRef({ isEnteringHome, isLeavingHome });
+  transitionStateRef.current = { isEnteringHome, isLeavingHome };
+
+  const reportBootHealthy = useCallback(() => {
+    document.documentElement.dataset.retailosBootHealthy = 'true';
+    navigator.serviceWorker?.controller?.postMessage({
+      type: 'APP_BOOT_OK',
+      buildId: __RETAILOS_BUILD_ID__,
+    });
+    window.dispatchEvent(new Event('retailos:boot-healthy'));
+  }, []);
 
   const handleAuthenticated = useCallback((session: EmployeeSession, origin?: MotionOrigin) => {
     saveSession(session);
@@ -205,6 +219,21 @@ export default function App() {
     };
   }, []);
 
+  useLayoutEffect(() => registerPwaUpdateBlocker('app-transition', () => {
+    const { isEnteringHome: entering, isLeavingHome: leaving } = transitionStateRef.current;
+    return entering || leaving
+      ? 'RetailOS đang chuyển màn hình. Bản mới sẽ tự kích hoạt sau khi chuyển cảnh hoàn tất.'
+      : null;
+  }), []);
+
+  useEffect(() => {
+    if (!employee || authJourney === 'login') reportBootHealthy();
+  }, [employee, authJourney, reportBootHealthy]);
+
+  useEffect(() => {
+    notifyPwaUpdateSafetyChanged();
+  }, [isEnteringHome, isLeavingHome]);
+
   if (!employee) return <div className="retailos-scene">
     <ExperienceBackground experience="login" />
     <div className="retailos-interface">
@@ -263,6 +292,7 @@ export default function App() {
           isOffline={isOffline}
           canInstall={canInstall}
             onInstall={handleInstall}
+            onBootReady={reportBootHealthy}
           />
         </div>
       </Suspense>

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [html, manifestText, promptCss, prompt, registration, worker, homeScanner, stocktakeScanner] = await Promise.all([
+const [html, manifestText, promptCss, prompt, registration, worker, homeScanner, stocktakeScanner, deployWorkflow] = await Promise.all([
   read('../index.html'),
   read('../public/manifest.webmanifest'),
   read('../src/shared/pwa/pwa-update-prompt.css'),
@@ -11,6 +11,7 @@ const [html, manifestText, promptCss, prompt, registration, worker, homeScanner,
   read('../src/sw/service-worker.template.js'),
   read('../src/features/scanner/components/BarcodeScanner.tsx'),
   read('../src/features/stocktake/components/StocktakeScanner.tsx'),
+  read('../.github/workflows/deploy.yml'),
 ]);
 const manifest = JSON.parse(manifestText);
 
@@ -24,7 +25,7 @@ assert.match(promptCss, /env\(safe-area-inset-left\)/);
 assert.match(promptCss, /env\(safe-area-inset-right\)/);
 assert.match(promptCss, /env\(safe-area-inset-bottom\)/);
 assert.match(promptCss, /@media\s*\(max-width:\s*560px\)/);
-assert.match(promptCss, /min-height:\s*38px/);
+assert.match(promptCss, /min-height:\s*40px/);
 
 // Registration must use the Vite project base, not an origin-root URL.
 assert.match(registration, /import\.meta\.env\.BASE_URL\s*\+\s*'sw\.js'/);
@@ -35,11 +36,18 @@ assert.match(prompt, /visibilitychange/);
 assert.match(prompt, /controllerchange/);
 assert.doesNotMatch(prompt, /beforeinstallprompt/,
   'update lifecycle must not depend on install-prompt support');
+assert.equal((deployWorkflow.match(/if: github\.ref == 'refs\/heads\/main'/g) || []).length, 2,
+  'production GitHub Pages build and deploy jobs must be restricted to main even when workflow_dispatch is used');
 
 // Service worker code must remain worker-context-only and origin/base scoped.
 assert.match(worker, /clientUrl\.origin === APP_BASE_URL\.origin/);
 assert.match(worker, /clientUrl\.pathname\.startsWith\(APP_BASE_URL\.pathname\)/);
-assert.match(worker, /addAllInBatches/);
+assert.match(worker, /BATCH_SIZE = 2/);
+assert.match(worker, /STAGE_RELEASE/);
+assert.match(worker, /ACTIVATE_RELEASE/);
+assert.match(worker, /crypto\.subtle\.digest/);
+assert.match(promptCss, /safe-area-inset/);
+assert.match(promptCss, /prefers-reduced-motion/);
 assert.match(worker, /readActiveRelease/);
 assert.match(worker, /APP_BOOT_FAILED/);
 assert.match(worker, /APP_BOOT_OK/);

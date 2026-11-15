@@ -1,36 +1,48 @@
-# Current handoff — PWA offline runtime and staged release architecture
+# Current handoff — consent-gated PWA release runtime
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Branch:** `feat/pwa-offline-release-architecture`  
-**Base:** `main` at `80a8626da8c067186aa813d339ea95dbe6c0e3ba`  
-**Status:** implementation staged on this branch; final CI and physical-device acceptance pending. No merge or deploy.
+**Branch:** `feat/pwa-consent-gated-release-runtime`  
+**Base:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` (PR #119 production baseline). PR #120 was closed as superseded; its documentation changes were incorporated into this branch.  
+**Status:** Full RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including the main-only production deploy guard and its regression test. PR review and physical device acceptance remain pending. No merge/deploy.
 
 ## Read first
+1. `AGENTS.md` — mandatory release lifecycle policy.
+2. `docs/ai-context/INDEX.md`.
+3. `docs/ai-context/PWA_RUNTIME_RELEASE.md` — canonical architecture and acceptance matrix.
+4. `docs/ai-context/IMPLEMENTATION_STATUS.md`.
+5. `docs/ai-context/ARCHITECTURE.md` — ADR-040 product contract and ADR-041 implementation.
+6. `scripts/test-pwa-cache-policy.mjs`, `scripts/test-pwa-worker-runtime.mjs`, `scripts/test-pwa-platform-compatibility.mjs`.
 
-1. `AGENTS.md`
-2. `docs/ai-context/INDEX.md`
-3. `docs/ai-context/PWA_RUNTIME_RELEASE.md` — canonical PWA runtime/release contract.
-4. `docs/ai-context/PERFORMANCE_BUNDLE_PWA.md` — bundle and code-splitting evidence.
-5. `scripts/test-pwa-cache-policy.mjs`, `scripts/test-pwa-worker-runtime.mjs`, `scripts/test-pwa-platform-compatibility.mjs`.
-6. Current branch diff and final-head GitHub Actions run.
+## Runtime implementation
+- Build emits `release-manifest.json` with exact build ID, version, notes, resource paths, byte sizes and SHA-256 hashes.
+- Update worker install does not stage candidate payload. First install is the only automatic staging case.
+- Waiting worker serves metadata-only discovery. User consent starts full payload staging in isolated caches, batch size two with storage-budget preflight.
+- Worker verifies HTTP status, size and SHA-256 before caching, then reads every cached resource back and verifies exact byte size/SHA-256 plus the root shell alias before writing the staged marker. Activation revalidates the persisted candidate bytes offline; corruption/eviction removes only candidate caches and returns the UI to a consented restaging retry.
+- UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
+- Concurrent/reloaded clients join an in-progress stage and receive shared progress instead of starting duplicate downloads. A completed staged release resumes without renewed consent after app restart.
+- Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup, app transitions, dirty native forms, active editing and multi-window detection. Successful async form saves advance the dirty baseline; cancelled native resets do not clear blockers. If staged bytes are corrupted/evicted, activation is rejected, UI staged flags are reset, candidate caches are removed and the next explicit retry restages the payload.
+- Boot health is acknowledged by the primary route only after the login surface commits or HomeScreen mounts; the update prompt itself cannot mark the app healthy early. Root render failures before readiness still reach the rollback reporter. Last-known-good rollback remains active; healthy boot retains the active-release pointer and business data is not part of release caches.
+- Production Pages build/deploy jobs are guarded to `refs/heads/main`, including manual dispatch; branch previews must never publish to the production Pages target.
+- One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
 
-## Implemented scope
+## Latest CI evidence and corrective action
+- GitHub Actions run #1126 on the previous PR head `ecbc32fc092e281fba6b5b824ef00ffe9bb02e94` passed the regression suites and TypeScript, then failed during Vite production build because `index.html` was not yet present when the release-manifest plugin ran.
+- First correction: `retailos-pwa-artifacts` uses Vite `enforce: 'post'`, which made the final `index.html` available. CI #1162 then passed TypeScript, production and Pages builds plus worker runtime tests, but PWA cache-policy detected a real emitted-chunk byte mismatch (HomeScreen manifest size 59,043 bytes vs final file 60,023 bytes).
+- Second correction: change the plugin's `generateBundle` hook to an explicit `{ order: 'post', handler }`, so release hashes are calculated after all Rollup output hooks have finalized chunk bytes. A regression assertion protects this ordering.
+- **PASS — RetailOS CI #1170** on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`: full preflight, TypeScript, production/Pages builds, manifest byte/hash parity, worker runtime, platform contracts and bundle comparison passed.
+- **PASS — RetailOS CI #1184** on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`: repeated the full gate after the production deployment guard and its regression test were added; all steps, including bundle comparison and artifact upload, passed.
+- Remaining gate: physical Android/iOS/Desktop/low-end Android acceptance.
 
-- Include ZXing WASM and the complete emitted runtime asset inventory in the Vite release manifest.
-- Stage and verify shell plus all runtime assets during Service Worker install; reject incomplete releases without disturbing the active release.
-- Pin the active navigation shell so newly deployed HTML cannot leak into the previous release.
-- Retain previous release caches until matching-build boot health; route a failed boot back to the previous cached shell/assets.
-- Keep business-data/snapshot refresh separate from application release lifecycle.
-- Preserve camera/session/decoder behavior, module workflows, IndexedDB and business data contracts.
+## Critical audit points before approval
+1. Check Vite production and Pages output: `release-manifest.json` must match the exact emitted `index.html`, shell files, lazy chunks, public assets and ZXing WASM bytes.
+2. Verify no asset fetch occurs on update install or `GET_RELEASE_INFO`; only manifest metadata may be fetched.
+3. Verify defer, network interruption, hash mismatch, cache quota failure, stage resume, multi-window retry, dirty-work blockers and automatic activation.
+4. Verify old release remains usable offline while candidate staging runs.
+5. Verify rollback after boot failure and ensure data/IndexedDB/Auth/Stocktake persistence are untouched.
+6. Run final-head `npm run preflight`, TypeScript, production build, Pages build and CI. Then complete physical Android/iOS/Desktop QA.
 
-## Required gates
+Do not claim CI/device acceptance before evidence exists. No merge or deploy is authorized by this handoff.
 
-1. Verify complete precache includes the emitted `zxing_reader.wasm` URL and every lazy feature chunk.
-2. Run all three PWA tests, `npm run preflight`, TypeScript, production build and Pages build.
-3. Review the final diff for accidental camera, scanner algorithm, business-data or persistence changes.
-4. Verify failed/partial install preserves the old worker/cache; verify boot failure rollback and matching-build cleanup.
-5. Keep physical Android Chrome/PWA and iOS Safari/Home Screen PWA acceptance separate from CI.
-6. Keep PR unmerged until CI, manual review and explicit user approval.
 
 ---
 
