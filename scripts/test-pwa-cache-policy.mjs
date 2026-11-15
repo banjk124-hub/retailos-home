@@ -7,6 +7,7 @@ const registration = await readFile(new URL('../src/shared/pwa/serviceWorkerRegi
 const push = await readFile(new URL('../src/features/notifications/pushNotifications.ts', import.meta.url), 'utf8');
 const prompt = await readFile(new URL('../src/shared/pwa/PwaUpdatePrompt.tsx', import.meta.url), 'utf8');
 const errorBoundary = await readFile(new URL('../src/shared/components/AppErrorBoundary.tsx', import.meta.url), 'utf8');
+const wasmAdapter = await readFile(new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url), 'utf8');
 
 assert.match(worker, /retailos-pwa-/);
 assert.match(worker, /ASSET_URLS\.has\(url\.href\)/);
