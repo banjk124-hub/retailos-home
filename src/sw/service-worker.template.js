@@ -13,7 +13,7 @@ const ACTIVE_RELEASE_STATE_URL = new URL('__retailos_active_release__', APP_BASE
 const PREVIOUS_RELEASE_STATE_URL = new URL('__retailos_previous_release__', APP_BASE_URL).href;
 const STAGED_RELEASE_STATE_URL = new URL('__retailos_staged_release__/' + BUILD_ID, APP_BASE_URL).href;
 const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).href));
-const BATCH_SIZE = 8;
+const BATCH_SIZE = 2;
 
 function notify(target, message) {
   try {
@@ -134,6 +134,19 @@ async function stagedReleaseIsComplete(manifest) {
 
 async function stageCandidate(target) {
   const manifest = await fetchReleaseManifest();
+  const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
+  if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
+    try {
+      const estimate = await navigator.storage.estimate();
+      const availableBytes = Number(estimate.quota) - Number(estimate.usage);
+      if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
+        throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng rồi thử lại.');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
+      // Storage estimation is advisory; actual Cache API writes remain authoritative.
+    }
+  }
   if (await stagedReleaseIsComplete(manifest)) {
     notify(target, {
       type: 'RELEASE_STAGED',
@@ -154,7 +167,6 @@ async function stageCandidate(target) {
   let completed = 0;
   let bytesDownloaded = 0;
   const total = manifest.resources.length;
-  const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
 
   try {
     for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
