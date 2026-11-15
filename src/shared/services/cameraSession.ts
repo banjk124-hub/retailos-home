@@ -1,6 +1,7 @@
 import { getSafeCameraSettings } from './cameraDiagnostics';
 import { DEFAULT_SCANNER_CAMERA_REQUEST, type ScannerCameraRequest } from '../../platform/scanner/contracts';
 import { buildCameraVideoConstraints, resolveCameraStreamCompatibility } from '../../platform/scanner/cameraRequestResolver';
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../pwa/updateSafety';
 
 let activeStream: MediaStream | null = null;
 let activeCameraRequest: ScannerCameraRequest | null = null;
@@ -9,6 +10,12 @@ let pendingCameraRequest: ScannerCameraRequest | null = null;
 let requestGeneration = 0;
 let activeLeaseCount = 0;
 const trackEndedListeners = new Set<(stream: MediaStream) => void>();
+registerPwaUpdateBlocker('camera-session', () => {
+  if (pendingRequest) return 'Camera đang khởi tạo. Hãy chờ phiên camera hoàn tất trước khi cập nhật.';
+  if (activeLeaseCount > 0) return 'Camera đang được một phiên quét sử dụng. Hãy đóng máy quét trước khi cập nhật.';
+  return null;
+});
+
 
 export type CameraStreamLease = {
   readonly stream: MediaStream;
@@ -151,6 +158,7 @@ async function acquireSharedStream(
           activeStream = null;
           activeCameraRequest = null;
           activeLeaseCount = 0;
+          notifyPwaUpdateSafetyChanged();
           trackEndedListeners.forEach((listener) => listener(stream));
         }, { once: true });
       });
@@ -168,9 +176,11 @@ async function acquireSharedStream(
       if (pendingRequest === request) {
         pendingRequest = null;
         pendingCameraRequest = null;
+        notifyPwaUpdateSafetyChanged();
       }
     });
     pendingRequest = request;
+    notifyPwaUpdateSafetyChanged();
   }
 
   const sharedRequest = pendingRequest;
@@ -213,6 +223,7 @@ export async function acquireCameraLease(
   }
 
   activeLeaseCount += 1;
+  notifyPwaUpdateSafetyChanged();
   let released = false;
   return {
     stream,
@@ -221,6 +232,7 @@ export async function acquireCameraLease(
       released = true;
       if (generation !== requestGeneration || activeStream !== stream) return;
       activeLeaseCount = Math.max(0, activeLeaseCount - 1);
+      notifyPwaUpdateSafetyChanged();
       if (activeLeaseCount > 0) return;
       activeStream = null;
       activeCameraRequest = null;
@@ -246,6 +258,7 @@ export function releaseCameraStream(): void {
   const stream = activeStream;
   activeStream = null;
   activeCameraRequest = null;
+  notifyPwaUpdateSafetyChanged();
   stream?.getTracks().forEach((track) => track.stop());
 }
 
