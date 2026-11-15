@@ -25,7 +25,7 @@ function isUpdateSafeField(control: EditableControl): boolean {
 function initialFieldValue(control: EditableControl): string {
   if (control instanceof HTMLInputElement) {
     if (control.type === 'checkbox' || control.type === 'radio') return 'checked:' + String(control.defaultChecked);
-    if (control.type === 'file') return '';
+    if (control.type === 'file') return 'files:0';
     return control.defaultValue;
   }
   if (control instanceof HTMLTextAreaElement) return control.defaultValue;
