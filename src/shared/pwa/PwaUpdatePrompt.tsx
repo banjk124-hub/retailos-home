@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import './pwa-update-prompt.css';
 import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 
+declare const __RETAILOS_BUILD_ID__: string;
+
 export default function PwaUpdatePrompt() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [isApplying, setIsApplying] = useState(false);
@@ -14,6 +16,15 @@ export default function PwaUpdatePrompt() {
     let hasReloaded = false;
     let disposed = false;
     let installingWorker: ServiceWorker | null = null;
+
+    const reportHealthyBoot = () => {
+      navigator.serviceWorker.controller?.postMessage({
+        type: 'APP_BOOT_OK',
+        buildId: __RETAILOS_BUILD_ID__,
+      });
+      window.dispatchEvent(new Event('retailos:boot-healthy'));
+    };
+    reportHealthyBoot();
 
     const revealWaitingWorker = () => {
       if (!disposed && registration?.waiting) setWaitingWorker(registration.waiting);
@@ -44,6 +55,7 @@ export default function PwaUpdatePrompt() {
       }
     };
     const handleControllerChange = () => {
+      reportHealthyBoot();
       if (!isApplyingUpdate.current || hasReloaded) return;
       hasReloaded = true;
       window.location.reload();
@@ -54,6 +66,10 @@ export default function PwaUpdatePrompt() {
         isApplyingUpdate.current = false;
         setIsApplying(false);
         setUpdateNotice('Đang có RetailOS mở ở tab hoặc cửa sổ khác. Hãy đóng các phiên còn lại rồi thử cập nhật.');
+      }
+      if (event.data?.type === 'UPDATE_ROLLBACK_UNAVAILABLE') {
+        setIsApplying(false);
+        setUpdateNotice('Không thể tự khôi phục bản trước. Hãy giữ ứng dụng đang mở và liên hệ quản trị viên.');
       }
     };
     navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
@@ -82,7 +98,7 @@ export default function PwaUpdatePrompt() {
     <aside className="pwa-update-prompt" role="status" aria-live="polite">
       <div className="pwa-update-prompt__copy">
         <strong>RetailOS có phiên bản mới</strong>
-        <span>{updateNotice || 'Cập nhật sẽ tải lại ứng dụng. Hãy hoàn tất thao tác đang thực hiện trước khi tiếp tục.'}</span>
+        <span>{updateNotice || 'Bản mới đã được tải và xác minh. Cập nhật sẽ khởi động lại ứng dụng; hãy hoàn tất thao tác đang thực hiện trước khi tiếp tục.'}</span>
       </div>
       <div className="pwa-update-prompt__actions">
         <button type="button" className="pwa-update-prompt__later" onClick={() => setWaitingWorker(null)}>Để sau</button>
