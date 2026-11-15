@@ -9,6 +9,7 @@ const STATE_CACHE = CACHE_PREFIX + 'state';
 const APP_BASE_URL = new URL(APP_BASE, self.location.origin);
 const APP_SHELL_URL = new URL('index.html', APP_BASE_URL).href;
 const ACTIVE_RELEASE_STATE_URL = new URL('__retailos_active_release__', APP_BASE_URL).href;
+const PREVIOUS_RELEASE_STATE_URL = new URL('__retailos_previous_release__', APP_BASE_URL).href;
 const SHELL_URLS = [
   APP_BASE_URL.href, APP_SHELL_URL,
   new URL('manifest.webmanifest', APP_BASE_URL).href,
@@ -26,6 +27,18 @@ async function readActiveRelease() {
     return response ? await response.json() : null;
   } catch { return null; }
 }
+async function readPreviousRelease() {
+  try {
+    const response = await (await caches.open(STATE_CACHE)).match(PREVIOUS_RELEASE_STATE_URL);
+    return response ? await response.json() : null;
+  } catch { return null; }
+}
+async function writePreviousRelease(release) {
+  const cache = await caches.open(STATE_CACHE);
+  await cache.put(PREVIOUS_RELEASE_STATE_URL, new Response(JSON.stringify(release), {
+    headers: { 'Content-Type': 'application/json' }
+  }));
+}
 async function writeActiveRelease(release) {
   const cache = await caches.open(STATE_CACHE);
   await cache.put(ACTIVE_RELEASE_STATE_URL, new Response(JSON.stringify(release), {
@@ -38,6 +51,10 @@ async function addAllInBatches(cache, urls, batchSize = 8) {
   }
 }
 async function findPreviousRelease() {
+  const recordedPrevious = await readPreviousRelease();
+  if (recordedPrevious?.shellCache && await matchAppShell(recordedPrevious.shellCache)) {
+    return recordedPrevious;
+  }
   const keys = await caches.keys();
   const previousShells = keys.filter((key) =>
     key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE
@@ -116,6 +133,9 @@ self.addEventListener('message', (event) => {
         return;
       }
       await writeActiveRelease(previous);
+      // The failed release is no longer the serving app. Remove its caches so
+      // a later update cannot mistake this failed build for the last good one.
+      await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
       if (event.source && 'navigate' in event.source) await event.source.navigate(event.source.url);
     })());
   }
@@ -123,6 +143,10 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
+    const previous = await readActiveRelease();
+    if (previous?.buildId && previous.buildId !== BUILD_ID && previous.shellCache) {
+      await writePreviousRelease(previous);
+    }
     await writeActiveRelease({ buildId: BUILD_ID, shellCache: SHELL_CACHE, assetCache: ASSET_CACHE });
     await self.clients.claim();
   })());
