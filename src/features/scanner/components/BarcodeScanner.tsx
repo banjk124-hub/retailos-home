@@ -1,7 +1,7 @@
 import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
 import '../scanner-transition.css';
 import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
-import { AlertTriangle, Flashlight, FlashlightOff, X } from 'lucide-react';
+import { AlertTriangle, Flashlight, FlashlightOff, Search, X } from 'lucide-react';
 import type { CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import type { MotionOrigin } from '../../../shared/motion';
 import { useScannerEngine, type ScannerMode } from '../hooks/useScannerEngine';
@@ -16,7 +16,7 @@ type ScannerTransitionStyle = CSSProperties & {
 
 type Props = {
   onDetected: (value: string) => void;
-  onClose: () => void;
+  onClose: () => void;\n  onManualSearch?: () => void;
   /** single closes through the caller after one result; continuous keeps decoding. */
   mode?: ScannerMode;
   scanCooldownMs?: number;
@@ -114,6 +114,7 @@ export default function BarcodeScanner({
           >
             {scanner.torch.enabled ? <FlashlightOff size={19} /> : <Flashlight size={19} />}
           </button>}
+          {onManualSearch && <button className="scanner-manual-search-trigger" type="button" onClick={onManualSearch} aria-label="Nhập tên hoặc mã sản phẩm"><Search size={18} /><span>Nhập thủ công</span></button>}
           <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng tra cứu"><X size={20} /></button>
         </header>
         {scanner.isScanning && <div ref={reticleRef} className="barcode-scan-frame" aria-hidden="true"><i /></div>}
