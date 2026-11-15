@@ -115,6 +115,11 @@ export default function HomeScreen({
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  useEffect(() => {
+    const openSettings = () => setShowSettings(true);
+    window.addEventListener('retailos:open-settings', openSettings);
+    return () => window.removeEventListener('retailos:open-settings', openSettings);
+  }, []);
   const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
   const [showScannerQa, setShowScannerQa] = useState(false);
   const [showScannerSettings, setShowScannerSettings] = useState(false);
