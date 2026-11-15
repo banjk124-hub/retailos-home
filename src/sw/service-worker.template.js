@@ -405,6 +405,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     try {
       const activeRelease = await readActiveRelease();
+      const activeShell = await caches.open(activeRelease?.shellCache || SHELL_CACHE);
+      const cachedShellResource = await activeShell.match(request);
+      if (cachedShellResource) return cachedShellResource;
       const activeAssets = await caches.open(activeRelease?.assetCache || ASSET_CACHE);
       const activeAsset = await activeAssets.match(request);
       if (activeAsset) return activeAsset;
