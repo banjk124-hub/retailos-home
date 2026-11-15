@@ -6,6 +6,7 @@ export type LiquidDockItemDefinition = {
   label: string;
   icon: RetailIcon;
   disabled?: boolean;
+  noticeCount?: number;
 };
 
 export type LiquidDockActionDefinition = {
