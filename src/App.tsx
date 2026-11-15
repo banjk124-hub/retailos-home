@@ -205,6 +205,12 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => registerPwaUpdateBlocker('app-transition', () => (
+    isEnteringHome || isLeavingHome
+      ? 'RetailOS đang chuyển màn hình. Bản mới sẽ tự kích hoạt sau khi chuyển cảnh hoàn tất.'
+      : null
+  )), [isEnteringHome, isLeavingHome]);
+
   if (!employee) return <div className="retailos-scene">
     <ExperienceBackground experience="login" />
     <div className="retailos-interface">
