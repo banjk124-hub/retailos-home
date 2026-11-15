@@ -13,6 +13,7 @@ const [
   wasmAdapter,
   updateSafety,
   app,
+  homeScreen,
   dataService,
   stocktakeModule,
   stocktakeImportModule,
@@ -32,6 +33,7 @@ const [
   read('../src/platform/scanner/decoders/zxingWasmDecoder.ts'),
   read('../src/shared/pwa/updateSafety.ts'),
   read('../src/App.tsx'),
+  read('../src/features/home/HomeScreen.tsx'),
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/stocktake/components/StocktakeModule.tsx'),
   read('../src/features/stocktake-import/components/StocktakeImportModule.tsx'),
@@ -156,6 +158,12 @@ assert.match(cameraSession, /registerPwaUpdateBlocker\('camera-session'/);
 assert.match(cameraSession, /notifyPwaUpdateSafetyChanged/);
 assert.match(errorBoundary, /APP_BOOT_FAILED/);
 assert.match(errorBoundary, /retailosBootHealthy/);
+assert.match(app, /type: 'APP_BOOT_OK'/);
+assert.match(app, /onBootReady=\{reportBootHealthy\}/);
+assert.match(homeScreen, /onBootReady\(\)/,
+  'the Home surface must acknowledge boot only after it has committed');
+assert.doesNotMatch(prompt, /APP_BOOT_OK|reportHealthyBoot/,
+  'the update prompt must not acknowledge healthy boot before the primary app surface is ready');
 
 assert.match(registration, /updateViaCache:\s*'none'/);
 assert.match(registration, /import\.meta\.env\.BASE_URL\s*\+\s*'sw\.js'/);
