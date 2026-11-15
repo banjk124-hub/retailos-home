@@ -368,7 +368,7 @@ export default function PwaUpdatePrompt() {
 
   const currentBlockReason = getPwaUpdateBlockReason();
   const isBusinessBusy = Boolean(currentBlockReason);
-  useEffect(() => { if (isBusinessBusy) setIsExpanded(false); }, [isBusinessBusy]);
+  useEffect(() => { setIsExpanded(!isBusinessBusy); }, [isBusinessBusy]);
   if (!waitingWorker || isDeferred) return null;
 
   const totalBytes = manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
