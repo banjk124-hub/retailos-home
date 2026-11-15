@@ -1,4 +1,4 @@
-# Scanner runtime roadmap — current state 2026-11-15
+# RetailOS engineering roadmap — current state 2026-11-15
 
 ## PWA release management — consent-gated download and automatic activation
 
@@ -15,6 +15,8 @@
 Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). This work is an application release capability; lookup/snapshot refresh and recalculation using existing logic remain data lifecycle operations.
 
 > **Current navigation:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) is the only current scanner architecture/contract document. [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) indexes retained audits, stage plans and incident evidence. The detailed PR narratives below are historical implementation records, not competing runtime specifications.
+
+## Scanner runtime roadmap
 
 ## Current production baseline
 
