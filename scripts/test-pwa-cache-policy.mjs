@@ -65,6 +65,11 @@ assert.match(worker, /RELEASE_DOWNLOAD_PROGRESS/);
 assert.match(worker, /RELEASE_STAGED/);
 assert.match(worker, /RELEASE_STAGE_FAILED/);
 assert.match(worker, /crypto\.subtle\.digest\('SHA-256'/);
+assert.match(worker, /async function verifyStagedResources/);
+assert.match(worker, /await verifyStagedResources\\(manifest\\.resources\\)/,
+  'staging must verify cache read-back and revalidate an existing staged candidate before reusing it');
+assert.match(worker, /await verifyStagedResources\\(staged\\.resources\\)/,
+  'activation must revalidate cached candidate bytes without requiring a network fetch');
 assert.match(worker, /UPDATE_BLOCKED_MULTIPLE_CLIENTS/);
 assert.match(worker, /APP_BOOT_OK/);
 assert.match(worker, /APP_BOOT_FAILED/);
