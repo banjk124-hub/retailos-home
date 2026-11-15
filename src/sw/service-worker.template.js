@@ -199,7 +199,7 @@ async function stageCandidate(target) {
       type: 'RELEASE_DOWNLOAD_PROGRESS', buildId: BUILD_ID, version: manifest.version,
       completed: 0, total: manifest.resources.length, bytesDownloaded: 0, totalBytes,
     };
-    if (await stagedReleaseIsComplete(manifest)) {
+    if (await stagedReleaseIsComplete(manifest) && await verifyStagedResources(manifest.resources)) {
       notify(target, {
         type: 'RELEASE_STAGED',
         buildId: BUILD_ID,
