@@ -50,7 +50,9 @@ export function getPwaUpdateBlockReason(): string | null {
 
   const activeCamera = Array.from(document.querySelectorAll('video')).some((video) => {
     const stream = video.srcObject;
-    return stream instanceof MediaStream && stream.getVideoTracks().some((track) => track.readyState === 'live');
+    return typeof MediaStream !== 'undefined'
+      && stream instanceof MediaStream
+      && stream.getVideoTracks().some((track) => track.readyState === 'live');
   });
   if (activeCamera) return 'Camera đang hoạt động. Hãy đóng phiên quét trước khi cập nhật.';
 
