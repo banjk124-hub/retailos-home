@@ -159,7 +159,7 @@ async function stageCandidate(target) {
   try {
     for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
       const batch = manifest.resources.slice(index, index + BATCH_SIZE);
-      await Promise.all(batch.map(async (resource) => {
+      const batchResults = await Promise.allSettled(batch.map(async (resource) => {
         const url = new URL(resource.path, APP_BASE_URL).href;
         const response = await fetch(url, { cache: 'reload', credentials: 'same-origin' });
         if (!response.ok || response.type === 'opaque') {
@@ -188,6 +188,8 @@ async function stageCandidate(target) {
           totalBytes,
         });
       }));
+      const failedResult = batchResults.find((result) => result.status === 'rejected');
+      if (failedResult) throw failedResult.reason;
     }
 
     const missing = [];
