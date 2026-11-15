@@ -16,6 +16,7 @@ export const LiquidDock = memo(function LiquidDock({
   className = '',
   hidden = false,
 }: LiquidDockProps) {
+  const [isActionExpanded, setIsActionExpanded] = useState(false);
   const { prefersReducedMotion } = useMotionState();
   const activeIndex = items.findIndex((item) => item.id === activeId && !item.disabled);
   const slotCount = items.length + (action ? 1 : 0);
