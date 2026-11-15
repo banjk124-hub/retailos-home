@@ -18,7 +18,7 @@ export class AppErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[RetailOS] React render failure:', error, info.componentStack);
-    if ('serviceWorker' in navigator) {
+    if (document.documentElement.dataset.retailosBootHealthy !== 'true' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.controller?.postMessage({
         type: 'APP_BOOT_FAILED',
         buildId: __RETAILOS_BUILD_ID__,
