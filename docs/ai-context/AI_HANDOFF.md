@@ -20,7 +20,7 @@
 - Worker verifies HTTP status, size and SHA-256 before caching, then reads every cached resource back and verifies exact byte size/SHA-256 plus the root shell alias before writing the staged marker. Activation revalidates the persisted candidate bytes offline; corruption/eviction removes only candidate caches and returns the UI to a consented restaging retry.
 - UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
 - Concurrent/reloaded clients join an in-progress stage and receive shared progress instead of starting duplicate downloads. A completed staged release resumes without renewed consent after app restart.
-- Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup, app transitions, dirty native forms, active editing and multi-window detection.
+- Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup, app transitions, dirty native forms, active editing and multi-window detection. Successful async form saves advance the dirty baseline; cancelled native resets do not clear blockers. If staged bytes are corrupted/evicted, activation is rejected, UI staged flags are reset, candidate caches are removed and the next explicit retry restages the payload.
 - Boot health and last-known-good rollback remain active; healthy boot retains the active-release pointer and business data is not part of release caches.
 - One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
 
