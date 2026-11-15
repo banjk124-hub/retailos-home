@@ -20,7 +20,14 @@ type ReleaseManifest = {
 };
 
 type UpdatePhase = 'loading-info' | 'available' | 'downloading' | 'staged' | 'error' | 'activating';
-type WorkerReply = { type?: string; manifest?: ReleaseManifest; staged?: boolean; message?: string };
+type WorkerReply = {
+  type?: string;
+  manifest?: ReleaseManifest;
+  staged?: boolean;
+  staging?: boolean;
+  progress?: { completed: number; total: number; bytesDownloaded: number; totalBytes: number } | null;
+  message?: string;
+};
 
 function formatBytes(value: number): string {
   if (value < 1024) return value + ' B';
@@ -53,6 +60,8 @@ function requestWorkerMessage(worker: ServiceWorker, message: unknown, timeoutMs
 export default function PwaUpdatePrompt() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [manifest, setManifest] = useState<ReleaseManifest | null>(null);
+  const manifestRef = useRef<ReleaseManifest | null>(null);
+  manifestRef.current = manifest;
   const [phase, setPhase] = useState<UpdatePhase>('loading-info');
   const [progress, setProgress] = useState({ completed: 0, total: 0, bytesDownloaded: 0, totalBytes: 0 });
   const [notice, setNotice] = useState('');
@@ -158,6 +167,7 @@ export default function PwaUpdatePrompt() {
       activationRequestedRef.current = false;
       setWaitingWorker(worker);
       setManifest(null);
+      manifestRef.current = null;
       setPhase('loading-info');
       setNotice('Đang đọc thông tin phiên bản mới…');
       const response = await requestWorkerMessage(worker, { type: 'GET_RELEASE_INFO' });
@@ -183,6 +193,7 @@ export default function PwaUpdatePrompt() {
         waitingWorkerRef.current = null;
         return;
       }
+      manifestRef.current = nextManifest;
       setManifest(nextManifest);
       if (response.staged === true) {
         stagedRef.current = true;
@@ -196,6 +207,18 @@ export default function PwaUpdatePrompt() {
         setPhase('staged');
         setNotice('Phiên bản đã được tải và xác minh ở phiên trước. RetailOS sẽ tự kích hoạt khi có thể chuyển giao an toàn.');
         tryActivate();
+        return;
+      }
+      if (response.staging === true) {
+        const currentProgress = response.progress;
+        setProgress({
+          completed: currentProgress?.completed ?? 0,
+          total: currentProgress?.total ?? nextManifest.resources.length,
+          bytesDownloaded: currentProgress?.bytesDownloaded ?? 0,
+          totalBytes: currentProgress?.totalBytes ?? nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0),
+        });
+        setPhase('downloading');
+        setNotice('Đang tiếp tục tải phiên bản đã được bạn chấp thuận. Bản hiện tại vẫn hoạt động.');
         return;
       }
       setPhase('available');
@@ -246,6 +269,38 @@ export default function PwaUpdatePrompt() {
       window.location.reload();
     };
     const handleWorkerMessage = (event: MessageEvent) => {
+      const message = event.data;
+      const currentManifest = manifestRef.current;
+      if (currentManifest && message?.buildId === currentManifest.buildId) {
+        if (message.type === 'RELEASE_DOWNLOAD_PROGRESS') {
+          setPhase('downloading');
+          setProgress({
+            completed: message.completed ?? 0,
+            total: message.total ?? currentManifest.resources.length,
+            bytesDownloaded: message.bytesDownloaded ?? 0,
+            totalBytes: message.totalBytes ?? 0,
+          });
+        }
+        if (message.type === 'RELEASE_STAGED') {
+          stagedRef.current = true;
+          setProgress({
+            completed: message.completed ?? currentManifest.resources.length,
+            total: message.total ?? currentManifest.resources.length,
+            bytesDownloaded: message.totalBytes ?? 0,
+            totalBytes: message.totalBytes ?? 0,
+          });
+          setPhase('staged');
+          setNotice('Đã tải và xác minh toàn bộ tài nguyên. RetailOS sẽ tự cập nhật khi có thể chuyển giao an toàn.');
+          tryActivate();
+        }
+        if (message.type === 'RELEASE_STAGE_FAILED') {
+          stagedRef.current = false;
+          activationRequestedRef.current = false;
+          isApplyingUpdate.current = false;
+          setPhase('error');
+          setNotice(message.message || 'Không thể tải đầy đủ phiên bản mới. Bản hiện tại vẫn được giữ nguyên.');
+        }
+      }
       if (event.data?.type === 'UPDATE_BLOCKED_MULTIPLE_CLIENTS') {
         activationRequestedRef.current = false;
         setPhase('staged');
