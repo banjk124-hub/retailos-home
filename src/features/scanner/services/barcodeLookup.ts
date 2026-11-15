@@ -85,7 +85,7 @@ function toProductRecord(row: Record<string, unknown>, source: string): BarcodeP
 }
 
 function splitBarcodeValues(value: string): string[] {
-  return value.split(/[;,|\\n\\r]+/).map(normalizeCode).filter(Boolean);
+  return value.split(/[;,|\n\r]+/).map(normalizeCode).filter(Boolean);
 }
 
 function scoreTextMatch(value: string, query: string, tokens: string[]): number {
@@ -101,7 +101,7 @@ function scoreTextMatch(value: string, query: string, tokens: string[]): number 
 }
 
 function normalizeSearchText(value: string): string {
-  return value.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLocaleLowerCase('vi').replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
