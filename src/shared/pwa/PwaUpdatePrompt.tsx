@@ -92,7 +92,10 @@ export default function PwaUpdatePrompt() {
     if (!worker || !stagedRef.current || activationRequestedRef.current) return;
     const reason = getPwaUpdateBlockReason();
     setBlockReason(reason || '');
-    if (reason) return;
+    if (reason) {
+      window.dispatchEvent(new CustomEvent('retailos:update-center-blocked', { detail: { reason } }));
+      return;
+    }
     activationRequestedRef.current = true;
     isApplyingUpdate.current = true;
     setPhase('activating');
