@@ -197,8 +197,8 @@ assert.match(updateStore, /inCenter/);
 assert.match(updateStore, /return entry\?\.inCenter \? 1 : 0/,
   'the Settings badge must only represent an update explicitly deferred into Update Center');
 assert.match(updateStore, /retailos\.pwa\.update-center\.v1/);
-assert.match(prompt, /status: 'deferred'/,
-  'deferral must be persisted for the exact candidate BUILD_ID');
+assert.match(prompt, /persistCandidate\('deferred', true\)/,
+  'deferral must be persisted for the exact candidate BUILD_ID and explicitly pinned to Update Center');
 assert.match(prompt, /onClick=\{tryActivate\}/,
   'activation must be reachable only through an explicit user action');
 assert.match(prompt, /onClick=\{tryActivate\}/,
