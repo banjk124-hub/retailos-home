@@ -5,6 +5,7 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const BUILD_ID = (process.env.GITHUB_SHA || Date.now().toString(36)).slice(0, 12);
+const APP_VERSION = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')).version as string;
 const SHELL_PATHS = new Set(['index.html', 'manifest.webmanifest', 'icon.svg']);
 
 function toBuffer(source: string | Uint8Array): Buffer {
@@ -127,6 +128,9 @@ function retailosPwaArtifacts(): Plugin {
 
 export default defineConfig({
   plugins: [react(), retailosPwaArtifacts()],
-  define: { __RETAILOS_BUILD_ID__: JSON.stringify(BUILD_ID) },
+  define: {
+    __RETAILOS_BUILD_ID__: JSON.stringify(BUILD_ID),
+    __RETAILOS_APP_VERSION__: JSON.stringify(APP_VERSION),
+  },
   build: { manifest: true },
 });
