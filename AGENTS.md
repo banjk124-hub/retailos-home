@@ -33,6 +33,16 @@ Implement RetailOS as a reliable mobile-first supermarket operations workspace. 
 Report: objective, files changed, behavior changed, tests actually run, results, untested paths, risks, rollback instructions, and next step. Separate facts from assumptions.
 
 
+## Application release lifecycle contract (mandatory for every task)
+
+- Before changing application source, modules, UI/UX, runtime dependencies, build/deploy configuration or preparing a release, read `docs/ai-context/PWA_RUNTIME_RELEASE.md` and classify the work as Application Lifecycle, Data Lifecycle or both.
+- Application releases must publish a build-bound release manifest and user-facing release notes. Explain new capabilities/modules, UI/UX changes, fixes, compatibility notes and operational warnings before asking staff to download.
+- The user must explicitly approve downloading a new application payload. Do not download/stage the full candidate runtime before consent. Deferring must leave the current release usable, including its existing offline capabilities.
+- Download and verify the complete release payload (including unopened/lazy modules, UI assets, workers, WASM and media) before activation. Lazy evaluation is allowed; lazy first-time downloading after activation is not.
+- After consent and successful verification, activation is automatic; do not ask for a second switch/activation confirmation. Protect unsaved operational work and retain last-known-good rollback until the new build reports healthy.
+- Data-only lookup/snapshot refreshes and recalculation using existing logic must not change the app build ID, stage/activate a release, reload the app or clear release caches. A new processing mechanism or capability is an application release change.
+- Treat `PWA_RUNTIME_RELEASE.md` as a mandatory cross-project development and deployment contract. Update it and the relevant status/handoff documents whenever the accepted release policy or implementation state changes. Never claim the target flow is implemented until source, automated tests and physical acceptance support that claim.
+
 ## Cross-session continuity contract (added 2026-11-05)
 - At session start, read `docs/ai-context/INDEX.md` as the navigation entry point, then read `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, and the relevant skill.
 - Keep document ownership aligned with `docs/ai-context/INDEX.md`: PROJECT_CONTEXT for durable product facts/current top-level state; ARCHITECTURE for invariants/decisions; ROADMAP for future scope; IMPLEMENTATION_STATUS for verified state; SESSION_LOG for concise handoffs; CHANGELOG_AI for implementation evidence.
