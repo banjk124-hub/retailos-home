@@ -52,7 +52,7 @@ assert.match(worker, /ASSET_URLS\.has\(url\.href\)/);
 assert.match(worker, /navigator\.storage\?\.estimate/);
 const installHandler = worker.slice(worker.indexOf("self.addEventListener('install'"), worker.indexOf("self.addEventListener('message'"));
 assert.match(installHandler, /self\.registration\.active/);
-assert.match(installHandler, /if \(!self\.registration\.active\) await stageCandidate\(null\)/,
+assert.match(installHandler, /if \(!self\.registration\.active && !previousRelease\) await stageCandidate\(null\)/,
   'only a first install may stage automatically; an update install must wait for consent');
 assert.doesNotMatch(installHandler, /addAll|addAllInBatches/,
   'the browser-triggered update install must not download the candidate runtime payload');
