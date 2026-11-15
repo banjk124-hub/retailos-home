@@ -93,9 +93,10 @@ export default function SettingsHub({ onClose, onOpenScannerSettings, onOpenScan
       </header>
       <div className="scanner-settings-section-label">CẬP NHẬT VÀ THÔNG BÁO</div>
       <div className="scanner-settings-menu">
-        <button type="button" className="scanner-settings-menu-item" onClick={() => setShowUpdateCenter(true)}>
-          <span className="scanner-settings-menu-icon"><BellRing size={20} /></span>
-          <span className="scanner-settings-menu-copy"><strong>Trung tâm cập nhật {updateEntry?.inCenter ? '· 1' : ''}</strong><small>{updateEntry?.inCenter ? `${updateEntry.title} · ${updateEntry.status === 'staged' ? 'Đã tải, chờ xác nhận' : updateEntry.status === 'deferred' ? 'Đã để sau' : updateEntry.status === 'downloading' ? 'Đang tải' : updateEntry.status === 'error' ? 'Cần xử lý' : 'Đang chờ xử lý'}` : 'Quản lý phiên bản và trạng thái cập nhật'}</small></span>
+        <button type="button" className={`scanner-settings-menu-item scanner-settings-menu-item--update ${updateEntry?.inCenter ? 'has-pending-update' : ''}`} onClick={() => setShowUpdateCenter(true)}>
+          <span className="scanner-settings-menu-icon scanner-settings-update-icon"><BellRing size={20} />{updateEntry?.inCenter && <i aria-label="Có bản cập nhật đang chờ" />}</span>
+          <span className="scanner-settings-menu-copy"><strong>Trung tâm cập nhật</strong><small>{updateEntry?.inCenter ? `${updateEntry.title} · ${updateEntry.status === 'staged' ? 'Đã tải, chờ xác nhận' : updateEntry.status === 'deferred' ? 'Đã để sau' : updateEntry.status === 'downloading' ? 'Đang tải' : updateEntry.status === 'error' ? 'Cần xử lý' : 'Đang chờ xử lý'}` : 'Xem phiên bản mới, tiến độ và lịch sử xử lý'}</small></span>
+          {updateEntry?.inCenter && <span className="scanner-settings-update-tag">ĐANG CHỜ</span>}
           <ChevronRight size={18} />
         </button>
       </div>

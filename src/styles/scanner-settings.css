@@ -58,3 +58,8 @@
 .scanner-symbology-switch.is-on span{transform:translateX(18px)}
 .scanner-symbology-switch:disabled{opacity:.58;cursor:not-allowed}
 @media(prefers-reduced-motion:reduce){.scanner-symbology-switch,.scanner-symbology-switch span{transition:none}}
+
+.scanner-settings-menu-item--update.has-pending-update { border-color:rgba(181,37,55,.24); background:linear-gradient(110deg,#fff 0%,#fff8f8 100%); }
+.scanner-settings-update-icon { position:relative; }
+.scanner-settings-update-icon i { position:absolute; top:5px; right:5px; width:8px; height:8px; border:2px solid #f9e9eb; border-radius:50%; background:#b52537; }
+.scanner-settings-update-tag { flex:0 0 auto; padding:5px 7px; border-radius:99px; background:#fae9eb; color:#ad2638; font-size:8px; font-weight:900; letter-spacing:.5px; }
