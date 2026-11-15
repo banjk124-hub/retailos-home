@@ -253,8 +253,6 @@ export default function PwaUpdatePrompt() {
     safetyEvents.forEach((name) => document.addEventListener(name, retrySafeActivation));
     window.addEventListener('focus', retrySafeActivation);
     document.addEventListener('visibilitychange', retrySafeActivation);
-    const observer = new MutationObserver(retrySafeActivation);
-    observer.observe(document.documentElement, { childList: true, subtree: true });
 
     void register();
     navigator.serviceWorker.addEventListener('message', handleWorkerMessage);
@@ -270,7 +268,6 @@ export default function PwaUpdatePrompt() {
       safetyEvents.forEach((name) => document.removeEventListener(name, retrySafeActivation));
       window.removeEventListener('focus', retrySafeActivation);
       document.removeEventListener('visibilitychange', retrySafeActivation);
-      observer.disconnect();
       retryInfoRef.current = () => undefined;
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
