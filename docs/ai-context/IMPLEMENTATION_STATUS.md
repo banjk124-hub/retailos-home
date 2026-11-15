@@ -776,3 +776,10 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - Structurally invalid manifests remain fail-closed. A genuinely different valid build continues through the existing consent-gated release flow.
 - Regression assertions added to `scripts/test-pwa-cache-policy.mjs`.
 - Fix branch: `fix/pwa-same-build-manifest-handling`; PR and CI validation pending.
+
+
+## Release-note workflow clarification
+
+- Development iterations in the personal development repository use concise, generic release notes. Assess/update the generic note as appropriate during ongoing changes; a full staff-facing changelog is not required for each PR.
+- BUILD_ID identifies each build; SemVer identifies the product release level. Do not bump product version just to trigger update discovery.
+- Complete release notes are prepared only when the user explicitly selects a finished version for promotion to the store's shared production GitHub repository and Cloudflare deployment.
