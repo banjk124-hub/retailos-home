@@ -93,8 +93,20 @@ function retailosPwaArtifacts(): Plugin {
         ...assetResources.map((resource) => describeResource(resource.path, resource.source, resource.cache)),
       ];
       const releaseNotes = JSON.parse(readFileSync(resolve(projectRoot, 'release-notes.json'), 'utf8'));
-      if (!releaseNotes.version || !releaseNotes.title || !releaseNotes.summary || !Array.isArray(releaseNotes.sections)) {
-        throw new Error('release-notes.json must define version, title, summary and sections.');
+      if (
+        releaseNotes.version !== APP_VERSION
+        || !releaseNotes.title
+        || !releaseNotes.summary
+        || !Array.isArray(releaseNotes.sections)
+        || !Array.isArray(releaseNotes.compatibility)
+        || !Array.isArray(releaseNotes.warnings)
+        || releaseNotes.sections.some((section: any) => (
+          typeof section?.heading !== 'string'
+          || !Array.isArray(section.items)
+          || section.items.some((item: unknown) => typeof item !== 'string')
+        ))
+      ) {
+        throw new Error('release-notes.json must be valid and its version must match package.json.');
       }
       const manifest = {
         schemaVersion: 1,
