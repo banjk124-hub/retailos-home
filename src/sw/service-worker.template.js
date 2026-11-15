@@ -73,11 +73,18 @@ async function fetchReleaseManifest() {
     || manifest.buildId !== BUILD_ID
     || manifest.base !== APP_BASE
     || typeof manifest.version !== 'string'
+    || typeof manifest.title !== 'string'
+    || typeof manifest.summary !== 'string'
+    || !Array.isArray(manifest.sections)
+    || !Array.isArray(manifest.compatibility)
+    || !Array.isArray(manifest.warnings)
     || !Array.isArray(manifest.resources)
-    || manifest.resources.length === 0
+    || manifest.resources.length !== ASSET_PATHS.length + 3
   ) {
     throw new Error('Thông tin phiên bản không hợp lệ hoặc không khớp với Service Worker.');
   }
+  const resourcePaths = new Set();
+  const shellPaths = new Set(['index.html', 'manifest.webmanifest', 'icon.svg']);
   for (const resource of manifest.resources) {
     if (
       typeof resource.path !== 'string'
@@ -88,8 +95,24 @@ async function fetchReleaseManifest() {
       || !Number.isInteger(resource.size)
       || resource.size < 0
       || !/^[a-f0-9]{64}$/.test(resource.sha256)
+      || resourcePaths.has(resource.path)
+      || (resource.cache === 'shell' && !shellPaths.has(resource.path))
+      || (resource.cache === 'assets' && !ASSET_PATHS.includes(resource.path))
     ) {
       throw new Error('Danh sách tài nguyên của phiên bản không hợp lệ.');
+    }
+    resourcePaths.add(resource.path);
+  }
+  if (
+    shellPaths.size !== manifest.resources.filter((resource) => resource.cache === 'shell').length
+    || ASSET_PATHS.some((path) => !resourcePaths.has(path))
+  ) {
+    throw new Error('Manifest chưa liệt kê đầy đủ shell và runtime assets.');
+  }
+  for (const section of manifest.sections) {
+    if (typeof section?.heading !== 'string' || !Array.isArray(section.items)
+      || section.items.some((item) => typeof item !== 'string')) {
+      throw new Error('Nội dung release notes không hợp lệ.');
     }
   }
   return manifest;
