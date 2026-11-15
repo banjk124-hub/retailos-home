@@ -13,12 +13,14 @@ const listeners = new Map();
 const cacheStore = new Map();
 const cacheUrl = (request) => typeof request === 'string' ? request : request.url;
 let rejectCacheWrites = false;
+let rejectPrecache = false;
 const cachesMock = {
   async open(name) {
     if (!cacheStore.has(name)) cacheStore.set(name, new Map());
     const entries = cacheStore.get(name);
     return {
       async addAll(urls) {
+        if (rejectPrecache && name.includes('assets-failed-build')) throw new Error('simulated offline asset download');
         for (const url of urls) entries.set(url, new Response('cached:' + url));
       },
       async put(request, response) {
@@ -118,6 +120,16 @@ blockedMessage = null;
 await sendUpdateRequest();
 assert.equal(skipWaitingCalls, 2, 'update is accepted after other RetailOS tabs close');
 
+const activeNavigation = {
+  request: { method: 'GET', url: appBase, mode: 'navigate' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+const fetchCountBeforeNavigation = fetchCalls;
+listener('fetch')(activeNavigation);
+assert.equal(await (await activeNavigation.responsePromise).text(), 'cached:' + shellUrl,
+  'active release navigation is served from its own pinned shell');
+assert.equal(fetchCalls, fetchCountBeforeNavigation, 'active shell navigation does not fetch newly deployed HTML');
+
 let rollbackMessage = null;
 await runExtendable('message', {
   data: { type: 'APP_BOOT_FAILED', buildId: 'runtime-test' },
@@ -165,5 +177,34 @@ const unlistedEvent = {
 listener('fetch')(unlistedEvent);
 assert.match(await (await unlistedEvent.responsePromise).text(), /^network:/,
   'non-asset same-origin requests continue to use the network');
+
+// A later release that cannot download its full asset set must reject install
+// and remove only its partial caches, leaving the active release untouched.
+rejectPrecache = true;
+const failedListeners = new Map();
+const failedSelf = {
+  ...selfMock,
+  addEventListener(type, callback) {
+    if (!failedListeners.has(type)) failedListeners.set(type, []);
+    failedListeners.get(type).push(callback);
+  },
+};
+const failedSource = template
+  .replace('__BUILD_ID__', 'failed-build')
+  .replace('__APP_BASE__', '/retailos-home/')
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
+const failedContext = vm.createContext({ self: failedSelf, caches: cachesMock, URL, Response, fetch: context.fetch });
+vm.runInContext(failedSource, failedContext);
+let installRejected = false;
+try {
+  let pending;
+  failedListeners.get('install')[0]({ waitUntil(promise) { pending = promise; } });
+  await pending;
+} catch { installRejected = true; }
+assert.equal(installRejected, true, 'offline during precache rejects the new worker install');
+assert.equal(cacheStore.has('retailos-pwa-shell-failed-build'), false, 'failed release shell cache is removed');
+assert.equal(cacheStore.has('retailos-pwa-assets-failed-build'), false, 'failed release asset cache is removed');
+assert.equal(cacheStore.has(oldShellCache), true, 'old release remains available after failed install');
+assert.equal(cacheStore.has(oldAssetCache), true, 'old release assets remain available after failed install');
 
 console.log('PWA service-worker staged install, offline runtime and rollback tests passed.');
