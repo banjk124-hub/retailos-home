@@ -133,42 +133,45 @@ async function stagedReleaseIsComplete(manifest) {
 }
 
 async function stageCandidate(target) {
-  const manifest = await fetchReleaseManifest();
-  const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
-  if (await stagedReleaseIsComplete(manifest)) {
-    notify(target, {
-      type: 'RELEASE_STAGED',
-      buildId: BUILD_ID,
-      version: manifest.version,
-      completed: manifest.resources.length,
-      total: manifest.resources.length,
-      reused: true,
-    });
-    return manifest;
-  }
-
+  let manifest;
   try {
-    await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
-  const stateCache = await caches.open(STATE_CACHE);
-  await stateCache.delete(STAGED_RELEASE_STATE_URL);
-
-  if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
-    try {
-      const estimate = await navigator.storage.estimate();
-      const availableBytes = Number(estimate.quota) - Number(estimate.usage);
-      if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
-        throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng khác rồi thử lại; không xóa dữ liệu RetailOS hoặc dữ liệu trình duyệt của ứng dụng.');
-      }
-    } catch (error) {
-      if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
-      // Storage estimation is advisory; actual Cache API writes remain authoritative.
+    manifest = await fetchReleaseManifest();
+    const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
+    if (await stagedReleaseIsComplete(manifest)) {
+      notify(target, {
+        type: 'RELEASE_STAGED',
+        buildId: BUILD_ID,
+        version: manifest.version,
+        completed: manifest.resources.length,
+        total: manifest.resources.length,
+        totalBytes,
+        reused: true,
+      });
+      return manifest;
     }
-  }
-  const shellCache = await caches.open(SHELL_CACHE);
-  const assetCache = await caches.open(ASSET_CACHE);
-  let completed = 0;
-  let bytesDownloaded = 0;
-  const total = manifest.resources.length;
+
+    await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
+    const stateCache = await caches.open(STATE_CACHE);
+    await stateCache.delete(STAGED_RELEASE_STATE_URL);
+
+    if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
+      try {
+        const estimate = await navigator.storage.estimate();
+        const availableBytes = Number(estimate.quota) - Number(estimate.usage);
+        if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
+          throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng khác rồi thử lại; không xóa dữ liệu RetailOS hoặc dữ liệu trình duyệt của ứng dụng.');
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
+        // Storage estimation is advisory; actual Cache API writes remain authoritative.
+      }
+    }
+
+    const shellCache = await caches.open(SHELL_CACHE);
+    const assetCache = await caches.open(ASSET_CACHE);
+    let completed = 0;
+    let bytesDownloaded = 0;
+    const total = manifest.resources.length;
 
     for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
       const batch = manifest.resources.slice(index, index + BATCH_SIZE);
@@ -237,6 +240,7 @@ async function stageCandidate(target) {
       version: manifest.version,
       completed: total,
       total,
+      bytesDownloaded,
       totalBytes,
     });
     return manifest;
@@ -252,13 +256,12 @@ async function stageCandidate(target) {
     notify(target, {
       type: 'RELEASE_STAGE_FAILED',
       buildId: BUILD_ID,
-      version: manifest.version,
+      version: manifest?.version,
       message: error instanceof Error ? error.message : 'Không thể tải và xác minh phiên bản mới.',
     });
     throw error;
   }
 }
-
 async function tryActivate(source) {
   const staged = await readStagedRelease();
   if (staged?.buildId !== BUILD_ID) {
