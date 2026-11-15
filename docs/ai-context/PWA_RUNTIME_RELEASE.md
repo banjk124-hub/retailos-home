@@ -116,7 +116,7 @@ Activation does not immediately delete the previous release.
 - `PwaUpdatePrompt` reports `APP_BOOT_OK` with the exact build ID after the app root mounts.
 - `AppErrorBoundary` reports `APP_BOOT_FAILED` only before root health is established.
 - The HTML bootstrap watchdog reports failure if healthy startup is not observed within 30 seconds.
-- A matching new-build health report permits cleanup of old release caches.
+- A matching new-build health report permits cleanup of old release caches and obsolete previous/staged markers, but retains the active-release pointer for the next update.
 - A matching new-build failure selects the recorded previous release, removes the failed candidate caches and navigates the client back to the old cached shell.
 - A rolled-back app reporting healthy cannot mark the failed new build healthy or delete its own caches.
 - If no previous release exists, the worker reports `UPDATE_ROLLBACK_UNAVAILABLE`; never claim rollback succeeded.
