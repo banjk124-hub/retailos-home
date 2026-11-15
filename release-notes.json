@@ -25,6 +25,6 @@
     "Cần kết nối mạng để tải phiên bản mới; bản đang hoạt động tiếp tục dùng theo khả năng offline hiện có."
   ],
   "warnings": [
-    "Không đóng ứng dụng hoặc xóa dữ liệu trình duyệt trong khi đang tải bản cập nhật."
+    "Nếu tải bị gián đoạn, phiên bản hiện tại vẫn hoạt động và có thể thử tải lại. Không xóa dữ liệu trình duyệt."
   ]
 }
