@@ -349,7 +349,11 @@ self.addEventListener('message', (event) => {
           || (key.startsWith(CACHE_PREFIX + 'assets-') && key !== ASSET_CACHE)
           || key.startsWith('retailos-shell-')
         )).map((key) => caches.delete(key)));
-        await caches.delete(STATE_CACHE);
+        const stateCache = await caches.open(STATE_CACHE);
+        await Promise.all([
+          stateCache.delete(PREVIOUS_RELEASE_STATE_URL),
+          stateCache.delete(STAGED_RELEASE_STATE_URL),
+        ]);
         return;
       }
       const activeRelease = await readActiveRelease();
