@@ -84,6 +84,8 @@ The maintained worker source is `src/sw/service-worker.template.js`. Never edit 
 - The worker verifies every expected cache entry and writes a staged-release marker only after all resources are present.
 - The active worker continues to serve only the active release while staging runs.
 - On network, quota, response, size, digest or cache failure, the worker removes only the candidate shell/assets and staged marker. The active release is not changed.
+- If a user closes/reloads the app while the same waiting worker is still staging, the new page joins the in-progress stage, receives current progress and does not start a duplicate download. Progress/completion/failure are broadcast to RetailOS clients.
+- If the worker is terminated before staging completes, the active release remains untouched. Partial candidate caches are cleaned on the next explicit retry; the user may need to approve that retry again.
 - If a user closes the app after successful staging, the staged marker survives. On the next app launch, `GET_RELEASE_INFO` reports `staged: true`; the UI resumes safe auto-activation without asking for download consent again.
 
 The manifest itself is small control-plane metadata and is fetched with a build-specific query to avoid stale HTTP cache responses. It is not part of business-data storage or the immutable runtime asset cache.
