@@ -33,7 +33,8 @@ import { requestCameraLease, type CameraLeaseRequest } from '../../shared/servic
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
-import { getPendingUpdateNoticeCount, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
+import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
+declare const __RETAILOS_BUILD_ID__: string;
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
 const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
@@ -97,6 +98,8 @@ export default function HomeScreen({
 }: Props) {
   useEffect(() => {
     onBootReady();
+    const pendingUpdate = readUpdateCenterEntry();
+    if (pendingUpdate?.buildId === __RETAILOS_BUILD_ID__) clearUpdateCenterEntry(pendingUpdate.buildId);
   }, [onBootReady]);
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
@@ -763,7 +766,7 @@ export default function HomeScreen({
       onSelect={handleNav}
       action={dockAction}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} onOpenUpdateCenter={() => { closeSettings(); window.dispatchEvent(new Event('retailos:update-center-open')); }} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} onOpenUpdateCenter={() => undefined} /></Suspense>}
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
