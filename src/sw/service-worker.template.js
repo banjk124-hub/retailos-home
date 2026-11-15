@@ -155,6 +155,10 @@ self.addEventListener('fetch', (event) => {
   }
   event.respondWith((async () => {
     try {
+      const activeRelease = await readActiveRelease();
+      const activeAssets = await caches.open(activeRelease?.assetCache || ASSET_CACHE);
+      const activeAsset = await activeAssets.match(request);
+      if (activeAsset) return activeAsset;
       const retained = await caches.match(request);
       if (retained) return retained;
     } catch { /* Fall through to network. */ }
