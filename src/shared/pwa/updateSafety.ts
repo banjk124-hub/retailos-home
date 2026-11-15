@@ -1,9 +1,89 @@
 export type PwaUpdateBlocker = () => string | null;
 
 const blockers = new Map<string, PwaUpdateBlocker>();
+const fieldBaselines = new WeakMap<Element, string>();
+const dirtyFormFields = new Map<Element, HTMLFormElement>();
+
+type EditableControl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
 function signalSafetyChange() {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event('retailos:update-safety-changed'));
+}
+
+function isEditableControl(target: EventTarget | null): target is EditableControl {
+  if (!(target instanceof HTMLElement)) return false;
+  return target instanceof HTMLInputElement
+    || target instanceof HTMLTextAreaElement
+    || target instanceof HTMLSelectElement;
+}
+
+function isUpdateSafeField(control: EditableControl): boolean {
+  return control.hasAttribute('data-retailos-update-safe')
+    || Boolean(control.form?.hasAttribute('data-retailos-update-safe'));
+}
+
+function initialFieldValue(control: EditableControl): string {
+  if (control instanceof HTMLInputElement) {
+    if (control.type === 'checkbox' || control.type === 'radio') return 'checked:' + String(control.defaultChecked);
+    if (control.type === 'file') return '';
+    return control.defaultValue;
+  }
+  if (control instanceof HTMLTextAreaElement) return control.defaultValue;
+  return Array.from(control.options)
+    .filter((option) => option.defaultSelected)
+    .map((option) => option.value)
+    .join('\u0000');
+}
+
+function currentFieldValue(control: EditableControl): string {
+  if (control instanceof HTMLInputElement) {
+    if (control.type === 'checkbox' || control.type === 'radio') return 'checked:' + String(control.checked);
+    if (control.type === 'file') return 'files:' + String(control.files?.length ?? 0);
+    return control.value;
+  }
+  if (control instanceof HTMLTextAreaElement) return control.value;
+  return Array.from(control.selectedOptions).map((option) => option.value).join('\u0000');
+}
+
+function updateDirtyField(control: EditableControl) {
+  const form = control.form;
+  if (!form || isUpdateSafeField(control)) {
+    dirtyFormFields.delete(control);
+    return;
+  }
+  const baseline = fieldBaselines.get(control) ?? initialFieldValue(control);
+  fieldBaselines.set(control, baseline);
+  if (currentFieldValue(control) !== baseline) dirtyFormFields.set(control, form);
+  else dirtyFormFields.delete(control);
+  signalSafetyChange();
+}
+
+function clearFormFields(form: HTMLFormElement) {
+  for (const [control, owner] of dirtyFormFields) {
+    if (owner === form) {
+      dirtyFormFields.delete(control);
+      fieldBaselines.delete(control);
+    }
+  }
+  signalSafetyChange();
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('focusin', (event) => {
+    if (!isEditableControl(event.target) || !event.target.form || isUpdateSafeField(event.target)) return;
+    if (!fieldBaselines.has(event.target)) fieldBaselines.set(event.target, initialFieldValue(event.target));
+  }, true);
+  for (const eventName of ['input', 'change', 'focusout']) {
+    document.addEventListener(eventName, (event) => {
+      if (isEditableControl(event.target)) updateDirtyField(event.target);
+    }, true);
+  }
+  document.addEventListener('submit', (event) => {
+    if (event.target instanceof HTMLFormElement) clearFormFields(event.target);
+  }, true);
+  document.addEventListener('reset', (event) => {
+    if (event.target instanceof HTMLFormElement) queueMicrotask(() => clearFormFields(event.target as HTMLFormElement));
+  }, true);
 }
 
 /** Register a module-owned critical operation that must finish before app reload. */
@@ -29,6 +109,14 @@ export function getPwaUpdateBlockReason(): string | null {
     } catch {
       return 'Một nghiệp vụ chưa xác nhận trạng thái an toàn. Hãy hoàn tất thao tác trước khi cập nhật.';
     }
+  }
+
+  for (const [control, form] of dirtyFormFields) {
+    if (!control.isConnected || !form.isConnected) {
+      dirtyFormFields.delete(control);
+      continue;
+    }
+    return 'Biểu mẫu đang có thay đổi chưa được gửi hoặc lưu. Hãy hoàn tất thao tác trước khi cập nhật.';
   }
 
   const activeElement = document.activeElement;
