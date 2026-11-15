@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const template = await readFile(new URL('../src/sw/service-worker.template.js', import.meta.url), 'utf8');
-const assetPaths = ['assets/app.js', 'assets/app.css', 'assets/zxing_reader.wasm', 'assets/uncached.js', 'images/background.webp'];
+const assetPaths = ['assets/app.js', 'assets/app.css', 'assets/zxing_reader.wasm', 'assets/uncached.js', 'images/background.webp', ...Array.from({ length: 10 }, (_, index) => `assets/chunk-${index + 1}.js`)];
 const source = template
   .replace('__BUILD_ID__', 'runtime-test')
   .replace('__APP_BASE__', '/retailos-home/')
@@ -14,12 +14,14 @@ const cacheStore = new Map();
 const cacheUrl = (request) => typeof request === 'string' ? request : request.url;
 let rejectCacheWrites = false;
 let rejectPrecache = false;
+const assetBatchSizes = [];
 const cachesMock = {
   async open(name) {
     if (!cacheStore.has(name)) cacheStore.set(name, new Map());
     const entries = cacheStore.get(name);
     return {
       async addAll(urls) {
+        if (name.includes('assets-runtime-test')) assetBatchSizes.push(urls.length);
         if (rejectPrecache && name.includes('assets-failed-build')) throw new Error('simulated offline asset download');
         for (const url of urls) entries.set(url, new Response('cached:' + url));
       },
@@ -90,6 +92,7 @@ const assetCache = cacheStore.get('retailos-pwa-assets-runtime-test');
 assert.ok(shellCache?.has(shellUrl), 'install precaches the app shell');
 assert.ok(assetCache?.has(appBase + 'assets/zxing_reader.wasm'), 'install precaches the ZXing WASM runtime');
 assert.ok(assetPaths.every((path) => assetCache.has(appBase + path)), 'all build assets are staged before install completes');
+assert.deepEqual(assetBatchSizes, [8, 7], 'asset staging uses bounded batches to avoid oversized concurrent fetch bursts');
 
 await runExtendable('activate');
 assert.equal(cacheStore.has(oldShellCache), true, 'previous shell remains available during the new release probation');
@@ -213,5 +216,36 @@ assert.equal(cacheStore.has('retailos-pwa-shell-failed-build'), false, 'failed r
 assert.equal(cacheStore.has('retailos-pwa-assets-failed-build'), false, 'failed release asset cache is removed');
 assert.equal(cacheStore.has(oldShellCache), true, 'old release remains available after failed install');
 assert.equal(cacheStore.has(oldAssetCache), true, 'old release assets remain available after failed install');
+
+// A subsequent release can activate after rollback. It retains the rollback
+// release until its own matching build reports healthy, then reclaims old caches.
+rejectPrecache = false;
+const nextListeners = new Map();
+const nextSelf = {
+  ...selfMock,
+  addEventListener(type, callback) {
+    if (!nextListeners.has(type)) nextListeners.set(type, []);
+    nextListeners.get(type).push(callback);
+  },
+};
+const nextSource = template
+  .replace('__BUILD_ID__', 'next-build')
+  .replace('__APP_BASE__', '/retailos-home/')
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
+const nextContext = vm.createContext({ self: nextSelf, caches: cachesMock, URL, Response, fetch: context.fetch });
+vm.runInContext(nextSource, nextContext);
+const runNext = async (type, values = {}) => {
+  let pending;
+  nextListeners.get(type)[0]({ ...values, waitUntil(promise) { pending = promise; } });
+  await pending;
+};
+await runNext('install');
+await runNext('activate');
+assert.equal(cacheStore.has(oldShellCache), true, 'previous release remains during next release probation');
+await runNext('message', { data: { type: 'APP_BOOT_OK', buildId: 'next-build' } });
+assert.equal(cacheStore.has(oldShellCache), false, 'matching new-build health reclaims old shell cache');
+assert.equal(cacheStore.has(oldAssetCache), false, 'matching new-build health reclaims old asset cache');
+assert.equal(cacheStore.has('retailos-pwa-shell-runtime-test'), false, 'superseded failed release cache is reclaimed');
+assert.equal(cacheStore.has('retailos-pwa-state'), false, 'successful new release clears active-release metadata');
 
 console.log('PWA service-worker staged install, offline runtime and rollback tests passed.');
