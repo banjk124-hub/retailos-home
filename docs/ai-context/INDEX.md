@@ -21,7 +21,8 @@ This file is the navigation layer for repository documentation. Read the canonic
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
 | UI interaction responsiveness | `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` |
-| PWA bundle, service worker and cache behavior | `PERFORMANCE_BUNDLE_PWA.md` |
+| PWA runtime, offline guarantees, staged releases, boot health and rollback | [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) |
+| Bundle analysis, code splitting and performance evidence | [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md) |
 | Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
 | Export utilities | `modules/EXPORT_FILE.md` |
 | Login Phase 2 historical changes | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
