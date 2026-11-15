@@ -206,11 +206,35 @@ assert.equal(worker.skipWaitingCalls, 0, 'another RetailOS window blocks release
 assert.equal(currentClient.messages.at(-1)?.type, 'UPDATE_BLOCKED_MULTIPLE_CLIENTS');
 assert.equal(cacheStore.has(oldShellCache), true, 'blocked activation does not affect the running release');
 activeClients.splice(1, 1);
+
+// Simulate post-staging cache corruption/eviction. A staged marker alone must
+// never authorize activation unless every cached resource still matches its hash.
+candidateAssets.set(appBase + 'assets/app.js', new Response('corrupted-after-staging'));
 await worker.runExtendable('message', {
   data: { type: 'ACTIVATE_RELEASE' },
   source: currentClient,
 });
-assert.equal(worker.skipWaitingCalls, 1, 'automatic activation can retry after the other app window closes');
+assert.equal(worker.skipWaitingCalls, 0, 'corrupted staged bytes must block automatic activation');
+assert.equal(currentClient.messages.at(-1)?.type, 'UPDATE_NOT_STAGED',
+  'cache integrity failure requests a fresh consented staging attempt');
+assert.equal(cacheStore.has('retailos-pwa-shell-runtime-test'), false,
+  'invalid staged shell is discarded without touching the active release');
+assert.equal(cacheStore.has('retailos-pwa-assets-runtime-test'), false,
+  'invalid staged assets are discarded without touching the active release');
+
+const restageMessages = [];
+await worker.runExtendable('message', {
+  data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage(message) { restageMessages.push(message); } }],
+  source: currentClient,
+});
+assert.equal(restageMessages.at(-1)?.type, 'RELEASE_STAGED',
+  'user-approved retry can restage a candidate after cache integrity failure');
+await worker.runExtendable('message', {
+  data: { type: 'ACTIVATE_RELEASE' },
+  source: currentClient,
+});
+assert.equal(worker.skipWaitingCalls, 1, 'automatic activation succeeds after the complete cache passes read-back verification');
 
 worker.listeners.get('message');
 const singleClientWorker = createWorker('runtime-test-2', {
