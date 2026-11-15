@@ -13,7 +13,7 @@
 - Candidate shell/assets are staged in release-specific caches, in bounded batches of eight, with status, size, SHA-256 and cache verification.
 - Download progress, retryable failure and staged-resume behavior are implemented.
 - Successful staging triggers automatic activation when app-wide safety blockers and the multi-window guard permit it. No second user confirmation.
-- Shared update-safety blockers cover camera leases, Stocktake, Stocktake Import and app transitions. A module API exists for future non-DOM critical operations.
+- Shared update-safety blockers cover camera leases, Stocktake, Stocktake Import, app transitions and module snapshot sync/IndexedDB cleanup. Generic form dirty tracking plus an explicit async-save API protects other forms; future modules can register non-DOM blockers.
 - Previous-release health/rollback behavior and data lifecycle separation remain protected.
 - A one-time compatibility bridge treats the old PR #119 client's explicit `SKIP_WAITING` action as consent to stage. That legacy UI cannot show the new release notes/progress until it loads this version.
 
