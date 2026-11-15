@@ -16,7 +16,6 @@ assert.match(installHandler, /shellCache\.addAll\(SHELL_URLS\)/);
 assert.match(installHandler, /addAllInBatches\(assetCache, \[\.\.\.ASSET_URLS\]\)/,
   'a new release must precache every emitted asset before installation completes');
 assert.match(worker, /async function addAllInBatches/);
-assert.match(worker, /async function addAllInBatches/);
 assert.match(installHandler, /missingAssets\.some/);
 assert.match(installHandler, /caches\.delete\(ASSET_CACHE\)/,
   'an incomplete release must discard only its own partial cache');
@@ -47,4 +46,5 @@ assert.match(prompt, /Bản mới đã được tải và xác minh/);
 assert.match(prompt, /registration\?\.removeEventListener\('updatefound'/);
 assert.match(prompt, /installingWorker\?\.removeEventListener\('statechange'/);
 assert.match(errorBoundary, /APP_BOOT_FAILED/);
+assert.match(errorBoundary, /retailosBootHealthy/);
 console.log('PWA staged-release, offline precache and rollback policy tests passed.');
