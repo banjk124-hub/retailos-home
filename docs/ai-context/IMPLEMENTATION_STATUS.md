@@ -1,18 +1,32 @@
 # Current PWA runtime and release status — 2026-11-15
 
-**Branch:** `feat/pwa-offline-release-architecture`  
-**Base:** `main` at `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.  
-**Status:** implementation and source-level regression updates are in progress; final CI and physical-device acceptance are pending.
+**Baseline:** PR #119 is merged and deployed, as confirmed by the user. This status reflects a source audit of the current default branch, not physical-device acceptance.
 
-- Vite release manifest now includes emitted WASM and all Vite-emitted runtime assets/public files (excluding source maps).
-- Service Worker install stages and verifies shell plus complete asset inventory before it can enter the waiting state.
-- Active navigation is pinned to the current release; a deployed network HTML file cannot leak into the old active release.
-- Previous release caches are retained through new-build boot probation. Matching-build health confirms cleanup; boot failure can route back to the previous cached shell and assets.
-- Data snapshots and business records remain outside release caches and retain independent refresh semantics.
-- Required next gates: PWA policy/runtime tests, full preflight, TypeScript, production/Pages builds, PR-head CI, then physical Android/iOS offline and update tests.
-- No merge, deployment or physical-device acceptance is claimed.
+## Implemented foundation
+- Vite release inventory includes emitted/public runtime assets, including ZXing WASM.
+- Service Worker install stages and verifies the complete shell/asset inventory in release-specific caches.
+- Active shell/assets are pinned by release; previous release caches are retained through boot probation.
+- Matching-build boot failure can roll back to the previous cached release; healthy boot permits old-cache cleanup.
+- Business data and snapshots are outside the immutable release asset inventory.
 
-Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
+## Audit findings — required flow is not yet implemented
+- **Consent boundary defect:** full candidate asset download currently runs in the Service Worker `install` event. Browser update installation starts before the React prompt is shown. User approval therefore occurs after download and only controls activation.
+- **Release information gap:** current `PwaUpdatePrompt` shows generic text; there is no build-bound changelog/release manifest UI for new features, UI/UX changes, fixes, compatibility notes or operational warnings.
+- **Activation mismatch:** current user action sends `SKIP_WAITING` and then reloads. Required behavior is one confirmation before download, followed by automatic activation after complete verification.
+- **Progress gap:** no user-facing download progress/retry lifecycle is present.
+- Existing tests cover precache, cache isolation, multi-window guard and rollback. They do not prove no candidate runtime payload is fetched before consent, nor that release notes are bound to the exact candidate build.
+
+## Required next implementation lane
+1. Design a consent-gated staging mechanism that separates small release discovery/control-plane traffic from the full runtime payload. Do not assume a prompt-only change solves Service Worker install semantics.
+2. Add a build-bound release manifest and user-facing release notes.
+3. Stage every application resource only after consent; show progress and retry/error states.
+4. Verify integrity/completeness, then auto-activate without a second confirmation while protecting unsaved work.
+5. Preserve old-release offline operation and last-known-good rollback; keep data lifecycle independent.
+6. Extend runtime tests to assert the pre-consent network boundary, defer path, complete staging, automatic activation and data-lifecycle isolation.
+7. Complete physical Android/iOS/Desktop acceptance after final-head CI.
+
+Canonical contract and detailed acceptance: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). No runtime code changes are included in the current documentation-only work.
+
 
 ---
 
