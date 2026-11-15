@@ -74,7 +74,7 @@ const updateSafetyUrl = 'data:text/javascript;base64,' + Buffer.from(updateSafet
 const cameraSessionJs = cameraSessionSource
   .replace("from './cameraDiagnostics';", `from '${diagnosticsUrl}';`)
   .replace("from '../../platform/scanner/contracts';", `from '${contractsUrl}';`)
-  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${resolverUrl}';`);
+  .replace("from '../../platform/scanner/cameraRequestResolver';", `from '${resolverUrl}';`)
   // cameraSession is loaded from a data URL in this isolated harness, so its
   // browser-only PWA safety dependency must be stubbed like the other imports.
   .replace("from '../pwa/updateSafety';", `from '${updateSafetyUrl}';`);
