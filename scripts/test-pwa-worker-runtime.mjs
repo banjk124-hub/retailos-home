@@ -249,6 +249,13 @@ const assetEvent = {
 singleClientWorker.listener('fetch')(assetEvent);
 assert.equal(await (await assetEvent.responsePromise).text(), 'release-runtime:assets/app.js',
   'selected release serves its own cached assets');
+const shellResourceEvent = {
+  request: { method: 'GET', url: appBase + 'manifest.webmanifest', mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+singleClientWorker.listener('fetch')(shellResourceEvent);
+assert.equal(await (await shellResourceEvent.responsePromise).text(), 'release-runtime:manifest.webmanifest',
+  'active shell resources such as the web manifest remain available offline');
 
 await singleClientWorker.runExtendable('message', {
   data: { type: 'APP_BOOT_FAILED', buildId: 'runtime-test-2' },
