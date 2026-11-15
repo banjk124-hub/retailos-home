@@ -16,11 +16,15 @@ function requestUpdateAction(action: 'download' | 'activate') {
 
 function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; onBack: () => void }) {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activationBlockReason, setActivationBlockReason] = useState('');
   useEffect(() => {
     const refresh = () => setRefreshKey((value) => value + 1);
+    const handleBlocked = (event: Event) => setActivationBlockReason((event as CustomEvent<{ reason?: string }>).detail?.reason ?? 'Nghiệp vụ đang hoạt động.');
+    window.addEventListener('retailos:update-center-blocked', handleBlocked);
     window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, refresh);
     window.addEventListener('storage', refresh);
     return () => {
+      window.removeEventListener('retailos:update-center-blocked', handleBlocked);
       window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, refresh);
       window.removeEventListener('storage', refresh);
     };
@@ -51,6 +55,7 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
         {!!current.warnings?.length && <div className="update-center-section is-warning"><h4>Lưu ý vận hành</h4><ul>{current.warnings.map((item) => <li key={item}>{item}</li>)}</ul></div>}
       </div>
       {current.status === 'downloading' && <div className="update-center-progress"><div><span>Tiến độ tải</span><strong>{progressPercent}%</strong></div><span className="update-center-progress__track"><i style={{ transform: 'scaleX(' + progressPercent / 100 + ')' }} /></span><small>{progress?.completed ?? 0}/{progress?.total ?? 0} tài nguyên</small></div>}
+      {activationBlockReason && <p className="update-center-blocked" role="alert">Chưa thể kích hoạt: {activationBlockReason}</p>}
       <div className="update-center-actions">
         {current.status === 'staged' ? <button type="button" className="update-center-primary" onClick={() => requestUpdateAction('activate')}>Xác nhận cập nhật</button>
           : current.status === 'downloading' ? <p role="status">Đang tải trong nền. Phiên bản hiện tại vẫn hoạt động.</p>
