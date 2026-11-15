@@ -2,7 +2,7 @@
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Branch:** `feat/pwa-consent-gated-release-runtime`  
-**Base:** documentation contract branch `docs/pwa-user-approved-release-contract` (PR #120); production runtime baseline includes deployed PR #119.  
+**Base:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` (PR #119 production baseline). PR #120 was closed as superseded; its documentation changes were incorporated into this branch.  
 **Status:** Runtime implementation and tests updated; final-head CI, PR review and physical device acceptance pending. No merge/deploy.
 
 ## Read first
@@ -23,6 +23,11 @@
 - Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup, app transitions, dirty native forms, active editing and multi-window detection.
 - Boot health and last-known-good rollback remain active; healthy boot retains the active-release pointer and business data is not part of release caches.
 - One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
+
+## Latest CI evidence and corrective action
+- GitHub Actions run #1126 on the previous PR head `ecbc32fc092e281fba6b5b824ef00ffe9bb02e94` passed the regression suites and TypeScript, then failed during Vite production build because `index.html` was not yet present when the release-manifest plugin ran.
+- Corrective change: run `retailos-pwa-artifacts` with Vite `enforce: 'post'` so its output hook runs after Vite build plugins; add a source-contract regression assertion for this ordering.
+- The corrected branch head must receive a fresh full preflight/production/Pages CI run. No pass is claimed until that exact head is green.
 
 ## Critical audit points before approval
 1. Check Vite production and Pages output: `release-manifest.json` must match the exact emitted `index.html`, shell files, lazy chunks, public assets and ZXing WASM bytes.
