@@ -11,7 +11,7 @@
 - [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
 - [x] Preserve old-release serving, staged resume, primary-surface boot health, last-known-good rollback and business data.
 - [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
-- [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions. Previous CI #1126 passed regression tests/TypeScript but failed production build because the release-manifest plugin ran before final `index.html` emission; `enforce: 'post'` and a regression assertion are now in the branch, awaiting a fresh exact-head run.
+- [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions. CI #1126 exposed early `index.html` ordering; CI #1162 passed production/Pages builds but failed manifest-vs-final-chunk byte parity. The plugin now uses `enforce: 'post'` and `generateBundle` hook `order: 'post'`, both protected by regression assertions; fresh exact-head validation is pending.
 - [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance.
 
 Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Current implementation is not production-accepted until the unchecked CI/device gates pass. Data-only lookup/snapshot refresh and recalculation using existing logic remain independent.
