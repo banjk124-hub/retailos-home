@@ -253,8 +253,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     // First install has no previous release to preserve. A returning device
     // must explicitly approve staging before any candidate payload is fetched.
-    const previous = await readActiveRelease() || await findPreviousRelease();
-    if (!previous) await stageCandidate(null);
+    if (!self.registration.active) await stageCandidate(null);
   })());
 });
 
