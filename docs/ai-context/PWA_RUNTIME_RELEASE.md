@@ -21,7 +21,7 @@ The required user journey is:
 2. **Explain:** display current and candidate version, release title/summary, new capabilities/modules, UI/UX changes, fixes, compatibility notes, operational warnings and estimated payload size.
 3. **Ask once:** user explicitly approves download or defers. Deferring keeps the active release selected and usable.
 4. **Stage:** after approval, download every required application resource into isolated candidate caches. Show progress by bytes and resource count.
-5. **Verify:** verify response status, exact byte size, SHA-256, manifest completeness and cache read-back. A partial/corrupt candidate cannot activate.
+5. **Verify:** verify response status, exact byte size, SHA-256 and manifest completeness; read every cache write back and verify its bytes and root navigation alias before persisting the staged marker. Revalidate staged bytes from cache immediately before activation, without requiring network access. A partial/corrupt/evicted candidate cannot activate.
 6. **Auto-activate:** after successful staging, automatically activate when the application is at a safe handoff point and no other RetailOS window blocks takeover. There is no second confirmation.
 7. **Boot health:** the new app reports healthy startup for its exact build ID.
 8. **Rollback:** if boot health fails, restore the last-known-good shell and matching assets. Never touch business data.
