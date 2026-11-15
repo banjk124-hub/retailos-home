@@ -52,7 +52,11 @@ const oldShellCache = 'retailos-pwa-shell-old';
 const oldAssetCache = 'retailos-pwa-assets-old';
 const oldAssetUrl = appBase + 'assets/old-app.js';
 cacheStore.set(oldShellCache, new Map([[shellUrl, new Response('previous-release-shell')]]));
-cacheStore.set(oldAssetCache, new Map([[oldAssetUrl, new Response('previous-release-asset')]]));
+const sharedPublicAssetUrl = appBase + 'images/background.webp';
+cacheStore.set(oldAssetCache, new Map([
+  [oldAssetUrl, new Response('previous-release-asset')],
+  [sharedPublicAssetUrl, new Response('previous-release-shared-image')],
+]));
 
 const selfMock = {
   location: { origin: 'https://retailos.test' },
@@ -133,6 +137,14 @@ assert.equal(await (await activeNavigation.responsePromise).text(), 'cached:' + 
   'active release navigation is served from its own pinned shell');
 assert.equal(fetchCalls, fetchCountBeforeNavigation, 'active shell navigation does not fetch newly deployed HTML');
 
+const currentPublicAsset = {
+  request: { method: 'GET', url: sharedPublicAssetUrl, mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(currentPublicAsset);
+assert.equal(await (await currentPublicAsset.responsePromise).text(), 'cached:' + sharedPublicAssetUrl,
+  'active release asset wins over an older cached file with the same public URL');
+
 let rollbackMessage = null;
 await runExtendable('message', {
   data: { type: 'APP_BOOT_FAILED', buildId: 'runtime-test' },
@@ -169,6 +181,14 @@ const rollbackAsset = {
 listener('fetch')(rollbackAsset);
 assert.equal(await (await rollbackAsset.responsePromise).text(), 'previous-release-asset',
   'rollback shell can still load its own old hashed assets');
+
+const rollbackPublicAsset = {
+  request: { method: 'GET', url: sharedPublicAssetUrl, mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(rollbackPublicAsset);
+assert.equal(await (await rollbackPublicAsset.responsePromise).text(), 'previous-release-shared-image',
+  'rollback serves the previous release copy of a stable public asset');
 
 const cachedAsset = {
   request: { method: 'GET', url: appBase + 'assets/app.js', mode: 'cors' },
