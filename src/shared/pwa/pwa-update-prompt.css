@@ -102,3 +102,9 @@
 .update-center-empty p { max-width:360px; margin:0; font-size:11px; line-height:1.6; }
 @keyframes update-center-enter { from { opacity:0; transform:translateY(6px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
 @media(prefers-reduced-motion:reduce) { .update-center-view,.update-center-progress__track i,.update-center-primary { animation:none; transition:none; } }
+
+/* Prompt and badge motion stays on compositor-friendly properties. */
+.pwa-update-prompt { animation: pwa-update-enter var(--motion-duration-standard, 200ms) var(--motion-ease-enter, ease-out) both; }
+.pwa-update-prompt__collapse { min-height:30px; padding:0 10px; border:0; border-radius:99px; background:#f1f2f5; color:#4e5664; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
+@keyframes pwa-update-enter { from { opacity:0; transform:translateY(8px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media(prefers-reduced-motion:reduce) { .pwa-update-prompt { animation:none; } }
