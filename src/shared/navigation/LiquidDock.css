@@ -299,13 +299,13 @@
 /* Each badge rises beyond the dock edge and lands over a mirrored upper corner of the magnifier. */
 .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { animation: dock-choice-left 310ms cubic-bezier(.18,.8,.25,1) both; }
 .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { animation: dock-choice-right 330ms 25ms cubic-bezier(.18,.8,.25,1) both; }
-@keyframes dock-choice-left { from { opacity: 0; transform: translate(calc(-50% - 8px), -27px) scale(.52) rotate(0); } to { opacity: 1; transform: translate(calc(-50% - 13px), -67px) scale(1) rotate(-8deg); } }
-@keyframes dock-choice-right { from { opacity: 0; transform: translate(calc(-50% + 8px), -27px) scale(.52) rotate(0); } to { opacity: 1; transform: translate(calc(-50% + 13px), -67px) scale(1) rotate(8deg); } }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(calc(-50% - 13px), -67px) rotate(-8deg); }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(calc(-50% + 13px), -67px) rotate(8deg); }
+@keyframes dock-choice-left { from { opacity: 0; transform: translate(calc(-50% - 8px), -27px) scale(.52) rotate(0); } to { opacity: 1; transform: translate(calc(-50% - 30px), -67px) scale(1) rotate(-8deg); } }
+@keyframes dock-choice-right { from { opacity: 0; transform: translate(calc(-50% + 8px), -27px) scale(.52) rotate(0); } to { opacity: 1; transform: translate(calc(-50% + 30px), -67px) scale(1) rotate(8deg); } }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(calc(-50% - 30px), -67px) rotate(-8deg); }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(calc(-50% + 30px), -67px) rotate(8deg); }
 @media (max-width: 360px) {
   .liquid-dock__choice { width: 36px; height: 36px; }
-  .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(calc(-50% - 12px), -64px) rotate(-8deg); }
-  .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(calc(-50% + 12px), -64px) rotate(8deg); }
+  .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(calc(-50% - 28px), -64px) rotate(-8deg); }
+  .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(calc(-50% + 28px), -64px) rotate(8deg); }
 }
 @media (prefers-reduced-motion: reduce) { .liquid-dock__action-wrap *, .liquid-dock__action-choices, .liquid-dock__choice { animation: none !important; transition-duration: 1ms !important; } }
