@@ -8,6 +8,7 @@ const push = await readFile(new URL('../src/features/notifications/pushNotificat
 const prompt = await readFile(new URL('../src/shared/pwa/PwaUpdatePrompt.tsx', import.meta.url), 'utf8');
 const errorBoundary = await readFile(new URL('../src/shared/components/AppErrorBoundary.tsx', import.meta.url), 'utf8');
 const wasmAdapter = await readFile(new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url), 'utf8');
+const builtWorker = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 
 assert.match(worker, /retailos-pwa-/);
 assert.match(worker, /ASSET_URLS\.has\(url\.href\)/);
@@ -24,6 +25,10 @@ assert.match(vite, /__RETAILOS_BUILD_ID__/);
 assert.match(vite, /Object\.keys\(bundle\).*assets/);
 assert.match(vite, /publicAssets\.push/);
 assert.match(wasmAdapter, /zxing-wasm\/reader\/zxing_reader\.wasm\?url/);
+const builtAssetManifest = builtWorker.match(/const ASSET_PATHS = (\\[[\\s\\S]*?\\]);/)?.[1];
+assert.ok(builtAssetManifest, 'production worker must contain the generated build asset manifest');
+assert.ok(JSON.parse(builtAssetManifest).some((asset) => /zxing_reader-[^/]+\\.wasm$/.test(asset)),
+  'the actual GitHub Pages worker manifest must contain the emitted ZXing WASM binary');
 assert.match(vite, /transformIndexHtml/);
 assert.match(vite, /APP_BOOT_FAILED/);
 assert.match(worker, /APP_BOOT_OK/);
