@@ -29,7 +29,7 @@ Each release owns separate immutable caches:
 
 - `retailos-pwa-shell-<BUILD_ID>`: app base, `index.html`, manifest and app icon.
 - `retailos-pwa-assets-<BUILD_ID>`: all emitted Vite assets and public runtime files.
-- `retailos-pwa-state`: temporary rollback metadata only.
+- `retailos-pwa-state`: the active-release pointer used to select the serving shell and to preserve rollback selection.
 
 A release must never write new build assets into a previous release's cache. IndexedDB, localStorage, authentication state, stocktake history and business snapshots are not part of these release caches.
 
