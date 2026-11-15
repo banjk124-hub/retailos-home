@@ -4,6 +4,7 @@ import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 import { getPwaUpdateBlockReason } from './updateSafety';
 
 declare const __RETAILOS_BUILD_ID__: string;
+declare const __RETAILOS_APP_VERSION__: string;
 
 type ReleaseManifest = {
   schemaVersion: number;
@@ -286,7 +287,7 @@ export default function PwaUpdatePrompt() {
       <div className="pwa-update-prompt__header">
         <div className="pwa-update-prompt__eyebrow">RETAILOS · PHIÊN BẢN MỚI</div>
         <strong>{manifest?.title || 'Đang kiểm tra phiên bản mới'}</strong>
-        {manifest && <span className="pwa-update-prompt__version">Phiên bản {manifest.version}</span>}
+        {manifest && <span className="pwa-update-prompt__version">Đang chạy {__RETAILOS_APP_VERSION__} · Bản mới {manifest.version}</span>}
         <p>{manifest?.summary || notice}</p>
       </div>
 
