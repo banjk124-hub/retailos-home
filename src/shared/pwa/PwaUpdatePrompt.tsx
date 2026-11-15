@@ -77,6 +77,13 @@ export default function PwaUpdatePrompt() {
   const hasReloaded = useRef(false);
 
   const retryInfoRef = useRef<() => void>(() => undefined);
+  const updateCenterActionRef = useRef<(action: 'download' | 'activate') => void>(() => undefined);
+  const persistCandidate = useCallback((status: 'available' | 'deferred' | 'downloading' | 'staged' | 'error', inCenter?: boolean) => {
+    const candidate = manifestRef.current;
+    if (!candidate) return false;
+    const previous = readUpdateCenterEntry();
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0) });
+  }, []);
 
   const tryActivate = useCallback(() => {
     const worker = waitingWorkerRef.current;
@@ -102,7 +109,7 @@ export default function PwaUpdatePrompt() {
     const worker = waitingWorkerRef.current;
     if (!worker || phase === 'downloading' || phase === 'activating') return;
     setPhase('downloading');
-    if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'downloading', updatedAt: new Date().toISOString() });
+    persistCandidate('downloading');
     setNotice('Đang tải toàn bộ tài nguyên ứng dụng. Phiên bản hiện tại vẫn hoạt động trong quá trình này.');
     setBlockReason('');
     setProgress({
@@ -126,7 +133,7 @@ export default function PwaUpdatePrompt() {
         channel.port1.close();
         setPhase('error');
         setNotice(message.message || 'Không thể tải đầy đủ phiên bản mới. Bản hiện tại vẫn được giữ nguyên.');
-        if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'error', updatedAt: new Date().toISOString() });
+        persistCandidate('error');
       }
       if (message?.type === 'RELEASE_STAGED') {
         channel.port1.close();
@@ -139,7 +146,7 @@ export default function PwaUpdatePrompt() {
         }));
         setPhase('staged');
         setNotice('Đã tải và xác minh toàn bộ tài nguyên. Hãy xác nhận cập nhật khi đã sẵn sàng.');
-        if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'staged', updatedAt: new Date().toISOString() });
+        persistCandidate('staged');
       }
     };
     try {
@@ -149,7 +156,7 @@ export default function PwaUpdatePrompt() {
       setPhase('error');
       setNotice('Không thể bắt đầu tải phiên bản. Bản hiện tại vẫn hoạt động bình thường.');
     }
-  }, [manifest, phase, tryActivate]);
+  }, [manifest, phase, tryActivate, persistCandidate]);
 
   useEffect(() => {
     const persistedUpdate = readUpdateCenterEntry();
@@ -198,11 +205,11 @@ export default function PwaUpdatePrompt() {
         return;
       }
       const persistedUpdate = readUpdateCenterEntry();
-      const deferred = persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'deferred';
+      const deferred = persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.inCenter === true;
       setIsDeferred(deferred);
       manifestRef.current = nextManifest;
       setManifest(nextManifest);
-      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: deferred ? 'deferred' : response.staged === true ? 'staged' : 'available', updatedAt: new Date().toISOString() });
+      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: deferred ? 'deferred' : response.staged === true ? 'staged' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, totalBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0) });
       if (response.staged === true) {
         stagedRef.current = true;
         const totalBytes = nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0);
@@ -288,6 +295,7 @@ export default function PwaUpdatePrompt() {
             bytesDownloaded: message.bytesDownloaded ?? 0,
             totalBytes: message.totalBytes ?? 0,
           });
+          persistCandidate('downloading');
         }
         if (message.type === 'RELEASE_STAGED') {
           stagedRef.current = true;
@@ -299,7 +307,7 @@ export default function PwaUpdatePrompt() {
           });
           setPhase('staged');
           setNotice('Đã tải và xác minh toàn bộ tài nguyên. Hãy xác nhận cập nhật khi đã sẵn sàng.');
-          writeUpdateCenterEntry({ buildId: currentManifest.buildId, version: currentManifest.version, title: currentManifest.title, summary: currentManifest.summary, status: 'staged', updatedAt: new Date().toISOString() });
+          persistCandidate('staged');
         }
         if (message.type === 'RELEASE_STAGE_FAILED') {
           stagedRef.current = false;
@@ -307,7 +315,7 @@ export default function PwaUpdatePrompt() {
           isApplyingUpdate.current = false;
           setPhase('error');
           setNotice(message.message || 'Không thể tải đầy đủ phiên bản mới. Bản hiện tại vẫn được giữ nguyên.');
-          writeUpdateCenterEntry({ buildId: currentManifest.buildId, version: currentManifest.version, title: currentManifest.title, summary: currentManifest.summary, status: 'error', updatedAt: new Date().toISOString() });
+          persistCandidate('error');
         }
       }
       if (event.data?.type === 'UPDATE_BLOCKED_MULTIPLE_CLIENTS') {
@@ -339,7 +347,12 @@ export default function PwaUpdatePrompt() {
       setBlockReason(reason || '');
     };
     const handleUpdateCenterOpen = () => { setIsDeferred(false); setIsExpanded(true); };
+    const handleUpdateCenterAction = (event: Event) => {
+      const action = (event as CustomEvent<{ action?: 'download' | 'activate' }>).detail?.action;
+      if (action === 'download' || action === 'activate') updateCenterActionRef.current(action);
+    };
     window.addEventListener('retailos:update-center-open', handleUpdateCenterOpen);
+    window.addEventListener('retailos:update-center-action', handleUpdateCenterAction);
     const safetyEvents = ['input', 'change', 'focusout', 'reset'];
     safetyEvents.forEach((name) => document.addEventListener(name, retrySafeActivation));
     window.addEventListener('retailos:update-safety-changed', retrySafeActivation);
@@ -360,6 +373,7 @@ export default function PwaUpdatePrompt() {
       safetyEvents.forEach((name) => document.removeEventListener(name, retrySafeActivation));
       window.removeEventListener('retailos:update-safety-changed', retrySafeActivation);
       window.removeEventListener('retailos:update-center-open', handleUpdateCenterOpen);
+      window.removeEventListener('retailos:update-center-action', handleUpdateCenterAction);
       window.removeEventListener('focus', retrySafeActivation);
       document.removeEventListener('visibilitychange', retrySafeActivation);
       retryInfoRef.current = () => undefined;
@@ -368,9 +382,10 @@ export default function PwaUpdatePrompt() {
     };
   }, [tryActivate]);
 
+  updateCenterActionRef.current = (action) => { if (action === 'download') startDownload(); else tryActivate(); };
   const currentBlockReason = getPwaUpdateBlockReason();
   const isBusinessBusy = Boolean(currentBlockReason);
-  useEffect(() => { setIsExpanded(!isBusinessBusy); }, [isBusinessBusy]);
+  useEffect(() => { if (isBusinessBusy) setIsExpanded(false); }, [isBusinessBusy]);
   if (!waitingWorker || isDeferred) return null;
 
   const totalBytes = manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
@@ -380,7 +395,7 @@ export default function PwaUpdatePrompt() {
 
   return (
     <aside className={`pwa-update-prompt ${isBusinessBusy ? 'is-busy' : 'is-modal'} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`} role="region" aria-label="Cập nhật RetailOS" data-business-busy={isBusinessBusy ? 'true' : 'false'}>
-      {isBusinessBusy && <button type="button" className="pwa-update-prompt__collapse" onClick={() => setIsExpanded((value) => !value)} aria-expanded={isExpanded}>{isExpanded ? 'Thu gọn' : 'Cập nhật đang chờ'}</button>}
+      {isBusinessBusy && <button type="button" className="pwa-update-prompt__collapse" onClick={() => { if (isExpanded) { if (persistCandidate('deferred', true)) { setIsDeferred(true); setIsExpanded(false); } else setNotice('Không thể lưu lựa chọn lúc này. Hãy kiểm tra dung lượng lưu trữ của trình duyệt rồi thử lại.'); } else setIsExpanded(true); }} aria-expanded={isExpanded}>{isExpanded ? 'Thu gọn' : 'Cập nhật đang chờ'}</button>}
       <div className="pwa-update-prompt__content">
       <div className="pwa-update-prompt__header">
         <div className="pwa-update-prompt__eyebrow">RETAILOS · PHIÊN BẢN MỚI</div>
@@ -444,8 +459,7 @@ export default function PwaUpdatePrompt() {
         {phase === 'available' && (
           <>
             <button type="button" className="pwa-update-prompt__later" onClick={() => {
-              if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'deferred', updatedAt: new Date().toISOString() });
-              setIsDeferred(true);
+              if (persistCandidate('deferred', true)) setIsDeferred(true); else setNotice('Không thể lưu lựa chọn lúc này. Hãy thử lại trước khi đóng thông báo.');
             }}>Để sau</button>
             <button type="button" className="pwa-update-prompt__apply" onClick={startDownload}>Tải và cập nhật</button>
           </>
@@ -453,8 +467,7 @@ export default function PwaUpdatePrompt() {
         {phase === 'error' && manifest && (
           <>
             <button type="button" className="pwa-update-prompt__later" onClick={() => {
-              writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'deferred', updatedAt: new Date().toISOString() });
-              setIsDeferred(true);
+              if (persistCandidate('deferred', true)) setIsDeferred(true); else setNotice('Không thể lưu lựa chọn lúc này. Hãy thử lại trước khi đóng thông báo.');
             }}>Để sau</button>
             <button type="button" className="pwa-update-prompt__apply" onClick={startDownload}>Thử tải lại</button>
           </>
@@ -465,7 +478,7 @@ export default function PwaUpdatePrompt() {
         {phase === 'loading-info' && <span className="pwa-update-prompt__loading">Đang kiểm tra thông tin phiên bản…</span>}
         {phase === 'downloading' && <span className="pwa-update-prompt__loading">Không đóng ứng dụng trong khi tải</span>}
         {phase === 'staged' && <>
-          <button type="button" className="pwa-update-prompt__later" onClick={() => { if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'deferred', updatedAt: new Date().toISOString() }); setIsDeferred(true); }}>Để sau</button>
+          <button type="button" className="pwa-update-prompt__later" onClick={() => { if (persistCandidate('deferred', true)) setIsDeferred(true); else setNotice('Không thể lưu lựa chọn lúc này. Hãy thử lại trước khi đóng thông báo.'); }}>Để sau</button>
           <button type="button" className="pwa-update-prompt__apply" disabled={isBusinessBusy} onClick={tryActivate}>Xác nhận cập nhật</button>
         </>}
         {phase === 'staged' && isBusinessBusy && <span className="pwa-update-prompt__loading">Đang chờ hoàn tất nghiệp vụ: {currentBlockReason}</span>}
