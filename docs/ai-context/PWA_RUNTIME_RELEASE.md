@@ -78,7 +78,7 @@ The maintained worker source is `src/sw/service-worker.template.js`. Never edit 
 
 - Candidate caches are isolated by build ID: `retailos-pwa-shell-<BUILD_ID>` and `retailos-pwa-assets-<BUILD_ID>`.
 - The waiting worker handles `STAGE_RELEASE` only after explicit consent.
-- Resources are downloaded in sequential batches of eight, with bounded concurrency inside each batch.
+- Resources are downloaded in sequential batches of two to cap concurrent network/body-buffer memory on low-end devices. Before starting, the worker checks `navigator.storage.estimate()` where available and requires approximately 10% headroom beyond the candidate size so the old release can remain cached. The estimate is advisory; Cache API writes remain authoritative.
 - Each response must be successful and non-opaque; the worker checks exact byte length and SHA-256 before writing it to the candidate cache.
 - Shell and asset resources are written only to their intended release caches. The root navigation alias is created from the verified `index.html`.
 - The worker verifies every expected cache entry and writes a staged-release marker only after all resources are present.
