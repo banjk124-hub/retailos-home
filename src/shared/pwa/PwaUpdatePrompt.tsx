@@ -183,6 +183,20 @@ export default function PwaUpdatePrompt() {
         return;
       }
       setManifest(nextManifest);
+      if (response.staged === true) {
+        stagedRef.current = true;
+        const totalBytes = nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0);
+        setProgress({
+          completed: nextManifest.resources.length,
+          total: nextManifest.resources.length,
+          bytesDownloaded: totalBytes,
+          totalBytes,
+        });
+        setPhase('staged');
+        setNotice('Phiên bản đã được tải và xác minh ở phiên trước. RetailOS sẽ tự kích hoạt khi có thể chuyển giao an toàn.');
+        tryActivate();
+        return;
+      }
       setPhase('available');
       setNotice('');
     };
