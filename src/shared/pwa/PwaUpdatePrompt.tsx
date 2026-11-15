@@ -278,9 +278,9 @@ export default function PwaUpdatePrompt() {
   if (!waitingWorker) return null;
 
   const totalBytes = manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
-  const progressPercent = progress.total > 0
-    ? Math.min(100, Math.round((progress.completed / progress.total) * 100))
-    : 0;
+  const progressPercent = progress.totalBytes > 0
+    ? Math.min(100, Math.round((progress.bytesDownloaded / progress.totalBytes) * 100))
+    : progress.total > 0 ? Math.min(100, Math.round((progress.completed / progress.total) * 100)) : 0;
 
   return (
     <aside className="pwa-update-prompt" role="region" aria-label="Cập nhật RetailOS">
