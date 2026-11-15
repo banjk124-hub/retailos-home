@@ -143,6 +143,13 @@ await runExtendable('message', {
 assert.equal(navigatedTo, appBase, 'failed new release navigates back through the rollback-aware worker');
 assert.equal(rollbackMessage, null, 'rollback is available when the previous release cache exists');
 
+await runExtendable('message', {
+  data: { type: 'APP_BOOT_OK', buildId: 'old' },
+  source: { id: 'current', url: appBase },
+});
+assert.equal(cacheStore.has(oldShellCache), true, 'rolled-back old build health does not delete its serving cache');
+assert.equal(cacheStore.has(oldAssetCache), true, 'rolled-back old build health retains its own hashed assets');
+
 const rollbackNavigation = {
   request: { method: 'GET', url: appBase, mode: 'navigate' },
   respondWith(promise) { this.responsePromise = promise; },
