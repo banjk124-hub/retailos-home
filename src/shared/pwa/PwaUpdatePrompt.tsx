@@ -92,7 +92,7 @@ export default function PwaUpdatePrompt() {
         : currentPhase === 'downloading' ? 'downloading'
           : currentPhase === 'error' ? 'error' : 'deferred'
       : status;
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current });
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: status === 'error' ? notice : undefined });
   }, []);
 
   const tryActivate = useCallback(() => {
@@ -223,7 +223,7 @@ export default function PwaUpdatePrompt() {
       setIsDeferred(deferred);
       manifestRef.current = nextManifest;
       setManifest(nextManifest);
-      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: response.staged === true ? 'staged' : response.staging === true ? 'downloading' : persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'error' ? 'error' : deferred ? 'deferred' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, totalBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0) });
+      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: response.staged === true ? 'staged' : response.staging === true ? 'downloading' : persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'error' ? 'error' : deferred ? 'deferred' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0) });
       if (response.staged === true) {
         stagedRef.current = true;
         const totalBytes = nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0);
