@@ -36,6 +36,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
 - Scanner implementation truth lives in `SCANNER_ENGINE.md`; scanner historical notes are indexed in `SCANNER_HISTORY.md`.
+- PWA runtime/release truth lives in `PWA_RUNTIME_RELEASE.md`; bundle-size analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
 
 ## Historical-document policy
 
