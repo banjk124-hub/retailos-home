@@ -1065,3 +1065,40 @@ Post-deployment source audit found that the Service Worker `install` event downl
 
 ### Acceptance
 See the mandatory source-of-truth matrix in [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Extend tests to cover discovery-only, no-download-before-consent, defer/offline preservation, full payload staging, integrity failure, automatic activation, safe handoff, boot rollback and data lifecycle isolation. Complete Android, iOS and desktop physical acceptance separately.
+
+## ADR-041 — Consent-gated PWA release staging and safe automatic activation (2026-11-15)
+
+**Status:** Implemented on branch `feat/pwa-consent-gated-release-runtime`; final CI and physical-device acceptance pending. No production deployment is claimed.
+
+### Context
+
+PR #119 delivered full offline asset inventory, release-specific caches, boot health and rollback, but its Service Worker `install` event downloaded the complete candidate payload before the update prompt. The user had asked to approve the download itself, review release notes, then have the verified update activate automatically without a second confirmation.
+
+### Decision
+
+- Vite emits a build-bound `release-manifest.json` from the exact output resources and `release-notes.json`. Every resource includes path, cache class, byte size and SHA-256. Package version and release-note version must match.
+- An update Service Worker install downloads no application payload. It waits while the current worker continues serving the active release. First install (no active worker) is the only automatic full-stage case.
+- The waiting worker exposes metadata-only `GET_RELEASE_INFO`. The UI shows current/candidate versions, release notes, compatibility/warnings and estimated size. Only explicit user consent sends `STAGE_RELEASE`.
+- Candidate resources are fetched in batches of eight, verified by status/size/SHA-256 and cached in build-isolated shell/assets caches. The old release remains selected. Any failure deletes only candidate caches.
+- A staged marker allows a later app launch to resume auto-activation without renewed download consent.
+- After `RELEASE_STAGED`, the app automatically requests activation when module blockers report safe and the worker confirms no other RetailOS window is open. No second user confirmation. Unsafe handoff is visible and retried on focus/visibility or module safety-change events.
+- Shared blockers cover the camera lease service, Stocktake, Stocktake Import and app-level transitions. Future modules with non-DOM unsaved/critical state must register their own blocker.
+- Matching-build boot health and last-known-good rollback remain authoritative. Release activation/rollback never mutates business data.
+- The PR #119 client receives a one-time compatibility bridge: its explicit `SKIP_WAITING` action is interpreted as consent to stage before activation. Its old UI cannot show release notes/progress until it loads the new client.
+
+### Protected boundaries
+
+- No candidate runtime payload before consent on update.
+- No activation with incomplete or invalid manifest/resources.
+- No cross-release asset mixing.
+- No forced reload during camera leases, unsaved Stocktake/Stocktake Import work or app transitions.
+- No takeover while another RetailOS window is active.
+- No data-only update may trigger app release lifecycle.
+- No claim of physical offline/device acceptance based on CI alone.
+
+### Verification
+
+- `scripts/test-pwa-cache-policy.mjs`: manifest, hash inventory, WASM, consent boundary, notes/version parity, safety blockers and data separation.
+- `scripts/test-pwa-worker-runtime.mjs`: update install without payload, metadata discovery, staging, progress, staged resume, failure cleanup, legacy bridge, multi-window retry, offline rollback and first install.
+- `scripts/test-pwa-platform-compatibility.mjs`: Pages base path, responsive/safe-area/reduced-motion update UI and scanner inline compatibility.
+- Final-head full preflight, TypeScript, production/Pages build and physical Android/iOS/Desktop acceptance remain required.
