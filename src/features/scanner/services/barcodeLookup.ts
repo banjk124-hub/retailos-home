@@ -68,14 +68,6 @@ function formatValue(value: unknown): string | null {
   return null;
 }
 
-function rowMatchesCode(row: Record<string, unknown>, barcode: string): boolean {
-  return Object.entries(row).some(([key, value]) => {
-    if (!barcodeFieldNames.has(normalizeFieldName(key))) return false;
-    const formatted = formatValue(value);
-    return formatted !== null && normalizeCode(formatted) === normalizeCode(barcode);
-  });
-}
-
 function toProductRecord(row: Record<string, unknown>, source: string): BarcodeProductRecord {
   const values = Object.entries(row).flatMap(([key, value]) => {
     const formatted = formatValue(value);
@@ -112,10 +104,12 @@ function scoreRow(row: Record<string, unknown>, query: string): number {
     const formatted = formatValue(value);
     if (!formatted) continue;
     const fieldName = normalizeFieldName(key);
+    const isBarcodeField = barcodeFieldNames.has(fieldName);
+    if (typeof value !== 'string' && !isBarcodeField) continue;
     const valueScore = scoreTextMatch(formatted, query, tokens);
     const fieldBoost = /^(itemname|productname|name|tenhanghoa|tensanpham|description)$/.test(fieldName) ? 35 : 0;
     best = Math.max(best, valueScore + fieldBoost);
-    if (barcodeFieldNames.has(fieldName)) {
+    if (isBarcodeField) {
       const exactBarcode = splitBarcodeValues(formatted).some((code) => code === normalizeCode(query));
       if (exactBarcode) best = Math.max(best, 1200);
     }
