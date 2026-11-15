@@ -265,9 +265,40 @@ const runNext = async (type, values = {}) => {
 await runNext('install');
 await runNext('activate');
 assert.equal(cacheStore.has(oldShellCache), true, 'previous release remains during next release probation');
-await runNext('message', { data: { type: 'APP_BOOT_OK', buildId: 'next-build' } });
-assert.equal(cacheStore.has(oldShellCache), false, 'matching new-build health reclaims old shell cache');
-assert.equal(cacheStore.has(oldAssetCache), false, 'matching new-build health reclaims old asset cache');
+let secondRollbackUrl = null;
+await runNext('message', {
+  data: { type: 'APP_BOOT_FAILED', buildId: 'next-build' },
+  source: { id: 'next', url: appBase, async navigate(url) { secondRollbackUrl = url; } },
+});
+assert.equal(secondRollbackUrl, appBase, 'a second failed release rolls back to the same last-known-good build');
+assert.equal(cacheStore.has(oldShellCache), true, 'last-known-good shell survives repeated failed releases');
+assert.equal(cacheStore.has('retailos-pwa-shell-next-build'), false, 'second failed release shell is discarded');
+
+const followListeners = new Map();
+const followSelf = {
+  ...selfMock,
+  addEventListener(type, callback) {
+    if (!followListeners.has(type)) followListeners.set(type, []);
+    followListeners.get(type).push(callback);
+  },
+};
+const followSource = template
+  .replace('__BUILD_ID__', 'following-build')
+  .replace('__APP_BASE__', '/retailos-home/')
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
+const followContext = vm.createContext({ self: followSelf, caches: cachesMock, URL, Response, fetch: context.fetch });
+vm.runInContext(followSource, followContext);
+const runFollow = async (type, values = {}) => {
+  let pending;
+  followListeners.get(type)[0]({ ...values, waitUntil(promise) { pending = promise; } });
+  await pending;
+};
+await runFollow('install');
+await runFollow('activate');
+assert.equal(cacheStore.has(oldShellCache), true, 'last-known-good shell is retained for a later successful release');
+await runFollow('message', { data: { type: 'APP_BOOT_OK', buildId: 'following-build' } });
+assert.equal(cacheStore.has(oldShellCache), false, 'matching healthy build reclaims old shell cache');
+assert.equal(cacheStore.has(oldAssetCache), false, 'matching healthy build reclaims old asset cache');
 assert.equal(cacheStore.has('retailos-pwa-shell-runtime-test'), false, 'superseded failed release cache is reclaimed');
 assert.equal(cacheStore.has('retailos-pwa-state'), false, 'successful new release clears active-release metadata');
 
