@@ -161,32 +161,42 @@ async function stageCandidate(target) {
       const batch = manifest.resources.slice(index, index + BATCH_SIZE);
       const batchResults = await Promise.allSettled(batch.map(async (resource) => {
         const url = new URL(resource.path, APP_BASE_URL).href;
-        const response = await fetch(url, { cache: 'reload', credentials: 'same-origin' });
-        if (!response.ok || response.type === 'opaque') {
-          throw new Error('Tải tài nguyên thất bại: ' + resource.path);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 45000);
+        try {
+          const response = await fetch(url, {
+            cache: 'reload',
+            credentials: 'same-origin',
+            signal: controller.signal,
+          });
+          if (!response.ok || response.type === 'opaque') {
+            throw new Error('Tải tài nguyên thất bại: ' + resource.path);
+          }
+          const bytes = await response.clone().arrayBuffer();
+          if (bytes.byteLength !== resource.size) {
+            throw new Error('Sai kích thước tài nguyên: ' + resource.path);
+          }
+          if (await digestHex(bytes) !== resource.sha256) {
+            throw new Error('Sai checksum tài nguyên: ' + resource.path);
+          }
+          const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
+          const rootAlias = resource.path === 'index.html' ? response.clone() : null;
+          await targetCache.put(url, response);
+          if (rootAlias) await shellCache.put(APP_BASE_URL.href, rootAlias);
+          completed += 1;
+          bytesDownloaded += resource.size;
+          notify(target, {
+            type: 'RELEASE_DOWNLOAD_PROGRESS',
+            buildId: BUILD_ID,
+            version: manifest.version,
+            completed,
+            total,
+            bytesDownloaded,
+            totalBytes,
+          });
+        } finally {
+          clearTimeout(timeout);
         }
-        const bytes = await response.clone().arrayBuffer();
-        if (bytes.byteLength !== resource.size) {
-          throw new Error('Sai kích thước tài nguyên: ' + resource.path);
-        }
-        if (await digestHex(bytes) !== resource.sha256) {
-          throw new Error('Sai checksum tài nguyên: ' + resource.path);
-        }
-        const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
-        const rootAlias = resource.path === 'index.html' ? response.clone() : null;
-        await targetCache.put(url, response);
-        if (rootAlias) await shellCache.put(APP_BASE_URL.href, rootAlias);
-        completed += 1;
-        bytesDownloaded += resource.size;
-        notify(target, {
-          type: 'RELEASE_DOWNLOAD_PROGRESS',
-          buildId: BUILD_ID,
-          version: manifest.version,
-          completed,
-          total,
-          bytesDownloaded,
-          totalBytes,
-        });
       }));
       const failedResult = batchResults.find((result) => result.status === 'rejected');
       if (failedResult) throw failedResult.reason;
