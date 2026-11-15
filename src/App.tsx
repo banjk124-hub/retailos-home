@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import LoginExperience from './features/auth/screens/LoginExperience';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
@@ -208,7 +208,7 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => registerPwaUpdateBlocker('app-transition', () => {
+  useLayoutEffect(() => registerPwaUpdateBlocker('app-transition', () => {
     const { isEnteringHome: entering, isLeavingHome: leaving } = transitionStateRef.current;
     return entering || leaving
       ? 'RetailOS đang chuyển màn hình. Bản mới sẽ tự kích hoạt sau khi chuyển cảnh hoàn tất.'
