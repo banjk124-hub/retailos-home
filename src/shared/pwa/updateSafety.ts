@@ -118,6 +118,10 @@ export function getPwaUpdateBlockReason(): string | null {
       dirtyFormFields.delete(control);
       continue;
     }
+    if (isEditableControl(control) && currentFieldValue(control) === fieldBaselines.get(control)) {
+      dirtyFormFields.delete(control);
+      continue;
+    }
     return 'Biểu mẫu đang có thay đổi chưa được gửi hoặc lưu. Hãy hoàn tất thao tác trước khi cập nhật.';
   }
 
