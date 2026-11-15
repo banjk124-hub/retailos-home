@@ -130,7 +130,7 @@ const sameBuildBranch = prompt.indexOf("if (nextManifest.buildId === __RETAILOS_
 const manifestValidationBranch = prompt.indexOf("nextManifest.schemaVersion !== 1");
 assert.ok(sameBuildBranch > manifestValidationBranch,
   'same-build handling must run only after manifest structure validation');
-const sameBuildHandling = prompt.slice(sameBuildBranch, prompt.indexOf("if (dismissedBuildId.current", sameBuildBranch));
+const sameBuildHandling = prompt.slice(sameBuildBranch, prompt.indexOf("const persistedUpdate = readUpdateCenterEntry();", sameBuildBranch));
 assert.match(sameBuildHandling, /setWaitingWorker\(null\)/,
   'a same-build waiting worker must be dismissed without showing a manifest error');
 assert.match(sameBuildHandling, /waitingWorkerRef\.current = null/);
