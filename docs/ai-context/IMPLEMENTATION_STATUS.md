@@ -1,31 +1,39 @@
 # Current PWA runtime and release status — 2026-11-15
 
-**Baseline:** PR #119 is merged and deployed, as confirmed by the user. This status reflects a source audit of the current default branch, not physical-device acceptance.
+**Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
+**Baseline:** PR #119 merged/deployed by user; includes the documentation contract introduced by PR #120 branch.  
+**Status:** Runtime implementation and regression updates are in this branch. Final-head CI, PR review and physical-device acceptance are pending. No merge or deployment.
 
-## Implemented foundation
-- Vite release inventory includes emitted/public runtime assets, including ZXing WASM.
-- Service Worker install stages and verifies the complete shell/asset inventory in release-specific caches.
-- Active shell/assets are pinned by release; previous release caches are retained through boot probation.
-- Matching-build boot failure can roll back to the previous cached release; healthy boot permits old-cache cleanup.
-- Business data and snapshots are outside the immutable release asset inventory.
+## Implemented in this branch
 
-## Audit findings — required flow is not yet implemented
-- **Consent boundary defect:** full candidate asset download currently runs in the Service Worker `install` event. Browser update installation starts before the React prompt is shown. User approval therefore occurs after download and only controls activation.
-- **Release information gap:** current `PwaUpdatePrompt` shows generic text; there is no build-bound changelog/release manifest UI for new features, UI/UX changes, fixes, compatibility notes or operational warnings.
-- **Activation mismatch:** current user action sends `SKIP_WAITING` and then reloads. Required behavior is one confirmation before download, followed by automatic activation after complete verification.
-- **Progress gap:** no user-facing download progress/retry lifecycle is present.
-- Existing tests cover precache, cache isolation, multi-window guard and rollback. They do not prove no candidate runtime payload is fetched before consent, nor that release notes are bound to the exact candidate build.
+- Vite generates a build-bound `release-manifest.json` from the actual output inventory and `release-notes.json`.
+- Each shell/runtime resource carries byte size and SHA-256; package version and release-notes version are checked for parity.
+- Update Service Worker install no longer downloads the candidate payload. It stages automatically only for a first install with no active worker.
+- Waiting worker exposes metadata-only discovery; full candidate payload staging begins only after the user approves.
+- Candidate shell/assets are staged in release-specific caches, in bounded batches of eight, with status, size, SHA-256 and cache verification.
+- Download progress, retryable failure and staged-resume behavior are implemented.
+- Successful staging triggers automatic activation when app-wide safety blockers and the multi-window guard permit it. No second user confirmation.
+- Shared update-safety blockers cover camera leases, Stocktake, Stocktake Import and app transitions. A module API exists for future non-DOM critical operations.
+- Previous-release health/rollback behavior and data lifecycle separation remain protected.
+- A one-time compatibility bridge treats the old PR #119 client's explicit `SKIP_WAITING` action as consent to stage. That legacy UI cannot show the new release notes/progress until it loads this version.
 
-## Required next implementation lane
-1. Design a consent-gated staging mechanism that separates small release discovery/control-plane traffic from the full runtime payload. Do not assume a prompt-only change solves Service Worker install semantics.
-2. Add a build-bound release manifest and user-facing release notes.
-3. Stage every application resource only after consent; show progress and retry/error states.
-4. Verify integrity/completeness, then auto-activate without a second confirmation while protecting unsaved work.
-5. Preserve old-release offline operation and last-known-good rollback; keep data lifecycle independent.
-6. Extend runtime tests to assert the pre-consent network boundary, defer path, complete staging, automatic activation and data-lifecycle isolation.
-7. Complete physical Android/iOS/Desktop acceptance after final-head CI.
+## Changed runtime and regression areas
 
-Canonical contract and detailed acceptance: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). No runtime code changes are included in the current documentation-only work.
+- Build/release: `vite.config.ts`, `release-notes.json`, `package.json`, `package-lock.json`.
+- Worker/update UI: `src/sw/service-worker.template.js`, `src/shared/pwa/PwaUpdatePrompt.tsx`, `pwa-update-prompt.css`, `updateSafety.ts`, `serviceWorkerRegistration.ts`.
+- Safety integration: shared `cameraSession.ts`, `App.tsx`, Stocktake and Stocktake Import modules.
+- Tests: PWA policy, worker runtime and platform compatibility regression scripts.
+- Canonical design/status/handoff/ADR/roadmap documents are synchronized in the same branch.
+
+## Required verification still pending
+
+1. Run all PWA tests and full `npm run preflight` on the final PR head.
+2. Confirm production and GitHub Pages builds emit a manifest whose resource hashes match the deployed bytes and includes every lazy chunk plus ZXing WASM.
+3. Audit final diff for unrelated scanner/data/auth changes.
+4. Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, Desktop and low-end Android acceptance for defer, consent, progress, interrupted download, resume, offline, safe handoff and rollback.
+5. Verify first-install and one-time legacy migration behavior on devices already running PR #119.
+
+No CI pass, physical acceptance, merge or deployment is claimed by this status. Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
 
 
 ---
