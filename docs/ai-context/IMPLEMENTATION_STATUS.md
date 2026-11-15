@@ -2,7 +2,7 @@
 
 **Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
 **Baseline:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` after PR #119. PR #120 was closed as superseded; its documentation changes are included in this branch.  
-**Status:** RetailOS CI #1170 passed on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`, including full preflight, TypeScript, production/Pages builds, PWA runtime/cache-policy/platform tests and bundle comparison. PR review and physical-device acceptance remain pending. No merge or deployment.
+**Status:** RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including full preflight, TypeScript, production/Pages builds, PWA runtime/cache-policy/platform tests, main-only deploy guard regression and bundle comparison. PR review and physical-device acceptance remain pending. No merge or deployment.
 
 ## Implemented in this branch
 
@@ -31,7 +31,7 @@
 - CI #1126 (`ecbc32fc`) passed regression suites and TypeScript but failed because the release plugin ran before Vite emitted `index.html`. `enforce: 'post'` fixed that ordering.
 - CI #1162 then passed TypeScript, production build, Pages build and the worker runtime test, but PWA cache-policy found the manifest's HomeScreen chunk size (59,043 bytes) differed from the final emitted file (60,023 bytes). This proves the manifest hook still ran before all output mutations had completed.
 - Second correction: the plugin now declares `generateBundle` as an explicit hook object with `order: 'post'`; the regression test requires that exact ordering. The integrity checks remain fail-closed and continue comparing every manifest size/hash with actual `dist` bytes.
-- Final evidence: RetailOS CI #1170 completed successfully on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`. Production and Pages builds, final manifest byte/hash parity, worker runtime, platform contracts, and bundle baseline comparison all passed.
+- Final evidence: RetailOS CI #1184 completed successfully on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`. Production and Pages builds, final manifest byte/hash parity, worker runtime, platform contracts, main-only deployment guard and bundle baseline comparison all passed.
 
 ## Required verification still pending
 
