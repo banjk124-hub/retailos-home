@@ -83,10 +83,10 @@ export default function StocktakeModule({ employee, onClose }: Props) {
   const [error, setError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const pwaUpdateStateRef = useRef({
-    busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, barcode, zoneInput,
+    busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput,
   });
   pwaUpdateStateRef.current = {
-    busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, barcode, zoneInput,
+    busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput,
   };
 
   const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
@@ -142,7 +142,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     if (state.busy) return 'Stocktake đang ghi hoặc đọc dữ liệu kiểm kê.';
     if (state.scannerOpen) return 'Máy quét đang hoạt động. Hãy đóng phiên quét trước khi cập nhật.';
     if (state.pendingZone || state.showClearConfirm) return 'Stocktake đang chờ xác nhận thao tác.';
-    if (state.editingEntry || state.barcode.trim() || state.zoneInput.trim()) {
+    if (state.editingEntry || state.manualEntry || state.barcode.trim() || state.quantity !== '1' || state.zoneInput.trim()) {
       return 'Stocktake có nội dung nhập hoặc chỉnh sửa chưa hoàn tất.';
     }
     return null;
@@ -150,7 +150,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
 
   useEffect(() => {
     notifyPwaUpdateSafetyChanged();
-  }, [busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, barcode, zoneInput]);
+  }, [busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput]);
 
   // loadZoneEntries already scopes and sorts entries for the active zone.
   const currentEntries = entries;
