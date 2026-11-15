@@ -36,7 +36,7 @@ assert.match(prompt, /visibilitychange/);
 assert.match(prompt, /controllerchange/);
 assert.doesNotMatch(prompt, /beforeinstallprompt/,
   'update lifecycle must not depend on install-prompt support');
-assert.equal((deployWorkflow.match(/if: github\\.ref == 'refs\\/heads\\/main'/g) || []).length, 2,
+assert.equal((deployWorkflow.match(/if: github\.ref == 'refs\/heads\/main'/g) || []).length, 2,
   'production GitHub Pages build and deploy jobs must be restricted to main even when workflow_dispatch is used');
 
 // Service worker code must remain worker-context-only and origin/base scoped.
