@@ -2,7 +2,7 @@
 
 ## PWA release management — consent-gated download and automatic activation
 
-**Priority:** Runtime implementation is present on `feat/pwa-consent-gated-release-runtime`; CI and device acceptance are the remaining gates before production adoption.
+**Priority:** Runtime implementation is present on `feat/pwa-consent-gated-release-runtime`; the previous-head CI failure is being corrected and exact-head CI plus device acceptance remain gates before production adoption.
 
 - [x] Design the pre-download consent boundary around Service Worker update semantics.
 - [x] Publish a build-bound release manifest and release notes with complete resource hashes and byte sizes.
@@ -11,7 +11,7 @@
 - [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
 - [x] Preserve old-release serving, staged resume, last-known-good rollback and business data.
 - [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
-- [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions.
+- [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions. Previous CI #1126 passed regression tests/TypeScript but failed production build because the release-manifest plugin ran before final `index.html` emission; `enforce: 'post'` and a regression assertion are now in the branch, awaiting a fresh exact-head run.
 - [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance.
 
 Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Current implementation is not production-accepted until the unchecked CI/device gates pass. Data-only lookup/snapshot refresh and recalculation using existing logic remain independent.
