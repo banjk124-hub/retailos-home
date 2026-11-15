@@ -156,7 +156,7 @@ async function stageCandidate(target) {
       const estimate = await navigator.storage.estimate();
       const availableBytes = Number(estimate.quota) - Number(estimate.usage);
       if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
-        throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng rồi thử lại.');
+        throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng khác rồi thử lại; không xóa dữ liệu RetailOS hoặc dữ liệu trình duyệt của ứng dụng.');
       }
     } catch (error) {
       if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
