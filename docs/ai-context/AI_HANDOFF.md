@@ -1,34 +1,38 @@
-# Current handoff — user-approved PWA release lifecycle audit
+# Current handoff — consent-gated PWA release runtime
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Baseline:** `main`, after PR #119 merge and deployment confirmed by the user.  
-**Current documentation branch:** `docs/pwa-user-approved-release-contract`.  
-**Scope:** source audit and durable documentation policy; no runtime source changes in this work.
+**Branch:** `feat/pwa-consent-gated-release-runtime`  
+**Base:** documentation contract branch `docs/pwa-user-approved-release-contract` (PR #120); production runtime baseline includes deployed PR #119.  
+**Status:** Runtime implementation and tests updated; final-head CI, PR review and physical device acceptance pending. No merge/deploy.
 
 ## Read first
-1. `AGENTS.md` — mandatory cross-task release lifecycle rules.
+1. `AGENTS.md` — mandatory release lifecycle policy.
 2. `docs/ai-context/INDEX.md`.
-3. `docs/ai-context/PWA_RUNTIME_RELEASE.md` — canonical current behavior, target contract and acceptance tests.
-4. `docs/ai-context/IMPLEMENTATION_STATUS.md` — verified implementation and gaps.
-5. `docs/ai-context/ARCHITECTURE.md` — ADR-040 product decision.
+3. `docs/ai-context/PWA_RUNTIME_RELEASE.md` — canonical architecture and acceptance matrix.
+4. `docs/ai-context/IMPLEMENTATION_STATUS.md`.
+5. `docs/ai-context/ARCHITECTURE.md` — ADR-040 product contract and ADR-041 implementation.
+6. `scripts/test-pwa-cache-policy.mjs`, `scripts/test-pwa-worker-runtime.mjs`, `scripts/test-pwa-platform-compatibility.mjs`.
 
-## Source audit conclusion
-- PR #119's full asset inventory, WASM precache, release cache isolation, boot health and rollback foundation are present in deployed source.
-- Important mismatch: `src/sw/service-worker.template.js` downloads the full asset inventory inside the browser-triggered `install` event. This happens before `PwaUpdatePrompt` reveals the waiting worker.
-- `src/shared/pwa/PwaUpdatePrompt.tsx` currently displays generic copy after staging and asks the user to activate. It has no release-note data model, pre-download consent, progress UI or automatic post-download activation.
-- The existing tests prove install-time precache and rollback, not the required pre-consent no-download boundary.
-- Target flow: discover metadata → present exact release notes → ask once before download → stage and verify all runtime resources → auto-activate → boot-health check/rollback.
-- Data refresh/recalculation using existing logic stays independent; new processing mechanisms/features belong to the application release.
+## Runtime implementation
+- Build emits `release-manifest.json` with exact build ID, version, notes, resource paths, byte sizes and SHA-256 hashes.
+- Update worker install does not stage candidate payload. First install is the only automatic staging case.
+- Waiting worker serves metadata-only discovery. User consent starts full payload staging in isolated caches, batch size eight.
+- Worker verifies HTTP status, size, SHA-256 and cache read-back; failure removes only candidate caches.
+- UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
+- A completed staged release resumes without renewed consent after app restart.
+- Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, app transitions, active editing and multi-window detection.
+- Boot health and last-known-good rollback remain active; business data is not part of release caches.
+- One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
 
-## Next implementation requirements
-1. Audit Service Worker/browser update semantics before designing the consent-gated staging mechanism. Do not solve this by merely moving the existing button or changing `SKIP_WAITING`.
-2. Add a build-bound release manifest and versioned user-facing notes.
-3. Prove no candidate runtime payload is fetched/staged before explicit approval.
-4. Prove all modules/chunks, UI assets, workers, WASM and media are local before automatic activation.
-5. Preserve old-release offline behavior, safe handoff, business data and last-known-good rollback.
-6. Add runtime tests for consent/defer/progress/failure/auto-activation and data lifecycle isolation; then full CI and physical-device QA.
+## Critical audit points before approval
+1. Check Vite production and Pages output: `release-manifest.json` must match the exact emitted `index.html`, shell files, lazy chunks, public assets and ZXing WASM bytes.
+2. Verify no asset fetch occurs on update install or `GET_RELEASE_INFO`; only manifest metadata may be fetched.
+3. Verify defer, network interruption, hash mismatch, cache quota failure, stage resume, multi-window retry, dirty-work blockers and automatic activation.
+4. Verify old release remains usable offline while candidate staging runs.
+5. Verify rollback after boot failure and ensure data/IndexedDB/Auth/Stocktake persistence are untouched.
+6. Run final-head `npm run preflight`, TypeScript, production build, Pages build and CI. Then complete physical Android/iOS/Desktop QA.
 
-Do not claim the target flow is implemented until the source, tests and device evidence support it. No merge/deploy is authorized by this handoff.
+Do not claim CI/device acceptance before evidence exists. No merge or deploy is authorized by this handoff.
 
 
 ---
