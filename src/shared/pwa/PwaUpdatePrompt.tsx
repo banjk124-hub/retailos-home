@@ -264,8 +264,9 @@ export default function PwaUpdatePrompt() {
     const retrySafeActivation = () => {
       if (stagedRef.current && !activationRequestedRef.current) tryActivate();
     };
-    const safetyEvents = ['input', 'change', 'focusout', 'reset', 'retailos:update-safety-changed'];
+    const safetyEvents = ['input', 'change', 'focusout', 'reset'];
     safetyEvents.forEach((name) => document.addEventListener(name, retrySafeActivation));
+    window.addEventListener('retailos:update-safety-changed', retrySafeActivation);
     window.addEventListener('focus', retrySafeActivation);
     document.addEventListener('visibilitychange', retrySafeActivation);
 
@@ -281,6 +282,7 @@ export default function PwaUpdatePrompt() {
       window.removeEventListener('focus', checkForUpdate);
       document.removeEventListener('visibilitychange', checkForUpdate);
       safetyEvents.forEach((name) => document.removeEventListener(name, retrySafeActivation));
+      window.removeEventListener('retailos:update-safety-changed', retrySafeActivation);
       window.removeEventListener('focus', retrySafeActivation);
       document.removeEventListener('visibilitychange', retrySafeActivation);
       retryInfoRef.current = () => undefined;
