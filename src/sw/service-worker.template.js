@@ -37,7 +37,7 @@ async function findPreviousRelease() {
   const previousShells = keys.filter((key) =>
     key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE
   );
-  const shellCache = previousShells.at(-1);
+  const shellCache = previousShells[previousShells.length - 1];
   if (!shellCache) return null;
   const releaseId = shellCache.slice((CACHE_PREFIX + 'shell-').length);
   return { buildId: releaseId, shellCache, assetCache: CACHE_PREFIX + 'assets-' + releaseId };
