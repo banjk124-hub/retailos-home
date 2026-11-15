@@ -55,3 +55,17 @@
 @media (prefers-reduced-motion: reduce) {
   .pwa-update-prompt__progress-track span { transition: none; }
 }
+
+/* Update Center presentation: centered confirmation only at a safe idle point;
+   compact corner notice while an operational blocker is active. */
+.pwa-update-prompt.is-modal { inset: 50% auto auto 50%; transform: translate(-50%, -50%); width: min(720px, calc(100% - 28px)); max-height: min(82dvh, 760px); margin: 0; }
+.pwa-update-prompt.is-busy { inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) auto; width: min(360px, calc(100% - 24px)); max-height: min(70dvh, 560px); margin: 0; }
+.pwa-update-prompt__collapse { justify-self: end; min-height: 30px; padding: 0 10px; border: 0; border-radius: 99px; background: #f1f2f5; color: #4e5664; font: inherit; font-size: 11px; font-weight: 800; }
+.pwa-update-prompt.is-collapsed .pwa-update-prompt__content { display: none; }
+.pwa-update-prompt.is-collapsed { width: auto; max-width: min(280px, calc(100% - 24px)); padding: 8px 10px; }
+.pwa-update-prompt.is-collapsed .pwa-update-prompt__collapse { justify-self: stretch; }
+.pwa-update-prompt__content { display: grid; gap: 14px; }
+@media (max-width: 560px) {
+  .pwa-update-prompt.is-modal { inset: 50% auto auto 50%; width: calc(100% - 20px); max-height: min(84dvh, 760px); }
+  .pwa-update-prompt.is-busy { inset: auto max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) auto; width: min(340px, calc(100% - 20px)); }
+}
