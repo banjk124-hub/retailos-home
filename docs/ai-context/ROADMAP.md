@@ -2,7 +2,7 @@
 
 ## PWA release management — consent-gated download and automatic activation
 
-**Priority:** Runtime implementation is present on `feat/pwa-consent-gated-release-runtime`; the previous-head CI failure is being corrected and exact-head CI plus device acceptance remain gates before production adoption.
+**Priority:** Runtime implementation is present on `feat/pwa-consent-gated-release-runtime`; automated CI #1170 is green. Physical device acceptance and final PR review remain gates before production adoption.
 
 - [x] Design the pre-download consent boundary around Service Worker update semantics.
 - [x] Publish a build-bound release manifest and release notes with complete resource hashes and byte sizes.
@@ -11,7 +11,8 @@
 - [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
 - [x] Preserve old-release serving, staged resume, primary-surface boot health, last-known-good rollback and business data.
 - [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
-- [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions. CI #1126 exposed early `index.html` ordering; CI #1162 passed production/Pages builds but failed manifest-vs-final-chunk byte parity. The plugin now uses `enforce: 'post'` and `generateBundle` hook `order: 'post'`, both protected by regression assertions; fresh exact-head validation is pending.
+- [x] Pass full preflight, TypeScript, production build, Pages build, manifest byte/hash parity, PWA runtime/platform tests and bundle comparison in RetailOS CI #1170 (`d5902b4a`).
+- [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance before merge/deploy.
 - [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance.
 
 Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Current implementation is not production-accepted until the unchecked CI/device gates pass. Data-only lookup/snapshot refresh and recalculation using existing logic remain independent.
