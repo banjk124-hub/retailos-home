@@ -7,7 +7,7 @@
 - App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
 - First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
 - Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
-- CI #1126 exposed missing final `index.html`; CI #1162 passed production and Pages builds but found manifest chunk sizes differed from final emitted bytes. The plugin now uses `enforce: 'post'` plus `generateBundle` hook `order: 'post'`, with regression assertions. Fresh exact-head CI, final PR audit and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
+- CI #1126 exposed missing final `index.html`; CI #1162 exposed manifest/final-chunk byte mismatch. Both were corrected with `enforce: 'post'` and `generateBundle` hook `order: 'post'`. RetailOS CI #1170 then passed full preflight, TypeScript, production/Pages builds, manifest integrity, worker/platform tests and bundle comparison on source commit `d5902b4a`. Final PR review and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
 
 
 # Historical scanner state snapshot — 2026-11-11
