@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
@@ -92,6 +93,26 @@ assert.equal(builtManifest.version, releaseNotes.version, 'release metadata must
 assert.equal(packageJson.version, releaseNotes.version, 'package version and release notes version must stay synchronized');
 assert.equal(packageLock.packages[''].version, packageJson.version, 'package lock version must match package.json');
 assert.match(builtWorker, /const BUILD_ID = '[^']+'/);
+const workerBuildId = builtWorker.match(/const BUILD_ID = '([^']+)'/)?.[1];
+const workerBase = builtWorker.match(/const APP_BASE = '([^']+)'/)?.[1];
+const workerAssetPaths = builtWorker.match(/const ASSET_PATHS = (\[[\s\S]*?\]);/)?.[1];
+assert.equal(workerBuildId, builtManifest.buildId, 'Service Worker and release manifest must share one build ID');
+assert.equal(workerBase, builtManifest.base, 'Service Worker and release manifest must share one Vite base');
+assert.ok(workerAssetPaths, 'generated worker must contain its exact asset routing inventory');
+assert.deepEqual(
+  JSON.parse(workerAssetPaths),
+  builtManifest.resources.filter((item) => item.cache === 'assets').map((item) => item.path),
+  'worker routing inventory and staged release manifest must cover the same asset paths',
+);
+for (const resource of builtManifest.resources) {
+  const bytes = await readFile(new URL('../dist/' + resource.path, import.meta.url));
+  assert.equal(bytes.byteLength, resource.size, 'built resource size must match manifest: ' + resource.path);
+  assert.equal(
+    createHash('sha256').update(bytes).digest('hex'),
+    resource.sha256,
+    'built resource SHA-256 must match manifest: ' + resource.path,
+  );
+}
 
 assert.match(prompt, /GET_RELEASE_INFO/);
 assert.match(prompt, /STAGE_RELEASE/);
