@@ -32,6 +32,7 @@ export function LiquidDockItem({ item, active, hidden, onSelect }: Props) {
         />
       </span>
       <span className="liquid-dock__label">{item.label}</span>
+      {Boolean(item.noticeCount) && <span className="liquid-dock__notice-badge" aria-label={`${item.noticeCount} thông báo đang chờ`}>{item.noticeCount}</span>}
     </button>
   );
 }
