@@ -29,6 +29,8 @@ function retailosPwaArtifacts(): Plugin {
   return {
     name: 'retailos-pwa-artifacts',
     apply: 'build',
+    // Run after Vite's HTML/build plugins so the finalized index.html is present in the output bundle.
+    enforce: 'post',
     configResolved(config) {
       appBase = config.base;
       projectRoot = config.root;
