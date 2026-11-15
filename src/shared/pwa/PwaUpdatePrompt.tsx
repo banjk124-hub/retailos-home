@@ -65,6 +65,8 @@ export default function PwaUpdatePrompt() {
   const manifestRef = useRef<ReleaseManifest | null>(null);
   manifestRef.current = manifest;
   const [phase, setPhase] = useState<UpdatePhase>('loading-info');
+  const phaseRef = useRef<UpdatePhase>('loading-info');
+  phaseRef.current = phase;
   const [progress, setProgress] = useState({ completed: 0, total: 0, bytesDownloaded: 0, totalBytes: 0 });
   const progressRef = useRef(progress);
   progressRef.current = progress;
@@ -84,7 +86,13 @@ export default function PwaUpdatePrompt() {
     const candidate = manifestRef.current;
     if (!candidate) return false;
     const previous = readUpdateCenterEntry();
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current });
+    const currentPhase = phaseRef.current;
+    const persistedStatus = status === 'deferred'
+      ? currentPhase === 'staged' || currentPhase === 'activating' ? 'staged'
+        : currentPhase === 'downloading' ? 'downloading'
+          : currentPhase === 'error' ? 'error' : 'deferred'
+      : status;
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current });
   }, []);
 
   const tryActivate = useCallback(() => {
