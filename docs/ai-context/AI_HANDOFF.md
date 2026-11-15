@@ -26,8 +26,8 @@
 
 ## Latest CI evidence and corrective action
 - GitHub Actions run #1126 on the previous PR head `ecbc32fc092e281fba6b5b824ef00ffe9bb02e94` passed the regression suites and TypeScript, then failed during Vite production build because `index.html` was not yet present when the release-manifest plugin ran.
-- Corrective change: run `retailos-pwa-artifacts` with Vite `enforce: 'post'` so its output hook runs after Vite build plugins; add a source-contract regression assertion for this ordering.
-- The corrected branch head must receive a fresh full preflight/production/Pages CI run. No pass is claimed until that exact head is green.
+- First correction: `retailos-pwa-artifacts` uses Vite `enforce: 'post'`, which made the final `index.html` available. CI #1162 then passed TypeScript, production and Pages builds plus worker runtime tests, but PWA cache-policy detected a real emitted-chunk byte mismatch (HomeScreen manifest size 59,043 bytes vs final file 60,023 bytes).
+- Second correction: change the plugin's `generateBundle` hook to an explicit `{ order: 'post', handler }`, so release hashes are calculated after all Rollup output hooks have finalized chunk bytes. A regression assertion protects this ordering. Fresh exact-head CI is required; no pass is claimed until it completes.
 
 ## Critical audit points before approval
 1. Check Vite production and Pages output: `release-manifest.json` must match the exact emitted `index.html`, shell files, lazy chunks, public assets and ZXing WASM bytes.
