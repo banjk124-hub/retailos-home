@@ -56,7 +56,7 @@ The source ROI is bounded before candidate generation. The decoder input must al
 
 - `MAX_ROI_SOURCE_WIDTH = 2048`
 - `MAX_ROI_SOURCE_PIXELS = 1,500,000`
-- `MAX_DECODE_CANDIDATE_PIXELS = 1,500,000` (Phase A target; planner and WASM guard must import the same constant)
+- `MAX_DECODE_CANDIDATE_PIXELS = 1,500,000` (implemented in Phase A; planner and WASM guard import the same constant)
 
 The 1.5× candidate remains the preferred baseline when it fits. If it exceeds the hard input budget, the planner reduces its effective scale. Alternate 1×/2× candidates are also bounded by the same budget and duplicate dimensions are removed. No candidate should be generated only to be rejected by the decoder.
 
