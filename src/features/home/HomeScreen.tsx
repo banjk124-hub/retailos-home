@@ -564,9 +564,19 @@ export default function HomeScreen({
     cameraLeaseRequestRef.current = null;
     runBarcodeLookup(barcode);
   }, [runBarcodeLookup]);
-  const openManualProductLookup = useCallback(() => {
+  const openManualProductLookup = useCallback((query: string) => {
     const requestId = ++barcodeLookupRequestIdRef.current;
-    setBarcodeLookup({ query: '', requestId, records: [] });
+    setBarcodeLookup({ query, requestId, records: null });
+    void searchCachedProducts(query).then(({ records, failedSources }) => {
+      setBarcodeLookup((current) => current?.requestId === requestId
+        ? { ...current, records, failedSources }
+        : current);
+    }).catch((error: unknown) => {
+      console.error('Không thể tra cứu sản phẩm từ snapshot:', error);
+      setBarcodeLookup((current) => current?.requestId === requestId
+        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
+        : current);
+    });
   }, []);
   const submitManualProductLookup = useCallback(() => {
     if (!barcodeLookup?.query.trim()) return;
