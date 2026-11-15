@@ -4,7 +4,7 @@ import './pwa-update-prompt.css';
 declare const __RETAILOS_BUILD_ID__: string;
 import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 import { getPwaUpdateBlockReason } from './updateSafety';
-import { readUpdateCenterEntry, writeUpdateCenterEntry } from './updateCenterStore';
+import { clearUpdateCenterEntry, readUpdateCenterEntry, writeUpdateCenterEntry } from './updateCenterStore';
 
 declare const __RETAILOS_APP_VERSION__: string;
 
@@ -152,6 +152,8 @@ export default function PwaUpdatePrompt() {
   }, [manifest, phase, tryActivate]);
 
   useEffect(() => {
+    const persistedUpdate = readUpdateCenterEntry();
+    if (persistedUpdate?.buildId === __RETAILOS_BUILD_ID__) clearUpdateCenterEntry(persistedUpdate.buildId);
     if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
     let registration: ServiceWorkerRegistration | null = null;
     let disposed = false;
