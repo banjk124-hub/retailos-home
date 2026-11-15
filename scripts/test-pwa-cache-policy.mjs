@@ -25,9 +25,9 @@ assert.match(vite, /__RETAILOS_BUILD_ID__/);
 assert.match(vite, /Object\.keys\(bundle\).*assets/);
 assert.match(vite, /publicAssets\.push/);
 assert.match(wasmAdapter, /zxing-wasm\/reader\/zxing_reader\.wasm\?url/);
-const builtAssetManifest = builtWorker.match(/const ASSET_PATHS = (\\[[\\s\\S]*?\\]);/)?.[1];
+const builtAssetManifest = builtWorker.match(/const ASSET_PATHS = (\[[\s\S]*?\]);/)?.[1];
 assert.ok(builtAssetManifest, 'production worker must contain the generated build asset manifest');
-assert.ok(JSON.parse(builtAssetManifest).some((asset) => /zxing_reader-[^/]+\\.wasm$/.test(asset)),
+assert.ok(JSON.parse(builtAssetManifest).some((asset) => /zxing_reader-[^/]+\.wasm$/.test(asset)),
   'the actual GitHub Pages worker manifest must contain the emitted ZXing WASM binary');
 assert.match(vite, /transformIndexHtml/);
 assert.match(vite, /APP_BOOT_FAILED/);
