@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import './pwa-update-prompt.css';
 
 declare const __RETAILOS_BUILD_ID__: string;
@@ -403,8 +403,15 @@ export default function PwaUpdatePrompt() {
   updateCenterActionRef.current = (action) => { if (action === 'download') startDownload(); else tryActivate(); };
   const currentBlockReason = getPwaUpdateBlockReason();
   const isBusinessBusy = Boolean(currentBlockReason);
-  useEffect(() => { if (isBusinessBusy) setIsExpanded(false); }, [isBusinessBusy]);
-  if (!waitingWorker || isDeferred) return null;
+  useLayoutEffect(() => { if (isBusinessBusy) setIsExpanded(false); }, [isBusinessBusy]);
+  if (!waitingWorker) return null;
+  if (isDeferred) return (
+    <aside className="pwa-update-deferred" role="status" aria-label="Bản cập nhật đã được lưu">
+      <span className="pwa-update-deferred__mark" aria-hidden="true">↻</span>
+      <span className="pwa-update-deferred__copy"><strong>Đã lưu bản cập nhật</strong><small>Trong Cài đặt · Trung tâm cập nhật</small></span>
+      <button type="button" onClick={() => window.dispatchEvent(new Event('retailos:open-settings'))}>Mở</button>
+    </aside>
+  );
 
   const totalBytes = manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
   const progressPercent = progress.totalBytes > 0
@@ -413,7 +420,7 @@ export default function PwaUpdatePrompt() {
 
   return (
     <aside className={`pwa-update-prompt ${isBusinessBusy ? 'is-busy' : 'is-modal'} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`} role="region" aria-label="Cập nhật RetailOS" data-business-busy={isBusinessBusy ? 'true' : 'false'}>
-      {<button type="button" className="pwa-update-prompt__collapse" onClick={() => { if (isExpanded) { if (persistCandidate('deferred', true)) { setIsDeferred(true); setIsExpanded(false); } else setNotice('Không thể lưu lựa chọn lúc này. Hãy kiểm tra dung lượng lưu trữ của trình duyệt rồi thử lại.'); } else setIsExpanded(true); }} aria-expanded={isExpanded}>{isExpanded ? 'Thu gọn' : 'Cập nhật đang chờ'}</button>}
+      <button type="button" className="pwa-update-prompt__collapse" onClick={() => { if (isExpanded) { if (persistCandidate('deferred', true)) { setIsDeferred(true); setIsExpanded(false); } else setNotice('Không thể lưu lựa chọn lúc này. Hãy kiểm tra dung lượng lưu trữ của trình duyệt rồi thử lại.'); } else setIsExpanded(true); }} aria-expanded={isExpanded}>{isExpanded ? 'Thu gọn' : 'Cập nhật đang chờ'}</button>
       <div className="pwa-update-prompt__content">
       <div className="pwa-update-prompt__header">
         <div className="pwa-update-prompt__eyebrow">RETAILOS · PHIÊN BẢN MỚI</div>
