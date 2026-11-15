@@ -24,7 +24,7 @@ assert.match(promptCss, /env\(safe-area-inset-left\)/);
 assert.match(promptCss, /env\(safe-area-inset-right\)/);
 assert.match(promptCss, /env\(safe-area-inset-bottom\)/);
 assert.match(promptCss, /@media\s*\(max-width:\s*560px\)/);
-assert.match(promptCss, /min-height:\s*38px/);
+assert.match(promptCss, /min-height:\s*40px/);
 
 // Registration must use the Vite project base, not an origin-root URL.
 assert.match(registration, /import\.meta\.env\.BASE_URL\s*\+\s*'sw\.js'/);
@@ -39,7 +39,12 @@ assert.doesNotMatch(prompt, /beforeinstallprompt/,
 // Service worker code must remain worker-context-only and origin/base scoped.
 assert.match(worker, /clientUrl\.origin === APP_BASE_URL\.origin/);
 assert.match(worker, /clientUrl\.pathname\.startsWith\(APP_BASE_URL\.pathname\)/);
-assert.match(worker, /addAllInBatches/);
+assert.match(worker, /BATCH_SIZE = 8/);
+assert.match(worker, /STAGE_RELEASE/);
+assert.match(worker, /ACTIVATE_RELEASE/);
+assert.match(worker, /crypto\.subtle\.digest/);
+assert.match(prompt, /safe-area-inset/);
+assert.match(prompt, /prefers-reduced-motion/);
 assert.match(worker, /readActiveRelease/);
 assert.match(worker, /APP_BOOT_FAILED/);
 assert.match(worker, /APP_BOOT_OK/);
