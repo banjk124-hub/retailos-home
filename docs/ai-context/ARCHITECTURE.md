@@ -1076,7 +1076,7 @@ PR #119 delivered full offline asset inventory, release-specific caches, boot he
 
 ### Decision
 
-- Vite emits a build-bound `release-manifest.json` from the exact output resources and `release-notes.json`. Every resource includes path, cache class, byte size and SHA-256. Package version and release-note version must match.
+- Vite emits a build-bound `release-manifest.json` from the exact output resources and `release-notes.json`. Every resource includes path, cache class, byte size and SHA-256. Package, lockfile and release-note versions must match under SemVer.
 - An update Service Worker install downloads no application payload. It waits while the current worker continues serving the active release. First install (no active worker) is the only automatic full-stage case.
 - The waiting worker exposes metadata-only `GET_RELEASE_INFO`. The UI shows current/candidate versions, release notes, compatibility/warnings and estimated size. Only explicit user consent sends `STAGE_RELEASE`.
 - Candidate resources are fetched in batches of eight, verified by status/size/SHA-256 and cached in build-isolated shell/assets caches. The old release remains selected. Any failure deletes only candidate caches.
