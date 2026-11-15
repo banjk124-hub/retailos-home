@@ -102,7 +102,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
     fetchCalls += 1;
     const url = typeof request === 'string' ? request : request.url;
     if (offline || (failPath && url.endsWith(failPath))) throw new Error('simulated network failure');
-    if (url.endsWith('/release-manifest.json')) {
+    if (url.includes('/release-manifest.json?build=')) {
       return new Response(JSON.stringify(releaseManifest), { headers: { 'Content-Type': 'application/json' } });
     }
     const resource = releaseManifest.resources.find((item) => appBase + item.path === url);
