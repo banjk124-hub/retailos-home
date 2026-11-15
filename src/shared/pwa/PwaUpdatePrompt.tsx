@@ -82,7 +82,7 @@ export default function PwaUpdatePrompt() {
 
   const retryInfoRef = useRef<() => void>(() => undefined);
   const updateCenterActionRef = useRef<(action: 'download' | 'activate') => void>(() => undefined);
-  const persistCandidate = useCallback((status: 'available' | 'deferred' | 'downloading' | 'staged' | 'error', inCenter?: boolean, progressValue?: { completed: number; total: number; bytesDownloaded: number; totalBytes: number }) => {
+  const persistCandidate = useCallback((status: 'available' | 'deferred' | 'downloading' | 'staged' | 'error', inCenter?: boolean, progressValue?: { completed: number; total: number; bytesDownloaded: number; totalBytes: number }, errorMessage?: string) => {
     const candidate = manifestRef.current;
     if (!candidate) return false;
     const previous = readUpdateCenterEntry();
@@ -92,7 +92,7 @@ export default function PwaUpdatePrompt() {
         : currentPhase === 'downloading' ? 'downloading'
           : currentPhase === 'error' ? 'error' : 'deferred'
       : status;
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: status === 'error' ? notice : undefined });
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: errorMessage ?? (status === 'error' ? previous?.lastError ?? notice : undefined) });
   }, []);
 
   const tryActivate = useCallback(() => {
@@ -147,7 +147,7 @@ export default function PwaUpdatePrompt() {
         channel.port1.close();
         setPhase('error');
         setNotice(message.message || 'Không thể tải đầy đủ phiên bản mới. Bản hiện tại vẫn được giữ nguyên.');
-        persistCandidate('error');
+        persistCandidate('error', undefined, undefined, message.message || 'Không thể tải đầy đủ phiên bản mới.');
       }
       if (message?.type === 'RELEASE_STAGED') {
         channel.port1.close();
@@ -169,7 +169,7 @@ export default function PwaUpdatePrompt() {
       channel.port1.close();
       setPhase('error');
       setNotice('Không thể bắt đầu tải phiên bản. Bản hiện tại vẫn hoạt động bình thường.');
-      persistCandidate('error');
+      persistCandidate('error', undefined, undefined, 'Không thể bắt đầu tải phiên bản.');
     }
   }, [manifest, phase, tryActivate, persistCandidate]);
 
@@ -342,7 +342,7 @@ export default function PwaUpdatePrompt() {
         activationRequestedRef.current = false;
         setPhase('error');
         setNotice('Không tìm thấy bản ổn định để khôi phục. Hãy giữ ứng dụng đang mở và liên hệ quản trị viên.');
-        persistCandidate('error');
+        persistCandidate('error', undefined, undefined, 'Không tìm thấy bản ổn định để khôi phục.');
       }
       if (event.data?.type === 'UPDATE_NOT_STAGED') {
         stagedRef.current = false;
@@ -350,13 +350,14 @@ export default function PwaUpdatePrompt() {
         isApplyingUpdate.current = false;
         setPhase('error');
         setNotice('Phiên bản chưa được tải và xác minh đầy đủ. Hãy thử tải lại.');
-        persistCandidate('error');
+        persistCandidate('error', undefined, undefined, 'Phiên bản chưa được tải và xác minh đầy đủ.');
       }
       if (event.data?.type === 'UPDATE_ACTIVATION_FAILED') {
         activationRequestedRef.current = false;
         isApplyingUpdate.current = false;
         setPhase('staged');
         setNotice('Tài nguyên đã sẵn sàng nhưng trình duyệt chưa thể chuyển phiên bản. Hãy xác nhận thử lại khi đã sẵn sàng.');
+        persistCandidate('staged', undefined, undefined, 'Trình duyệt chưa thể chuyển phiên bản.');
       }
     };
     const retrySafeActivation = () => {
