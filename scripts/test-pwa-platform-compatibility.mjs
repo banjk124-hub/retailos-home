@@ -39,7 +39,7 @@ assert.doesNotMatch(prompt, /beforeinstallprompt/,
 // Service worker code must remain worker-context-only and origin/base scoped.
 assert.match(worker, /clientUrl\.origin === APP_BASE_URL\.origin/);
 assert.match(worker, /clientUrl\.pathname\.startsWith\(APP_BASE_URL\.pathname\)/);
-assert.match(worker, /BATCH_SIZE = 8/);
+assert.match(worker, /BATCH_SIZE = 2/);
 assert.match(worker, /STAGE_RELEASE/);
 assert.match(worker, /ACTIVATE_RELEASE/);
 assert.match(worker, /crypto\.subtle\.digest/);
