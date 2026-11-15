@@ -8,7 +8,7 @@ const ASSET_CACHE = CACHE_PREFIX + 'assets-' + BUILD_ID;
 const STATE_CACHE = CACHE_PREFIX + 'state';
 const APP_BASE_URL = new URL(APP_BASE, self.location.origin);
 const APP_SHELL_URL = new URL('index.html', APP_BASE_URL).href;
-const RELEASE_MANIFEST_URL = new URL('release-manifest.json', APP_BASE_URL).href;
+const RELEASE_MANIFEST_URL = new URL('release-manifest.json?build=' + BUILD_ID, APP_BASE_URL).href;
 const ACTIVE_RELEASE_STATE_URL = new URL('__retailos_active_release__', APP_BASE_URL).href;
 const PREVIOUS_RELEASE_STATE_URL = new URL('__retailos_previous_release__', APP_BASE_URL).href;
 const STAGED_RELEASE_STATE_URL = new URL('__retailos_staged_release__/' + BUILD_ID, APP_BASE_URL).href;
