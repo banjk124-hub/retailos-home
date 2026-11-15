@@ -17,6 +17,8 @@ function requestUpdateAction(action: 'download' | 'activate') {
 function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; onBack: () => void }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [activationBlockReason, setActivationBlockReason] = useState('');
+  const backButtonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { backButtonRef.current?.focus(); }, []);
   useEffect(() => {
     const refresh = () => setRefreshKey((value) => value + 1);
     const handleBlocked = (event: Event) => setActivationBlockReason((event as CustomEvent<{ reason?: string }>).detail?.reason ?? 'Nghiệp vụ đang hoạt động.');
@@ -38,9 +40,9 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
         : current?.status === 'deferred' ? 'Đã để sau' : 'Đang chờ xử lý';
   const progress = current?.progress;
   const progressPercent = progress?.totalBytes ? Math.min(100, Math.round(progress.bytesDownloaded / progress.totalBytes * 100)) : 0;
-  return <section className="scanner-settings-panel scanner-settings-panel--detail update-center-view" aria-labelledby="update-center-title">
+  return <section className="scanner-settings-panel scanner-settings-panel--detail update-center-view" role="dialog" aria-modal="true" aria-labelledby="update-center-title">
     <header className="scanner-settings-header">
-      <button type="button" className="scanner-settings-back" onClick={onBack} aria-label="Quay lại cài đặt"><ChevronLeft size={19} /></button>
+      <button ref={backButtonRef} type="button" className="scanner-settings-back" onClick={onBack} aria-label="Quay lại cài đặt"><ChevronLeft size={19} /></button>
       <div><span className="scanner-settings-eyebrow">RETAILOS · SYSTEM UPDATE</span><h2 id="update-center-title">Trung tâm cập nhật</h2><p>Theo dõi và chủ động kiểm soát phiên bản ứng dụng</p></div>
       <button type="button" className="scanner-settings-close" onClick={onBack} aria-label="Đóng trung tâm cập nhật"><X size={19} /></button>
     </header>
@@ -49,12 +51,13 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
         <div className="update-center-release__top"><span className="update-center-release__eyebrow">PHIÊN BẢN MỚI</span><span className="update-center-status" data-status={current.status}>{current.status === 'staged' ? <CheckCircle2 size={14}/> : current.status === 'error' ? <AlertCircle size={14}/> : <RefreshCw size={14}/>} {statusLabel}</span></div>
         <h3>{current.title}</h3>
         <p>{current.summary}</p>
-        <div className="update-center-version"><span>Phiên bản mục tiêu</span><strong>{current.version}</strong></div>
+        <div className="update-center-version"><span>Đang chạy {current.currentVersion || '—'}</span><strong>Mới {current.version}</strong></div>
         {current.sections?.map((section) => <div className="update-center-section" key={section.heading}><h4>{section.heading}</h4><ul>{section.items.map((item) => <li key={item}>{item}</li>)}</ul></div>)}
         {!!current.compatibility?.length && <div className="update-center-section"><h4>Tương thích</h4><ul>{current.compatibility.map((item) => <li key={item}>{item}</li>)}</ul></div>}
         {!!current.warnings?.length && <div className="update-center-section is-warning"><h4>Lưu ý vận hành</h4><ul>{current.warnings.map((item) => <li key={item}>{item}</li>)}</ul></div>}
       </div>
       {current.status === 'downloading' && <div className="update-center-progress"><div><span>Tiến độ tải</span><strong>{progressPercent}%</strong></div><span className="update-center-progress__track"><i style={{ transform: 'scaleX(' + progressPercent / 100 + ')' }} /></span><small>{progress?.completed ?? 0}/{progress?.total ?? 0} tài nguyên</small></div>}
+      {current.lastError && <p className="update-center-blocked" role="alert">Lỗi cập nhật: {current.lastError}</p>}
       {activationBlockReason && <p className="update-center-blocked" role="alert">Chưa thể kích hoạt: {activationBlockReason}</p>}
       <div className="update-center-actions">
         {current.status === 'staged' ? <button type="button" className="update-center-primary" onClick={() => requestUpdateAction('activate')}>Xác nhận cập nhật</button>
