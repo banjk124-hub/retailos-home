@@ -100,7 +100,7 @@ function retailosPwaArtifacts(): Plugin {
         || !Array.isArray(releaseNotes.sections)
         || !Array.isArray(releaseNotes.compatibility)
         || !Array.isArray(releaseNotes.warnings)
-        || releaseNotes.sections.some((section: any) => (
+        || releaseNotes.sections.some((section: { heading?: unknown; items?: unknown }) => (
           typeof section?.heading !== 'string'
           || !Array.isArray(section.items)
           || section.items.some((item: unknown) => typeof item !== 'string')
