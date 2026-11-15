@@ -148,7 +148,8 @@ const currentClient = {
   async navigate(url) { this.navigatedTo = url; },
 };
 const otherClient = { id: 'other', url: appBase + 'stocktake', postMessage() {} };
-const worker = createWorker('runtime-test', manifest, { clients: [currentClient, otherClient] });
+const activeClients = [currentClient, otherClient];
+const worker = createWorker('runtime-test', manifest, { clients: activeClients });
 
 await worker.runExtendable('install');
 assert.equal(worker.fetchCalls, 0, 'an update install must not download release metadata or runtime payload before consent');
@@ -190,6 +191,13 @@ await worker.runExtendable('message', {
 });
 assert.equal(worker.skipWaitingCalls, 0, 'another RetailOS window blocks release takeover');
 assert.equal(currentClient.messages.at(-1)?.type, 'UPDATE_BLOCKED_MULTIPLE_CLIENTS');
+assert.equal(cacheStore.has(oldShellCache), true, 'blocked activation does not affect the running release');
+activeClients.splice(1, 1);
+await worker.runExtendable('message', {
+  data: { type: 'ACTIVATE_RELEASE' },
+  source: currentClient,
+});
+assert.equal(worker.skipWaitingCalls, 1, 'automatic activation can retry after the other app window closes');
 
 worker.listeners.get('message');
 const singleClientWorker = createWorker('runtime-test-2', {
@@ -260,6 +268,25 @@ const rollbackAsset = {
 singleClientWorker.listener('fetch')(rollbackAsset);
 assert.equal(await (await rollbackAsset.responsePromise).text(), 'previous-release-asset',
   'rollback serves the previous release assets while offline');
+
+const legacyManifest = {
+  ...manifest,
+  buildId: 'legacy-bridge',
+  resources: await Promise.all(resources.map(async (resource) => ({
+    ...resource,
+    sha256: await sha256Hex('release-runtime:' + resource.path),
+  }))),
+};
+const legacyWorker = createWorker('legacy-bridge', legacyManifest, { clients: [currentClient] });
+await legacyWorker.runExtendable('install');
+assert.equal(legacyWorker.fetchCalls, 0, 'legacy bridge does not pre-download before the legacy user action');
+await legacyWorker.runExtendable('message', {
+  data: { type: 'SKIP_WAITING' },
+  source: currentClient,
+});
+assert.equal(legacyWorker.skipWaitingCalls, 1, 'legacy explicit update action is treated as download consent and activates after staging');
+assert.ok(cacheStore.get('retailos-pwa-assets-legacy-bridge')?.has(appBase + 'assets/zxing_reader.wasm'),
+  'legacy migration bridge still stages WASM before activation');
 
 const failedManifest = {
   ...manifest,
