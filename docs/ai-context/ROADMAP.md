@@ -1,5 +1,19 @@
 # Scanner runtime roadmap — current state 2026-11-15
 
+## PWA release management — consent-gated download and automatic activation
+
+**Priority:** Required architecture follow-up before treating the PR #119 release flow as complete.
+
+- [ ] Design the pre-download consent boundary around browser Service Worker update semantics; full runtime payload must not be staged before explicit approval.
+- [ ] Publish a build-bound release manifest and release notes (new features/modules, UI/UX changes, fixes, compatibility notes and operational warnings).
+- [ ] Implement progress-aware full-payload staging for all modules, lazy chunks, UI/media, workers, WASM and dependencies.
+- [ ] Verify integrity/completeness before automatic activation; no second activation confirmation.
+- [ ] Preserve old-release offline operation, safe handoff, last-known-good rollback and all business data.
+- [ ] Add regression tests for discovery-only, no download before consent, defer, interrupted download, auto-activation, rollback and data lifecycle isolation.
+- [ ] Complete physical Android/iOS/Desktop acceptance.
+
+Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). This work is an application release capability; lookup/snapshot refresh and recalculation using existing logic remain data lifecycle operations.
+
 > **Current navigation:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) is the only current scanner architecture/contract document. [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) indexes retained audits, stage plans and incident evidence. The detailed PR narratives below are historical implementation records, not competing runtime specifications.
 
 ## Current production baseline
