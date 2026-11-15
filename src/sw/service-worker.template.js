@@ -159,8 +159,6 @@ self.addEventListener('fetch', (event) => {
       const activeAssets = await caches.open(activeRelease?.assetCache || ASSET_CACHE);
       const activeAsset = await activeAssets.match(request);
       if (activeAsset) return activeAsset;
-      const retained = await caches.match(request);
-      if (retained) return retained;
     } catch { /* Fall through to network. */ }
     if (!ASSET_URLS.has(url.href)) return fetch(request);
     try {
