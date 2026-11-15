@@ -1083,7 +1083,7 @@ PR #119 delivered full offline asset inventory, release-specific caches, boot he
 - A staged marker allows a later app launch to resume auto-activation without renewed download consent.
 - After `RELEASE_STAGED`, the app automatically requests activation when module blockers report safe and the worker confirms no other RetailOS window is open. No second user confirmation. Unsafe handoff is visible and retried on focus/visibility or module safety-change events.
 - Shared blockers cover the camera lease service, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup and app-level transitions. Native form dirtiness is tracked; asynchronous forms clear their guard only after successful save through `markPwaUpdateFormSaved`, while auto-saved fields may opt out with `data-retailos-update-safe`. Future modules with non-DOM unsaved/critical state must register their own blocker.
-- Matching-build boot health and last-known-good rollback remain authoritative. Release activation/rollback never mutates business data.
+- Matching-build boot health and last-known-good rollback remain authoritative. Healthy boot cleans old release caches and obsolete previous/staged markers while retaining the active-release pointer for the next update. Release activation/rollback never mutates business data.
 - The PR #119 client receives a one-time compatibility bridge: its explicit `SKIP_WAITING` action is interpreted as consent to stage before activation. Its old UI cannot show release notes/progress until it loads the new client.
 
 ### Protected boundaries
