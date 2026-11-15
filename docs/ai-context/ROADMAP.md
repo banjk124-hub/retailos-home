@@ -2,17 +2,21 @@
 
 ## PWA release management — consent-gated download and automatic activation
 
-**Priority:** Required architecture follow-up before treating the PR #119 release flow as complete.
+**Priority:** Runtime implementation is present on `feat/pwa-consent-gated-release-runtime`; CI and device acceptance are the remaining gates before production adoption.
 
-- [ ] Design the pre-download consent boundary around browser Service Worker update semantics; full runtime payload must not be staged before explicit approval.
-- [ ] Publish a build-bound release manifest and release notes (new features/modules, UI/UX changes, fixes, compatibility notes and operational warnings).
-- [ ] Implement progress-aware full-payload staging for all modules, lazy chunks, UI/media, workers, WASM and dependencies.
-- [ ] Verify integrity/completeness before automatic activation; no second activation confirmation.
-- [ ] Preserve old-release offline operation, safe handoff, last-known-good rollback and all business data.
-- [ ] Add regression tests for discovery-only, no download before consent, defer, interrupted download, auto-activation, rollback and data lifecycle isolation.
-- [ ] Complete physical Android/iOS/Desktop acceptance.
+- [x] Design the pre-download consent boundary around Service Worker update semantics.
+- [x] Publish a build-bound release manifest and release notes with complete resource hashes and byte sizes.
+- [x] Implement progress-aware full-payload staging for shell, all modules/lazy chunks, UI/media, workers and WASM.
+- [x] Verify response status, byte size, SHA-256 and cache completeness before activation.
+- [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
+- [x] Preserve old-release serving, staged resume, last-known-good rollback and business data.
+- [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
+- [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions.
+- [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance.
 
-Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). This work is an application release capability; lookup/snapshot refresh and recalculation using existing logic remain data lifecycle operations.
+Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Current implementation is not production-accepted until the unchecked CI/device gates pass. Data-only lookup/snapshot refresh and recalculation using existing logic remain independent.
+
+
 
 > **Current navigation:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) is the only current scanner architecture/contract document. [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) indexes retained audits, stage plans and incident evidence. The detailed PR narratives below are historical implementation records, not competing runtime specifications.
 
