@@ -794,7 +794,7 @@ export default function HomeScreen({
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
-      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onManualSearch={() => { openManualProductLookup(); closeBarcodeScanner(); }} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onManualSearch={openManualProductLookup} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
