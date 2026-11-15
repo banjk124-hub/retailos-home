@@ -13,8 +13,9 @@ assert.match(worker, /retailos-pwa-/);
 assert.match(worker, /ASSET_URLS\.has\(url\.href\)/);
 const installHandler = worker.slice(worker.indexOf("self.addEventListener('install'"), worker.indexOf("self.addEventListener('message'"));
 assert.match(installHandler, /shellCache\.addAll\(SHELL_URLS\)/);
-assert.match(installHandler, /addAllInBatches\(assetCache, \[\.\.\.ASSET_URLS\]\),
+assert.match(installHandler, /addAllInBatches\(assetCache, \[\.\.\.ASSET_URLS\]\)/,
   'a new release must precache every emitted asset before installation completes');
+assert.match(worker, /async function addAllInBatches/);
 assert.match(installHandler, /missingAssets\.some/);
 assert.match(installHandler, /caches\.delete\(ASSET_CACHE\)/,
   'an incomplete release must discard only its own partial cache');
