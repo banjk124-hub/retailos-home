@@ -90,7 +90,7 @@ The maintained worker source is `src/sw/service-worker.template.js`. Never edit 
 
 The manifest itself is small control-plane metadata and is fetched with a build-specific query to avoid stale HTTP cache responses. It is not part of business-data storage or the immutable runtime asset cache.
 
-## 6. Safe handoff and automatic activation
+## 6. Safe handoff and explicit activation confirmation
 
 After `RELEASE_STAGED`, the UI records the candidate as staged and waits. It must not call `ACTIVATE_RELEASE` automatically, including on app restart or when blockers clear. A separate explicit activation confirmation is required after the business-safety registry reports no blocker.
 
