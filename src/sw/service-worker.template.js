@@ -135,18 +135,6 @@ async function stagedReleaseIsComplete(manifest) {
 async function stageCandidate(target) {
   const manifest = await fetchReleaseManifest();
   const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
-  if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
-    try {
-      const estimate = await navigator.storage.estimate();
-      const availableBytes = Number(estimate.quota) - Number(estimate.usage);
-      if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
-        throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng rồi thử lại.');
-      }
-    } catch (error) {
-      if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
-      // Storage estimation is advisory; actual Cache API writes remain authoritative.
-    }
-  }
   if (await stagedReleaseIsComplete(manifest)) {
     notify(target, {
       type: 'RELEASE_STAGED',
@@ -159,6 +147,18 @@ async function stageCandidate(target) {
     return manifest;
   }
 
+  if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
+    try {
+      const estimate = await navigator.storage.estimate();
+      const availableBytes = Number(estimate.quota) - Number(estimate.usage);
+      if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
+        throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng rồi thử lại.');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
+      // Storage estimation is advisory; actual Cache API writes remain authoritative.
+    }
+  }
   await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
   const stateCache = await caches.open(STATE_CACHE);
   await stateCache.delete(STAGED_RELEASE_STATE_URL);
