@@ -312,7 +312,9 @@ export default function PwaUpdatePrompt() {
         setNotice('Không tìm thấy bản ổn định để khôi phục. Hãy giữ ứng dụng đang mở và liên hệ quản trị viên.');
       }
       if (event.data?.type === 'UPDATE_NOT_STAGED') {
+        stagedRef.current = false;
         activationRequestedRef.current = false;
+        isApplyingUpdate.current = false;
         setPhase('error');
         setNotice('Phiên bản chưa được tải và xác minh đầy đủ. Hãy thử tải lại.');
       }
