@@ -56,8 +56,9 @@ URL GitHub Pages của repository này dự kiến là `https://banjk124-hub.git
 - `public/manifest.webmanifest`: metadata/cài đặt PWA; đường dẫn tương đối để hỗ trợ GitHub Pages project site.
 - `src/sw/service-worker.template.js`: nguồn worker; Vite sinh `dist/sw.js` theo từng build và nhúng danh sách asset có hash.
 - `vite.config.ts`: tạo build ID, asset manifest và bật Vite build manifest.
-- `src/shared/pwa/PwaUpdatePrompt.tsx`: đăng ký worker với `updateViaCache: 'none'`, kiểm tra cập nhật khi app trở lại foreground và chỉ kích hoạt sau thao tác xác nhận của người dùng.
-- Worker tách app shell khỏi immutable hashed assets, dọn cache của release cũ khi activate; không xóa IndexedDB nghiệp vụ.
+- `src/shared/pwa/PwaUpdatePrompt.tsx`: hiện kiểm tra update khi app khởi động/trở lại foreground. Lưu ý audit sau PR #119: prompt hiện xuất hiện **sau khi** Service Worker đã tự tải/precache toàn bộ asset và nút xác nhận đang xác nhận kích hoạt, chưa phải xác nhận tải.
+- Worker hiện có release-specific shell/asset caches, complete precache, active-release pinning, boot health và rollback; nền tảng này chưa đồng nghĩa với flow tải có consent.
+- Contract mục tiêu bắt buộc cho mọi lần phát triển/deploy nằm tại `docs/ai-context/PWA_RUNTIME_RELEASE.md`: hiển thị release notes → user đồng ý tải → tải/xác minh toàn bộ runtime → tự kích hoạt → health-check/rollback. Không tải full payload trước consent; data-only refresh không kích hoạt app update.
 - Push notification dùng lại registration trung tâm, không tự đăng ký worker lần thứ hai.
 - Giao diện sáng được áp dụng nhất quán, không đổi theo cài đặt sáng/tối của hệ điều hành. App vẫn tôn trọng `prefers-reduced-motion`, Reduce Data và tín hiệu pin/thiết bị để giảm blur, animation và tải render. Web không có API nhiệt độ thiết bị đáng tin cậy trên các trình duyệt mục tiêu, nên tiết kiệm nhiệt dựa trên các tín hiệu tài nguyên/pin thay vì đọc nhiệt độ trực tiếp.
 - Token thương hiệu dùng chung (màu, liquid glass, bo góc, bóng và nhịp chuyển động) nằm tại `src/styles/theme.css`; `src/styles/adaptive-appearance.css` chứa chính sách hiệu năng/thích nghi. Ưu tiên native scroll-snap cho thao tác vuốt; carousel thư viện hỗ trợ giữ-kéo bằng chuột trên desktop.
