@@ -21,7 +21,7 @@
 
 - Build/release: `vite.config.ts`, `release-notes.json`, `package.json`, `package-lock.json`.
 - Worker/update UI: `src/sw/service-worker.template.js`, `src/shared/pwa/PwaUpdatePrompt.tsx`, `pwa-update-prompt.css`, `updateSafety.ts`, `serviceWorkerRegistration.ts`.
-- Safety integration: shared `cameraSession.ts`, `App.tsx`, Stocktake and Stocktake Import modules.
+- Safety integration: shared `cameraSession.ts`, `moduleDataService.ts`, `pushNotifications.ts`, `App.tsx`, Stocktake and Stocktake Import modules.
 - Tests: PWA policy, worker runtime and platform compatibility regression scripts.
 - Canonical design/status/handoff/ADR/roadmap documents are synchronized in the same branch.
 
