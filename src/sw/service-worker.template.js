@@ -265,7 +265,8 @@ self.addEventListener('message', (event) => {
     event.waitUntil((async () => {
       try {
         const manifest = await fetchReleaseManifest();
-        notify(replyTarget, { type: 'RELEASE_INFO', manifest });
+        const staged = await stagedReleaseIsComplete(manifest);
+        notify(replyTarget, { type: 'RELEASE_INFO', manifest, staged });
       } catch (error) {
         notify(replyTarget, {
           type: 'RELEASE_INFO_FAILED',
