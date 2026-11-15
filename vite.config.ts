@@ -34,8 +34,7 @@ function retailosPwaArtifacts(): Plugin {
       return html.replace('</head>', `${bootGuard}\n  </head>`);
     },
     generateBundle(_options, bundle) {
-      const isCacheableAsset = (file: string) => /\.(?:js|css|wasm|woff2?|ttf|otf|png|jpe?g|svg|webp|avif)$/i.test(file);
-      const bundledAssets = Object.keys(bundle).filter((file) => /^assets\//.test(file) && isCacheableAsset(file));
+      const bundledAssets = Object.keys(bundle).filter((file) => /^assets\//.test(file) && !file.endsWith('.map'));
       const publicAssets: string[] = [];
       const collectPublicAssets = (directory: string) => {
         if (!directory || !publicDirectory) return;
