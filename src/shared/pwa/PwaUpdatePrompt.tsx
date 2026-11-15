@@ -261,6 +261,12 @@ export default function PwaUpdatePrompt() {
         setPhase('error');
         setNotice('Phiên bản chưa được tải và xác minh đầy đủ. Hãy thử tải lại.');
       }
+      if (event.data?.type === 'UPDATE_ACTIVATION_FAILED') {
+        activationRequestedRef.current = false;
+        isApplyingUpdate.current = false;
+        setPhase('staged');
+        setNotice('Tài nguyên đã sẵn sàng nhưng trình duyệt chưa thể chuyển phiên bản. RetailOS sẽ tự thử lại khi có thể.');
+      }
     };
     const retrySafeActivation = () => {
       if (stagedRef.current && !activationRequestedRef.current) tryActivate();
