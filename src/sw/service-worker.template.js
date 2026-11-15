@@ -147,7 +147,8 @@ async function stageCandidate(target) {
     return manifest;
   }
 
-  await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
+  try {
+    await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
   const stateCache = await caches.open(STATE_CACHE);
   await stateCache.delete(STAGED_RELEASE_STATE_URL);
 
@@ -169,7 +170,6 @@ async function stageCandidate(target) {
   let bytesDownloaded = 0;
   const total = manifest.resources.length;
 
-  try {
     for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
       const batch = manifest.resources.slice(index, index + BATCH_SIZE);
       const batchResults = await Promise.allSettled(batch.map(async (resource) => {
@@ -241,8 +241,20 @@ async function stageCandidate(target) {
     });
     return manifest;
   } catch (error) {
-    await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
-    await stateCache.delete(STAGED_RELEASE_STATE_URL);
+    await Promise.allSettled([
+      caches.delete(SHELL_CACHE),
+      caches.delete(ASSET_CACHE),
+      (async () => {
+        const cleanupStateCache = await caches.open(STATE_CACHE);
+        await cleanupStateCache.delete(STAGED_RELEASE_STATE_URL);
+      })(),
+    ]);
+    notify(target, {
+      type: 'RELEASE_STAGE_FAILED',
+      buildId: BUILD_ID,
+      version: manifest.version,
+      message: error instanceof Error ? error.message : 'Không thể tải và xác minh phiên bản mới.',
+    });
     throw error;
   }
 }
