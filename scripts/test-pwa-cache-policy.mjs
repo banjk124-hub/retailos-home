@@ -228,3 +228,12 @@ assert.match(dockItem, /liquid-dock__notice-badge/,
   'pending actionable update notices must render a numeric badge on Settings');
 
 console.log('PWA consent boundary, release manifest integrity, full-runtime inventory and data-lifecycle isolation tests passed.');
+
+assert.match(prompt, /pwa-update-deferred/,
+  'a deferred update must leave a visible confirmation with a route back to Settings');
+assert.match(prompt, /useLayoutEffect\(\(\) => \{ if \(isBusinessBusy\) setIsExpanded\(false\); \}/,
+  'busy presentation must collapse before paint to avoid a transient expanded notice');
+assert.match(homeScreen, /retailos:open-settings/,
+  'the deferred confirmation must provide a working route to Settings');
+assert.match(settingsHub, /scanner-settings-update-tag/,
+  'Settings must visibly distinguish a pending update from an empty Update Center');
