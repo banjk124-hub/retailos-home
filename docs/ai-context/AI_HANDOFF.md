@@ -20,7 +20,7 @@
 - Worker verifies HTTP status, size, SHA-256 and cache read-back; failure removes only candidate caches.
 - UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
 - A completed staged release resumes without renewed consent after app restart.
-- Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, app transitions, active editing and multi-window detection.
+- Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, app transitions, dirty native forms, active editing and multi-window detection.
 - Boot health and last-known-good rollback remain active; business data is not part of release caches.
 - One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
 
