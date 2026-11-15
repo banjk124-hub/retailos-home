@@ -20,6 +20,7 @@ type ReleaseManifest = {
 };
 
 type UpdatePhase = 'loading-info' | 'available' | 'downloading' | 'staged' | 'error' | 'activating';
+type WorkerReply = { type?: string; manifest?: ReleaseManifest; staged?: boolean; message?: string };
 
 function formatBytes(value: number): string {
   if (value < 1024) return value + ' B';
@@ -27,7 +28,7 @@ function formatBytes(value: number): string {
   return (value / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-function requestWorkerMessage(worker: ServiceWorker, message: unknown, timeoutMs = 8000): Promise<any> {
+function requestWorkerMessage(worker: ServiceWorker, message: unknown, timeoutMs = 8000): Promise<WorkerReply | null> {
   return new Promise((resolve) => {
     const channel = new MessageChannel();
     const timeout = window.setTimeout(() => {
