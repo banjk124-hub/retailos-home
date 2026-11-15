@@ -371,7 +371,7 @@ self.addEventListener('message', (event) => {
 
   if (message.type === 'APP_BOOT_FAILED' && message.buildId === BUILD_ID) {
     event.waitUntil((async () => {
-      const previous = await readPreviousRelease() || await findPreviousRelease();
+      const previous = await findPreviousRelease();
       if (!previous || !(await matchAppShell(previous.shellCache))) {
         notify(event.source, { type: 'UPDATE_ROLLBACK_UNAVAILABLE' });
         return;
