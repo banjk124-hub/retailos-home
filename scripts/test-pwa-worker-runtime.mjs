@@ -101,6 +101,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
   };
   const fetchMock = async (request) => {
     fetchCalls += 1;
+    if (options.fetchDelayMs) await new Promise((resolve) => setTimeout(resolve, options.fetchDelayMs));
     const url = typeof request === 'string' ? request : request.url;
     if (offline || (failPath && url.endsWith(failPath))) throw new Error('simulated network failure');
     if (url.includes('/release-manifest.json?build=')) {
@@ -375,6 +376,45 @@ assert.equal(cacheStore.has('retailos-pwa-shell-quota-failed-build'), false, 'qu
 assert.equal(cacheStore.has('retailos-pwa-assets-quota-failed-build'), false, 'quota failure leaves no candidate assets');
 assert.equal(cacheStore.has(oldShellCache), true, 'quota failure preserves the current offline release');
 assert.equal(cacheStore.has('retailos-business-data'), true, 'quota failure preserves business data');
+
+const joinManifest = {
+  ...manifest,
+  buildId: 'join-build',
+  resources: await Promise.all(resources.map(async (resource) => ({
+    ...resource,
+    sha256: await sha256Hex('release-runtime:' + resource.path),
+  }))),
+};
+const joinWorker = createWorker('join-build', joinManifest, {
+  clients: [currentClient],
+  fetchDelayMs: 20,
+});
+await joinWorker.runExtendable('install');
+const firstStageMessages = [];
+const firstStagePromise = joinWorker.runExtendable('message', {
+  data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage(message) { firstStageMessages.push(message); } }],
+  source: currentClient,
+});
+await new Promise((resolve) => setTimeout(resolve, 5));
+const joinInfoMessages = [];
+await joinWorker.runExtendable('message', {
+  data: { type: 'GET_RELEASE_INFO' },
+  ports: [{ postMessage(message) { joinInfoMessages.push(message); } }],
+  source: currentClient,
+});
+assert.equal(joinInfoMessages[0]?.staging, true, 'metadata discovery identifies an in-progress download');
+assert.ok(joinInfoMessages[0]?.progress, 'reopened client receives current staging progress');
+const secondStageMessages = [];
+const secondStagePromise = joinWorker.runExtendable('message', {
+  data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage(message) { secondStageMessages.push(message); } }],
+  source: currentClient,
+});
+await Promise.all([firstStagePromise, secondStagePromise]);
+assert.equal(joinWorker.fetchCalls, resources.length + 2, 'a second client joins the active stage instead of downloading a duplicate payload');
+assert.equal(firstStageMessages.at(-1)?.type, 'RELEASE_STAGED');
+assert.equal(secondStageMessages.at(-1)?.type, 'RELEASE_STAGED', 'joined clients are notified when the shared stage completes');
 
 const healthyManifest = {
   ...manifest,
