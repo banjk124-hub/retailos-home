@@ -1,4 +1,16 @@
-# Current repository state — 2026-11-14
+## Current PWA release work — 2026-11-15
+
+- Main baseline: `80a8626da8c067186aa813d339ea95dbe6c0e3ba` (PR #118 merge).
+- Active branch: `feat/pwa-offline-release-architecture`; implementation of complete offline asset staging, WASM precache, active-release pinning, boot health and rollback is in progress.
+- Canonical PWA contract: `docs/ai-context/PWA_RUNTIME_RELEASE.md`. Bundle analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
+- Application releases and business-data/snapshot refreshes are separate lifecycles. A data-only refresh must never force a PWA release or full reload.
+- A release cannot become update-ready until the complete Vite/public runtime asset inventory, including ZXing WASM, has been downloaded and verified. Failed staging leaves the active release unchanged.
+- Previous release caches remain until the matching new build reports healthy startup. Physical Android/iOS acceptance remains pending; do not claim device verification from CI.
+- Scanner camera/session/decoder behavior and business data contracts are outside this branch's runtime scope.
+
+---
+
+# Current repository state — 2026-11-15
 
 - Production baseline: `main` at PR #101 merge commit `f884b7222bb806d7e588d7d231f261c10fc3f086`.
 - Active work: PR #102, branch `fix/ux-cross-platform-core-audit`, targeting `main`; Draft and not merged/deployed.
