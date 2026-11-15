@@ -48,7 +48,7 @@ async function findPreviousRelease() {
   if (recordedPrevious?.shellCache && await matchAppShell(recordedPrevious.shellCache)) {
     return recordedPrevious;
   }
-  const keys = (await caches.keys()).sort();
+  const keys = await caches.keys();
   const previousShells = keys.filter((key) =>
     key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE
   );
