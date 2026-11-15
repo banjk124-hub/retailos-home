@@ -161,6 +161,7 @@ export default function PwaUpdatePrompt() {
       channel.port1.close();
       setPhase('error');
       setNotice('Không thể bắt đầu tải phiên bản. Bản hiện tại vẫn hoạt động bình thường.');
+      persistCandidate('error');
     }
   }, [manifest, phase, tryActivate, persistCandidate]);
 
@@ -231,6 +232,7 @@ export default function PwaUpdatePrompt() {
       }
       if (response.staging === true) {
         const currentProgress = response.progress;
+        persistCandidate('downloading', undefined, currentProgress ?? undefined);
         setProgress({
           completed: currentProgress?.completed ?? 0,
           total: currentProgress?.total ?? nextManifest.resources.length,
@@ -332,6 +334,7 @@ export default function PwaUpdatePrompt() {
         activationRequestedRef.current = false;
         setPhase('error');
         setNotice('Không tìm thấy bản ổn định để khôi phục. Hãy giữ ứng dụng đang mở và liên hệ quản trị viên.');
+        persistCandidate('error');
       }
       if (event.data?.type === 'UPDATE_NOT_STAGED') {
         stagedRef.current = false;
@@ -339,6 +342,7 @@ export default function PwaUpdatePrompt() {
         isApplyingUpdate.current = false;
         setPhase('error');
         setNotice('Phiên bản chưa được tải và xác minh đầy đủ. Hãy thử tải lại.');
+        persistCandidate('error');
       }
       if (event.data?.type === 'UPDATE_ACTIVATION_FAILED') {
         activationRequestedRef.current = false;
