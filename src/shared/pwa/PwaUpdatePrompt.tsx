@@ -83,7 +83,7 @@ export default function PwaUpdatePrompt() {
     if (!candidate) return false;
     const previous = readUpdateCenterEntry();
     return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progress });
-  }, []);
+  }, [progress]);
 
   const tryActivate = useCallback(() => {
     const worker = waitingWorkerRef.current;
@@ -209,7 +209,7 @@ export default function PwaUpdatePrompt() {
       setIsDeferred(deferred);
       manifestRef.current = nextManifest;
       setManifest(nextManifest);
-      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: deferred ? 'deferred' : response.staged === true ? 'staged' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, totalBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0) });
+      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: response.staged === true ? 'staged' : response.staging === true ? 'downloading' : persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'error' ? 'error' : deferred ? 'deferred' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, totalBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0) });
       if (response.staged === true) {
         stagedRef.current = true;
         const totalBytes = nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0);
