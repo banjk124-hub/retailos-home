@@ -14,11 +14,27 @@ const PREVIOUS_RELEASE_STATE_URL = new URL('__retailos_previous_release__', APP_
 const STAGED_RELEASE_STATE_URL = new URL('__retailos_staged_release__/' + BUILD_ID, APP_BASE_URL).href;
 const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).href));
 const BATCH_SIZE = 2;
+let stagingPromise = null;
+let stagingProgress = null;
 
 function notify(target, message) {
   try {
     if (target && typeof target.postMessage === 'function') target.postMessage(message);
   } catch { /* The page may have navigated or closed during staging. */ }
+}
+
+async function notifyAppClients(message) {
+  try {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clients) {
+      try {
+        const clientUrl = new URL(client.url);
+        if (clientUrl.origin === APP_BASE_URL.origin && clientUrl.pathname.startsWith(APP_BASE_URL.pathname)) {
+          client.postMessage(message);
+        }
+      } catch { /* Ignore unrelated or stale clients. */ }
+    }
+  } catch { /* Broadcast is best-effort; the staged marker is authoritative. */ }
 }
 async function matchAppShell(cacheName = SHELL_CACHE) {
   try { return await (await caches.open(cacheName)).match(APP_SHELL_URL) || null; }
@@ -144,6 +160,10 @@ async function stageCandidate(target) {
   try {
     manifest = await fetchReleaseManifest();
     const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
+    stagingProgress = {
+      type: 'RELEASE_DOWNLOAD_PROGRESS', buildId: BUILD_ID, version: manifest.version,
+      completed: 0, total: manifest.resources.length, bytesDownloaded: 0, totalBytes,
+    };
     if (await stagedReleaseIsComplete(manifest)) {
       notify(target, {
         type: 'RELEASE_STAGED',
@@ -208,7 +228,7 @@ async function stageCandidate(target) {
           if (rootAlias) await shellCache.put(APP_BASE_URL.href, rootAlias);
           completed += 1;
           bytesDownloaded += resource.size;
-          notify(target, {
+          stagingProgress = {
             type: 'RELEASE_DOWNLOAD_PROGRESS',
             buildId: BUILD_ID,
             version: manifest.version,
@@ -216,7 +236,9 @@ async function stageCandidate(target) {
             total,
             bytesDownloaded,
             totalBytes,
-          });
+          };
+          notify(target, stagingProgress);
+          if (target) await notifyAppClients(stagingProgress);
         } finally {
           clearTimeout(timeout);
         }
@@ -241,7 +263,7 @@ async function stageCandidate(target) {
       resourceCount: total,
       stagedAt: new Date().toISOString(),
     });
-    notify(target, {
+    const stagedMessage = {
       type: 'RELEASE_STAGED',
       buildId: BUILD_ID,
       version: manifest.version,
@@ -249,7 +271,9 @@ async function stageCandidate(target) {
       total,
       bytesDownloaded,
       totalBytes,
-    });
+    };
+    notify(target, stagedMessage);
+    if (target) await notifyAppClients(stagedMessage);
     return manifest;
   } catch (error) {
     await Promise.allSettled([
@@ -260,15 +284,45 @@ async function stageCandidate(target) {
         await cleanupStateCache.delete(STAGED_RELEASE_STATE_URL);
       })(),
     ]);
-    notify(target, {
+    const failedMessage = {
       type: 'RELEASE_STAGE_FAILED',
       buildId: BUILD_ID,
       version: manifest?.version,
       message: error instanceof Error ? error.message : 'Không thể tải và xác minh phiên bản mới.',
-    });
+    };
+    notify(target, failedMessage);
+    if (target) await notifyAppClients(failedMessage);
     throw error;
   }
 }
+
+function startOrJoinStage(target) {
+  if (stagingPromise) {
+    if (stagingProgress) notify(target, stagingProgress);
+    return stagingPromise.then((manifest) => {
+      const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
+      notify(target, {
+        type: 'RELEASE_STAGED',
+        buildId: BUILD_ID,
+        version: manifest.version,
+        completed: manifest.resources.length,
+        total: manifest.resources.length,
+        totalBytes,
+        reused: true,
+      });
+      return manifest;
+    });
+  }
+  const promise = stageCandidate(target);
+  stagingPromise = promise;
+  return promise.finally(() => {
+    if (stagingPromise === promise) {
+      stagingPromise = null;
+      stagingProgress = null;
+    }
+  });
+}
+
 async function tryActivate(source) {
   const staged = await readStagedRelease();
   if (staged?.buildId !== BUILD_ID) {
@@ -318,7 +372,13 @@ self.addEventListener('message', (event) => {
       try {
         const manifest = await fetchReleaseManifest();
         const staged = await stagedReleaseIsComplete(manifest);
-        notify(replyTarget, { type: 'RELEASE_INFO', manifest, staged });
+        notify(replyTarget, {
+          type: 'RELEASE_INFO',
+          manifest,
+          staged,
+          staging: !staged && Boolean(stagingPromise),
+          progress: !staged ? stagingProgress : null,
+        });
       } catch (error) {
         notify(replyTarget, {
           type: 'RELEASE_INFO_FAILED',
@@ -330,7 +390,7 @@ self.addEventListener('message', (event) => {
   }
 
   if (message.type === 'STAGE_RELEASE') {
-    event.waitUntil(stageCandidate(replyTarget).catch(() => undefined));
+    event.waitUntil(startOrJoinStage(replyTarget).catch(() => undefined));
     return;
   }
 
@@ -342,7 +402,7 @@ self.addEventListener('message', (event) => {
   if (message.type === 'SKIP_WAITING') {
     // One-time compatibility bridge for clients running the pre-consent UI:
     // their explicit "Cập nhật" action is treated as consent to download.
-    event.waitUntil(stageCandidate(event.source)
+    event.waitUntil(startOrJoinStage(event.source)
       .then(() => tryActivate(event.source))
       .catch(() => undefined));
     return;
