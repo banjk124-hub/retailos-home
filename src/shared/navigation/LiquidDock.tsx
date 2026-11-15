@@ -1,4 +1,4 @@
-import { memo, type CSSProperties, type KeyboardEvent } from 'react';
+import { memo, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { GlassSurface } from '../components/glass';
 import { MotionIcon } from '../icons';
 import { useMotionState } from '../motion';
@@ -16,6 +16,7 @@ export const LiquidDock = memo(function LiquidDock({
   className = '',
   hidden = false,
 }: LiquidDockProps) {
+  const [isActionExpanded, setIsActionExpanded] = useState(false);
   const { prefersReducedMotion } = useMotionState();
   const activeIndex = items.findIndex((item) => item.id === activeId && !item.disabled);
   const slotCount = items.length + (action ? 1 : 0);
@@ -76,29 +77,31 @@ export const LiquidDock = memo(function LiquidDock({
         {Array.from({ length: slotCount }, (_, slot) => {
           if (action && slot === actionSlot) {
             return (
-              <button
-                key={`action-${action.label}`}
-                type="button"
-                className="liquid-dock__action"
-                aria-label={action.label}
-                title={action.label}
-                data-dock-action
-                data-dock-item
-                disabled={action.disabled}
-                tabIndex={unavailableForFocus ? -1 : undefined}
-                onClick={action.onSelect}
-              >
-                <span className="liquid-dock__action-icon">
-                  <MotionIcon
-                    icon={action.icon}
-                    variant="scanner"
-                    state={action.disabled ? 'disabled' : 'idle'}
-                    size={25}
-                    strokeWidth={2.1}
-                  />
-                </span>
-                <span className="liquid-dock__label">{action.label}</span>
-              </button>
+              <div key={`action-${action.label}`} className={`liquid-dock__action-wrap${isActionExpanded && action.choices?.length ? ' is-expanded' : ''}`} data-dock-action>
+                <button
+                  type="button"
+                  className="liquid-dock__action"
+                  aria-label={isActionExpanded ? 'Thu gọn tra cứu' : action.label}
+                  aria-expanded={Boolean(action.choices?.length && isActionExpanded)}
+                  title={action.label}
+                  data-dock-item
+                  disabled={action.disabled}
+                  tabIndex={unavailableForFocus ? -1 : undefined}
+                  onClick={(event) => {
+                    if (action.choices?.length) setIsActionExpanded((expanded) => !expanded);
+                    else action.onSelect(event);
+                  }}
+                >
+                  <span className="liquid-dock__action-icon"><MotionIcon icon={action.icon} variant="navigation" state={action.disabled ? 'disabled' : 'idle'} size={25} strokeWidth={2.1} /></span>
+                  <span className="liquid-dock__label">{isActionExpanded ? 'Chọn thao tác' : action.label}</span>
+                </button>
+                {Boolean(action.choices?.length) && <span className="liquid-dock__action-choices" aria-hidden={!isActionExpanded}>
+                  {action.choices?.map((choice) => <button key={choice.id} type="button" className="liquid-dock__choice" aria-label={choice.label} title={choice.label} data-dock-item tabIndex={!isActionExpanded || unavailableForFocus ? -1 : undefined} onClick={(event) => { setIsActionExpanded(false); choice.onSelect(event); }}>
+                    <span className="liquid-dock__choice-icon"><MotionIcon icon={choice.icon} variant="navigation" size={19} strokeWidth={2.1} /></span>
+                    <span className="liquid-dock__choice-label">{choice.label}</span>
+                  </button>)}
+                </span>}
+              </div>
             );
           }
 

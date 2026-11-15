@@ -9,11 +9,19 @@ export type LiquidDockItemDefinition = {
   noticeCount?: number;
 };
 
+export type LiquidDockActionChoice = {
+  id: string;
+  label: string;
+  icon: RetailIcon;
+  onSelect: (event: MouseEvent<HTMLButtonElement>) => void;
+};
+
 export type LiquidDockActionDefinition = {
   label: string;
   icon: RetailIcon;
   onSelect: (event: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  choices?: LiquidDockActionChoice[];
 };
 
 export type LiquidDockProps = {
