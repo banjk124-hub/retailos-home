@@ -108,7 +108,7 @@ function scoreRow(row: Record<string, unknown>, query: string): number {
     if (typeof value !== 'string' && !isBarcodeField) continue;
     const valueScore = scoreTextMatch(formatted, query, tokens);
     const fieldBoost = /^(itemname|productname|name|tenhanghoa|tensanpham|description)$/.test(fieldName) ? 35 : 0;
-    best = Math.max(best, valueScore + fieldBoost);
+    best = Math.max(best, valueScore > 0 ? valueScore + fieldBoost : 0);
     if (isBarcodeField) {
       const exactBarcode = splitBarcodeValues(formatted).some((code) => code === normalizeCode(query));
       if (exactBarcode) best = Math.max(best, 1200);
