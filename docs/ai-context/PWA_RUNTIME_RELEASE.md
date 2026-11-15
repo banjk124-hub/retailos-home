@@ -164,7 +164,7 @@ For every future RetailOS code change, module addition, UI/UX change, runtime de
 3. If it adds or changes application capability/runtime resources, include them in the release manifest and update `release-notes.json`.
 4. Keep the active release usable while the candidate is discovered, approved, downloaded and verified.
 5. Never download the full candidate application payload before explicit user approval (first install is the initial-install exception).
-6. Never activate before complete integrity verification; after approval and verification, activation is automatic without a second confirmation.
+6. Never activate before complete integrity verification. Download approval and activation approval are separate; only the explicit activation confirmation at a safe handoff may request `ACTIVATE_RELEASE`.
 7. Preserve old-release offline operation, safe handoff, business data and last-known-good rollback.
 8. Add regression coverage and run full preflight on the final PR head.
 9. Verify the deployment artifact contains the exact manifest, notes and complete asset inventory for the same build.
