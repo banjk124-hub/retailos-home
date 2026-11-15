@@ -2,7 +2,7 @@
 
 **Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
 **Baseline:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` after PR #119. PR #120 was closed as superseded; its documentation changes are included in this branch.  
-**Status:** Runtime implementation and regression updates are in this branch. CI #1126 on the prior head passed regression suites and TypeScript but failed in Vite production build because the manifest plugin ran before final `index.html` emission. The branch now applies `enforce: 'post'` and tests that ordering; fresh exact-head CI, PR review and physical-device acceptance remain pending. No merge or deployment.
+**Status:** RetailOS CI #1170 passed on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`, including full preflight, TypeScript, production/Pages builds, PWA runtime/cache-policy/platform tests and bundle comparison. PR review and physical-device acceptance remain pending. No merge or deployment.
 
 ## Implemented in this branch
 
@@ -30,17 +30,15 @@
 - CI #1126 (`ecbc32fc`) passed regression suites and TypeScript but failed because the release plugin ran before Vite emitted `index.html`. `enforce: 'post'` fixed that ordering.
 - CI #1162 then passed TypeScript, production build, Pages build and the worker runtime test, but PWA cache-policy found the manifest's HomeScreen chunk size (59,043 bytes) differed from the final emitted file (60,023 bytes). This proves the manifest hook still ran before all output mutations had completed.
 - Second correction: the plugin now declares `generateBundle` as an explicit hook object with `order: 'post'`; the regression test requires that exact ordering. The integrity checks remain fail-closed and continue comparing every manifest size/hash with actual `dist` bytes.
-- Fresh exact-head CI is still required; do not treat either correction as verified until the final run completes.
+- Final evidence: RetailOS CI #1170 completed successfully on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`. Production and Pages builds, final manifest byte/hash parity, worker runtime, platform contracts, and bundle baseline comparison all passed.
 
 ## Required verification still pending
 
-1. Run all PWA tests and full `npm run preflight` on the final PR head.
-2. Confirm production and GitHub Pages builds emit a manifest whose resource hashes match the deployed bytes and includes every lazy chunk plus ZXing WASM.
-3. Audit final diff for unrelated scanner/data/auth changes.
-4. Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, Desktop and low-end Android acceptance for defer, consent, progress, interrupted download, resume, offline, safe handoff and rollback.
-5. Verify first-install and one-time legacy migration behavior on devices already running PR #119.
+1. Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, Desktop and low-end Android acceptance for defer, consent, progress, interrupted download, resume, offline, safe handoff and rollback.
+2. Verify first-install and one-time legacy migration behavior on devices already running PR #119.
+3. Complete final human review of the PR diff before merge consideration.
 
-No CI pass, physical acceptance, merge or deployment is claimed by this status. Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
+Automated CI #1170 is green; physical acceptance, merge and deployment are not claimed. Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
 
 
 ---
