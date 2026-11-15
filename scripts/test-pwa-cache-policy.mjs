@@ -31,6 +31,8 @@ assert.match(worker, /APP_BOOT_FAILED/);
 assert.match(worker, /findPreviousRelease/);
 assert.match(worker, /readActiveRelease/);
 assert.match(worker, /writeActiveRelease/);
+assert.match(worker, /readPreviousRelease/);
+assert.match(worker, /writePreviousRelease/);
 assert.match(worker, /activeAssets\.match\(request\)/,
   'only the selected release asset cache may serve app runtime files');
 assert.doesNotMatch(worker, /caches\.match\(request\)/,
