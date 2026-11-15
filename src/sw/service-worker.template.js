@@ -147,6 +147,10 @@ async function stageCandidate(target) {
     return manifest;
   }
 
+  await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
+  const stateCache = await caches.open(STATE_CACHE);
+  await stateCache.delete(STAGED_RELEASE_STATE_URL);
+
   if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
     try {
       const estimate = await navigator.storage.estimate();
@@ -159,9 +163,6 @@ async function stageCandidate(target) {
       // Storage estimation is advisory; actual Cache API writes remain authoritative.
     }
   }
-  await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
-  const stateCache = await caches.open(STATE_CACHE);
-  await stateCache.delete(STAGED_RELEASE_STATE_URL);
   const shellCache = await caches.open(SHELL_CACHE);
   const assetCache = await caches.open(ASSET_CACHE);
   let completed = 0;
