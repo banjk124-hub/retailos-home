@@ -67,6 +67,7 @@ function seedOldRelease() {
     [appBase + 'assets/old-app.js', new Response('previous-release-asset')],
     [appBase + 'images/background.webp', new Response('previous-release-shared-image')],
   ]));
+  cacheStore.set('retailos-business-data', new Map([['snapshot', new Response('business-data-must-survive')]]));
   cacheStore.set('retailos-pwa-state', new Map([
     [activeStateUrl, new Response(JSON.stringify({
       buildId: 'old',
@@ -316,6 +317,56 @@ assert.equal(cacheStore.has('retailos-pwa-shell-failed-build'), false, 'failed c
 assert.equal(cacheStore.has('retailos-pwa-assets-failed-build'), false, 'failed candidate asset cache is discarded');
 assert.equal(cacheStore.has(oldShellCache), true, 'failed staging preserves the active shell');
 assert.equal(cacheStore.has(oldAssetCache), true, 'failed staging preserves the active assets');
+assert.equal(cacheStore.has('retailos-business-data'), true, 'failed app staging never deletes business data caches');
+
+const corruptManifest = {
+  ...manifest,
+  buildId: 'hash-failed-build',
+  resources: await Promise.all(resources.map(async (resource, index) => ({
+    ...resource,
+    sha256: index === 4 ? '0'.repeat(64) : await sha256Hex('release-runtime:' + resource.path),
+  }))),
+};
+const hashWorker = createWorker('hash-failed-build', corruptManifest, { clients: [currentClient] });
+await hashWorker.runExtendable('install');
+const hashMessages = [];
+await hashWorker.runExtendable('message', {
+  data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage(message) { hashMessages.push(message); } }],
+  source: currentClient,
+});
+assert.equal(hashMessages.at(-1)?.type, 'RELEASE_STAGE_FAILED', 'a checksum mismatch fails staging closed');
+assert.equal(cacheStore.has('retailos-pwa-shell-hash-failed-build'), false, 'checksum failure removes candidate shell');
+assert.equal(cacheStore.has('retailos-pwa-assets-hash-failed-build'), false, 'checksum failure removes candidate assets');
+assert.equal(cacheStore.has(oldShellCache), true, 'checksum failure preserves last-known-good release');
+
+const healthyManifest = {
+  ...manifest,
+  buildId: 'healthy-build',
+  resources: await Promise.all(resources.map(async (resource) => ({
+    ...resource,
+    sha256: await sha256Hex('release-runtime:' + resource.path),
+  }))),
+};
+const healthyWorker = createWorker('healthy-build', healthyManifest, { clients: [currentClient] });
+await healthyWorker.runExtendable('install');
+await healthyWorker.runExtendable('message', {
+  data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage() {} }],
+  source: currentClient,
+});
+await healthyWorker.runExtendable('message', {
+  data: { type: 'ACTIVATE_RELEASE' },
+  source: currentClient,
+});
+await healthyWorker.runExtendable('activate');
+await healthyWorker.runExtendable('message', {
+  data: { type: 'APP_BOOT_OK', buildId: 'healthy-build' },
+  source: currentClient,
+});
+assert.equal(cacheStore.has(oldShellCache), false, 'matching healthy boot releases old rollback caches');
+assert.equal(cacheStore.has(oldAssetCache), false, 'matching healthy boot releases old asset caches');
+assert.equal(cacheStore.has('retailos-business-data'), true, 'healthy app release cleanup never touches business data');
 
 const initialStore = new Map();
 for (const [key, value] of cacheStore) initialStore.set(key, value);
