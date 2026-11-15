@@ -44,18 +44,25 @@ const writePreviousRelease = (release) => writeState(PREVIOUS_RELEASE_STATE_URL,
 const writeStagedRelease = (release) => writeState(STAGED_RELEASE_STATE_URL, release);
 
 async function findPreviousRelease() {
+  const keys = await caches.keys();
   const recordedPrevious = await readPreviousRelease();
-  if (recordedPrevious?.shellCache && await matchAppShell(recordedPrevious.shellCache)) {
+  if (
+    recordedPrevious?.shellCache
+    && recordedPrevious?.assetCache
+    && keys.includes(recordedPrevious.assetCache)
+    && await matchAppShell(recordedPrevious.shellCache)
+  ) {
     return recordedPrevious;
   }
-  const keys = await caches.keys();
   const previousShells = keys.filter((key) =>
     key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE
   );
   const shellCache = previousShells[previousShells.length - 1];
   if (!shellCache) return null;
   const releaseId = shellCache.slice((CACHE_PREFIX + 'shell-').length);
-  return { buildId: releaseId, shellCache, assetCache: CACHE_PREFIX + 'assets-' + releaseId };
+  const assetCache = CACHE_PREFIX + 'assets-' + releaseId;
+  if (!keys.includes(assetCache) || !(await matchAppShell(shellCache))) return null;
+  return { buildId: releaseId, shellCache, assetCache };
 }
 
 async function fetchReleaseManifest() {
