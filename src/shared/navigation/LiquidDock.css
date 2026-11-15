@@ -30,6 +30,8 @@
 
 .liquid-dock__track {
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(var(--dock-slot-count), minmax(0, 1fr));
   align-items: center;
@@ -284,21 +286,25 @@
 @media(prefers-reduced-motion:reduce) { .liquid-dock__notice-badge { animation:none; } }
 
 
-/* Icon-only quick lookup stickers fan upward, clear of the dock navigation row. */
-.liquid-dock__action-wrap { position: relative; z-index: 2; display: grid; min-width: 0; min-height: 64px; place-items: center; }
+/* Quick lookup stickers: smaller, raised, and explicitly centered around the action slot. */
+.liquid-dock__action-wrap { position: relative; z-index: 2; display: grid; width: 100%; min-width: 0; min-height: 64px; place-items: center; }
 .liquid-dock__action-wrap .liquid-dock__action { transition: opacity 150ms ease, transform 220ms cubic-bezier(.2,.8,.2,1); }
 .liquid-dock__action-wrap.is-expanded .liquid-dock__action { opacity: 0; pointer-events: none; transform: scale(.65); }
-.liquid-dock__action-choices { position: absolute; z-index: 8; top: 0; left: 50%; width: 0; height: 0; opacity: 0; pointer-events: none; }
+.liquid-dock__action-choices { position: absolute; z-index: 8; top: 50%; left: 50%; width: 0; height: 0; opacity: 0; pointer-events: none; }
 .liquid-dock__action-wrap.is-expanded .liquid-dock__action-choices { opacity: 1; pointer-events: auto; }
-.liquid-dock__choice { position: absolute; top: 0; display: grid; width: 48px; height: 48px; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.96); border-radius: 17px 17px 17px 7px; background: linear-gradient(145deg, rgba(255,255,255,.99), rgba(255,231,235,.97)); color: #a92334; box-shadow: 0 8px 22px rgba(110,26,39,.22), inset 0 1px 0 #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: box-shadow 180ms ease; }
-.liquid-dock__choice::after { position: absolute; bottom: -4px; left: 10px; width: 10px; height: 10px; border-right: 1px solid rgba(255,255,255,.96); border-bottom: 1px solid rgba(255,255,255,.96); border-bottom-right-radius: 3px; background: #ffedf0; content: ""; transform: skewY(35deg) rotate(18deg); }
+.liquid-dock__choice { position: absolute; top: 0; left: 0; display: grid; width: 40px; height: 40px; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.96); border-radius: 15px 15px 15px 6px; background: linear-gradient(145deg, rgba(255,255,255,.99), rgba(255,231,235,.97)); color: #a92334; box-shadow: 0 7px 18px rgba(110,26,39,.2), inset 0 1px 0 #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: box-shadow 180ms ease; }
+.liquid-dock__choice::after { position: absolute; bottom: -4px; left: 8px; width: 9px; height: 9px; border-right: 1px solid rgba(255,255,255,.96); border-bottom: 1px solid rgba(255,255,255,.96); border-bottom-right-radius: 3px; background: #ffedf0; content: ""; transform: skewY(35deg) rotate(18deg); }
 .liquid-dock__choice:active { filter: brightness(.97); }
 .liquid-dock__choice-icon { display: grid; width: 100%; height: 100%; place-items: center; }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { animation: dock-choice-left 260ms cubic-bezier(.18,.8,.25,1) both; }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { animation: dock-choice-right 280ms 25ms cubic-bezier(.18,.8,.25,1) both; }
-@keyframes dock-choice-left { from { opacity: 0; transform: translate(0, 0) scale(.55) rotate(0); } to { opacity: 1; transform: translate(-39px, -25px) scale(1) rotate(-9deg); } }
-@keyframes dock-choice-right { from { opacity: 0; transform: translate(0, 0) scale(.55) rotate(0); } to { opacity: 1; transform: translate(39px, -25px) scale(1) rotate(9deg); } }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(-39px, -25px) rotate(-9deg); }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(39px, -25px) rotate(9deg); }
-@media (max-width: 360px) { .liquid-dock__choice { width: 44px; height: 44px; } .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(-35px, -23px) rotate(-9deg); } .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(35px, -23px) rotate(9deg); } }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { animation: dock-choice-left 250ms cubic-bezier(.18,.8,.25,1) both; }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { animation: dock-choice-right 270ms 20ms cubic-bezier(.18,.8,.25,1) both; }
+@keyframes dock-choice-left { from { opacity: 0; transform: translate(-50%, 0) scale(.55) rotate(0); } to { opacity: 1; transform: translate(calc(-50% - 30px), -38px) scale(1) rotate(-8deg); } }
+@keyframes dock-choice-right { from { opacity: 0; transform: translate(-50%, 0) scale(.55) rotate(0); } to { opacity: 1; transform: translate(calc(-50% + 30px), -38px) scale(1) rotate(8deg); } }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(calc(-50% - 30px), -38px) rotate(-8deg); }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(calc(-50% + 30px), -38px) rotate(8deg); }
+@media (max-width: 360px) {
+  .liquid-dock__choice { width: 38px; height: 38px; }
+  .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { transform: translate(calc(-50% - 27px), -36px) rotate(-8deg); }
+  .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { transform: translate(calc(-50% + 27px), -36px) rotate(8deg); }
+}
 @media (prefers-reduced-motion: reduce) { .liquid-dock__action-wrap *, .liquid-dock__action-choices, .liquid-dock__choice { animation: none !important; transition-duration: 1ms !important; } }
