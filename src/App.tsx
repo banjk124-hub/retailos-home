@@ -222,7 +222,7 @@ export default function App() {
   useLayoutEffect(() => registerPwaUpdateBlocker('app-transition', () => {
     const { isEnteringHome: entering, isLeavingHome: leaving } = transitionStateRef.current;
     return entering || leaving
-      ? 'RetailOS đang chuyển màn hình. Bản mới sẽ tự kích hoạt sau khi chuyển cảnh hoàn tất.'
+      ? 'RetailOS đang chuyển màn hình. Bản mới sẽ chờ xác nhận sau khi chuyển cảnh hoàn tất.'
       : null;
   }), []);
 

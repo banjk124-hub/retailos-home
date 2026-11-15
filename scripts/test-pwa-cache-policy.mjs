@@ -130,7 +130,7 @@ const sameBuildBranch = prompt.indexOf("if (nextManifest.buildId === __RETAILOS_
 const manifestValidationBranch = prompt.indexOf("nextManifest.schemaVersion !== 1");
 assert.ok(sameBuildBranch > manifestValidationBranch,
   'same-build handling must run only after manifest structure validation');
-const sameBuildHandling = prompt.slice(sameBuildBranch, prompt.indexOf("if (dismissedBuildId.current", sameBuildBranch));
+const sameBuildHandling = prompt.slice(sameBuildBranch, prompt.indexOf("const persistedUpdate = readUpdateCenterEntry();", sameBuildBranch));
 assert.match(sameBuildHandling, /setWaitingWorker\(null\)/,
   'a same-build waiting worker must be dismissed without showing a manifest error');
 assert.match(sameBuildHandling, /waitingWorkerRef\.current = null/);
@@ -185,5 +185,29 @@ assert.match(push, /registerPwaUpdateBlocker\('push-subscription'/);
 assert.match(push, /notifyPwaUpdateSafetyChanged/);
 assert.doesNotMatch(dataService, /registerRetailOsServiceWorker|SKIP_WAITING|APP_BOOT_OK|APP_BOOT_FAILED/,
   'data refresh services must not control application release activation or boot lifecycle');
+
+
+// Update Center lifecycle: download consent is distinct from activation consent.
+const updateStore = await read('../src/shared/pwa/updateCenterStore.ts');
+const settingsHub = await read('../src/features/home/components/SettingsHub.tsx');
+const dockItem = await read('../src/shared/navigation/LiquidDockItem.tsx');
+assert.match(updateStore, /localStorage\.setItem\(STORAGE_KEY/,
+  'update deferral metadata must persist beyond the current React page session');
+assert.match(updateStore, /retailos\.pwa\.update-center\.v1/);
+assert.match(prompt, /status: 'deferred'/,
+  'deferral must be persisted for the exact candidate BUILD_ID');
+assert.match(prompt, /onClick=\{tryActivate\}/,
+  'activation must be reachable only through an explicit user action');
+assert.doesNotMatch(prompt, /tryActivate\(\);/,
+  'staging completion and blocker-clear events must never auto-activate');
+assert.match(prompt, /retailos:update-center-open/,
+  'the Settings Update Center must be able to reopen a deferred candidate');
+assert.match(prompt, /isBusinessBusy/);
+assert.match(prompt, /is-modal/);
+assert.match(prompt, /is-busy/);
+assert.match(settingsHub, /Trung tâm cập nhật/);
+assert.match(settingsHub, /UPDATE_CENTER_CHANGED_EVENT/);
+assert.match(dockItem, /liquid-dock__notice-badge/,
+  'pending actionable update notices must render a numeric badge on Settings');
 
 console.log('PWA consent boundary, release manifest integrity, full-runtime inventory and data-lifecycle isolation tests passed.');

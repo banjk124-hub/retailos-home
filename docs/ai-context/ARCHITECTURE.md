@@ -1053,7 +1053,7 @@ Post-deployment source audit found that the Service Worker `install` event downl
 ### Protected boundaries
 - No application release may become active with missing runtime assets.
 - No full candidate payload download before explicit user consent.
-- No second user confirmation after successful staging; activation is automatic.
+- Historical ADR-041 rule superseded by ADR-042: successful staging does not authorize activation; explicit confirmation is required at a safe handoff.
 - No clearing/migration of business data as part of ordinary release activation or rollback.
 - No claim of offline/device acceptance based only on source assertions or CI.
 
@@ -1080,8 +1080,8 @@ PR #119 delivered full offline asset inventory, release-specific caches, boot he
 - An update Service Worker install downloads no application payload. It waits while the current worker continues serving the active release. First install (no active worker) is the only automatic full-stage case.
 - The waiting worker exposes metadata-only `GET_RELEASE_INFO`. The UI shows current/candidate versions, release notes, compatibility/warnings and estimated size. Only explicit user consent sends `STAGE_RELEASE`.
 - Candidate resources are fetched in batches of two after an advisory storage-budget preflight, verified by status/size/SHA-256 and cached in build-isolated shell/assets caches. The worker reads every cache entry back and rechecks byte size/SHA-256 plus the root navigation alias before persisting the staged marker. Immediately before activation, it revalidates all staged bytes from cache without a network dependency; corruption/eviction deletes only candidate caches and requires a new user-approved staging attempt. The old release remains selected.
-- A shared in-worker staging promise lets reloaded/concurrent clients join the same download and receive progress instead of starting duplicate downloads. A staged marker allows a later app launch to resume auto-activation without renewed download consent.
-- After `RELEASE_STAGED`, the app automatically requests activation when module blockers report safe and the worker confirms no other RetailOS window is open. No second user confirmation. Unsafe handoff is visible and retried on focus/visibility or module safety-change events.
+- A shared in-worker staging promise lets reloaded/concurrent clients join the same download and receive progress instead of starting duplicate downloads. A staged marker allows a later app launch to restore the candidate without renewed download consent; activation still requires a separate explicit user confirmation.
+- After `RELEASE_STAGED`, the app waits for module blockers to clear and for the worker's multi-window guard, then presents an explicit activation confirmation. Clearing blockers never requests activation automatically.
 - Shared blockers cover the camera lease service, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup and app-level transitions. Native form dirtiness is tracked; asynchronous forms advance each control's baseline to its current saved value only after successful save through `markPwaUpdateFormSaved`, while auto-saved fields may opt out with `data-retailos-update-safe`. A cancelled native reset does not clear dirty blockers. Future modules with non-DOM unsaved/critical state must register their own blocker.
 - Matching-build boot health and last-known-good rollback remain authoritative. The login surface or mounted HomeScreen acknowledges health; the update prompt cannot report healthy before the primary application surface is ready. Root render failures before that acknowledgement remain eligible for rollback. Healthy boot cleans old release caches and obsolete previous/staged markers while retaining the active-release pointer for the next update. Release activation/rollback never mutates business data.
 - The PR #119 client receives a one-time compatibility bridge: its explicit `SKIP_WAITING` action is interpreted as consent to stage before activation. Its old UI cannot show release notes/progress until it loads the new client.
@@ -1104,3 +1104,25 @@ PR #119 delivered full offline asset inventory, release-specific caches, boot he
 - Worker runtime regression mutates a staged cache entry after successful staging and proves activation is blocked, candidate caches are discarded, and a consented restage succeeds.
 - Vite release artifact plugin uses `enforce: 'post'` and `generateBundle: { order: 'post', handler }`, ensuring the final `index.html` and final emitted chunk bytes exist before manifest hashing. CI #1126 exposed the missing HTML ordering; CI #1162 exposed a post-hook chunk byte mismatch (manifest 59,043 bytes vs final HomeScreen asset 60,023 bytes). The cache-policy test protects both ordering contracts. RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including preflight, TypeScript, production/Pages builds, manifest byte/hash parity, worker runtime, platform compatibility, main-only production deployment guard and bundle comparison.
 - Physical Android/iOS/Desktop/low-end Android acceptance remains required before merge/deployment.
+
+
+## ADR-042 — PWA Update Center and explicit business-safe activation (2026-11-15)
+
+**Status:** Implementation in progress on `feat/pwa-update-center-safe-handoff`; automated CI and physical acceptance pending.
+
+### Context
+The previous release contract auto-activated after verified staging when blockers cleared. That conflated consent to download with consent to replace the running app and allowed a deferred candidate to reappear after reload because deferral lived only in a component ref.
+
+### Decision
+- Separate download consent from activation consent. `RELEASE_STAGED` records readiness only; it never authorizes `ACTIVATE_RELEASE`.
+- Persist deferral per device and BUILD_ID. Deferring before staging prevents payload download; deferring after staging may retain verified bytes but keeps the old release active.
+- Surface deferred work in Settings → Update Center with a numeric Settings badge.
+- Show a compact expandable corner notice while business blockers exist; show a centered confirmation only when the application is at a safe handoff.
+- Clearing a blocker never activates automatically. Only the explicit activation action can request takeover.
+- Forced-update behavior remains unsupported until an authoritative, validated policy publisher is implemented; optional is the fail-safe default.
+
+### Protected invariants
+No changes to release cache isolation, manifest resource integrity, first-install staging, boot health/rollback, business data/IndexedDB, auth/session, module IDs, Apps Script contracts or production deployment controls.
+
+### Acceptance
+Persistent defer across reload/reopen; no download before consent; no auto-activation after stage/reopen/blocker-clear; explicit confirm only when safe; Settings badge/Update Center consistency; busy compact notification and idle centered dialog; worker multi-window/integrity/rollback regressions; physical Android/iOS/Desktop QA.

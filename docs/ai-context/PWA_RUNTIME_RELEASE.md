@@ -22,7 +22,7 @@ The required user journey is:
 3. **Ask once:** user explicitly approves download or defers. Deferring keeps the active release selected and usable.
 4. **Stage:** after approval, download every required application resource into isolated candidate caches. Show progress by bytes and resource count.
 5. **Verify:** verify response status, exact byte size, SHA-256 and manifest completeness; read every cache write back and verify its bytes and root navigation alias before persisting the staged marker. Revalidate staged bytes from cache immediately before activation, without requiring network access. A partial/corrupt/evicted candidate cannot activate.
-6. **Auto-activate:** after successful staging, automatically activate when the application is at a safe handoff point and no other RetailOS window blocks takeover. There is no second confirmation.
+6. **Wait for safe handoff and explicit activation confirmation:** successful staging never activates by itself. Keep the old release active until all business blockers clear; then show a centered confirmation. Only the employee's explicit `Xác nhận cập nhật` action may send `ACTIVATE_RELEASE`. `Để sau` persists and leaves the old release active, including after restart.
 7. **Boot health:** the new app reports healthy startup for its exact build ID only after the primary route has committed (login surface) or HomeScreen has mounted. The update prompt must not acknowledge boot health merely because it mounted; otherwise lazy Home failures could prematurely clear the last-known-good rollback release.
 8. **Rollback:** if boot health fails, restore the last-known-good shell and matching assets. Never touch business data.
 
@@ -39,7 +39,7 @@ Current implementation:
 - The new worker becomes waiting while the old worker continues serving the selected release.
 - The active app asks the waiting worker for `GET_RELEASE_INFO`. The candidate worker fetches only `release-manifest.json?build=<BUILD_ID>`, validates it and returns the manifest.
 - The UI displays the exact manifest notes and estimated size. No candidate application resource is fetched before the user selects **Tải và cập nhật**.
-- Deferring hides the candidate prompt for the current page session; the old release remains active and the candidate can be reviewed again later.
+- Deferring is persisted per device and candidate `BUILD_ID`; it survives reload/reopen and moves the candidate to Settings → Update Center. The old release remains active. Do not redisplay the same optional candidate as a foreground modal on every launch.
 
 Do not move precache back into the update `install` event. Do not assume that moving `skipWaiting()` or changing the React prompt alone establishes consent.
 
@@ -86,13 +86,13 @@ The maintained worker source is `src/sw/service-worker.template.js`. Never edit 
 - On network, quota, response, size, digest or cache failure, the worker removes only the candidate shell/assets and staged marker. The active release is not changed.
 - If a user closes/reloads the app while the same waiting worker is still staging, the new page joins the in-progress stage, receives current progress and does not start a duplicate download. Progress/completion/failure are broadcast to RetailOS clients.
 - If the worker is terminated before staging completes, the active release remains untouched. Partial candidate caches are cleaned on the next explicit retry; the user may need to approve that retry again.
-- If a user closes the app after successful staging, the staged marker survives. On the next app launch, `GET_RELEASE_INFO` reports `staged: true`; the UI resumes safe auto-activation without asking for download consent again.
+- If a user closes the app after successful staging, the staged marker survives. On the next app launch, `GET_RELEASE_INFO` reports `staged: true`; the UI restores the pending staged candidate and waits for explicit activation confirmation. It must not activate merely because the app reopened.
 
 The manifest itself is small control-plane metadata and is fetched with a build-specific query to avoid stale HTTP cache responses. It is not part of business-data storage or the immutable runtime asset cache.
 
-## 6. Safe handoff and automatic activation
+## 6. Safe handoff and explicit activation confirmation
 
-After `RELEASE_STAGED`, `PwaUpdatePrompt` invokes the activation coordinator automatically. No second user click is required.
+After `RELEASE_STAGED`, the UI records the candidate as staged and waits. It must not call `ACTIVATE_RELEASE` automatically, including on app restart or when blockers clear. A separate explicit activation confirmation is required after the business-safety registry reports no blocker.
 
 The shared `updateSafety.ts` registry supports module-owned blockers. Current integrations cover:
 
@@ -164,7 +164,7 @@ For every future RetailOS code change, module addition, UI/UX change, runtime de
 3. If it adds or changes application capability/runtime resources, include them in the release manifest and update `release-notes.json`.
 4. Keep the active release usable while the candidate is discovered, approved, downloaded and verified.
 5. Never download the full candidate application payload before explicit user approval (first install is the initial-install exception).
-6. Never activate before complete integrity verification; after approval and verification, activation is automatic without a second confirmation.
+6. Never activate before complete integrity verification. Download approval and activation approval are separate; only the explicit activation confirmation at a safe handoff may request `ACTIVATE_RELEASE`.
 7. Preserve old-release offline operation, safe handoff, business data and last-known-good rollback.
 8. Add regression coverage and run full preflight on the final PR head.
 9. Verify the deployment artifact contains the exact manifest, notes and complete asset inventory for the same build.
@@ -194,3 +194,35 @@ RetailOS has separate development and store-production environments. The persona
 - Do not increment `package.json` SemVer merely to make the update detector notice a new build. A new build ID is the update identity; product version is the release level.
 - When the user explicitly chooses a completed version for promotion to the store's shared production repository and Cloudflare, pause iterative generic notes and prepare the complete production release notes. Cover the final included features, fixes, UI/UX changes, compatibility, warnings, staff impact and any required actions. Validate and transfer the code, version, release notes and generated manifest as one coherent production release.
 - This promotion gate applies regardless of which chat/session implements the feature. For every development change, assess whether the generic note needs a small update; full release-note authoring is deferred until the explicit production-promotion decision.
+
+
+## 12. Update Center, deferral and business-safe activation (current contract)
+
+### Two separate approvals
+
+1. **Download consent:** `Tải và cập nhật` authorizes staging the complete candidate payload. It does not authorize activation.
+2. **Activation consent:** after staging/integrity verification and after all business blockers clear, the employee sees a centered confirmation and explicitly selects `Xác nhận cập nhật`. Only this action may request `ACTIVATE_RELEASE`.
+
+### Deferral
+
+- `Để sau` before download persists a per-device, per-BUILD_ID deferred record and must not stage candidate payload.
+- `Để sau` after staging may retain the verified candidate cache, but persists the deferred state and must not activate it.
+- Both states survive reload, browser close and app reopen. The same optional BUILD_ID stays in Settings → Update Center rather than repeatedly interrupting the employee.
+- A newer BUILD_ID may replace the current pending candidate. Do not treat a product SemVer comparison as build identity.
+
+### Presentation and badge
+
+- When a business blocker is active, present a compact corner notice with expand/collapse. It must not be a blocking modal or obscure the operational surface.
+- When no business blocker is active, present the centered update dialog and ask for explicit action.
+- Settings → Update Center is the durable home for deferred/available/staged/error update work. The Settings dock icon badge counts pending actionable notices, not versions or build IDs.
+- The badge must be derived from persisted notice state and remain consistent across reloads and same-origin tabs.
+
+### Business safety
+
+- Blockers cover active transactions, camera/scanner leases, dirty forms, unsaved edits, import/export, pending confirmations, app transitions, snapshot sync and persistence cleanup. Module owners must register non-DOM state and signal transitions.
+- A blocker clearing only makes the update eligible to be offered; it never activates the release. The employee still confirms.
+- If blocker state is unknown or a blocker throws, fail closed and keep the old release active.
+
+### Forced-update policy boundary
+
+A forced update must be an explicit, validated policy attached to an authorized release, never inferred from release notes or version ordering. Even a forced release cannot interrupt an active business operation; enforcement may occur only at a safe handoff under the declared policy. The current manifest/source has no authoritative force-policy publisher yet, so releases remain optional until that control plane is implemented and audited. This is a known remaining acceptance item, not an implemented capability.
