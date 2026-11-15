@@ -311,7 +311,7 @@ export default function PwaUpdatePrompt() {
       if (event.data?.type === 'UPDATE_BLOCKED_MULTIPLE_CLIENTS') {
         activationRequestedRef.current = false;
         setPhase('staged');
-        setNotice('Bản mới đã sẵn sàng. Hãy đóng các tab hoặc cửa sổ RetailOS khác; ứng dụng sẽ tự tiếp tục cập nhật.');
+        setNotice('Bản mới đã sẵn sàng. Hãy đóng các tab hoặc cửa sổ RetailOS khác, sau đó xác nhận cập nhật tại đây.');
       }
       if (event.data?.type === 'UPDATE_ROLLBACK_UNAVAILABLE') {
         activationRequestedRef.current = false;
@@ -329,7 +329,7 @@ export default function PwaUpdatePrompt() {
         activationRequestedRef.current = false;
         isApplyingUpdate.current = false;
         setPhase('staged');
-        setNotice('Tài nguyên đã sẵn sàng nhưng trình duyệt chưa thể chuyển phiên bản. RetailOS sẽ tự thử lại khi có thể.');
+        setNotice('Tài nguyên đã sẵn sàng nhưng trình duyệt chưa thể chuyển phiên bản. Hãy xác nhận thử lại khi đã sẵn sàng.');
       }
     };
     const retrySafeActivation = () => {
