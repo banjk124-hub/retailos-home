@@ -26,7 +26,8 @@ assert.match(vite, /APP_BOOT_FAILED/);
 assert.match(worker, /APP_BOOT_OK/);
 assert.match(worker, /APP_BOOT_FAILED/);
 assert.match(worker, /findPreviousRelease/);
-assert.match(worker, /readRollbackTarget/);
+assert.match(worker, /readActiveRelease/);
+assert.match(worker, /writeActiveRelease/);
 assert.match(worker, /caches\.match\(request\)/,
   'retained release assets must remain readable during rollback');
 assert.match(worker, /self\.clients\.claim\(\)/);
