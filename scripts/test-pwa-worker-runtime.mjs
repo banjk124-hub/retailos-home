@@ -137,6 +137,16 @@ assert.equal(await (await activeNavigation.responsePromise).text(), 'cached:' + 
   'active release navigation is served from its own pinned shell');
 assert.equal(fetchCalls, fetchCountBeforeNavigation, 'active shell navigation does not fetch newly deployed HTML');
 
+const cachedAsset = {
+  request: { method: 'GET', url: appBase + 'assets/app.js', mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(cachedAsset);
+assert.match(await (await cachedAsset.responsePromise).text(), /^cached:/,
+  'pre-cached current release asset is served without network');
+const fetchCountBefore = fetchCalls;
+assert.equal(fetchCalls, fetchCountBefore, 'pre-cached asset does not issue a network request');
+
 const currentPublicAsset = {
   request: { method: 'GET', url: sharedPublicAssetUrl, mode: 'cors' },
   respondWith(promise) { this.responsePromise = promise; },
@@ -189,16 +199,6 @@ const rollbackPublicAsset = {
 listener('fetch')(rollbackPublicAsset);
 assert.equal(await (await rollbackPublicAsset.responsePromise).text(), 'previous-release-shared-image',
   'rollback serves the previous release copy of a stable public asset');
-
-const cachedAsset = {
-  request: { method: 'GET', url: appBase + 'assets/app.js', mode: 'cors' },
-  respondWith(promise) { this.responsePromise = promise; },
-};
-listener('fetch')(cachedAsset);
-assert.match(await (await cachedAsset.responsePromise).text(), /^cached:/,
-  'pre-cached current release asset is served without network');
-const fetchCountBefore = fetchCalls;
-assert.equal(fetchCalls, fetchCountBefore, 'pre-cached asset does not issue a network request');
 
 const unlistedEvent = {
   request: { method: 'GET', url: appBase + 'api/data', mode: 'cors' },
