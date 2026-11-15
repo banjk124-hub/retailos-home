@@ -125,17 +125,20 @@ self.addEventListener('fetch', (event) => {
         const previousShell = await matchAppShell(rollback.shellCache);
         if (previousShell) return previousShell;
       }
+      // Keep the currently active release pinned. New HTML is adopted only
+      // after the new worker has precached and activated the complete release.
+      const activeShell = await matchAppShell();
+      if (activeShell) return activeShell;
       try {
         const response = await fetch(request);
         if (response.ok) {
           try {
             const cache = await caches.open(SHELL_CACHE);
             await cache.put(APP_SHELL_URL, response.clone());
-          } catch { /* Preserve a successful network navigation. */ }
-          return response;
+          } catch { /* Preserve a successful first-install navigation. */ }
         }
-        return (await matchAppShell()) || response;
-      } catch { return (await matchAppShell()) || Response.error(); }
+        return response;
+      } catch { return Response.error(); }
     })());
     return;
   }
