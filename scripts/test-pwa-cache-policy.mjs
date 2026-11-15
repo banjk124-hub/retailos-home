@@ -191,9 +191,6 @@ assert.doesNotMatch(dataService, /registerRetailOsServiceWorker|SKIP_WAITING|APP
 const updateStore = await read('../src/shared/pwa/updateCenterStore.ts');
 const settingsHub = await read('../src/features/home/components/SettingsHub.tsx');
 const dockItem = await read('../src/shared/navigation/LiquidDockItem.tsx');
-const stocktakeModule = await read('../src/features/stocktake/components/StocktakeModule.tsx');
-const stocktakeImportModule = await read('../src/features/stocktake-import/components/StocktakeImportModule.tsx');
-const updateSafety = await read('../src/shared/pwa/updateSafety.ts');
 assert.match(updateStore, /localStorage\.setItem\(STORAGE_KEY/,
   'update deferral metadata must persist beyond the current React page session');
 assert.match(updateStore, /inCenter/);
