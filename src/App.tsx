@@ -13,6 +13,7 @@ import { MOTION_CONFIG, useMotionState } from './shared/motion';
 import type { MotionOrigin } from './shared/motion';
 import type { CSSProperties } from 'react';
 import { releaseCameraStream } from './shared/services/cameraSession';
+import { registerPwaUpdateBlocker } from './shared/pwa/updateSafety';
 
 const HomeScreen = lazy(() => import('./features/home/HomeScreen'));
 
