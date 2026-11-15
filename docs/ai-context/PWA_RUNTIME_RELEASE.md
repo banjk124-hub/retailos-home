@@ -169,5 +169,6 @@ For every future RetailOS code change, module addition, UI/UX change, runtime de
 8. Add regression coverage and run full preflight on the final PR head.
 9. Verify the deployment artifact contains the exact manifest, notes and complete asset inventory for the same build.
 10. Record tests, unverified paths, physical acceptance and rollback instructions. Never claim device acceptance without device evidence.
+11. Restrict production GitHub Pages deployment to `main` for both push and manual `workflow_dispatch`. Never use the production Pages target to preview a feature branch; create an isolated preview target before physical QA.
 
 This contract applies to all modules and future versions, not only scanner or PWA-specific tasks. Repository documentation is the durable source of truth; do not rely on chat history alone.
