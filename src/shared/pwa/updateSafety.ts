@@ -79,7 +79,17 @@ if (typeof document !== 'undefined') {
     }, true);
   }
   document.addEventListener('reset', (event) => {
-    if (event.target instanceof HTMLFormElement) queueMicrotask(() => clearFormFields(event.target as HTMLFormElement));
+    if (!(event.target instanceof HTMLFormElement)) return;
+    const form = event.target;
+    queueMicrotask(() => {
+      if (event.defaultPrevented) {
+        for (const control of Array.from(form.elements)) {
+          if (isEditableControl(control)) updateDirtyField(control);
+        }
+        return;
+      }
+      clearFormFields(form);
+    });
   }, true);
 }
 
@@ -95,7 +105,12 @@ export function registerPwaUpdateBlocker(key: string, blocker: PwaUpdateBlocker)
 
 /** Call after a form's asynchronous save has completed successfully. */
 export function markPwaUpdateFormSaved(form: HTMLFormElement) {
-  clearFormFields(form);
+  for (const control of Array.from(form.elements)) {
+    if (!isEditableControl(control)) continue;
+    fieldBaselines.set(control, currentFieldValue(control));
+    dirtyFormFields.delete(control);
+  }
+  signalSafetyChange();
 }
 
 /** Call after a module's non-DOM dirty/active state changes. */
