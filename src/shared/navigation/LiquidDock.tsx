@@ -25,7 +25,7 @@ export const LiquidDock = memo(function LiquidDock({
     const closeOnOutsidePointer = (event: PointerEvent) => {
       if (event.target instanceof Node && !actionWrapRef.current?.contains(event.target)) setIsActionExpanded(false);
     };
-    const closeOnEscape = (event: KeyboardEvent) => {
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') setIsActionExpanded(false);
     };
     document.addEventListener('pointerdown', closeOnOutsidePointer, true);
