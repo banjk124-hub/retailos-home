@@ -36,7 +36,7 @@ Report: objective, files changed, behavior changed, tests actually run, results,
 ## Application release lifecycle contract (mandatory for every task)
 
 - Before changing application source, modules, UI/UX, runtime dependencies, build/deploy configuration or preparing a release, read `docs/ai-context/PWA_RUNTIME_RELEASE.md` and classify the work as Application Lifecycle, Data Lifecycle or both.
-- Application releases must publish a build-bound release manifest and user-facing release notes. Explain new capabilities/modules, UI/UX changes, fixes, compatibility notes and operational warnings before asking staff to download.
+- Application releases must publish a build-bound release manifest and user-facing release notes. Bump the app version using SemVer (patch for fixes, minor for backward-compatible capabilities, major for breaking contracts) and keep `package.json`, `package-lock.json` and `release-notes.json` versions identical. Explain new capabilities/modules, UI/UX changes, fixes, compatibility notes and operational warnings before asking staff to download.
 - The user must explicitly approve downloading a new application payload. Do not download/stage the full candidate runtime before consent. Deferring must leave the current release usable, including its existing offline capabilities.
 - Download and verify the complete release payload (including unopened/lazy modules, UI assets, workers, WASM and media) before activation. Lazy evaluation is allowed; lazy first-time downloading after activation is not.
 - After consent and successful verification, activation is automatic; do not ask for a second switch/activation confirmation. Protect unsaved operational work and retain last-known-good rollback until the new build reports healthy.
