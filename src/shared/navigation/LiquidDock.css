@@ -284,85 +284,19 @@
 @media(prefers-reduced-motion:reduce) { .liquid-dock__notice-badge { animation:none; } }
 
 
-/* The Home quick-lookup action unfolds into two compact choices. */
-.liquid-dock__action-wrap {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  min-width: 0;
-  min-height: 64px;
-  place-items: center;
-}
-.liquid-dock__action-wrap .liquid-dock__action {
-  transition: opacity 160ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
-}
-.liquid-dock__action-choices {
-  position: absolute;
-  z-index: 3;
-  top: 50%;
-  left: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: max-content;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%) scale(.72);
-  transform-origin: center;
-  transition: opacity 150ms ease, transform 240ms cubic-bezier(.2,.8,.2,1);
-}
-.liquid-dock__action-wrap.is-expanded .liquid-dock__action {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(.65);
-}
-.liquid-dock__action-wrap.is-expanded .liquid-dock__action-choices {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
-}
-.liquid-dock__choice {
-  display: grid;
-  width: 58px;
-  min-height: 58px;
-  flex: 0 0 auto;
-  align-content: center;
-  justify-items: center;
-  gap: 3px;
-  padding: 3px;
-  border: 1px solid rgba(255,255,255,.9);
-  border-radius: 17px;
-  background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(255,232,235,.9));
-  color: #a92334;
-  box-shadow: 0 6px 18px rgba(110,26,39,.2), inset 0 1px 0 #fff;
-  cursor: pointer;
-  font: inherit;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 150ms ease, box-shadow 180ms ease;
-}
-.liquid-dock__choice:active { transform: scale(.92); }
-.liquid-dock__choice-icon {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-}
-.liquid-dock__choice-label {
-  color: #76535a;
-  font-size: 8px;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
-}
+/* Quick lookup choices float across the dock edge like message stickers. */
+.liquid-dock__action-wrap { position: relative; z-index: 2; display: grid; min-width: 0; min-height: 64px; place-items: center; }
+.liquid-dock__action-wrap .liquid-dock__action { transition: opacity 150ms ease, transform 220ms cubic-bezier(.2,.8,.2,1); }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__action { opacity: 0; pointer-events: none; transform: scale(.65); }
+.liquid-dock__action-choices { position: absolute; z-index: 8; top: calc(50% - 26px); left: 50%; display: flex; align-items: center; justify-content: center; gap: 9px; width: max-content; opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.78); transform-origin: center bottom; transition: opacity 150ms ease, transform 230ms cubic-bezier(.2,.8,.2,1); }
+.liquid-dock__action-wrap.is-expanded .liquid-dock__action-choices { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+.liquid-dock__choice { position: relative; display: flex; width: 116px; min-height: 62px; flex: 0 0 auto; flex-direction: row; align-items: center; justify-content: center; gap: 9px; padding: 8px 12px 10px; border: 1px solid rgba(255,255,255,.96); border-radius: 20px 20px 20px 9px; background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(255,231,235,.96)); color: #a92334; box-shadow: 0 8px 22px rgba(110,26,39,.22), inset 0 1px 0 #fff; cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: transform 150ms ease, box-shadow 180ms ease; }
+.liquid-dock__choice::after { position: absolute; bottom: -5px; left: 17px; width: 12px; height: 12px; border-right: 1px solid rgba(255,255,255,.96); border-bottom: 1px solid rgba(255,255,255,.96); border-bottom-right-radius: 3px; background: #ffedf0; content: ""; transform: skewY(35deg) rotate(18deg); }
+.liquid-dock__choice:active { transform: translateY(2px) scale(.96); }
+.liquid-dock__choice-icon { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; }
+.liquid-dock__choice-label { color: #76535a; font-size: 12px; font-weight: 800; line-height: 1; white-space: nowrap; }
 .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:first-child { animation: dock-choice-in 230ms 20ms both; }
 .liquid-dock__action-wrap.is-expanded .liquid-dock__choice:last-child { animation: dock-choice-in 250ms 55ms both; }
-@keyframes dock-choice-in {
-  from { opacity: 0; transform: translateY(7px) scale(.78); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .liquid-dock__action-wrap *,
-  .liquid-dock__action-choices,
-  .liquid-dock__choice { animation: none !important; transition-duration: 1ms !important; }
-}
+@keyframes dock-choice-in { from { opacity: 0; transform: translateY(9px) scale(.82); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 360px) { .liquid-dock__choice { width: 106px; min-height: 58px; gap: 6px; padding-inline: 8px; } }
+@media (prefers-reduced-motion: reduce) { .liquid-dock__action-wrap *, .liquid-dock__action-choices, .liquid-dock__choice { animation: none !important; transition-duration: 1ms !important; } }
