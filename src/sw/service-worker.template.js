@@ -32,6 +32,11 @@ async function writeActiveRelease(release) {
     headers: { 'Content-Type': 'application/json' }
   }));
 }
+async function addAllInBatches(cache, urls, batchSize = 8) {
+  for (let index = 0; index < urls.length; index += batchSize) {
+    await cache.addAll(urls.slice(index, index + batchSize));
+  }
+}
 async function findPreviousRelease() {
   const keys = await caches.keys();
   const previousShells = keys.filter((key) =>
@@ -50,7 +55,7 @@ self.addEventListener('install', (event) => {
       const shellCache = await caches.open(SHELL_CACHE);
       const assetCache = await caches.open(ASSET_CACHE);
       await shellCache.addAll(SHELL_URLS);
-      await assetCache.addAll([...ASSET_URLS]);
+      await addAllInBatches(assetCache, [...ASSET_URLS]);
       const missingShell = await Promise.all(SHELL_URLS.map((url) => shellCache.match(url)));
       const missingAssets = await Promise.all([...ASSET_URLS].map((url) => assetCache.match(url)));
       if (missingShell.some((entry) => !entry) || missingAssets.some((entry) => !entry)) {
