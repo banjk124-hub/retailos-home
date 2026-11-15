@@ -403,6 +403,10 @@ await healthyWorker.runExtendable('message', {
 assert.equal(cacheStore.has(oldShellCache), false, 'matching healthy boot releases old rollback caches');
 assert.equal(cacheStore.has(oldAssetCache), false, 'matching healthy boot releases old asset caches');
 assert.equal(cacheStore.has('retailos-business-data'), true, 'healthy app release cleanup never touches business data');
+const healthyState = cacheStore.get('retailos-pwa-state');
+assert.ok(healthyState?.has(appBase + '__retailos_active_release__'), 'healthy boot retains the active release pointer for the next update');
+assert.equal(healthyState?.has(appBase + '__retailos_previous_release__'), false, 'healthy boot clears only the obsolete rollback pointer');
+assert.equal(healthyState?.has(appBase + '__retailos_staged_release__/healthy-build'), false, 'healthy boot clears the completed staging marker');
 
 const initialStore = new Map();
 for (const [key, value] of cacheStore) initialStore.set(key, value);
