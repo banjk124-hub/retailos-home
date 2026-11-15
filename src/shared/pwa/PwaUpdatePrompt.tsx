@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './pwa-update-prompt.css';
+
+declare const __RETAILOS_BUILD_ID__: string;
 import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 import { getPwaUpdateBlockReason } from './updateSafety';
 
