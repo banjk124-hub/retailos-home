@@ -191,6 +191,9 @@ assert.doesNotMatch(dataService, /registerRetailOsServiceWorker|SKIP_WAITING|APP
 const updateStore = await read('../src/shared/pwa/updateCenterStore.ts');
 const settingsHub = await read('../src/features/home/components/SettingsHub.tsx');
 const dockItem = await read('../src/shared/navigation/LiquidDockItem.tsx');
+const stocktakeModule = await read('../src/features/stocktake/components/StocktakeModule.tsx');
+const stocktakeImportModule = await read('../src/features/stocktake-import/components/StocktakeImportModule.tsx');
+const updateSafety = await read('../src/shared/pwa/updateSafety.ts');
 assert.match(updateStore, /localStorage\.setItem\(STORAGE_KEY/,
   'update deferral metadata must persist beyond the current React page session');
 assert.match(updateStore, /inCenter/);
@@ -237,3 +240,14 @@ assert.match(homeScreen, /retailos:open-settings/,
   'the deferred confirmation must provide a working route to Settings');
 assert.match(settingsHub, /scanner-settings-update-tag/,
   'Settings must visibly distinguish a pending update from an empty Update Center');
+
+assert.match(stocktakeModule, /registerPwaUpdateBlocker\('stocktake'/,
+  'active Stocktake work must register an update activation blocker');
+assert.match(stocktakeImportModule, /registerPwaUpdateBlocker\('stocktake-import'/,
+  'Stocktake Import work must register an update activation blocker');
+assert.match(updateSafety, /Camera đang hoạt động/,
+  'an active camera stream must block update activation');
+assert.match(updateSafety, /Biểu mẫu đang có thay đổi chưa được gửi hoặc lưu/,
+  'dirty form edits must block update activation');
+assert.match(updateSafety, /Đang có tệp được chọn/,
+  'selected files must block update activation until import is complete');
