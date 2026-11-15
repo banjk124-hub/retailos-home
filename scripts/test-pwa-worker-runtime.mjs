@@ -183,6 +183,13 @@ assert.equal(cacheStore.has(oldShellCache), true, 'old shell is retained through
 assert.equal(cacheStore.has(oldAssetCache), true, 'old assets are retained throughout candidate staging');
 assert.ok(progressMessages.some((message) => message.type === 'RELEASE_DOWNLOAD_PROGRESS'), 'download progress is reported');
 assert.equal(progressMessages.at(-1)?.type, 'RELEASE_STAGED', 'staging reports completion only after verification');
+const resumedInfo = [];
+await worker.runExtendable('message', {
+  data: { type: 'GET_RELEASE_INFO' },
+  ports: [{ postMessage(message) { resumedInfo.push(message); } }],
+  source: currentClient,
+});
+assert.equal(resumedInfo[0]?.staged, true, 'a re-opened app can resume activation without asking for download consent again');
 assert.equal(cacheStore.has('retailos-pwa-state'), true, 'staged-release metadata is stored separately from business data');
 
 await worker.runExtendable('message', {
