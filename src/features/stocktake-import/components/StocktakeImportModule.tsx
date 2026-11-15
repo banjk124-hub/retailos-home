@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet, Info,
   FileText, History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
@@ -186,7 +186,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
 
   useEffect(() => { void refreshHistory(); }, []);
 
-  useEffect(() => registerPwaUpdateBlocker('stocktake-import', () => {
+  useLayoutEffect(() => registerPwaUpdateBlocker('stocktake-import', () => {
     const state = pwaUpdateStateRef.current;
     if (state.busy || state.historyBusy || state.historyExportingId) {
       return 'Stocktake Import đang xử lý hoặc đồng bộ lịch sử trên thiết bị.';
