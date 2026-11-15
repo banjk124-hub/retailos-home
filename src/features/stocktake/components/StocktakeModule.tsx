@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import StocktakeScanner from './StocktakeScanner';
@@ -137,7 +137,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     return () => { active = false; };
   }, [resolvedEmployeeCode, employee.name, employee.department, refresh]);
 
-  useEffect(() => registerPwaUpdateBlocker('stocktake', () => {
+  useLayoutEffect(() => registerPwaUpdateBlocker('stocktake', () => {
     const state = pwaUpdateStateRef.current;
     if (state.busy) return 'Stocktake đang ghi hoặc đọc dữ liệu kiểm kê.';
     if (state.scannerOpen) return 'Máy quét đang hoạt động. Hãy đóng phiên quét trước khi cập nhật.';
