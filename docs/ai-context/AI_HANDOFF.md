@@ -16,7 +16,7 @@
 ## Runtime implementation
 - Build emits `release-manifest.json` with exact build ID, version, notes, resource paths, byte sizes and SHA-256 hashes.
 - Update worker install does not stage candidate payload. First install is the only automatic staging case.
-- Waiting worker serves metadata-only discovery. User consent starts full payload staging in isolated caches, batch size eight.
+- Waiting worker serves metadata-only discovery. User consent starts full payload staging in isolated caches, batch size two with storage-budget preflight.
 - Worker verifies HTTP status, size, SHA-256 and cache read-back; failure removes only candidate caches.
 - UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
 - A completed staged release resumes without renewed consent after app restart.
