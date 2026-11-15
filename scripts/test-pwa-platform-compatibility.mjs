@@ -26,6 +26,9 @@ assert.match(promptCss, /env\(safe-area-inset-right\)/);
 assert.match(promptCss, /env\(safe-area-inset-bottom\)/);
 assert.match(promptCss, /@media\s*\(max-width:\s*560px\)/);
 assert.match(promptCss, /min-height:\s*40px/);
+assert.match(promptCss, /\.pwa-update-prompt\.is-modal/);
+assert.match(promptCss, /\.pwa-update-prompt\.is-busy/);
+assert.match(promptCss, /\.pwa-update-prompt\.is-collapsed/);
 
 // Registration must use the Vite project base, not an origin-root URL.
 assert.match(registration, /import\.meta\.env\.BASE_URL\s*\+\s*'sw\.js'/);
