@@ -20,7 +20,9 @@ assert.match(installHandler, /caches\.delete\(ASSET_CACHE\)/,
   'an incomplete release must discard only its own partial cache');
 assert.match(vite, /BUILD_ID/);
 assert.match(vite, /__RETAILOS_BUILD_ID__/);
-assert.match(vite, /\.wasm/);
+assert.match(vite, /Object\.keys\(bundle\).*assets/);
+assert.match(vite, /publicAssets\.push/);
+assert.match(wasmAdapter, /zxing-wasm\\/reader\\/zxing_reader\\.wasm\\?url/);
 assert.match(vite, /transformIndexHtml/);
 assert.match(vite, /APP_BOOT_FAILED/);
 assert.match(worker, /APP_BOOT_OK/);
