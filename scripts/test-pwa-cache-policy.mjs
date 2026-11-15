@@ -201,8 +201,12 @@ assert.match(prompt, /status: 'deferred'/,
   'deferral must be persisted for the exact candidate BUILD_ID');
 assert.match(prompt, /onClick=\{tryActivate\}/,
   'activation must be reachable only through an explicit user action');
-assert.doesNotMatch(prompt, /tryActivate\(\);/,
-  'staging completion and blocker-clear events must never auto-activate');
+assert.match(prompt, /onClick=\{tryActivate\}/,
+  'activation must remain behind an explicit user click');
+assert.match(prompt, /action === 'download' \|\| action === 'activate'/,
+  'Update Center activation commands must be explicit UI actions, not lifecycle side effects');
+assert.doesNotMatch(prompt, /RetailOS sẽ tự thử lại/,
+  'activation failures must not promise or trigger automatic retries');
 assert.match(prompt, /retailos:update-center-action/,
   'Update Center actions must be routed to the existing Service Worker lifecycle');
 assert.match(settingsHub, /function UpdateCenterView/,
