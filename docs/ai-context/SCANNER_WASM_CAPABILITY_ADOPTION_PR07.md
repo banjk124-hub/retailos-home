@@ -1,3 +1,5 @@
+> **Historical status clarification (2026-11-15):** The Code39 Extended row below records the PR-07 decision to defer the variant policy. Phase A now aligns the shared CODE_39 validator with the adapter's Code39Std/Code39Ext family mapping by accepting printable ASCII and rejecting controls. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and PR #118 for the current contract. This does not change the fact that this document is a historical snapshot.
+
 **Historical status note (2026-11-14):** This document records the PR-07 migration stage. PR-08 subsequently switched the production factory to ZXing-C++ WASM, and PR-09 removes the retired ZXing JS adapter/dependency. Current runtime and benchmark are WASM-only; physical optical/device acceptance remains a separate release gate.
 
 # PR-07 — ZXing-C++ WASM capability adoption matrix

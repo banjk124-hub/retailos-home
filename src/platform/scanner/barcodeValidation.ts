@@ -44,9 +44,11 @@ export function validateBarcodePayload(
   const normalized = preservesText ? value : value.trim();
   if (normalized.length === 0) return invalid('empty');
 
-  // GS (ASCII 29) is retained for GS1/2D payloads; other control characters
-  // are rejected to avoid invisible data corrupting lookups or UI state.
-  const allowsGroupSeparator = ['QR_CODE', 'DATA_MATRIX', 'PDF_417', 'AZTEC', 'MAXICODE', 'MICRO_QR_CODE', 'RSS_EXPANDED'].includes(symbology);
+  // GS (ASCII 29) is a meaningful separator in GS1-128 as well as selected
+  // 2D/GS1 payloads. Permit only this one control character for CODE_128;
+  // all other controls remain rejected before the payload reaches consumers.
+  const allowsGroupSeparator = symbology === 'CODE_128'
+    || ['QR_CODE', 'DATA_MATRIX', 'PDF_417', 'AZTEC', 'MAXICODE', 'MICRO_QR_CODE', 'RSS_EXPANDED'].includes(symbology);
   const controlPattern = allowsGroupSeparator
     ? /[\u0000-\u0008\u000A-\u001C\u001E-\u001F\u007F]/
     : /[\u0000-\u001F\u007F]/;
@@ -68,7 +70,10 @@ export function validateBarcodePayload(
     case 'CODE_128':
       return { valid: true, reason: 'accepted' };
     case 'CODE_39':
-      if (!/^[A-Z0-9 .$\x2F+%\-]+$/.test(normalized)) return invalid('invalid-character');
+      // ZXing-C++ reports both Code39Std and Code39Ext under the shared
+      // RetailOS CODE_39 family. Extended mode legitimately decodes the
+      // printable ASCII range, including lowercase characters.
+      if (!/^[\x20-\x7E]+$/.test(normalized)) return invalid('invalid-character');
       return { valid: true, reason: 'accepted' };
     case 'CODE_93':
       if (!/^[\x20-\x7E]+$/.test(normalized)) return invalid('invalid-character');
@@ -77,7 +82,9 @@ export function validateBarcodePayload(
       if (!/^\d{2,}$/.test(normalized) || normalized.length % 2 !== 0) return invalid('invalid-length');
       return { valid: true, reason: 'accepted' };
     case 'CODABAR':
-      if (!/^[0-9$+:\x2F.\-]+$/.test(normalized)) return invalid('invalid-character');
+      // The pinned zxing-wasm API includes Codabar start/stop characters.
+      // Require exactly one A-D guard at each end and data characters inside.
+      if (!/^[A-D][0-9$+:\x2F.\-]+[A-D]$/.test(normalized)) return invalid('invalid-character');
       return { valid: true, reason: 'accepted' };
     case 'RSS_14':
       if (!/^\d{14}$/.test(normalized)) return invalid('invalid-length');

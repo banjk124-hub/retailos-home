@@ -2,7 +2,7 @@ import { prepareZXingModule, readBarcodes, ZXING_WASM_VERSION, type ReaderOption
 import readerWasmUrl from 'zxing-wasm/reader/zxing_reader.wasm?url';
 import { SUPPORTED_BARCODE_FORMATS, type ScannerSymbology } from '../contracts';
 import { resolveScannerRoiCrop } from '../scannerRoi';
-import { resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
+import { MAX_DECODE_CANDIDATE_PIXELS, resolveScannerRoiBaseDimensions, resolveScannerRoiScaleCandidates } from '../scannerScale';
 import { measureScannerFocusQuality } from '../scannerFocusQuality';
 import { createScannerTemporalSnapshot, type ScannerTemporalSnapshot } from '../scannerTemporalRecognition';
 import { measureScannerImageQuality, type ScannerImageQuality } from '../scannerImageEnhancement';
@@ -323,7 +323,7 @@ export class ZXingWasmDecoderAdapter implements ScannerDecoderAdapter {
   ): Promise<DecoderOutput | null> {
     if (this.disposed || !this.options || !Number.isSafeInteger(width) || !Number.isSafeInteger(height)
       || width < 1 || height < 1 || luminance.length !== width * height
-      || luminance.length > 1_500_000) return null;
+      || luminance.length > MAX_DECODE_CANDIDATE_PIXELS) return null;
 
     const rgbaStartedAt = performance.now();
     const rgba = new Uint8ClampedArray(luminance.length * 4);

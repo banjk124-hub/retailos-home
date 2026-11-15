@@ -1,4 +1,38 @@
-# Current handoff — UI overlay stabilization (2026-11-14)
+# Current handoff — Scanner Phase A correctness and documentation
+
+**Repository:** `banjk124-hub/retailos-home`
+**Branch:** `fix/scanner-phase-a-contracts-docs`
+**Base:** `main` at `c14ce79d2e1e216ea6c0c1da157211cf5abacfba`
+**Status:** Implementation and documentation changes are staged on the branch; final CI and review are pending. No merge or deploy has been performed.
+
+## Read first
+
+1. `AGENTS.md`
+2. `docs/ai-context/INDEX.md`
+3. `docs/ai-context/SCANNER_ENGINE.md` — current scanner runtime contract.
+4. `docs/ai-context/SCANNER_HISTORY.md` — historical audit and incident index.
+5. Current branch diff and final-head GitHub Actions run.
+
+## Phase A scope
+
+- Align scale candidate planning with the WASM adapter's 1.5 MP hard input guard.
+- Correct CODE-128 GS1 separator handling, CODE-39 Standard/Extended validation and CODABAR framing.
+- Add focused positive, negative and boundary regression tests.
+- Consolidate scanner documentation into one current contract and one historical index, while retaining unique incident observations.
+- Preserve camera lease, lifecycle/recovery, session cadence, strict ROI ownership, Home/Stocktake presentation and business flows.
+
+## Required gates
+
+1. Confirm test fixtures represent actual ASCII GS and control bytes (not escaped literal text).
+2. Run `npm run preflight`, TypeScript, production build and Pages build on the final PR head.
+3. Review source diff for accidental changes to camera/session/module behavior.
+4. Confirm old scanner notes remain discoverable and are clearly historical.
+5. Keep physical iOS/Android optical acceptance as a separate release gate; CI cannot substitute for it.
+
+---
+
+# Previous handoff — UI overlay stabilization (2026-11-14)
+
 
 **Repository:** `banjk124-hub/retailos-home`  
 **PR:** [#102](https://github.com/banjk124-hub/retailos-home/pull/102)  

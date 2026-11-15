@@ -93,7 +93,8 @@ assert.equal(validateBarcodePayload('4006381333931', 'EAN_13').valid, true, 'leg
 assert.equal(validateBarcodePayload('123456', 'ITF').valid, true, 'even-length numeric ITF is accepted');
 assert.equal(validateBarcodePayload('ABC123', 'CODE_93').valid, true, 'printable Code 93 Extended payload is accepted');
 assert.equal(validateBarcodePayload('HELLO-123', 'CODE_39').valid, true, 'legacy Code 39 remains valid');
-assert.equal(validateBarcodePayload('hello', 'CODE_39').reason, 'invalid-character', 'Code 39 keeps its uppercase alphabet policy');
+assert.equal(validateBarcodePayload('hello', 'CODE_39').valid, true, 'CODE_39 family accepts Code39 Extended printable ASCII output');
+assert.equal(validateBarcodePayload('hello' + String.fromCharCode(29), 'CODE_39').reason, 'control-character', 'CODE_39 still rejects non-printable controls');
 assert.equal(validateBarcodePayload('retail-qr', 'QR_CODE').valid, true, 'QR payload is treated as opaque text');
 assert.equal(validateBarcodePayload('ABC' + String.fromCharCode(0), 'QR_CODE').reason, 'control-character', 'unsafe control characters are rejected');
 console.log('Scanner configurable symbology settings, migration, allowlist and validation tests passed.');

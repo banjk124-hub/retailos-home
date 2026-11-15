@@ -14,7 +14,8 @@ export type ScannerRoiScaleCandidate = {
 
 const BASELINE_SCALE = 1.5;
 const ALTERNATE_SCALES = [1, 2] as const;
-const MAX_ALTERNATE_CANDIDATE_PIXELS = 6_000_000;
+/** One hard ceiling shared by the scale planner and the WASM input boundary. */
+export const MAX_DECODE_CANDIDATE_PIXELS = 1_500_000;
 
 // Bound the source ROI, not the entire camera frame. The old full-frame width
 // cap discarded useful sensor pixels on 1080p/4K cameras before the decoder
@@ -62,21 +63,28 @@ function dimensionsAtScale(
     ? Math.sqrt(pixelBudget / (baseWidth * baseHeight))
     : requestedScale;
   const scale = Math.min(requestedScale, budgetScale);
-  // Preserve the legacy round() result for 1.5x; floor fallback dimensions
-  // so integer rounding can never exceed the additional-candidate pixel cap.
+  // Preserve rounded 1.5x dimensions when they fit. If integer rounding
+  // crosses the shared hard budget, floor a bounded scale instead.
   const dimension = requestedScale === BASELINE_SCALE ? Math.round : Math.floor;
-  const width = Math.max(1, dimension(baseWidth * scale));
-  const height = Math.max(1, dimension(baseHeight * scale));
-  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)) return null;
+  let width = Math.max(1, dimension(baseWidth * scale));
+  let height = Math.max(1, dimension(baseHeight * scale));
+  let resolvedScale = scale;
+  if (width * height > pixelBudget) {
+    resolvedScale = Math.min(scale, Math.sqrt(pixelBudget / (baseWidth * baseHeight)));
+    width = Math.max(1, Math.floor(baseWidth * resolvedScale));
+    height = Math.max(1, Math.floor(baseHeight * resolvedScale));
+  }
+  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height)
+    || width * height > pixelBudget) return null;
 
-  return { scale, width, height, baseline: requestedScale === BASELINE_SCALE };
+  return { scale: resolvedScale, width, height, baseline: requestedScale === BASELINE_SCALE };
 }
 
 /**
- * Return the current 1.5x baseline followed by at most two bounded fallbacks.
- * The fallback dimensions are unique and each fallback stays within the
- * additional-candidate pixel budget. The baseline is intentionally unchanged
- * for compatibility with the currently deployed decode path.
+ * Return the 1.5x baseline followed by at most two bounded fallbacks.
+ * Every candidate, including the baseline, shares the exact decoder input
+ * pixel ceiling. Oversized requests are downscaled rather than emitted only
+ * to be rejected by the WASM adapter.
  */
 export function resolveScannerRoiScaleCandidates(
   baseWidth: number,
@@ -86,7 +94,7 @@ export function resolveScannerRoiScaleCandidates(
     baseWidth,
     baseHeight,
     BASELINE_SCALE,
-    Number.MAX_SAFE_INTEGER,
+    MAX_DECODE_CANDIDATE_PIXELS,
   );
   if (!baseline) return [];
 
@@ -96,7 +104,7 @@ export function resolveScannerRoiScaleCandidates(
       baseWidth,
       baseHeight,
       requestedScale,
-      MAX_ALTERNATE_CANDIDATE_PIXELS,
+      MAX_DECODE_CANDIDATE_PIXELS,
     );
     if (!candidate) continue;
     if (candidates.some((item) => item.width === candidate.width && item.height === candidate.height)) continue;

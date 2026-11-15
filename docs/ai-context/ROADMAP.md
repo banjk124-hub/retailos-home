@@ -1,3 +1,56 @@
+# Scanner runtime roadmap — current state 2026-11-15
+
+> **Current navigation:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) is the only current scanner architecture/contract document. [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) indexes retained audits, stage plans and incident evidence. The detailed PR narratives below are historical implementation records, not competing runtime specifications.
+
+## Current production baseline
+
+- PR #115 — WASM capability adoption: merged.
+- PR #116 — production cutover to lazy `ZXingWasmDecoderAdapter`: merged.
+- PR #117 — ZXing JS adapter, dependency and obsolete JS-only paths removed: merged.
+- Production factory selects ZXing-C++ WASM only (`zxing-wasm@3.1.6`); no legacy decoder fallback.
+- CI and GitHub Pages deployment passed on the post-cleanup main baseline. This does not constitute optical or physical-device acceptance.
+- Physical acceptance remains outstanding: labelled real-world corpus, iOS Safari/PWA, Android Chrome/PWA, low-end Android, Home and Stocktake end-to-end workflows.
+
+## Phase A — correctness and contract alignment (active branch)
+
+**Branch:** `fix/scanner-phase-a-contracts-docs`
+
+1. Unify the ROI candidate planner and WASM decoder around one 1.5 MP hard input budget. Preserve 1.5× as preferred baseline when it fits; bound it when it does not.
+2. Correct payload validation for GS1-128 CODE-128 (ASCII GS only), CODE-39 Standard/Extended family behavior and CODABAR start/stop framing.
+3. Add positive, negative and boundary regression fixtures.
+4. Establish one current scanner technical source of truth and one historical evidence index. Retain old incident notes; do not delete useful observations.
+5. Run final-head CI and review the full diff before merge.
+
+**Exit criteria:** no candidate can exceed the decoder input limit; valid supported payloads are not rejected by stale legacy assumptions; malformed controls/framing remain rejected; docs clearly distinguish current contracts from historical evidence; CI passes.
+
+## Phase B — optical evidence and diagnostics
+
+- Build a labelled corpus from real supermarket packaging and shelf labels, including negative samples and controlled lighting/orientation conditions.
+- Record exact match, miss, wrong decode and false-positive rates by symbology, device, browser and capture condition.
+- Extend diagnostics only for privacy-safe metrics that answer a defined QA question.
+- Capture initialization, first-result, p50/p95 decode duration and peak memory where measurable.
+
+## Phase C — low-end performance
+
+- Measure first; do not introduce a Worker or camera profile change based on assumption.
+- Evaluate a persistent Worker boundary with iOS Safari/PWA compatibility.
+- Make initial LOW profile budgets effective before repeated pressure observations.
+- Apply geometry candidate limits before expensive generation/warp work.
+- Benchmark RGBA/luminance allocation paths and experimental denoise by symbology.
+
+## Phase D — physical release acceptance
+
+- iOS Safari and installed PWA.
+- Android Chrome and installed PWA.
+- At least one low-end Android device.
+- Home lookup and Stocktake capture/save.
+- Real products, shelf labels, glare, blur, curved carriers, distance, skew, low contrast and ROI-edge cases.
+- Record exact app commit, device/browser, test corpus version and outcomes.
+
+Do not claim scanner production acceptance until these checks have actual device/corpus evidence. Keep ZXing-C++ WASM as the sole decoder; future work should improve the current engine and shared pipeline rather than restart the migration.
+
+---
+
 # Scanner runtime roadmap — 2026-11-14
 
 ## PR-08 — Production cutover to ZXing-C++ WASM (merged)
