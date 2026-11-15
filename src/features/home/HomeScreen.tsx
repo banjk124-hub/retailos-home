@@ -13,7 +13,7 @@ import { GlassSurface } from '../../shared/components/glass';
 import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
-import { lookupCachedBarcode, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
+import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
@@ -145,10 +145,13 @@ export default function HomeScreen({
   }, []);
   useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
   const [barcodeLookup, setBarcodeLookup] = useState<{
-    barcode: string;
+    query: string;
+    requestId: number;
     records: BarcodeProductRecord[] | null;
     error?: string;
+    failedSources?: string[];
   } | null>(null);
+  const barcodeLookupRequestIdRef = useRef(0);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
@@ -543,28 +546,44 @@ export default function HomeScreen({
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
   };
-  const handleBarcodeDetected = useCallback((barcode: string) => {
-    // Keep the scanner mounted for its short exit transition. The scanner
-    // component closes the session immediately and notifies us after motion.
-    cameraLeaseRequestRef.current = null;
-    setBarcodeLookup({ barcode, records: null });
+  const runBarcodeLookup = useCallback((barcode: string) => {
+    const requestId = ++barcodeLookupRequestIdRef.current;
+    setBarcodeLookup({ query: barcode, requestId, records: null });
     void lookupCachedBarcode(barcode).then(({ records, failedSources }) => {
-      setBarcodeLookup((current) => current?.barcode === barcode
-        ? {
-          barcode,
-          records,
-          error: failedSources.length > 0
-            ? `Không thể đọc đầy đủ snapshot từ: ${failedSources.join(', ')}. Kết quả có thể chưa đầy đủ.`
-            : undefined,
-        }
+      setBarcodeLookup((current) => current?.requestId === requestId
+        ? { ...current, records, failedSources }
         : current);
     }).catch((error: unknown) => {
       console.error('Không thể tra cứu thông tin cho mã barcode đã quét:', error);
-      setBarcodeLookup((current) => current?.barcode === barcode
-        ? { barcode, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
+      setBarcodeLookup((current) => current?.requestId === requestId
+        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
         : current);
     });
   }, []);
+  const handleBarcodeDetected = useCallback((barcode: string) => {
+    cameraLeaseRequestRef.current = null;
+    runBarcodeLookup(barcode);
+  }, [runBarcodeLookup]);
+  const openManualProductLookup = useCallback(() => {
+    const requestId = ++barcodeLookupRequestIdRef.current;
+    setBarcodeLookup({ query: '', requestId, records: [] });
+  }, []);
+  const submitManualProductLookup = useCallback(() => {
+    if (!barcodeLookup?.query.trim()) return;
+    const requestId = ++barcodeLookupRequestIdRef.current;
+    const query = barcodeLookup.query.trim();
+    setBarcodeLookup({ query, requestId, records: null });
+    void searchCachedProducts(query).then(({ records, failedSources }) => {
+      setBarcodeLookup((current) => current?.requestId === requestId
+        ? { ...current, records, failedSources }
+        : current);
+    }).catch((error: unknown) => {
+      console.error('Không thể tra cứu sản phẩm từ snapshot:', error);
+      setBarcodeLookup((current) => current?.requestId === requestId
+        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
+        : current);
+    });
+  }, [barcodeLookup?.query]);
   const closeBarcodeScanner = useCallback(() => {
     cameraLeaseRequestRef.current?.cancel();
     cameraLeaseRequestRef.current = null;
@@ -775,7 +794,7 @@ export default function HomeScreen({
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
-      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onManualSearch={() => { openManualProductLookup(); closeBarcodeScanner(); }} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
@@ -785,26 +804,29 @@ export default function HomeScreen({
           <span className={`barcode-result-icon ${barcodeLookup.records && barcodeLookup.records.length > 0 ? 'is-found' : ''}`}>
             {barcodeLookup.records && barcodeLookup.records.length > 0 ? <Check size={21} /> : <ScanBarcode size={21} />}
           </span>
-          <div><span className="library-eyebrow">{barcodeLookup.records === null ? 'ĐANG TRA CỨU' : 'TRA CỨU SẢN PHẨM'}</span><h2 id="barcode-result-title">{barcodeLookup.records === null ? 'Đang tìm dữ liệu' : 'Kết quả quét mã'}</h2></div>
+          <div><span className="library-eyebrow">{barcodeLookup.records === null ? 'ĐANG TRA CỨU' : 'TRA CỨU SẢN PHẨM'}</span><h2 id="barcode-result-title">{barcodeLookup.records === null ? 'Đang tìm dữ liệu' : 'Kết quả tra cứu'}</h2></div>
           <button type="button" className="barcode-scanner-close" aria-label="Đóng kết quả" onClick={() => setBarcodeLookup(null)}><X size={19} /></button>
         </header>
-        <ol className="barcode-flow-steps" aria-label="Tiến trình quét barcode">
-          <li className="is-complete"><span>01</span>Quét mã</li>
-          <li className={barcodeLookup.records === null ? 'is-active' : 'is-complete'}><span>02</span>Tra cứu</li>
-          <li className={barcodeLookup.records !== null ? 'is-active' : ''}><span>03</span>Kết quả</li>
-        </ol>
-        <div className="barcode-result-code"><span>Mã barcode</span><strong>{barcodeLookup.barcode}</strong></div>
+        
+        <form className="barcode-manual-search" onSubmit={(event) => { event.preventDefault(); submitManualProductLookup(); }}>
+          <label htmlFor="barcode-manual-query">Tên sản phẩm hoặc mã barcode</label>
+          <div className="barcode-manual-search__field">
+            <input id="barcode-manual-query" type="search" value={barcodeLookup.query} placeholder="Nhập tên, một phần tên hoặc mã…" onChange={(event) => setBarcodeLookup((current) => current ? { ...current, query: event.target.value, records: current.records === null ? null : [] , error: undefined, failedSources: undefined } : current)} />
+            <button type="submit" disabled={!barcodeLookup.query.trim()}>Tìm</button>
+          </div>
+        </form>
         {barcodeLookup.records === null
           ? <div className="barcode-lookup-loading" role="status"><span className="barcode-lookup-spinner" /><div><strong>Đang tra cứu snapshot</strong><span>Đối chiếu dữ liệu đã lưu trên thiết bị…</span></div></div>
           : barcodeLookup.records.length > 0
             ? <>
               {barcodeLookup.error && <p className="barcode-result-message" role="alert">{barcodeLookup.error}</p>}
+              {barcodeLookup.failedSources && barcodeLookup.failedSources.length > 0 && <p className="barcode-result-message" role="alert">Thiếu snapshot: {barcodeLookup.failedSources.join(', ')}. Kết quả bên dưới có thể chưa đầy đủ.</p>}
               <div className="barcode-result-records">{barcodeLookup.records.map((record, recordIndex) => <section className="barcode-result-record" key={`${record.source}-${recordIndex}`}>
                 <h3><PackageSearch size={16} />{record.source}</h3>
                 <dl>{record.values.map((item, index) => <div key={`${item.label}-${index}`}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl>
               </section>)}</div>
             </>
-            : <p className="barcode-result-message" role={barcodeLookup.error ? 'alert' : 'status'}>{barcodeLookup.error ?? 'Không tìm thấy mã này trong snapshot sản phẩm đang lưu trên thiết bị.'}</p>}
+            : <p className="barcode-result-message" role={barcodeLookup.error || (barcodeLookup.failedSources?.length ?? 0) > 0 ? 'alert' : 'status'}>{barcodeLookup.error ?? (barcodeLookup.failedSources?.length ? `Chưa thể kết luận không có sản phẩm vì thiếu snapshot: ${barcodeLookup.failedSources.join(', ')}.` : barcodeLookup.query.trim() ? 'Không tìm thấy kết quả phù hợp trong snapshot đang lưu trên thiết bị.' : 'Nhập tên sản phẩm hoặc mã barcode để bắt đầu tra cứu.')}</p>}
         <button type="button" className="barcode-result-action" onClick={() => setBarcodeLookup(null)}>Đóng</button>
       </section>
     </div>}
