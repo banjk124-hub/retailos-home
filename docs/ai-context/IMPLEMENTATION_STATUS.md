@@ -1,8 +1,8 @@
 # Current PWA runtime and release status — 2026-11-15
 
 **Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
-**Baseline:** PR #119 merged/deployed by user; includes the documentation contract introduced by PR #120 branch.  
-**Status:** Runtime implementation and regression updates are in this branch. Final-head CI, PR review and physical-device acceptance are pending. No merge or deployment.
+**Baseline:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` after PR #119. PR #120 was closed as superseded; its documentation changes are included in this branch.  
+**Status:** Runtime implementation and regression updates are in this branch. CI #1126 on the prior head passed regression suites and TypeScript but failed in Vite production build because the manifest plugin ran before final `index.html` emission. The branch now applies `enforce: 'post'` and tests that ordering; fresh exact-head CI, PR review and physical-device acceptance remain pending. No merge or deployment.
 
 ## Implemented in this branch
 
@@ -24,6 +24,13 @@
 - Safety integration: shared `cameraSession.ts`, `moduleDataService.ts`, `pushNotifications.ts`, `App.tsx`, Stocktake and Stocktake Import modules.
 - Tests: PWA policy, worker runtime and platform compatibility regression scripts.
 - Canonical design/status/handoff/ADR/roadmap documents are synchronized in the same branch.
+
+## Build failure and correction
+
+- Failure evidence: CI #1126 (`ecbc32fc`) reached `npm run preflight`, passed the regression suites and TypeScript, then failed in `retailos-pwa-artifacts.generateBundle` with `RetailOS release manifest requires the final generated index.html asset`.
+- Root cause: the custom output plugin was not ordered after Vite's HTML/build plugins, so its manifest hook could run before the finalized HTML asset was available.
+- Correction: mark the custom Vite plugin `enforce: 'post'`; add a regression assertion that protects this ordering. This retains the fail-closed requirement for a real final `index.html` and does not weaken manifest integrity.
+- Fresh exact-head CI has not yet been observed; do not treat the correction as verified until the new run completes.
 
 ## Required verification still pending
 
