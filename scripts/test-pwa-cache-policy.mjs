@@ -16,6 +16,7 @@ const [
   builtWorker,
   builtManifestText,
   releaseNotesText,
+  packageText,
 ] = await Promise.all([
   read('../src/sw/service-worker.template.js'),
   read('../vite.config.ts'),
@@ -30,9 +31,11 @@ const [
   read('../dist/sw.js'),
   read('../dist/release-manifest.json'),
   read('../release-notes.json'),
+  read('../package.json'),
 ]);
 const builtManifest = JSON.parse(builtManifestText);
 const releaseNotes = JSON.parse(releaseNotesText);
+const packageJson = JSON.parse(packageText);
 
 assert.match(worker, /retailos-pwa-/);
 assert.match(worker, /ASSET_URLS.has(url.href)/);
@@ -78,6 +81,7 @@ assert.ok(builtManifest.resources.some((item) => item.path === 'index.html' && i
 assert.ok(builtManifest.resources.some((item) => item.path === 'manifest.webmanifest' && item.cache === 'shell'));
 assert.ok(builtManifest.resources.some((item) => item.path === 'icon.svg' && item.cache === 'shell'));
 assert.equal(builtManifest.version, releaseNotes.version, 'release metadata must bind to the reviewed release notes');
+assert.equal(packageJson.version, releaseNotes.version, 'package version and release notes version must stay synchronized');
 assert.match(builtWorker, /const BUILD_ID = '[^']+'/);
 
 assert.match(prompt, /GET_RELEASE_INFO/);
