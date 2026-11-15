@@ -41,4 +41,4 @@ This file is the navigation layer for repository documentation. Read the canonic
 
 ## Historical-document policy
 
-Historical audits, phase plans and incident notes are retained when they contain unique evidence, symptoms, decisions or regression clues. They must not appear as competing current specifications. When an old document conflicts with current source or SCANNER_ENGINE.md, treat it as a historical snapshot and verify the exact resolving change before acting.
+Historical audits, phase plans and incident notes are retained when they contain unique evidence, symptoms, decisions or regression clues. They must not appear as competing current specifications. When an old document conflicts with current source or the relevant canonical contract (SCANNER_ENGINE.md or PWA_RUNTIME_RELEASE.md), treat it as a historical snapshot and verify the exact resolving change before acting.
