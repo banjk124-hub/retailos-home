@@ -1,3 +1,5 @@
+> **Historical design record.** This document captures the earlier unified pipeline stage and its ZXing-era execution assumptions. The current production engine is ZXing-C++ WASM only. For current ownership, candidate limits, validation and release gates, use [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). Preserve this file as implementation archaeology; do not use its old status, 70 ms cadence or legacy binarizer wording as current configuration.
+
 # Unified Scanner Recognition & Enhancement Pipeline
 
 **Status:** PR #80 — CI #690 passed on source/test head; physical-device QA pending.
