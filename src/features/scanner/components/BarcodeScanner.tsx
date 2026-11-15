@@ -17,7 +17,7 @@ type ScannerTransitionStyle = CSSProperties & {
 type Props = {
   onDetected: (value: string) => void;
   onClose: () => void;
-  onManualSearch?: () => void;
+  onManualSearch?: (query: string) => void;
   /** single closes through the caller after one result; continuous keeps decoding. */
   mode?: ScannerMode;
   scanCooldownMs?: number;
@@ -36,6 +36,8 @@ export default function BarcodeScanner({
   motionOrigin = null,
 }: Props) {
   const [isClosing, setIsClosing] = useState(false);
+  const [isManualSearchOpen, setIsManualSearchOpen] = useState(false);
+  const [manualQuery, setManualQuery] = useState('');
   const reticleRef = useRef<HTMLDivElement>(null);
   const [exitFrame, setExitFrame] = useState<string | null>(null);
   const onCloseRef = useRef(onClose);
@@ -116,10 +118,23 @@ export default function BarcodeScanner({
           >
             {scanner.torch.enabled ? <FlashlightOff size={19} /> : <Flashlight size={19} />}
           </button>}
-          {onManualSearch && <button className="scanner-manual-search-trigger" type="button" onClick={() => { onManualSearch?.(); handleClose(); }} aria-label="Nhập tên hoặc mã sản phẩm"><Search size={18} /><span>Nhập thủ công</span></button>}
+          {onManualSearch && <button className="scanner-manual-search-trigger" type="button" onClick={() => setIsManualSearchOpen((open) => !open)} aria-expanded={isManualSearchOpen} aria-label="Nhập tên hoặc mã sản phẩm"><Search size={18} /><span>Tìm thủ công</span></button>}
           <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng tra cứu"><X size={20} /></button>
         </header>
         {scanner.isScanning && <div ref={reticleRef} className="barcode-scan-frame" aria-hidden="true"><i /></div>}
+        {isManualSearchOpen && onManualSearch && <form className="scanner-manual-search-panel" onSubmit={(event) => {
+          event.preventDefault();
+          const query = manualQuery.trim();
+          if (!query) return;
+          onManualSearch(query);
+          handleClose();
+        }}>
+          <label htmlFor="scanner-manual-query">Tìm theo tên hoặc mã sản phẩm</label>
+          <div className="scanner-manual-search-panel__field">
+            <input id="scanner-manual-query" autoFocus value={manualQuery} onChange={(event) => setManualQuery(event.target.value)} placeholder="Nhập tên hoặc barcode…" />
+            <button type="submit" disabled={!manualQuery.trim()}>Tìm</button>
+          </div>
+        </form>}
         {!scanner.isPreviewReady && scanner.error && <div className="barcode-scanner-placeholder"><AlertTriangle size={25} /><span>Camera chưa sẵn sàng</span></div>}
         {scanner.error && <div className="barcode-scanner-error-panel" role="alert"><span>{scanner.error}</span><button className="barcode-scanner-retry" type="button" onClick={() => { void scanner.startScanner(); }}>Thử lại</button></div>}
       </div>
