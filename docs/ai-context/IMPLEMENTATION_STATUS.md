@@ -14,7 +14,7 @@
 - Download progress, retryable failure, concurrent-stage joining after page reload and staged-resume behavior are implemented.
 - Successful staging triggers automatic activation when app-wide safety blockers and the multi-window guard permit it. No second user confirmation.
 - Shared update-safety blockers cover camera leases, Stocktake, Stocktake Import, app transitions and module snapshot sync/IndexedDB cleanup and push subscription setup. Generic form dirty tracking advances baselines after successful async saves and preserves blockers when native reset is cancelled; future modules can register non-DOM blockers. If cache bytes fail revalidation, the worker deletes only candidate caches and the UI clears stale staged/activation flags before allowing a fresh consented retry.
-- Previous-release health/rollback behavior and data lifecycle separation remain protected; healthy boot retains the active-release pointer while clearing obsolete rollback/staging markers.
+- Boot health is reported after the login surface commits or HomeScreen mounts, not when the update prompt mounts. Root render failures before primary-surface readiness can still trigger rollback. Previous-release health/rollback behavior and data lifecycle separation remain protected; healthy boot retains the active-release pointer while clearing obsolete rollback/staging markers.
 - A one-time compatibility bridge treats the old PR #119 client's explicit `SKIP_WAITING` action as consent to stage. That legacy UI cannot show the new release notes/progress until it loads this version.
 
 ## Changed runtime and regression areas
