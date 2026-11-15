@@ -66,6 +66,8 @@ export default function PwaUpdatePrompt() {
   manifestRef.current = manifest;
   const [phase, setPhase] = useState<UpdatePhase>('loading-info');
   const [progress, setProgress] = useState({ completed: 0, total: 0, bytesDownloaded: 0, totalBytes: 0 });
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
   const [notice, setNotice] = useState('');
   const [blockReason, setBlockReason] = useState('');
   const [isDeferred, setIsDeferred] = useState(false);
@@ -82,8 +84,8 @@ export default function PwaUpdatePrompt() {
     const candidate = manifestRef.current;
     if (!candidate) return false;
     const previous = readUpdateCenterEntry();
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progress });
-  }, [progress]);
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current });
+  }, []);
 
   const tryActivate = useCallback(() => {
     const worker = waitingWorkerRef.current;
@@ -101,7 +103,7 @@ export default function PwaUpdatePrompt() {
       activationRequestedRef.current = false;
       isApplyingUpdate.current = false;
       setPhase('staged');
-      setNotice('Chưa thể chuyển phiên bản ở thời điểm này. RetailOS sẽ tự thử lại khi có thể.');
+      setNotice('Chưa thể chuyển phiên bản ở thời điểm này. Bạn có thể xác nhận thử lại khi đã sẵn sàng.');
     }
   }, []);
 
@@ -395,7 +397,7 @@ export default function PwaUpdatePrompt() {
 
   return (
     <aside className={`pwa-update-prompt ${isBusinessBusy ? 'is-busy' : 'is-modal'} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`} role="region" aria-label="Cập nhật RetailOS" data-business-busy={isBusinessBusy ? 'true' : 'false'}>
-      {isBusinessBusy && <button type="button" className="pwa-update-prompt__collapse" onClick={() => { if (isExpanded) { if (persistCandidate('deferred', true)) { setIsDeferred(true); setIsExpanded(false); } else setNotice('Không thể lưu lựa chọn lúc này. Hãy kiểm tra dung lượng lưu trữ của trình duyệt rồi thử lại.'); } else setIsExpanded(true); }} aria-expanded={isExpanded}>{isExpanded ? 'Thu gọn' : 'Cập nhật đang chờ'}</button>}
+      {<button type="button" className="pwa-update-prompt__collapse" onClick={() => { if (isExpanded) { if (persistCandidate('deferred', true)) { setIsDeferred(true); setIsExpanded(false); } else setNotice('Không thể lưu lựa chọn lúc này. Hãy kiểm tra dung lượng lưu trữ của trình duyệt rồi thử lại.'); } else setIsExpanded(true); }} aria-expanded={isExpanded}>{isExpanded ? 'Thu gọn' : 'Cập nhật đang chờ'}</button>}
       <div className="pwa-update-prompt__content">
       <div className="pwa-update-prompt__header">
         <div className="pwa-update-prompt__eyebrow">RETAILOS · PHIÊN BẢN MỚI</div>
