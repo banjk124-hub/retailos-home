@@ -143,6 +143,8 @@ assert.match(errorBoundary, /retailosBootHealthy/);
 assert.match(registration, /updateViaCache:\s*'none'/);
 assert.match(registration, /import\.meta\.env\.BASE_URL\s*\+\s*'sw\.js'/);
 assert.match(push, /registerRetailOsServiceWorker/);
+assert.match(push, /registerPwaUpdateBlocker\('push-subscription'/);
+assert.match(push, /notifyPwaUpdateSafetyChanged/);
 assert.doesNotMatch(dataService, /registerRetailOsServiceWorker|SKIP_WAITING|APP_BOOT_OK|APP_BOOT_FAILED/,
   'data refresh services must not control application release activation or boot lifecycle');
 
