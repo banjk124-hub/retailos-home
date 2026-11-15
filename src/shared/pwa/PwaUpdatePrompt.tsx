@@ -151,16 +151,6 @@ export default function PwaUpdatePrompt() {
     let disposed = false;
     let installingWorker: ServiceWorker | null = null;
 
-    const reportHealthyBoot = () => {
-      document.documentElement.dataset.retailosBootHealthy = 'true';
-      navigator.serviceWorker.controller?.postMessage({
-        type: 'APP_BOOT_OK',
-        buildId: __RETAILOS_BUILD_ID__,
-      });
-      window.dispatchEvent(new Event('retailos:boot-healthy'));
-    };
-    reportHealthyBoot();
-
     const loadCandidateInfo = async (worker: ServiceWorker) => {
       waitingWorkerRef.current = worker;
       stagedRef.current = false;
@@ -263,7 +253,6 @@ export default function PwaUpdatePrompt() {
     };
 
     const handleControllerChange = () => {
-      reportHealthyBoot();
       if (!isApplyingUpdate.current || hasReloaded.current) return;
       hasReloaded.current = true;
       window.location.reload();
