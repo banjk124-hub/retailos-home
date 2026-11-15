@@ -1,192 +1,167 @@
 # RetailOS PWA runtime and user-approved release architecture
 
-**Status:** The complete-asset staging and rollback foundation from PR #119 is merged and deployed (deployment confirmed by the user). A source audit of the deployed `main` snapshot found that the current update consent boundary is in the wrong place. This document is the canonical contract for future PWA runtime, release, offline and deployment work. The target user-approved download flow described below is **not yet implemented**.
+**Status:** Runtime implementation is present on branch `feat/pwa-consent-gated-release-runtime`, based on PR #119's deployed offline-cache/rollback foundation and the documentation contract from PR #120. Final CI, PR review and physical Android/iOS/Desktop acceptance are pending. This is the canonical source of truth for every future application release and deployment.
 
 ## 1. Product contract
 
-RetailOS must behave like an operating system with versioned application releases, not like a website that silently replaces its running code.
+RetailOS has two independent lifecycle domains:
 
-There are two independent lifecycle domains:
-
-1. **Application Release Lifecycle:** application shell, UI/UX, components, modules, business logic, runtime libraries, workers, WASM, fonts, icons, images and other resources required to run the release.
+1. **Application Release Lifecycle:** application shell, UI/UX, components, modules, business logic, runtime libraries, workers, WASM, fonts, icons, images and every resource required to run the application.
 2. **Data Lifecycle:** lookup data, snapshots, operational records, calculated/derived data, IndexedDB content and data refresh/recalculation.
 
-A new application capability or a new mechanism that changes how data is processed is an application change. New records, refreshed snapshots, lookup results or recalculation using existing mechanisms are data changes.
+A new capability, module, UI/UX behavior, runtime dependency or new mechanism that changes how data is processed is an application change. New records, refreshed snapshots, lookup results and recalculation using existing application logic are data changes.
 
 **Data-only activity must never trigger an application release, Service Worker activation, application reload or release-cache cleanup.** Application deployment must not clear or rewrite business data.
 
 ## 2. Required update experience
 
-The user must see release information and explicitly approve downloading the new application payload. Consent is for the download; there is no second activation confirmation.
+The required user journey is:
 
-Required flow:
+1. **Discover:** detect a newer build. Fetch only small release metadata; do not fetch candidate JS/CSS/WASM/media/module payload.
+2. **Explain:** display current and candidate version, release title/summary, new capabilities/modules, UI/UX changes, fixes, compatibility notes, operational warnings and estimated payload size.
+3. **Ask once:** user explicitly approves download or defers. Deferring keeps the active release selected and usable.
+4. **Stage:** after approval, download every required application resource into isolated candidate caches. Show progress by bytes and resource count.
+5. **Verify:** verify response status, exact byte size, SHA-256, manifest completeness and cache read-back. A partial/corrupt candidate cannot activate.
+6. **Auto-activate:** after successful staging, automatically activate when the application is at a safe handoff point and no other RetailOS window blocks takeover. There is no second confirmation.
+7. **Boot health:** the new app reports healthy startup for its exact build ID.
+8. **Rollback:** if boot health fails, restore the last-known-good shell and matching assets. Never touch business data.
 
-1. **Discover:** detect that a newer release is available. Discovery may retrieve small release metadata, but must not download the new application runtime payload.
-2. **Explain:** show a release information view before download:
-   - current version and available version;
-   - new capabilities and modules;
-   - UI/UX and workflow changes;
-   - fixes and performance/security improvements;
-   - compatibility notes, known limitations and important operational warnings;
-   - estimated download size where available.
-3. **Ask once:** user chooses to download/update or defer. Deferring leaves the current release selected and usable. No runtime asset staging begins before approval.
-4. **Download and stage:** after approval, download the complete release payload into isolated staging storage. Show progress, downloaded/total bytes where measurable, and actionable failure/retry state.
-5. **Verify:** verify every required resource and release identity/integrity. A partial, corrupt or incompatible payload is not ready and cannot activate.
-6. **Auto-activate:** after successful verification, activate the new release automatically. Do not ask for a second confirmation. Coordinate a safe handoff so an active operational action or unsaved user input is not silently lost; if safe handoff is not yet possible, defer activation until the app reaches a safe point.
-7. **Boot health:** start the new release and report health against its exact build ID.
-8. **Rollback:** if the new release fails its boot-health contract, restore the last-known-good release and its own assets without touching business data.
+The active release remains available while a candidate is discovered, deferred, downloaded or rejected. If the download fails or connectivity is lost, only the candidate's partial caches are removed.
 
-The user may continue using the old release while a new release is merely available or being downloaded. If download fails or the device goes offline, discard only the incomplete staging payload and keep the old release selected and usable.
+## 3. Release discovery and consent boundary
 
-## 3. Consent boundary and Service Worker design constraint
+The browser downloads a changed Service Worker control script as part of its update mechanism. That script is control-plane code, not the application payload. For an update, its `install` event must complete without downloading the candidate runtime.
 
-**Current implementation does not satisfy the required consent boundary.**
+Current implementation:
 
-The browser's Service Worker update lifecycle is important: once a changed worker script is discovered and installed, its `install` event runs automatically. The current worker performs full shell and asset precache inside that event. Therefore the current sequence is:
+- A first installation (no active Service Worker) stages its initial shell/runtime so the first installation can become offline-capable.
+- An update installation detects an existing `self.registration.active` and does **not** stage the candidate payload.
+- The new worker becomes waiting while the old worker continues serving the selected release.
+- The active app asks the waiting worker for `GET_RELEASE_INFO`. The candidate worker fetches only `release-manifest.json?build=<BUILD_ID>`, validates it and returns the manifest.
+- The UI displays the exact manifest notes and estimated size. No candidate application resource is fetched before the user selects **Tải và cập nhật**.
+- Deferring hides the candidate prompt for the current page session; the old release remains active and the candidate can be reviewed again later.
 
-`detect worker update → automatically download/precache all assets → waiting worker → show prompt → user accepts activation`
+Do not move precache back into the update `install` event. Do not assume that moving `skipWaiting()` or changing the React prompt alone establishes consent.
 
-The required sequence is:
+### One-time migration bridge
 
-`discover release metadata → show release notes → user approves → download/stage all runtime assets → verify → auto-activate`
+Devices currently running the PR #119 client do not yet understand `GET_RELEASE_INFO` or `STAGE_RELEASE`. For the first rollout only, the new worker treats that old client's explicit `SKIP_WAITING` action as consent to stage the candidate, then activates after staging. The legacy client cannot display the new release notes or byte progress because its UI predates this protocol. This is a one-time compatibility bridge; after the device has loaded this release, subsequent updates use the complete consent/release-notes/progress flow.
 
-The current UI asks for permission to activate a release that has already been downloaded; it does **not** ask permission before downloading. It also provides only generic update copy, not structured release notes.
+If a legacy-bridge download fails, the old release and its data remain intact. Since the old UI cannot display the new stage-failure message, reload the old app to re-open the update action and retry. Do not clear browser storage.
 
-Future implementation must separate release discovery/control-plane from the application payload. Investigate and implement a design where the existing active release remains the serving runtime while the approved payload is staged in release-specific storage. The browser may still need to fetch a small Service Worker control script as part of its own update mechanism; that control-plane fetch must not be confused with downloading the new application's modules, UI, libraries and media. No substantial runtime payload may be staged before user approval.
+## 4. Build-bound release manifest and notes
 
-Do not assume that moving `skipWaiting()` or changing the React prompt alone solves this problem. The consent boundary must be enforced by the actual download/staging mechanism and covered by runtime tests.
+Every application build publishes `release-manifest.json`, generated by `vite.config.ts` from the exact output bundle and `release-notes.json`.
 
-## 4. Release manifest and release notes
+Manifest fields include:
 
-Every deployable application release must publish a machine-readable release manifest alongside human-readable notes. At minimum it identifies:
+- `schemaVersion`, immutable `buildId`, Vite `base`, `publishedAt`, user-facing `version`;
+- `title`, `summary`, `sections`, `compatibility` and `warnings`;
+- `resources[]`: relative `path`, cache class (`shell` or `assets`), exact byte `size` and SHA-256 digest.
 
-- immutable `buildId` / release ID;
-- semantic or user-facing version;
-- release publication timestamp;
-- minimum compatible runtime/data-contract version where applicable;
-- complete runtime asset inventory, including paths and integrity metadata (for example content hash and byte size);
-- release-note sections: new capabilities/modules, UI/UX changes, fixes, performance/security changes, compatibility notes, known limitations and operational warnings.
+The inventory includes:
+- `index.html`, `manifest.webmanifest` and `icon.svg` as shell resources;
+- all emitted Vite chunks/assets, CSS, imported images/fonts and WASM;
+- all files recursively under `public/` except source maps and the three shell resources.
 
-The release information shown to staff must be derived from the manifest/release notes for that exact candidate release, not hardcoded generic text. Missing or invalid metadata must fail closed: do not start downloading or activating an unidentifiable release.
+The ZXing `zxing_reader-*.wasm` binary is a required resource. Lazy module evaluation is allowed; lazy first-time network downloading after activation is not.
 
-Release notes are part of the deployment contract. Every PR intended for a user-visible release must state the user-facing changes or explicitly state that it contains no user-visible change. Deployment must publish the matching notes and payload as one coherent release.
+`release-notes.json` is the human-authored source for the candidate notes. Its `version` must match `package.json` and `package-lock.json`; the build-policy regression checks this. Every user-visible release must update the notes. If a change has no user-visible impact, state that explicitly rather than reusing stale feature claims.
 
-## 5. Runtime asset inventory
+Missing/mismatched metadata, duplicate paths, missing resources, invalid hashes or incomplete shell inventory fail closed before staging.
 
-The Vite build plugin in `vite.config.ts` currently creates the deployment-specific Service Worker and injects:
-
-- `BUILD_ID`: GitHub commit SHA prefix in CI/deployment; local build identifier for local builds.
-- `APP_BASE`: Vite deployment base, including GitHub Pages `/retailos-home/`.
-- `ASSET_PATHS`: emitted Vite assets under `assets/` plus files recursively under `public/`, excluding source maps.
-
-The inventory includes JavaScript chunks, CSS, imported images/fonts and `zxing-wasm/reader/zxing_reader.wasm?url`. WASM is a required runtime dependency, not an optional online download.
+## 5. Candidate staging and integrity
 
 The maintained worker source is `src/sw/service-worker.template.js`. Never edit generated `dist/sw.js` directly.
 
-The release inventory must cover every resource needed by every feature, including modules not opened during the current session. Lazy loading may defer module evaluation/initialization to reduce startup and memory cost, but it must not defer the first network download of a release resource until the user opens that module. **Lazy execution is allowed; lazy first-time downloading after release activation is not.**
+- Candidate caches are isolated by build ID: `retailos-pwa-shell-<BUILD_ID>` and `retailos-pwa-assets-<BUILD_ID>`.
+- The waiting worker handles `STAGE_RELEASE` only after explicit consent.
+- Resources are downloaded in sequential batches of eight, with bounded concurrency inside each batch.
+- Each response must be successful and non-opaque; the worker checks exact byte length and SHA-256 before writing it to the candidate cache.
+- Shell and asset resources are written only to their intended release caches. The root navigation alias is created from the verified `index.html`.
+- The worker verifies every expected cache entry and writes a staged-release marker only after all resources are present.
+- The active worker continues to serve only the active release while staging runs.
+- On network, quota, response, size, digest or cache failure, the worker removes only the candidate shell/assets and staged marker. The active release is not changed.
+- If a user closes the app after successful staging, the staged marker survives. On the next app launch, `GET_RELEASE_INFO` reports `staged: true`; the UI resumes safe auto-activation without asking for download consent again.
 
-External runtime dependencies must either be bundled/version-pinned and included in the inventory or explicitly declared as online-only capabilities. A release cannot claim fully offline runtime if a required dependency is omitted.
+The manifest itself is small control-plane metadata and is fetched with a build-specific query to avoid stale HTTP cache responses. It is not part of business-data storage or the immutable runtime asset cache.
 
-## 6. Staging, integrity and activation invariants
+## 6. Safe handoff and automatic activation
 
-- Each release has isolated shell and asset storage. Never mix assets from different release IDs.
-- Download into staging storage that cannot become the serving release until every required item is present and verified.
-- Verify response status, expected size/hash where available, cache read-back, release ID and manifest completeness.
-- Bound download concurrency/batch size for mobile memory/network constraints; report progress without blocking the old application.
-- On quota, network, integrity or storage failure, clean only the failed candidate's staging data. Preserve the active release and its caches.
-- Activation is atomic from the application's perspective: the selected shell and every referenced runtime asset must belong to the same release.
-- After approval and successful verification, activation is automatic. There is no second user action for switching.
-- Protect unsaved operational work and coordinate multiple open RetailOS windows/tabs. A blocked handoff must be visible and retryable; do not silently claim the update completed.
-- Keep the previous known-good release until the new build passes health verification. Do not clean rollback assets early.
+After `RELEASE_STAGED`, `PwaUpdatePrompt` invokes the activation coordinator automatically. No second user click is required.
 
-The exact technical mechanism (message-driven staging, release-specific caches, worker handoff or another browser-compatible design) must be selected only after source audit and platform testing. Preserve the product contract even if browser constraints require a different implementation from the current PR #119 design.
+The shared `updateSafety.ts` registry supports module-owned blockers. Current integrations cover:
 
-## 7. Current source audit — deployed main after PR #119
+- **Camera platform:** the shared camera lease service blocks while a camera request is pending or any live camera lease exists. This covers Home and Stocktake scanner sessions, including permission/acquisition before the video element mounts.
+- **Stocktake:** blocks while a read/write operation is busy, scanner is open, a zone confirmation is pending, or barcode/zone/entry edits remain in progress.
+- **Stocktake Import:** blocks during import/save/export/history operations, active row editing, dirty zones, pending import conflict review, unsaved history or confirmation dialogs.
+- **Application transitions:** blocks while login/home identity transitions or logout/data cleanup are running.
+- **Generic interaction guard:** avoids reloading while a text control/contenteditable surface is actively being edited or a file selection is pending.
 
-This is an audit of source behavior, not a claim of physical-device acceptance.
+Modules with non-DOM unsaved state must register a blocker and call `notifyPwaUpdateSafetyChanged()` whenever their safe/unsafe state changes. Do not rely only on DOM inspection for future modules.
 
-### Implemented foundation
+The worker separately checks all same-origin clients within the RetailOS base path. Another open RetailOS tab/window blocks takeover. The UI shows the reason and retries when the current tab regains focus/visibility or a module signals that its operation is safe. Do not forcibly close another tab or silently discard its state.
 
-- Vite inventories emitted/public runtime assets, including ZXing WASM.
-- The current Service Worker install handler downloads the shell and complete asset inventory in batches, then verifies cache read-back.
-- Failed installation deletes only the candidate release's partial shell/assets caches.
-- Active release shell and assets are pinned to release-specific caches.
-- Previous release caches are retained through boot probation.
-- Matching-build boot failure can select the previous cached release; matching-build healthy boot allows old-cache cleanup.
-- The update prompt is centralized in `PwaUpdatePrompt`.
-- Data snapshots and business records are not part of the immutable release asset inventory.
+Once safe and single-client, the app sends `ACTIVATE_RELEASE`; the worker confirms the staged marker and calls `skipWaiting()`. The controller change triggers one reload.
 
-### Gaps against the product contract
+## 7. Boot health and rollback
 
-1. **Consent happens too late:** full asset download occurs in the Service Worker `install` event before the prompt is shown. The user currently approves activation, not download.
-2. **Release notes are absent:** `PwaUpdatePrompt` displays generic text and does not show versioned capabilities, UI/UX changes, fixes, warnings or estimated size.
-3. **Activation is user-triggered:** the current `Cập nhật` button sends `SKIP_WAITING`; activation and reload follow. The required behavior is one consent before download, then automatic activation after verified staging.
-4. **Progress UX is absent:** there is no user-facing staged-download progress/retry contract.
-5. **Automated tests validate the current install-time precache behavior:** they prove asset staging and rollback mechanics, but do not prove that no application payload is downloaded before user consent, nor that release notes are displayed and bound to the exact build.
-6. **Physical-device acceptance is separate:** source tests do not prove Android/iOS browser behavior, storage quota behavior, offline operation or safe handoff on real devices.
+Activation does not immediately delete the previous release.
 
-Do not describe the current implementation as fully matching the user-approved download flow until these gaps are implemented and verified.
+- The worker records the previous active release before selecting the new build.
+- `PwaUpdatePrompt` reports `APP_BOOT_OK` with the exact build ID after the app root mounts.
+- `AppErrorBoundary` reports `APP_BOOT_FAILED` only before root health is established.
+- The HTML bootstrap watchdog reports failure if healthy startup is not observed within 30 seconds.
+- A matching new-build health report permits cleanup of old release caches.
+- A matching new-build failure selects the recorded previous release, removes the failed candidate caches and navigates the client back to the old cached shell.
+- A rolled-back app reporting healthy cannot mark the failed new build healthy or delete its own caches.
+- If no previous release exists, the worker reports `UPDATE_ROLLBACK_UNAVAILABLE`; never claim rollback succeeded.
+
+Rollback protects the application release only. It must not delete, migrate or rewrite IndexedDB, authentication/session state, Stocktake history, Stocktake Import history or business snapshots.
 
 ## 8. Data lifecycle boundary
-
-Data refresh belongs to data services and snapshot lifecycle, not the Service Worker release manifest.
 
 - Do not put API responses, user-specific records, lookup data, snapshots or calculated business records in immutable release asset caches.
 - Do not increment `BUILD_ID` for snapshot refresh, lookup refresh or recalculation using existing application logic.
 - Do not stage/activate an application release, reload the page or clear release caches for data-only updates.
-- Preserve IndexedDB/local persistence, offline records, authentication/session semantics and explicit-save behavior across application releases.
-- A new calculation engine, data-processing mechanism, feature, module or schema-aware capability is an application change and must ship through the release process.
-- If an application release requires a data-schema migration, declare a versioned migration and compatibility/rollback plan. Do not disguise it as an ordinary data refresh.
+- Preserve IndexedDB/local persistence, offline records, authentication/session semantics and explicit-save behavior across releases.
+- A new calculation engine, processing mechanism, feature, module or schema-aware capability is an application change and must ship through the release process.
+- If a release requires a data-schema migration, declare a versioned migration and compatibility/rollback plan.
 
-## 9. Required automated regression coverage
+## 9. Automated regression coverage
 
-Tests must assert behavior, not merely search for source strings.
+The following scripts are part of `npm run preflight`:
 
-- Discovery can obtain release metadata without downloading the candidate runtime payload.
-- Before explicit user approval, candidate JS/CSS/WASM/media/module assets are not fetched or staged.
-- Deferring the update leaves the current release and offline behavior unchanged.
-- After approval, every manifest asset is downloaded and verified, including lazy module chunks and WASM.
-- Download progress and retry/error states are correct; failed or interrupted staging cannot change the active release.
-- A complete candidate becomes ready and auto-activates without a second confirmation.
-- Activation does not mix release assets or discard the last-known-good release before healthy boot.
-- New-build boot failure rolls back to the previous shell and its matching assets, including offline.
-- Data-only refresh/recalculation does not change build ID, trigger release staging, reload, or delete data.
-- Release notes shown to the user match the exact candidate build ID.
-- Multi-tab behavior and unsaved-work handoff are deterministic and tested.
+- `scripts/test-pwa-cache-policy.mjs`: manifest, SHA-256 inventory, WASM presence, consent boundary, release notes/version parity, app-wide blockers and data lifecycle separation.
+- `scripts/test-pwa-worker-runtime.mjs`: no payload download on update install, metadata-only discovery, consent-gated staging, progress, complete cache verification, retry cleanup, multi-window handoff, staged-resume, legacy bridge, offline rollback and first-install behavior.
+- `scripts/test-pwa-platform-compatibility.mjs`: GitHub Pages base path, iOS safe areas, responsive update UI, reduced motion and inline camera compatibility.
 
-Existing regression scripts:
-- `scripts/test-pwa-cache-policy.mjs`
-- `scripts/test-pwa-worker-runtime.mjs`
-- `scripts/test-pwa-platform-compatibility.mjs`
-
-Extend or replace assertions that encode install-time asset downloading as the desired consent policy. Keep the valuable cache isolation, offline and rollback regression coverage.
+The full release gate is final-head `npm run preflight`, TypeScript, production build, GitHub Pages build and CI. Source-contract/VM tests do not prove actual browser storage behavior or device acceptance.
 
 ## 10. Physical release acceptance
 
-CI/VM tests do not establish physical-device acceptance.
-
 | Platform | Required checks |
 |---|---|
-| Android Chrome tab + installed PWA | Defer update; confirm no runtime payload download; approve update; observe progress; complete staging; open every module offline; interrupt download; verify old release; test rollback |
-| iOS Safari + Home Screen PWA | Same consent, progress, offline, activation and rollback checks; verify safe handoff and no unexpected reload |
-| Desktop Chrome/Edge | Fresh install, defer/approve paths, multiple windows, complete offline payload, storage pressure and rollback |
-| Low-end Android | Memory/storage pressure, bounded download concurrency, background/foreground during staging, no partial activation |
+| Android Chrome tab + installed PWA | First install; defer without payload download; approve and observe progress; close/reopen during staging; interrupt network; open every module offline; scanner/WASM offline; safe handoff; rollback |
+| iOS Safari + Home Screen PWA | Same consent/progress/resume/offline/rollback checks; camera lease guard; safe-area prompt; no unexpected reload |
+| Desktop Chrome/Edge | Fresh install, defer/approve, multiple windows, complete offline payload, storage quota pressure and rollback |
+| Low-end Android | Bounded download concurrency, memory/storage pressure, background/foreground during staging, no partial activation |
 
-Record build IDs, device model, OS, browser version, install mode, network state, payload size, consent action, progress/failure behavior, offline result and rollback outcome. Do not infer physical acceptance from CI.
+Record build IDs, device model, OS, browser version, install mode, network state, payload size, consent action, progress/failure behavior, offline result and rollback outcome. CI/VM tests do not establish physical-device acceptance.
 
 ## 11. Mandatory change-control and deployment rules
 
 For every future RetailOS code change, module addition, UI/UX change, runtime dependency, build configuration change or deployment:
 
-1. Read this document before implementation and before release/deploy work.
-2. Classify the change as Application Lifecycle, Data Lifecycle or both. State why.
-3. If it adds or changes application capability/runtime resources, include it in the release manifest and user-facing release notes.
+1. Read this document before implementation and release/deploy work.
+2. Classify the work as Application Lifecycle, Data Lifecycle or both.
+3. If it adds or changes application capability/runtime resources, include them in the release manifest and update `release-notes.json`.
 4. Keep the active release usable while the candidate is discovered, approved, downloaded and verified.
-5. Never download the full candidate application payload before explicit user approval.
-6. Never activate before complete integrity verification; after approval and verification, activation must be automatic without a second confirmation.
-7. Preserve old-release offline operation, business data and last-known-good rollback.
-8. Add regression coverage for the changed contract and run the full preflight on the final PR head.
+5. Never download the full candidate application payload before explicit user approval (first install is the initial-install exception).
+6. Never activate before complete integrity verification; after approval and verification, activation is automatic without a second confirmation.
+7. Preserve old-release offline operation, safe handoff, business data and last-known-good rollback.
+8. Add regression coverage and run full preflight on the final PR head.
 9. Verify the deployment artifact contains the exact manifest, notes and complete asset inventory for the same build.
-10. Record what was tested, what remains unverified and the rollback path. Never claim physical-device acceptance without device evidence.
+10. Record tests, unverified paths, physical acceptance and rollback instructions. Never claim device acceptance without device evidence.
 
 This contract applies to all modules and future versions, not only scanner or PWA-specific tasks. Repository documentation is the durable source of truth; do not rely on chat history alone.
