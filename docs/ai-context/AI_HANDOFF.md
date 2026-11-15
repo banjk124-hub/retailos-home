@@ -21,7 +21,7 @@
 - UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
 - Concurrent/reloaded clients join an in-progress stage and receive shared progress instead of starting duplicate downloads. A completed staged release resumes without renewed consent after app restart.
 - Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup, app transitions, dirty native forms, active editing and multi-window detection. Successful async form saves advance the dirty baseline; cancelled native resets do not clear blockers. If staged bytes are corrupted/evicted, activation is rejected, UI staged flags are reset, candidate caches are removed and the next explicit retry restages the payload.
-- Boot health and last-known-good rollback remain active; healthy boot retains the active-release pointer and business data is not part of release caches.
+- Boot health is acknowledged by the primary route only after the login surface commits or HomeScreen mounts; the update prompt itself cannot mark the app healthy early. Root render failures before readiness still reach the rollback reporter. Last-known-good rollback remains active; healthy boot retains the active-release pointer and business data is not part of release caches.
 - One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
 
 ## Latest CI evidence and corrective action
