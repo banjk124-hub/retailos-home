@@ -129,6 +129,11 @@ assert.match(prompt, /Lưu ý vận hành/);
 assert.match(prompt, /RELEASE_DOWNLOAD_PROGRESS/);
 assert.match(prompt, /Đã tải và xác minh toàn bộ tài nguyên/);
 assert.match(prompt, /response\.staged === true/);
+const rejectedStageHandler = prompt.slice(prompt.indexOf("event.data?.type === 'UPDATE_NOT_STAGED'"));
+assert.match(rejectedStageHandler, /stagedRef\.current = false/,
+  'an integrity rejection must clear the UI staged flag before a consented retry');
+assert.match(rejectedStageHandler, /isApplyingUpdate\.current = false/,
+  'an integrity rejection must clear the activation-in-progress flag');
 assert.match(prompt, /getPwaUpdateBlockReason/);
 assert.doesNotMatch(prompt, /Bản mới đã được tải và xác minh/);
 assert.match(updateSafety, /registerPwaUpdateBlocker/);
