@@ -58,7 +58,7 @@ URL GitHub Pages của repository này dự kiến là `https://banjk124-hub.git
 - `vite.config.ts` tạo build ID và `release-manifest.json` chứa shell/runtime inventory, byte size và SHA-256. `release-notes.json` là nội dung release notes gắn với build; version phải khớp `package.json` và lockfile.
 - `src/shared/pwa/PwaUpdatePrompt.tsx` phát hiện bản mới, hiển thị version đang chạy/bản mới, release notes, cảnh báo, dung lượng và tiến trình tải. Người dùng xác nhận một lần trước khi tải; sau khi xác minh, ứng dụng tự kích hoạt khi an toàn.
 - Payload được tải vào cache riêng theo build, theo batch 8, kiểm tra checksum và cache read-back. Bản cũ tiếp tục hoạt động khi tải; lỗi chỉ xóa cache candidate. Staged marker cho phép tiếp tục kích hoạt sau khi mở app lại.
-- Safe handoff được bảo vệ bởi camera lease, Stocktake, Stocktake Import, app transition và multi-window guard. Boot health/rollback giữ nguyên; không tác động IndexedDB/dữ liệu nghiệp vụ.
+- Safe handoff được bảo vệ bởi camera lease, Stocktake, Stocktake Import, đồng bộ snapshot/IndexedDB cleanup, dirty form, app transition và multi-window guard. Boot health/rollback giữ nguyên; không tác động IndexedDB/dữ liệu nghiệp vụ.
 - Lưu ý rollout đầu tiên: client cũ từ PR #119 dùng một lần bridge; thao tác Cập nhật cũ được xem là consent để tải. Client cũ không thể hiển thị release notes/progress mới cho đến khi nạp phiên bản này.
 - Contract bắt buộc cho mọi lần phát triển/deploy nằm tại `docs/ai-context/PWA_RUNTIME_RELEASE.md`. Data-only refresh không tăng BUILD_ID, không tải app release và không reload.
 - Push notification dùng lại registration trung tâm, không tự đăng ký worker lần thứ hai.
