@@ -23,6 +23,7 @@
 - Worker/update UI: `src/sw/service-worker.template.js`, `src/shared/pwa/PwaUpdatePrompt.tsx`, `pwa-update-prompt.css`, `updateSafety.ts`, `serviceWorkerRegistration.ts`.
 - Safety integration: shared `cameraSession.ts`, `moduleDataService.ts`, `pushNotifications.ts`, `App.tsx`, Stocktake and Stocktake Import modules.
 - Tests: PWA policy, worker runtime and platform compatibility regression scripts.
+- Production GitHub Pages build/deploy jobs are restricted to `main` even for manual workflow dispatch; platform regression tests protect this guard.
 - Canonical design/status/handoff/ADR/roadmap documents are synchronized in the same branch.
 
 ## Build failure and correction
