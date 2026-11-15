@@ -5,45 +5,75 @@ const ASSET_PATHS = __ASSET_PATHS__;
 const CACHE_PREFIX = 'retailos-pwa-';
 const SHELL_CACHE = CACHE_PREFIX + 'shell-' + BUILD_ID;
 const ASSET_CACHE = CACHE_PREFIX + 'assets-' + BUILD_ID;
+const STATE_CACHE = CACHE_PREFIX + 'state';
 const APP_BASE_URL = new URL(APP_BASE, self.location.origin);
 const APP_SHELL_URL = new URL('index.html', APP_BASE_URL).href;
+const ROLLBACK_STATE_URL = new URL('__retailos_rollback__', APP_BASE_URL).href;
 const SHELL_URLS = [
   APP_BASE_URL.href, APP_SHELL_URL,
   new URL('manifest.webmanifest', APP_BASE_URL).href,
   new URL('icon.svg', APP_BASE_URL).href
 ];
-const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).pathname));
+const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).href));
 
-async function matchAppShell() {
-  try { return await caches.match(APP_SHELL_URL) || null; }
+async function matchAppShell(cacheName = SHELL_CACHE) {
+  try { return await (await caches.open(cacheName)).match(APP_SHELL_URL) || null; }
   catch { return null; }
+}
+async function readRollbackTarget() {
+  try {
+    const response = await (await caches.open(STATE_CACHE)).match(ROLLBACK_STATE_URL);
+    return response ? await response.json() : null;
+  } catch { return null; }
+}
+async function writeRollbackTarget(target) {
+  const cache = await caches.open(STATE_CACHE);
+  await cache.put(ROLLBACK_STATE_URL, new Response(JSON.stringify(target), {
+    headers: { 'Content-Type': 'application/json' }
+  }));
+}
+async function findPreviousRelease() {
+  const keys = await caches.keys();
+  const previousShells = keys.filter((key) =>
+    key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE
+  );
+  const shellCache = previousShells.at(-1);
+  if (!shellCache) return null;
+  const releaseId = shellCache.slice((CACHE_PREFIX + 'shell-').length);
+  return { shellCache, assetCache: CACHE_PREFIX + 'assets-' + releaseId };
 }
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     try {
-      const cache = await caches.open(SHELL_CACHE);
-      await cache.addAll(SHELL_URLS);
+      // A release is installable only when every required asset, including ZXing WASM, is present.
+      const shellCache = await caches.open(SHELL_CACHE);
+      const assetCache = await caches.open(ASSET_CACHE);
+      await shellCache.addAll(SHELL_URLS);
+      await assetCache.addAll([...ASSET_URLS]);
+      const missingShell = await Promise.all(SHELL_URLS.map((url) => shellCache.match(url)));
+      const missingAssets = await Promise.all([...ASSET_URLS].map((url) => assetCache.match(url)));
+      if (missingShell.some((entry) => !entry) || missingAssets.some((entry) => !entry)) {
+        throw new Error('RetailOS release precache verification failed.');
+      }
     } catch (error) {
-      await caches.delete(SHELL_CACHE);
+      await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
       throw error;
     }
   })());
 });
+
 self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
+  const message = event.data || {};
+  if (message.type === 'SKIP_WAITING') {
     event.waitUntil((async () => {
       const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      // GitHub Pages project sites share an origin. Only windows inside this
-      // RetailOS deployment may block an update; unrelated apps must not.
       const retailOsClients = clients.filter((client) => {
         try {
           const clientUrl = new URL(client.url);
           return clientUrl.origin === APP_BASE_URL.origin
             && clientUrl.pathname.startsWith(APP_BASE_URL.pathname);
-        } catch {
-          return false;
-        }
+        } catch { return false; }
       });
       const otherClients = retailOsClients.filter((client) => client.id !== event.source?.id);
       if (otherClients.length > 0) {
@@ -52,18 +82,37 @@ self.addEventListener('message', (event) => {
       }
       await self.skipWaiting();
     })());
+    return;
+  }
+  if (message.type === 'APP_BOOT_OK' && message.buildId === BUILD_ID) {
+    event.waitUntil((async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((key) => (
+        (key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE)
+        || (key.startsWith(CACHE_PREFIX + 'assets-') && key !== ASSET_CACHE)
+        || key.startsWith('retailos-shell-')
+      )).map((key) => caches.delete(key)));
+      await caches.delete(STATE_CACHE);
+    })());
+    return;
+  }
+  if (message.type === 'APP_BOOT_FAILED' && message.buildId === BUILD_ID) {
+    event.waitUntil((async () => {
+      const previous = await findPreviousRelease();
+      if (!previous || !(await matchAppShell(previous.shellCache))) {
+        event.source?.postMessage({ type: 'UPDATE_ROLLBACK_UNAVAILABLE' });
+        return;
+      }
+      await writeRollbackTarget(previous);
+      if (event.source && 'navigate' in event.source) await event.source.navigate(event.source.url);
+    })());
   }
 });
+
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter((key) => (
-      (key.startsWith(CACHE_PREFIX) && key !== SHELL_CACHE && key !== ASSET_CACHE)
-      || key.startsWith('retailos-shell-')
-    )).map((key) => caches.delete(key)));
-    await self.clients.claim();
-  })());
+  event.waitUntil(self.clients.claim());
 });
+
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -71,43 +120,44 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
+      const rollback = await readRollbackTarget();
+      if (rollback?.shellCache) {
+        const previousShell = await matchAppShell(rollback.shellCache);
+        if (previousShell) return previousShell;
+      }
       try {
         const response = await fetch(request);
         if (response.ok) {
-          // Cache writes are best-effort: storage pressure must never turn a
-          // successful online navigation into a failed page load.
           try {
             const cache = await caches.open(SHELL_CACHE);
             await cache.put(APP_SHELL_URL, response.clone());
-          } catch { /* Keep the successful network response. */ }
+          } catch { /* Preserve a successful network navigation. */ }
           return response;
         }
         return (await matchAppShell()) || response;
-      } catch {
-        return (await matchAppShell()) || Response.error();
-      }
+      } catch { return (await matchAppShell()) || Response.error(); }
     })());
     return;
   }
-  const isShellAsset = SHELL_URLS.includes(url.href);
-  if (!isShellAsset && !ASSET_URLS.has(url.pathname)) return;
   event.respondWith((async () => {
-    let cache = null;
     try {
-      cache = await caches.open(isShellAsset ? SHELL_CACHE : ASSET_CACHE);
-      const cached = await cache.match(request);
-      if (cached) return cached;
-    } catch { /* Fall through to network if Cache Storage is unavailable. */ }
+      const retained = await caches.match(request);
+      if (retained) return retained;
+    } catch { /* Fall through to network. */ }
+    if (!ASSET_URLS.has(url.href)) return fetch(request);
     try {
       const response = await fetch(request);
-      if (response.ok && cache) {
-        try { await cache.put(request, response.clone()); }
-        catch { /* Cache quota/write failures must not discard network assets. */ }
+      if (response.ok) {
+        try {
+          const cache = await caches.open(ASSET_CACHE);
+          await cache.put(request, response.clone());
+        } catch { /* Cache writes never discard a successful response. */ }
       }
       return response;
     } catch { return Response.error(); }
   })());
 });
+
 self.addEventListener('push', (event) => {
   let parsedPayload = {};
   if (event.data) {
