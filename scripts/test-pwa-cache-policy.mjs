@@ -86,6 +86,8 @@ assert.match(vite, /release-notes\.json/);
 assert.match(vite, /describeResource/);
 assert.match(vite, /assetResources/);
 assert.match(vite, /enforce:\s*'post'/, 'release manifest generation must run after Vite emits the finalized HTML shell');
+assert.match(vite, /generateBundle:\s*\{\s*order:\s*'post'/s,
+  'release manifest hashes must be calculated after every Rollup generateBundle hook has finalized output bytes');
 assert.match(wasmAdapter, /zxing-wasm\/reader\/zxing_reader\.wasm\?url/);
 assert.equal(builtManifest.schemaVersion, 1);
 assert.ok(builtManifest.buildId);
