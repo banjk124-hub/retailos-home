@@ -121,6 +121,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
     Response,
     fetch: fetchMock,
     crypto: webcrypto,
+    navigator: { storage: { estimate: async () => options.storageEstimate || { quota: 1_000_000_000, usage: 0 } } },
   });
   vm.runInContext(source, context);
   const listener = (type) => listeners.get(type)?.[0];
@@ -346,6 +347,31 @@ assert.equal(hashMessages.at(-1)?.type, 'RELEASE_STAGE_FAILED', 'a checksum mism
 assert.equal(cacheStore.has('retailos-pwa-shell-hash-failed-build'), false, 'checksum failure removes candidate shell');
 assert.equal(cacheStore.has('retailos-pwa-assets-hash-failed-build'), false, 'checksum failure removes candidate assets');
 assert.equal(cacheStore.has(oldShellCache), true, 'checksum failure preserves last-known-good release');
+
+const quotaManifest = {
+  ...manifest,
+  buildId: 'quota-failed-build',
+  resources: await Promise.all(resources.map(async (resource) => ({
+    ...resource,
+    sha256: await sha256Hex('release-runtime:' + resource.path),
+  }))),
+};
+const quotaWorker = createWorker('quota-failed-build', quotaManifest, {
+  clients: [currentClient],
+  storageEstimate: { quota: 100, usage: 99 },
+});
+await quotaWorker.runExtendable('install');
+const quotaMessages = [];
+await quotaWorker.runExtendable('message', {
+  data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage(message) { quotaMessages.push(message); } }],
+  source: currentClient,
+});
+assert.equal(quotaMessages.at(-1)?.type, 'RELEASE_STAGE_FAILED', 'insufficient storage fails before downloading the candidate');
+assert.equal(cacheStore.has('retailos-pwa-shell-quota-failed-build'), false, 'quota failure leaves no candidate shell');
+assert.equal(cacheStore.has('retailos-pwa-assets-quota-failed-build'), false, 'quota failure leaves no candidate assets');
+assert.equal(cacheStore.has(oldShellCache), true, 'quota failure preserves the current offline release');
+assert.equal(cacheStore.has('retailos-business-data'), true, 'quota failure preserves business data');
 
 const healthyManifest = {
   ...manifest,
