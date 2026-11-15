@@ -211,6 +211,8 @@ assert.match(prompt, /retailos:update-center-action/,
   'Update Center actions must be routed to the existing Service Worker lifecycle');
 assert.match(settingsHub, /function UpdateCenterView/,
   'Settings must provide a dedicated Update Center view, not merely reopen the prompt');
+assert.match(settingsHub, /current\.currentVersion/);
+assert.match(settingsHub, /current\.lastError/);
 assert.match(settingsHub, /requestUpdateAction\('activate'\)/);
 assert.match(settingsHub, /requestUpdateAction\('download'\)/);
 assert.match(homeScreen, /pendingUpdate\?\.buildId === __RETAILOS_BUILD_ID__/,
