@@ -42,6 +42,7 @@ Report: objective, files changed, behavior changed, tests actually run, results,
 - After consent and successful verification, activation is automatic; do not ask for a second switch/activation confirmation. Protect unsaved operational work and retain last-known-good rollback until the new build reports healthy.
 - Data-only lookup/snapshot refreshes and recalculation using existing logic must not change the app build ID, stage/activate a release, reload the app or clear release caches. A new processing mechanism or capability is an application release change.
 - Treat `PWA_RUNTIME_RELEASE.md` as a mandatory cross-project development and deployment contract. Update it and the relevant status/handoff documents whenever the accepted release policy or implementation state changes. Never claim the target flow is implemented until source, automated tests and physical acceptance support that claim.
+- Production deployment workflows must be restricted to `main`, including manual `workflow_dispatch`; never use the production GitHub Pages target to preview a feature branch. Physical QA previews must use an isolated preview target and must not replace production.
 
 ## Cross-session continuity contract (added 2026-11-05)
 - At session start, read `docs/ai-context/INDEX.md` as the navigation entry point, then read `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, and the relevant skill.
