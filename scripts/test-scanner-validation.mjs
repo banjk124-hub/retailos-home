@@ -50,6 +50,16 @@ assert.deepEqual(validateBarcodePayload("ABC\u0000 123", "CODE_128"), {
   valid: false,
   reason: "control-character",
 });
+assert.equal(validateBarcodePayload("A123B", "CODABAR").valid, true,
+  "CODABAR accepts the engine's A-D start/stop framing");
+assert.equal(validateBarcodePayload("C12-34D", "CODABAR").valid, true,
+  "CODABAR accepts supported data characters between start/stop characters");
+assert.deepEqual(validateBarcodePayload("12345", "CODABAR"), {
+  valid: false, reason: "invalid-character",
+}, "CODABAR rejects payloads missing start/stop framing");
+assert.deepEqual(validateBarcodePayload("A12BD", "CODABAR"), {
+  valid: false, reason: "invalid-character",
+}, "CODABAR rejects A-D characters inside the data region");
 const luminanceSource = await readFile(
   new URL("../src/platform/scanner/decoders/rgbaToLuminance.ts", import.meta.url),
   "utf8",
