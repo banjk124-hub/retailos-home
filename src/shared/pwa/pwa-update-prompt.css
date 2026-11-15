@@ -106,5 +106,7 @@
 /* Prompt and badge motion stays on compositor-friendly properties. */
 .pwa-update-prompt { animation: pwa-update-enter var(--motion-duration-standard, 200ms) var(--motion-ease-enter, ease-out) both; }
 .pwa-update-prompt__collapse { min-height:30px; padding:0 10px; border:0; border-radius:99px; background:#f1f2f5; color:#4e5664; font:inherit; font-size:11px; font-weight:800; cursor:pointer; }
-@keyframes pwa-update-enter { from { opacity:0; transform:translateY(8px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pwa-update-enter { from { opacity:0; } to { opacity:1; } }
 @media(prefers-reduced-motion:reduce) { .pwa-update-prompt { animation:none; } }
+
+.update-center-blocked { margin:12px 0 0; padding:10px 12px; border:1px solid rgba(169,37,52,.18); border-radius:11px; background:#fff5f5; color:#a92534; font-size:11px; line-height:1.5; }
