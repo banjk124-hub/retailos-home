@@ -49,7 +49,7 @@ This is the critical offline guarantee: **a release is not eligible for activati
 
 ## 5. Active release pinning
 
-The active worker serves its cached app shell first for navigation. It must not fetch a newly deployed `index.html` from the network while the old worker is still active; otherwise new HTML could reference chunks that the active release has not staged.
+The active worker serves its selected release's cached app shell first for navigation. For asset requests it checks the selected release's asset cache before searching retained release caches; this prevents an older same-URL public file from shadowing the current release while still allowing rollback to load old hashed assets. It must not fetch a newly deployed `index.html` from the network while the old worker is still active; otherwise new HTML could reference chunks that the active release has not staged.
 
 The new release is adopted only after:
 - its install/precache verification has completed;
