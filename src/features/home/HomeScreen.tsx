@@ -2,7 +2,7 @@ import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState
 import type * as React from 'react';
 import {
   Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode,
+  ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode, Search,
   ShieldCheck, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
@@ -564,19 +564,9 @@ export default function HomeScreen({
     cameraLeaseRequestRef.current = null;
     runBarcodeLookup(barcode);
   }, [runBarcodeLookup]);
-  const openManualProductLookup = useCallback((query: string) => {
+  const openManualProductLookup = useCallback(() => {
     const requestId = ++barcodeLookupRequestIdRef.current;
-    setBarcodeLookup({ query, requestId, records: null });
-    void searchCachedProducts(query).then(({ records, failedSources }) => {
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records, failedSources }
-        : current);
-    }).catch((error: unknown) => {
-      console.error('Không thể tra cứu sản phẩm từ snapshot:', error);
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
-        : current);
-    });
+    setBarcodeLookup({ query: '', requestId, records: [] });
   }, []);
   const submitManualProductLookup = useCallback(() => {
     if (!barcodeLookup?.query.trim()) return;
@@ -616,11 +606,15 @@ export default function HomeScreen({
     else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
   }, [prefersReducedMotion]);
-  const dockAction = useMemo(() => isScannerSupportedDevice() ? {
-    label: 'Quét mã',
-    icon: ScanBarcode,
-    onSelect: openBarcodeScanner,
-  } : undefined, [openBarcodeScanner]);
+  const dockAction = useMemo(() => ({
+    label: 'Tra cứu nhanh',
+    icon: Search,
+    onSelect: () => openManualProductLookup(),
+    choices: [
+      { id: 'manual-search', label: 'Tìm kiếm', icon: Search, onSelect: () => openManualProductLookup() },
+      ...(isScannerSupportedDevice() ? [{ id: 'barcode-scan', label: 'Quét mã', icon: ScanBarcode, onSelect: (event: React.MouseEvent<HTMLButtonElement>) => openBarcodeScanner(event) }] : []),
+    ],
+  }), [openBarcodeScanner, openManualProductLookup]);
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
@@ -804,7 +798,7 @@ export default function HomeScreen({
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
-      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onManualSearch={openManualProductLookup} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+      <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
