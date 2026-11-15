@@ -3,7 +3,6 @@ import './pwa-update-prompt.css';
 import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 import { getPwaUpdateBlockReason } from './updateSafety';
 
-declare const __RETAILOS_BUILD_ID__: string;
 declare const __RETAILOS_APP_VERSION__: string;
 
 type ReleaseManifest = {
