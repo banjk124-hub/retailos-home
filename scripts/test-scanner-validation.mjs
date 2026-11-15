@@ -17,16 +17,25 @@ assert.deepEqual(validateBarcodePayload("4006381333932", "EAN_13"), {
   reason: "invalid-check-digit",
 });
 assert.equal(validateBarcodePayload("ABC 123", "CODE_128").valid, true, "CODE-128 remains opaque text");
+assert.equal(validateBarcodePayload("0109501101530003\\u001d17270101", "CODE_128").valid, true,
+  "GS1-128 CODE-128 payloads may retain ASCII 29 group separators");
+assert.deepEqual(validateBarcodePayload("ABC\\u0001 123", "CODE_128"), {
+  valid: false, reason: "control-character",
+}, "CODE-128 still rejects controls other than GS");
 assert.equal(validateBarcodePayload("RETAIL-39", "CODE_39").valid, true,
   "valid uppercase Code 39 payload is accepted");
 assert.equal(validateBarcodePayload("STORE 01/$+%", "CODE_39").valid, true,
   "Code 39 preserves its supported punctuation and space characters");
 assert.equal(validateBarcodePayload("A B", "CODE_39").valid, true,
   "Code 39 preserves embedded spaces as payload characters");
-assert.deepEqual(validateBarcodePayload("retail39", "CODE_39"), {
+assert.equal(validateBarcodePayload("retailos-39", "CODE_39").valid, true,
+  "Code39 Extended printable ASCII payloads are accepted by the shared CODE_39 family");
+assert.equal(validateBarcodePayload("A*B", "CODE_39").valid, true,
+  "Code39 Extended may decode printable punctuation into payload text");
+assert.deepEqual(validateBarcodePayload("ABC\\u001d", "CODE_39"), {
   valid: false,
-  reason: "invalid-character",
-}, "Code 39 rejects lowercase characters outside its standard alphabet");
+  reason: "control-character",
+}, "Code 39 rejects non-printable control characters");
 assert.deepEqual(validateBarcodePayload("ABC*123", "CODE_39"), {
   valid: false,
   reason: "invalid-character",
