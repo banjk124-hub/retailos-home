@@ -171,12 +171,23 @@ export default function PwaUpdatePrompt() {
       const nextManifest = response.manifest as ReleaseManifest;
       if (
         nextManifest.schemaVersion !== 1
-        || nextManifest.buildId === __RETAILOS_BUILD_ID__
         || !Array.isArray(nextManifest.resources)
         || !nextManifest.resources.length
       ) {
         setPhase('error');
         setNotice('Manifest phiên bản không hợp lệ. RetailOS giữ nguyên phiên bản đang chạy.');
+        return;
+      }
+      // A waiting worker can be redundant after a deployment that republishes
+      // the same build. Matching IDs mean there is no update, not bad metadata.
+      // Dismiss it quietly so the prompt cannot become stranded in an error loop.
+      if (nextManifest.buildId === __RETAILOS_BUILD_ID__) {
+        setWaitingWorker(null);
+        waitingWorkerRef.current = null;
+        setManifest(null);
+        manifestRef.current = null;
+        setPhase('available');
+        setNotice('');
         return;
       }
       if (dismissedBuildId.current === nextManifest.buildId) {
