@@ -42,9 +42,9 @@ function retailosPwaArtifacts(): Plugin {
         for (const entry of readdirSync(directory, { withFileTypes: true })) {
           const absolutePath = resolve(directory, entry.name);
           if (entry.isDirectory()) collectPublicAssets(absolutePath);
-          else if (entry.isFile()) {
+          else if (entry.isFile() && !entry.name.endsWith('.map')) {
             const relativePath = relative(publicDirectory, absolutePath).split(sep).join('/');
-            if (isCacheableAsset(relativePath)) publicAssets.push(relativePath);
+            publicAssets.push(relativePath);
           }
         }
       };
