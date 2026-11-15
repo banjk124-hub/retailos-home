@@ -20,6 +20,7 @@ const [
   builtManifestText,
   releaseNotesText,
   packageText,
+  packageLockText,
 ] = await Promise.all([
   read('../src/sw/service-worker.template.js'),
   read('../vite.config.ts'),
@@ -38,17 +39,18 @@ const [
   read('../dist/release-manifest.json'),
   read('../release-notes.json'),
   read('../package.json'),
+  read('../package-lock.json'),
 ]);
 const builtManifest = JSON.parse(builtManifestText);
 const releaseNotes = JSON.parse(releaseNotesText);
 const packageJson = JSON.parse(packageText);
+const packageLock = JSON.parse(packageLockText);
 
 assert.match(worker, /retailos-pwa-/);
-assert.match(worker, /ASSET_URLS.has(url.href)/);
+assert.match(worker, /ASSET_URLS\.has\(url\.href\)/);
 const installHandler = worker.slice(worker.indexOf("self.addEventListener('install'"), worker.indexOf("self.addEventListener('message'"));
-assert.match(installHandler, /readActiveRelease/);
-assert.match(installHandler, /findPreviousRelease/);
-assert.match(installHandler, /if (!previous) await stageCandidate(null)/,
+assert.match(installHandler, /self\.registration\.active/);
+assert.match(installHandler, /if \(!self\.registration\.active\) await stageCandidate\(null\)/,
   'only a first install may stage automatically; an update install must wait for consent');
 assert.doesNotMatch(installHandler, /addAll|addAllInBatches/,
   'the browser-triggered update install must not download the candidate runtime payload');
@@ -60,25 +62,25 @@ assert.match(worker, /SKIP_WAITING/,
 assert.match(worker, /RELEASE_DOWNLOAD_PROGRESS/);
 assert.match(worker, /RELEASE_STAGED/);
 assert.match(worker, /RELEASE_STAGE_FAILED/);
-assert.match(worker, /crypto.subtle.digest('SHA-256'/);
+assert.match(worker, /crypto\.subtle\.digest\('SHA-256'/);
 assert.match(worker, /UPDATE_BLOCKED_MULTIPLE_CLIENTS/);
 assert.match(worker, /APP_BOOT_OK/);
 assert.match(worker, /APP_BOOT_FAILED/);
 assert.match(worker, /findPreviousRelease/);
-assert.match(worker, /activeAssets.match(request)/);
-assert.doesNotMatch(worker, /caches.match(request)/,
+assert.match(worker, /activeAssets\.match\(request\)/);
+assert.doesNotMatch(worker, /caches\.match\(request\)/,
   'runtime assets from different releases must never be mixed');
 
-assert.match(vite, /createHash('sha256')/);
-assert.match(vite, /release-manifest.json/);
-assert.match(vite, /release-notes.json/);
+assert.match(vite, /createHash\('sha256'\)/);
+assert.match(vite, /release-manifest\.json/);
+assert.match(vite, /release-notes\.json/);
 assert.match(vite, /describeResource/);
-assert.match(vite, /publicAssets|assetResources/);
-assert.match(wasmAdapter, /zxing-wasm/reader/zxing_reader.wasm?url/);
+assert.match(vite, /assetResources/);
+assert.match(wasmAdapter, /zxing-wasm\/reader\/zxing_reader\.wasm\?url/);
 assert.equal(builtManifest.schemaVersion, 1);
 assert.ok(builtManifest.buildId);
 assert.ok(builtManifest.version);
-assert.ok(builtManifest.resources.some((item) => /zxing_reader-[^/]+.wasm$/.test(item.path)),
+assert.ok(builtManifest.resources.some((item) => /zxing_reader-[^/]+\.wasm$/.test(item.path)),
   'the actual Pages release manifest must include the emitted ZXing WASM binary');
 assert.ok(builtManifest.resources.every((item) => (
   Number.isInteger(item.size) && item.size >= 0 && /^[a-f0-9]{64}$/.test(item.sha256)
@@ -88,6 +90,7 @@ assert.ok(builtManifest.resources.some((item) => item.path === 'manifest.webmani
 assert.ok(builtManifest.resources.some((item) => item.path === 'icon.svg' && item.cache === 'shell'));
 assert.equal(builtManifest.version, releaseNotes.version, 'release metadata must bind to the reviewed release notes');
 assert.equal(packageJson.version, releaseNotes.version, 'package version and release notes version must stay synchronized');
+assert.equal(packageLock.packages[''].version, packageJson.version, 'package lock version must match package.json');
 assert.match(builtWorker, /const BUILD_ID = '[^']+'/);
 
 assert.match(prompt, /GET_RELEASE_INFO/);
@@ -97,16 +100,21 @@ assert.match(prompt, /Tải và cập nhật/);
 assert.match(prompt, /Lưu ý vận hành/);
 assert.match(prompt, /RELEASE_DOWNLOAD_PROGRESS/);
 assert.match(prompt, /Đã tải và xác minh toàn bộ tài nguyên/);
+assert.match(prompt, /response\.staged === true/);
 assert.match(prompt, /getPwaUpdateBlockReason/);
 assert.doesNotMatch(prompt, /Bản mới đã được tải và xác minh/);
 assert.match(updateSafety, /registerPwaUpdateBlocker/);
 assert.match(updateSafety, /srcObject/);
-assert.match(app, /registerPwaUpdateBlocker('app-transition'/);
+assert.match(app, /registerPwaUpdateBlocker\('app-transition'/);
+assert.match(stocktakeModule, /registerPwaUpdateBlocker\('stocktake'/);
+assert.match(stocktakeImportModule, /registerPwaUpdateBlocker\('stocktake-import'/);
+assert.match(cameraSession, /registerPwaUpdateBlocker\('camera-session'/);
+assert.match(cameraSession, /notifyPwaUpdateSafetyChanged/);
 assert.match(errorBoundary, /APP_BOOT_FAILED/);
 assert.match(errorBoundary, /retailosBootHealthy/);
 
-assert.match(registration, /updateViaCache:s*'none'/);
-assert.match(registration, /import.meta.env.BASE_URLs*+s*'sw.js'/);
+assert.match(registration, /updateViaCache:\s*'none'/);
+assert.match(registration, /import\.meta\.env\.BASE_URL\s*\+\s*'sw\.js'/);
 assert.match(push, /registerRetailOsServiceWorker/);
 assert.doesNotMatch(dataService, /registerRetailOsServiceWorker|SKIP_WAITING|APP_BOOT_OK|APP_BOOT_FAILED/,
   'data refresh services must not control application release activation or boot lifecycle');
