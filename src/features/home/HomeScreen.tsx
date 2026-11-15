@@ -33,6 +33,7 @@ import { requestCameraLease, type CameraLeaseRequest } from '../../shared/servic
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
+import { getPendingUpdateNoticeCount, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
 const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
@@ -111,6 +112,7 @@ export default function HomeScreen({
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
   const [showScannerQa, setShowScannerQa] = useState(false);
   const [showScannerSettings, setShowScannerSettings] = useState(false);
   const closeSettings = useCallback(() => {
@@ -225,6 +227,7 @@ export default function HomeScreen({
     }
   };
   useEffect(() => installScannerDiagnosticCollector(), []);
+  useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -755,12 +758,12 @@ export default function HomeScreen({
 
     </div>
     <LiquidDock
-      items={HOME_DOCK_ITEMS}
+      items={HOME_DOCK_ITEMS.map((item) => item.id === 'settings' ? { ...item, noticeCount: updateNoticeCount } : item)}
       activeId={activeNav}
       onSelect={handleNav}
       action={dockAction}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} onOpenUpdateCenter={() => window.dispatchEvent(new Event('retailos:update-center-open'))} /></Suspense>}
     {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
