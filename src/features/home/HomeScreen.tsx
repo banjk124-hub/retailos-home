@@ -606,15 +606,21 @@ export default function HomeScreen({
     else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
   }, [prefersReducedMotion]);
-  const dockAction = useMemo(() => ({
-    label: 'Tra cứu nhanh',
-    icon: Search,
-    onSelect: () => openManualProductLookup(),
-    choices: [
-      { id: 'manual-search', label: 'Tìm kiếm', icon: Search, onSelect: () => openManualProductLookup() },
-      ...(isScannerSupportedDevice() ? [{ id: 'barcode-scan', label: 'Quét mã', icon: ScanBarcode, onSelect: (event: React.MouseEvent<HTMLButtonElement>) => openBarcodeScanner(event) }] : []),
-    ],
-  }), [openBarcodeScanner, openManualProductLookup]);
+  const dockAction = useMemo(() => {
+    const scannerAvailable = isScannerSupportedDevice();
+    return {
+      label: 'Tra cứu nhanh',
+      icon: Search,
+      onSelect: () => openManualProductLookup(),
+      // Desktop opens manual lookup directly. Mobile exposes both sticker actions.
+      ...(scannerAvailable ? {
+        choices: [
+          { id: 'manual-search', label: 'Tìm kiếm', icon: Search, onSelect: () => openManualProductLookup() },
+          { id: 'barcode-scan', label: 'Quét mã', icon: ScanBarcode, onSelect: (event: React.MouseEvent<HTMLButtonElement>) => openBarcodeScanner(event) },
+        ],
+      } : {}),
+    };
+  }, [openBarcodeScanner, openManualProductLookup]);
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
