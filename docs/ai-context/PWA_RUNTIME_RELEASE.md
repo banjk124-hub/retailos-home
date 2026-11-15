@@ -67,7 +67,7 @@ Activation does not immediately delete the previous release.
 
 - The new worker retains the prior shell and asset caches during a probation period.
 - `PwaUpdatePrompt` reports `APP_BOOT_OK` with the exact build ID after the React application tree mounts.
-- `AppErrorBoundary` reports `APP_BOOT_FAILED` for a React render failure.
+- `AppErrorBoundary` reports `APP_BOOT_FAILED` only before the root has reported healthy; later feature/runtime errors do not invalidate an already accepted release.
 - A small build-injected bootstrap watchdog reports `APP_BOOT_FAILED` if the page does not report healthy within 30 seconds.
 - The worker accepts a failure report only from its own build ID. A matching current-build health report permits cleanup; a previous application loaded during rollback is recognized only as the selected active release and cannot mark the failed new release healthy.
 - On failure, the worker changes the active-release pointer to the previous release and navigates the client. Navigation then serves the previous cached shell; old content-hashed assets remain available through cache lookup.
