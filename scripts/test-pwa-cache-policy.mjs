@@ -126,6 +126,17 @@ for (const resource of builtManifest.resources) {
 }
 
 assert.match(prompt, /GET_RELEASE_INFO/);
+const sameBuildBranch = prompt.indexOf("if (nextManifest.buildId === __RETAILOS_BUILD_ID__)");
+const manifestValidationBranch = prompt.indexOf("nextManifest.schemaVersion !== 1");
+assert.ok(sameBuildBranch > manifestValidationBranch,
+  'same-build handling must run only after manifest structure validation');
+const sameBuildHandling = prompt.slice(sameBuildBranch, prompt.indexOf("if (dismissedBuildId.current", sameBuildBranch));
+assert.match(sameBuildHandling, /setWaitingWorker\(null\)/,
+  'a same-build waiting worker must be dismissed without showing a manifest error');
+assert.match(sameBuildHandling, /waitingWorkerRef\.current = null/);
+assert.match(sameBuildHandling, /setManifest\(null\)/);
+assert.doesNotMatch(sameBuildHandling, /setPhase\('error'\)|Manifest phiên bản không hợp lệ/,
+  'a matching build ID is a no-update state, never an invalid-manifest failure');
 assert.match(prompt, /STAGE_RELEASE/);
 assert.match(prompt, /ACTIVATE_RELEASE/);
 assert.match(prompt, /Tải và cập nhật/);

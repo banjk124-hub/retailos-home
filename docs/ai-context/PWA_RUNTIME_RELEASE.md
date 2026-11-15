@@ -172,3 +172,25 @@ For every future RetailOS code change, module addition, UI/UX change, runtime de
 11. Restrict production GitHub Pages deployment to `main` for both push and manual `workflow_dispatch`. Never use the production Pages target to preview a feature branch; create an isolated preview target before physical QA.
 
 This contract applies to all modules and future versions, not only scanner or PWA-specific tasks. Repository documentation is the durable source of truth; do not rely on chat history alone.
+
+
+## Same-build manifest handling (regression contract)
+
+A waiting Service Worker can occasionally report the same build ID as the page. This is a **no-update state**, not a malformed manifest.
+
+- Validate manifest schema and required resource inventory independently of build comparison.
+- If the manifest is structurally valid and its `buildId` equals the running page's `__RETAILOS_BUILD_ID__`, quietly dismiss the redundant waiting worker and clear its UI references. Do not show an error, offer a retry loop, stage resources or attempt activation.
+- If the IDs differ, continue the normal release-notes, consent, staging, verification and safe-activation flow.
+- A malformed manifest remains fail-closed and must never stage or activate.
+- Regression coverage lives in `scripts/test-pwa-cache-policy.mjs`.
+
+
+## Development builds versus production promotion
+
+RetailOS has separate development and store-production environments. The personal development account/repository is used for iterative implementation, review, testing and validation. The store's shared account/repository and Cloudflare deployment are the production environment.
+
+- Every application build still receives a unique build-bound `BUILD_ID` and a valid generated `release-manifest.json`. Build identity is independent of the human-facing product version.
+- During development, keep `release-notes.json` concise and generic. Update the generic development note as needed while changes are being made; do not require a polished, exhaustive, staff-facing changelog for every PR, code edit or intermediate deployment.
+- Do not increment `package.json` SemVer merely to make the update detector notice a new build. A new build ID is the update identity; product version is the release level.
+- When the user explicitly chooses a completed version for promotion to the store's shared production repository and Cloudflare, pause iterative generic notes and prepare the complete production release notes. Cover the final included features, fixes, UI/UX changes, compatibility, warnings, staff impact and any required actions. Validate and transfer the code, version, release notes and generated manifest as one coherent production release.
+- This promotion gate applies regardless of which chat/session implements the feature. For every development change, assess whether the generic note needs a small update; full release-note authoring is deferred until the explicit production-promotion decision.
