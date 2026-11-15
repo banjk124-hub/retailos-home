@@ -28,6 +28,7 @@ type Props = {
 export default function BarcodeScanner({
   onDetected,
   onClose,
+  onManualSearch,
   mode = 'single',
   scanCooldownMs = 700,
   cameraLeaseRequest = null,
@@ -114,7 +115,7 @@ export default function BarcodeScanner({
           >
             {scanner.torch.enabled ? <FlashlightOff size={19} /> : <Flashlight size={19} />}
           </button>}
-          {onManualSearch && <button className="scanner-manual-search-trigger" type="button" onClick={onManualSearch} aria-label="Nhập tên hoặc mã sản phẩm"><Search size={18} /><span>Nhập thủ công</span></button>}
+          {onManualSearch && <button className="scanner-manual-search-trigger" type="button" onClick={() => { onManualSearch?.(); handleClose(); }} aria-label="Nhập tên hoặc mã sản phẩm"><Search size={18} /><span>Nhập thủ công</span></button>}
           <button className="barcode-scanner-close" type="button" onClick={handleClose} aria-label="Đóng tra cứu"><X size={20} /></button>
         </header>
         {scanner.isScanning && <div ref={reticleRef} className="barcode-scan-frame" aria-hidden="true"><i /></div>}
