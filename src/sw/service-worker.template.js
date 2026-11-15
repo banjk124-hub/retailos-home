@@ -8,7 +8,7 @@ const ASSET_CACHE = CACHE_PREFIX + 'assets-' + BUILD_ID;
 const STATE_CACHE = CACHE_PREFIX + 'state';
 const APP_BASE_URL = new URL(APP_BASE, self.location.origin);
 const APP_SHELL_URL = new URL('index.html', APP_BASE_URL).href;
-const ROLLBACK_STATE_URL = new URL('__retailos_rollback__', APP_BASE_URL).href;
+const ACTIVE_RELEASE_STATE_URL = new URL('__retailos_active_release__', APP_BASE_URL).href;
 const SHELL_URLS = [
   APP_BASE_URL.href, APP_SHELL_URL,
   new URL('manifest.webmanifest', APP_BASE_URL).href,
@@ -20,15 +20,15 @@ async function matchAppShell(cacheName = SHELL_CACHE) {
   try { return await (await caches.open(cacheName)).match(APP_SHELL_URL) || null; }
   catch { return null; }
 }
-async function readRollbackTarget() {
+async function readActiveRelease() {
   try {
-    const response = await (await caches.open(STATE_CACHE)).match(ROLLBACK_STATE_URL);
+    const response = await (await caches.open(STATE_CACHE)).match(ACTIVE_RELEASE_STATE_URL);
     return response ? await response.json() : null;
   } catch { return null; }
 }
-async function writeRollbackTarget(target) {
+async function writeActiveRelease(release) {
   const cache = await caches.open(STATE_CACHE);
-  await cache.put(ROLLBACK_STATE_URL, new Response(JSON.stringify(target), {
+  await cache.put(ACTIVE_RELEASE_STATE_URL, new Response(JSON.stringify(release), {
     headers: { 'Content-Type': 'application/json' }
   }));
 }
@@ -40,7 +40,7 @@ async function findPreviousRelease() {
   const shellCache = previousShells.at(-1);
   if (!shellCache) return null;
   const releaseId = shellCache.slice((CACHE_PREFIX + 'shell-').length);
-  return { shellCache, assetCache: CACHE_PREFIX + 'assets-' + releaseId };
+  return { buildId: releaseId, shellCache, assetCache: CACHE_PREFIX + 'assets-' + releaseId };
 }
 
 self.addEventListener('install', (event) => {
@@ -84,15 +84,22 @@ self.addEventListener('message', (event) => {
     })());
     return;
   }
-  if (message.type === 'APP_BOOT_OK' && message.buildId === BUILD_ID) {
+  if (message.type === 'APP_BOOT_OK') {
     event.waitUntil((async () => {
-      const keys = await caches.keys();
-      await Promise.all(keys.filter((key) => (
-        (key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE)
-        || (key.startsWith(CACHE_PREFIX + 'assets-') && key !== ASSET_CACHE)
-        || key.startsWith('retailos-shell-')
-      )).map((key) => caches.delete(key)));
-      await caches.delete(STATE_CACHE);
+      if (message.buildId === BUILD_ID) {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter((key) => (
+          (key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE)
+          || (key.startsWith(CACHE_PREFIX + 'assets-') && key !== ASSET_CACHE)
+          || key.startsWith('retailos-shell-')
+        )).map((key) => caches.delete(key)));
+        await caches.delete(STATE_CACHE);
+        return;
+      }
+      // A previous release may be reporting healthy after rollback. Keep it
+      // as the active serving release; do not clean either cache set here.
+      const activeRelease = await readActiveRelease();
+      if (activeRelease?.buildId === message.buildId) return;
     })());
     return;
   }
@@ -103,14 +110,17 @@ self.addEventListener('message', (event) => {
         event.source?.postMessage({ type: 'UPDATE_ROLLBACK_UNAVAILABLE' });
         return;
       }
-      await writeRollbackTarget(previous);
+      await writeActiveRelease(previous);
       if (event.source && 'navigate' in event.source) await event.source.navigate(event.source.url);
     })());
   }
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    await writeActiveRelease({ buildId: BUILD_ID, shellCache: SHELL_CACHE, assetCache: ASSET_CACHE });
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
@@ -120,14 +130,10 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
-      const rollback = await readRollbackTarget();
-      if (rollback?.shellCache) {
-        const previousShell = await matchAppShell(rollback.shellCache);
-        if (previousShell) return previousShell;
-      }
-      // Keep the currently active release pinned. New HTML is adopted only
-      // after the new worker has precached and activated the complete release.
-      const activeShell = await matchAppShell();
+      const activeRelease = await readActiveRelease();
+      // Keep the selected release pinned. A rollback changes this pointer to
+      // the previous release; a later activation selects its own new release.
+      const activeShell = await matchAppShell(activeRelease?.shellCache || SHELL_CACHE);
       if (activeShell) return activeShell;
       try {
         const response = await fetch(request);
