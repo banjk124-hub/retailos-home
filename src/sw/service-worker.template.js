@@ -322,13 +322,7 @@ self.addEventListener('message', (event) => {
   }
 
   if (message.type === 'STAGE_RELEASE') {
-    event.waitUntil(stageCandidate(replyTarget).catch((error) => {
-      notify(replyTarget, {
-        type: 'RELEASE_STAGE_FAILED',
-        buildId: BUILD_ID,
-        message: error instanceof Error ? error.message : 'Tải phiên bản thất bại.',
-      });
-    }));
+    event.waitUntil(stageCandidate(replyTarget).catch(() => undefined));
     return;
   }
 
@@ -340,18 +334,9 @@ self.addEventListener('message', (event) => {
   if (message.type === 'SKIP_WAITING') {
     // One-time compatibility bridge for clients running the pre-consent UI:
     // their explicit "Cập nhật" action is treated as consent to download.
-    event.waitUntil((async () => {
-      try {
-        await stageCandidate(event.source);
-        await tryActivate(event.source);
-      } catch (error) {
-        notify(event.source, {
-          type: 'RELEASE_STAGE_FAILED',
-          buildId: BUILD_ID,
-          message: error instanceof Error ? error.message : 'Tải phiên bản thất bại.',
-        });
-      }
-    })());
+    event.waitUntil(stageCandidate(event.source)
+      .then(() => tryActivate(event.source))
+      .catch(() => undefined));
     return;
   }
 
