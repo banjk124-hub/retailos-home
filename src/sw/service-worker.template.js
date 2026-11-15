@@ -12,12 +12,6 @@ const RELEASE_MANIFEST_URL = new URL('release-manifest.json?build=' + BUILD_ID, 
 const ACTIVE_RELEASE_STATE_URL = new URL('__retailos_active_release__', APP_BASE_URL).href;
 const PREVIOUS_RELEASE_STATE_URL = new URL('__retailos_previous_release__', APP_BASE_URL).href;
 const STAGED_RELEASE_STATE_URL = new URL('__retailos_staged_release__/' + BUILD_ID, APP_BASE_URL).href;
-const SHELL_URLS = [
-  APP_BASE_URL.href,
-  APP_SHELL_URL,
-  new URL('manifest.webmanifest', APP_BASE_URL).href,
-  new URL('icon.svg', APP_BASE_URL).href,
-];
 const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).href));
 const BATCH_SIZE = 8;
 
@@ -78,6 +72,8 @@ async function fetchReleaseManifest() {
     || !Array.isArray(manifest.sections)
     || !Array.isArray(manifest.compatibility)
     || !Array.isArray(manifest.warnings)
+    || manifest.compatibility.some((item) => typeof item !== 'string')
+    || manifest.warnings.some((item) => typeof item !== 'string')
     || !Array.isArray(manifest.resources)
     || manifest.resources.length !== ASSET_PATHS.length + 3
   ) {
