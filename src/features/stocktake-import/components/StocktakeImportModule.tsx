@@ -26,6 +26,7 @@ import {
 import './stocktake-import.css';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { downloadFile } from '../../../shared/downloadFile';
+import { registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
 
 type Props = { employee: EmployeeSession; onClose: () => void };
 type View = 'import' | 'history';
@@ -175,6 +176,15 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   };
 
   useEffect(() => { void refreshHistory(); }, []);
+
+  useEffect(() => registerPwaUpdateBlocker('stocktake-import', () => {
+    if (busy || historyBusy) return 'Stocktake Import đang xử lý hoặc đồng bộ lịch sử trên thiết bị.';
+    if (editingZone || hasDirtyZones) return 'Stocktake Import có vùng đang chỉnh sửa hoặc chưa lưu.';
+    if (pendingImport) return 'Đang chờ xác nhận dữ liệu nhập bổ sung.';
+    if (result && !historyPersisted) return 'Phiên nhập hiện tại chưa được lưu thành công vào lịch sử trên thiết bị.';
+    if (showClearConfirm || showNewSessionConfirm) return 'Đang chờ xác nhận thao tác trong Stocktake Import.';
+    return null;
+  }), [busy, historyBusy, editingZone, hasDirtyZones, pendingImport, result, historyPersisted, showClearConfirm, showNewSessionConfirm]);
 
   useEffect(() => {
     if (!notice) return undefined;
