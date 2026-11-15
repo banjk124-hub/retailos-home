@@ -1,36 +1,35 @@
-# Current handoff — PWA offline runtime and staged release architecture
+# Current handoff — user-approved PWA release lifecycle audit
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Branch:** `feat/pwa-offline-release-architecture`  
-**Base:** `main` at `80a8626da8c067186aa813d339ea95dbe6c0e3ba`  
-**Status:** implementation staged on this branch; final CI and physical-device acceptance pending. No merge or deploy.
+**Baseline:** `main`, after PR #119 merge and deployment confirmed by the user.  
+**Current documentation branch:** `docs/pwa-user-approved-release-contract`.  
+**Scope:** source audit and durable documentation policy; no runtime source changes in this work.
 
 ## Read first
+1. `AGENTS.md` — mandatory cross-task release lifecycle rules.
+2. `docs/ai-context/INDEX.md`.
+3. `docs/ai-context/PWA_RUNTIME_RELEASE.md` — canonical current behavior, target contract and acceptance tests.
+4. `docs/ai-context/IMPLEMENTATION_STATUS.md` — verified implementation and gaps.
+5. `docs/ai-context/ARCHITECTURE.md` — ADR-040 product decision.
 
-1. `AGENTS.md`
-2. `docs/ai-context/INDEX.md`
-3. `docs/ai-context/PWA_RUNTIME_RELEASE.md` — canonical PWA runtime/release contract.
-4. `docs/ai-context/PERFORMANCE_BUNDLE_PWA.md` — bundle and code-splitting evidence.
-5. `scripts/test-pwa-cache-policy.mjs`, `scripts/test-pwa-worker-runtime.mjs`, `scripts/test-pwa-platform-compatibility.mjs`.
-6. Current branch diff and final-head GitHub Actions run.
+## Source audit conclusion
+- PR #119's full asset inventory, WASM precache, release cache isolation, boot health and rollback foundation are present in deployed source.
+- Important mismatch: `src/sw/service-worker.template.js` downloads the full asset inventory inside the browser-triggered `install` event. This happens before `PwaUpdatePrompt` reveals the waiting worker.
+- `src/shared/pwa/PwaUpdatePrompt.tsx` currently displays generic copy after staging and asks the user to activate. It has no release-note data model, pre-download consent, progress UI or automatic post-download activation.
+- The existing tests prove install-time precache and rollback, not the required pre-consent no-download boundary.
+- Target flow: discover metadata → present exact release notes → ask once before download → stage and verify all runtime resources → auto-activate → boot-health check/rollback.
+- Data refresh/recalculation using existing logic stays independent; new processing mechanisms/features belong to the application release.
 
-## Implemented scope
+## Next implementation requirements
+1. Audit Service Worker/browser update semantics before designing the consent-gated staging mechanism. Do not solve this by merely moving the existing button or changing `SKIP_WAITING`.
+2. Add a build-bound release manifest and versioned user-facing notes.
+3. Prove no candidate runtime payload is fetched/staged before explicit approval.
+4. Prove all modules/chunks, UI assets, workers, WASM and media are local before automatic activation.
+5. Preserve old-release offline behavior, safe handoff, business data and last-known-good rollback.
+6. Add runtime tests for consent/defer/progress/failure/auto-activation and data lifecycle isolation; then full CI and physical-device QA.
 
-- Include ZXing WASM and the complete emitted runtime asset inventory in the Vite release manifest.
-- Stage and verify shell plus all runtime assets during Service Worker install; reject incomplete releases without disturbing the active release.
-- Pin the active navigation shell so newly deployed HTML cannot leak into the previous release.
-- Retain previous release caches until matching-build boot health; route a failed boot back to the previous cached shell/assets.
-- Keep business-data/snapshot refresh separate from application release lifecycle.
-- Preserve camera/session/decoder behavior, module workflows, IndexedDB and business data contracts.
+Do not claim the target flow is implemented until the source, tests and device evidence support it. No merge/deploy is authorized by this handoff.
 
-## Required gates
-
-1. Verify complete precache includes the emitted `zxing_reader.wasm` URL and every lazy feature chunk.
-2. Run all three PWA tests, `npm run preflight`, TypeScript, production build and Pages build.
-3. Review the final diff for accidental camera, scanner algorithm, business-data or persistence changes.
-4. Verify failed/partial install preserves the old worker/cache; verify boot failure rollback and matching-build cleanup.
-5. Keep physical Android Chrome/PWA and iOS Safari/Home Screen PWA acceptance separate from CI.
-6. Keep PR unmerged until CI, manual review and explicit user approval.
 
 ---
 
