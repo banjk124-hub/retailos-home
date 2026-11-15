@@ -7,7 +7,7 @@
 - [x] Design the pre-download consent boundary around Service Worker update semantics.
 - [x] Publish a build-bound release manifest and release notes with complete resource hashes and byte sizes.
 - [x] Implement progress-aware full-payload staging for shell, all modules/lazy chunks, UI/media, workers and WASM.
-- [x] Verify response status, byte size, SHA-256 and cache completeness before activation.
+- [x] Verify response status, byte size, SHA-256, cache read-back integrity and offline staged-byte revalidation before activation.
 - [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
 - [x] Preserve old-release serving, staged resume, last-known-good rollback and business data.
 - [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
