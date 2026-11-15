@@ -142,6 +142,41 @@ async function digestHex(bytes) {
   return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
 }
 
+async function verifyStagedResources(resources) {
+  if (!Array.isArray(resources) || resources.length === 0) return false;
+  const shellCache = await caches.open(SHELL_CACHE);
+  const assetCache = await caches.open(ASSET_CACHE);
+  let indexResource = null;
+
+  for (const resource of resources) {
+    if (
+      typeof resource?.path !== 'string'
+      || resource.path.startsWith('/')
+      || resource.path.split('/').includes('..')
+      || resource.path.includes('\\')
+      || !['shell', 'assets'].includes(resource.cache)
+      || !Number.isInteger(resource.size)
+      || resource.size < 0
+      || !/^[a-f0-9]{64}$/.test(resource.sha256)
+    ) return false;
+
+    const url = new URL(resource.path, APP_BASE_URL).href;
+    const cache = resource.cache === 'shell' ? shellCache : assetCache;
+    const cachedResponse = await cache.match(url);
+    if (!cachedResponse) return false;
+    const bytes = await cachedResponse.arrayBuffer();
+    if (bytes.byteLength !== resource.size || await digestHex(bytes) !== resource.sha256) return false;
+    if (resource.path === 'index.html' && resource.cache === 'shell') indexResource = resource;
+  }
+
+  if (!indexResource) return false;
+  const rootAlias = await shellCache.match(APP_BASE_URL.href);
+  if (!rootAlias) return false;
+  const aliasBytes = await rootAlias.arrayBuffer();
+  return aliasBytes.byteLength === indexResource.size
+    && await digestHex(aliasBytes) === indexResource.sha256;
+}
+
 async function stagedReleaseIsComplete(manifest) {
   const marker = await readStagedRelease();
   if (marker?.buildId !== BUILD_ID || marker?.resourceCount !== manifest.resources.length) return false;
@@ -247,20 +282,15 @@ async function stageCandidate(target) {
       if (failedResult) throw failedResult.reason;
     }
 
-    const missing = [];
-    for (const resource of manifest.resources) {
-      const url = new URL(resource.path, APP_BASE_URL).href;
-      const cache = resource.cache === 'shell' ? shellCache : assetCache;
-      if (!(await cache.match(url))) missing.push(resource.path);
-    }
-    if (missing.length || !(await shellCache.match(APP_BASE_URL.href))) {
-      throw new Error('Thiếu tài nguyên sau khi tải: ' + missing.slice(0, 5).join(', '));
+    if (!(await verifyStagedResources(manifest.resources))) {
+      throw new Error('Cache read-back không khớp kích thước hoặc SHA-256 của release manifest.');
     }
 
     await writeStagedRelease({
       buildId: BUILD_ID,
       version: manifest.version,
       resourceCount: total,
+      resources: manifest.resources,
       stagedAt: new Date().toISOString(),
     });
     const stagedMessage = {
@@ -325,7 +355,19 @@ function startOrJoinStage(target) {
 
 async function tryActivate(source) {
   const staged = await readStagedRelease();
-  if (staged?.buildId !== BUILD_ID) {
+  if (staged?.buildId !== BUILD_ID || staged?.resourceCount !== staged?.resources?.length) {
+    notify(source, { type: 'UPDATE_NOT_STAGED', buildId: BUILD_ID });
+    return false;
+  }
+  if (!(await verifyStagedResources(staged.resources))) {
+    await Promise.allSettled([
+      caches.delete(SHELL_CACHE),
+      caches.delete(ASSET_CACHE),
+      (async () => {
+        const stateCache = await caches.open(STATE_CACHE);
+        await stateCache.delete(STAGED_RELEASE_STATE_URL);
+      })(),
+    ]);
     notify(source, { type: 'UPDATE_NOT_STAGED', buildId: BUILD_ID });
     return false;
   }
