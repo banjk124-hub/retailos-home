@@ -1,4 +1,4 @@
-import { memo, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import { memo, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { GlassSurface } from '../components/glass';
 import { MotionIcon } from '../icons';
 import { useMotionState } from '../motion';
@@ -17,7 +17,24 @@ export const LiquidDock = memo(function LiquidDock({
   hidden = false,
 }: LiquidDockProps) {
   const [isActionExpanded, setIsActionExpanded] = useState(false);
+  const actionWrapRef = useRef<HTMLDivElement>(null);
   const { prefersReducedMotion } = useMotionState();
+
+  useEffect(() => {
+    if (!isActionExpanded) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (event.target instanceof Node && !actionWrapRef.current?.contains(event.target)) setIsActionExpanded(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsActionExpanded(false);
+    };
+    document.addEventListener('pointerdown', closeOnOutsidePointer, true);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer, true);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isActionExpanded]);
   const activeIndex = items.findIndex((item) => item.id === activeId && !item.disabled);
   const slotCount = items.length + (action ? 1 : 0);
   const actionSlot = action ? Math.floor(slotCount / 2) : -1;
@@ -77,7 +94,7 @@ export const LiquidDock = memo(function LiquidDock({
         {Array.from({ length: slotCount }, (_, slot) => {
           if (action && slot === actionSlot) {
             return (
-              <div key={`action-${action.label}`} className={`liquid-dock__action-wrap${isActionExpanded && action.choices?.length ? ' is-expanded' : ''}`} data-dock-action>
+              <div key={`action-${action.label}`} className={`liquid-dock__action-wrap${isActionExpanded && action.choices?.length ? ' is-expanded' : ''}`} ref={actionWrapRef} data-dock-action>
                 <button
                   type="button"
                   className="liquid-dock__action"
