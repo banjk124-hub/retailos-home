@@ -131,7 +131,6 @@ export default function PwaUpdatePrompt() {
     reportHealthyBoot();
 
     const loadCandidateInfo = async (worker: ServiceWorker) => {
-      if (waitingWorkerRef.current === worker && manifest?.buildId === worker.scriptURL) return;
       waitingWorkerRef.current = worker;
       stagedRef.current = false;
       activationRequestedRef.current = false;
