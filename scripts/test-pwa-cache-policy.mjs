@@ -31,8 +31,10 @@ assert.match(worker, /APP_BOOT_FAILED/);
 assert.match(worker, /findPreviousRelease/);
 assert.match(worker, /readActiveRelease/);
 assert.match(worker, /writeActiveRelease/);
-assert.match(worker, /caches\.match\(request\)/,
-  'retained release assets must remain readable during rollback');
+assert.match(worker, /activeAssets\\.match\\(request\\)/,
+  'only the selected release asset cache may serve app runtime files');
+assert.doesNotMatch(worker, /caches\\.match\\(request\\)/,
+  'runtime assets from different releases must never be mixed');
 assert.match(worker, /self\.clients\.claim\(\)/);
 assert.match(worker, /SKIP_WAITING/);
 assert.match(worker, /UPDATE_BLOCKED_MULTIPLE_CLIENTS/);
