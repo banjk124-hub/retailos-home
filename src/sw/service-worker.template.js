@@ -8,54 +8,53 @@ const ASSET_CACHE = CACHE_PREFIX + 'assets-' + BUILD_ID;
 const STATE_CACHE = CACHE_PREFIX + 'state';
 const APP_BASE_URL = new URL(APP_BASE, self.location.origin);
 const APP_SHELL_URL = new URL('index.html', APP_BASE_URL).href;
+const RELEASE_MANIFEST_URL = new URL('release-manifest.json', APP_BASE_URL).href;
 const ACTIVE_RELEASE_STATE_URL = new URL('__retailos_active_release__', APP_BASE_URL).href;
 const PREVIOUS_RELEASE_STATE_URL = new URL('__retailos_previous_release__', APP_BASE_URL).href;
+const STAGED_RELEASE_STATE_URL = new URL('__retailos_staged_release__/' + BUILD_ID, APP_BASE_URL).href;
 const SHELL_URLS = [
-  APP_BASE_URL.href, APP_SHELL_URL,
+  APP_BASE_URL.href,
+  APP_SHELL_URL,
   new URL('manifest.webmanifest', APP_BASE_URL).href,
-  new URL('icon.svg', APP_BASE_URL).href
+  new URL('icon.svg', APP_BASE_URL).href,
 ];
 const ASSET_URLS = new Set(ASSET_PATHS.map((file) => new URL(file, APP_BASE_URL).href));
+const BATCH_SIZE = 8;
 
+function notify(target, message) {
+  try {
+    if (target && typeof target.postMessage === 'function') target.postMessage(message);
+  } catch { /* The page may have navigated or closed during staging. */ }
+}
 async function matchAppShell(cacheName = SHELL_CACHE) {
   try { return await (await caches.open(cacheName)).match(APP_SHELL_URL) || null; }
   catch { return null; }
 }
-async function readActiveRelease() {
+async function readState(url) {
   try {
-    const response = await (await caches.open(STATE_CACHE)).match(ACTIVE_RELEASE_STATE_URL);
+    const response = await (await caches.open(STATE_CACHE)).match(url);
     return response ? await response.json() : null;
   } catch { return null; }
 }
-async function readPreviousRelease() {
-  try {
-    const response = await (await caches.open(STATE_CACHE)).match(PREVIOUS_RELEASE_STATE_URL);
-    return response ? await response.json() : null;
-  } catch { return null; }
-}
-async function writePreviousRelease(release) {
+async function writeState(url, value) {
   const cache = await caches.open(STATE_CACHE);
-  await cache.put(PREVIOUS_RELEASE_STATE_URL, new Response(JSON.stringify(release), {
-    headers: { 'Content-Type': 'application/json' }
+  await cache.put(url, new Response(JSON.stringify(value), {
+    headers: { 'Content-Type': 'application/json' },
   }));
 }
-async function writeActiveRelease(release) {
-  const cache = await caches.open(STATE_CACHE);
-  await cache.put(ACTIVE_RELEASE_STATE_URL, new Response(JSON.stringify(release), {
-    headers: { 'Content-Type': 'application/json' }
-  }));
-}
-async function addAllInBatches(cache, urls, batchSize = 8) {
-  for (let index = 0; index < urls.length; index += batchSize) {
-    await cache.addAll(urls.slice(index, index + batchSize));
-  }
-}
+const readActiveRelease = () => readState(ACTIVE_RELEASE_STATE_URL);
+const readPreviousRelease = () => readState(PREVIOUS_RELEASE_STATE_URL);
+const readStagedRelease = () => readState(STAGED_RELEASE_STATE_URL);
+const writeActiveRelease = (release) => writeState(ACTIVE_RELEASE_STATE_URL, release);
+const writePreviousRelease = (release) => writeState(PREVIOUS_RELEASE_STATE_URL, release);
+const writeStagedRelease = (release) => writeState(STAGED_RELEASE_STATE_URL, release);
+
 async function findPreviousRelease() {
   const recordedPrevious = await readPreviousRelease();
   if (recordedPrevious?.shellCache && await matchAppShell(recordedPrevious.shellCache)) {
     return recordedPrevious;
   }
-  const keys = await caches.keys();
+  const keys = (await caches.keys()).sort();
   const previousShells = keys.filter((key) =>
     key.startsWith(CACHE_PREFIX + 'shell-') && key !== SHELL_CACHE
   );
@@ -65,47 +64,230 @@ async function findPreviousRelease() {
   return { buildId: releaseId, shellCache, assetCache: CACHE_PREFIX + 'assets-' + releaseId };
 }
 
+async function fetchReleaseManifest() {
+  const response = await fetch(RELEASE_MANIFEST_URL, { cache: 'no-store' });
+  if (!response.ok) throw new Error('Không thể tải thông tin phiên bản (' + response.status + ').');
+  const manifest = await response.json();
+  if (
+    manifest?.schemaVersion !== 1
+    || manifest.buildId !== BUILD_ID
+    || manifest.base !== APP_BASE
+    || typeof manifest.version !== 'string'
+    || !Array.isArray(manifest.resources)
+    || manifest.resources.length === 0
+  ) {
+    throw new Error('Thông tin phiên bản không hợp lệ hoặc không khớp với Service Worker.');
+  }
+  for (const resource of manifest.resources) {
+    if (
+      typeof resource.path !== 'string'
+      || resource.path.startsWith('/')
+      || resource.path.split('/').includes('..')
+      || resource.path.includes('\\')
+      || !['shell', 'assets'].includes(resource.cache)
+      || !Number.isInteger(resource.size)
+      || resource.size < 0
+      || !/^[a-f0-9]{64}$/.test(resource.sha256)
+    ) {
+      throw new Error('Danh sách tài nguyên của phiên bản không hợp lệ.');
+    }
+  }
+  return manifest;
+}
+
+async function digestHex(bytes) {
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+async function stagedReleaseIsComplete(manifest) {
+  const marker = await readStagedRelease();
+  if (marker?.buildId !== BUILD_ID || marker?.resourceCount !== manifest.resources.length) return false;
+  const shellCache = await caches.open(SHELL_CACHE);
+  const assetCache = await caches.open(ASSET_CACHE);
+  for (const resource of manifest.resources) {
+    const url = new URL(resource.path, APP_BASE_URL).href;
+    const cache = resource.cache === 'shell' ? shellCache : assetCache;
+    if (!(await cache.match(url))) return false;
+  }
+  return Boolean(await shellCache.match(APP_BASE_URL.href));
+}
+
+async function stageCandidate(target) {
+  const manifest = await fetchReleaseManifest();
+  if (await stagedReleaseIsComplete(manifest)) {
+    notify(target, {
+      type: 'RELEASE_STAGED',
+      buildId: BUILD_ID,
+      version: manifest.version,
+      completed: manifest.resources.length,
+      total: manifest.resources.length,
+      reused: true,
+    });
+    return manifest;
+  }
+
+  await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
+  const stateCache = await caches.open(STATE_CACHE);
+  await stateCache.delete(STAGED_RELEASE_STATE_URL);
+  const shellCache = await caches.open(SHELL_CACHE);
+  const assetCache = await caches.open(ASSET_CACHE);
+  let completed = 0;
+  const total = manifest.resources.length;
+
+  try {
+    for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
+      const batch = manifest.resources.slice(index, index + BATCH_SIZE);
+      await Promise.all(batch.map(async (resource) => {
+        const url = new URL(resource.path, APP_BASE_URL).href;
+        const response = await fetch(url, { cache: 'reload', credentials: 'same-origin' });
+        if (!response.ok || response.type === 'opaque') {
+          throw new Error('Tải tài nguyên thất bại: ' + resource.path);
+        }
+        const bytes = await response.clone().arrayBuffer();
+        if (bytes.byteLength !== resource.size) {
+          throw new Error('Sai kích thước tài nguyên: ' + resource.path);
+        }
+        if (await digestHex(bytes) !== resource.sha256) {
+          throw new Error('Sai checksum tài nguyên: ' + resource.path);
+        }
+        const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
+        await targetCache.put(url, response);
+        if (resource.path === 'index.html') {
+          await shellCache.put(APP_BASE_URL.href, response.clone());
+        }
+        completed += 1;
+        notify(target, {
+          type: 'RELEASE_DOWNLOAD_PROGRESS',
+          buildId: BUILD_ID,
+          version: manifest.version,
+          completed,
+          total,
+          bytesDownloaded: manifest.resources
+            .slice(0, completed)
+            .reduce((sum, item) => sum + item.size, 0),
+          totalBytes: manifest.resources.reduce((sum, item) => sum + item.size, 0),
+        });
+      }));
+    }
+
+    const missing = [];
+    for (const resource of manifest.resources) {
+      const url = new URL(resource.path, APP_BASE_URL).href;
+      const cache = resource.cache === 'shell' ? shellCache : assetCache;
+      if (!(await cache.match(url))) missing.push(resource.path);
+    }
+    if (missing.length || !(await shellCache.match(APP_BASE_URL.href))) {
+      throw new Error('Thiếu tài nguyên sau khi tải: ' + missing.slice(0, 5).join(', '));
+    }
+
+    await writeStagedRelease({
+      buildId: BUILD_ID,
+      version: manifest.version,
+      resourceCount: total,
+      stagedAt: new Date().toISOString(),
+    });
+    notify(target, {
+      type: 'RELEASE_STAGED',
+      buildId: BUILD_ID,
+      version: manifest.version,
+      completed: total,
+      total,
+      totalBytes: manifest.resources.reduce((sum, item) => sum + item.size, 0),
+    });
+    return manifest;
+  } catch (error) {
+    await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
+    await stateCache.delete(STAGED_RELEASE_STATE_URL);
+    throw error;
+  }
+}
+
+async function tryActivate(source) {
+  const staged = await readStagedRelease();
+  if (staged?.buildId !== BUILD_ID) {
+    notify(source, { type: 'UPDATE_NOT_STAGED', buildId: BUILD_ID });
+    return false;
+  }
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  const appClients = clients.filter((client) => {
+    try {
+      const clientUrl = new URL(client.url);
+      return clientUrl.origin === APP_BASE_URL.origin
+        && clientUrl.pathname.startsWith(APP_BASE_URL.pathname);
+    } catch { return false; }
+  });
+  const otherClients = appClients.filter((client) => client.id !== source?.id);
+  if (otherClients.length > 0) {
+    notify(source, { type: 'UPDATE_BLOCKED_MULTIPLE_CLIENTS' });
+    return false;
+  }
+  await self.skipWaiting();
+  return true;
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
-    try {
-      // A release is installable only when every required asset, including ZXing WASM, is present.
-      const shellCache = await caches.open(SHELL_CACHE);
-      const assetCache = await caches.open(ASSET_CACHE);
-      await shellCache.addAll(SHELL_URLS);
-      await addAllInBatches(assetCache, [...ASSET_URLS]);
-      const missingShell = await Promise.all(SHELL_URLS.map((url) => shellCache.match(url)));
-      const missingAssets = await Promise.all([...ASSET_URLS].map((url) => assetCache.match(url)));
-      if (missingShell.some((entry) => !entry) || missingAssets.some((entry) => !entry)) {
-        throw new Error('RetailOS release precache verification failed.');
-      }
-    } catch (error) {
-      await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
-      throw error;
-    }
+    // First install has no previous release to preserve. A returning device
+    // must explicitly approve staging before any candidate payload is fetched.
+    const previous = await readActiveRelease() || await findPreviousRelease();
+    if (!previous) await stageCandidate(null);
   })());
 });
 
 self.addEventListener('message', (event) => {
   const message = event.data || {};
-  if (message.type === 'SKIP_WAITING') {
+  const replyTarget = event.ports?.[0] || event.source;
+
+  if (message.type === 'GET_RELEASE_INFO') {
     event.waitUntil((async () => {
-      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const retailOsClients = clients.filter((client) => {
-        try {
-          const clientUrl = new URL(client.url);
-          return clientUrl.origin === APP_BASE_URL.origin
-            && clientUrl.pathname.startsWith(APP_BASE_URL.pathname);
-        } catch { return false; }
-      });
-      const otherClients = retailOsClients.filter((client) => client.id !== event.source?.id);
-      if (otherClients.length > 0) {
-        event.source?.postMessage({ type: 'UPDATE_BLOCKED_MULTIPLE_CLIENTS' });
-        return;
+      try {
+        const manifest = await fetchReleaseManifest();
+        notify(replyTarget, { type: 'RELEASE_INFO', manifest });
+      } catch (error) {
+        notify(replyTarget, {
+          type: 'RELEASE_INFO_FAILED',
+          message: error instanceof Error ? error.message : 'Không đọc được thông tin phiên bản.',
+        });
       }
-      await self.skipWaiting();
     })());
     return;
   }
+
+  if (message.type === 'STAGE_RELEASE') {
+    event.waitUntil(stageCandidate(replyTarget).catch((error) => {
+      notify(replyTarget, {
+        type: 'RELEASE_STAGE_FAILED',
+        buildId: BUILD_ID,
+        message: error instanceof Error ? error.message : 'Tải phiên bản thất bại.',
+      });
+    }));
+    return;
+  }
+
+  if (message.type === 'ACTIVATE_RELEASE') {
+    event.waitUntil(tryActivate(event.source));
+    return;
+  }
+
+  if (message.type === 'SKIP_WAITING') {
+    // One-time compatibility bridge for clients running the pre-consent UI:
+    // their explicit "Cập nhật" action is treated as consent to download.
+    event.waitUntil((async () => {
+      try {
+        await stageCandidate(event.source);
+        await tryActivate(event.source);
+      } catch (error) {
+        notify(event.source, {
+          type: 'RELEASE_STAGE_FAILED',
+          buildId: BUILD_ID,
+          message: error instanceof Error ? error.message : 'Tải phiên bản thất bại.',
+        });
+      }
+    })());
+    return;
+  }
+
   if (message.type === 'APP_BOOT_OK') {
     event.waitUntil((async () => {
       if (message.buildId === BUILD_ID) {
@@ -118,24 +300,23 @@ self.addEventListener('message', (event) => {
         await caches.delete(STATE_CACHE);
         return;
       }
-      // A previous release may be reporting healthy after rollback. Keep it
-      // as the active serving release; do not clean either cache set here.
       const activeRelease = await readActiveRelease();
       if (activeRelease?.buildId === message.buildId) return;
     })());
     return;
   }
+
   if (message.type === 'APP_BOOT_FAILED' && message.buildId === BUILD_ID) {
     event.waitUntil((async () => {
-      const previous = await findPreviousRelease();
+      const previous = await readPreviousRelease() || await findPreviousRelease();
       if (!previous || !(await matchAppShell(previous.shellCache))) {
-        event.source?.postMessage({ type: 'UPDATE_ROLLBACK_UNAVAILABLE' });
+        notify(event.source, { type: 'UPDATE_ROLLBACK_UNAVAILABLE' });
         return;
       }
       await writeActiveRelease(previous);
-      // The failed release is no longer the serving app. Remove its caches so
-      // a later update cannot mistake this failed build for the last good one.
       await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
+      const stateCache = await caches.open(STATE_CACHE);
+      await stateCache.delete(STAGED_RELEASE_STATE_URL);
       if (event.source && 'navigate' in event.source) await event.source.navigate(event.source.url);
     })());
   }
@@ -143,11 +324,15 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    const previous = await readActiveRelease();
+    const previous = await readActiveRelease() || await findPreviousRelease();
     if (previous?.buildId && previous.buildId !== BUILD_ID && previous.shellCache) {
       await writePreviousRelease(previous);
     }
-    await writeActiveRelease({ buildId: BUILD_ID, shellCache: SHELL_CACHE, assetCache: ASSET_CACHE });
+    await writeActiveRelease({
+      buildId: BUILD_ID,
+      shellCache: SHELL_CACHE,
+      assetCache: ASSET_CACHE,
+    });
     await self.clients.claim();
   })());
 });
@@ -157,11 +342,10 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
   if (request.mode === 'navigate') {
     event.respondWith((async () => {
       const activeRelease = await readActiveRelease();
-      // Keep the selected release pinned. A rollback changes this pointer to
-      // the previous release; a later activation selects its own new release.
       const activeShell = await matchAppShell(activeRelease?.shellCache || SHELL_CACHE);
       if (activeShell) return activeShell;
       try {
@@ -170,6 +354,7 @@ self.addEventListener('fetch', (event) => {
           try {
             const cache = await caches.open(SHELL_CACHE);
             await cache.put(APP_SHELL_URL, response.clone());
+            await cache.put(APP_BASE_URL.href, response.clone());
           } catch { /* Preserve a successful first-install navigation. */ }
         }
         return response;
@@ -177,6 +362,7 @@ self.addEventListener('fetch', (event) => {
     })());
     return;
   }
+
   event.respondWith((async () => {
     try {
       const activeRelease = await readActiveRelease();
@@ -210,10 +396,11 @@ self.addEventListener('push', (event) => {
     body: typeof payload.body === 'string' ? payload.body : 'Bạn có thông báo mới.',
     icon: new URL('icon.svg', APP_BASE_URL).href,
     badge: new URL('icon.svg', APP_BASE_URL).href,
-    data: { url: typeof payload.url === 'string' ? payload.url : APP_BASE_URL.href }
+    data: { url: typeof payload.url === 'string' ? payload.url : APP_BASE_URL.href },
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   let requestedUrl;
