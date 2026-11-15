@@ -4,7 +4,7 @@ import './pwa-update-prompt.css';
 declare const __RETAILOS_BUILD_ID__: string;
 import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 import { getPwaUpdateBlockReason } from './updateSafety';
-import { clearUpdateCenterEntry, readUpdateCenterEntry, writeUpdateCenterEntry } from './updateCenterStore';
+import { readUpdateCenterEntry, writeUpdateCenterEntry } from './updateCenterStore';
 
 declare const __RETAILOS_APP_VERSION__: string;
 
@@ -78,11 +78,11 @@ export default function PwaUpdatePrompt() {
 
   const retryInfoRef = useRef<() => void>(() => undefined);
   const updateCenterActionRef = useRef<(action: 'download' | 'activate') => void>(() => undefined);
-  const persistCandidate = useCallback((status: 'available' | 'deferred' | 'downloading' | 'staged' | 'error', inCenter?: boolean) => {
+  const persistCandidate = useCallback((status: 'available' | 'deferred' | 'downloading' | 'staged' | 'error', inCenter?: boolean, progressValue?: { completed: number; total: number; bytesDownloaded: number; totalBytes: number }) => {
     const candidate = manifestRef.current;
     if (!candidate) return false;
     const previous = readUpdateCenterEntry();
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0) });
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progress });
   }, []);
 
   const tryActivate = useCallback(() => {
@@ -128,6 +128,7 @@ export default function PwaUpdatePrompt() {
           bytesDownloaded: message.bytesDownloaded ?? 0,
           totalBytes: message.totalBytes ?? 0,
         });
+        persistCandidate('downloading', undefined, { completed: message.completed ?? 0, total: message.total ?? 0, bytesDownloaded: message.bytesDownloaded ?? 0, totalBytes: message.totalBytes ?? 0 });
       }
       if (message?.type === 'RELEASE_STAGE_FAILED') {
         channel.port1.close();
@@ -159,8 +160,7 @@ export default function PwaUpdatePrompt() {
   }, [manifest, phase, tryActivate, persistCandidate]);
 
   useEffect(() => {
-    const persistedUpdate = readUpdateCenterEntry();
-    if (persistedUpdate?.buildId === __RETAILOS_BUILD_ID__) clearUpdateCenterEntry(persistedUpdate.buildId);
+    // The Update Center entry is cleared only after HomeScreen acknowledges a healthy boot.
     if (!('serviceWorker' in navigator) || !import.meta.env.PROD) return;
     let registration: ServiceWorkerRegistration | null = null;
     let disposed = false;
@@ -295,7 +295,7 @@ export default function PwaUpdatePrompt() {
             bytesDownloaded: message.bytesDownloaded ?? 0,
             totalBytes: message.totalBytes ?? 0,
           });
-          persistCandidate('downloading');
+          persistCandidate('downloading', undefined, { completed: message.completed ?? 0, total: message.total ?? currentManifest.resources.length, bytesDownloaded: message.bytesDownloaded ?? 0, totalBytes: message.totalBytes ?? 0 });
         }
         if (message.type === 'RELEASE_STAGED') {
           stagedRef.current = true;
