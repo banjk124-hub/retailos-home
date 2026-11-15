@@ -133,7 +133,9 @@ async function stageCandidate(target) {
   const shellCache = await caches.open(SHELL_CACHE);
   const assetCache = await caches.open(ASSET_CACHE);
   let completed = 0;
+  let bytesDownloaded = 0;
   const total = manifest.resources.length;
+  const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
 
   try {
     for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
@@ -156,16 +158,15 @@ async function stageCandidate(target) {
         await targetCache.put(url, response);
         if (rootAlias) await shellCache.put(APP_BASE_URL.href, rootAlias);
         completed += 1;
+        bytesDownloaded += resource.size;
         notify(target, {
           type: 'RELEASE_DOWNLOAD_PROGRESS',
           buildId: BUILD_ID,
           version: manifest.version,
           completed,
           total,
-          bytesDownloaded: manifest.resources
-            .slice(0, completed)
-            .reduce((sum, item) => sum + item.size, 0),
-          totalBytes: manifest.resources.reduce((sum, item) => sum + item.size, 0),
+          bytesDownloaded,
+          totalBytes,
         });
       }));
     }
@@ -192,7 +193,7 @@ async function stageCandidate(target) {
       version: manifest.version,
       completed: total,
       total,
-      totalBytes: manifest.resources.reduce((sum, item) => sum + item.size, 0),
+      totalBytes,
     });
     return manifest;
   } catch (error) {
