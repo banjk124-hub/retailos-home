@@ -3,7 +3,7 @@
 **Repository:** `banjk124-hub/retailos-home`  
 **Branch:** `feat/pwa-consent-gated-release-runtime`  
 **Base:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` (PR #119 production baseline). PR #120 was closed as superseded; its documentation changes were incorporated into this branch.  
-**Status:** Full RetailOS CI #1170 passed on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`; PR review and physical device acceptance remain pending. No merge/deploy.
+**Status:** Full RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including the main-only production deploy guard and its regression test. PR review and physical device acceptance remain pending. No merge/deploy.
 
 ## Read first
 1. `AGENTS.md` — mandatory release lifecycle policy.
@@ -29,8 +29,9 @@
 - GitHub Actions run #1126 on the previous PR head `ecbc32fc092e281fba6b5b824ef00ffe9bb02e94` passed the regression suites and TypeScript, then failed during Vite production build because `index.html` was not yet present when the release-manifest plugin ran.
 - First correction: `retailos-pwa-artifacts` uses Vite `enforce: 'post'`, which made the final `index.html` available. CI #1162 then passed TypeScript, production and Pages builds plus worker runtime tests, but PWA cache-policy detected a real emitted-chunk byte mismatch (HomeScreen manifest size 59,043 bytes vs final file 60,023 bytes).
 - Second correction: change the plugin's `generateBundle` hook to an explicit `{ order: 'post', handler }`, so release hashes are calculated after all Rollup output hooks have finalized chunk bytes. A regression assertion protects this ordering.
-- **PASS — RetailOS CI #1170** on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`: local-equivalent preflight, TypeScript, production build, GitHub Pages build, bundle-boundary tests, PWA worker runtime tests, PWA cache policy/integrity checks, platform compatibility tests, diff checks, PR-base bundle build and bundle comparison all completed successfully.
-- Remaining gate: physical Android/iOS/Desktop/low-end Android acceptance. The subsequent documentation reconciliation does not alter runtime source.
+- **PASS — RetailOS CI #1170** on source commit `d5902b4a40e5cddad96eeb6d42b1ba17a1fb5700`: full preflight, TypeScript, production/Pages builds, manifest byte/hash parity, worker runtime, platform contracts and bundle comparison passed.
+- **PASS — RetailOS CI #1184** on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`: repeated the full gate after the production deployment guard and its regression test were added; all steps, including bundle comparison and artifact upload, passed.
+- Remaining gate: physical Android/iOS/Desktop/low-end Android acceptance.
 
 ## Critical audit points before approval
 1. Check Vite production and Pages output: `release-manifest.json` must match the exact emitted `index.html`, shell files, lazy chunks, public assets and ZXing WASM bytes.
