@@ -10,7 +10,7 @@
 - Each shell/runtime resource carries byte size and SHA-256; package version and release-notes version are checked for parity.
 - Update Service Worker install no longer downloads the candidate payload. It stages automatically only for a first install with no active worker.
 - Waiting worker exposes metadata-only discovery; full candidate payload staging begins only after the user approves.
-- Candidate shell/assets are staged in release-specific caches, in bounded batches of two with storage-budget preflight, with status, size, SHA-256 and cache verification.
+- Candidate shell/assets are staged in release-specific caches, in bounded batches of two with storage-budget preflight. Each response is checked for status, size and SHA-256; every cache write is then read back and rechecked before the staged marker is persisted. Activation independently revalidates staged bytes from cache (offline-capable) and rejects/removes a corrupted candidate before `skipWaiting`.
 - Download progress, retryable failure, concurrent-stage joining after page reload and staged-resume behavior are implemented.
 - Successful staging triggers automatic activation when app-wide safety blockers and the multi-window guard permit it. No second user confirmation.
 - Shared update-safety blockers cover camera leases, Stocktake, Stocktake Import, app transitions and module snapshot sync/IndexedDB cleanup and push subscription setup. Generic form dirty tracking plus an explicit async-save API protects other forms; future modules can register non-DOM blockers.
