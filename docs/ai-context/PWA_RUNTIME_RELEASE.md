@@ -23,7 +23,7 @@ The required user journey is:
 4. **Stage:** after approval, download every required application resource into isolated candidate caches. Show progress by bytes and resource count.
 5. **Verify:** verify response status, exact byte size, SHA-256 and manifest completeness; read every cache write back and verify its bytes and root navigation alias before persisting the staged marker. Revalidate staged bytes from cache immediately before activation, without requiring network access. A partial/corrupt/evicted candidate cannot activate.
 6. **Auto-activate:** after successful staging, automatically activate when the application is at a safe handoff point and no other RetailOS window blocks takeover. There is no second confirmation.
-7. **Boot health:** the new app reports healthy startup for its exact build ID.
+7. **Boot health:** the new app reports healthy startup for its exact build ID only after the primary route has committed (login surface) or HomeScreen has mounted. The update prompt must not acknowledge boot health merely because it mounted; otherwise lazy Home failures could prematurely clear the last-known-good rollback release.
 8. **Rollback:** if boot health fails, restore the last-known-good shell and matching assets. Never touch business data.
 
 The active release remains available while a candidate is discovered, deferred, downloaded or rejected. If the download fails or connectivity is lost, only the candidate's partial caches are removed.
