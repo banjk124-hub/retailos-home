@@ -240,21 +240,29 @@ async function tryActivate(source) {
     notify(source, { type: 'UPDATE_NOT_STAGED', buildId: BUILD_ID });
     return false;
   }
-  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-  const appClients = clients.filter((client) => {
-    try {
-      const clientUrl = new URL(client.url);
-      return clientUrl.origin === APP_BASE_URL.origin
-        && clientUrl.pathname.startsWith(APP_BASE_URL.pathname);
-    } catch { return false; }
-  });
-  const otherClients = appClients.filter((client) => client.id !== source?.id);
-  if (otherClients.length > 0) {
-    notify(source, { type: 'UPDATE_BLOCKED_MULTIPLE_CLIENTS' });
+  try {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const appClients = clients.filter((client) => {
+      try {
+        const clientUrl = new URL(client.url);
+        return clientUrl.origin === APP_BASE_URL.origin
+          && clientUrl.pathname.startsWith(APP_BASE_URL.pathname);
+      } catch { return false; }
+    });
+    const otherClients = appClients.filter((client) => client.id !== source?.id);
+    if (otherClients.length > 0) {
+      notify(source, { type: 'UPDATE_BLOCKED_MULTIPLE_CLIENTS' });
+      return false;
+    }
+    await self.skipWaiting();
+    return true;
+  } catch (error) {
+    notify(source, {
+      type: 'UPDATE_ACTIVATION_FAILED',
+      message: error instanceof Error ? error.message : 'Không thể kích hoạt phiên bản mới.',
+    });
     return false;
   }
-  await self.skipWaiting();
-  return true;
 }
 
 self.addEventListener('install', (event) => {
