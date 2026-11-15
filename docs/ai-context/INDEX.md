@@ -1,39 +1,42 @@
 # Documentation index
 
-- `HOME_PERFORMANCE_RECONCILIATION.md` — selected implementation from PR #104/#105, excluded scope, error semantics and physical QA acceptance gate.
-
-- `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` — input-to-first-feedback contract, confirmed causes and remaining audit scope.
-- `HOME_PERFORMANCE_AUDIT.md` — Home startup/render hot paths, snapshot access, CSS layering, dependency review and performance acceptance gates.
-
-This is the navigation layer for repository documentation. Read the canonical document for a topic; do not copy the same implementation history into several files.
+This file is the navigation layer for repository documentation. Read the canonical document for a topic; do not copy the same implementation history into several files.
 
 ## Start here
+
 1. `AGENTS.md` — operating rules and safety contract.
-2. `PROJECT_CONTEXT.md` — durable product facts, constraints and current repository status.
+2. `PROJECT_CONTEXT.md` — durable product facts and project constraints.
 3. `ARCHITECTURE.md` — accepted architecture decisions and protected contracts.
-4. `IMPLEMENTATION_STATUS.md` — verified implementation state and known gaps.
+4. `IMPLEMENTATION_STATUS.md` — verified implementation state and outstanding acceptance gates.
 5. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
 
 ## Topic sources of truth
+
 | Topic | Canonical document |
 |---|---|
+| Scanner current architecture, runtime ownership, decoder options, payload rules and acceptance gates | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
+| Scanner historical investigations, incident notes and migration evidence | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
+| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
-| Scanner recognition architecture | `SCANNER_RECOGNITION_PIPELINE.md` (historical stage design; verify current implementation status against the Phase 0 audit) |
-| Scanner decoder replacement baseline and protected contracts | `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` |
-| Scanner decoder benchmark methodology and dev-only harness | `SCANNER_DECODER_PR05_BENCHMARK_FOUNDATION.md` |
-| Scanner implementation phase order | `ROADMAP.md` |
+| Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
+| UI interaction responsiveness | `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` |
 | PWA bundle, service worker and cache behavior | `PERFORMANCE_BUNDLE_PWA.md` |
 | Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
-| Historical scanner audit evidence | Individual dated `SCANNER_*_AUDIT_*.md` records |
+| Export utilities | `modules/EXPORT_FILE.md` |
 | Login Phase 2 historical changes | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
 
-## Record ownership and deduplication
-- `PROJECT_CONTEXT.md`: durable product constraints and current top-level state; no full PR changelog.
-- `ARCHITECTURE.md`: accepted decisions/invariants; no repeated per-commit logs.
+## Document ownership
+
+- `PROJECT_CONTEXT.md`: durable product constraints; no full PR changelog.
+- `ARCHITECTURE.md`: accepted decisions and invariants; no repeated per-commit logs.
 - `IMPLEMENTATION_STATUS.md`: current verified state and outstanding acceptance gates.
-- `ROADMAP.md`: future sequence and exit criteria.
-- `AI_HANDOFF.md`: current handoff is at the top; older scanner PR narratives below are a historical archive, not current status.
-- `SESSION_LOG.md`: session handoffs; `CHANGELOG_AI.md`: implementation evidence. Avoid repeating full narratives in both.
-- Dated audit/spec files are retained when they preserve unique evidence, decisions or acceptance criteria. Do not delete them merely because they discuss the same subsystem.
-- When two documents cover one phase and have no inbound references, merge their distinct content into one history file and remove duplicate entry points.
+- `ROADMAP.md`: future work and exit criteria, not a duplicate architecture spec.
+- `AI_HANDOFF.md`: one current handoff at the top; older handoffs are clearly labelled historical.
+- `SESSION_LOG.md`: chronological session breadcrumbs.
+- `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
+- Scanner implementation truth lives in `SCANNER_ENGINE.md`; scanner historical notes are indexed in `SCANNER_HISTORY.md`.
+
+## Historical-document policy
+
+Historical audits, phase plans and incident notes are retained when they contain unique evidence, symptoms, decisions or regression clues. They must not appear as competing current specifications. When an old document conflicts with current source or SCANNER_ENGINE.md, treat it as a historical snapshot and verify the exact resolving change before acting.
