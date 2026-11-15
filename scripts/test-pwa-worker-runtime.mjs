@@ -137,6 +137,7 @@ assert.equal(await (await activeNavigation.responsePromise).text(), 'cached:' + 
   'active release navigation is served from its own pinned shell');
 assert.equal(fetchCalls, fetchCountBeforeNavigation, 'active shell navigation does not fetch newly deployed HTML');
 
+const fetchCountBefore = fetchCalls;
 const cachedAsset = {
   request: { method: 'GET', url: appBase + 'assets/app.js', mode: 'cors' },
   respondWith(promise) { this.responsePromise = promise; },
@@ -144,7 +145,6 @@ const cachedAsset = {
 listener('fetch')(cachedAsset);
 assert.match(await (await cachedAsset.responsePromise).text(), /^cached:/,
   'pre-cached current release asset is served without network');
-const fetchCountBefore = fetchCalls;
 assert.equal(fetchCalls, fetchCountBefore, 'pre-cached asset does not issue a network request');
 
 const currentPublicAsset = {
@@ -167,6 +167,8 @@ await runExtendable('message', {
 });
 assert.equal(navigatedTo, appBase, 'failed new release navigates back through the rollback-aware worker');
 assert.equal(rollbackMessage, null, 'rollback is available when the previous release cache exists');
+assert.equal(cacheStore.has('retailos-pwa-shell-runtime-test'), false, 'failed new release shell cache is discarded after rollback');
+assert.equal(cacheStore.has('retailos-pwa-assets-runtime-test'), false, 'failed new release assets are discarded after rollback');
 
 await runExtendable('message', {
   data: { type: 'APP_BOOT_OK', buildId: 'old' },
@@ -200,6 +202,7 @@ listener('fetch')(rollbackPublicAsset);
 assert.equal(await (await rollbackPublicAsset.responsePromise).text(), 'previous-release-shared-image',
   'rollback serves the previous release copy of a stable public asset');
 
+context.fetch = async (request) => new Response('network:' + (typeof request === 'string' ? request : request.url));
 const unlistedEvent = {
   request: { method: 'GET', url: appBase + 'api/data', mode: 'cors' },
   respondWith(promise) { this.responsePromise = promise; },
