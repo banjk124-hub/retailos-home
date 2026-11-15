@@ -9,7 +9,7 @@
 - [x] Implement progress-aware full-payload staging for shell, all modules/lazy chunks, UI/media, workers and WASM.
 - [x] Verify response status, byte size, SHA-256, cache read-back integrity and offline staged-byte revalidation before activation.
 - [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
-- [x] Preserve old-release serving, staged resume, last-known-good rollback and business data.
+- [x] Preserve old-release serving, staged resume, primary-surface boot health, last-known-good rollback and business data.
 - [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
 - [ ] Pass final-head full preflight, TypeScript, production build, Pages build and GitHub Actions. Previous CI #1126 passed regression tests/TypeScript but failed production build because the release-manifest plugin ran before final `index.html` emission; `enforce: 'post'` and a regression assertion are now in the branch, awaiting a fresh exact-head run.
 - [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance.
