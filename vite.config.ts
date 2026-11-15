@@ -53,7 +53,9 @@ function retailosPwaArtifacts(): Plugin {
       return html.replace('</head>', `${bootGuard}
   </head>`);
     },
-    generateBundle(_options, bundle) {
+    generateBundle: {
+      order: 'post',
+      handler(_options, bundle) {
       const assetResources: Array<{ path: string; source: string | Uint8Array; cache: 'assets' }> = [];
       for (const fileName of Object.keys(bundle).sort()) {
         if (!fileName.startsWith('assets/') || fileName.endsWith('.map')) continue;
@@ -153,6 +155,7 @@ function retailosPwaArtifacts(): Plugin {
         .replace('__APP_BASE__', appBase)
         .replace('__ASSET_PATHS__', JSON.stringify(assetFiles));
       this.emitFile({ type: 'asset', fileName: 'sw.js', source: worker });
+      },
     },
   };
 }
