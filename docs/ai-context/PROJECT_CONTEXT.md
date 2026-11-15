@@ -1,13 +1,13 @@
 # Current repository state — 2026-11-15
 
 - Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
-- Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on the documentation contract introduced in PR #120. Runtime changes are not merged/deployed.
+- Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119 (`5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094`). PR #120 was superseded and its documentation changes are incorporated into PR #121. Runtime changes are not merged/deployed.
 - Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
 - This branch replaces update-time install precache with metadata-only discovery and user-approved candidate staging. Build-bound manifest/release notes, size/SHA-256 verification, progress, staged resume, automatic activation and safe handoff are implemented in source.
 - App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
 - First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
 - Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
-- CI, final PR audit and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
+- CI #1126 on the prior head passed regression tests and TypeScript but failed production build because the manifest plugin ran before Vite emitted final `index.html`. The branch now orders the plugin after Vite build plugins and adds a regression assertion; fresh exact-head CI, final PR audit and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
 
 
 # Historical scanner state snapshot — 2026-11-11
