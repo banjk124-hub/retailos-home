@@ -10,7 +10,7 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const url = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { resolveScannerRoiScaleCandidates, resolveScannerRoiBaseDimensions } = await import(url);
+const { resolveScannerRoiScaleCandidates, resolveScannerRoiBaseDimensions, MAX_DECODE_CANDIDATE_PIXELS } = await import(url);
 
 const native1080Roi = resolveScannerRoiBaseDimensions(1152, 600);
 assert.deepEqual(native1080Roi, {
@@ -45,13 +45,19 @@ assert.equal(resolveScannerRoiScaleCandidates(Number.NaN, 200).length, 0,
   'non-finite ROI dimensions must not produce scale candidates');
 
 const large = resolveScannerRoiScaleCandidates(1280, 2000);
-assert.equal(large[0].width, 1920,
-  'the existing 1.5x baseline dimensions must remain unchanged');
-assert.ok(large.slice(1).every(({ width, height }) => width * height <= 6_000_000),
-  'every additional candidate must remain within the 6 MP allocation budget');
+assert.ok(large.length > 0);
+assert.ok(large.every(({ width, height }) => width * height <= MAX_DECODE_CANDIDATE_PIXELS),
+  'baseline and fallback candidates must all fit the exact WASM input pixel budget');
+assert.ok(large[0].scale < 1.5,
+  'the baseline scale must be reduced when the requested 1.5x candidate exceeds the decoder budget');
+assert.ok(large.every(({ width, height }) => width * height <= 1_500_000),
+  'no candidate may be planned only to be rejected by the WASM adapter');
 assert.equal(new Set(large.map(({ width, height }) => `${width}x${height}`)).size, large.length,
   'duplicate integer candidate dimensions must be removed');
 assert.ok(large.length <= 3,
   'candidate fan-out must remain bounded to baseline plus two fallbacks');
+const boundary = resolveScannerRoiScaleCandidates(1_500, 1_000);
+assert.ok(boundary.every(({ width, height }) => width * height <= MAX_DECODE_CANDIDATE_PIXELS),
+  'exact-boundary source dimensions must not round above the shared budget');
 
 console.log('Scanner adaptive ROI scale candidate regression tests passed.');
