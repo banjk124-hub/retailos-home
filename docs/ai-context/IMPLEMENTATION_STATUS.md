@@ -27,10 +27,10 @@
 
 ## Build failure and correction
 
-- Failure evidence: CI #1126 (`ecbc32fc`) reached `npm run preflight`, passed the regression suites and TypeScript, then failed in `retailos-pwa-artifacts.generateBundle` with `RetailOS release manifest requires the final generated index.html asset`.
-- Root cause: the custom output plugin was not ordered after Vite's HTML/build plugins, so its manifest hook could run before the finalized HTML asset was available.
-- Correction: mark the custom Vite plugin `enforce: 'post'`; add a regression assertion that protects this ordering. This retains the fail-closed requirement for a real final `index.html` and does not weaken manifest integrity.
-- Fresh exact-head CI has not yet been observed; do not treat the correction as verified until the new run completes.
+- CI #1126 (`ecbc32fc`) passed regression suites and TypeScript but failed because the release plugin ran before Vite emitted `index.html`. `enforce: 'post'` fixed that ordering.
+- CI #1162 then passed TypeScript, production build, Pages build and the worker runtime test, but PWA cache-policy found the manifest's HomeScreen chunk size (59,043 bytes) differed from the final emitted file (60,023 bytes). This proves the manifest hook still ran before all output mutations had completed.
+- Second correction: the plugin now declares `generateBundle` as an explicit hook object with `order: 'post'`; the regression test requires that exact ordering. The integrity checks remain fail-closed and continue comparing every manifest size/hash with actual `dist` bytes.
+- Fresh exact-head CI is still required; do not treat either correction as verified until the final run completes.
 
 ## Required verification still pending
 
