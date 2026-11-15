@@ -2,6 +2,7 @@ export type UpdateCenterStatus = 'available' | 'deferred' | 'downloading' | 'sta
 export type UpdateCenterEntry = {
   buildId: string;
   version: string;
+  currentVersion?: string;
   title: string;
   summary: string;
   status: UpdateCenterStatus;
@@ -13,6 +14,7 @@ export type UpdateCenterEntry = {
   warnings?: string[];
   totalBytes?: number;
   progress?: { completed: number; total: number; bytesDownloaded: number; totalBytes: number };
+  lastError?: string;
 };
 const STORAGE_KEY = 'retailos.pwa.update-center.v1';
 export const UPDATE_CENTER_CHANGED_EVENT = 'retailos:update-center-changed';
