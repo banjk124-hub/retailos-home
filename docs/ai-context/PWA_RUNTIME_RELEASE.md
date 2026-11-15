@@ -69,9 +69,9 @@ Activation does not immediately delete the previous release.
 - `PwaUpdatePrompt` reports `APP_BOOT_OK` with the exact build ID after the React application tree mounts.
 - `AppErrorBoundary` reports `APP_BOOT_FAILED` for a React render failure.
 - A small build-injected bootstrap watchdog reports `APP_BOOT_FAILED` if the page does not report healthy within 30 seconds.
-- The worker accepts health/failure messages only when their build ID matches its own. A previous application loaded during rollback cannot accidentally mark the failed new release healthy.
-- On failure, the worker records the previous release as rollback target and navigates the client. Navigation then serves the previous cached shell; old content-hashed assets remain available through cache lookup.
-- Only a matching `APP_BOOT_OK` allows deletion of previous release caches and temporary rollback state.
+- The worker accepts a failure report only from its own build ID. A matching current-build health report permits cleanup; a previous application loaded during rollback is recognized only as the selected active release and cannot mark the failed new release healthy.
+- On failure, the worker changes the active-release pointer to the previous release and navigates the client. Navigation then serves the previous cached shell; old content-hashed assets remain available through cache lookup.
+- Only a matching `APP_BOOT_OK` from the new current build allows deletion of previous release caches and the active-release pointer. A rolled-back build reporting healthy leaves its selected caches intact.
 
 Rollback protects the application release only. It must not delete, migrate or rewrite business data. If no previous cached shell exists, the worker reports `UPDATE_ROLLBACK_UNAVAILABLE`; this limitation must be surfaced rather than claiming rollback succeeded.
 
