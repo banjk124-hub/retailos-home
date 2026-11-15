@@ -1,13 +1,13 @@
 # Current repository state — 2026-11-15
 
 - Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
-- Canonical PWA runtime/release contract: `PWA_RUNTIME_RELEASE.md`; bundle analysis: `PERFORMANCE_BUNDLE_PWA.md`.
-- PR #119 delivered the complete emitted/public asset inventory, WASM precache, release-specific caches, active-release pinning, boot health and rollback foundation.
-- Post-deployment source audit found an important product-flow gap: the browser's new Service Worker install currently downloads/pre-caches the full candidate payload before the update prompt appears. The current prompt asks the user to activate an already-downloaded release; it does not ask permission before download.
-- Current prompt has generic update copy, not build-bound release notes, and the current activation is user-triggered after download. The required target is: discover metadata → show versioned release notes → user approves download → download/verify the entire runtime → automatically activate → health-check/rollback.
-- The target user-approved download flow is not yet implemented. Documentation records the gap and makes the contract mandatory for future development/deployments; no runtime code was changed by this documentation update.
-- Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger application update/reload or clear business data. A new data-processing mechanism is an application capability and must ship in a release.
-- Physical Android/iOS acceptance for full offline payload, update consent, interrupted downloads, automatic activation and rollback remains a separate required gate.
+- Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on the documentation contract introduced in PR #120. Runtime changes are not merged/deployed.
+- Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
+- This branch replaces update-time install precache with metadata-only discovery and user-approved candidate staging. Build-bound manifest/release notes, size/SHA-256 verification, progress, staged resume, automatic activation and safe handoff are implemented in source.
+- App-wide handoff guards cover camera leases, Stocktake, Stocktake Import and application transitions. Future modules with non-DOM critical state must register a blocker.
+- First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
+- Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
+- CI, final PR audit and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
 
 
 # Historical scanner state snapshot — 2026-11-11
