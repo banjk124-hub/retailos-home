@@ -18,6 +18,7 @@ export default function PwaUpdatePrompt() {
     let installingWorker: ServiceWorker | null = null;
 
     const reportHealthyBoot = () => {
+      document.documentElement.dataset.retailosBootHealthy = 'true';
       navigator.serviceWorker.controller?.postMessage({
         type: 'APP_BOOT_OK',
         buildId: __RETAILOS_BUILD_ID__,
