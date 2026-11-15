@@ -4,7 +4,7 @@
 - Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on the documentation contract introduced in PR #120. Runtime changes are not merged/deployed.
 - Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
 - This branch replaces update-time install precache with metadata-only discovery and user-approved candidate staging. Build-bound manifest/release notes, size/SHA-256 verification, progress, staged resume, automatic activation and safe handoff are implemented in source.
-- App-wide handoff guards cover camera leases, Stocktake, Stocktake Import and application transitions. Future modules with non-DOM critical state must register a blocker.
+- App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
 - First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
 - Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
 - CI, final PR audit and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
