@@ -1053,7 +1053,7 @@ Post-deployment source audit found that the Service Worker `install` event downl
 ### Protected boundaries
 - No application release may become active with missing runtime assets.
 - No full candidate payload download before explicit user consent.
-- No second user confirmation after successful staging; activation is automatic.
+- Historical ADR-041 rule superseded by ADR-042: successful staging does not authorize activation; explicit confirmation is required at a safe handoff.
 - No clearing/migration of business data as part of ordinary release activation or rollback.
 - No claim of offline/device acceptance based only on source assertions or CI.
 
