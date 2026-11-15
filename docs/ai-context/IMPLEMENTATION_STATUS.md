@@ -767,3 +767,12 @@ First synchronize and review this documentation-only branch, run repository CI/p
 - On Samsung Galaxy S23 Ultra / Android Chrome, the explicit Torch ON and OFF requests both resolved, but the physical LED did not illuminate and `settings.torch` remained unexposed.
 - This is not evidence of working Torch support. The probe did not alter production capability state or Flash visibility.
 - The cleanup branch removes the probe and the temporary PR #53 diagnostics. Production capability-gated Torch behavior remains unchanged.
+
+
+## Same-build manifest regression fix
+
+- A same-build manifest returned by a waiting Service Worker is now treated as a normal no-update condition, not an invalid manifest.
+- The redundant waiting worker is dismissed and UI references are cleared; no error/retry loop, download, staging or activation is triggered.
+- Structurally invalid manifests remain fail-closed. A genuinely different valid build continues through the existing consent-gated release flow.
+- Regression assertions added to `scripts/test-pwa-cache-policy.mjs`.
+- Fix branch: `fix/pwa-same-build-manifest-handling`; PR and CI validation pending.
