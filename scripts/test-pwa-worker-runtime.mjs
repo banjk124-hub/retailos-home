@@ -3,32 +3,40 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const template = await readFile(new URL('../src/sw/service-worker.template.js', import.meta.url), 'utf8');
+const assetPaths = ['assets/app.js', 'assets/app.css', 'assets/zxing_reader.wasm', 'assets/uncached.js', 'images/background.webp', ...Array.from({ length: 10 }, (_, index) => `assets/chunk-${index + 1}.js`)];
 const source = template
   .replace('__BUILD_ID__', 'runtime-test')
   .replace('__APP_BASE__', '/retailos-home/')
-  .replace('__ASSET_PATHS__', JSON.stringify(['assets/app.js', 'assets/app.css', 'assets/uncached.js', 'images/background.webp']));
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
 
 const listeners = new Map();
 const cacheStore = new Map();
 const cacheUrl = (request) => typeof request === 'string' ? request : request.url;
+let rejectCacheWrites = false;
+let rejectPrecache = false;
+const assetBatchSizes = [];
 const cachesMock = {
   async open(name) {
     if (!cacheStore.has(name)) cacheStore.set(name, new Map());
     const entries = cacheStore.get(name);
     return {
-      async addAll(urls) { for (const url of urls) entries.set(url, new Response('cached:' + url)); },
+      async addAll(urls) {
+        if (name.includes('assets-runtime-test')) assetBatchSizes.push(urls.length);
+        if (rejectPrecache && name.includes('assets-failed-build')) throw new Error('simulated offline asset download');
+        for (const url of urls) entries.set(url, new Response('cached:' + url));
+      },
       async put(request, response) {
         if (rejectCacheWrites) throw new Error('simulated storage quota failure');
         entries.set(cacheUrl(request), response);
       },
-      async match(request) { return entries.get(cacheUrl(request)); },
+      async match(request) { return entries.get(cacheUrl(request))?.clone(); },
     };
   },
   async keys() { return [...cacheStore.keys()]; },
   async delete(name) { return cacheStore.delete(name); },
   async match(request) {
     const key = cacheUrl(request);
-    for (const entries of cacheStore.values()) if (entries.has(key)) return entries.get(key);
+    for (const entries of cacheStore.values()) if (entries.has(key)) return entries.get(key)?.clone();
     return undefined;
   },
 };
@@ -37,7 +45,19 @@ let windowClients = [];
 let skipWaitingCalls = 0;
 let claimCalls = 0;
 let fetchCalls = 0;
-let rejectCacheWrites = false;
+let navigatedTo = null;
+const appBase = 'https://retailos.test/retailos-home/';
+const shellUrl = appBase + 'index.html';
+const oldShellCache = 'retailos-pwa-shell-old';
+const oldAssetCache = 'retailos-pwa-assets-old';
+const oldAssetUrl = appBase + 'assets/old-app.js';
+cacheStore.set(oldShellCache, new Map([[shellUrl, new Response('previous-release-shell')]]));
+const sharedPublicAssetUrl = appBase + 'images/background.webp';
+cacheStore.set(oldAssetCache, new Map([
+  [oldAssetUrl, new Response('previous-release-asset')],
+  [sharedPublicAssetUrl, new Response('previous-release-shared-image')],
+]));
+
 const selfMock = {
   location: { origin: 'https://retailos.test' },
   registration: { showNotification: async () => undefined },
@@ -69,19 +89,18 @@ const runExtendable = async (type, values = {}) => {
   listener(type)({ ...values, waitUntil(promise) { pending = promise; } });
   await pending;
 };
-const appBase = 'https://retailos.test/retailos-home/';
-const shellUrl = appBase + 'index.html';
-const assetUrl = appBase + 'assets/app.js';
 
 await runExtendable('install');
-assert.ok(cacheStore.has('retailos-pwa-shell-runtime-test'));
-assert.ok(cacheStore.get('retailos-pwa-shell-runtime-test').has(shellUrl), 'install caches the app shell');
+const shellCache = cacheStore.get('retailos-pwa-shell-runtime-test');
+const assetCache = cacheStore.get('retailos-pwa-assets-runtime-test');
+assert.ok(shellCache?.has(shellUrl), 'install precaches the app shell');
+assert.ok(assetCache?.has(appBase + 'assets/zxing_reader.wasm'), 'install precaches the ZXing WASM runtime');
+assert.ok(assetPaths.every((path) => assetCache.has(appBase + path)), 'all build assets are staged before install completes');
+assert.deepEqual(assetBatchSizes, [8, 7], 'asset staging uses bounded batches to avoid oversized concurrent fetch bursts');
 
-cacheStore.set('retailos-shell-v10', new Map([['old', new Response('old')]]));
-cacheStore.set('retailos-pwa-assets-old', new Map([['old-asset', new Response('old')]]));
 await runExtendable('activate');
-assert.equal(cacheStore.has('retailos-shell-v10'), false, 'legacy shell cache is removed');
-assert.equal(cacheStore.has('retailos-pwa-assets-old'), false, 'previous release asset cache is removed');
+assert.equal(cacheStore.has(oldShellCache), true, 'previous shell remains available during the new release probation');
+assert.equal(cacheStore.has(oldAssetCache), true, 'previous hashed assets remain available for rollback');
 assert.equal(claimCalls, 1, 'new worker claims clients only after activation');
 
 let blockedMessage = null;
@@ -89,72 +108,198 @@ const sendUpdateRequest = () => runExtendable('message', {
   data: { type: 'SKIP_WAITING' },
   source: { id: 'current', postMessage: (message) => { blockedMessage = message; } },
 });
-
-// Same-origin windows belonging to another GitHub Pages project must not
-// block RetailOS updates.
 windowClients = [
   { id: 'current', url: appBase },
   { id: 'other-app', url: 'https://retailos.test/another-project/' },
   { id: 'external-origin', url: 'https://example.test/retailos-home/' },
 ];
 await sendUpdateRequest();
-assert.equal(skipWaitingCalls, 1, 'unrelated same-origin and external clients do not block updates');
-assert.equal(blockedMessage, null, 'unrelated clients do not emit a blocked notice');
+assert.equal(skipWaitingCalls, 1, 'unrelated clients do not block updates');
+assert.equal(blockedMessage, null);
 
-// A second RetailOS tab remains a hard safety lock.
-windowClients = [
-  { id: 'current', url: appBase },
-  { id: 'other-tab', url: appBase + 'stocktake' },
-];
+windowClients = [{ id: 'current', url: appBase }, { id: 'other-tab', url: appBase + 'stocktake' }];
 await sendUpdateRequest();
-assert.equal(skipWaitingCalls, 1, 'worker must not take over while another RetailOS tab is open');
+assert.equal(skipWaitingCalls, 1, 'another RetailOS tab blocks takeover');
 assert.equal(blockedMessage?.type, 'UPDATE_BLOCKED_MULTIPLE_CLIENTS');
 
-// Update can proceed after the other RetailOS tab closes.
 windowClients = [{ id: 'current', url: appBase }];
 blockedMessage = null;
 await sendUpdateRequest();
-assert.equal(skipWaitingCalls, 2, 'explicit update is accepted when no other RetailOS tab remains');
+assert.equal(skipWaitingCalls, 2, 'update is accepted after other RetailOS tabs close');
 
-const assetCache = await cachesMock.open('retailos-pwa-assets-runtime-test');
-await assetCache.put(assetUrl, new Response('cached-asset'));
-const cachedFetchEvent = {
-  request: { method: 'GET', url: assetUrl, mode: 'cors' },
-  respondWith(promise) { this.responsePromise = promise; },
-};
-const fetchCountBefore = fetchCalls;
-listener('fetch')(cachedFetchEvent);
-assert.equal(await (await cachedFetchEvent.responsePromise).text(), 'cached-asset');
-assert.equal(fetchCalls, fetchCountBefore, 'allowlisted immutable asset is cache-first');
-
-// Cache Storage quota/write failures must not break successful network loads.
-rejectCacheWrites = true;
-const uncachedAssetEvent = {
-  request: { method: 'GET', url: appBase + 'assets/uncached.js', mode: 'cors' },
-  respondWith(promise) { this.responsePromise = promise; },
-};
-listener('fetch')(uncachedAssetEvent);
-assert.match(await (await uncachedAssetEvent.responsePromise).text(), /^network:/,
-  'asset network response survives a cache write failure');
-
-const unlistedEvent = {
-  request: { method: 'GET', url: appBase + 'unlisted.js', mode: 'cors' },
-  respondWith() { throw new Error('unlisted resource must not be intercepted'); },
-};
-listener('fetch')(unlistedEvent);
-
-const navigationEvent = {
+const activeNavigation = {
   request: { method: 'GET', url: appBase, mode: 'navigate' },
   respondWith(promise) { this.responsePromise = promise; },
 };
-// Even if the shell cache cannot be updated, a successful navigation is returned.
-context.fetch = async () => new Response('network-navigation');
-listener('fetch')(navigationEvent);
-assert.equal(await (await navigationEvent.responsePromise).text(), 'network-navigation');
+const fetchCountBeforeNavigation = fetchCalls;
+listener('fetch')(activeNavigation);
+assert.equal(await (await activeNavigation.responsePromise).text(), 'cached:' + shellUrl,
+  'active release navigation is served from its own pinned shell');
+assert.equal(fetchCalls, fetchCountBeforeNavigation, 'active shell navigation does not fetch newly deployed HTML');
 
-rejectCacheWrites = false;
+const fetchCountBefore = fetchCalls;
+const cachedAsset = {
+  request: { method: 'GET', url: appBase + 'assets/app.js', mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(cachedAsset);
+assert.match(await (await cachedAsset.responsePromise).text(), /^cached:/,
+  'pre-cached current release asset is served without network');
+assert.equal(fetchCalls, fetchCountBefore, 'pre-cached asset does not issue a network request');
+
+const currentPublicAsset = {
+  request: { method: 'GET', url: sharedPublicAssetUrl, mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(currentPublicAsset);
+assert.equal(await (await currentPublicAsset.responsePromise).text(), 'cached:' + sharedPublicAssetUrl,
+  'active release asset wins over an older cached file with the same public URL');
+
+let rollbackMessage = null;
+await runExtendable('message', {
+  data: { type: 'APP_BOOT_FAILED', buildId: 'runtime-test' },
+  source: {
+    id: 'current',
+    url: appBase,
+    postMessage: (message) => { rollbackMessage = message; },
+    async navigate(url) { navigatedTo = url; },
+  },
+});
+assert.equal(navigatedTo, appBase, 'failed new release navigates back through the rollback-aware worker');
+assert.equal(rollbackMessage, null, 'rollback is available when the previous release cache exists');
+assert.equal(cacheStore.has('retailos-pwa-shell-runtime-test'), false, 'failed new release shell cache is discarded after rollback');
+assert.equal(cacheStore.has('retailos-pwa-assets-runtime-test'), false, 'failed new release assets are discarded after rollback');
+
+await runExtendable('message', {
+  data: { type: 'APP_BOOT_OK', buildId: 'old' },
+  source: { id: 'current', url: appBase },
+});
+assert.equal(cacheStore.has(oldShellCache), true, 'rolled-back old build health does not delete its serving cache');
+assert.equal(cacheStore.has(oldAssetCache), true, 'rolled-back old build health retains its own hashed assets');
+
+const rollbackNavigation = {
+  request: { method: 'GET', url: appBase, mode: 'navigate' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
 context.fetch = async () => { throw new Error('offline'); };
-listener('fetch')(navigationEvent);
-assert.equal(await (await navigationEvent.responsePromise).text(), 'cached:' + shellUrl);
+listener('fetch')(rollbackNavigation);
+assert.equal(await (await rollbackNavigation.responsePromise).text(), 'previous-release-shell',
+  'rollback serves the previous shell even while offline');
 
-console.log('PWA service-worker runtime tests passed.');
+const rollbackAsset = {
+  request: { method: 'GET', url: oldAssetUrl, mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(rollbackAsset);
+assert.equal(await (await rollbackAsset.responsePromise).text(), 'previous-release-asset',
+  'rollback shell can still load its own old hashed assets');
+
+const rollbackPublicAsset = {
+  request: { method: 'GET', url: sharedPublicAssetUrl, mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(rollbackPublicAsset);
+assert.equal(await (await rollbackPublicAsset.responsePromise).text(), 'previous-release-shared-image',
+  'rollback serves the previous release copy of a stable public asset');
+
+context.fetch = async (request) => new Response('network:' + (typeof request === 'string' ? request : request.url));
+const unlistedEvent = {
+  request: { method: 'GET', url: appBase + 'api/data', mode: 'cors' },
+  respondWith(promise) { this.responsePromise = promise; },
+};
+listener('fetch')(unlistedEvent);
+assert.match(await (await unlistedEvent.responsePromise).text(), /^network:/,
+  'non-asset same-origin requests continue to use the network');
+
+// A later release that cannot download its full asset set must reject install
+// and remove only its partial caches, leaving the active release untouched.
+rejectPrecache = true;
+const failedListeners = new Map();
+const failedSelf = {
+  ...selfMock,
+  addEventListener(type, callback) {
+    if (!failedListeners.has(type)) failedListeners.set(type, []);
+    failedListeners.get(type).push(callback);
+  },
+};
+const failedSource = template
+  .replace('__BUILD_ID__', 'failed-build')
+  .replace('__APP_BASE__', '/retailos-home/')
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
+const failedContext = vm.createContext({ self: failedSelf, caches: cachesMock, URL, Response, fetch: context.fetch });
+vm.runInContext(failedSource, failedContext);
+let installRejected = false;
+try {
+  let pending;
+  failedListeners.get('install')[0]({ waitUntil(promise) { pending = promise; } });
+  await pending;
+} catch { installRejected = true; }
+assert.equal(installRejected, true, 'offline during precache rejects the new worker install');
+assert.equal(cacheStore.has('retailos-pwa-shell-failed-build'), false, 'failed release shell cache is removed');
+assert.equal(cacheStore.has('retailos-pwa-assets-failed-build'), false, 'failed release asset cache is removed');
+assert.equal(cacheStore.has(oldShellCache), true, 'old release remains available after failed install');
+assert.equal(cacheStore.has(oldAssetCache), true, 'old release assets remain available after failed install');
+
+// A subsequent release can activate after rollback. It retains the rollback
+// release until its own matching build reports healthy, then reclaims old caches.
+rejectPrecache = false;
+const nextListeners = new Map();
+const nextSelf = {
+  ...selfMock,
+  addEventListener(type, callback) {
+    if (!nextListeners.has(type)) nextListeners.set(type, []);
+    nextListeners.get(type).push(callback);
+  },
+};
+const nextSource = template
+  .replace('__BUILD_ID__', 'next-build')
+  .replace('__APP_BASE__', '/retailos-home/')
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
+const nextContext = vm.createContext({ self: nextSelf, caches: cachesMock, URL, Response, fetch: context.fetch });
+vm.runInContext(nextSource, nextContext);
+const runNext = async (type, values = {}) => {
+  let pending;
+  nextListeners.get(type)[0]({ ...values, waitUntil(promise) { pending = promise; } });
+  await pending;
+};
+await runNext('install');
+await runNext('activate');
+assert.equal(cacheStore.has(oldShellCache), true, 'previous release remains during next release probation');
+let secondRollbackUrl = null;
+await runNext('message', {
+  data: { type: 'APP_BOOT_FAILED', buildId: 'next-build' },
+  source: { id: 'next', url: appBase, async navigate(url) { secondRollbackUrl = url; } },
+});
+assert.equal(secondRollbackUrl, appBase, 'a second failed release rolls back to the same last-known-good build');
+assert.equal(cacheStore.has(oldShellCache), true, 'last-known-good shell survives repeated failed releases');
+assert.equal(cacheStore.has('retailos-pwa-shell-next-build'), false, 'second failed release shell is discarded');
+
+const followListeners = new Map();
+const followSelf = {
+  ...selfMock,
+  addEventListener(type, callback) {
+    if (!followListeners.has(type)) followListeners.set(type, []);
+    followListeners.get(type).push(callback);
+  },
+};
+const followSource = template
+  .replace('__BUILD_ID__', 'following-build')
+  .replace('__APP_BASE__', '/retailos-home/')
+  .replace('__ASSET_PATHS__', JSON.stringify(assetPaths));
+const followContext = vm.createContext({ self: followSelf, caches: cachesMock, URL, Response, fetch: context.fetch });
+vm.runInContext(followSource, followContext);
+const runFollow = async (type, values = {}) => {
+  let pending;
+  followListeners.get(type)[0]({ ...values, waitUntil(promise) { pending = promise; } });
+  await pending;
+};
+await runFollow('install');
+await runFollow('activate');
+assert.equal(cacheStore.has(oldShellCache), true, 'last-known-good shell is retained for a later successful release');
+await runFollow('message', { data: { type: 'APP_BOOT_OK', buildId: 'following-build' } });
+assert.equal(cacheStore.has(oldShellCache), false, 'matching healthy build reclaims old shell cache');
+assert.equal(cacheStore.has(oldAssetCache), false, 'matching healthy build reclaims old asset cache');
+assert.equal(cacheStore.has('retailos-pwa-shell-runtime-test'), false, 'superseded failed release cache is reclaimed');
+assert.equal(cacheStore.has('retailos-pwa-state'), false, 'successful new release clears active-release metadata');
+
+console.log('PWA service-worker staged install, offline runtime and rollback tests passed.');

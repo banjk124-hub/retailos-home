@@ -1,15 +1,14 @@
-# Current repository state — 2026-11-14
+# Current repository state — 2026-11-15
 
-- Production baseline: `main` at PR #101 merge commit `f884b7222bb806d7e588d7d231f261c10fc3f086`.
-- Active work: PR #102, branch `fix/ux-cross-platform-core-audit`, targeting `main`; Draft and not merged/deployed.
-- Current scope: shared overlay scroll-lock lifecycle, safe-area/dynamic-viewport layout, Home/Settings/Scanner/Stocktake overlay consistency, and documentation consolidation.
-- Current overlay contract: `UI_OVERLAY_ARCHITECTURE.md`; device acceptance: `UI_OVERLAY_ACCEPTANCE.md`.
-- Automated preflight includes body-scroll-lock and overlay layout regression tests. CI and physical-device results must be checked against the latest PR head, not copied from an earlier commit.
-- Physical Desktop Chrome/Edge, Android Chrome/PWA and iOS Safari/Home Screen PWA acceptance remains pending. CI does not substitute for device testing.
-- Module registry currently marks inventory, price, products, orders, delivery, sales and product-dates as `integrating`; Stocktake and Stocktake Import are marked `ready`. Do not infer a completed workflow from snapshot availability.
-- No merge, deployment or production mutation is authorized by this work.
+- Production baseline: `main` at PR #118 merge commit `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.
+- Active work: Draft PR #119, branch `feat/pwa-offline-release-architecture`, targeting `main`; not merged or deployed.
+- Canonical PWA runtime/release contract: `PWA_RUNTIME_RELEASE.md`; bundle analysis: `PERFORMANCE_BUNDLE_PWA.md`.
+- The active branch stages all application runtime assets, including ZXing WASM, before a new Service Worker can become update-ready; incomplete downloads must preserve the old release.
+- Application releases and business-data/snapshot refreshes are independent. Data-only refreshes must not trigger app reloads or Service Worker replacement.
+- Previous release caches remain until the matching new build reports healthy startup; failed boot routes back to the previous cached shell/assets.
+- Scanner camera/session/decoder behavior and business data contracts are outside PR #119. Physical Android/iOS scanner and offline acceptance remains pending.
+- No merge, deployment or production mutation is authorized by this work. CI and physical-device evidence must be checked against the latest PR head.
 
----
 
 # Historical scanner state snapshot — 2026-11-11
 

@@ -21,7 +21,8 @@ This file is the navigation layer for repository documentation. Read the canonic
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
 | UI interaction responsiveness | `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` |
-| PWA bundle, service worker and cache behavior | `PERFORMANCE_BUNDLE_PWA.md` |
+| PWA runtime, offline guarantees, staged releases, boot health and rollback | [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) |
+| Bundle analysis, code splitting and performance evidence | [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md) |
 | Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
 | Export utilities | `modules/EXPORT_FILE.md` |
 | Login Phase 2 historical changes | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
@@ -36,7 +37,8 @@ This file is the navigation layer for repository documentation. Read the canonic
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
 - Scanner implementation truth lives in `SCANNER_ENGINE.md`; scanner historical notes are indexed in `SCANNER_HISTORY.md`.
+- PWA runtime/release truth lives in `PWA_RUNTIME_RELEASE.md`; bundle-size analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
 
 ## Historical-document policy
 
-Historical audits, phase plans and incident notes are retained when they contain unique evidence, symptoms, decisions or regression clues. They must not appear as competing current specifications. When an old document conflicts with current source or SCANNER_ENGINE.md, treat it as a historical snapshot and verify the exact resolving change before acting.
+Historical audits, phase plans and incident notes are retained when they contain unique evidence, symptoms, decisions or regression clues. They must not appear as competing current specifications. When an old document conflicts with current source or the relevant canonical contract (SCANNER_ENGINE.md or PWA_RUNTIME_RELEASE.md), treat it as a historical snapshot and verify the exact resolving change before acting.

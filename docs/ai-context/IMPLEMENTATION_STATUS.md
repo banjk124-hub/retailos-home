@@ -1,3 +1,21 @@
+# Current PWA runtime and release status — 2026-11-15
+
+**Branch:** `feat/pwa-offline-release-architecture`  
+**Base:** `main` at `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.  
+**Status:** implementation and source-level regression updates are in progress; final CI and physical-device acceptance are pending.
+
+- Vite release manifest now includes emitted WASM and all Vite-emitted runtime assets/public files (excluding source maps).
+- Service Worker install stages and verifies shell plus complete asset inventory before it can enter the waiting state.
+- Active navigation is pinned to the current release; a deployed network HTML file cannot leak into the old active release.
+- Previous release caches are retained through new-build boot probation. Matching-build health confirms cleanup; boot failure can route back to the previous cached shell and assets.
+- Data snapshots and business records remain outside release caches and retain independent refresh semantics.
+- Required next gates: PWA policy/runtime tests, full preflight, TypeScript, production/Pages builds, PR-head CI, then physical Android/iOS offline and update tests.
+- No merge, deployment or physical-device acceptance is claimed.
+
+Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
+
+---
+
 # Current scanner decoder status — 2026-11-14
 
 - Production decoder: ZXing-C++ WASM (`zxing-wasm` 3.1.6), loaded lazily through `defaultScannerDecoderFactory`.

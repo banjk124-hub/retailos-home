@@ -11,17 +11,12 @@
 - CI and GitHub Pages deployment passed on the post-cleanup main baseline. This does not constitute optical or physical-device acceptance.
 - Physical acceptance remains outstanding: labelled real-world corpus, iOS Safari/PWA, Android Chrome/PWA, low-end Android, Home and Stocktake end-to-end workflows.
 
-## Phase A — correctness and contract alignment (active branch)
+## Phase A — correctness and contract alignment (completed)
 
-**Branch:** `fix/scanner-phase-a-contracts-docs`
-
-1. Unify the ROI candidate planner and WASM decoder around one 1.5 MP hard input budget. Preserve 1.5× as preferred baseline when it fits; bound it when it does not.
-2. Correct payload validation for GS1-128 CODE-128 (ASCII GS only), CODE-39 Standard/Extended family behavior and CODABAR start/stop framing.
-3. Add positive, negative and boundary regression fixtures.
-4. Establish one current scanner technical source of truth and one historical evidence index. Retain old incident notes; do not delete useful observations.
-5. Run final-head CI and review the full diff before merge.
-
-**Exit criteria:** no candidate can exceed the decoder input limit; valid supported payloads are not rejected by stale legacy assumptions; malformed controls/framing remain rejected; docs clearly distinguish current contracts from historical evidence; CI passes.
+- Implemented and merged by PR #118 at `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.
+- Shared 1.5 MP ROI candidate/decoder budget and symbology payload validation are documented in `SCANNER_ENGINE.md`.
+- Current scanner architecture and retained incident evidence are separated into `SCANNER_ENGINE.md` and `SCANNER_HISTORY.md`.
+- Physical iOS/Android optical acceptance remains outstanding and is not implied by CI.
 
 ## Phase B — optical evidence and diagnostics
 
