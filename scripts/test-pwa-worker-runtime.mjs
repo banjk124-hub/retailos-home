@@ -29,14 +29,14 @@ const cachesMock = {
         if (rejectCacheWrites) throw new Error('simulated storage quota failure');
         entries.set(cacheUrl(request), response);
       },
-      async match(request) { return entries.get(cacheUrl(request)); },
+      async match(request) { return entries.get(cacheUrl(request))?.clone(); },
     };
   },
   async keys() { return [...cacheStore.keys()]; },
   async delete(name) { return cacheStore.delete(name); },
   async match(request) {
     const key = cacheUrl(request);
-    for (const entries of cacheStore.values()) if (entries.has(key)) return entries.get(key);
+    for (const entries of cacheStore.values()) if (entries.has(key)) return entries.get(key)?.clone();
     return undefined;
   },
 };
