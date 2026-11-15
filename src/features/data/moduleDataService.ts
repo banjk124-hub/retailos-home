@@ -56,7 +56,7 @@ let activeModuleDataOperations = 0;
 
 registerPwaUpdateBlocker('module-data-lifecycle', () => (
   activeModuleDataOperations > 0
-    ? 'RetailOS đang đồng bộ hoặc ghi dữ liệu snapshot. Bản mới sẽ tự kích hoạt sau khi thao tác hoàn tất.'
+    ? 'RetailOS đang đồng bộ hoặc ghi dữ liệu snapshot. Bản mới sẽ chờ xác nhận sau khi thao tác hoàn tất.'
     : null
 ));
 
