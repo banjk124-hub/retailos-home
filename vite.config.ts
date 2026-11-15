@@ -79,6 +79,21 @@ function retailosPwaArtifacts(): Plugin {
       };
       collectPublicAssets(publicDirectory);
 
+      const uniqueAssets = new Map<string, { path: string; source: string | Uint8Array; cache: 'assets' }>();
+      for (const resource of assetResources) {
+        const existing = uniqueAssets.get(resource.path);
+        if (existing) {
+          const existingHash = createHash('sha256').update(toBuffer(existing.source)).digest('hex');
+          const incomingHash = createHash('sha256').update(toBuffer(resource.source)).digest('hex');
+          if (existingHash !== incomingHash) {
+            throw new Error('Conflicting public and bundled runtime asset path: ' + resource.path);
+          }
+          continue;
+        }
+        uniqueAssets.set(resource.path, resource);
+      }
+      const completeAssetResources = [...uniqueAssets.values()].sort((a, b) => a.path.localeCompare(b.path));
+
       const indexOutput = bundle['index.html'];
       if (!indexOutput || indexOutput.type !== 'asset') {
         throw new Error('RetailOS release manifest requires the final generated index.html asset.');
@@ -90,7 +105,7 @@ function retailosPwaArtifacts(): Plugin {
       ];
       const resources = [
         ...shellResources,
-        ...assetResources.map((resource) => describeResource(resource.path, resource.source, resource.cache)),
+        ...completeAssetResources.map((resource) => describeResource(resource.path, resource.source, resource.cache)),
       ];
       const releaseNotes = JSON.parse(readFileSync(resolve(projectRoot, 'release-notes.json'), 'utf8'));
       if (
@@ -100,6 +115,8 @@ function retailosPwaArtifacts(): Plugin {
         || !Array.isArray(releaseNotes.sections)
         || !Array.isArray(releaseNotes.compatibility)
         || !Array.isArray(releaseNotes.warnings)
+        || releaseNotes.compatibility.some((item: unknown) => typeof item !== 'string')
+        || releaseNotes.warnings.some((item: unknown) => typeof item !== 'string')
         || releaseNotes.sections.some((section: { heading?: unknown; items?: unknown }) => (
           typeof section?.heading !== 'string'
           || !Array.isArray(section.items)
@@ -127,7 +144,7 @@ function retailosPwaArtifacts(): Plugin {
         source: JSON.stringify(manifest),
       });
 
-      const assetFiles = [...new Set(assetResources.map((resource) => resource.path))].sort();
+      const assetFiles = completeAssetResources.map((resource) => resource.path);
       const template = readFileSync(resolve(projectRoot, 'src/sw/service-worker.template.js'), 'utf8');
       const worker = template
         .replace('__BUILD_ID__', BUILD_ID)
