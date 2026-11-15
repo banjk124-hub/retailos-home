@@ -289,7 +289,8 @@
 /* Quick lookup stickers: smaller, raised, and explicitly centered around the action slot. */
 .liquid-dock__action-wrap { position: relative; z-index: 2; display: grid; width: 100%; min-width: 0; min-height: 64px; place-items: center; }
 .liquid-dock__action-wrap .liquid-dock__action { transition: opacity 150ms ease, transform 220ms cubic-bezier(.2,.8,.2,1); }
-.liquid-dock__action-wrap.is-expanded .liquid-dock__action { opacity: 0; pointer-events: none; transform: scale(.65); }
+/* Keep the parent search action visible: the two choices are its raised cap, not replacements. */
+.liquid-dock__action-wrap.is-expanded .liquid-dock__action { opacity: 1; pointer-events: auto; transform: none; }
 .liquid-dock__action-choices { position: absolute; z-index: 8; top: 50%; left: 50%; width: 0; height: 0; opacity: 0; pointer-events: none; }
 .liquid-dock__action-wrap.is-expanded .liquid-dock__action-choices { opacity: 1; pointer-events: auto; }
 .liquid-dock__choice { position: absolute; top: 0; left: 0; display: grid; width: 40px; height: 40px; place-items: center; padding: 0; border: 1px solid rgba(255,255,255,.96); border-radius: 15px 15px 15px 6px; background: linear-gradient(145deg, rgba(255,255,255,.99), rgba(255,231,235,.97)); color: #a92334; box-shadow: 0 7px 18px rgba(110,26,39,.2), inset 0 1px 0 #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: box-shadow 180ms ease; }
