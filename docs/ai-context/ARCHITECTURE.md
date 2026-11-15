@@ -1032,3 +1032,36 @@ PR #78 moved a continuous-focus `applyConstraints()` request to after preview re
 
 ### Consequences
 The scanner no longer attempts to recover the physical lens. It trusts native camera autofocus and reports image-quality evidence only. If a device's native autofocus fails, the scanner will not repeatedly intervene; that behavior must be addressed through device/browser-specific evidence rather than a generic post-preview focus command.
+
+## ADR-040 — User-approved application payload download and automatic activation (2026-11-15)
+
+**Status:** Accepted product/architecture contract; current implementation is incomplete. PR #119's offline staging and rollback foundation is merged/deployed, but the consent boundary and release-information UX require a follow-up implementation.
+
+### Context
+Post-deployment source audit found that the Service Worker `install` event downloads the complete asset inventory immediately when the browser installs a changed worker. The React update prompt appears only after this staging and currently asks the user to activate the already-downloaded release. It also displays generic text rather than build-bound release notes.
+
+### Decision
+- Discovering a release and showing its metadata must not download the candidate application's full runtime payload.
+- Before any candidate runtime payload is downloaded/staged, show the user the exact candidate version and release notes: new capabilities/modules, UI/UX changes, fixes, performance/security changes, compatibility notes and operational warnings. The user explicitly approves once.
+- Deferring leaves the selected release fully usable, including its existing offline capabilities.
+- After approval, download and verify the complete release payload: shell, every module/lazy chunk, UI assets, fonts, media, workers, WASM and runtime dependencies. Lazy evaluation is allowed; first-time network download after activation is not.
+- Once complete and verified, automatically activate the candidate; there is no second confirmation. Coordinate a safe handoff around unsaved work and multiple open clients.
+- Keep the old release selected and operational during staging. On download/integrity failure, discard only candidate staging. Retain last-known-good assets until the new build reports healthy; rollback must not mutate business data.
+- Publish a build-bound release manifest and release notes with every application deployment. Missing/mismatched release metadata blocks staging/activation.
+- Keep Application Release Lifecycle separate from Data Lifecycle. Data-only lookup/snapshot refresh and recalculation using existing logic never trigger app update/reload. A new processing mechanism or capability is an application release change.
+
+### Protected boundaries
+- No application release may become active with missing runtime assets.
+- No full candidate payload download before explicit user consent.
+- No second user confirmation after successful staging; activation is automatic.
+- No clearing/migration of business data as part of ordinary release activation or rollback.
+- No claim of offline/device acceptance based only on source assertions or CI.
+
+### Current implementation gaps
+- Full precache currently occurs inside Service Worker `install`, before consent.
+- The current prompt has no versioned release notes or download progress and asks for activation after download.
+- Existing tests do not assert the pre-consent no-download boundary or automatic activation after approved staging.
+- Follow-up must redesign the staging boundary around actual browser Service Worker semantics; a prompt-only change is insufficient.
+
+### Acceptance
+See the mandatory source-of-truth matrix in [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Extend tests to cover discovery-only, no-download-before-consent, defer/offline preservation, full payload staging, integrity failure, automatic activation, safe handoff, boot rollback and data lifecycle isolation. Complete Android, iOS and desktop physical acceptance separately.
