@@ -1,30 +1,20 @@
 {
   "version": "0.3.5",
-  "title": "Nâng cấp cơ chế cập nhật RetailOS",
-  "summary": "Bổ sung cập nhật có xác nhận tải, tải trước toàn bộ tài nguyên của phiên bản mới, tự kích hoạt an toàn và khôi phục bản ổn định nếu khởi động lỗi.",
+  "title": "Cập nhật RetailOS",
+  "summary": "Bản cập nhật đang được hoàn thiện, tập trung cải thiện chức năng, độ ổn định và trải nghiệm vận hành.",
   "sections": [
     {
-      "heading": "Cơ chế cập nhật",
+      "heading": "Cải tiến hệ thống",
       "items": [
-        "Xem nội dung thay đổi trước khi tải phiên bản mới.",
-        "Chỉ tải payload ứng dụng sau khi người dùng đồng ý.",
-        "Tải và xác minh cả các module chưa mở, giao diện, hình ảnh, worker và ZXing WASM.",
-        "Tự kích hoạt sau khi tải hoàn tất và có thể chuyển giao an toàn."
-      ]
-    },
-    {
-      "heading": "Độ ổn định",
-      "items": [
-        "Giữ phiên bản hiện tại hoạt động trong lúc tải bản mới.",
-        "Không thay đổi dữ liệu nghiệp vụ khi cập nhật ứng dụng.",
-        "Giữ bản ổn định trước đó để rollback nếu bản mới không khởi động thành công."
+        "Cập nhật và hoàn thiện các chức năng trong quá trình phát triển RetailOS.",
+        "Cải thiện độ ổn định và trải nghiệm sử dụng."
       ]
     }
   ],
   "compatibility": [
-    "Cần kết nối mạng để tải phiên bản mới; bản đang hoạt động tiếp tục dùng theo khả năng offline hiện có."
+    "Thông tin tương thích sẽ được xác nhận khi phiên bản hoàn thiện được lựa chọn phát hành Production."
   ],
   "warnings": [
-    "Nếu tải bị gián đoạn, phiên bản hiện tại vẫn hoạt động và có thể thử tải lại. Không xóa dữ liệu trình duyệt."
+    "Đây là bản cập nhật trong môi trường phát triển; nội dung phát hành chính thức sẽ được hoàn thiện khi chuyển giao Production."
   ]
 }
