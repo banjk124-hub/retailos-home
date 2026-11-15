@@ -1,4 +1,12 @@
 import { registerRetailOsServiceWorker } from '../../shared/pwa/serviceWorkerRegistration';
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../shared/pwa/updateSafety';
+
+let activePushSetupCount = 0;
+registerPwaUpdateBlocker('push-subscription', () => (
+  activePushSetupCount > 0
+    ? 'RetailOS đang thiết lập đăng ký thông báo. Hãy chờ thao tác hoàn tất trước khi cập nhật.'
+    : null
+));
 
 type PushSetupResult = 'ready' | 'not-configured';
 
@@ -23,19 +31,26 @@ export async function subscribeForPushNotifications(): Promise<PushSetupResult> 
     throw new Error('Push notifications are not supported by this browser.');
   }
 
-  const registration = await registerRetailOsServiceWorker();
-  const readyRegistration = await navigator.serviceWorker.ready;
-  const activeRegistration = readyRegistration.scope === registration.scope ? readyRegistration : registration;
-  const subscription = await activeRegistration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: decodeApplicationServerKey(vapidPublicKey),
-  });
+  activePushSetupCount += 1;
+  notifyPwaUpdateSafetyChanged();
+  try {
+    const registration = await registerRetailOsServiceWorker();
+    const readyRegistration = await navigator.serviceWorker.ready;
+    const activeRegistration = readyRegistration.scope === registration.scope ? readyRegistration : registration;
+    const subscription = await activeRegistration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: decodeApplicationServerKey(vapidPublicKey),
+    });
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ subscription: subscription.toJSON() }),
-  });
-  if (!response.ok) throw new Error(`Push subscription endpoint returned HTTP ${response.status}.`);
-  return 'ready';
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: subscription.toJSON() }),
+    });
+    if (!response.ok) throw new Error(`Push subscription endpoint returned HTTP ${response.status}.`);
+    return 'ready';
+  } finally {
+    activePushSetupCount = Math.max(0, activePushSetupCount - 1);
+    notifyPwaUpdateSafetyChanged();
+  }
 }
