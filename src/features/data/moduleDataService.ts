@@ -1,3 +1,5 @@
+import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../shared/pwa/updateSafety';
+
 export const MODULE_DATA_IDS = [
   'inventory',
   'price',
@@ -50,6 +52,23 @@ const DATABASE_NAME = 'retailos-module-data';
 const DATABASE_VERSION = 1;
 const SNAPSHOT_STORE = 'snapshots';
 const MODULE_DATA_ENDPOINT = import.meta.env.VITE_APPS_SCRIPT_DATA_URL;
+let activeModuleDataOperations = 0;
+
+registerPwaUpdateBlocker('module-data-lifecycle', () => (
+  activeModuleDataOperations > 0
+    ? 'RetailOS đang đồng bộ hoặc ghi dữ liệu snapshot. Bản mới sẽ tự kích hoạt sau khi thao tác hoàn tất.'
+    : null
+));
+
+function beginModuleDataOperation() {
+  activeModuleDataOperations += 1;
+  notifyPwaUpdateSafetyChanged();
+}
+
+function endModuleDataOperation() {
+  activeModuleDataOperations = Math.max(0, activeModuleDataOperations - 1);
+  notifyPwaUpdateSafetyChanged();
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -214,8 +233,13 @@ async function deleteModuleSnapshotsExcept(authorizedModules: ModuleDataId[]): P
     request.onerror = () => reject(request.error ?? new Error('Could not reconcile module cache access.'));
   }));
 }
-export function clearCachedModuleData(): Promise<void> {
-  return withStore<undefined>('readwrite', (store) => store.clear()).then(() => undefined);
+export async function clearCachedModuleData(): Promise<void> {
+  beginModuleDataOperation();
+  try {
+    await withStore<undefined>('readwrite', (store) => store.clear());
+  } finally {
+    endModuleDataOperation();
+  }
 }
 
 async function requestJson<T>(url: URL, accessToken: string, signal?: AbortSignal): Promise<T> {
@@ -260,7 +284,8 @@ function makeEndpoint(action: 'manifest' | 'snapshot', moduleId?: ModuleDataId, 
  */
 export async function syncAuthorizedModuleData(options: SyncOptions): Promise<ModuleSyncResult> {
   if (!options.accessToken.trim()) throw new Error('A valid data access token is required to sync module snapshots.');
-
+  beginModuleDataOperation();
+  try {
   const rawManifest = await requestJson<unknown>(makeEndpoint('manifest'), options.accessToken, options.signal);
   const manifest = parseManifest(rawManifest);
   await deleteModuleSnapshotsExcept(manifest.authorizedModules);
@@ -306,4 +331,7 @@ export async function syncAuthorizedModuleData(options: SyncOptions): Promise<Mo
   };
   if (updatedModules.length > 0) window.dispatchEvent(new Event(MODULE_SNAPSHOTS_UPDATED_EVENT));
   return result;
+  } finally {
+    endModuleDataOperation();
+  }
 }
