@@ -96,7 +96,8 @@ The shared `updateSafety.ts` registry supports module-owned blockers. Current in
 - **Stocktake:** blocks while a read/write operation is busy, scanner is open, a zone confirmation is pending, or barcode/zone/entry edits remain in progress.
 - **Stocktake Import:** blocks during import/save/export/history operations, active row editing, dirty zones, pending import conflict review, unsaved history or confirmation dialogs.
 - **Application transitions:** blocks while login/home identity transitions or logout/data cleanup are running.
-- **Generic interaction guard:** avoids reloading while a text control/contenteditable surface is actively being edited or a file selection is pending.
+- **Module data lifecycle:** blocks while Apps Script manifest/snapshot synchronization or IndexedDB module-data cleanup is in progress; this defers activation but never couples data refresh to app release.
+- **Generic interaction guard:** tracks dirty native form fields, active text editing/contenteditable surfaces and pending file selections. Async forms call `markPwaUpdateFormSaved(form)` only after successful persistence; auto-saved fields/forms may opt out with `data-retailos-update-safe`.
 
 Modules with non-DOM unsaved state must register a blocker and call `notifyPwaUpdateSafetyChanged()` whenever their safe/unsafe state changes. Do not rely only on DOM inspection for future modules.
 
