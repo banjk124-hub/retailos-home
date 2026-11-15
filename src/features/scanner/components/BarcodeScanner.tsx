@@ -16,7 +16,8 @@ type ScannerTransitionStyle = CSSProperties & {
 
 type Props = {
   onDetected: (value: string) => void;
-  onClose: () => void;\n  onManualSearch?: () => void;
+  onClose: () => void;
+  onManualSearch?: () => void;
   /** single closes through the caller after one result; continuous keeps decoding. */
   mode?: ScannerMode;
   scanCooldownMs?: number;
