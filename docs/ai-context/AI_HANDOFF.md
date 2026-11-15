@@ -19,7 +19,7 @@
 - Waiting worker serves metadata-only discovery. User consent starts full payload staging in isolated caches, batch size two with storage-budget preflight.
 - Worker verifies HTTP status, size, SHA-256 and cache read-back; failure removes only candidate caches.
 - UI presents release notes, current/candidate version, estimated size and byte progress; stage failure can be retried.
-- A completed staged release resumes without renewed consent after app restart.
+- Concurrent/reloaded clients join an in-progress stage and receive shared progress instead of starting duplicate downloads. A completed staged release resumes without renewed consent after app restart.
 - Safe auto-activation is guarded by shared camera leases, Stocktake, Stocktake Import, module snapshot sync/IndexedDB cleanup, push subscription setup, app transitions, dirty native forms, active editing and multi-window detection.
 - Boot health and last-known-good rollback remain active; healthy boot retains the active-release pointer and business data is not part of release caches.
 - One-time PR #119 legacy bridge treats old client's explicit `SKIP_WAITING` as consent to stage.
