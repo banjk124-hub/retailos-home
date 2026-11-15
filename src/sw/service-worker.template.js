@@ -152,10 +152,9 @@ async function stageCandidate(target) {
           throw new Error('Sai checksum tài nguyên: ' + resource.path);
         }
         const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
+        const rootAlias = resource.path === 'index.html' ? response.clone() : null;
         await targetCache.put(url, response);
-        if (resource.path === 'index.html') {
-          await shellCache.put(APP_BASE_URL.href, response.clone());
-        }
+        if (rootAlias) await shellCache.put(APP_BASE_URL.href, rootAlias);
         completed += 1;
         notify(target, {
           type: 'RELEASE_DOWNLOAD_PROGRESS',
