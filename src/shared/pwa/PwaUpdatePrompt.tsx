@@ -4,7 +4,7 @@ import './pwa-update-prompt.css';
 declare const __RETAILOS_BUILD_ID__: string;
 import { registerRetailOsServiceWorker } from './serviceWorkerRegistration';
 import { getPwaUpdateBlockReason } from './updateSafety';
-import { readUpdateCenterEntry, writeUpdateCenterEntry, clearUpdateCenterEntry } from './updateCenterStore';
+import { readUpdateCenterEntry, writeUpdateCenterEntry } from './updateCenterStore';
 
 declare const __RETAILOS_APP_VERSION__: string;
 
@@ -136,8 +136,8 @@ export default function PwaUpdatePrompt() {
           totalBytes: message.totalBytes ?? current.totalBytes,
         }));
         setPhase('staged');
-        setNotice('Đã tải và xác minh toàn bộ tài nguyên. RetailOS sẽ tự cập nhật khi có thể chuyển giao an toàn.');
-        tryActivate();
+        setNotice('Đã tải và xác minh toàn bộ tài nguyên. Hãy xác nhận cập nhật khi đã sẵn sàng.');
+        if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'staged', updatedAt: new Date().toISOString() });
       }
     };
     try {
