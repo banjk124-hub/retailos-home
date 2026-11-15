@@ -1,13 +1,13 @@
 # Current repository state — 2026-11-15
 
-- Production baseline: `main` at PR #118 merge commit `80a8626da8c067186aa813d339ea95dbe6c0e3ba`.
-- Active work: Draft PR #119, branch `feat/pwa-offline-release-architecture`, targeting `main`; not merged or deployed.
+- Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
 - Canonical PWA runtime/release contract: `PWA_RUNTIME_RELEASE.md`; bundle analysis: `PERFORMANCE_BUNDLE_PWA.md`.
-- The active branch stages all application runtime assets, including ZXing WASM, before a new Service Worker can become update-ready; incomplete downloads must preserve the old release.
-- Application releases and business-data/snapshot refreshes are independent. Data-only refreshes must not trigger app reloads or Service Worker replacement.
-- Previous release caches remain until the matching new build reports healthy startup; failed boot routes back to the previous cached shell/assets.
-- Scanner camera/session/decoder behavior and business data contracts are outside PR #119. Physical Android/iOS scanner and offline acceptance remains pending.
-- No merge, deployment or production mutation is authorized by this work. CI and physical-device evidence must be checked against the latest PR head.
+- PR #119 delivered the complete emitted/public asset inventory, WASM precache, release-specific caches, active-release pinning, boot health and rollback foundation.
+- Post-deployment source audit found an important product-flow gap: the browser's new Service Worker install currently downloads/pre-caches the full candidate payload before the update prompt appears. The current prompt asks the user to activate an already-downloaded release; it does not ask permission before download.
+- Current prompt has generic update copy, not build-bound release notes, and the current activation is user-triggered after download. The required target is: discover metadata → show versioned release notes → user approves download → download/verify the entire runtime → automatically activate → health-check/rollback.
+- The target user-approved download flow is not yet implemented. Documentation records the gap and makes the contract mandatory for future development/deployments; no runtime code was changed by this documentation update.
+- Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger application update/reload or clear business data. A new data-processing mechanism is an application capability and must ship in a release.
+- Physical Android/iOS acceptance for full offline payload, update consent, interrupted downloads, automatic activation and rollback remains a separate required gate.
 
 
 # Historical scanner state snapshot — 2026-11-11
