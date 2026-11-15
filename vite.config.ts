@@ -1,9 +1,25 @@
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 import { relative, resolve, sep } from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const BUILD_ID = (process.env.GITHUB_SHA || Date.now().toString(36)).slice(0, 12);
+const SHELL_PATHS = new Set(['index.html', 'manifest.webmanifest', 'icon.svg']);
+
+function toBuffer(source: string | Uint8Array): Buffer {
+  return typeof source === 'string' ? Buffer.from(source) : Buffer.from(source);
+}
+
+function describeResource(path: string, source: string | Uint8Array, cache: 'shell' | 'assets') {
+  const bytes = toBuffer(source);
+  return {
+    path,
+    cache,
+    size: bytes.byteLength,
+    sha256: createHash('sha256').update(bytes).digest('hex'),
+  };
+}
 
 function retailosPwaArtifacts(): Plugin {
   let appBase = '/';
@@ -31,24 +47,74 @@ function retailosPwaArtifacts(): Plugin {
         }, 30000);
       })();
     </script>`;
-      return html.replace('</head>', `${bootGuard}\n  </head>`);
+      return html.replace('</head>', `${bootGuard}
+  </head>`);
     },
     generateBundle(_options, bundle) {
-      const bundledAssets = Object.keys(bundle).filter((file) => /^assets\//.test(file) && !file.endsWith('.map'));
-      const publicAssets: string[] = [];
+      const assetResources: Array<{ path: string; source: string | Uint8Array; cache: 'assets' }> = [];
+      for (const fileName of Object.keys(bundle).sort()) {
+        if (!fileName.startsWith('assets/') || fileName.endsWith('.map')) continue;
+        const output = bundle[fileName];
+        assetResources.push({
+          path: fileName,
+          source: output.type === 'chunk' ? output.code : output.source,
+          cache: 'assets',
+        });
+      }
+
       const collectPublicAssets = (directory: string) => {
         if (!directory || !publicDirectory) return;
         for (const entry of readdirSync(directory, { withFileTypes: true })) {
           const absolutePath = resolve(directory, entry.name);
-          if (entry.isDirectory()) collectPublicAssets(absolutePath);
-          else if (entry.isFile() && !entry.name.endsWith('.map')) {
-            const relativePath = relative(publicDirectory, absolutePath).split(sep).join('/');
-            publicAssets.push(relativePath);
+          if (entry.isDirectory()) {
+            collectPublicAssets(absolutePath);
+          } else if (entry.isFile() && !entry.name.endsWith('.map')) {
+            const path = relative(publicDirectory, absolutePath).split(sep).join('/');
+            if (!SHELL_PATHS.has(path)) {
+              assetResources.push({ path, source: readFileSync(absolutePath), cache: 'assets' });
+            }
           }
         }
       };
       collectPublicAssets(publicDirectory);
-      const assetFiles = [...new Set([...bundledAssets, ...publicAssets])].sort();
+
+      const indexOutput = bundle['index.html'];
+      if (!indexOutput || indexOutput.type !== 'asset') {
+        throw new Error('RetailOS release manifest requires the final generated index.html asset.');
+      }
+      const shellResources = [
+        describeResource('index.html', indexOutput.source, 'shell'),
+        describeResource('manifest.webmanifest', readFileSync(resolve(publicDirectory, 'manifest.webmanifest')), 'shell'),
+        describeResource('icon.svg', readFileSync(resolve(publicDirectory, 'icon.svg')), 'shell'),
+      ];
+      const resources = [
+        ...shellResources,
+        ...assetResources.map((resource) => describeResource(resource.path, resource.source, resource.cache)),
+      ];
+      const releaseNotes = JSON.parse(readFileSync(resolve(projectRoot, 'release-notes.json'), 'utf8'));
+      if (!releaseNotes.version || !releaseNotes.title || !releaseNotes.summary || !Array.isArray(releaseNotes.sections)) {
+        throw new Error('release-notes.json must define version, title, summary and sections.');
+      }
+      const manifest = {
+        schemaVersion: 1,
+        buildId: BUILD_ID,
+        base: appBase,
+        publishedAt: new Date().toISOString(),
+        version: releaseNotes.version,
+        title: releaseNotes.title,
+        summary: releaseNotes.summary,
+        sections: releaseNotes.sections,
+        compatibility: Array.isArray(releaseNotes.compatibility) ? releaseNotes.compatibility : [],
+        warnings: Array.isArray(releaseNotes.warnings) ? releaseNotes.warnings : [],
+        resources,
+      };
+      this.emitFile({
+        type: 'asset',
+        fileName: 'release-manifest.json',
+        source: JSON.stringify(manifest),
+      });
+
+      const assetFiles = [...new Set(assetResources.map((resource) => resource.path))].sort();
       const template = readFileSync(resolve(projectRoot, 'src/sw/service-worker.template.js'), 'utf8');
       const worker = template
         .replace('__BUILD_ID__', BUILD_ID)
