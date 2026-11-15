@@ -102,6 +102,7 @@ export default function PwaUpdatePrompt() {
     const worker = waitingWorkerRef.current;
     if (!worker || phase === 'downloading' || phase === 'activating') return;
     setPhase('downloading');
+    if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'downloading', updatedAt: new Date().toISOString() });
     setNotice('Đang tải toàn bộ tài nguyên ứng dụng. Phiên bản hiện tại vẫn hoạt động trong quá trình này.');
     setBlockReason('');
     setProgress({
@@ -125,6 +126,7 @@ export default function PwaUpdatePrompt() {
         channel.port1.close();
         setPhase('error');
         setNotice(message.message || 'Không thể tải đầy đủ phiên bản mới. Bản hiện tại vẫn được giữ nguyên.');
+        if (manifest) writeUpdateCenterEntry({ buildId: manifest.buildId, version: manifest.version, title: manifest.title, summary: manifest.summary, status: 'error', updatedAt: new Date().toISOString() });
       }
       if (message?.type === 'RELEASE_STAGED') {
         channel.port1.close();
@@ -367,6 +369,7 @@ export default function PwaUpdatePrompt() {
   if (!waitingWorker || isDeferred) return null;
   const currentBlockReason = getPwaUpdateBlockReason();
   const isBusinessBusy = Boolean(currentBlockReason);
+  useEffect(() => { if (isBusinessBusy) setIsExpanded(false); }, [isBusinessBusy]);
 
   const totalBytes = manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
   const progressPercent = progress.totalBytes > 0
