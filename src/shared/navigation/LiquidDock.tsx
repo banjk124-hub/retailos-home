@@ -114,8 +114,7 @@ export const LiquidDock = memo(function LiquidDock({
                 </button>
                 {Boolean(action.choices?.length) && <span className="liquid-dock__action-choices" aria-hidden={!isActionExpanded}>
                   {action.choices?.map((choice) => <button key={choice.id} type="button" className="liquid-dock__choice" aria-label={choice.label} title={choice.label} data-dock-item tabIndex={!isActionExpanded || unavailableForFocus ? -1 : undefined} onClick={(event) => { setIsActionExpanded(false); choice.onSelect(event); }}>
-                    <span className="liquid-dock__choice-icon"><MotionIcon icon={choice.icon} variant="navigation" size={19} strokeWidth={2.1} /></span>
-                    <span className="liquid-dock__choice-label">{choice.label}</span>
+                    <span className="liquid-dock__choice-icon"><MotionIcon icon={choice.icon} variant="navigation" size={23} strokeWidth={2.2} /></span>
                   </button>)}
                 </span>}
               </div>
