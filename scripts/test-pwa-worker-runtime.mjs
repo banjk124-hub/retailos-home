@@ -86,7 +86,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
   const windowClients = options.clients || [];
   const selfMock = {
     location: { origin: 'https://retailos.test' },
-    registration: { showNotification: async () => undefined },
+    registration: { showNotification: async () => undefined, active: options.hasActiveWorker === false ? null : { scriptURL: appBase + 'sw.js' } },
     addEventListener(type, listener) {
       if (!listeners.has(type)) listeners.set(type, []);
       listeners.get(type).push(listener);
@@ -321,7 +321,7 @@ const firstInstallManifest = {
     sha256: await sha256Hex('release-runtime:' + resource.path),
   }))),
 };
-const firstInstallWorker = createWorker('first-install', firstInstallManifest, { clients: [] });
+const firstInstallWorker = createWorker('first-install', firstInstallManifest, { clients: [], hasActiveWorker: false });
 await firstInstallWorker.runExtendable('install');
 assert.ok(cacheStore.get('retailos-pwa-shell-first-install')?.has(shellUrl),
   'a fresh first install stages its initial shell without requiring an update prompt');
