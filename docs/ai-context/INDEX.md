@@ -8,7 +8,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 2. `PROJECT_CONTEXT.md` — durable product facts and current top-level repository state.
 3. `IMPLEMENTATION_STATUS.md` — verified implementation state and outstanding acceptance gates.
 4. Select the relevant canonical topic document from the table below; read `ARCHITECTURE.md` only when the task touches an architecture decision or protected contract.
-5. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow, when implementing or auditing application work.
+5. Load `.github/skills/retailos-core/SKILL.md` and only the task skill needed for the request (audit, technical research or implementation).
 6. `prompts/START_HERE.md` — concise session-start and task prompts.
 
 ## Topic sources of truth
