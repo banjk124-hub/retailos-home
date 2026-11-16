@@ -142,6 +142,62 @@ async function digestHex(bytes) {
   return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
 }
 
+async function buildDownloadPlan(manifest) {
+  const active = await readActiveRelease();
+  const cacheNames = await caches.keys();
+  const canReuse = Boolean(
+    active?.buildId
+    && active.buildId !== BUILD_ID
+    && active.shellCache
+    && active.assetCache
+    && cacheNames.includes(active.shellCache)
+    && cacheNames.includes(active.assetCache)
+  );
+  const previousCaches = canReuse ? {
+    shell: await caches.open(active.shellCache),
+    assets: await caches.open(active.assetCache),
+  } : null;
+  const reusable = [];
+  const toDownload = [];
+  let reusedBytes = 0;
+  let downloadBytes = 0;
+  let totalReleaseBytes = 0;
+
+  for (const resource of manifest.resources) {
+    totalReleaseBytes += resource.size;
+    let reusableResponse = null;
+    if (previousCaches) {
+      const previousResponse = await previousCaches[resource.cache].match(
+        new URL(resource.path, APP_BASE_URL).href
+      );
+      if (previousResponse?.ok) {
+        const bytes = await previousResponse.clone().arrayBuffer();
+        if (
+          bytes.byteLength === resource.size
+          && await digestHex(bytes) === resource.sha256
+        ) reusableResponse = previousResponse;
+      }
+    }
+    if (reusableResponse) {
+      reusable.push({ resource, response: reusableResponse });
+      reusedBytes += resource.size;
+    } else {
+      toDownload.push(resource);
+      downloadBytes += resource.size;
+    }
+  }
+
+  return {
+    totalReleaseBytes,
+    reusedBytes,
+    downloadBytes,
+    reusedCount: reusable.length,
+    downloadCount: toDownload.length,
+    reusable,
+    toDownload,
+  };
+}
+
 async function verifyStagedResources(resources) {
   if (!Array.isArray(resources) || resources.length === 0) return false;
   const shellCache = await caches.open(SHELL_CACHE);
@@ -194,24 +250,33 @@ async function stageCandidate(target) {
   let manifest;
   try {
     manifest = await fetchReleaseManifest();
-    const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
+    const plan = await buildDownloadPlan(manifest);
+    const total = manifest.resources.length;
+    const totalBytes = plan.downloadBytes;
     stagingProgress = {
       type: 'RELEASE_DOWNLOAD_PROGRESS', buildId: BUILD_ID, version: manifest.version,
-      completed: 0, total: manifest.resources.length, bytesDownloaded: 0, totalBytes,
+      completed: 0, total, bytesDownloaded: 0, totalBytes,
+      reusedBytes: plan.reusedBytes, totalReleaseBytes: plan.totalReleaseBytes,
     };
     if (await stagedReleaseIsComplete(manifest) && await verifyStagedResources(manifest.resources)) {
+      const marker = await readStagedRelease();
       notify(target, {
         type: 'RELEASE_STAGED',
         buildId: BUILD_ID,
         version: manifest.version,
-        completed: manifest.resources.length,
-        total: manifest.resources.length,
-        totalBytes,
+        completed: total,
+        total,
+        bytesDownloaded: marker?.bytesDownloaded ?? totalBytes,
+        totalBytes: marker?.totalBytes ?? totalBytes,
+        reusedBytes: marker?.reusedBytes ?? plan.reusedBytes,
+        totalReleaseBytes: plan.totalReleaseBytes,
         reused: true,
       });
       return manifest;
     }
 
+    // The new release gets isolated caches. Reuse is content-addressed by the
+    // manifest's exact byte size and SHA-256, never by path or build ID alone.
     await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
     const stateCache = await caches.open(STATE_CACHE);
     await stateCache.delete(STAGED_RELEASE_STATE_URL);
@@ -220,7 +285,9 @@ async function stageCandidate(target) {
       try {
         const estimate = await navigator.storage.estimate();
         const availableBytes = Number(estimate.quota) - Number(estimate.usage);
-        if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(totalBytes * 1.1)) {
+        // Reused responses are copied into release-specific caches, so storage
+        // must still accommodate the complete candidate alongside the active release.
+        if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(plan.totalReleaseBytes * 1.1)) {
           throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng khác rồi thử lại; không xóa dữ liệu RetailOS hoặc dữ liệu trình duyệt của ứng dụng.');
         }
       } catch (error) {
@@ -233,10 +300,35 @@ async function stageCandidate(target) {
     const assetCache = await caches.open(ASSET_CACHE);
     let completed = 0;
     let bytesDownloaded = 0;
-    const total = manifest.resources.length;
+    const reportProgress = () => {
+      stagingProgress = {
+        type: 'RELEASE_DOWNLOAD_PROGRESS',
+        buildId: BUILD_ID,
+        version: manifest.version,
+        completed,
+        total,
+        bytesDownloaded,
+        totalBytes,
+        reusedBytes: plan.reusedBytes,
+        totalReleaseBytes: plan.totalReleaseBytes,
+      };
+      notify(target, stagingProgress);
+      if (target) void notifyAppClients(stagingProgress);
+    };
 
-    for (let index = 0; index < manifest.resources.length; index += BATCH_SIZE) {
-      const batch = manifest.resources.slice(index, index + BATCH_SIZE);
+    for (const item of plan.reusable) {
+      const targetCache = item.resource.cache === 'shell' ? shellCache : assetCache;
+      const url = new URL(item.resource.path, APP_BASE_URL).href;
+      await targetCache.put(url, item.response.clone());
+      if (item.resource.path === 'index.html') {
+        await shellCache.put(APP_BASE_URL.href, item.response.clone());
+      }
+      completed += 1;
+      reportProgress();
+    }
+
+    for (let index = 0; index < plan.toDownload.length; index += BATCH_SIZE) {
+      const batch = plan.toDownload.slice(index, index + BATCH_SIZE);
       const batchResults = await Promise.allSettled(batch.map(async (resource) => {
         const url = new URL(resource.path, APP_BASE_URL).href;
         const controller = new AbortController();
@@ -258,22 +350,11 @@ async function stageCandidate(target) {
             throw new Error('Sai checksum tài nguyên: ' + resource.path);
           }
           const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
-          const rootAlias = resource.path === 'index.html' ? response.clone() : null;
           await targetCache.put(url, response);
-          if (rootAlias) await shellCache.put(APP_BASE_URL.href, rootAlias);
+          if (resource.path === 'index.html') await shellCache.put(APP_BASE_URL.href, response.clone());
           completed += 1;
           bytesDownloaded += resource.size;
-          stagingProgress = {
-            type: 'RELEASE_DOWNLOAD_PROGRESS',
-            buildId: BUILD_ID,
-            version: manifest.version,
-            completed,
-            total,
-            bytesDownloaded,
-            totalBytes,
-          };
-          notify(target, stagingProgress);
-          if (target) await notifyAppClients(stagingProgress);
+          reportProgress();
         } finally {
           clearTimeout(timeout);
         }
@@ -291,6 +372,10 @@ async function stageCandidate(target) {
       version: manifest.version,
       resourceCount: total,
       resources: manifest.resources,
+      bytesDownloaded,
+      totalBytes,
+      reusedBytes: plan.reusedBytes,
+      totalReleaseBytes: plan.totalReleaseBytes,
       stagedAt: new Date().toISOString(),
     });
     const stagedMessage = {
@@ -301,6 +386,8 @@ async function stageCandidate(target) {
       total,
       bytesDownloaded,
       totalBytes,
+      reusedBytes: plan.reusedBytes,
+      totalReleaseBytes: plan.totalReleaseBytes,
     };
     notify(target, stagedMessage);
     if (target) await notifyAppClients(stagedMessage);
@@ -325,19 +412,21 @@ async function stageCandidate(target) {
     throw error;
   }
 }
-
 function startOrJoinStage(target) {
   if (stagingPromise) {
     if (stagingProgress) notify(target, stagingProgress);
-    return stagingPromise.then((manifest) => {
-      const totalBytes = manifest.resources.reduce((sum, item) => sum + item.size, 0);
+    return stagingPromise.then(async (manifest) => {
+      const marker = await readStagedRelease();
       notify(target, {
         type: 'RELEASE_STAGED',
         buildId: BUILD_ID,
         version: manifest.version,
         completed: manifest.resources.length,
         total: manifest.resources.length,
-        totalBytes,
+        bytesDownloaded: marker?.bytesDownloaded ?? 0,
+        totalBytes: marker?.totalBytes ?? 0,
+        reusedBytes: marker?.reusedBytes ?? 0,
+        totalReleaseBytes: marker?.totalReleaseBytes ?? 0,
         reused: true,
       });
       return manifest;
@@ -414,10 +503,19 @@ self.addEventListener('message', (event) => {
       try {
         const manifest = await fetchReleaseManifest();
         const staged = await stagedReleaseIsComplete(manifest);
+        const downloadPlan = await buildDownloadPlan(manifest);
+        const stagedMarker = staged ? await readStagedRelease() : null;
         notify(replyTarget, {
           type: 'RELEASE_INFO',
           manifest,
           staged,
+          downloadPlan: {
+            totalReleaseBytes: downloadPlan.totalReleaseBytes,
+            reusedBytes: stagedMarker?.reusedBytes ?? downloadPlan.reusedBytes,
+            downloadBytes: stagedMarker?.totalBytes ?? downloadPlan.downloadBytes,
+            reusedCount: downloadPlan.reusedCount,
+            downloadCount: downloadPlan.downloadCount,
+          },
           staging: !staged && Boolean(stagingPromise),
           progress: !staged ? stagingProgress : null,
         });
