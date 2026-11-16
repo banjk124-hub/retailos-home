@@ -167,19 +167,25 @@ async function buildDownloadPlan(manifest) {
     totalReleaseBytes += resource.size;
     let reusableResponse = null;
     if (previousCaches) {
-      const previousResponse = await previousCaches[resource.cache].match(
-        new URL(resource.path, APP_BASE_URL).href
-      );
-      if (previousResponse?.ok) {
-        const bytes = await previousResponse.clone().arrayBuffer();
-        if (
-          bytes.byteLength === resource.size
-          && await digestHex(bytes) === resource.sha256
-        ) reusableResponse = new Response(bytes, {
-          status: previousResponse.status,
-          statusText: previousResponse.statusText,
-          headers: previousResponse.headers,
-        });
+      try {
+        const previousResponse = await previousCaches[resource.cache].match(
+          new URL(resource.path, APP_BASE_URL).href
+        );
+        if (previousResponse?.ok) {
+          const bytes = await previousResponse.clone().arrayBuffer();
+          if (
+            bytes.byteLength === resource.size
+            && await digestHex(bytes) === resource.sha256
+          ) reusableResponse = new Response(bytes, {
+            status: previousResponse.status,
+            statusText: previousResponse.statusText,
+            headers: previousResponse.headers,
+          });
+        }
+      } catch {
+        // An unreadable/evicted/corrupt old cache entry is a cache miss, not
+        // a reason to block discovery or prevent a normal network download.
+        reusableResponse = null;
       }
     }
     if (reusableResponse) {
