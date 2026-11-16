@@ -90,6 +90,18 @@ The maintained worker source is `src/sw/service-worker.template.js`. Never edit 
 
 The manifest itself is small control-plane metadata and is fetched with a build-specific query to avoid stale HTTP cache responses. It is not part of business-data storage or the immutable runtime asset cache.
 
+### 5.1 Delta-aware staging and network-byte accounting
+
+Before staging, the waiting worker reads the active release's shell/assets caches and compares each candidate manifest resource by its canonical app URL, exact byte length and SHA-256 digest.
+
+- A previous response is reusable only when it exists, is a successful non-opaque response and its bytes match both manifest size and SHA-256. Path equality alone is never sufficient.
+- Verified matches are copied into the new build-specific cache without a network request. Missing, changed, unreadable or corrupt resources are fetched and verified normally.
+- Resources removed from the new manifest are not copied. The new candidate cache is still complete and contains exactly the resources required by its manifest, plus the shell root alias.
+- `downloadBytes` / progress `totalBytes` count only bytes fetched over the network. `reusedBytes` reports verified bytes copied from the active release; `totalReleaseBytes` reports the complete candidate footprint. Resource-count progress includes both reused and downloaded resources.
+- `GET_RELEASE_INFO` returns this estimate after reading and hashing active cached resources; it still fetches only the small release manifest over the network. The Update Center labels the estimate as network download size and separately identifies reused and total release bytes.
+- Storage headroom is still checked against the complete candidate size, not the delta: release-specific caches duplicate reused responses while preserving the active release for rollback. A small network delta does not imply a small temporary storage requirement.
+- First install has no active release to reuse and therefore downloads the complete initial payload. If the active cache is missing or any resource fails verification, that resource is downloaded. If every resource matches, network payload download is zero; cache copy, read-back verification and explicit safe activation still occur.
+
 ## 6. Safe handoff and explicit activation confirmation
 
 After `RELEASE_STAGED`, the UI records the candidate as staged and waits. It must not call `ACTIVATE_RELEASE` automatically, including on app restart or when blockers clear. A separate explicit activation confirmation is required after the business-safety registry reports no blocker.
