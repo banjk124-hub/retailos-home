@@ -1,25 +1,30 @@
-# Current handoff — delta-aware PWA release staging — 2026-11-16
+# Current handoff — Phase 1 AI workflow and documentation governance — 2026-11-16
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Branch:** `feat/pwa-delta-release-staging`  
-**Objective:** Download only candidate resources that are not byte-for-byte reusable from the active release, while preserving complete offline candidate caches and the separate safe activation confirmation.
+**Base:** `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
+**Work branch:** `docs/phase1-ai-context-governance`  
+**Scope:** documentation and AI workflow only.
 
-## Source behavior now authored
-- Candidate resources are compared against active release caches by URL, exact byte size and SHA-256. Valid matches are copied into the candidate cache; changed/missing/corrupt resources are fetched.
-- Removed resources are excluded. Progress distinguishes network bytes from reused bytes and complete candidate size.
-- Storage budget still uses complete candidate size because candidate and active release caches coexist.
-- First install still downloads the complete payload. No automatic activation, consent bypass, data migration or production deployment was added.
+## Objective
+Correct stale current-state records after PR #137 merged and reduce unnecessary context loading. Preserve the existing RetailOS architecture and historical technical evidence.
 
-## Verification
-- GitHub Actions CI #1250 (`43800583013`) passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`: locked dependency install, full `npm run preflight` (including worker runtime, cache-policy and platform contract tests), TypeScript/production build, GitHub Pages build, PR-base bundle build/comparison and artifact upload.
-- Earlier runs #1243 and #1246 found a consumed Response body in the test harness after the test inspected a raw cached response. The fixture now reads a clone; final-head CI #1250 passed.
-- Physical Android/iOS/Desktop and low-end Android acceptance remains outstanding.
+## Governance changes in this branch
+- Make `INDEX.md` the context router and replace the instruction to read every AI-context document with selective, task-based reading.
+- Align `AGENTS.md`, Copilot instructions, implementation skill and `prompts/START_HERE.md` on repository-state verification, token discipline, current technical research and honest test reporting.
+- Reconcile current-state summaries in Project Context, Implementation Status, AI Handoff, Roadmap, PWA release contract, Session Log and AI Changelog with verified main/PR/CI/deployment state.
+- Keep historical evidence intact and distinguish historical snapshots from current instructions.
 
-## Next validation
-1. Review the complete PR diff before merge consideration.
-2. Complete physical platform acceptance before treating the release workflow as fully accepted.
+## Safety boundary
+No application source, tests, dependencies, build configuration, Service Worker, business data contract or deployment workflow may be changed in this phase. No merge, production promotion or deployment is authorized.
 
-No merge or deployment is authorized by this work.
+## Validation required before review
+1. Inspect the complete branch diff and confirm all changed paths are documentation/instruction files.
+2. Check for contradictory unconditional “read all context” instructions and stale PR #137 pending/unmerged claims in current-state sections.
+3. Verify links, branch/commit identifiers and CI/deployment evidence against GitHub.
+4. Do not claim application tests or builds were run; this is a documentation-only change.
+
+## Next step
+Complete diff review, then open a Draft PR for user review. Do not merge without explicit approval.
 
 ---
 
