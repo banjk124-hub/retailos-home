@@ -65,6 +65,7 @@ export default function PwaUpdatePrompt() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [manifest, setManifest] = useState<ReleaseManifest | null>(null);
   const [downloadPlan, setDownloadPlan] = useState<ReleaseDownloadPlan | null>(null);
+  const downloadPlanRef = useRef<ReleaseDownloadPlan | null>(null);
   const manifestRef = useRef<ReleaseManifest | null>(null);
   manifestRef.current = manifest;
   const [phase, setPhase] = useState<UpdatePhase>('loading-info');
@@ -95,7 +96,7 @@ export default function PwaUpdatePrompt() {
         : currentPhase === 'downloading' ? 'downloading'
           : currentPhase === 'error' ? 'error' : 'deferred'
       : status;
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: progressValue?.totalBytes ?? progressRef.current.totalBytes ?? candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: errorMessage ?? (status === 'error' ? previous?.lastError ?? notice : undefined) });
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: progressValue?.totalBytes ?? downloadPlanRef.current?.downloadBytes ?? candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: errorMessage ?? (status === 'error' ? previous?.lastError ?? notice : undefined) });
   }, []);
 
   const tryActivate = useCallback(() => {
@@ -190,6 +191,7 @@ export default function PwaUpdatePrompt() {
       setWaitingWorker(worker);
       setManifest(null);
       setDownloadPlan(null);
+      downloadPlanRef.current = null;
       manifestRef.current = null;
       setPhase('loading-info');
       setNotice('Đang đọc thông tin phiên bản mới…');
@@ -235,6 +237,7 @@ export default function PwaUpdatePrompt() {
         downloadCount: nextManifest.resources.length,
       };
       setDownloadPlan(nextDownloadPlan);
+      downloadPlanRef.current = nextDownloadPlan;
       writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: response.staged === true ? 'staged' : response.staging === true ? 'downloading' : persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'error' ? 'error' : deferred ? 'deferred' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: nextDownloadPlan.downloadBytes });
       if (response.staged === true) {
         stagedRef.current = true;
