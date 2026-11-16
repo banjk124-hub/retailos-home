@@ -10,11 +10,14 @@
 - Storage budget still uses complete candidate size because candidate and active release caches coexist.
 - First install still downloads the complete payload. No automatic activation, consent bypass, data migration or production deployment was added.
 
+## Verification
+- GitHub Actions CI #1250 (`43800583013`) passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`: locked dependency install, full `npm run preflight` (including worker runtime, cache-policy and platform contract tests), TypeScript/production build, GitHub Pages build, PR-base bundle build/comparison and artifact upload.
+- Earlier runs #1243 and #1246 found a consumed Response body in the test harness after the test inspected a raw cached response. The fixture now reads a clone; final-head CI #1250 passed.
+- Physical Android/iOS/Desktop and low-end Android acceptance remains outstanding.
+
 ## Next validation
-1. Run `node scripts/test-pwa-worker-runtime.mjs` and inspect failures.
-2. Run `npm run preflight`, TypeScript/production build and Pages build through the repository CI on the exact PR head.
-3. Inspect the full PR diff and verify that the release manifest, candidate cache, progress and Update Center semantics agree.
-4. Complete physical platform acceptance before treating the release workflow as fully accepted.
+1. Review the complete PR diff before merge consideration.
+2. Complete physical platform acceptance before treating the release workflow as fully accepted.
 
 No merge or deployment is authorized by this work.
 
