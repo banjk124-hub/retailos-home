@@ -1,3 +1,14 @@
+### 2026-11-16 — Phase 1 AI workflow and documentation governance
+
+- Verified current `main` is `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`; PR #137 merged at that commit.
+- Verified PR-head CI #1250 passed; post-merge main CI run `43802257547` and GitHub Pages deployment run `43802257688` completed successfully.
+- Found current-state docs still describing PR #137 as Draft/unmerged and conflicting instructions requiring every AI-context file to be read at session start.
+- Phase 1 scope: reconcile current-state documentation and establish INDEX-driven selective context loading, GitHub-state verification, token discipline, current technical research and evidence-based reporting.
+- Work branch: `docs/phase1-ai-context-governance`, based on current main. No application source, tests, dependencies, build configuration or deployment workflow changes are in scope.
+- No application build, local test or physical-device QA is claimed for this documentation-only work. Final path/diff review is required before opening a Draft PR.
+
+---
+
 ### 2026-11-11 — Camera Request Bridge CI verification
 
 - CI run #588 initially exposed a test-harness import issue after `cameraSession.ts` gained platform contract/resolver imports. Updated the existing scanner validation harness to map those dependencies to data modules.
