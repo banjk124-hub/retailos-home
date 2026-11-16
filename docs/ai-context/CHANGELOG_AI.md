@@ -12,6 +12,15 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Unverified:
 - Risks / rollback:
 
+## 2026-11-16 — Phase 2.1 AI capability upgrade
+
+- Intent: upgrade practical AI engineering capability through three connected layers: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation.
+- Files: added `AI_CAPABILITY_SYSTEM.md`, `AI_CAPABILITY_EVALUATION.md`, `retailos-core`, `retailos-audit`, `retailos-technical-research`; integrated the existing implementation skill; updated AGENTS, Copilot instructions, START_HERE, INDEX, Roadmap, Implementation Status, AI Handoff, Project Context, Session Log and this log.
+- Behavior: introduced composable CORE/TASK skills, progressive disclosure, source-grounded audit, evidence-led research, complexity/risk/dependency gates, and scenario-based evaluation. No application runtime behavior changed.
+- Validation: final changed-path/diff review and final-head CI are pending; do not claim evaluation scenarios have passed merely because they are defined. No application build/device QA is claimed for documentation/skill work.
+- Unverified: workflow effectiveness across real subsequent tasks; domain-specific skills are intentionally deferred until repeated work demonstrates a distinct need.
+- Risks / rollback: revert the Phase 2.1 documentation/skill commits on this PR if skill selection conflicts or adds unnecessary context; no application runtime rollback is required.
+
 ## 2026-11-16 — Phase 1 AI workflow and documentation governance
 
 - Intent: correct stale current-state records and reduce unnecessary context/token consumption without changing RetailOS application behavior.
