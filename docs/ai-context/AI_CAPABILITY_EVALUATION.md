@@ -97,3 +97,21 @@ When CORE, an entry instruction or a task skill changes:
 - The scenarios and pass/fail rules are defined in Phase 2.1.
 - No separate model benchmark, automated agent harness or physical-device test is claimed by this document-only phase.
 - The workflow must be exercised on subsequent real RetailOS tasks before claiming operational effectiveness.
+
+## Evaluation record template
+
+Use this template when a scenario is exercised on a real task. Keep records concise and evidence-linked; do not create a record for a scenario that was not run.
+
+```md
+### YYYY-MM-DD — Scenario N: short task name
+- Repository / branch / commit:
+- Task and scope:
+- Scenario:
+- Result: Pass / Fail / Not tested
+- Evidence: source paths, test commands/results, CI run, observed environment
+- Missed criteria / failure cause:
+- Corrective rule or skill change:
+- Follow-up regression check:
+```
+
+Store completed evaluations as concise entries in the append-only `CHANGELOG_AI.md` or a linked task handoff. Keep this file as the stable evaluation specification.
