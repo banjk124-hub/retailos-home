@@ -9,9 +9,9 @@
 
 
 - Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
-- Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119 (`5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094`). PR #120 was superseded and its documentation changes are incorporated into PR #121. Runtime changes are not merged/deployed.
+- Earlier consent-gated runtime implementation was developed on `feat/pwa-consent-gated-release-runtime`; the current delta-staging work is isolated on `feat/pwa-delta-release-staging` (PR #137). Neither branch is a production deployment.
 - Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
-- This branch replaces update-time install precache with metadata-only discovery and user-approved candidate staging. Build-bound manifest/release notes, response and cache read-back size/SHA-256 verification, offline staged-byte revalidation before activation, primary-surface boot health acknowledgement, progress, staged resume, automatic activation and safe handoff are implemented in source.
+- The consent-gated runtime baseline uses metadata-only discovery and user-approved candidate staging. The current delta-staging branch layers content-verified reuse onto that baseline; the separate explicit safe-handoff confirmation and rollback contracts remain mandatory.
 - App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
 - First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
 - Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
