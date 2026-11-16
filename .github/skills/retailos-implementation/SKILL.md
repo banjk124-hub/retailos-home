@@ -1,12 +1,12 @@
 ---
 name: retailos-implementation
-description: Safely audit, design, implement, and verify changes to RetailOS React/Vite/TypeScript application, especially module library, mobile UX, data snapshots, PWA, and GitHub Pages deployment.
+description: Safely design, implement, and verify approved changes to the RetailOS React/Vite/TypeScript application.
 ---
 
 # RetailOS implementation skill
 
 ## When to use
-Use for any RetailOS feature, refactor, UI/UX redesign, module registry/library work, data integration, bug fix, performance work, or release preparation.
+Use for approved implementation work: features, bounded refactors, UI/UX, module registry/library, data integration, bug fixes, performance changes and release preparation. For read-only audits, use `retailos-audit` instead.
 
 ## Skill composition
 
