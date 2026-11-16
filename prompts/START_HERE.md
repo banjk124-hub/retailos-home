@@ -11,6 +11,14 @@
 
 Do not bulk-read all of `docs/ai-context/`, do not create duplicate context documents, and do not claim local/browser/device tests unless they were actually executed.
 
+## Select the task workflow
+
+- Always apply `.github/skills/retailos-core/SKILL.md` for reasoning, complexity, risk, dependency and evidence gates.
+- Read `.github/skills/retailos-audit/SKILL.md` for a read-only audit; do not edit unless separately authorized.
+- Read `.github/skills/retailos-technical-research/SKILL.md` when current external technical evidence or option comparison is required; research is a proposal, not approval to adopt.
+- Read `.github/skills/retailos-implementation/SKILL.md` for an approved implementation task.
+- Load only the domain documents and source/tests selected by the impact map and INDEX.
+
 ## Audit-only prompt
 Perform a source-grounded audit of this repository. Do not edit files. Map module registry, Home, navigation, auth/session, data services, IndexedDB snapshots, barcode, notifications, PWA/service worker and deployment. Report concrete file/line references, verified issues versus hypotheses, risk severity, and prioritized remediation.
 
