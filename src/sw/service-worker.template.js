@@ -175,10 +175,16 @@ async function buildDownloadPlan(manifest) {
         if (
           bytes.byteLength === resource.size
           && await digestHex(bytes) === resource.sha256
-        ) reusableResponse = previousResponse;
+        ) reusableResponse = new Response(bytes, {
+          status: previousResponse.status,
+          statusText: previousResponse.statusText,
+          headers: previousResponse.headers,
+        });
       }
     }
     if (reusableResponse) {
+      // Keep an independent in-memory body; Cache.put consumes the Response
+      // passed to it, and later metadata discovery must remain repeatable.
       reusable.push({ resource, response: reusableResponse });
       reusedBytes += resource.size;
     } else {
