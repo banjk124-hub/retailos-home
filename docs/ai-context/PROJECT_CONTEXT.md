@@ -11,7 +11,7 @@
 - Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains a separate validation gate. Do not claim device acceptance from CI or deployment.
 - Production baseline includes PR #119; the user previously confirmed that baseline was merged and deployed. The current delta-staging feature is merged to the development repository's `main`; this does not imply transfer to the separate shared production account/repository or Cloudflare environment.
 - Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`. Application Release Lifecycle and Data Lifecycle remain independent; data-only refresh/recalculation using existing logic must not trigger an app release, reload or release-cache cleanup.
-- AI workflow source of truth: `AGENTS.md`, `docs/ai-context/INDEX.md`, and `prompts/START_HERE.md`. Load context selectively; historical snapshots below are retained for evidence, not current-state authority.
+- AI workflow source of truth: `AGENTS.md`, `docs/ai-context/INDEX.md`, `docs/ai-context/AI_CAPABILITY_SYSTEM.md`, the composable CORE/task skills under `.github/skills/`, and `prompts/START_HERE.md`. Load context selectively; historical snapshots below are retained for evidence, not current-state authority.
 
 # Historical scanner state snapshot — 2026-11-11
 
