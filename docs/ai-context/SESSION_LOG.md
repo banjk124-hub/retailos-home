@@ -580,3 +580,16 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Consolidated two unreferenced Login Phase 2 documents into one historical file while preserving their separate change/verification records; removed the two old entry points.
 - Updated project context, architecture ADR, implementation status, handoff, roadmap, changelog and session log.
 - Final-head CI and physical device QA must be rechecked; no merge/deploy performed.
+
+
+---
+
+### 2026-11-16 — Delta-aware PWA release staging
+
+- Intent: reduce update network transfer by reusing unchanged resources from the active release, without weakening complete offline staging or rollback.
+- Branch: `feat/pwa-delta-release-staging`.
+- Source: the waiting Service Worker compares active-cache responses to candidate manifest entries using exact URL, byte length and SHA-256; valid matches are copied into isolated candidate caches, while changed/missing/corrupt entries are fetched and verified. Removed resources are omitted.
+- UI/protocol: release discovery and progress distinguish network download bytes, reused bytes and total candidate bytes. Resource progress counts reused and downloaded resources.
+- Storage: quota preflight remains based on the full candidate footprint because the active and candidate release caches coexist.
+- Regression coverage authored for unchanged reuse, same-path changed content, removed resources and network-byte accounting.
+- Verification: no local test/build or GitHub Actions run has yet been observed for this branch. Physical Android/iOS/Desktop acceptance is also outstanding. No merge or deployment.
