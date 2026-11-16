@@ -12,6 +12,16 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Unverified:
 - Risks / rollback:
 
+## 2026-11-16 — Phase 1 AI workflow and documentation governance
+
+- Intent: correct stale current-state records and reduce unnecessary context/token consumption without changing RetailOS application behavior.
+- Files: `AGENTS.md`, `.github/copilot-instructions.md`, `.github/skills/retailos-implementation/SKILL.md`, `prompts/START_HERE.md`, `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.md`, `IMPLEMENTATION_STATUS.md`, `AI_HANDOFF.md`, `ROADMAP.md`, `PWA_RUNTIME_RELEASE.md`, `SESSION_LOG.md` and this log.
+- Behavior: documentation and agent workflow only. INDEX-driven selective reading replaces the instruction to load every AI-context file. Instructions now require GitHub verification for volatile state, targeted reads, current technical research with explicit decision boundaries, and honest separation of CI/local/device evidence.
+- Baseline evidence: PR #137 merged to main at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`; final PR CI #1250 passed; post-merge CI run `43802257547` and Pages deployment run `43802257688` completed successfully.
+- Checks run: final diff/path review pending. No application build or test is required or claimed for this documentation-only change.
+- Unverified: this governance workflow still needs validation through a subsequent real implementation task.
+- Risks / rollback: revert this documentation-only branch/PR if the new context-loading protocol omits a required canonical contract; no application runtime behavior is changed.
+
 ## 2026-11-10 — SCAN-05/06 post-merge audit and deployed acceptance
 
 - PR #67 [SCAN-05/06] Continuous barcode orientation recovery is merged and closed at merge commit 9406ac30d53bc9984912bd1928a32fd78157cf60; main is identical to that commit at audit time.
