@@ -32,11 +32,11 @@
 
 ---
 
-# Current PWA Update Center and safe-handoff implementation status — 2026-11-15
+# Historical implementation snapshot — PWA Update Center and safe handoff (2026-11-15)
 
 **Branch:** `feat/pwa-update-center-safe-handoff`  
 **Base:** `main` after merged PR #122 (`70677e5dd0db8d417b1b9441ce3763aaaca26c60`).  
-**Status:** Implementation in progress. Source edits are committed to this branch; no CI/build/test has yet been run in this remote editing session. No merge or deployment.
+**Status at that historical snapshot:** Implementation was in progress on its feature branch; this section is retained as implementation history, not the current main status.
 
 ## Source changes made
 - Added `src/shared/pwa/updateCenterStore.ts` for device-local pending update metadata and a cross-component change event.
