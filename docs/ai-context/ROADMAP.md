@@ -22,11 +22,11 @@ Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Successf
 
 **Status:** In progress on `docs/phase1-ai-context-governance`. Documentation/instructions only; no application source changes.
 
-- [ ] Reconcile current-state documentation with GitHub main, PR, CI and deployment.
-- [ ] Replace bulk context loading with INDEX-driven selective reading.
-- [ ] Align AGENTS, Copilot instructions, implementation skill and START_HERE workflow.
-- [ ] Review complete diff and confirm application source/build/deploy files are untouched.
-- [ ] Open a Draft PR for review; merge only after explicit user approval.
+- [x] Reconcile current-state documentation with GitHub main, PR, CI and deployment.
+- [x] Replace bulk context loading with INDEX-driven selective reading.
+- [x] Align AGENTS, Copilot instructions, implementation skill and START_HERE workflow.
+- [x] Review changed paths; all 12 are documentation/instruction files and no application source/build/deploy file changed.
+- [x] Open Draft PR #138 for review; merge only after explicit user approval.
 
 ---
 
