@@ -28,7 +28,7 @@ Provides the authoritative knowledge needed to reason about this specific system
 - `ARCHITECTURE.md` and `DECISIONS.md`: accepted invariants, boundaries and decisions.
 - `IMPLEMENTATION_STATUS.md`: verified current state and acceptance gaps.
 - Canonical domain contracts, e.g. `PWA_RUNTIME_RELEASE.md`, `SCANNER_ENGINE.md`, `UI_OVERLAY_ARCHITECTURE.md`, `STOCKTAKE_FILE_IMPORT.md`.
-- Actual source, tests, package/configuration and GitHub history remain authoritative for implemented behavior and live repository state.
+- Actual source, tests and package/configuration remain authoritative for implemented behavior; GitHub branch/PR/Actions/deployment records establish repository workflow state; observed runtime/device evidence establishes what is actually running.
 
 This layer answers: **What is RetailOS, how is it actually built, and what must not be broken?**
 
