@@ -28,7 +28,7 @@ Complete diff review, then open a Draft PR for user review. Do not merge without
 
 ---
 
-# Current handoff — PWA Update Center and explicit safe handoff
+# Historical handoff — PWA Update Center and explicit safe handoff
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Branch:** `feat/pwa-update-center-safe-handoff`  
@@ -58,7 +58,7 @@ Complete diff review, then open a Draft PR for user review. Do not merge without
 
 ---
 
-# Current handoff — consent-gated PWA release runtime
+# Historical handoff — consent-gated PWA release runtime
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Branch:** `feat/pwa-consent-gated-release-runtime`  
@@ -252,7 +252,7 @@ At the PR #75 baseline, `ScannerModuleConfig.cameraRequest` was declarative and 
 
 ---
 
-# Current task — Stocktake offline file import (2026-11-10)
+# Historical task — Stocktake offline file import (2026-11-10)
 
 **PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
 **Branch:** `feat/stocktake-file-import`.
@@ -283,7 +283,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 
 ---
 
-# Current AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
+# Historical AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
 
 - Repository: banjk124-hub/retailos-home; default branch: main.
 - PR #67 merge baseline is 9406ac30d53bc9984912bd1928a32fd78157cf60; current main later advanced to PR #74 merge commit 6ac1eefad1c47d87d2c83f9002050c8a7d7802fe.
