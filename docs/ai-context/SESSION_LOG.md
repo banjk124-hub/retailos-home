@@ -1,3 +1,14 @@
+### 2026-11-16 — Phase 2.1 AI capability upgrade
+
+- Confirmed PR #138 remains the active vehicle; Phase 2.1 is AI capability upgrade, distinct from Phase 2.2 Runtime Audit/PWA Update hardening.
+- Defined the three connected layers: AI Working Protocol, RetailOS Project Intelligence, Execution & Validation.
+- Added CORE and task skills for shared engineering reasoning, source-grounded audit and evidence-led technical research; integrated existing implementation skill.
+- Added canonical capability architecture and scenario-based evaluation; updated repository entry points and status/roadmap.
+- Scope remains documentation and agent-skill files only. Application source, runtime, dependencies, tests, data contracts, Service Worker and deployment workflows are excluded.
+- Evaluation scenarios are defined but not yet proven by subsequent real tasks. Final diff/path review and final-head CI remain required.
+
+---
+
 ### 2026-11-16 — Phase 1 AI workflow and documentation governance
 
 - Verified current `main` is `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`; PR #137 merged at that commit.
