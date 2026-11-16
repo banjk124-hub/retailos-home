@@ -221,6 +221,7 @@ await worker.runExtendable('message', {
   ports: [{ postMessage(message) { resumedInfo.push(message); } }],
   source: currentClient,
 });
+assert.equal(resumedInfo[0]?.type, 'RELEASE_INFO', 'staged release discovery succeeds: ' + (resumedInfo[0]?.message || 'no worker error detail'));
 assert.equal(resumedInfo[0]?.staged, true, 'a re-opened app can resume activation without asking for download consent again');
 assert.equal(cacheStore.has('retailos-pwa-state'), true, 'staged-release metadata is stored separately from business data');
 
