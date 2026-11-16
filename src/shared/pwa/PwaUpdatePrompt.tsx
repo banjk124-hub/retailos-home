@@ -20,12 +20,14 @@ type ReleaseManifest = {
   warnings: string[];
   resources: Array<{ path: string; cache: 'shell' | 'assets'; size: number; sha256: string }>;
 };
+type ReleaseDownloadPlan = { totalReleaseBytes: number; reusedBytes: number; downloadBytes: number; reusedCount: number; downloadCount: number };
 
 type UpdatePhase = 'loading-info' | 'available' | 'downloading' | 'staged' | 'error' | 'activating';
 type WorkerReply = {
   type?: string;
   manifest?: ReleaseManifest;
   staged?: boolean;
+  downloadPlan?: ReleaseDownloadPlan;
   staging?: boolean;
   progress?: { completed: number; total: number; bytesDownloaded: number; totalBytes: number } | null;
   message?: string;
@@ -62,6 +64,7 @@ function requestWorkerMessage(worker: ServiceWorker, message: unknown, timeoutMs
 export default function PwaUpdatePrompt() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [manifest, setManifest] = useState<ReleaseManifest | null>(null);
+  const [downloadPlan, setDownloadPlan] = useState<ReleaseDownloadPlan | null>(null);
   const manifestRef = useRef<ReleaseManifest | null>(null);
   manifestRef.current = manifest;
   const [phase, setPhase] = useState<UpdatePhase>('loading-info');
@@ -92,7 +95,7 @@ export default function PwaUpdatePrompt() {
         : currentPhase === 'downloading' ? 'downloading'
           : currentPhase === 'error' ? 'error' : 'deferred'
       : status;
-    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: errorMessage ?? (status === 'error' ? previous?.lastError ?? notice : undefined) });
+    return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: progressValue?.totalBytes ?? progressRef.current.totalBytes ?? candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: errorMessage ?? (status === 'error' ? previous?.lastError ?? notice : undefined) });
   }, []);
 
   const tryActivate = useCallback(() => {
@@ -123,13 +126,13 @@ export default function PwaUpdatePrompt() {
     if (!worker || phase === 'downloading' || phase === 'activating') return;
     setPhase('downloading');
     persistCandidate('downloading');
-    setNotice('Đang tải toàn bộ tài nguyên ứng dụng. Phiên bản hiện tại vẫn hoạt động trong quá trình này.');
+    setNotice('Đang chuẩn bị tài nguyên phiên bản mới; các tệp giống hệt bản hiện tại sẽ được tái sử dụng. Bản hiện tại vẫn hoạt động.');
     setBlockReason('');
     setProgress({
       completed: 0,
       total: manifest?.resources.length ?? 0,
       bytesDownloaded: 0,
-      totalBytes: manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0,
+      totalBytes: downloadPlan?.downloadBytes ?? manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0,
     });
     const channel = new MessageChannel();
     channel.port1.onmessage = (event) => {
@@ -155,7 +158,7 @@ export default function PwaUpdatePrompt() {
         setProgress((current) => ({
           completed: message.completed ?? current.total,
           total: message.total ?? current.total,
-          bytesDownloaded: message.totalBytes ?? current.totalBytes,
+          bytesDownloaded: message.bytesDownloaded ?? current.bytesDownloaded,
           totalBytes: message.totalBytes ?? current.totalBytes,
         }));
         setPhase('staged');
@@ -171,7 +174,7 @@ export default function PwaUpdatePrompt() {
       setNotice('Không thể bắt đầu tải phiên bản. Bản hiện tại vẫn hoạt động bình thường.');
       persistCandidate('error', undefined, undefined, 'Không thể bắt đầu tải phiên bản.');
     }
-  }, [manifest, phase, tryActivate, persistCandidate]);
+  }, [manifest, downloadPlan, phase, tryActivate, persistCandidate]);
 
   useEffect(() => {
     // The Update Center entry is cleared only after HomeScreen acknowledges a healthy boot.
@@ -186,6 +189,7 @@ export default function PwaUpdatePrompt() {
       activationRequestedRef.current = false;
       setWaitingWorker(worker);
       setManifest(null);
+      setDownloadPlan(null);
       manifestRef.current = null;
       setPhase('loading-info');
       setNotice('Đang đọc thông tin phiên bản mới…');
@@ -223,14 +227,22 @@ export default function PwaUpdatePrompt() {
       setIsDeferred(deferred);
       manifestRef.current = nextManifest;
       setManifest(nextManifest);
-      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: response.staged === true ? 'staged' : response.staging === true ? 'downloading' : persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'error' ? 'error' : deferred ? 'deferred' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0) });
+      const nextDownloadPlan = response.downloadPlan ?? {
+        totalReleaseBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0),
+        reusedBytes: 0,
+        downloadBytes: nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0),
+        reusedCount: 0,
+        downloadCount: nextManifest.resources.length,
+      };
+      setDownloadPlan(nextDownloadPlan);
+      writeUpdateCenterEntry({ buildId: nextManifest.buildId, version: nextManifest.version, title: nextManifest.title, summary: nextManifest.summary, status: response.staged === true ? 'staged' : response.staging === true ? 'downloading' : persistedUpdate?.buildId === nextManifest.buildId && persistedUpdate.status === 'error' ? 'error' : deferred ? 'deferred' : 'available', updatedAt: new Date().toISOString(), inCenter: deferred, sections: nextManifest.sections, compatibility: nextManifest.compatibility, warnings: nextManifest.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: nextDownloadPlan.downloadBytes });
       if (response.staged === true) {
         stagedRef.current = true;
-        const totalBytes = nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0);
+        const totalBytes = response.downloadPlan?.downloadBytes ?? nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0);
         setProgress({
           completed: nextManifest.resources.length,
           total: nextManifest.resources.length,
-          bytesDownloaded: totalBytes,
+          bytesDownloaded: response.progress?.bytesDownloaded ?? totalBytes,
           totalBytes,
         });
         setPhase('staged');
@@ -245,7 +257,7 @@ export default function PwaUpdatePrompt() {
           completed: currentProgress?.completed ?? 0,
           total: currentProgress?.total ?? nextManifest.resources.length,
           bytesDownloaded: currentProgress?.bytesDownloaded ?? 0,
-          totalBytes: currentProgress?.totalBytes ?? nextManifest.resources.reduce((sum, resource) => sum + resource.size, 0),
+          totalBytes: currentProgress?.totalBytes ?? nextDownloadPlan.downloadBytes,
         });
         setPhase('downloading');
         setNotice('Đang tiếp tục tải phiên bản đã được bạn chấp thuận. Bản hiện tại vẫn hoạt động.');
@@ -413,7 +425,7 @@ export default function PwaUpdatePrompt() {
     </aside>
   );
 
-  const totalBytes = manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
+  const totalBytes = downloadPlan?.downloadBytes ?? manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
   const progressPercent = progress.totalBytes > 0
     ? Math.min(100, Math.round((progress.bytesDownloaded / progress.totalBytes) * 100))
     : progress.total > 0 ? Math.min(100, Math.round((progress.completed / progress.total) * 100)) : 0;
@@ -450,7 +462,9 @@ export default function PwaUpdatePrompt() {
             </section>
           )}
           <div className="pwa-update-prompt__download-size">
-            Dung lượng cần tải: <strong>{formatBytes(totalBytes)}</strong>
+            Dung lượng tải qua mạng: <strong>{formatBytes(totalBytes)}</strong>
+            {downloadPlan && downloadPlan.reusedBytes > 0 && <span> · Tái sử dụng {formatBytes(downloadPlan.reusedBytes)} từ bản hiện tại</span>}
+            {downloadPlan && <small> · Tổng tài nguyên bản mới {formatBytes(downloadPlan.totalReleaseBytes)}</small>}
           </div>
         </div>
       )}
