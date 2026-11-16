@@ -24,6 +24,13 @@
 - Verify progress behavior on large assets and memory/storage behavior on constrained devices before treating delta-download UX as fully accepted.
 - No transfer to the separate shared production account/repository or Cloudflare deployment is implied by the development repository's successful GitHub Pages deployment.
 
+## Phase 2.1 — AI capability upgrade
+- Scope: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation. No application source/runtime, dependency, data-contract or deployment changes.
+- Work branch: `docs/phase1-ai-context-governance`, continuing directly on Draft PR #138.
+- Added canonical AI capability architecture and scenario evaluation; introduced `retailos-core`, `retailos-audit`, and `retailos-technical-research` skills; composed CORE/task-skill selection into the existing implementation skill and entry instructions.
+- Validation status: documentation/skill consistency and final PR path/diff review are required. The Phase 2.1 workflow scenarios are defined but have not yet been exercised across real subsequent engineering tasks. Check final-head GitHub Actions before reporting CI.
+- Explicit exclusion: Phase 2.2 PWA Runtime Audit/hardening is not part of this phase.
+
 ## Phase 1 — AI workflow and documentation governance
 - Scope: documentation and AI workflow only. No application source, tests, runtime dependencies, build configuration or deployment workflow changes.
 - Work branch: `docs/phase1-ai-context-governance`, based on main commit `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`.
