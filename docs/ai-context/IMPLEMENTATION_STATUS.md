@@ -1,8 +1,9 @@
 # Current implementation — delta-aware PWA release staging — 2026-11-16
 
 **Branch:** `feat/pwa-delta-release-staging`  
-**Base:** branch created from `main`; exact base/head comparison and CI evidence are pending.  
-**Status:** Source and regression-test edits are committed on the feature branch. No local test, TypeScript check, production build, GitHub Actions run, merge or deployment has yet been verified for this branch.
+**Base:** `main` at `32cc651afcaf7af73dab34d9964a559d025e608e`.  
+**PR:** Draft #137; final verified source/test head `c7da10651b39d517782912baf9fd0cc4a252b55f`.  
+**Status:** GitHub Actions CI #1250 (`43800583013`) passed the full `npm run preflight`, TypeScript/production and GitHub Pages builds, PR-base bundle build/comparison and artifact upload. No merge or deployment.
 
 ## Implemented in source
 - Service Worker builds a delta plan from the active release caches using exact URL, response success, byte length and SHA-256 checks.
@@ -23,9 +24,9 @@
 - `docs/ai-context/PROJECT_CONTEXT.md`
 
 ## Verification still required
-- Run worker runtime regression, full preflight, TypeScript, production build, GitHub Pages build and diff checks on the final PR head.
+- Review the complete PR diff once more before merge consideration. The first two CI attempts exposed a test-harness-only consumed Response body; the test now reads a clone, and final-head CI #1250 passed.
 - Review the complete diff for protocol compatibility, progress semantics, cache edge cases and documentation consistency.
-- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains pending.
+- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains pending; CI does not establish browser Cache API/device behavior.
 - No merge, production promotion or deployment is included.
 
 ---
