@@ -14,6 +14,11 @@ Before editing, read `AGENTS.md`, `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.m
 - Never deploy or push without explicit approval.
 
 
+## Skill selection
+- Use `.github/skills/retailos-core/SKILL.md` as the shared reasoning and safety layer.
+- Select only the task skill needed: `retailos-audit`, `retailos-technical-research`, or `retailos-implementation`.
+- Use `docs/ai-context/INDEX.md` to load the canonical domain contract; do not duplicate its contents in prompts or skills.
+
 ## Context and evidence
 - Verify branch, commit, PR, CI and deployment state from GitHub before reporting current status.
 - Prefer targeted file/line reads and focused diffs. Historical logs are for specific investigations, not mandatory session-start reading.
