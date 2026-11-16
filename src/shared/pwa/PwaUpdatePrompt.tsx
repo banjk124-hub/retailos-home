@@ -169,6 +169,7 @@ export default function PwaUpdatePrompt() {
         persistCandidate('error', undefined, undefined, message.message || 'Không thể tải đầy đủ phiên bản mới.');
       }
       if (message?.type === 'RELEASE_STAGED') {
+        syncDownloadPlanFromProgress(message);
         channel.port1.close();
         stagedRef.current = true;
         setProgress((current) => ({

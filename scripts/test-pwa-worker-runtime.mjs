@@ -6,6 +6,8 @@ import vm from 'node:vm';
 const template = await readFile(new URL('../src/sw/service-worker.template.js', import.meta.url), 'utf8');
 const updatePrompt = await readFile(new URL('../src/shared/pwa/PwaUpdatePrompt.tsx', import.meta.url), 'utf8');
 assert.match(updatePrompt, /Math\.min\(99, Math\.floor\(/, 'download UI must not display 100% before cache verification and RELEASE_STAGED');
+assert.ok((updatePrompt.match(/syncDownloadPlanFromProgress\(message\)/g) || []).length >= 3,
+  'both MessagePort and Service Worker events must keep the displayed download/reuse plan synchronized with actual staging progress');
 const planStart = template.indexOf('async function buildDownloadPlan(manifest)');
 const planEnd = template.indexOf('async function verifyStagedResources(resources)', planStart);
 const planSource = template.slice(planStart, planEnd);
