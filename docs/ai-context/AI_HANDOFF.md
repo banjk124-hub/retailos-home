@@ -18,13 +18,13 @@ Correct stale current-state records after PR #137 merged and reduce unnecessary 
 No application source, tests, dependencies, build configuration, Service Worker, business data contract or deployment workflow may be changed in this phase. No merge, production promotion or deployment is authorized.
 
 ## Validation required before review
-1. Inspect the complete branch diff and confirm all changed paths are documentation/instruction files.
+1. Complete diff review: all 12 changed paths are documentation/instruction files; no application source, tests, dependencies, build configuration or deployment workflow changed.
 2. Check for contradictory unconditional “read all context” instructions and stale PR #137 pending/unmerged claims in current-state sections.
 3. Verify links, branch/commit identifiers and CI/deployment evidence against GitHub.
-4. Do not claim application tests or builds were run; this is a documentation-only change.
+4. No application build/test or physical-device QA was run or claimed; this is a documentation-only change.
 
-## Next step
-Complete diff review, then open a Draft PR for user review. Do not merge without explicit approval.
+## Review state
+Draft PR #138 is open: https://github.com/banjk124-hub/retailos-home/pull/138. Await user review and explicit approval before merge. Do not deploy or promote production.
 
 ---
 
