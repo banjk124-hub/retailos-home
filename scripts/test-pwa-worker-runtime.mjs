@@ -4,6 +4,12 @@ import { webcrypto } from 'node:crypto';
 import vm from 'node:vm';
 
 const template = await readFile(new URL('../src/sw/service-worker.template.js', import.meta.url), 'utf8');
+const planStart = template.indexOf('async function buildDownloadPlan(manifest)');
+const planEnd = template.indexOf('async function verifyStagedResources(resources)', planStart);
+const planSource = template.slice(planStart, planEnd);
+assert.match(planSource, /reusable\.push\(resource\)/);
+assert.doesNotMatch(planSource, /reusable\.push\(\{\s*resource,\s*response/);
+assert.doesNotMatch(planSource, /new Response\(bytes/);
 const appBase = 'https://retailos.test/retailos-home/';
 const shellUrl = appBase + 'index.html';
 const oldShellCache = 'retailos-pwa-shell-old';
@@ -49,7 +55,7 @@ const cachesMock = {
     if (!cacheStore.has(name)) cacheStore.set(name, new Map());
     const entries = cacheStore.get(name);
     return {
-      async put(request, response) { entries.set(cacheUrl(request), response.clone()); },
+      async put(request, response) { const bytes = await response.arrayBuffer(); entries.set(cacheUrl(request), new Response(bytes, { status: response.status, statusText: response.statusText, headers: response.headers })); },
       async match(request) { return entries.get(cacheUrl(request))?.clone(); },
       async delete(request) { return entries.delete(cacheUrl(request)); },
     };
@@ -113,7 +119,21 @@ function createWorker(buildId, releaseManifest, options = {}) {
     const resource = releaseManifest.resources.find((item) => appBase + item.path === url);
     if (resource) resourceFetchPaths.push(resource.path);
     if (!resource) return new Response('not-found', { status: 404 });
-    return new Response('release-runtime:' + resource.path);
+    const body = options.largeResourcePath === resource.path ? options.largeResourceBody : 'release-runtime:' + resource.path;
+    if (options.chunkedResourcePath === resource.path) {
+      const bytes = new TextEncoder().encode(body), chunkSize = options.chunkSize || 32768;
+      const stream = new ReadableStream({
+        async start(controller) {
+          for (let offset = 0; offset < bytes.byteLength; offset += chunkSize) {
+            controller.enqueue(bytes.slice(offset, Math.min(offset + chunkSize, bytes.byteLength)));
+            if (options.chunkDelayMs) await new Promise((resolve) => setTimeout(resolve, options.chunkDelayMs));
+          }
+          controller.close();
+        },
+      });
+      return new Response(stream);
+    }
+    return new Response(body);
   };
   const source = template
     .replace('__BUILD_ID__', buildId)
@@ -175,6 +195,7 @@ await worker.runExtendable('message', {
 });
 assert.equal(infoMessages[0]?.type, 'RELEASE_INFO', 'candidate exposes release metadata to the active app');
 assert.equal(worker.fetchCalls, 1, 'discovery downloads only the small release manifest');
+assert.equal(infoMessages[0]?.downloadPlan?.totalReleaseBytes, resources.reduce((sum, item) => sum + item.size, 0), 'new-release footprint is the sum of its manifest resources, not removed old resources');
 assert.equal(cacheStore.has('retailos-pwa-assets-runtime-test'), false, 'metadata discovery does not stage application assets');
 assert.equal(infoMessages[0]?.downloadPlan?.reusedBytes, resources.find((item) => item.path === 'images/background.webp').size,
   'discovery identifies an exact size-and-hash match in the active release');
@@ -519,4 +540,30 @@ assert.ok(cacheStore.get('retailos-pwa-assets-first-install')?.has(appBase + 'as
 cacheStore.clear();
 for (const [key, value] of initialStore) cacheStore.set(key, value);
 
+// Large resources must report byte progress while the body is still streaming.
+cacheStore.clear();
+seedOldRelease();
+const largePath = 'assets/chunk-1.js', largeBody = 'R'.repeat(1024 * 1024);
+const progressResources = await Promise.all(resources.map(async (resource) => resource.path === largePath
+  ? { ...resource, size: new TextEncoder().encode(largeBody).byteLength, sha256: await sha256Hex(largeBody) } : resource));
+const progressManifest = { ...manifest, buildId: 'progress-build', resources: progressResources };
+const progressWorker = createWorker('progress-build', progressManifest, { clients: [currentClient],
+  chunkedResourcePath: largePath, largeResourcePath: largePath, largeResourceBody: largeBody, chunkSize: 32768, chunkDelayMs: 5 });
+await progressWorker.runExtendable('install');
+const streamedProgressMessages = [];
+await progressWorker.runExtendable('message', { data: { type: 'STAGE_RELEASE' },
+  ports: [{ postMessage(message) { streamedProgressMessages.push(message); } }], source: currentClient });
+const streamedProgress = streamedProgressMessages.filter((message) => message.type === 'RELEASE_DOWNLOAD_PROGRESS');
+assert.ok(streamedProgress.some((message) => message.bytesDownloaded > 0 && message.bytesDownloaded < message.totalBytes && message.completed < message.total),
+  'large-resource transfer emits intermediate byte progress before resource completion');
+assert.ok(streamedProgress.every((message, index) => index === 0 || message.bytesDownloaded >= streamedProgress[index - 1].bytesDownloaded),
+  'network byte progress is monotonic');
+assert.equal(streamedProgress.at(-1)?.bytesDownloaded, streamedProgress.at(-1)?.totalBytes,
+  'successful staging finishes at the exact expected network payload byte total');
+assert.equal(streamedProgress.at(-1)?.totalBytes,
+  progressResources.filter((resource) => resource.path !== 'images/background.webp').reduce((sum, resource) => sum + resource.size, 0),
+  'progress denominator includes only missing/changed network resources');
+assert.equal(streamedProgress.at(-1)?.reusedBytes, resources.find((resource) => resource.path === 'images/background.webp').size,
+  'verified reused bytes remain separate from network transfer bytes');
+assert.equal(streamedProgressMessages.at(-1)?.type, 'RELEASE_STAGED');
 console.log('PWA consent-gated staging, integrity verification, offline rollback and first-install tests passed.');

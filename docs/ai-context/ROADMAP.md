@@ -18,6 +18,23 @@
 
 Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Successful development Pages deployment does not mean production-account promotion or physical-device acceptance.
 
+## Phase 2.2 — PWA Runtime Audit and hardening
+
+**Status:** Implementation in progress directly on PR #138, branch `docs/phase1-ai-context-governance`. This phase adds targeted runtime changes after Phase 2.1; it does not create a parallel PR/branch.
+
+- [x] Audit Service Worker release discovery, delta plan, candidate staging, cache read-back, activation, boot-health and rollback paths.
+- [x] Confirm existing SHA-256/cache read-back, failed-stage cleanup, data isolation, business blockers and boot-health boundaries from source and regression tests.
+- [x] Identify retained reusable response bodies as an avoidable peak-memory risk in `buildDownloadPlan()`.
+- [x] Identify that download progress advances only after a complete resource, not during a large file.
+- [x] Implement metadata-only reusable plans and one-resource-at-a-time revalidation/copy.
+- [x] Implement streamed byte accounting and throttled in-file progress while preserving exact size/SHA-256 validation and isolated candidate caches.
+- [x] Add runtime regression coverage for intermediate progress, monotonic byte counts, exact network denominator, reuse accounting and bounded plan retention.
+- [x] Bump development release version and update build-bound release notes.
+- [ ] Run final-head CI/preflight, PWA runtime/cache-policy/platform tests and inspect all diffs.
+- [ ] Complete Android Chrome/PWA, iOS Safari/Home Screen, desktop and low-end Android acceptance before production transfer.
+
+**Canonical contract:** [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). No merge or production deployment is authorized by this phase.
+
 ## Phase 2.1 — AI capability upgrade
 
 **Status:** Implemented in progress on Draft PR #138; documentation and agent-skill files only. Phase 2.2 Runtime Audit is explicitly separate and excluded.

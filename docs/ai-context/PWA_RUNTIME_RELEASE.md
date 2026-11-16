@@ -1,6 +1,6 @@
 # RetailOS PWA runtime and user-approved release architecture
 
-**Current status — 2026-11-16:** Delta-aware staging PR #137 is merged to `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`. Final PR-head CI #1250 passed full preflight, TypeScript, production/Pages builds and PR-base bundle comparison. Post-merge main CI `43802257547` and GitHub Pages deployment `43802257688` completed successfully. Physical Android/iOS/Desktop and low-end Android acceptance remains a separate outstanding gate. No production-account/Cloudflare promotion is implied.
+**Current status — 2026-11-16:** Delta-aware staging PR #137 is merged to `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`. Phase 2.2 Runtime Audit/hardening is being implemented directly on PR #138 branch `docs/phase1-ai-context-governance`; current `main` remains the PR #137 baseline until review/merge. Phase 2.1 CI #1271 passed on head `eb1dca880a4c17043c963230a64e435903a62713`; Phase 2.2 CI and physical Android/iOS/Desktop/low-end acceptance remain pending. No production-account/Cloudflare promotion is implied.
 
 This remains the canonical source of truth for every future application release and deployment. Prior consent-gated runtime and CI notes below are historical implementation evidence; do not treat old branch/PR status statements as current state.
 
@@ -105,6 +105,19 @@ Before staging, the waiting worker reads the active release's shell/assets cache
 - `GET_RELEASE_INFO` returns this estimate after reading and hashing active cached resources; it still fetches only the small release manifest over the network. The Update Center labels the estimate as network download size and separately identifies reused and total release bytes.
 - Storage headroom is still checked against the complete candidate size, not the delta: release-specific caches duplicate reused responses while preserving the active release for rollback. A small network delta does not imply a small temporary storage requirement.
 - First install has no active release to reuse and therefore downloads the complete initial payload. If the active cache is missing or any resource fails verification, that resource is downloaded. If every resource matches, network payload download is zero; cache copy, read-back verification and explicit safe activation still occur.
+
+### 5.2 Runtime hardening — bounded memory and byte-accurate progress
+
+- `buildDownloadPlan()` verifies one previous-cache resource at a time and retains only manifest resource records, not an in-memory response body for every reusable resource.
+- After explicit consent, staging re-reads and verifies each reusable cache entry one at a time before copying it into the candidate cache. If an entry was evicted or corrupted after discovery, it becomes a network download and its expected bytes are added to the live denominator.
+- Network response bodies are read as streams. One branch writes to the candidate Cache API; the verification branch counts received payload bytes and computes SHA-256. Progress is emitted during large-resource transfer, throttled to a 256 KiB / 150 ms cadence and forced at resource boundaries.
+- `bytesDownloaded` is received network response-body bytes; `totalBytes` is the expected payload size of resources actually fetched; `reusedBytes` counts verified cache copies; `totalReleaseBytes` is the sum of every resource in the new manifest.
+- The new-release footprint includes every resource retained by the candidate build. Files removed from the old manifest are absent from the candidate and are not counted. Storage headroom remains based on the complete new-release footprint because the active release remains available for rollback.
+- A resource with wrong byte length or SHA-256 is removed from the candidate cache and staging fails closed. The old active release and business-data stores remain untouched.
+
+The release UI labels these quantities separately and shows network progress from received bytes, not only after each file completes. If all candidate resources are reused, the network denominator is zero and resource-count progress is used. If a cache entry becomes invalid after discovery, the UI updates the reused/download estimate to match the actual staging decision.
+
+The existing boot-health contract was audited: `App.tsx` reports the login surface after its primary effect, or passes the health callback to `HomeScreen`; `HomeScreen` reports after mounting. `PwaUpdatePrompt` does not report boot health. `AppErrorBoundary` reports a matching build failure only before healthy boot. This boundary remains unchanged.
 
 ## 6. Safe handoff and explicit activation confirmation
 

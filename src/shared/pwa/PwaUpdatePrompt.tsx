@@ -25,6 +25,8 @@ type ReleaseDownloadPlan = { totalReleaseBytes: number; reusedBytes: number; dow
 type UpdatePhase = 'loading-info' | 'available' | 'downloading' | 'staged' | 'error' | 'activating';
 type WorkerReply = {
   type?: string;
+  reusedBytes?: number;
+  totalReleaseBytes?: number;
   manifest?: ReleaseManifest;
   staged?: boolean;
   downloadPlan?: ReleaseDownloadPlan;
@@ -99,6 +101,18 @@ export default function PwaUpdatePrompt() {
     return writeUpdateCenterEntry({ buildId: candidate.buildId, version: candidate.version, title: candidate.title, summary: candidate.summary, status: persistedStatus, updatedAt: new Date().toISOString(), inCenter: inCenter === true || previous?.buildId === candidate.buildId && previous.inCenter === true, sections: candidate.sections, compatibility: candidate.compatibility, warnings: candidate.warnings, currentVersion: __RETAILOS_APP_VERSION__, totalBytes: progressValue?.totalBytes ?? downloadPlanRef.current?.downloadBytes ?? candidate.resources.reduce((sum, resource) => sum + resource.size, 0), progress: progressValue ?? progressRef.current, lastError: errorMessage ?? (status === 'error' ? previous?.lastError ?? notice : undefined) });
   }, []);
 
+  const syncDownloadPlanFromProgress = useCallback((message: { totalBytes?: number; reusedBytes?: number; totalReleaseBytes?: number }) => {
+    const current = downloadPlanRef.current;
+    if (!current) return;
+    const next = { ...current,
+      downloadBytes: typeof message.totalBytes === 'number' ? message.totalBytes : current.downloadBytes,
+      reusedBytes: typeof message.reusedBytes === 'number' ? message.reusedBytes : current.reusedBytes,
+      totalReleaseBytes: typeof message.totalReleaseBytes === 'number' ? message.totalReleaseBytes : current.totalReleaseBytes,
+    };
+    downloadPlanRef.current = next;
+    setDownloadPlan(next);
+  }, []);
+
   const tryActivate = useCallback(() => {
     const worker = waitingWorkerRef.current;
     if (!worker || !stagedRef.current || activationRequestedRef.current) return;
@@ -139,6 +153,7 @@ export default function PwaUpdatePrompt() {
     channel.port1.onmessage = (event) => {
       const message = event.data;
       if (message?.type === 'RELEASE_DOWNLOAD_PROGRESS') {
+        syncDownloadPlanFromProgress(message);
         setProgress({
           completed: message.completed ?? 0,
           total: message.total ?? 0,
@@ -175,7 +190,7 @@ export default function PwaUpdatePrompt() {
       setNotice('Không thể bắt đầu tải phiên bản. Bản hiện tại vẫn hoạt động bình thường.');
       persistCandidate('error', undefined, undefined, 'Không thể bắt đầu tải phiên bản.');
     }
-  }, [manifest, downloadPlan, phase, tryActivate, persistCandidate]);
+  }, [manifest, downloadPlan, phase, tryActivate, persistCandidate, syncDownloadPlanFromProgress]);
 
   useEffect(() => {
     // The Update Center entry is cleared only after HomeScreen acknowledges a healthy boot.
@@ -251,7 +266,6 @@ export default function PwaUpdatePrompt() {
         setPhase('staged');
         setNotice('Phiên bản đã được tải và xác minh. Hãy xác nhận cập nhật khi đã sẵn sàng.');
         return;
-        return;
       }
       if (response.staging === true) {
         const currentProgress = response.progress;
@@ -318,6 +332,7 @@ export default function PwaUpdatePrompt() {
       const currentManifest = manifestRef.current;
       if (currentManifest && message?.buildId === currentManifest.buildId) {
         if (message.type === 'RELEASE_DOWNLOAD_PROGRESS') {
+          syncDownloadPlanFromProgress(message);
           setPhase('downloading');
           setProgress({
             completed: message.completed ?? 0,
@@ -328,11 +343,12 @@ export default function PwaUpdatePrompt() {
           persistCandidate('downloading', undefined, { completed: message.completed ?? 0, total: message.total ?? currentManifest.resources.length, bytesDownloaded: message.bytesDownloaded ?? 0, totalBytes: message.totalBytes ?? 0 });
         }
         if (message.type === 'RELEASE_STAGED') {
+          syncDownloadPlanFromProgress(message);
           stagedRef.current = true;
           setProgress({
             completed: message.completed ?? currentManifest.resources.length,
             total: message.total ?? currentManifest.resources.length,
-            bytesDownloaded: message.totalBytes ?? 0,
+            bytesDownloaded: message.bytesDownloaded ?? message.totalBytes ?? 0,
             totalBytes: message.totalBytes ?? 0,
           });
           setPhase('staged');
@@ -413,7 +429,7 @@ export default function PwaUpdatePrompt() {
       navigator.serviceWorker.removeEventListener('message', handleWorkerMessage);
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
     };
-  }, [tryActivate]);
+  }, [tryActivate, syncDownloadPlanFromProgress]);
 
   updateCenterActionRef.current = (action) => { if (action === 'download') startDownload(); else tryActivate(); };
   const currentBlockReason = getPwaUpdateBlockReason();
@@ -467,7 +483,7 @@ export default function PwaUpdatePrompt() {
           <div className="pwa-update-prompt__download-size">
             Dung lượng tải qua mạng: <strong>{formatBytes(totalBytes)}</strong>
             {downloadPlan && downloadPlan.reusedBytes > 0 && <span> · Tái sử dụng {formatBytes(downloadPlan.reusedBytes)} từ bản hiện tại</span>}
-            {downloadPlan && <small> · Tổng tài nguyên bản mới {formatBytes(downloadPlan.totalReleaseBytes)}</small>}
+            {downloadPlan && <small> · Tổng dung lượng bản mới {formatBytes(downloadPlan.totalReleaseBytes)}; không tính tài nguyên đã loại bỏ</small>}
           </div>
         </div>
       )}
@@ -475,13 +491,13 @@ export default function PwaUpdatePrompt() {
       {phase === 'downloading' && (
         <div className="pwa-update-prompt__progress">
           <div className="pwa-update-prompt__progress-meta">
-            <span>Đang tải tài nguyên</span>
+            <span>Đang tải qua mạng</span>
             <strong>{progressPercent}%</strong>
           </div>
           <div className="pwa-update-prompt__progress-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent}>
             <span style={{ width: progressPercent + '%' }} />
           </div>
-          <small>{progress.completed}/{progress.total} tài nguyên · {formatBytes(progress.bytesDownloaded)} / {formatBytes(progress.totalBytes)}</small>
+          <small>{progress.completed}/{progress.total} tài nguyên đã xử lý · {formatBytes(progress.bytesDownloaded)} / {formatBytes(progress.totalBytes)} tải qua mạng</small>
         </div>
       )}
 

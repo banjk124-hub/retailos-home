@@ -1,34 +1,36 @@
-# Current handoff — Phase 2.1 AI capability upgrade — 2026-11-16
+# Current handoff — Phase 2.2 PWA Runtime Audit and hardening — 2026-11-16
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Base:** `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
 **Work branch:** `docs/phase1-ai-context-governance`  
 **Pull request:** [#138](https://github.com/banjk124-hub/retailos-home/pull/138)  
-**Scope:** documentation, repository AI instructions and agent skills only.
+**Phase 2.1 baseline head:** `eb1dca880a4c17043c963230a64e435903a62713` — CI #1271 passed.
 
-## Objective
-Upgrade practical AI capability for RetailOS across three connected layers: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation.
+## Phase 2.2 scope
+Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
-## Phase 2.1 changes
-- Added `AI_CAPABILITY_SYSTEM.md` as the canonical architecture for the three layers, CORE/TASK/DOMAIN skill taxonomy, progressive disclosure, engineering intelligence loop, complexity/risk gates and evidence governance.
-- Added `AI_CAPABILITY_EVALUATION.md` with observable pass/fail scenarios for audit, technical research, implementation, cross-feature changes and release/evidence reporting.
-- Added `retailos-core`, `retailos-audit` and `retailos-technical-research` skills.
-- Composed the existing `retailos-implementation` skill with CORE and task-skill selection.
-- Updated INDEX, AGENTS, Copilot instructions and START_HERE to route work through the canonical system without duplicating project knowledge.
-- Updated roadmap/status to separate Phase 2.1 from Phase 2.2.
+## Source findings
+- Existing code verifies reused resources by URL, success status, exact byte length and SHA-256; verifies candidate cache read-back and root navigation alias; revalidates before activation; and removes only candidate caches on staging failure.
+- Existing safety boundaries protect dirty forms, camera leases, Stocktake, Stocktake Import, data lifecycle, app transitions and push setup.
+- Existing boot-health path is owned by the primary app surface: login surface after App effect or HomeScreen after mount. AppErrorBoundary reports a matching build failure only before healthy boot. No boot lifecycle rewrite is required.
+- Confirmed weaknesses: download-plan discovery retained every reusable response body in memory; network progress advanced only after an entire resource completed.
+
+## Phase 2.2 changes
+- Replace retained reusable response bodies with metadata-only planning and one-resource-at-a-time revalidation/copy.
+- Stream network response bodies to candidate cache while independently counting received bytes and validating SHA-256.
+- Emit throttled in-file progress; keep `bytesDownloaded`, `totalBytes`, `reusedBytes` and `totalReleaseBytes` semantically distinct.
+- If a cache entry becomes unavailable/corrupt between discovery and staging, treat it as a network miss and update the live byte denominator and UI estimate.
+- Clarify that total new-release size includes all resources in the candidate manifest; removed old resources are not counted.
+- Add runtime regression tests and bump development version to 0.3.6 with synchronized release notes.
 
 ## Safety boundary
-No application source, runtime behavior, tests, dependencies, build configuration, Service Worker, data contracts or deployment workflows are intentionally changed. Phase 2.2 Runtime Audit/PWA Update hardening is excluded. No merge, production promotion or deployment is authorized.
+Keep the active release and business data untouched on failed staging. Preserve the full candidate storage headroom requirement, explicit download consent, separate explicit activation confirmation, safe handoff blockers and boot-health rollback. No backend/data schema, auth/session contract, deployment workflow, merge, production promotion or deployment is authorized.
 
 ## Validation required
-1. Review every changed path and full diff; confirm only documentation and agent-skill files changed.
-2. Check skill links, task selection, source-of-truth ownership and absence of contradictory duplicate policies.
-3. Confirm Phase 2.2/PWA runtime files and application source are untouched.
-4. Check GitHub Actions on the final PR head and report the exact run/commit.
-5. Treat evaluation scenarios as defined, not passed: operational effectiveness requires exercising them on real future tasks.
-
-## Review state
-Keep PR #138 Draft and unmerged until review and explicit user approval. Do not deploy or promote production.
+1. Run final-head CI/preflight and inspect PWA runtime, cache-policy and platform compatibility checks.
+2. Review final PR diff and confirm no unintended backend/data contract or deployment changes.
+3. Report exact CI run and head SHA.
+4. Physical Android Chrome/PWA, iOS Safari/Home Screen, desktop and low-end Android tests remain a separate acceptance gate.
 
 ---
 

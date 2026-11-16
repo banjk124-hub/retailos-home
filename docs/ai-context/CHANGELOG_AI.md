@@ -12,6 +12,17 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Unverified:
 - Risks / rollback:
 
+## 2026-11-16 — Phase 2.2 PWA Runtime Audit and hardening
+
+- Intent: remove avoidable peak-memory retention during delta planning and make update progress reflect actual network payload bytes while preserving release integrity and safe handoff.
+- Audit: verified existing cache URL/size/SHA-256 reuse, staged cache read-back, activation-time revalidation, failed candidate cleanup, data isolation, business blockers and primary-surface boot-health reporting. Found that `buildDownloadPlan()` retained every reusable response body and download progress advanced only after full resources.
+- Files: `src/sw/service-worker.template.js`, `src/shared/pwa/PwaUpdatePrompt.tsx`, `scripts/test-pwa-worker-runtime.mjs`, `package.json`, `package-lock.json`, `release-notes.json`, `PWA_RUNTIME_RELEASE.md`, `ROADMAP.md`, `IMPLEMENTATION_STATUS.md`, `AI_HANDOFF.md` and this log.
+- Behavior: reusable plans retain metadata only; staging revalidates/copies cached resources one at a time; network response streams are byte-counted during transfer while being cached and SHA-256 verified; progress is throttled and forced at resource boundaries; cache misses discovered during staging adjust the network denominator and UI estimate; UI separates network bytes, reused bytes and full candidate footprint.
+- Release: development version 0.3.6; package, lockfile and release notes synchronized.
+- Checks: regression coverage added for in-file progress, monotonic received bytes, exact network payload denominator, reused bytes, candidate footprint and metadata-only reusable planning. Final-head CI is not yet run.
+- Unverified: physical Android/iOS/Desktop and low-end-device memory/progress behavior; CI cannot replace those acceptance tests.
+- Risks / rollback: revert the Phase 2.2 application/test/release-note commit on this branch if runtime regressions appear; previous main release remains the known-good baseline until merge/deployment.
+
 ## 2026-11-16 — Phase 2.1 AI capability upgrade
 
 - Intent: upgrade practical AI engineering capability through three connected layers: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation.
