@@ -1,3 +1,25 @@
+# Current handoff — delta-aware PWA release staging — 2026-11-16
+
+**Repository:** `banjk124-hub/retailos-home`  
+**Branch:** `feat/pwa-delta-release-staging`  
+**Objective:** Download only candidate resources that are not byte-for-byte reusable from the active release, while preserving complete offline candidate caches and the separate safe activation confirmation.
+
+## Source behavior now authored
+- Candidate resources are compared against active release caches by URL, exact byte size and SHA-256. Valid matches are copied into the candidate cache; changed/missing/corrupt resources are fetched.
+- Removed resources are excluded. Progress distinguishes network bytes from reused bytes and complete candidate size.
+- Storage budget still uses complete candidate size because candidate and active release caches coexist.
+- First install still downloads the complete payload. No automatic activation, consent bypass, data migration or production deployment was added.
+
+## Next validation
+1. Run `node scripts/test-pwa-worker-runtime.mjs` and inspect failures.
+2. Run `npm run preflight`, TypeScript/production build and Pages build through the repository CI on the exact PR head.
+3. Inspect the full PR diff and verify that the release manifest, candidate cache, progress and Update Center semantics agree.
+4. Complete physical platform acceptance before treating the release workflow as fully accepted.
+
+No merge or deployment is authorized by this work.
+
+---
+
 # Current handoff — PWA Update Center and explicit safe handoff
 
 **Repository:** `banjk124-hub/retailos-home`  
