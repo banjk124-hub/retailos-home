@@ -18,6 +18,21 @@
 
 Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Successful development Pages deployment does not mean production-account promotion or physical-device acceptance.
 
+## Phase 2.1 — AI capability upgrade
+
+**Status:** Implemented in progress on Draft PR #138; documentation and agent-skill files only. Phase 2.2 Runtime Audit is explicitly separate and excluded.
+
+- [x] Define the three connected layers: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation.
+- [x] Establish composable CORE + TASK skill architecture with progressive disclosure and canonical knowledge ownership.
+- [x] Add shared CORE reasoning, complexity/risk/dependency and evidence gates.
+- [x] Add source-grounded audit and evidence-led technical research task skills.
+- [x] Integrate the existing implementation skill with CORE and task-skill selection.
+- [x] Define scenario-based evaluation for audit, research, implementation, cross-feature risk and release evidence.
+- [ ] Validate the workflow against subsequent real RetailOS tasks and refine only from observed failures/evidence.
+- [ ] Review final PR diff and final-head CI before considering merge; explicit user approval required.
+
+**Canonical design:** [AI_CAPABILITY_SYSTEM.md](./AI_CAPABILITY_SYSTEM.md). **Evaluation:** [AI_CAPABILITY_EVALUATION.md](./AI_CAPABILITY_EVALUATION.md).
+
 ## Phase 1 — AI workflow and documentation governance
 
 **Status:** In progress on `docs/phase1-ai-context-governance`. Documentation/instructions only; no application source changes.
