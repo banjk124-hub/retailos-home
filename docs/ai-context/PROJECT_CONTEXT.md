@@ -1,4 +1,12 @@
-# Current repository state — 2026-11-15
+# Current repository state — 2026-11-16
+
+- Active implementation branch: `feat/pwa-delta-release-staging`, created to add content-verified delta downloads to the consent-gated PWA runtime.
+- Delta staging source now reuses active-cache resources only after exact URL, size and SHA-256 validation; missing/changed/corrupt assets are fetched, and removed assets are not copied. Network download bytes are reported separately from reused and total release bytes.
+- Temporary storage still requires the full candidate footprint because release caches remain isolated and the active release must remain available for rollback.
+- Automated CI and physical-device acceptance for this delta branch are pending. No merge or deployment is claimed.
+- Canonical PWA release contract and acceptance matrix: `PWA_RUNTIME_RELEASE.md`.
+
+
 
 - Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
 - Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119 (`5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094`). PR #120 was superseded and its documentation changes are incorporated into PR #121. Runtime changes are not merged/deployed.
