@@ -1,30 +1,36 @@
-# Current handoff — Phase 1 AI workflow and documentation governance — 2026-11-16
+# Current handoff — Phase 2.1 AI capability upgrade — 2026-11-16
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Base:** `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
 **Work branch:** `docs/phase1-ai-context-governance`  
-**Scope:** documentation and AI workflow only.
+**Pull request:** [#138](https://github.com/banjk124-hub/retailos-home/pull/138)  
+**Scope:** documentation, repository AI instructions and agent skills only.
 
 ## Objective
-Correct stale current-state records after PR #137 merged and reduce unnecessary context loading. Preserve the existing RetailOS architecture and historical technical evidence.
+Upgrade practical AI capability for RetailOS across three connected layers: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation.
 
-## Governance changes in this branch
-- Make `INDEX.md` the context router and replace the instruction to read every AI-context document with selective, task-based reading.
-- Align `AGENTS.md`, Copilot instructions, implementation skill and `prompts/START_HERE.md` on repository-state verification, token discipline, current technical research and honest test reporting.
-- Reconcile current-state summaries in Project Context, Implementation Status, AI Handoff, Roadmap, PWA release contract, Session Log and AI Changelog with verified main/PR/CI/deployment state.
-- Keep historical evidence intact and distinguish historical snapshots from current instructions.
+## Phase 2.1 changes
+- Added `AI_CAPABILITY_SYSTEM.md` as the canonical architecture for the three layers, CORE/TASK/DOMAIN skill taxonomy, progressive disclosure, engineering intelligence loop, complexity/risk gates and evidence governance.
+- Added `AI_CAPABILITY_EVALUATION.md` with observable pass/fail scenarios for audit, technical research, implementation, cross-feature changes and release/evidence reporting.
+- Added `retailos-core`, `retailos-audit` and `retailos-technical-research` skills.
+- Composed the existing `retailos-implementation` skill with CORE and task-skill selection.
+- Updated INDEX, AGENTS, Copilot instructions and START_HERE to route work through the canonical system without duplicating project knowledge.
+- Updated roadmap/status to separate Phase 2.1 from Phase 2.2.
 
 ## Safety boundary
-No application source, tests, dependencies, build configuration, Service Worker, business data contract or deployment workflow may be changed in this phase. No merge, production promotion or deployment is authorized.
+No application source, runtime behavior, tests, dependencies, build configuration, Service Worker, data contracts or deployment workflows are intentionally changed. Phase 2.2 Runtime Audit/PWA Update hardening is excluded. No merge, production promotion or deployment is authorized.
 
-## Validation required before review
-1. Complete diff review: all 12 changed paths are documentation/instruction files; no application source, tests, dependencies, build configuration or deployment workflow changed.
-2. Check for contradictory unconditional “read all context” instructions and stale PR #137 pending/unmerged claims in current-state sections.
-3. Verify links, branch/commit identifiers and CI/deployment evidence against GitHub.
-4. No application build/test or physical-device QA was run or claimed; this is a documentation-only change.
+## Validation required
+1. Review every changed path and full diff; confirm only documentation and agent-skill files changed.
+2. Check skill links, task selection, source-of-truth ownership and absence of contradictory duplicate policies.
+3. Confirm Phase 2.2/PWA runtime files and application source are untouched.
+4. Check GitHub Actions on the final PR head and report the exact run/commit.
+5. Treat evaluation scenarios as defined, not passed: operational effectiveness requires exercising them on real future tasks.
 
 ## Review state
-Draft PR #138 is open: https://github.com/banjk124-hub/retailos-home/pull/138. Await user review and explicit approval before merge. Do not deploy or promote production.
+Keep PR #138 Draft and unmerged until review and explicit user approval. Do not deploy or promote production.
+
+---
 
 ---
 
