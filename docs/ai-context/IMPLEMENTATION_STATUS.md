@@ -27,7 +27,7 @@
 ## Phase 1 — AI workflow and documentation governance
 - Scope: documentation and AI workflow only. No application source, tests, runtime dependencies, build configuration or deployment workflow changes.
 - Work branch: `docs/phase1-ai-context-governance`, based on main commit `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`.
-- Current change status: documentation changes are being prepared for review; no merge or production promotion is claimed.
+- Current change status: Draft PR #138 is open for review; no merge or production promotion is claimed.
 - Verification: inspect changed paths and diffs; verify every changed path is documentation/instructions only. An application build is not a validation requirement for this documentation-only phase.
 
 ---
