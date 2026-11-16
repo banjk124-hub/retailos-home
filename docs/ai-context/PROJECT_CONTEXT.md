@@ -1,9 +1,17 @@
-# Current repository state — 2026-11-15
+# Current repository state — 2026-11-16
+
+- Active implementation branch: `feat/pwa-delta-release-staging`, created to add content-verified delta downloads to the consent-gated PWA runtime.
+- Delta staging source now reuses active-cache resources only after exact URL, size and SHA-256 validation; missing/changed/corrupt assets are fetched, and removed assets are not copied. Network download bytes are reported separately from reused and total release bytes.
+- Temporary storage still requires the full candidate footprint because release caches remain isolated and the active release must remain available for rollback.
+- GitHub Actions CI #1250 passed on final source/test head `c7da10651b39d517782912baf9fd0cc4a252b55f`, including full preflight, TypeScript/production and Pages builds, and PR-base bundle comparison. Physical-device acceptance remains pending; no merge or deployment is claimed.
+- Canonical PWA release contract and acceptance matrix: `PWA_RUNTIME_RELEASE.md`.
+
+
 
 - Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
-- Active implementation branch: `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119 (`5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094`). PR #120 was superseded and its documentation changes are incorporated into PR #121. Runtime changes are not merged/deployed.
+- Earlier consent-gated runtime implementation was developed on `feat/pwa-consent-gated-release-runtime`; the current delta-staging work is isolated on `feat/pwa-delta-release-staging` (PR #137). Neither branch is a production deployment.
 - Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
-- This branch replaces update-time install precache with metadata-only discovery and user-approved candidate staging. Build-bound manifest/release notes, response and cache read-back size/SHA-256 verification, offline staged-byte revalidation before activation, primary-surface boot health acknowledgement, progress, staged resume, automatic activation and safe handoff are implemented in source.
+- The consent-gated runtime baseline uses metadata-only discovery and user-approved candidate staging. The current delta-staging branch layers content-verified reuse onto that baseline; the separate explicit safe-handoff confirmation and rollback contracts remain mandatory.
 - App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
 - First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
 - Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.

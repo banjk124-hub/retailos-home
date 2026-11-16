@@ -65,7 +65,9 @@ function seedOldRelease() {
   ]));
   cacheStore.set(oldAssetCache, new Map([
     [appBase + 'assets/old-app.js', new Response('previous-release-asset')],
-    [appBase + 'images/background.webp', new Response('previous-release-shared-image')],
+    // Exact content match is reusable; same-path but changed bytes are not.
+    [appBase + 'images/background.webp', new Response('release-runtime:images/background.webp')],
+    [appBase + 'assets/app.js', new Response('previous-build-app-js')],
   ]));
   cacheStore.set('retailos-business-data', new Map([['snapshot', new Response('business-data-must-survive')]]));
   cacheStore.set('retailos-pwa-state', new Map([
@@ -82,6 +84,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
   let skipWaitingCalls = 0;
   let claimCalls = 0;
   let fetchCalls = 0;
+  const resourceFetchPaths = [];
   let failPath = options.failPath || null;
   let offline = false;
   const windowClients = options.clients || [];
@@ -108,6 +111,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
       return new Response(JSON.stringify(releaseManifest), { headers: { 'Content-Type': 'application/json' } });
     }
     const resource = releaseManifest.resources.find((item) => appBase + item.path === url);
+    if (resource) resourceFetchPaths.push(resource.path);
     if (!resource) return new Response('not-found', { status: 404 });
     return new Response('release-runtime:' + resource.path);
   };
@@ -140,6 +144,7 @@ function createWorker(buildId, releaseManifest, options = {}) {
     runExtendable,
     setOffline(value) { offline = value; },
     get fetchCalls() { return fetchCalls; },
+    get resourceFetchPaths() { return [...resourceFetchPaths]; },
     get skipWaitingCalls() { return skipWaitingCalls; },
     get claimCalls() { return claimCalls; },
   };
@@ -171,6 +176,13 @@ await worker.runExtendable('message', {
 assert.equal(infoMessages[0]?.type, 'RELEASE_INFO', 'candidate exposes release metadata to the active app');
 assert.equal(worker.fetchCalls, 1, 'discovery downloads only the small release manifest');
 assert.equal(cacheStore.has('retailos-pwa-assets-runtime-test'), false, 'metadata discovery does not stage application assets');
+assert.equal(infoMessages[0]?.downloadPlan?.reusedBytes, resources.find((item) => item.path === 'images/background.webp').size,
+  'discovery identifies an exact size-and-hash match in the active release');
+assert.equal(infoMessages[0]?.downloadPlan?.downloadCount, resources.length - 1,
+  'discovery counts changed and missing resources as network downloads');
+assert.equal(infoMessages[0]?.downloadPlan?.downloadBytes,
+  resources.filter((item) => item.path !== 'images/background.webp').reduce((sum, item) => sum + item.size, 0),
+  'download estimate excludes only verified reusable bytes');
 
 const progressMessages = [];
 await worker.runExtendable('message', {
@@ -183,18 +195,33 @@ const candidateAssets = cacheStore.get('retailos-pwa-assets-runtime-test');
 assert.ok(candidateShell?.has(shellUrl), 'approved staging downloads the candidate shell');
 assert.ok(candidateShell?.has(appBase), 'staging creates the root navigation alias');
 assert.ok(candidateAssets?.has(appBase + 'assets/zxing_reader.wasm'), 'approved staging downloads the ZXing WASM runtime');
+assert.equal(worker.resourceFetchPaths.includes('images/background.webp'), false,
+  'an unchanged resource is copied from the active cache without a network request');
+assert.equal(worker.resourceFetchPaths.includes('assets/app.js'), true,
+  'same-path content changes fail hash comparison and are downloaded');
+assert.equal(candidateAssets?.has(appBase + 'assets/old-app.js'), false,
+  'resources removed from the new manifest are not copied into the candidate cache');
+assert.equal(await candidateAssets?.get(appBase + 'images/background.webp')?.clone().text(), 'release-runtime:images/background.webp',
+  'reused response bytes are copied intact into the candidate cache');
 assert.ok(resources.filter((item) => item.cache === 'assets').every((item) => candidateAssets.has(appBase + item.path)),
   'all lazy chunks and runtime assets are staged before activation');
 assert.equal(cacheStore.has(oldShellCache), true, 'old shell is retained throughout candidate staging');
 assert.equal(cacheStore.has(oldAssetCache), true, 'old assets are retained throughout candidate staging');
 assert.ok(progressMessages.some((message) => message.type === 'RELEASE_DOWNLOAD_PROGRESS'), 'download progress is reported');
 assert.equal(progressMessages.at(-1)?.type, 'RELEASE_STAGED', 'staging reports completion only after verification');
+assert.equal(progressMessages.at(-1)?.totalBytes, infoMessages[0].downloadPlan.downloadBytes,
+  'progress totalBytes represents network bytes, not full release size');
+assert.equal(progressMessages.at(-1)?.bytesDownloaded, infoMessages[0].downloadPlan.downloadBytes,
+  'network byte counter excludes reused cache entries');
+assert.equal(progressMessages.at(-1)?.reusedBytes, infoMessages[0].downloadPlan.reusedBytes,
+  'staged result reports bytes reused from the active release');
 const resumedInfo = [];
 await worker.runExtendable('message', {
   data: { type: 'GET_RELEASE_INFO' },
   ports: [{ postMessage(message) { resumedInfo.push(message); } }],
   source: currentClient,
 });
+assert.equal(resumedInfo[0]?.type, 'RELEASE_INFO', 'staged release discovery succeeds: ' + (resumedInfo[0]?.message || 'no worker error detail'));
 assert.equal(resumedInfo[0]?.staged, true, 'a re-opened app can resume activation without asking for download consent again');
 assert.equal(cacheStore.has('retailos-pwa-state'), true, 'staged-release metadata is stored separately from business data');
 
@@ -436,7 +463,7 @@ const secondStagePromise = joinWorker.runExtendable('message', {
   source: currentClient,
 });
 await Promise.all([firstStagePromise, secondStagePromise]);
-assert.equal(joinWorker.fetchCalls, resources.length + 2, 'a second client joins the active stage instead of downloading a duplicate payload');
+assert.equal(joinWorker.fetchCalls, resources.length + 1, 'a second client joins the active stage and only the non-reusable payload is fetched');
 assert.equal(firstStageMessages.at(-1)?.type, 'RELEASE_STAGED');
 assert.equal(secondStageMessages.at(-1)?.type, 'RELEASE_STAGED', 'joined clients are notified when the shared stage completes');
 

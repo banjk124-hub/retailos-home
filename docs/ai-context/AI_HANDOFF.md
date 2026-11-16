@@ -1,3 +1,28 @@
+# Current handoff — delta-aware PWA release staging — 2026-11-16
+
+**Repository:** `banjk124-hub/retailos-home`  
+**Branch:** `feat/pwa-delta-release-staging`  
+**Objective:** Download only candidate resources that are not byte-for-byte reusable from the active release, while preserving complete offline candidate caches and the separate safe activation confirmation.
+
+## Source behavior now authored
+- Candidate resources are compared against active release caches by URL, exact byte size and SHA-256. Valid matches are copied into the candidate cache; changed/missing/corrupt resources are fetched.
+- Removed resources are excluded. Progress distinguishes network bytes from reused bytes and complete candidate size.
+- Storage budget still uses complete candidate size because candidate and active release caches coexist.
+- First install still downloads the complete payload. No automatic activation, consent bypass, data migration or production deployment was added.
+
+## Verification
+- GitHub Actions CI #1250 (`43800583013`) passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`: locked dependency install, full `npm run preflight` (including worker runtime, cache-policy and platform contract tests), TypeScript/production build, GitHub Pages build, PR-base bundle build/comparison and artifact upload.
+- Earlier runs #1243 and #1246 found a consumed Response body in the test harness after the test inspected a raw cached response. The fixture now reads a clone; final-head CI #1250 passed.
+- Physical Android/iOS/Desktop and low-end Android acceptance remains outstanding.
+
+## Next validation
+1. Review the complete PR diff before merge consideration.
+2. Complete physical platform acceptance before treating the release workflow as fully accepted.
+
+No merge or deployment is authorized by this work.
+
+---
+
 # Current handoff — PWA Update Center and explicit safe handoff
 
 **Repository:** `banjk124-hub/retailos-home`  

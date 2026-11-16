@@ -1,5 +1,9 @@
 # RetailOS PWA runtime and user-approved release architecture
 
+**Current delta-staging implementation:** Draft PR #137 on `feat/pwa-delta-release-staging`, based on `main` at `32cc651afcaf7af73dab34d9964a559d025e608e`. GitHub Actions CI #1250 passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`, including full preflight, TypeScript/production and Pages builds, PR-base bundle comparison and artifact upload. Physical Android/iOS/Desktop acceptance and final human review remain pending. No merge or deployment.
+
+The consent-gated runtime baseline and historical CI evidence are retained below. This document remains the canonical source of truth for every future application release and deployment.
+
 **Status:** Runtime implementation is present on branch `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119. PR #120 was closed as superseded and its documentation contract is incorporated here. CI #1126 exposed an early Vite plugin-ordering failure; `enforce: 'post'` made the final HTML available. CI #1162 then exposed a second issue: emitted chunk bytes still changed after the manifest hook (HomeScreen size mismatch). The branch now uses `generateBundle: { order: 'post', handler }` so hashes are computed after all output hooks, with a regression assertion. RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including preflight, TypeScript, production/Pages builds, manifest byte/hash parity, worker runtime, platform contract, main-only production deploy guard and bundle comparison. PR review and physical Android/iOS/Desktop acceptance remain pending. This is the canonical source of truth for every future application release and deployment.
 
 ## 1. Product contract
@@ -89,6 +93,18 @@ The maintained worker source is `src/sw/service-worker.template.js`. Never edit 
 - If a user closes the app after successful staging, the staged marker survives. On the next app launch, `GET_RELEASE_INFO` reports `staged: true`; the UI restores the pending staged candidate and waits for explicit activation confirmation. It must not activate merely because the app reopened.
 
 The manifest itself is small control-plane metadata and is fetched with a build-specific query to avoid stale HTTP cache responses. It is not part of business-data storage or the immutable runtime asset cache.
+
+### 5.1 Delta-aware staging and network-byte accounting
+
+Before staging, the waiting worker reads the active release's shell/assets caches and compares each candidate manifest resource by its canonical app URL, exact byte length and SHA-256 digest.
+
+- A previous response is reusable only when it exists, is a successful non-opaque response and its bytes match both manifest size and SHA-256. Path equality alone is never sufficient.
+- Verified matches are copied into the new build-specific cache without a network request. Missing, changed, unreadable or corrupt resources are fetched and verified normally.
+- Resources removed from the new manifest are not copied. The new candidate cache is still complete and contains exactly the resources required by its manifest, plus the shell root alias.
+- `downloadBytes` / progress `totalBytes` count only bytes fetched over the network. `reusedBytes` reports verified bytes copied from the active release; `totalReleaseBytes` reports the complete candidate footprint. Resource-count progress includes both reused and downloaded resources.
+- `GET_RELEASE_INFO` returns this estimate after reading and hashing active cached resources; it still fetches only the small release manifest over the network. The Update Center labels the estimate as network download size and separately identifies reused and total release bytes.
+- Storage headroom is still checked against the complete candidate size, not the delta: release-specific caches duplicate reused responses while preserving the active release for rollback. A small network delta does not imply a small temporary storage requirement.
+- First install has no active release to reuse and therefore downloads the complete initial payload. If the active cache is missing or any resource fails verification, that resource is downloaded. If every resource matches, network payload download is zero; cache copy, read-back verification and explicit safe activation still occur.
 
 ## 6. Safe handoff and explicit activation confirmation
 
