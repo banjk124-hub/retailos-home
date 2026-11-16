@@ -32,7 +32,7 @@
 - Changes: reusable planning now retains only resource metadata; staging revalidates/copies one cached resource at a time; network bodies stream through a cache branch and a byte-count/hash branch; UI progress is emitted during large files and throttled; a cache miss discovered during staging increases the live network denominator. Release UI clarifies that removed old resources are not part of the new-release footprint.
 - Release: development version `0.3.6`, with synchronized package, lockfile and release notes.
 - Boot-health audit: existing `App.tsx` / `HomeScreen` primary-surface report and `AppErrorBoundary` pre-health failure signal match the accepted contract; no unnecessary boot lifecycle change was made.
-- Validation: new runtime test covers in-file progress, monotonic received bytes, exact network-only denominator, reuse accounting and metadata-only plan. Final-head CI is required; physical-device acceptance remains outstanding.
+- Validation: runtime regression coverage includes in-file progress, monotonic received bytes, exact network-only denominator, reuse accounting, candidate footprint, metadata-only plan and the 99% pre-verification cap. CI #1275 (`43808291451`) passed on head `9e209838ae19f7d0db01bb4ef058fca2877cb129`, including preflight, TypeScript/production and Pages builds, PR-base build and bundle comparison. Physical-device acceptance remains outstanding.
 - Safety: no backend/data schema, business-data store, auth/session contract, deploy workflow or production-account change.
 
 ## Phase 2.1 — AI capability upgrade

@@ -26,11 +26,10 @@ Audit and harden the PWA application release runtime: cache reuse planning, stre
 ## Safety boundary
 Keep the active release and business data untouched on failed staging. Preserve the full candidate storage headroom requirement, explicit download consent, separate explicit activation confirmation, safe handoff blockers and boot-health rollback. No backend/data schema, auth/session contract, deployment workflow, merge, production promotion or deployment is authorized.
 
-## Validation required
-1. Run final-head CI/preflight and inspect PWA runtime, cache-policy and platform compatibility checks.
-2. Review final PR diff and confirm no unintended backend/data contract or deployment changes.
-3. Report exact CI run and head SHA.
-4. Physical Android Chrome/PWA, iOS Safari/Home Screen, desktop and low-end Android tests remain a separate acceptance gate.
+## Validation results
+1. CI #1275 (`43808291451`) passed on application/test head `9e209838ae19f7d0db01bb4ef058fca2877cb129`, including npm install, local-equivalent preflight, TypeScript/production and Pages builds, PR-base build and bundle comparison.
+2. Final PR path review confirms only AI documentation/skills, PWA Service Worker/UI, the focused PWA runtime test, package version and release notes changed. No backend/data contract or deployment workflow changed.
+3. Physical Android Chrome/PWA, iOS Safari/Home Screen, desktop and low-end Android tests remain a separate acceptance gate and have not been claimed.
 
 ---
 

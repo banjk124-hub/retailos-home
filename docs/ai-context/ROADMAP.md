@@ -30,7 +30,7 @@ Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Successf
 - [x] Implement streamed byte accounting and throttled in-file progress while preserving exact size/SHA-256 validation and isolated candidate caches.
 - [x] Add runtime regression coverage for intermediate progress, monotonic byte counts, exact network denominator, reuse accounting and bounded plan retention.
 - [x] Bump development release version and update build-bound release notes.
-- [ ] Run final-head CI/preflight, PWA runtime/cache-policy/platform tests and inspect all diffs.
+- [x] Pass final-head CI #1275 (`43808291451`) on `9e209838ae19f7d0db01bb4ef058fca2877cb129`, including preflight, TypeScript/production and Pages builds, PR-base build and bundle comparison.
 - [ ] Complete Android Chrome/PWA, iOS Safari/Home Screen, desktop and low-end Android acceptance before production transfer.
 
 **Canonical contract:** [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). No merge or production deployment is authorized by this phase.

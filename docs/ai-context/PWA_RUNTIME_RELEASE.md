@@ -1,6 +1,6 @@
 # RetailOS PWA runtime and user-approved release architecture
 
-**Current status — 2026-11-16:** Delta-aware staging PR #137 is merged to `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`. Phase 2.2 Runtime Audit/hardening is being implemented directly on PR #138 branch `docs/phase1-ai-context-governance`; current `main` remains the PR #137 baseline until review/merge. Phase 2.1 CI #1271 passed on head `eb1dca880a4c17043c963230a64e435903a62713`; Phase 2.2 CI and physical Android/iOS/Desktop/low-end acceptance remain pending. No production-account/Cloudflare promotion is implied.
+**Current status — 2026-11-16:** Delta-aware staging PR #137 is merged to `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`. Phase 2.2 Runtime Audit/hardening is being implemented directly on PR #138 branch `docs/phase1-ai-context-governance`; current `main` remains the PR #137 baseline until review/merge. Phase 2.1 CI #1271 passed on head `eb1dca880a4c17043c963230a64e435903a62713`; Phase 2.2 CI #1275 (`43808291451`) passed on head `9e209838ae19f7d0db01bb4ef058fca2877cb129`. Physical Android/iOS/Desktop/low-end acceptance remains pending. No production-account/Cloudflare promotion is implied.
 
 This remains the canonical source of truth for every future application release and deployment. Prior consent-gated runtime and CI notes below are historical implementation evidence; do not treat old branch/PR status statements as current state.
 
