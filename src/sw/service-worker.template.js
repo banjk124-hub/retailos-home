@@ -522,7 +522,7 @@ self.addEventListener('message', (event) => {
       } catch (error) {
         notify(replyTarget, {
           type: 'RELEASE_INFO_FAILED',
-          message: error instanceof Error ? error.message : 'Không đọc được thông tin phiên bản.',
+          message: error instanceof Error ? error.message : String(error) || 'Không đọc được thông tin phiên bản.',
         });
       }
     })());
