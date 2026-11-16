@@ -1,42 +1,34 @@
-## PWA Update Center and explicit safe-handoff lifecycle
+# RetailOS engineering roadmap — current state 2026-11-16
 
-**Priority:** Active implementation branch `feat/pwa-update-center-safe-handoff`, based on main after PR #122. No CI or physical acceptance is claimed yet.
+## PWA release management — delta-aware staging (merged)
 
-- [x] Persist deferred candidate metadata by device and BUILD_ID.
-- [x] Separate staging consent from explicit activation confirmation in the update UI.
-- [x] Add centered idle presentation and compact expandable busy presentation.
-- [x] Add Settings Update Center entry and pending-action badge.
-- [ ] Verify no automatic activation after stage, reload/reopen or blocker-clear.
-- [ ] Add regression tests for persistent deferral, staged deferral, explicit activation and badge consistency.
-- [ ] Audit business blockers against every module's transaction/dirty/import/export/confirmation lifecycle.
-- [ ] Implement and audit authoritative forced-update policy; optional is the safe default until then.
-- [ ] Pass final-head preflight, TypeScript, production/Pages builds and PWA worker/cache/platform tests.
-- [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance.
+**Status:** PR #137 merged to `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`. Final-head CI #1250 passed; post-merge main CI `43802257547` and GitHub Pages deployment `43802257688` completed successfully.
 
-Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). This work does not merge or deploy production.
+- [x] Consent-gated release discovery and candidate staging.
+- [x] Content-verified reuse of unchanged resources using exact URL, byte length and SHA-256.
+- [x] Download missing/changed/corrupt resources and exclude removed resources.
+- [x] Report network download bytes separately from reused bytes and complete candidate footprint.
+- [x] Keep storage preflight based on the complete candidate footprint while retaining the active release for rollback.
+- [x] Keep download consent separate from explicit safe-handoff activation.
+- [x] Pass final-head preflight, TypeScript, production/Pages builds and PR-base bundle comparison.
+- [x] Merge to development repository main and pass post-merge CI / GitHub Pages workflow.
+- [ ] Complete physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance.
+- [ ] Benchmark large-resource progress behavior, memory use and storage behavior on constrained devices.
+- [ ] Complete final human acceptance before selecting this version for transfer to the separate shared production account/repository and Cloudflare environment.
+
+Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Successful development Pages deployment does not mean production-account promotion or physical-device acceptance.
+
+## Phase 1 — AI workflow and documentation governance
+
+**Status:** In progress on `docs/phase1-ai-context-governance`. Documentation/instructions only; no application source changes.
+
+- [ ] Reconcile current-state documentation with GitHub main, PR, CI and deployment.
+- [ ] Replace bulk context loading with INDEX-driven selective reading.
+- [ ] Align AGENTS, Copilot instructions, implementation skill and START_HERE workflow.
+- [ ] Review complete diff and confirm application source/build/deploy files are untouched.
+- [ ] Open a Draft PR for review; merge only after explicit user approval.
 
 ---
-
-# RetailOS engineering roadmap — current state 2026-11-15
-
-## PWA release management — consent-gated download and automatic activation
-
-**Priority:** Runtime implementation is present on `feat/pwa-consent-gated-release-runtime`; automated CI #1184 is green on the final PR head. Physical device acceptance and final PR review remain gates before production adoption.
-
-- [x] Design the pre-download consent boundary around Service Worker update semantics.
-- [x] Publish a build-bound release manifest and release notes with complete resource hashes and byte sizes.
-- [x] Restrict production GitHub Pages deployment to `main`, including manual workflow dispatch; feature branches cannot deploy to the production target.
-- [x] Implement progress-aware full-payload staging for shell, all modules/lazy chunks, UI/media, workers and WASM.
-- [x] Verify response status, byte size, SHA-256, cache read-back integrity and offline staged-byte revalidation before activation.
-- [x] Automatically activate after verification when camera/forms/operational work and multi-window handoff are safe; no second confirmation.
-- [x] Preserve old-release serving, staged resume, primary-surface boot health, last-known-good rollback and business data.
-- [x] Add regression coverage for no-download-before-consent, metadata discovery, defer, interrupted staging, retry, staged resume, legacy bridge and data lifecycle isolation.
-- [x] Pass full preflight, TypeScript, production build, Pages build, manifest byte/hash parity, PWA runtime/platform tests and bundle comparison in RetailOS CI #1184 (`1212b8f7`), including the main-only production deploy guard regression.
-- [ ] Complete physical Android/iOS/Desktop and low-end Android acceptance before merge/deploy.
-
-Canonical contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Automated CI is green; production acceptance remains blocked on physical device QA and final human review. Data-only lookup/snapshot refresh and recalculation using existing logic remain independent.
-
-
 
 > **Current navigation:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) is the only current scanner architecture/contract document. [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) indexes retained audits, stage plans and incident evidence. The detailed PR narratives below are historical implementation records, not competing runtime specifications.
 
