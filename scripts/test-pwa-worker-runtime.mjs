@@ -201,7 +201,7 @@ assert.equal(worker.resourceFetchPaths.includes('assets/app.js'), true,
   'same-path content changes fail hash comparison and are downloaded');
 assert.equal(candidateAssets?.has(appBase + 'assets/old-app.js'), false,
   'resources removed from the new manifest are not copied into the candidate cache');
-assert.equal(await candidateAssets?.get(appBase + 'images/background.webp')?.text(), 'release-runtime:images/background.webp',
+assert.equal(await candidateAssets?.get(appBase + 'images/background.webp')?.clone().text(), 'release-runtime:images/background.webp',
   'reused response bytes are copied intact into the candidate cache');
 assert.ok(resources.filter((item) => item.cache === 'assets').every((item) => candidateAssets.has(appBase + item.path)),
   'all lazy chunks and runtime assets are staged before activation');
