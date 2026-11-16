@@ -12,7 +12,7 @@ Load this skill together with the one task skill needed for the current request.
 
 ## Knowledge authority
 Use this authority order:
-1. Current source, tests, package/configuration and actual GitHub state for what exists and what is running.
+1. Current source, tests and package/configuration for implemented behavior; GitHub branch/PR/Actions/deployment records for repository workflow state; observed runtime/device evidence for what is actually running.
 2. Canonical repository documents for accepted product intent, architecture invariants, contracts and constraints.
 3. Current official technical documentation and reproducible external evidence for platform/library behavior.
 4. Historical logs, prior conversations and AI memory as investigative clues only.
