@@ -462,7 +462,7 @@ const secondStagePromise = joinWorker.runExtendable('message', {
   source: currentClient,
 });
 await Promise.all([firstStagePromise, secondStagePromise]);
-assert.equal(joinWorker.fetchCalls, resources.length + 2, 'a second client joins the active stage instead of downloading a duplicate payload');
+assert.equal(joinWorker.fetchCalls, resources.length + 1, 'a second client joins the active stage and only the non-reusable payload is fetched');
 assert.equal(firstStageMessages.at(-1)?.type, 'RELEASE_STAGED');
 assert.equal(secondStageMessages.at(-1)?.type, 'RELEASE_STAGED', 'joined clients are notified when the shared stage completes');
 
