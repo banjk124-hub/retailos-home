@@ -1,3 +1,35 @@
+# Current implementation — delta-aware PWA release staging — 2026-11-16
+
+**Branch:** `feat/pwa-delta-release-staging`  
+**Base:** branch created from `main`; exact base/head comparison and CI evidence are pending.  
+**Status:** Source and regression-test edits are committed on the feature branch. No local test, TypeScript check, production build, GitHub Actions run, merge or deployment has yet been verified for this branch.
+
+## Implemented in source
+- Service Worker builds a delta plan from the active release caches using exact URL, response success, byte length and SHA-256 checks.
+- Only missing or changed resources are fetched; verified unchanged resources are copied into the isolated candidate caches. Removed old resources are not copied.
+- Candidate cache completeness, full read-back integrity verification, root shell alias, explicit download consent, explicit safe-handoff activation, rollback and business-data preservation remain in place.
+- Worker discovery reports network download bytes, verified reused bytes, total candidate bytes and resource counts. UI labels network transfer separately from reused and total release bytes.
+- Storage preflight intentionally remains based on the complete candidate footprint because copied resources occupy space in a second release-specific cache while the active release is retained.
+
+## Changed files
+- `src/sw/service-worker.template.js`
+- `src/shared/pwa/PwaUpdatePrompt.tsx`
+- `scripts/test-pwa-worker-runtime.mjs`
+- `docs/ai-context/PWA_RUNTIME_RELEASE.md`
+- `docs/ai-context/IMPLEMENTATION_STATUS.md`
+- `docs/ai-context/AI_HANDOFF.md`
+- `docs/ai-context/SESSION_LOG.md`
+- `docs/ai-context/CHANGELOG_AI.md`
+- `docs/ai-context/PROJECT_CONTEXT.md`
+
+## Verification still required
+- Run worker runtime regression, full preflight, TypeScript, production build, GitHub Pages build and diff checks on the final PR head.
+- Review the complete diff for protocol compatibility, progress semantics, cache edge cases and documentation consistency.
+- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains pending.
+- No merge, production promotion or deployment is included.
+
+---
+
 # Current PWA Update Center and safe-handoff implementation status — 2026-11-15
 
 **Branch:** `feat/pwa-update-center-safe-handoff`  
