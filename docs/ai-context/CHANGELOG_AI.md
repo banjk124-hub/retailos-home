@@ -131,5 +131,5 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Files: Service Worker template, PWA update prompt, worker runtime regression test and canonical PWA/status/handoff documentation.
 - Behavior: reuse only active-cache responses whose exact bytes match candidate manifest size and SHA-256; fetch changed/missing/corrupt entries; omit removed entries; keep candidate caches complete. Report network bytes separately from reused and total release bytes.
 - Storage policy: still reserve for the complete candidate because copied resources are stored in a separate release cache while the current release remains available.
-- Checks run: none yet in this remote editing step; CI and physical-device validation pending.
+- Checks run: GitHub Actions CI #1250 (`43800583013`) passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`: full preflight, worker runtime/cache-policy/platform tests, TypeScript, production/Pages builds, PR-base bundle comparison and artifact upload. Earlier CI #1243/#1246 exposed a test fixture consuming the stored Response body; the test now reads a clone.
 - Risks / rollback: candidate staging remains isolated and failure cleanup removes only candidate caches. Revert the feature branch commits to restore full-download staging; do not alter active release/data caches.
