@@ -5,12 +5,21 @@ Implement RetailOS as a reliable mobile-first supermarket operations workspace. 
 
 ## Mandatory workflow
 1. Inspect the actual repository and current git diff before editing. Never assume an old ZIP/patch matches the working tree.
-2. Read `docs/ai-context/PROJECT_CONTEXT.md`, `docs/ai-context/ARCHITECTURE.md`, `docs/ai-context/IMPLEMENTATION_STATUS.md`, and the relevant skill under `.github/skills/`.
+2. Read `docs/ai-context/INDEX.md`, then `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`; read only the canonical architecture/topic document and skill relevant to the task.
 3. Establish baseline: package manager, scripts, TypeScript/build result, current branch/status, and existing tests. Record failures before changing code.
 4. Make a short plan with files and regression risks. Implement one coherent vertical slice at a time.
 5. After edits, run the narrowest relevant tests, then TypeScript/build. Never report a check as passed unless it was actually run and its exit status is known.
 6. Inspect the diff for unintended changes, secrets, generated files, schema changes, or removed behavior.
 7. Update `IMPLEMENTATION_STATUS.md` with changed files, tests run, results, and known limitations.
+
+## AI context, research and ChatGPT Web workflow
+
+- **Context loading is selective, not exhaustive:** start with `AGENTS.md`, `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`. Then read only the canonical topic document(s), relevant skill and source files needed for the task. Read historical logs only to answer a specific question or trace a regression.
+- **Repository state outranks memory and prose:** verify the current default branch, commit, working branch, PR state, CI and deployment state from GitHub before describing them. Treat old branch names, dates and status text as historical unless independently reconfirmed.
+- **ChatGPT Web / connected GitHub:** when working in ChatGPT Web with GitHub access, use the connected repository as the source of truth and make reviewable changes on an isolated branch. Do not claim local commands, browser/device QA or tests ran unless the corresponding execution/result is actually available. Use GitHub Actions as CI evidence and state exactly which commit/run it validates.
+- **Token discipline:** prefer INDEX navigation, targeted file/line reads, focused diffs and concise handoffs. Do not load every document, repeat long historical narratives, or create duplicate context files to compensate for poor navigation.
+- **Technical exploration:** when a task involves architecture, performance or a new technology, investigate credible current options (prefer official documentation and reproducible evidence), compare trade-offs against RetailOS constraints, and separate exploratory ideas from accepted decisions. Do not introduce a dependency, service, migration or architectural change without an explicit decision and a bounded validation plan.
+- **Evidence-based completion:** distinguish source inspection, automated CI, local execution and physical-device acceptance. A successful build is not proof of runtime/device acceptance. Record the exact commit and checks; list unverified items without implying they passed.
 
 ## Non-negotiable safety rules
 - Do not deploy, push, publish, overwrite production, rotate credentials, or change cloud settings without explicit user approval.
@@ -46,7 +55,7 @@ Report: objective, files changed, behavior changed, tests actually run, results,
 - Production deployment workflows must be restricted to `main`, including manual `workflow_dispatch`; never use the production GitHub Pages target to preview a feature branch. Physical QA previews must use an isolated preview target and must not replace production.
 
 ## Cross-session continuity contract (added 2026-11-05)
-- At session start, read `docs/ai-context/INDEX.md` as the navigation entry point, then read `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `IMPLEMENTATION_STATUS.md`, and the relevant skill.
+- At session start, read `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`; use INDEX to select only the relevant architecture/topic document and skill. Do not bulk-read the archive.
 - Keep document ownership aligned with `docs/ai-context/INDEX.md`: PROJECT_CONTEXT for durable product facts/current top-level state; ARCHITECTURE for invariants/decisions; ROADMAP for future scope; IMPLEMENTATION_STATUS for verified state; SESSION_LOG for concise handoffs; CHANGELOG_AI for implementation evidence.
 - Every implementation session must update status and handoff evidence in the same change set. If a phase or acceptance criterion changes, update roadmap. If an invariant/decision changes, record it explicitly.
 - Do not rely on chat history or model memory as the project source of truth. The repository documents and current source are authoritative.
