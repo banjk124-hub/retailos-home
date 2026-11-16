@@ -1,5 +1,9 @@
 # RetailOS PWA runtime and user-approved release architecture
 
+**Current delta-staging implementation:** Draft PR #137 on `feat/pwa-delta-release-staging`, based on `main` at `32cc651afcaf7af73dab34d9964a559d025e608e`. GitHub Actions CI #1250 passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`, including full preflight, TypeScript/production and Pages builds, PR-base bundle comparison and artifact upload. Physical Android/iOS/Desktop acceptance and final human review remain pending. No merge or deployment.
+
+The consent-gated runtime baseline and historical CI evidence are retained below. This document remains the canonical source of truth for every future application release and deployment.
+
 **Status:** Runtime implementation is present on branch `feat/pwa-consent-gated-release-runtime`, based on `main` after PR #119. PR #120 was closed as superseded and its documentation contract is incorporated here. CI #1126 exposed an early Vite plugin-ordering failure; `enforce: 'post'` made the final HTML available. CI #1162 then exposed a second issue: emitted chunk bytes still changed after the manifest hook (HomeScreen size mismatch). The branch now uses `generateBundle: { order: 'post', handler }` so hashes are computed after all output hooks, with a regression assertion. RetailOS CI #1184 passed on final PR head `1212b8f73b21e699bff053cfc3b8a1ee48652aa7`, including preflight, TypeScript, production/Pages builds, manifest byte/hash parity, worker runtime, platform contract, main-only production deploy guard and bundle comparison. PR review and physical Android/iOS/Desktop acceptance remain pending. This is the canonical source of truth for every future application release and deployment.
 
 ## 1. Product contract
