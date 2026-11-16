@@ -3,7 +3,7 @@
 - Active implementation branch: `feat/pwa-delta-release-staging`, created to add content-verified delta downloads to the consent-gated PWA runtime.
 - Delta staging source now reuses active-cache resources only after exact URL, size and SHA-256 validation; missing/changed/corrupt assets are fetched, and removed assets are not copied. Network download bytes are reported separately from reused and total release bytes.
 - Temporary storage still requires the full candidate footprint because release caches remain isolated and the active release must remain available for rollback.
-- Automated CI and physical-device acceptance for this delta branch are pending. No merge or deployment is claimed.
+- GitHub Actions CI #1250 passed on final source/test head `c7da10651b39d517782912baf9fd0cc4a252b55f`, including full preflight, TypeScript/production and Pages builds, and PR-base bundle comparison. Physical-device acceptance remains pending; no merge or deployment is claimed.
 - Canonical PWA release contract and acceptance matrix: `PWA_RUNTIME_RELEASE.md`.
 
 
