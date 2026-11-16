@@ -61,7 +61,7 @@ No merge, production promotion or deployment is included.
 
 ---
 
-# Current PWA runtime and release status — 2026-11-15
+# Historical implementation snapshot — consent-gated PWA runtime (2026-11-15)
 
 **Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
 **Baseline:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` after PR #119. PR #120 was closed as superseded; its documentation changes are included in this branch.  
