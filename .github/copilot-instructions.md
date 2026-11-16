@@ -1,6 +1,6 @@
 # Copilot instructions for RetailOS
 
-Before editing, read `AGENTS.md` and the context files in `docs/ai-context/`. Inspect current source; do not trust a patch or previous assistant summary over the working tree.
+Before editing, read `AGENTS.md`, `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`. Use INDEX to load only the canonical topic document and skill relevant to the task; inspect current source and GitHub state. Do not bulk-read historical context or trust an old assistant summary over the repository.
 
 ## Rules
 - Preserve production behavior and public contracts unless the user explicitly approves a migration.
@@ -12,3 +12,16 @@ Before editing, read `AGENTS.md` and the context files in `docs/ai-context/`. In
 - Never silently alter `vite.config.ts`, GitHub Pages base paths, service worker, auth, IndexedDB, Apps Script contracts, or deployment workflow.
 - Run applicable checks and state exact results. If a check was not run, say so.
 - Never deploy or push without explicit approval.
+
+
+## Skill selection
+- Use `.github/skills/retailos-core/SKILL.md` as the shared reasoning and safety layer.
+- Select only the task skill needed: `retailos-audit`, `retailos-technical-research`, or `retailos-implementation`.
+- Use `docs/ai-context/INDEX.md` to load the canonical domain contract; do not duplicate its contents in prompts or skills.
+
+## Context and evidence
+- Verify branch, commit, PR, CI and deployment state from GitHub before reporting current status.
+- Prefer targeted file/line reads and focused diffs. Historical logs are for specific investigations, not mandatory session-start reading.
+- Separate confirmed source facts, CI results, local execution and physical-device acceptance. Never claim a check that was not run on the stated commit.
+- For architecture/performance/new-technology work, research current credible options and official documentation, compare trade-offs with RetailOS constraints, and keep proposals separate from accepted decisions. No new dependency or service without explicit approval.
+- In ChatGPT Web, use the connected GitHub repository and an isolated branch for reviewable edits; do not claim local or device validation unless actually performed.

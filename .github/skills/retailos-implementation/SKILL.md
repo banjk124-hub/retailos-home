@@ -1,18 +1,29 @@
 ---
 name: retailos-implementation
-description: Safely audit, design, implement, and verify changes to RetailOS React/Vite/TypeScript application, especially module library, mobile UX, data snapshots, PWA, and GitHub Pages deployment.
+description: Safely design, implement, and verify approved changes to the RetailOS React/Vite/TypeScript application.
 ---
 
 # RetailOS implementation skill
 
 ## When to use
-Use for any RetailOS feature, refactor, UI/UX redesign, module registry/library work, data integration, bug fix, performance work, or release preparation.
+Use for approved implementation work: features, bounded refactors, UI/UX, module registry/library, data integration, bug fixes, performance changes and release preparation. For read-only audits, use `retailos-audit` instead.
+
+## Skill composition
+
+Load `.github/skills/retailos-core/SKILL.md` as the shared engineering reasoning and safety layer. Select task skills only when relevant:
+- `retailos-audit` for read-only investigation and review.
+- `retailos-technical-research` when current external technical evidence is needed.
+- This implementation skill for approved code changes.
+
+Load only the domain contract/source files selected through `docs/ai-context/INDEX.md`. Do not load every skill or every domain document by default.
 
 ## Phase A — Orient
-1. Read root `AGENTS.md`, project context and implementation status.
+1. Read root `AGENTS.md`, `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`; use INDEX to select only the relevant canonical topic document and skill. Do not bulk-read historical logs.
 2. Inspect `git status --short`, branch, recent changes, package scripts, Vite config, routes, and related components.
 3. Trace the feature end-to-end: UI entry point → state/action → service/data contract → persistence/network → error/empty/offline states.
-4. Distinguish confirmed code facts from hypotheses. Search before assuming a file or function exists.
+4. Verify current branch, commit, PR, CI and deployment state from GitHub; do not infer current state from stale documentation.
+5. Distinguish confirmed code facts from hypotheses. Search before assuming a file or function exists.
+6. For architecture, performance or new-technology work, research current credible options and official documentation, compare trade-offs against project constraints, and keep exploratory proposals separate from accepted decisions.
 
 ## Phase B — Baseline
 Record:
@@ -25,6 +36,8 @@ Record:
 Never “fix” baseline failures without noting whether they predate the change.
 
 ## Phase C — Design
+Apply the CORE Complexity Gate and Risk/Dependency Gate before coding. Prefer the minimum sufficient solution, reuse existing platform capabilities and dependencies, and justify every new layer. Trace producers and consumers for shared contracts; stop before unapproved migrations or architectural changes.
+
 Before coding, state:
 - user problem and measurable outcome;
 - proposed interaction and responsive behavior;
@@ -53,6 +66,8 @@ Do not infer one dimension from another.
 - Avoid changing data schemas or API payloads as part of a visual-only task.
 
 ## Phase E — Verify
+Use the acceptance criteria and evidence standards in `retailos-core`. Validate changed behavior and affected consumers; distinguish source assertions, automated tests, CI, local/browser execution and physical-device acceptance.
+
 Run relevant checks in this order:
 1. targeted unit/type checks;
 2. app TypeScript check;

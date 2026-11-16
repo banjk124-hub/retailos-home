@@ -1,3 +1,25 @@
+### 2026-11-16 — Phase 2.1 AI capability upgrade
+
+- Confirmed PR #138 remains the active vehicle; Phase 2.1 is AI capability upgrade, distinct from Phase 2.2 Runtime Audit/PWA Update hardening.
+- Defined the three connected layers: AI Working Protocol, RetailOS Project Intelligence, Execution & Validation.
+- Added CORE and task skills for shared engineering reasoning, source-grounded audit and evidence-led technical research; integrated existing implementation skill.
+- Added canonical capability architecture and scenario-based evaluation; updated repository entry points and status/roadmap.
+- Scope remains documentation and agent-skill files only. Application source, runtime, dependencies, tests, data contracts, Service Worker and deployment workflows are excluded.
+- Evaluation scenarios are defined but not yet proven by subsequent real tasks. Final diff/path review and final-head CI remain required.
+
+---
+
+### 2026-11-16 — Phase 1 AI workflow and documentation governance
+
+- Verified current `main` is `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`; PR #137 merged at that commit.
+- Verified PR-head CI #1250 passed; post-merge main CI run `43802257547` and GitHub Pages deployment run `43802257688` completed successfully.
+- Found current-state docs still describing PR #137 as Draft/unmerged and conflicting instructions requiring every AI-context file to be read at session start.
+- Phase 1 scope: reconcile current-state documentation and establish INDEX-driven selective context loading, GitHub-state verification, token discipline, current technical research and evidence-based reporting.
+- Work branch: `docs/phase1-ai-context-governance`, based on current main. No application source, tests, dependencies, build configuration or deployment workflow changes are in scope.
+- Reviewed Draft PR #138 and the GitHub changed-file list: all 12 changed paths are documentation/instruction files; no application source, tests, dependencies, build configuration or deployment workflow changed. No application build, local test or physical-device QA is claimed for this documentation-only work.
+
+---
+
 ### 2026-11-11 — Camera Request Bridge CI verification
 
 - CI run #588 initially exposed a test-harness import issue after `cameraSession.ts` gained platform contract/resolver imports. Updated the existing scanner validation harness to map those dependencies to data modules.

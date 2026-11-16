@@ -1,41 +1,60 @@
-# Current implementation — delta-aware PWA release staging — 2026-11-16
+# Current verified implementation status — 2026-11-16
 
-**Branch:** `feat/pwa-delta-release-staging`  
-**Base:** `main` at `32cc651afcaf7af73dab34d9964a559d025e608e`.  
-**PR:** Draft #137; final verified source/test head `c7da10651b39d517782912baf9fd0cc4a252b55f`.  
-**Status:** GitHub Actions CI #1250 (`43800583013`) passed the full `npm run preflight`, TypeScript/production and GitHub Pages builds, PR-base bundle build/comparison and artifact upload. No merge or deployment.
+**Repository:** `banjk124-hub/retailos-home`  
+**Default branch:** `main`  
+**Current main commit:** `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
+**Latest feature:** PR #137, delta-aware PWA release staging — merged.
 
-## Implemented in source
-- Service Worker builds a delta plan from the active release caches using exact URL, response success, byte length and SHA-256 checks.
-- Only missing or changed resources are fetched; verified unchanged resources are copied into the isolated candidate caches. Removed old resources are not copied.
-- Candidate cache completeness, full read-back integrity verification, root shell alias, explicit download consent, explicit safe-handoff activation, rollback and business-data preservation remain in place.
-- Worker discovery reports network download bytes, verified reused bytes, total candidate bytes and resource counts. UI labels network transfer separately from reused and total release bytes.
-- Storage preflight intentionally remains based on the complete candidate footprint because copied resources occupy space in a second release-specific cache while the active release is retained.
+## Verified repository state
+- PR #137 merged on 2026-11-16 at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`.
+- Final PR-head CI #1250 (`43800583013`) passed full `npm run preflight`, TypeScript, production and GitHub Pages builds, PR-base bundle build/comparison and artifact upload.
+- Post-merge main CI run `43802257547` completed successfully.
+- GitHub Pages deployment run `43802257688` completed successfully.
+- These results verify automated pipeline runs, not physical Android/iOS/desktop or low-end-device acceptance.
 
-## Changed files
-- `src/sw/service-worker.template.js`
-- `src/shared/pwa/PwaUpdatePrompt.tsx`
-- `scripts/test-pwa-worker-runtime.mjs`
-- `docs/ai-context/PWA_RUNTIME_RELEASE.md`
-- `docs/ai-context/IMPLEMENTATION_STATUS.md`
-- `docs/ai-context/AI_HANDOFF.md`
-- `docs/ai-context/SESSION_LOG.md`
-- `docs/ai-context/CHANGELOG_AI.md`
-- `docs/ai-context/PROJECT_CONTEXT.md`
+## Current PWA behavior recorded in source
+- Candidate resources are reused only after exact URL, successful response, byte length and SHA-256 verification against the candidate manifest.
+- Missing, changed, unreadable or corrupt resources are downloaded and verified; removed resources are not copied into the new release.
+- Network download bytes, reused bytes and total candidate release bytes are reported separately.
+- Candidate caches remain isolated; the complete candidate footprint is still required in temporary storage while the active release is retained for rollback.
+- Download consent and explicit safe-handoff activation remain separate. Business data is not part of application release-cache cleanup.
 
-## Verification still required
-- Review the complete PR diff once more before merge consideration. The first two CI attempts exposed a test-harness-only consumed Response body; the test now reads a clone, and final-head CI #1250 passed.
-- Review the complete diff for protocol compatibility, progress semantics, cache edge cases and documentation consistency.
-- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains pending; CI does not establish browser Cache API/device behavior.
-- No merge, production promotion or deployment is included.
+## Outstanding acceptance
+- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android validation remains outstanding unless separately recorded with evidence.
+- Verify progress behavior on large assets and memory/storage behavior on constrained devices before treating delta-download UX as fully accepted.
+- No transfer to the separate shared production account/repository or Cloudflare deployment is implied by the development repository's successful GitHub Pages deployment.
+
+## Phase 2.2 — PWA Runtime Audit and hardening
+
+- Scope: Service Worker delta planning/staging, byte-accurate download progress, candidate integrity and failure recovery. Work is performed directly on PR #138 branch `docs/phase1-ai-context-governance`.
+- Verified baseline: active/candidate caches are isolated; previous-cache reuse requires a successful response, exact size and SHA-256; staging verifies cache read-back and root alias; activation revalidates staged bytes; failed staging cleans only candidate caches; business data is outside release-cache cleanup; dirty forms, camera, Stocktake, Stocktake Import, module data lifecycle, transitions and push setup have blockers.
+- Findings: `buildDownloadPlan()` retained an in-memory response body for every reusable resource; progress bytes advanced only after an entire network resource completed. The Update Center already distinguished network bytes, reused bytes and total candidate footprint.
+- Changes: reusable planning now retains only resource metadata; staging revalidates/copies one cached resource at a time; network bodies stream through a cache branch and a byte-count/hash branch; UI progress is emitted during large files and throttled; a cache miss discovered during staging increases the live network denominator. Release UI clarifies that removed old resources are not part of the new-release footprint.
+- Release: development version `0.3.6`, with synchronized package, lockfile and release notes.
+- Boot-health audit: existing `App.tsx` / `HomeScreen` primary-surface report and `AppErrorBoundary` pre-health failure signal match the accepted contract; no unnecessary boot lifecycle change was made.
+- Validation: runtime regression coverage includes in-file progress, monotonic received bytes, exact network-only denominator, reuse accounting, candidate footprint, metadata-only plan and the 99% pre-verification cap. CI #1275 (`43808291451`) passed on head `9e209838ae19f7d0db01bb4ef058fca2877cb129`, including preflight, TypeScript/production and Pages builds, PR-base build and bundle comparison. Physical-device acceptance remains outstanding.
+- Safety: no backend/data schema, business-data store, auth/session contract, deploy workflow or production-account change.
+
+## Phase 2.1 — AI capability upgrade
+- Scope: AI Working Protocol, RetailOS Project Intelligence, and Execution & Validation. No application source/runtime, dependency, data-contract or deployment changes.
+- Work branch: `docs/phase1-ai-context-governance`, continuing directly on Draft PR #138.
+- Added canonical AI capability architecture and scenario evaluation; introduced `retailos-core`, `retailos-audit`, and `retailos-technical-research` skills; composed CORE/task-skill selection into the existing implementation skill and entry instructions.
+- Validation status: documentation/skill consistency and final PR path/diff review are required. The Phase 2.1 workflow scenarios are defined but have not yet been exercised across real subsequent engineering tasks. Check final-head GitHub Actions before reporting CI.
+- Explicit exclusion: Phase 2.2 PWA Runtime Audit/hardening is not part of this phase.
+
+## Phase 1 — AI workflow and documentation governance
+- Scope: documentation and AI workflow only. No application source, tests, runtime dependencies, build configuration or deployment workflow changes.
+- Work branch: `docs/phase1-ai-context-governance`, based on main commit `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`.
+- Current change status: Draft PR #138 is open for review; no merge or production promotion is claimed.
+- Verification: inspect changed paths and diffs; verify every changed path is documentation/instructions only. An application build is not a validation requirement for this documentation-only phase.
 
 ---
 
-# Current PWA Update Center and safe-handoff implementation status — 2026-11-15
+# Historical implementation snapshot — PWA Update Center and safe handoff (2026-11-15)
 
 **Branch:** `feat/pwa-update-center-safe-handoff`  
 **Base:** `main` after merged PR #122 (`70677e5dd0db8d417b1b9441ce3763aaaca26c60`).  
-**Status:** Implementation in progress. Source edits are committed to this branch; no CI/build/test has yet been run in this remote editing session. No merge or deployment.
+**Status at that historical snapshot:** Implementation was in progress on its feature branch; this section is retained as implementation history, not the current main status.
 
 ## Source changes made
 - Added `src/shared/pwa/updateCenterStore.ts` for device-local pending update metadata and a cross-component change event.
@@ -60,7 +79,7 @@ No merge, production promotion or deployment is included.
 
 ---
 
-# Current PWA runtime and release status — 2026-11-15
+# Historical implementation snapshot — consent-gated PWA runtime (2026-11-15)
 
 **Implementation branch:** `feat/pwa-consent-gated-release-runtime`  
 **Baseline:** `main` at `5fa89b0ff0537899bbb9ca9f8ecf257d2ad4a094` after PR #119. PR #120 was closed as superseded; its documentation changes are included in this branch.  

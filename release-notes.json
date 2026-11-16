@@ -1,20 +1,22 @@
 {
-  "version": "0.3.5",
-  "title": "Cập nhật RetailOS",
-  "summary": "Bản cập nhật đang được hoàn thiện, tập trung cải thiện chức năng, độ ổn định và trải nghiệm vận hành.",
+  "version": "0.3.6",
+  "title": "Cải thiện độ tin cậy cập nhật RetailOS",
+  "summary": "Tối ưu quy trình tải bản cập nhật, xác minh tài nguyên và hiển thị tiến trình theo dữ liệu thực tế.",
   "sections": [
     {
-      "heading": "Cải tiến hệ thống",
+      "heading": "Nâng cấp hệ thống cập nhật",
       "items": [
-        "Cập nhật và hoàn thiện các chức năng trong quá trình phát triển RetailOS.",
-        "Cải thiện độ ổn định và trải nghiệm sử dụng."
+        "Tiến trình tải phản ánh số byte thực tế nhận được, cập nhật ngay cả khi một tệp lớn chưa tải xong.",
+        "Giảm áp lực bộ nhớ khi kiểm tra và tái sử dụng tài nguyên từ phiên bản hiện tại.",
+        "Tiếp tục phân biệt dung lượng tải qua mạng, dung lượng tái sử dụng và tổng tài nguyên của bản mới.",
+        "Giữ nguyên phiên bản đang chạy và dữ liệu nghiệp vụ khi quá trình tải hoặc xác minh bản mới thất bại."
       ]
     }
   ],
   "compatibility": [
-    "Thông tin tương thích sẽ được xác nhận khi phiên bản hoàn thiện được lựa chọn phát hành Production."
+    "Không thay đổi cấu trúc dữ liệu nghiệp vụ hoặc định dạng snapshot."
   ],
   "warnings": [
-    "Đây là bản cập nhật trong môi trường phát triển; nội dung phát hành chính thức sẽ được hoàn thiện khi chuyển giao Production."
+    "Bản cập nhật trong môi trường phát triển; vẫn cần kiểm thử thực tế trên Android, iOS và thiết bị cấu hình thấp trước khi chuyển giao vận hành."
   ]
 }

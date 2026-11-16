@@ -1,29 +1,41 @@
-# Current handoff — delta-aware PWA release staging — 2026-11-16
+# Current handoff — Phase 2.2 PWA Runtime Audit and hardening — 2026-11-16
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Branch:** `feat/pwa-delta-release-staging`  
-**Objective:** Download only candidate resources that are not byte-for-byte reusable from the active release, while preserving complete offline candidate caches and the separate safe activation confirmation.
+**Base:** `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
+**Work branch:** `docs/phase1-ai-context-governance`  
+**Pull request:** [#138](https://github.com/banjk124-hub/retailos-home/pull/138)  
+**Phase 2.1 baseline head:** `eb1dca880a4c17043c963230a64e435903a62713` — CI #1271 passed.
 
-## Source behavior now authored
-- Candidate resources are compared against active release caches by URL, exact byte size and SHA-256. Valid matches are copied into the candidate cache; changed/missing/corrupt resources are fetched.
-- Removed resources are excluded. Progress distinguishes network bytes from reused bytes and complete candidate size.
-- Storage budget still uses complete candidate size because candidate and active release caches coexist.
-- First install still downloads the complete payload. No automatic activation, consent bypass, data migration or production deployment was added.
+## Phase 2.2 scope
+Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
-## Verification
-- GitHub Actions CI #1250 (`43800583013`) passed on head `c7da10651b39d517782912baf9fd0cc4a252b55f`: locked dependency install, full `npm run preflight` (including worker runtime, cache-policy and platform contract tests), TypeScript/production build, GitHub Pages build, PR-base bundle build/comparison and artifact upload.
-- Earlier runs #1243 and #1246 found a consumed Response body in the test harness after the test inspected a raw cached response. The fixture now reads a clone; final-head CI #1250 passed.
-- Physical Android/iOS/Desktop and low-end Android acceptance remains outstanding.
+## Source findings
+- Existing code verifies reused resources by URL, success status, exact byte length and SHA-256; verifies candidate cache read-back and root navigation alias; revalidates before activation; and removes only candidate caches on staging failure.
+- Existing safety boundaries protect dirty forms, camera leases, Stocktake, Stocktake Import, data lifecycle, app transitions and push setup.
+- Existing boot-health path is owned by the primary app surface: login surface after App effect or HomeScreen after mount. AppErrorBoundary reports a matching build failure only before healthy boot. No boot lifecycle rewrite is required.
+- Confirmed weaknesses: download-plan discovery retained every reusable response body in memory; network progress advanced only after an entire resource completed.
 
-## Next validation
-1. Review the complete PR diff before merge consideration.
-2. Complete physical platform acceptance before treating the release workflow as fully accepted.
+## Phase 2.2 changes
+- Replace retained reusable response bodies with metadata-only planning and one-resource-at-a-time revalidation/copy.
+- Stream network response bodies to candidate cache while independently counting received bytes and validating SHA-256.
+- Emit throttled in-file progress; keep `bytesDownloaded`, `totalBytes`, `reusedBytes` and `totalReleaseBytes` semantically distinct.
+- If a cache entry becomes unavailable/corrupt between discovery and staging, treat it as a network miss and update the live byte denominator and UI estimate.
+- Clarify that total new-release size includes all resources in the candidate manifest; removed old resources are not counted.
+- Add runtime regression tests and bump development version to 0.3.6 with synchronized release notes.
 
-No merge or deployment is authorized by this work.
+## Safety boundary
+Keep the active release and business data untouched on failed staging. Preserve the full candidate storage headroom requirement, explicit download consent, separate explicit activation confirmation, safe handoff blockers and boot-health rollback. No backend/data schema, auth/session contract, deployment workflow, merge, production promotion or deployment is authorized.
+
+## Validation results
+1. CI #1275 (`43808291451`) passed on application/test head `9e209838ae19f7d0db01bb4ef058fca2877cb129`, including npm install, local-equivalent preflight, TypeScript/production and Pages builds, PR-base build and bundle comparison.
+2. Final PR path review confirms only AI documentation/skills, PWA Service Worker/UI, the focused PWA runtime test, package version and release notes changed. No backend/data contract or deployment workflow changed.
+3. Physical Android Chrome/PWA, iOS Safari/Home Screen, desktop and low-end Android tests remain a separate acceptance gate and have not been claimed.
 
 ---
 
-# Current handoff — PWA Update Center and explicit safe handoff
+---
+
+# Historical handoff — PWA Update Center and explicit safe handoff
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Branch:** `feat/pwa-update-center-safe-handoff`  
@@ -53,7 +65,7 @@ No merge or deployment is authorized by this work.
 
 ---
 
-# Current handoff — consent-gated PWA release runtime
+# Historical handoff — consent-gated PWA release runtime
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Branch:** `feat/pwa-consent-gated-release-runtime`  
@@ -247,7 +259,7 @@ At the PR #75 baseline, `ScannerModuleConfig.cameraRequest` was declarative and 
 
 ---
 
-# Current task — Stocktake offline file import (2026-11-10)
+# Historical task — Stocktake offline file import (2026-11-10)
 
 **PR:** [#69 — Offline file import, zone preview and export](https://github.com/banjk124-hub/retailos-home/pull/69).
 **Branch:** `feat/stocktake-file-import`.
@@ -278,7 +290,7 @@ See `docs/ai-context/STOCKTAKE_FILE_IMPORT.md` and ADR-028 in `ARCHITECTURE.md`.
 
 ---
 
-# Current AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
+# Historical AI handoff — post-merge SCAN-05/06 audit (2026-11-10)
 
 - Repository: banjk124-hub/retailos-home; default branch: main.
 - PR #67 merge baseline is 9406ac30d53bc9984912bd1928a32fd78157cf60; current main later advanced to PR #74 merge commit 6ac1eefad1c47d87d2c83f9002050c8a7d7802fe.
@@ -661,9 +673,9 @@ This is the latest task snapshot and supersedes older “active task” labels a
 - This verifies the latest documentation-synchronized branch head, not only the earlier source/test commit.
 - Local Windows/PowerShell preflight and physical iOS/Android camera QA remain outstanding.
 
-## Current handoff snapshot — Supplemental Scanner UX Transition (2026-11-08)
+## Historical handoff snapshot — Supplemental Scanner UX Transition (2026-11-08)
 
-This is the latest active task snapshot and supersedes older active-task labels above where they conflict. Earlier entries remain historical.
+This was the active task snapshot on 2026-11-08. It is retained as historical evidence and does not describe the current task.
 
 - Repository: banjk124-hub/retailos-home; base branch: main at 36b8ca7457c9df7bb3f26105660605c66070b9ea.
 - Active branch: feat/scanner-ux-transition; Draft PR #31: https://github.com/banjk124-hub/retailos-home/pull/31.
@@ -677,7 +689,7 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Once this supplemental patch is accepted, return to the existing Phase 1.2G–1.2J roadmap. The patch does not complete Phase 1.2G.
 
 
-## Current handoff — Post-merge Scanner stabilization (2026-11-08)
+## Historical handoff — Post-merge Scanner stabilization (2026-11-08)
 
 - Main base: `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4`.
 - Active branch: `fix/scanner-lifecycle-preview-stability`; Draft PR #32.

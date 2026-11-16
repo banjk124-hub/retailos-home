@@ -1,22 +1,17 @@
 # Current repository state — 2026-11-16
 
-- Active implementation branch: `feat/pwa-delta-release-staging`, created to add content-verified delta downloads to the consent-gated PWA runtime.
-- Delta staging source now reuses active-cache resources only after exact URL, size and SHA-256 validation; missing/changed/corrupt assets are fetched, and removed assets are not copied. Network download bytes are reported separately from reused and total release bytes.
-- Temporary storage still requires the full candidate footprint because release caches remain isolated and the active release must remain available for rollback.
-- GitHub Actions CI #1250 passed on final source/test head `c7da10651b39d517782912baf9fd0cc4a252b55f`, including full preflight, TypeScript/production and Pages builds, and PR-base bundle comparison. Physical-device acceptance remains pending; no merge or deployment is claimed.
-- Canonical PWA release contract and acceptance matrix: `PWA_RUNTIME_RELEASE.md`.
+**Repository:** `banjk124-hub/retailos-home`  
+**Default branch:** `main`  
+**Current main commit:** `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
+**Latest completed feature:** PR #137 — delta-aware PWA release staging. Merged at the main commit above on 2026-11-16.
 
-
-
-- Production baseline: `main` includes PR #119; the user confirms it has been merged and deployed.
-- Earlier consent-gated runtime implementation was developed on `feat/pwa-consent-gated-release-runtime`; the current delta-staging work is isolated on `feat/pwa-delta-release-staging` (PR #137). Neither branch is a production deployment.
-- Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`; mandatory cross-task rules are in `AGENTS.md`.
-- The consent-gated runtime baseline uses metadata-only discovery and user-approved candidate staging. The current delta-staging branch layers content-verified reuse onto that baseline; the separate explicit safe-handoff confirmation and rollback contracts remain mandatory.
-- App-wide handoff guards cover camera leases, Stocktake, Stocktake Import, snapshot sync/IndexedDB cleanup, push subscription setup, dirty forms and application transitions. Future modules with non-DOM critical state must register a blocker.
-- First install (no active Service Worker) still stages its initial runtime. The first update from PR #119 uses a one-time compatibility bridge: the old client's explicit Cập nhật action becomes consent to stage; the old UI cannot show release notes/progress until it reloads into this version.
-- Application Release Lifecycle and Data Lifecycle remain independent. Lookup/snapshot refresh and recalculation using existing logic must not trigger app update/reload or clear business data. New processing mechanisms/capabilities belong to an application release.
-- CI #1126 exposed missing final `index.html`; CI #1162 exposed manifest/final-chunk byte mismatch. Both were corrected with `enforce: 'post'` and `generateBundle` hook `order: 'post'`. RetailOS CI #1184 then passed full preflight, TypeScript, production/Pages builds, manifest integrity, worker/platform tests, main-only production deployment guard and bundle comparison on final PR head `1212b8f7`. Production Pages deployment is guarded to `main` for push and manual dispatch; feature branches cannot replace the production site. Final PR review and physical Android/iOS/Desktop acceptance remain pending. No merge/deploy is authorized by this work.
-
+- Delta staging reuses active-cache resources only after exact URL, byte-length and SHA-256 validation. Missing, changed or corrupt resources are downloaded and verified; removed resources are excluded.
+- Update reporting distinguishes network download bytes, verified reused bytes and total candidate release bytes. Temporary storage still needs room for the complete candidate alongside the active release for rollback.
+- PR #137 final-head CI #1250 passed full preflight, TypeScript, production/Pages builds and PR-base bundle comparison. Post-merge main CI run `43802257547` passed; GitHub Pages deployment run `43802257688` passed. These are automated pipeline results, not physical-device acceptance.
+- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains a separate validation gate. Do not claim device acceptance from CI or deployment.
+- Production baseline includes PR #119; the user previously confirmed that baseline was merged and deployed. The current delta-staging feature is merged to the development repository's `main`; this does not imply transfer to the separate shared production account/repository or Cloudflare environment.
+- Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`. Application Release Lifecycle and Data Lifecycle remain independent; data-only refresh/recalculation using existing logic must not trigger an app release, reload or release-cache cleanup.
+- AI workflow source of truth: `AGENTS.md`, `docs/ai-context/INDEX.md`, `docs/ai-context/AI_CAPABILITY_SYSTEM.md`, the composable CORE/task skills under `.github/skills/`, and `prompts/START_HERE.md`. Load context selectively; historical snapshots below are retained for evidence, not current-state authority.
 
 # Historical scanner state snapshot — 2026-11-11
 

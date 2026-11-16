@@ -4,11 +4,12 @@ This file is the navigation layer for repository documentation. Read the canonic
 
 ## Start here
 
-1. `AGENTS.md` — operating rules and safety contract.
-2. `PROJECT_CONTEXT.md` — durable product facts and project constraints.
-3. `ARCHITECTURE.md` — accepted architecture decisions and protected contracts.
-4. `IMPLEMENTATION_STATUS.md` — verified implementation state and outstanding acceptance gates.
-5. `.github/skills/retailos-implementation/SKILL.md` — implementation workflow.
+1. `AGENTS.md` — operating rules, selective context policy and safety contract.
+2. `PROJECT_CONTEXT.md` — durable product facts and current top-level repository state.
+3. `IMPLEMENTATION_STATUS.md` — verified implementation state and outstanding acceptance gates.
+4. Select the relevant canonical topic document from the table below; read `ARCHITECTURE.md` only when the task touches an architecture decision or protected contract.
+5. Load `.github/skills/retailos-core/SKILL.md` and only the task skill needed for the request (audit, technical research or implementation).
+6. `prompts/START_HERE.md` — concise session-start and task prompts.
 
 ## Topic sources of truth
 
@@ -26,6 +27,14 @@ This file is the navigation layer for repository documentation. Read the canonic
 | Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
 | Export utilities | `modules/EXPORT_FILE.md` |
 | Login Phase 2 historical changes | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
+
+## AI context loading policy
+
+- The default session-start set is `AGENTS.md`, this index, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`.
+- Load only the canonical topic document(s), relevant skill and source files required by the task. `ARCHITECTURE.md` is not a mandatory full read for an unrelated UI or documentation task.
+- Historical documents are opt-in evidence for a specific investigation; never bulk-load the archive.
+- Verify volatile repository facts (branch, commit, PR, CI, deployment) against GitHub before updating current-state documents.
+- Keep exploratory technology research clearly separate from accepted architecture decisions. Update canonical decisions only after an explicit decision and validation.
 
 ## Document ownership
 

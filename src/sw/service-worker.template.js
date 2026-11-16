@@ -145,69 +145,29 @@ async function digestHex(bytes) {
 async function buildDownloadPlan(manifest) {
   const active = await readActiveRelease();
   const cacheNames = await caches.keys();
-  const canReuse = Boolean(
-    active?.buildId
-    && active.buildId !== BUILD_ID
-    && active.shellCache
-    && active.assetCache
-    && cacheNames.includes(active.shellCache)
-    && cacheNames.includes(active.assetCache)
-  );
-  const previousCaches = canReuse ? {
-    shell: await caches.open(active.shellCache),
-    assets: await caches.open(active.assetCache),
-  } : null;
-  const reusable = [];
-  const toDownload = [];
-  let reusedBytes = 0;
-  let downloadBytes = 0;
-  let totalReleaseBytes = 0;
-
+  const canReuse = Boolean(active?.buildId && active.buildId !== BUILD_ID && active.shellCache && active.assetCache
+    && cacheNames.includes(active.shellCache) && cacheNames.includes(active.assetCache));
+  const previousCaches = canReuse ? { shell: await caches.open(active.shellCache), assets: await caches.open(active.assetCache) } : null;
+  const reusable = [], toDownload = [];
+  let reusedBytes = 0, downloadBytes = 0, totalReleaseBytes = 0;
   for (const resource of manifest.resources) {
     totalReleaseBytes += resource.size;
-    let reusableResponse = null;
+    let isReusable = false;
     if (previousCaches) {
       try {
-        const previousResponse = await previousCaches[resource.cache].match(
-          new URL(resource.path, APP_BASE_URL).href
-        );
-        if (previousResponse?.ok) {
-          const bytes = await previousResponse.clone().arrayBuffer();
-          if (
-            bytes.byteLength === resource.size
-            && await digestHex(bytes) === resource.sha256
-          ) reusableResponse = new Response(bytes, {
-            status: previousResponse.status,
-            statusText: previousResponse.statusText,
-            headers: previousResponse.headers,
-          });
+        const previousResponse = await previousCaches[resource.cache].match(new URL(resource.path, APP_BASE_URL).href);
+        if (previousResponse?.ok && previousResponse.type !== 'opaque') {
+          // Hash one cache entry at a time; never retain all reusable bodies in memory.
+          const bytes = await previousResponse.arrayBuffer();
+          isReusable = bytes.byteLength === resource.size && await digestHex(bytes) === resource.sha256;
         }
-      } catch {
-        // An unreadable/evicted/corrupt old cache entry is a cache miss, not
-        // a reason to block discovery or prevent a normal network download.
-        reusableResponse = null;
-      }
+      } catch { isReusable = false; }
     }
-    if (reusableResponse) {
-      // Keep an independent in-memory body; Cache.put consumes the Response
-      // passed to it, and later metadata discovery must remain repeatable.
-      reusable.push({ resource, response: reusableResponse });
-      reusedBytes += resource.size;
-    } else {
-      toDownload.push(resource);
-      downloadBytes += resource.size;
-    }
+    if (isReusable) { reusable.push(resource); reusedBytes += resource.size; }
+    else { toDownload.push(resource); downloadBytes += resource.size; }
   }
-
-  return {
-    totalReleaseBytes,
-    reusedBytes,
-    downloadBytes,
-    reusedCount: reusable.length,
-    downloadCount: toDownload.length,
-    reusable,
-    toDownload,
-  };
+  return { totalReleaseBytes, reusedBytes, downloadBytes, reusedCount: reusable.length,
+    downloadCount: toDownload.length, previousCaches, reusable, toDownload };
 }
 
 async function verifyStagedResources(resources) {
@@ -264,161 +224,136 @@ async function stageCandidate(target) {
     manifest = await fetchReleaseManifest();
     const plan = await buildDownloadPlan(manifest);
     const total = manifest.resources.length;
-    const totalBytes = plan.downloadBytes;
-    stagingProgress = {
-      type: 'RELEASE_DOWNLOAD_PROGRESS', buildId: BUILD_ID, version: manifest.version,
-      completed: 0, total, bytesDownloaded: 0, totalBytes,
-      reusedBytes: plan.reusedBytes, totalReleaseBytes: plan.totalReleaseBytes,
-    };
+    let totalBytes = plan.downloadBytes, reusedBytes = 0;
+    stagingProgress = { type: 'RELEASE_DOWNLOAD_PROGRESS', buildId: BUILD_ID, version: manifest.version,
+      completed: 0, total, bytesDownloaded: 0, totalBytes, reusedBytes, totalReleaseBytes: plan.totalReleaseBytes };
     if (await stagedReleaseIsComplete(manifest) && await verifyStagedResources(manifest.resources)) {
       const marker = await readStagedRelease();
-      notify(target, {
-        type: 'RELEASE_STAGED',
-        buildId: BUILD_ID,
-        version: manifest.version,
-        completed: total,
-        total,
-        bytesDownloaded: marker?.bytesDownloaded ?? totalBytes,
-        totalBytes: marker?.totalBytes ?? totalBytes,
-        reusedBytes: marker?.reusedBytes ?? plan.reusedBytes,
-        totalReleaseBytes: plan.totalReleaseBytes,
-        reused: true,
-      });
+      notify(target, { type: 'RELEASE_STAGED', buildId: BUILD_ID, version: manifest.version,
+        completed: total, total, bytesDownloaded: marker?.bytesDownloaded ?? totalBytes,
+        totalBytes: marker?.totalBytes ?? totalBytes, reusedBytes: marker?.reusedBytes ?? plan.reusedBytes,
+        totalReleaseBytes: plan.totalReleaseBytes, reused: true });
       return manifest;
     }
-
-    // The new release gets isolated caches. Reuse is content-addressed by the
-    // manifest's exact byte size and SHA-256, never by path or build ID alone.
     await Promise.all([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE)]);
     const stateCache = await caches.open(STATE_CACHE);
     await stateCache.delete(STAGED_RELEASE_STATE_URL);
-
     if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
       try {
         const estimate = await navigator.storage.estimate();
         const availableBytes = Number(estimate.quota) - Number(estimate.usage);
-        // Reused responses are copied into release-specific caches, so storage
-        // must still accommodate the complete candidate alongside the active release.
         if (Number.isFinite(availableBytes) && availableBytes < Math.ceil(plan.totalReleaseBytes * 1.1)) {
           throw new Error('Không đủ dung lượng trống để giữ đồng thời bản hiện tại và bản mới. Hãy giải phóng dung lượng khác rồi thử lại; không xóa dữ liệu RetailOS hoặc dữ liệu trình duyệt của ứng dụng.');
         }
       } catch (error) {
         if (error instanceof Error && error.message.startsWith('Không đủ dung lượng trống')) throw error;
-        // Storage estimation is advisory; actual Cache API writes remain authoritative.
       }
     }
-
-    const shellCache = await caches.open(SHELL_CACHE);
-    const assetCache = await caches.open(ASSET_CACHE);
-    let completed = 0;
-    let bytesDownloaded = 0;
-    const reportProgress = () => {
-      stagingProgress = {
-        type: 'RELEASE_DOWNLOAD_PROGRESS',
-        buildId: BUILD_ID,
-        version: manifest.version,
-        completed,
-        total,
-        bytesDownloaded,
-        totalBytes,
-        reusedBytes: plan.reusedBytes,
-        totalReleaseBytes: plan.totalReleaseBytes,
-      };
+    const shellCache = await caches.open(SHELL_CACHE), assetCache = await caches.open(ASSET_CACHE);
+    let completed = 0, bytesDownloaded = 0, lastProgressBytes = 0, lastProgressAt = Date.now();
+    const reportProgress = (force = false) => {
+      const now = Date.now();
+      if (!force && bytesDownloaded - lastProgressBytes < 256 * 1024 && now - lastProgressAt < 150) return;
+      lastProgressBytes = bytesDownloaded; lastProgressAt = now;
+      stagingProgress = { type: 'RELEASE_DOWNLOAD_PROGRESS', buildId: BUILD_ID, version: manifest.version,
+        completed, total, bytesDownloaded, totalBytes, reusedBytes, totalReleaseBytes: plan.totalReleaseBytes };
       notify(target, stagingProgress);
       if (target) void notifyAppClients(stagingProgress);
     };
-
-    for (const item of plan.reusable) {
-      const targetCache = item.resource.cache === 'shell' ? shellCache : assetCache;
-      const url = new URL(item.resource.path, APP_BASE_URL).href;
-      await targetCache.put(url, item.response.clone());
-      if (item.resource.path === 'index.html') {
-        await shellCache.put(APP_BASE_URL.href, item.response.clone());
+    reportProgress(true);
+    // Revalidate/copy one reusable entry at a time; late cache misses join the network plan.
+    for (const resource of plan.reusable) {
+      const url = new URL(resource.path, APP_BASE_URL).href;
+      const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
+      let reusableBytes = null, reusableStatus = 200, reusableStatusText = '', reusableHeaders;
+      try {
+        const previousResponse = await plan.previousCaches?.[resource.cache]?.match(url);
+        if (previousResponse?.ok && previousResponse.type !== 'opaque') {
+          const bytes = await previousResponse.arrayBuffer();
+          if (bytes.byteLength === resource.size && await digestHex(bytes) === resource.sha256) {
+            reusableBytes = bytes; reusableStatus = previousResponse.status;
+            reusableStatusText = previousResponse.statusText; reusableHeaders = previousResponse.headers;
+          }
+        }
+      } catch { reusableBytes = null; }
+      if (reusableBytes !== null) {
+        const reusableResponse = new Response(reusableBytes, { status: reusableStatus, statusText: reusableStatusText, headers: reusableHeaders });
+        await targetCache.put(url, reusableResponse.clone());
+        if (resource.path === 'index.html') await shellCache.put(APP_BASE_URL.href, reusableResponse.clone());
+        reusedBytes += resource.size; completed += 1;
+      } else {
+        totalBytes += resource.size;
+        plan.toDownload.push(resource);
       }
-      completed += 1;
-      reportProgress();
+      reportProgress(true);
     }
-
     for (let index = 0; index < plan.toDownload.length; index += BATCH_SIZE) {
       const batch = plan.toDownload.slice(index, index + BATCH_SIZE);
       const batchResults = await Promise.allSettled(batch.map(async (resource) => {
         const url = new URL(resource.path, APP_BASE_URL).href;
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 45000);
+        const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 45000);
         try {
-          const response = await fetch(url, {
-            cache: 'reload',
-            credentials: 'same-origin',
-            signal: controller.signal,
-          });
-          if (!response.ok || response.type === 'opaque') {
-            throw new Error('Tải tài nguyên thất bại: ' + resource.path);
-          }
-          const bytes = await response.clone().arrayBuffer();
-          if (bytes.byteLength !== resource.size) {
-            throw new Error('Sai kích thước tài nguyên: ' + resource.path);
-          }
-          if (await digestHex(bytes) !== resource.sha256) {
-            throw new Error('Sai checksum tài nguyên: ' + resource.path);
-          }
+          const response = await fetch(url, { cache: 'reload', credentials: 'same-origin', signal: controller.signal });
+          if (!response.ok || response.type === 'opaque') throw new Error('Tải tài nguyên thất bại: ' + resource.path);
           const targetCache = resource.cache === 'shell' ? shellCache : assetCache;
-          await targetCache.put(url, response);
-          if (resource.path === 'index.html') await shellCache.put(APP_BASE_URL.href, response.clone());
-          completed += 1;
-          bytesDownloaded += resource.size;
-          reportProgress();
-        } finally {
-          clearTimeout(timeout);
-        }
+          let verifiedBytes;
+          if (response.body) {
+            const [cacheStream, verificationStream] = response.body.tee();
+            const cacheWrite = targetCache.put(url, new Response(cacheStream, {
+              status: response.status, statusText: response.statusText, headers: response.headers,
+            })).then(() => null, (error) => error);
+            const reader = verificationStream.getReader(), chunks = [];
+            let receivedBytes = 0;
+            try {
+              while (true) {
+                const result = await reader.read();
+                if (result.done) break;
+                chunks.push(result.value); receivedBytes += result.value.byteLength;
+                bytesDownloaded += result.value.byteLength; reportProgress();
+              }
+            } catch (error) {
+              try { await reader.cancel(); } catch { /* Stream already failed. */ }
+              await cacheWrite; throw error;
+            }
+            const cacheWriteError = await cacheWrite;
+            if (cacheWriteError) throw cacheWriteError;
+            verifiedBytes = new Uint8Array(receivedBytes);
+            let offset = 0;
+            for (const chunk of chunks) { verifiedBytes.set(chunk, offset); offset += chunk.byteLength; }
+          } else {
+            verifiedBytes = new Uint8Array(await response.arrayBuffer());
+            bytesDownloaded += verifiedBytes.byteLength; reportProgress();
+            await targetCache.put(url, new Response(verifiedBytes, { status: response.status, statusText: response.statusText, headers: response.headers }));
+          }
+          if (verifiedBytes.byteLength !== resource.size) {
+            await targetCache.delete(url); throw new Error('Sai kích thước tài nguyên: ' + resource.path);
+          }
+          if (await digestHex(verifiedBytes) !== resource.sha256) {
+            await targetCache.delete(url); throw new Error('Sai checksum tài nguyên: ' + resource.path);
+          }
+          if (resource.path === 'index.html') await shellCache.put(APP_BASE_URL.href, new Response(verifiedBytes, {
+            status: response.status, statusText: response.statusText, headers: response.headers,
+          }));
+          completed += 1; reportProgress(true);
+        } finally { clearTimeout(timeout); }
       }));
       const failedResult = batchResults.find((result) => result.status === 'rejected');
       if (failedResult) throw failedResult.reason;
     }
-
-    if (!(await verifyStagedResources(manifest.resources))) {
-      throw new Error('Cache read-back không khớp kích thước hoặc SHA-256 của release manifest.');
-    }
-
-    await writeStagedRelease({
-      buildId: BUILD_ID,
-      version: manifest.version,
-      resourceCount: total,
-      resources: manifest.resources,
-      bytesDownloaded,
-      totalBytes,
-      reusedBytes: plan.reusedBytes,
-      totalReleaseBytes: plan.totalReleaseBytes,
-      stagedAt: new Date().toISOString(),
-    });
-    const stagedMessage = {
-      type: 'RELEASE_STAGED',
-      buildId: BUILD_ID,
-      version: manifest.version,
-      completed: total,
-      total,
-      bytesDownloaded,
-      totalBytes,
-      reusedBytes: plan.reusedBytes,
-      totalReleaseBytes: plan.totalReleaseBytes,
-    };
+    if (!(await verifyStagedResources(manifest.resources))) throw new Error('Cache read-back không khớp kích thước hoặc SHA-256 của release manifest.');
+    await writeStagedRelease({ buildId: BUILD_ID, version: manifest.version, resourceCount: total,
+      resources: manifest.resources, bytesDownloaded, totalBytes, reusedBytes,
+      totalReleaseBytes: plan.totalReleaseBytes, stagedAt: new Date().toISOString() });
+    const stagedMessage = { type: 'RELEASE_STAGED', buildId: BUILD_ID, version: manifest.version,
+      completed: total, total, bytesDownloaded, totalBytes, reusedBytes, totalReleaseBytes: plan.totalReleaseBytes };
     notify(target, stagedMessage);
     if (target) await notifyAppClients(stagedMessage);
     return manifest;
   } catch (error) {
-    await Promise.allSettled([
-      caches.delete(SHELL_CACHE),
-      caches.delete(ASSET_CACHE),
-      (async () => {
-        const cleanupStateCache = await caches.open(STATE_CACHE);
-        await cleanupStateCache.delete(STAGED_RELEASE_STATE_URL);
-      })(),
-    ]);
-    const failedMessage = {
-      type: 'RELEASE_STAGE_FAILED',
-      buildId: BUILD_ID,
-      version: manifest?.version,
-      message: error instanceof Error ? error.message : 'Không thể tải và xác minh phiên bản mới.',
-    };
+    await Promise.allSettled([caches.delete(SHELL_CACHE), caches.delete(ASSET_CACHE),
+      (async () => { const cache = await caches.open(STATE_CACHE); await cache.delete(STAGED_RELEASE_STATE_URL); })()]);
+    const failedMessage = { type: 'RELEASE_STAGE_FAILED', buildId: BUILD_ID, version: manifest?.version,
+      message: error instanceof Error ? error.message : 'Không thể tải và xác minh phiên bản mới.' };
     notify(target, failedMessage);
     if (target) await notifyAppClients(failedMessage);
     throw error;
