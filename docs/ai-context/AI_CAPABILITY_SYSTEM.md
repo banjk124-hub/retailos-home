@@ -23,6 +23,7 @@ This layer answers: **How should the AI think and work safely?**
 
 Provides the authoritative knowledge needed to reason about this specific system:
 - `docs/ai-context/INDEX.md`: navigation and progressive-disclosure router.
+- `docs/ai-context/PROJECT_MAP.md`: verified directory-level source/test map; it guides inspection but never substitutes for import tracing or canonical contracts.
 - `PROJECT_CONTEXT.md`: durable product goals, stack and constraints.
 - `ARCHITECTURE.md` and `DECISIONS.md`: accepted invariants, boundaries and decisions.
 - `IMPLEMENTATION_STATUS.md`: verified current state and acceptance gaps.
