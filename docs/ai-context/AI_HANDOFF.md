@@ -666,9 +666,9 @@ This is the latest task snapshot and supersedes older “active task” labels a
 - This verifies the latest documentation-synchronized branch head, not only the earlier source/test commit.
 - Local Windows/PowerShell preflight and physical iOS/Android camera QA remain outstanding.
 
-## Current handoff snapshot — Supplemental Scanner UX Transition (2026-11-08)
+## Historical handoff snapshot — Supplemental Scanner UX Transition (2026-11-08)
 
-This is the latest active task snapshot and supersedes older active-task labels above where they conflict. Earlier entries remain historical.
+This was the active task snapshot on 2026-11-08. It is retained as historical evidence and does not describe the current task.
 
 - Repository: banjk124-hub/retailos-home; base branch: main at 36b8ca7457c9df7bb3f26105660605c66070b9ea.
 - Active branch: feat/scanner-ux-transition; Draft PR #31: https://github.com/banjk124-hub/retailos-home/pull/31.
@@ -682,7 +682,7 @@ This is the latest active task snapshot and supersedes older active-task labels 
 - Once this supplemental patch is accepted, return to the existing Phase 1.2G–1.2J roadmap. The patch does not complete Phase 1.2G.
 
 
-## Current handoff — Post-merge Scanner stabilization (2026-11-08)
+## Historical handoff — Post-merge Scanner stabilization (2026-11-08)
 
 - Main base: `56fbd1dab5e6fafd1976a7932a7a5a64e96c1bd4`.
 - Active branch: `fix/scanner-lifecycle-preview-stability`; Draft PR #32.
