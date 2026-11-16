@@ -9,10 +9,12 @@ description: Safely audit, design, implement, and verify changes to RetailOS Rea
 Use for any RetailOS feature, refactor, UI/UX redesign, module registry/library work, data integration, bug fix, performance work, or release preparation.
 
 ## Phase A — Orient
-1. Read root `AGENTS.md`, project context and implementation status.
+1. Read root `AGENTS.md`, `docs/ai-context/INDEX.md`, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`; use INDEX to select only the relevant canonical topic document and skill. Do not bulk-read historical logs.
 2. Inspect `git status --short`, branch, recent changes, package scripts, Vite config, routes, and related components.
 3. Trace the feature end-to-end: UI entry point → state/action → service/data contract → persistence/network → error/empty/offline states.
-4. Distinguish confirmed code facts from hypotheses. Search before assuming a file or function exists.
+4. Verify current branch, commit, PR, CI and deployment state from GitHub; do not infer current state from stale documentation.
+5. Distinguish confirmed code facts from hypotheses. Search before assuming a file or function exists.
+6. For architecture, performance or new-technology work, research current credible options and official documentation, compare trade-offs against project constraints, and keep exploratory proposals separate from accepted decisions.
 
 ## Phase B — Baseline
 Record:
