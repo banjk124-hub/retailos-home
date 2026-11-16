@@ -446,8 +446,8 @@ export default function PwaUpdatePrompt() {
 
   const totalBytes = downloadPlan?.downloadBytes ?? manifest?.resources.reduce((sum, resource) => sum + resource.size, 0) ?? 0;
   const progressPercent = progress.totalBytes > 0
-    ? Math.min(100, Math.round((progress.bytesDownloaded / progress.totalBytes) * 100))
-    : progress.total > 0 ? Math.min(100, Math.round((progress.completed / progress.total) * 100)) : 0;
+    ? Math.min(99, Math.floor((progress.bytesDownloaded / progress.totalBytes) * 100))
+    : progress.total > 0 ? Math.min(99, Math.floor((progress.completed / progress.total) * 100)) : 0;
 
   return (
     <aside className={`pwa-update-prompt ${isBusinessBusy ? 'is-busy' : 'is-modal'} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`} role="region" aria-label="Cập nhật RetailOS" data-business-busy={isBusinessBusy ? 'true' : 'false'}>
