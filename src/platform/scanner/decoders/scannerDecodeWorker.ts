@@ -32,11 +32,12 @@ let generation = 0;
 let initialized = false;
 let formats: string[] = [];
 let cancelled = new Set<number>();
+let activeJobs = new Set<number>();
 let disposed = false;
 let initPromise: Promise<unknown> | null = null;
 
-function post(type: string, payload: Record<string, unknown> = {}) {
-  scope.postMessage({ type, protocolVersion: 1, generation, ...payload });
+function post(type: string, payload: Record<string, unknown> = {}, targetGeneration = generation) {
+  scope.postMessage({ type, protocolVersion: 1, generation: targetGeneration, ...payload });
 }
 async function initialize(message: InitMessage) {
   generation = message.generation;
@@ -54,26 +55,27 @@ async function initialize(message: InitMessage) {
   if (disposed || generation !== message.generation) return;
   initialized = true;
   // READY is emitted only here; the message handler must not emit a duplicate handshake.
-  post('READY', { wasmVersion: String(ZXING_WASM_VERSION) });
+  post('READY', { wasmVersion: String(ZXING_WASM_VERSION) }, message.generation);
 }
 async function decode(message: DecodeMessage) {
   if (!initialized || disposed || message.generation !== generation) {
-    post('RESULT', { jobId: message.jobId, results: [], stale: true });
+    post('RESULT', { jobId: message.jobId, results: [], stale: true }, message.generation);
     return;
   }
   if (!Number.isSafeInteger(message.width) || !Number.isSafeInteger(message.height)
     || message.width < 1 || message.height < 1 || message.width * message.height > 1_500_000
     || message.pixels.byteLength !== message.width * message.height * 4) {
-    post('ERROR', { jobId: message.jobId, error: 'Invalid or oversized frame payload.' });
+    post('ERROR', { jobId: message.jobId, error: 'Invalid or oversized frame payload.' }, message.generation);
     return;
   }
+  activeJobs.add(message.jobId);
   try {
     const pixels = new Uint8ClampedArray(message.pixels);
     const imageData = new ImageData(pixels, message.width, message.height);
     const results = await readBarcodes(imageData, createZXingWasmReaderOptions(formats));
     if (disposed || message.generation !== generation || cancelled.has(message.jobId)) {
       cancelled.delete(message.jobId);
-      post('RESULT', { jobId: message.jobId, results: [], stale: true });
+      post('RESULT', { jobId: message.jobId, results: [], stale: true }, message.generation);
       return;
     }
     const accepted = results.filter(isZXingWasmReadResultValid).map((result) => ({
@@ -81,25 +83,29 @@ async function decode(message: DecodeMessage) {
       format: String(result.format ?? ''),
       isValid: result.isValid !== false,
     })).filter((result) => result.text.length > 0 && formats.includes(result.format));
-    post('RESULT', { jobId: message.jobId, results: accepted });
+    post('RESULT', { jobId: message.jobId, results: accepted }, message.generation);
   } catch (error) {
-    post('ERROR', { jobId: message.jobId, error: error instanceof Error ? error.message : String(error) });
+    post('ERROR', { jobId: message.jobId, error: error instanceof Error ? error.message : String(error) }, message.generation);
+  } finally {
+    activeJobs.delete(message.jobId);
+    cancelled.delete(message.jobId);
   }
 }
 scope.onmessage = (event: { data: Incoming }) => {
   const message = event.data;
   if (!message || message.protocolVersion !== 1) return;
   if (message.type === 'INIT') {
-    void initialize(message).catch((error) => post('ERROR', { error: error instanceof Error ? error.message : String(error), phase: 'init' }));
+    void initialize(message).catch((error) => post('ERROR', { error: error instanceof Error ? error.message : String(error), phase: 'init' }, message.generation));
     return;
   }
   if (message.generation !== generation) return;
   if (message.type === 'DECODE') void decode(message);
-  if (message.type === 'CANCEL') cancelled.add(message.jobId);
+  if (message.type === 'CANCEL' && activeJobs.has(message.jobId)) cancelled.add(message.jobId);
   if (message.type === 'DISPOSE') {
     disposed = true;
     initialized = false;
     cancelled.clear();
+    activeJobs.clear();
     post('DISPOSED');
     scope.close();
   }
