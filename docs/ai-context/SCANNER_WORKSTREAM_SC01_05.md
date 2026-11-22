@@ -1,6 +1,6 @@
 # Scanner stabilization workstream — SC-01 through SC-05
 
-**Status:** PLAN LOCKED — execution authorized by user; SC-01A is the active next step.  
+**Status:** PLAN LOCKED — SC-01A source/API research recorded; empirical prototype and measurements remain blocked pending local/browser execution.  
 **Baseline:** main at `d0d65f56aca8081953be644ef002d91d9f84e4e4` (source audit baseline, 2026-11-17).  
 **Working branch:** `docs/scanner-sc01-05-roadmap`  
 **Execution mode:** staged, evidence-first, reversible. This roadmap does not authorize a production deployment.
@@ -50,8 +50,8 @@ Single in-flight decode and at most one latest pending frame. Replacing pending 
 - OffscreenCanvas: Worker-side processing surface, optional capability—not a frame transport by itself and not a hard prerequisite.
 - Existing Main Thread decoder: last-resort fallback with bounded cadence/processing budget and same correctness contract.
 
-### SC-01A experiment (current)
-Isolated proof only; no production source edits. Verify worker bundling/build conventions, WASM asset URL/init in worker, VideoFrame and ImageBitmap transfer/close behavior, OffscreenCanvas availability and actual required APIs, pixel/ROI pipeline feasibility, startup and transfer cost. Compare transports using repeatable images/cases and a small live-camera responsiveness probe only if the test environment allows it. Report capability matrix, measurements, blockers and recommended transport before implementation.
+### SC-01A experiment (current)\n\nSource and API research results are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
+Isolated proof only; no production source edits. Source/API research is complete: VideoFrame is the lead candidate, ImageBitmap the compatibility candidate, OffscreenCanvas optional processing surface, ImageData fallback. Worker bundling, WASM asset resolution, runtime API tests, transport benchmarking and browser/device probes have not been run. The current remote-only repository access cannot execute the Vite build or browser prototype; therefore SC-01A is **research-complete / runtime-proof-pending**, not passed.
 
 ### SC-01 release gates
 No lost frames/resource leaks or stale results; bounded queue; graceful worker failure; fallback maintains exact formats, ROI, processing/candidate order and validation. Benchmark: Main Thread blocking/long tasks, decode P50/P95, exact-match/miss/wrong/false-positive rates, worker startup, transfer cost, memory observations, first-result latency and UI responsiveness. Establish baseline before changes; do not invent target metrics.
