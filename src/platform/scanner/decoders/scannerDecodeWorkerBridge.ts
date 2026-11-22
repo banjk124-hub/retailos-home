@@ -122,6 +122,18 @@ export class ScannerDecodeWorkerBridge {
     }, [pixels]);
   }
 
+  private finishFrame(jobId: number, results: ScannerWorkerDecodeResult): void {
+    if (this.inFlight?.jobId !== jobId) return;
+    const finished = this.inFlight;
+    this.inFlight = null;
+    finished.resolve(results);
+    if (this.latestPending) {
+      const next = this.latestPending;
+      this.latestPending = null;
+      this.send(next);
+    }
+  }
+
   private onMessage(message: WorkerReply): void {
     if (!message || message.protocolVersion !== PROTOCOL_VERSION || message.generation !== this.generation) return;
     if (message.type === 'READY') {
@@ -135,25 +147,16 @@ export class ScannerDecodeWorkerBridge {
     }
     if (message.type === 'ERROR') {
       const error = new Error(message.error || 'Scanner Worker error.');
-      if (message.phase === 'init') {
-        this.initReject?.(error);
-        this.initReject = null;
-        this.initResolve = null;
-      } else {
+      if (message.phase === 'init' || message.jobId === undefined) {
         this.fail(error);
+      } else {
+        // Frame-level decode errors fail only that frame, not the Worker lifecycle.
+        this.finishFrame(message.jobId, []);
       }
       return;
     }
     if (message.type === 'RESULT') {
-      if (this.inFlight?.jobId !== message.jobId) return;
-      const finished = this.inFlight;
-      this.inFlight = null;
-      finished.resolve(message.stale ? [] : message.results);
-      if (this.latestPending) {
-        const next = this.latestPending;
-        this.latestPending = null;
-        this.send(next);
-      }
+      this.finishFrame(message.jobId, message.stale ? [] : message.results);
     }
   }
 

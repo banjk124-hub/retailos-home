@@ -8,7 +8,11 @@ type DecodeMessage = { type: 'DECODE'; protocolVersion: 1; generation: number; j
 type CancelMessage = { type: 'CANCEL'; protocolVersion: 1; generation: number; jobId: number };
 type DisposeMessage = { type: 'DISPOSE'; protocolVersion: 1; generation: number };
 type Incoming = InitMessage | DecodeMessage | CancelMessage | DisposeMessage;
-type WorkerScopeLike = DedicatedWorkerGlobalScope;
+type WorkerScopeLike = {
+  postMessage: (message: unknown) => void;
+  onmessage: ((event: { data: Incoming }) => void) | null;
+  close: () => void;
+};
 
 const scope = self as unknown as WorkerScopeLike;
 const FORMAT_MAP: Record<string, string> = {
@@ -49,6 +53,7 @@ async function initialize(message: InitMessage) {
   await initPromise;
   if (disposed || generation !== message.generation) return;
   initialized = true;
+  // READY is emitted only here; the message handler must not emit a duplicate handshake.
   post('READY', { wasmVersion: String(ZXING_WASM_VERSION) });
 }
 async function decode(message: DecodeMessage) {
@@ -81,11 +86,11 @@ async function decode(message: DecodeMessage) {
     post('ERROR', { jobId: message.jobId, error: error instanceof Error ? error.message : String(error) });
   }
 }
-scope.onmessage = (event: MessageEvent<Incoming>) => {
+scope.onmessage = (event: { data: Incoming }) => {
   const message = event.data;
   if (!message || message.protocolVersion !== 1) return;
   if (message.type === 'INIT') {
-    void initialize(message).then(() => post('READY', { wasmVersion: String(ZXING_WASM_VERSION) })).catch((error) => post('ERROR', { error: error instanceof Error ? error.message : String(error), phase: 'init' }));
+    void initialize(message).catch((error) => post('ERROR', { error: error instanceof Error ? error.message : String(error), phase: 'init' }));
     return;
   }
   if (message.generation !== generation) return;
