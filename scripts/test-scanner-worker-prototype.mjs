@@ -30,7 +30,7 @@ assert.doesNotMatch(worker, /DedicatedWorkerGlobalScope/);
 assert.match(worker, /post\('READY', \{ wasmVersion: String\(ZXING_WASM_VERSION\) \}, message\.generation\)/);
 assert.doesNotMatch(worker, /initialize\(message\)\.then\(\(\) => post\('READY'/);
 assert.match(bridge, /new Worker\(new URL\('\.\/scannerDecodeWorker\.ts', import\.meta\.url\)/);
-assert.match(bridge, /latest-frame-wins/);
+assert.match(bridge, /latest-frame-wins/i);
 assert.match(bridge, /this\.latestPending\?\.resolve\(\[\]\)/);
 assert.match(bridge, /new Uint8ClampedArray\(frame\.frame\.data\)\.buffer/);
 assert.match(bridge, /frame\.width \* frame\.height > 1_500_000/);
