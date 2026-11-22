@@ -17,7 +17,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 |---|---|
 | Scanner current architecture, runtime ownership, decoder options, payload rules and acceptance gates | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical investigations, incident notes and migration evidence | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
-| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |\n| Locked scanner stabilization plan SC-01–05, phase gates and active SC-01A proof | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
+| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |\n| Locked scanner stabilization plan SC-01–05, phase gates and active SC-01A proof | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |\n| SC-01A Worker transport/API research findings and test matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
