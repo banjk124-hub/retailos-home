@@ -69,6 +69,11 @@ const checks = [
     args: ["scripts/test-scanner-lifecycle.mjs"],
   },
   {
+    name: "Scanner Worker prototype source-contract tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-worker-prototype.mjs"],
+  },
+  {
     name: "Scanner torch capability regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-torch.mjs"],
