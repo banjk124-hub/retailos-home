@@ -113,7 +113,7 @@ A green CI run proves code contracts and build health, not optical accuracy or p
 
 These are explicit follow-up items, not reasons to reintroduce the retired decoder or rewrite camera/session ownership.
 
-## 9. Change protocol
+## 9. Active stabilization workstream\n\nThe locked SC-01–05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A is the active isolated proof phase. The plan preserves the current camera/session/consumer contracts and does not represent Worker execution, camera health control, geometry diagnostics or focus recovery as implemented. Use that document for phase scope, dependencies, proposed transport tiers, test/benchmark gates and current evidence limits. The SC-01A source/API study and blocked runtime-proof matrix are in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).\n\n## 10. Change protocol
 
 For every scanner change:
 1. Read this document and the exact source/tests involved.
@@ -122,4 +122,4 @@ For every scanner change:
 4. Preserve Home and Stocktake behavior unless the task explicitly changes their contracts.
 5. Run `npm run preflight`, TypeScript, production build and Pages build through CI.
 6. Record physical-device evidence separately; never infer it from CI.
-7. Update this document only when the implementation contract changes. Put incident observations in the history log with date, evidence, resolution and current status.
+7. Update this document only when the implementation contract changes. Put incident observations in the history log with date, evidence, resolution and current status.\n8. For SC-01–05 work, satisfy the phase-specific gates in `SCANNER_WORKSTREAM_SC01_05.md`; do not claim a phase complete from source inspection alone.
