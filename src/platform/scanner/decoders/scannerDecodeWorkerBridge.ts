@@ -57,6 +57,11 @@ export class ScannerDecodeWorkerBridge {
 
   decode(frame: ImageData): Promise<ScannerWorkerDecodeResult> {
     if (this.disposed || !this.ready || !this.worker) return Promise.reject(new Error('Scanner Worker is not ready.'));
+    if (!Number.isSafeInteger(frame.width) || !Number.isSafeInteger(frame.height)
+      || frame.width < 1 || frame.height < 1 || frame.width * frame.height > 1_500_000
+      || frame.data.length !== frame.width * frame.height * 4) {
+      return Promise.reject(new Error('Invalid or oversized frame for Worker decode.'));
+    }
     const jobId = ++this.nextJobId;
     return new Promise((resolve) => {
       const next: PendingFrame = { jobId, frame, resolve };
