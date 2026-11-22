@@ -23,6 +23,15 @@ const FORMAT_MAP: Record<string, string> = {
   RSS_14: 'DataBar', RSS_EXPANDED: 'DataBarExp', MAXICODE: 'MaxiCode',
   MICRO_QR_CODE: 'MicroQRCode',
 };
+const RESULT_FORMAT_MAP: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(FORMAT_MAP).map(([symbol, format]) => [format, symbol])),
+  Code39Std: 'CODE_39', Code39Ext: 'CODE_39', ITF14: 'ITF',
+  CompactPDF417: 'PDF_417', MicroPDF417: 'PDF_417',
+  QRCodeModel1: 'QR_CODE', QRCodeModel2: 'QR_CODE',
+  AztecCode: 'AZTEC', AztecRune: 'AZTEC',
+  DataBarOmni: 'RSS_14', DataBarStk: 'RSS_14', DataBarStkOmni: 'RSS_14',
+  DataBarExpStk: 'RSS_EXPANDED',
+};
 const WASM_OVERRIDES = {
   locateFile(path: string, prefix: string) {
     return path.endsWith('.wasm') ? readerWasmUrl : `${prefix}${path}`;
@@ -31,6 +40,7 @@ const WASM_OVERRIDES = {
 let generation = 0;
 let initialized = false;
 let formats: string[] = [];
+let requestedFormats: string[] = [];
 let cancelled = new Set<number>();
 let activeJobs = new Set<number>();
 let disposed = false;
@@ -46,6 +56,7 @@ async function initialize(message: InitMessage) {
   cancelled.clear();
   const mapped = [...new Set(message.formats)].map((format) => FORMAT_MAP[format]).filter(Boolean);
   if (!mapped.length || mapped.length !== new Set(message.formats).size) throw new Error('Unsupported or empty barcode format allowlist.');
+  requestedFormats = [...new Set(message.formats)];
   formats = mapped;
   if (!initPromise) initPromise = prepareZXingModule({ overrides: WASM_OVERRIDES, fireImmediately: true }).catch((error) => {
     initPromise = null;
@@ -80,9 +91,9 @@ async function decode(message: DecodeMessage) {
     }
     const accepted = results.filter(isZXingWasmReadResultValid).map((result) => ({
       text: typeof result.text === 'string' ? result.text : '',
-      format: String(result.format ?? ''),
+      format: RESULT_FORMAT_MAP[String(result.format ?? '')] ?? '',
       isValid: result.isValid !== false,
-    })).filter((result) => result.text.length > 0 && formats.includes(result.format));
+    })).filter((result) => result.text.length > 0 && requestedFormats.includes(result.format));
     post('RESULT', { jobId: message.jobId, results: accepted }, message.generation);
   } catch (error) {
     post('ERROR', { jobId: message.jobId, error: error instanceof Error ? error.message : String(error) }, message.generation);
