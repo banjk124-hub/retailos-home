@@ -35,6 +35,7 @@ export class ScannerDecodeWorkerBridge {
   private latestPending: PendingFrame | null = null;
   private initReject: ((error: Error) => void) | null = null;
   private initResolve: (() => void) | null = null;
+  private initTimeout: ReturnType<typeof setTimeout> | null = null;
 
   async initialize(formats: ScannerSymbology[]): Promise<void> {
     if (this.disposed) throw new Error('Scanner worker bridge is disposed.');
@@ -52,6 +53,7 @@ export class ScannerDecodeWorkerBridge {
     };
     worker.onmessageerror = () => this.fail(new Error('Scanner Worker message could not be decoded.'));
     worker.postMessage({ type: 'INIT', protocolVersion: PROTOCOL_VERSION, generation, formats });
+    this.initTimeout = setTimeout(() => this.fail(new Error('Scanner Worker initialization timed out.')), 10_000);
     await ready;
   }
 
@@ -84,6 +86,8 @@ export class ScannerDecodeWorkerBridge {
     if (this.disposed) return;
     this.disposed = true;
     this.ready = false;
+    if (this.initTimeout) clearTimeout(this.initTimeout);
+    this.initTimeout = null;
     this.initReject?.(new Error('Scanner Worker bridge disposed during initialization.'));
     this.initReject = null;
     this.initResolve = null;
@@ -121,6 +125,8 @@ export class ScannerDecodeWorkerBridge {
   private onMessage(message: WorkerReply): void {
     if (!message || message.protocolVersion !== PROTOCOL_VERSION || message.generation !== this.generation) return;
     if (message.type === 'READY') {
+      if (this.initTimeout) clearTimeout(this.initTimeout);
+      this.initTimeout = null;
       this.ready = true;
       this.initResolve?.();
       this.initResolve = null;
@@ -152,6 +158,8 @@ export class ScannerDecodeWorkerBridge {
   }
 
   private fail(error: Error): void {
+    if (this.initTimeout) clearTimeout(this.initTimeout);
+    this.initTimeout = null;
     this.ready = false;
     this.initReject?.(error);
     this.initReject = null;
