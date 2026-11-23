@@ -20,6 +20,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 | Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |
 | Scanner stabilization SC-01A/01B/01C stages through SC-05 and current evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
 | Worker transport/API research and remaining SC-01A empirical validation matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
+| SC-05 cross-layer scanner integration and physical-device/corpus QA protocol | [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |

@@ -43,7 +43,7 @@ const VISIBLE_METRIC_KEYS = new Set([
   'stage', 'durationMs', 'phase', 'phaseCommitIntervalMs', 'pageLifecycle', 'deviceProfile', 'deviceProfileReason',
   'focusStatus', 'focusModes', 'focusRequestMs', 'focusSharpness', 'focusSharpnessMin',
   'focusEdgeCoverage', 'focusMotionScore', 'focusQualitySamples', 'focusSustainedBlurEvents',
-  'focusQualityStatus', 'cameraControlChanged', 'width', 'height', 'frameRate', 'facingMode',
+  'focusQualityStatus', 'focusRecoveryState', 'focusRecoveryAction', 'focusRecoveryGuidance', 'cameraControlChanged', 'width', 'height', 'frameRate', 'facingMode',
   'focusMode', 'videoReadyMs', 'videoReadyState', 'videoWidth', 'videoHeight', 'trackEvent',
   'trackMuted', 'trackReadyState', 'frameCallbackObserved', 'decodeAttempts',
   'framesWithSymbols', 'accepted', 'rejectedByValidation', 'decoderErrors',

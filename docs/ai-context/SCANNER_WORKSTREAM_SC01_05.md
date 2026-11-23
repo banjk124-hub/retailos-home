@@ -1,8 +1,8 @@
 # Scanner stabilization workstream — SC-01 through SC-05
 
-**Status:** SC-01A/01B/01C isolated Worker prototype phases completed and merged. SC-01B deploy/device update was user-verified without errors. SC-01C source-contract validation and post-merge CI + Pages deployment passed. Empirical Worker transport/runtime/optical benchmarks and production integration remain gated.
-**Baseline:** main at `d0d65f56aca8081953be644ef002d91d9f84e4e4` (source audit baseline, 2026-11-17).  
-**Working branch:** `docs/scanner-sc01-05-roadmap`  
+**Status:** SC-01A/01B/01C, SC-02, SC-03 and SC-04 software/CI scope completed at their documented boundaries. SC-04 is merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`. SC-05 software integration contract and QA acceptance protocol are under implementation; physical-device/corpus evidence remains outstanding.
+**Baseline:** main at `0b6840c9b2872d93920d4eba5f628158e09679b4` (SC-04 merge, 2026-11-23).  
+**Working branch:** `feat/scanner-sc05-integration-qa`  
 **Execution mode:** staged, evidence-first, reversible. This roadmap does not authorize a production deployment.
 
 ## Objective
@@ -19,9 +19,9 @@ Stabilize the existing scanner engine in bounded stages. Keep CameraSession leas
 | **SC-02** | Camera Health Controller | Frame heartbeat, health states, watchdog, recovery cooldown, bounded retry budget, escalation. Exit: stale/paused/ended stream cases reliably detected and recover without loops. |
 | **SC-03** | Geometry Diagnostics | Geometry signature, stale detection, invalidation, source/preview reconciliation. Exit: geometry drift/invalid mapping cannot decode with stale ROI; diagnostics are privacy-safe. |
 | **SC-04** | Focus Recovery Policy | Passive quality-state policy using existing ROI samples; sustained-blur gate, native-autofocus wait, recovery recognition and bounded cooldown. Exit: state transitions/guards pass CI; optical behavior remains device QA. |
-| **SC-05** | Integration & QA | Home/Stocktake integration, regressions, benchmark, Android/iOS/Desktop and low-end-device matrix, release gate. Exit: CI, measured accuracy/perf and explicit device acceptance complete. |
+| **SC-05** | Integration & QA | Cross-layer integration contract + existing regression audit, benchmark protocol and physical-device acceptance matrix. Software exit: contract tests, full preflight/build/Pages/PR-base CI, docs sync. Optical/device exit remains separate and requires actual recorded runs. |
 
-Dependencies are sequential: SC-02 builds on the isolated SC-01A/01B/01C Worker scheduling/reporting foundation; SC-03 feeds valid geometry into frame scheduling; SC-04 consumes quality/health evidence and geometry context; SC-05 integrates and validates all stages. Discovery may run in parallel, but production integration must respect this sequence.
+The phases are ordered for evidence and safe review, not as a Worker production migration. SC-02 health operates within the current shared session; SC-03 geometry versions guard the feature-owned ROI; SC-04 observes existing ROI quality; SC-05 validates their integration. SC-01A/01B/01C Worker prototypes remain isolated and their transport/performance proof is a separate gate, not a prerequisite for the existing Main Thread production path.
 
 ## Global protected contracts
 
@@ -118,8 +118,28 @@ SC-04 extends the existing `ScannerFocusQualityMonitor` into a passive recovery 
 - Software state-policy closure must not be confused with optical autofocus acceptance. Physical near/far transitions and focus behavior on iOS Safari/PWA and Android Chrome/PWA in Home and Stocktake remain device QA.
 ## SC-05 — Integration & QA
 
-Integrate through existing session/backend boundary, then verify Home and Stocktake separately. Include lifecycle, ROI/geometry, validation, single/continuous behavior, feedback, capture/save, fallback and update handoff regression. Benchmark baseline vs worker and each accepted controller. Matrix: Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop Chrome, low-end Android. Release gate includes CI, benchmark/corpus evidence, resource/memory checks and explicit physical-device acceptance. CI/build green does not prove optical or device acceptance.
+### Audit conclusion
 
+Most integration is already implemented in the shared `UniversalScannerSession` and `useScannerEngine`: camera lease, lifecycle/visibility recovery, health controller, strict source-frame ROI, geometry revisions, focus quality, adaptive processing/runtime budget, serialized WASM decode, payload validation and feature-owned result handling. Home and Stocktake both use the same scanner hook and preview-region binding.
+
+SC-05 will not create a new engine or camera orchestration layer. It adds one focused cross-layer source-contract test, registers it in preflight, exposes three existing passive focus-recovery diagnostic fields through the current allowlist/QA monitor, consolidates the physical QA protocol, and corrects stale current-state documentation.
+
+### Software integration gates
+
+- `scripts/test-scanner-sc05-integration.mjs`: guard single camera owner, shared Home/Stocktake path, ROI publishing/close gating, bounded health recovery, SC-03 revision rejection, SC-04 passive focus, adaptive runtime wiring, WASM-only production factory, isolated Worker prototype and benchmark privacy.
+- Existing scanner tests remain specialized; SC-05 does not duplicate their fixtures or change their algorithms.
+- CI must run full preflight, TypeScript, production build, Pages build and PR-base/bundle comparison on the final PR head.
+- Review changed paths and bundle/dependency delta; reject unrelated source changes.
+
+### Physical acceptance gate
+
+Use [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md) for the device matrix, scenario protocol, local barcode corpus and run-record template. Physical iOS/Android camera/focus/viewport behavior cannot be completed by the remote CI environment and is explicitly not claimed.
+
+### Current status
+
+- Branch: `feat/scanner-sc05-integration-qa` (software contract + QA documentation).
+- Physical-device test matrix: NOT RUN; real devices/corpus required.
+- SC-05 software scope can close after final CI pass and source/path review; overall device acceptance/release remains BLOCKED until the matrix is executed or explicitly scoped as an operational release blocker.
 ## Reversible execution and rollback
 
 Each phase should be isolated in a small branch/commit and independently reviewable. Keep a working fallback/backend switch only if it is simple, explicit and testable; avoid dual runtime complexity. If accuracy, resource ownership, memory, or consumer behavior regresses, disable the new execution path and restore the prior decoder execution route. Do not progress to the next phase until exit gates and findings are documented.

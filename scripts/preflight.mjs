@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Scanner SC-05 cross-layer integration contract tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-sc05-integration.mjs"],
+  },
+  {
     name: "Scanner benchmark manifest and metrics core tests",
     command: process.execPath,
     args: ["scripts/test-scanner-benchmark-core.mjs"],

@@ -2,7 +2,7 @@
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Default branch:** `main`  
-**Current main commit:** `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
+**Current main commit:** `0b6840c9b2872d93920d4eba5f628158e09679b4` (SC-04 merge)  
 **Latest completed feature:** PR #137 — delta-aware PWA release staging. Merged at the main commit above on 2026-11-16.
 
 - Delta staging reuses active-cache resources only after exact URL, byte-length and SHA-256 validation. Missing, changed or corrupt resources are downloaded and verified; removed resources are excluded.
@@ -207,4 +207,11 @@ SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merge
 - Existing geometry mapping rules and strict fail-closed behavior are preserved. Unsupported geometry remains null; no inferred/full-frame fallback.
 - Automated coverage includes signature sensitivity/normalization, valid/invalid revision epochs, stale session revision rejection, observer event invalidation and cleanup. CI #1332 passed full preflight, TypeScript/production build, PR-base baseline and bundle comparison on PR #146 head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`.
 - Software/CI scope is complete. Actual orientation/viewport behavior on iOS Safari/PWA and Android Chrome/PWA remains device QA and is not claimed from CI.
-- SC-04 Focus Recovery Policy is implemented in PR #148 at latest head `fa4349344eb9fd80d8d487942113ea5560cae6e5`: passive focus states, native-autofocus waiting and recovery detection. CI #1347 found an 8-second cooldown-boundary test expectation error; corrected test passed full CI #1348. Physical optical QA remains pending; do not claim device focus recovery from code alone.
+- SC-04 Focus Recovery Policy merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`; CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base comparison on code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. Physical optical QA remains pending; do not claim device focus recovery from code alone.
+
+## Current scanner phase — 2026-11-23
+
+- SC-04 Focus Recovery Policy merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`; CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base comparison on code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. Optical QA has not been run.
+- SC-05 Integration & QA active on branch `feat/scanner-sc05-integration-qa`: existing Home/Stocktake/session/ROI wiring audited; one cross-layer integration contract test, physical-device/corpus QA protocol and SC-04 recovery metrics visibility correction are included. No camera/decoder/recognition behavior or dependency change is intended.
+- Production remains Main Thread ZXing-C++ WASM. Worker transport/runtime/optical proof remains gated and Worker is not connected to production.
+- Physical iOS, Android low/mid capability and Desktop scanner acceptance is NOT RUN in this remote implementation environment.

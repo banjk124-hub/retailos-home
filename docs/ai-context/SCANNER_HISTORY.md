@@ -78,3 +78,11 @@ SC-02 implementation adds bounded frame-progress monitoring and recovery in the 
 - Explicit zero post-preview camera-constraint write budget; no `applyConstraints`, autofocus re-arm, camera reacquisition or stream restart. Invalid/moving samples do not trigger the policy.
 - Source tests cover transitions, cooldown, reset, low-texture/motion rejection and zero-camera-write contract. CI #1347 failed at a cooldown-boundary expectation; corrected test passed full CI #1348. Physical device QA remains outstanding.
 - Scope closure: policy software only; real lens focus behavior is not asserted.
+
+## 2026-11-23 — SC-05 Integration & QA audit
+
+- Audited current main at SC-04 merge. Home BarcodeScanner and StocktakeScanner already share `useScannerEngine` and the feature-owned preview-region binding. Shared camera service retains acquisition/lease ownership.
+- Camera health recovery, geometry revision rejection, passive focus recovery and adaptive runtime budget compose through `UniversalScannerSession` and the production WASM decoder adapter. Worker prototype remains isolated.
+- SC-05 adds one cross-layer integration contract test to preflight and consolidates a device/corpus acceptance protocol rather than duplicating subsystem tests or adding another engine.
+- Device/corpus acceptance NOT RUN in the remote session; overall optical/device acceptance remains pending recorded physical runs.
+- SC-05 follow-up audit found SC-04 recovery state/action/guidance were logged by the session but omitted from the diagnostics allowlist/visible QA metrics. Added those three bounded fields to the existing collector and Home QA monitor; no controller or camera behavior added.
