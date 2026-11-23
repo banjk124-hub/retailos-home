@@ -233,10 +233,7 @@ export class ScannerDecodeWorkerBridge {
     if (this.inFlight?.jobId !== jobId) return;
     const finished = this.inFlight;
     this.inFlight = null;
-    this.schedulingMetrics.completed += 1;
-    const decodeMs = finished.startedAtMs === null ? 0 : Math.max(0, performance.now() - finished.startedAtMs);
-    this.schedulingMetrics.totalDecodeMs += decodeMs;
-    this.schedulingMetrics.maxDecodeMs = Math.max(this.schedulingMetrics.maxDecodeMs, decodeMs);
+    this.recordFrameCompletion(finished);
     this.resolveFrame(finished, results);
     if (this.latestPending && this.ready && !this.disposed) {
       const next = this.latestPending;
@@ -264,7 +261,6 @@ export class ScannerDecodeWorkerBridge {
         recoverable: message.phase === 'init',
       });
       if (message.phase === 'init' || message.jobId === undefined) {
-        this.schedulingMetrics.failed += 1;
         this.failInitializationOrRecover(error);
       } else {
         // Frame-level decode errors fail only that frame; Worker remains usable.
@@ -283,10 +279,7 @@ export class ScannerDecodeWorkerBridge {
     this.lastError = timeoutError;
     this.schedulingMetrics.timedOut += 1;
     this.schedulingMetrics.failed += 1;
-    this.schedulingMetrics.completed += 1;
-    const timedOutDuration = this.inFlight.startedAtMs === null ? 0 : Math.max(0, performance.now() - this.inFlight.startedAtMs);
-    this.schedulingMetrics.totalDecodeMs += timedOutDuration;
-    this.schedulingMetrics.maxDecodeMs = Math.max(this.schedulingMetrics.maxDecodeMs, timedOutDuration);
+    this.recordFrameCompletion(this.inFlight);
     this.resolveFrame(this.inFlight, []);
     this.inFlight = null;
     if (this.latestPending) this.schedulingMetrics.droppedPending += 1;
@@ -301,6 +294,8 @@ export class ScannerDecodeWorkerBridge {
     this.ready = false;
     this.lastError = error;
     const failedDuringInit = Boolean(this.initReject);
+    this.schedulingMetrics.failed += 1;
+    this.recordFrameCompletion(this.inFlight);
     this.initReject?.(error);
     this.initReject = null;
     this.initResolve = null;
@@ -332,6 +327,15 @@ export class ScannerDecodeWorkerBridge {
       this.restarting = false;
     }
   }
+
+  private recordFrameCompletion(frame: PendingFrame | null): void {
+    if (!frame) return;
+    this.schedulingMetrics.completed += 1;
+    const decodeMs = frame.startedAtMs === null ? 0 : Math.max(0, performance.now() - frame.startedAtMs);
+    this.schedulingMetrics.totalDecodeMs += decodeMs;
+    this.schedulingMetrics.maxDecodeMs = Math.max(this.schedulingMetrics.maxDecodeMs, decodeMs);
+  }
+
 
   private resolveFrame(frame: PendingFrame | null, results: ScannerWorkerDecodeResult): void {
     if (!frame) return;
