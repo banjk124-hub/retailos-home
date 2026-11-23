@@ -56,17 +56,17 @@ export class ScannerDecodeWorkerBridge {
   private disposed = false;
   private restarting = false;
   private restartCount = 0;
-  private formats: ScannerSymbology[] = [];
+  private formats: ScannerSymbology[] = [];\n  private lastError: ScannerWorkerRuntimeError | null = null;
   private inFlight: PendingFrame | null = null;
   private latestPending: PendingFrame | null = null;
   private initReject: ((error: Error) => void) | null = null;
   private initResolve: (() => void) | null = null;
   private initTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  async initialize(formats: ScannerSymbology[]): Promise<void> {
+  get runtimeError(): ScannerWorkerRuntimeError | null {\n    return this.lastError;\n  }\n\n  async initialize(formats: ScannerSymbology[]): Promise<void> {
     if (this.disposed) throw new ScannerWorkerRuntimeError('Scanner Worker bridge is disposed.', { phase: 'dispose', code: 'DISPOSED', generation: this.generation });
     if (this.worker) throw new Error('Scanner worker bridge already initialized.');
-    this.formats = [...new Set(formats)];
+    this.formats = [...new Set(formats)];\n    this.lastError = null;
     try {
       await this.startWorker();
     } catch (error) {
@@ -209,12 +209,12 @@ export class ScannerDecodeWorkerBridge {
 
   private handleDecodeTimeout(jobId: number, generation: number): void {
     if (generation !== this.generation || this.inFlight?.jobId !== jobId || this.disposed) return;
-    const error = new ScannerWorkerRuntimeError('Scanner Worker decode timed out.', { phase: 'decode', code: 'DECODE_TIMEOUT', generation, recoverable: true });
+    this.lastError = new ScannerWorkerRuntimeError('Scanner Worker decode timed out.', { phase: 'decode', code: 'DECODE_TIMEOUT', generation, recoverable: true });
     this.resolveFrame(this.inFlight, []);
     this.inFlight = null;
     this.resolveFrame(this.latestPending, []);
     this.latestPending = null;
-    void this.recover(error);
+    void this.recover(this.lastError);
   }
 
   private failInitializationOrRecover(error: ScannerWorkerRuntimeError): void {
