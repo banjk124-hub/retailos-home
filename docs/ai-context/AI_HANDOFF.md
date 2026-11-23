@@ -1,4 +1,4 @@
-# Current handoff — Scanner SC-03 Geometry Diagnostics — 2026-11-23
+# Current handoff — Scanner SC-04 Focus Recovery Policy — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Base:** `main` after SC-02 merge  
@@ -8,6 +8,11 @@
 
 
 ## Current status — 2026-11-23
+
+- SC-03 Geometry Diagnostics is merged/deployed at `b388d876f61f6a95991ef3a7f637c6418dcdea5c`; software/CI scope closed, physical viewport/orientation QA still outstanding.
+- SC-04 is in draft PR #148, branch `feat/scanner-sc04-focus-recovery-policy`, head `262ccc7feee797e80441d64083b093c2a7d78955`. It extends the existing focus monitor with passive `observing`/`waiting-native-autofocus`/`recovered` states, preserving the motion gate, sharpness thresholds and cooldown.
+- Recovery action is advisory only: wait for native autofocus, steady/adjust distance; zero post-preview camera-constraint writes, no applyConstraints, autofocus re-arm, restart or extra capture. PR CI/build and physical focus QA are pending.
+- Protected: camera lease/acquisition, decoder/recognition order, ROI/geometry, validation, Home/Stocktake business flows, PWA lifecycle/deployment.
 
 - SC-01B/SC-01C and SC-02 software/CI scopes are closed. Production scanner remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated and is not wired into camera/session/Home/Stocktake.
 - SC-02 PR #144 merged as `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`. Post-merge CI #1320 and Pages deployment #147 succeeded.
