@@ -14,6 +14,8 @@ const [
   decoderIntegration,
   benchmarkHarness,
   preflight,
+  diagnosticCollector,
+  qaMonitor,
 ] = await Promise.all([
   source('src/platform/scanner/universalScannerSession.ts'),
   source('src/features/scanner/hooks/useScannerEngine.ts'),
@@ -24,6 +26,8 @@ const [
   source('scripts/test-scanner-decoder-integration.mjs'),
   source('scripts/test-scanner-benchmark-harness.mjs'),
   source('scripts/preflight.mjs'),
+  source('src/features/scanner/services/scannerDiagnosticCollector.ts'),
+  source('src/features/home/components/ScannerQaMonitor.tsx'),
 ]);
 
 // One camera owner, one session boundary, shared by Home and Stocktake.
@@ -58,6 +62,12 @@ assert.match(session, /onFocusQuality: \(sample\) => this\.handleFocusQuality/);
 assert.match(session, /focusQualityMonitor\.observe/);
 assert.match(session, /focusRecoveryAction: 'wait-native-autofocus'/);
 assert.match(session, /cameraConstraintWriteBudget: 0/);
+assert.match(diagnosticCollector, /focusRecoveryState/);
+assert.match(diagnosticCollector, /focusRecoveryAction/);
+assert.match(diagnosticCollector, /focusRecoveryGuidance/);
+assert.match(qaMonitor, /focusRecoveryState/);
+assert.match(qaMonitor, /focusRecoveryAction/,
+  'the in-app scanner QA monitor must expose SC-04 recovery actions');
 assert.match(session, /adaptiveRuntimeController\.getBudget\(\)/);
 assert.match(session, /adaptiveRuntimeController\.observe\(/);
 assert.match(session, /processingBudget,/);
