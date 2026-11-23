@@ -46,9 +46,20 @@ assert.equal(health.getSnapshot(7599).state, 'healthy');
 health.tick(7600);
 assert.equal(health.getSnapshot(7600).state, 'failed', 'second stall is escalated after the single automatic attempt is consumed');
 assert.equal(health.getSnapshot(7600).recoveryAttempts, 1);
+assert.equal(health.getSnapshot(7600).reason, 'recovery-cooldown', 'cooldown is enforced separately from the retry budget');
 health.dispose();
 health.tick(9000);
 assert.equal(health.getSnapshot(9000).state, 'failed', 'disposed controller ignores later ticks');
+
+const budgetHealth = new ScannerCameraHealthController(() => undefined, () => undefined);
+budgetHealth.start(100);
+budgetHealth.tick(3100);
+budgetHealth.completeRecovery(true, 3200);
+budgetHealth.frame(14000);
+budgetHealth.tick(17000);
+assert.equal(budgetHealth.getSnapshot(17000).state, 'failed');
+assert.equal(budgetHealth.getSnapshot(17000).reason, 'recovery-budget-exhausted', 'attempt budget is enforced after the cooldown window has elapsed');
+budgetHealth.dispose();
 
 const endedEvents = [];
 const endedRecovery = [];
