@@ -304,7 +304,7 @@ export class ScannerDecodeWorkerBridge {
     this.resolveFrame(this.latestPending, []);
     this.inFlight = null;
     this.latestPending = null;
-    if (failedDuringInit this.terminateWorker();
+    if (failedDuringInit) this.terminateWorker();
     else void this.recover(error);
   }
 
