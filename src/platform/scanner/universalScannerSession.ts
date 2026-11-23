@@ -534,7 +534,7 @@ export class UniversalScannerSession implements ScannerSession {
     this.frameKind = 'raf';
     this.frameHandle = window.requestAnimationFrame((now) => {
       this.frameHandle = null;
-      void this.processFrame(now, generation);
+      void this.processFrame(now, generation, 'raf');
     });
   }
 
