@@ -118,7 +118,9 @@ assert.equal(revision2.version, 2, 'changed geometry advances revision');
 assert.equal(tracker.update(null), null, 'invalid geometry is not publishable');
 assert.equal(tracker.getVersion(), 3, 'invalidating a valid geometry advances revision');
 assert.equal(tracker.update(null), null, 'repeated invalid geometry remains unpublished');
-assert.equal(tracker.getVersion(), 4, 'each invalidation advances the geometry epoch');
+assert.equal(tracker.getVersion(), 3, 'stable invalid geometry does not churn revisions');
+tracker.invalidate();
+assert.equal(tracker.getVersion(), 4, 'explicit invalidation advances the epoch to reject delayed work');
 const revision5 = tracker.update(baseSignature);
 assert.equal(revision5.version, 5, 'a new valid geometry after invalidation gets a fresh epoch');
 
