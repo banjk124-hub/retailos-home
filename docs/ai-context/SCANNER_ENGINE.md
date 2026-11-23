@@ -138,7 +138,7 @@ The existing `scannerGeometry.ts` pure mapper remains the authority for mapping 
 
 ## 11. Active stabilization workstream
 
-The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C, SC-02 and SC-03 software/CI scopes are closed at their documented boundaries. SC-04 Focus Recovery Policy is implemented in PR #148; latest head `fa4349344eb9fd80d8d487942113ea5560cae6e5`, with CI #1348 rerun in progress after correcting the cooldown-boundary test. Worker phases remain isolated from production session/Home/Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Physical viewport/orientation and focus behavior remain device QA gates. SC-01A transport/API evidence is in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
+The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C, SC-02 and SC-03 software/CI scopes are closed at their documented boundaries. SC-04 Focus Recovery Policy is implemented in PR #148; latest head `fa4349344eb9fd80d8d487942113ea5560cae6e5`, with CI #1348 passed after correcting the cooldown-boundary test. Worker phases remain isolated from production session/Home/Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Physical viewport/orientation and focus behavior remain device QA gates. SC-01A transport/API evidence is in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
 
 ## 12. SC-04 Focus Recovery Policy
 
