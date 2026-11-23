@@ -29,13 +29,30 @@ assert.match(worker, /WorkerScopeLike/);
 assert.doesNotMatch(worker, /DedicatedWorkerGlobalScope/);
 assert.match(worker, /post\('READY', \{ wasmVersion: String\(ZXING_WASM_VERSION\) \}, message\.generation\)/);
 assert.doesNotMatch(worker, /initialize\(message\)\.then\(\(\) => post\('READY'/);
+
 assert.match(bridge, /new Worker\(new URL\('\.\/scannerDecodeWorker\.ts', import\.meta\.url\)/);
 assert.match(bridge, /latest-frame-wins/i);
 assert.match(bridge, /this\.resolveFrame\(this\.latestPending, \[\]\)/);
 assert.match(bridge, /new Uint8ClampedArray\(frame\.frame\.data\)\.buffer/);
 assert.match(bridge, /frame\.width \* frame\.height > 1_500_000/);
 assert.match(bridge, /message\.generation !== this\.generation/);
-assert.match(bridge, /private terminateWorker\(sendDispose = false\)/);\nassert.match(bridge, /worker\.terminate\(\)/);
+assert.match(bridge, /private terminateWorker\(sendDispose = false\)/);
+assert.match(bridge, /worker\.terminate\(\)/);
 assert.match(bridge, /private finishFrame\(jobId: number/);
 assert.match(bridge, /Frame-level decode errors fail only that frame/);
-console.log('Scanner SC-01A Worker prototype source-contract checks passed.');
+
+// SC-01B runtime and lifecycle contracts.
+assert.match(bridge, /INIT_TIMEOUT_MS = 10_000/);
+assert.match(bridge, /DECODE_TIMEOUT_MS = 5_000/);
+assert.match(bridge, /MAX_RESTARTS = 1/);
+assert.match(bridge, /ScannerWorkerRuntimeError/);
+assert.match(bridge, /ScannerWorkerErrorPhase/);
+assert.match(bridge, /ScannerWorkerErrorCode/);
+assert.match(bridge, /handleDecodeTimeout/);
+assert.match(bridge, /private async recover\(error: ScannerWorkerRuntimeError\)/);
+assert.match(bridge, /this\.restartCount >= MAX_RESTARTS/);
+assert.match(bridge, /frame\.timeout = setTimeout/);
+assert.match(bridge, /failedDuringInit/);
+assert.match(bridge, /get runtimeError\(\)/);
+assert.match(bridge, /this\.lastError = error/);
+console.log('Scanner SC-01B Worker runtime and protocol source-contract checks passed.');
