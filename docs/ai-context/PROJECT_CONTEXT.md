@@ -197,3 +197,14 @@ SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merge
 - SC-02 branch `feat/scanner-sc02-camera-health` implements a bounded frame heartbeat/watchdog and recovery callback. Production decoder remains ZXing-C++ WASM Main Thread; Worker prototypes remain isolated.
 - SC-02 software implementation and CI are complete on PR #144, head `416b168b1b00b858c2b7e34e751e33defb9afb50`; CI #1313 passed full preflight, TypeScript, production build, Pages build and bundle comparison.
 - Closure boundary: source/software and CI gates. Live-camera stall, track-ended recovery, recovery failure/teardown and device/browser matrix are not established by CI; perform these as post-merge operational QA before declaring camera-health behavior device-accepted.
+
+
+## Scanner SC-03 Geometry Diagnostics — 2026-11-23
+
+- User confirms current deployed app workflows operate normally with no observed errors; this is the baseline regression acceptance.
+- SC-03 adds privacy-safe geometry signatures for source frame, preview/reticle bounds, CSS object fit/position/transform, viewport/visualViewport and pixel density.
+- Geometry revisions are monotonic; geometry drift clears stale ROI immediately; source-frame ROI is versioned; the platform session rejects malformed or stale revisions.
+- Existing geometry mapping rules and strict fail-closed behavior are preserved. Unsupported geometry remains null; no inferred/full-frame fallback.
+- Automated coverage includes signature sensitivity/normalization, valid/invalid revision epochs, stale session revision rejection, observer event invalidation and cleanup. CI #1332 passed full preflight, TypeScript/production build, PR-base baseline and bundle comparison on PR #146 head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`.
+- Software/CI scope is complete. Actual orientation/viewport behavior on iOS Safari/PWA and Android Chrome/PWA remains device QA and is not claimed from CI.
+- Next scanner engineering phase: SC-04 Focus Recovery Policy.
