@@ -106,3 +106,13 @@ Each phase should be isolated in a small branch/commit and independently reviewa
 ## Current evidence limits
 
 SC-00 was source audit only. No baseline benchmark has been executed in this workstream, no live-camera test, and no physical-device QA. All target states, thresholds and technology choices above remain proposals until SC-01A evidence/review.
+
+
+## SC-02 closure record — 2026-11-23
+
+- **Status:** software implementation and CI validation complete; PR #144 is the delivery unit. Head at closure review: `416b168b1b00b858c2b7e34e751e33defb9afb50`.
+- **CI evidence:** RetailOS CI #1313 passed the complete preflight, TypeScript/production build, GitHub Pages build and bundle comparison.
+- **Scope delivered:** independent camera-health telemetry states; frame-progress watchdog (1s interval / 3s threshold); native `requestVideoFrameCallback` with RAF `currentTime)-advance fallback; mute/unmute and ended-track signals; one bounded auto-recovery per mounted activation via the existing serialized session replacement; terminal error on failed/exhausted recovery; cleanup on teardown.
+- **Regression boundaries:** decoder backend, decoder allowlist, frame scheduling cadence, ROI, payload validation, barcode recognition order, camera lease owner and Home/Stocktake feature flows remain unchanged by intent. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
+- **Acceptance boundary:** close SC-02 at software/CI scope only. CI does not prove physical camera fault injection or recovery. Before device acceptance, verify frame freeze/stall, mute/unmute, track-ended, successful reacquisition, failed reacquisition/cleanup, close-during-recovery, background/foreground and regular Home/Stocktake scan flows on representative iOS Safari and Android Chrome devices.
+- **Follow-on:** SC-03 Geometry Diagnostics is the next planned engineering phase. Carry outstanding live-camera/device QA into the scanner operational acceptance checklist; do not reopen SC-02 software scope unless a reproducible defect is found.
