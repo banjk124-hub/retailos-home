@@ -207,4 +207,4 @@ SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merge
 - Existing geometry mapping rules and strict fail-closed behavior are preserved. Unsupported geometry remains null; no inferred/full-frame fallback.
 - Automated coverage includes signature sensitivity/normalization, valid/invalid revision epochs, stale session revision rejection, observer event invalidation and cleanup. CI #1332 passed full preflight, TypeScript/production build, PR-base baseline and bundle comparison on PR #146 head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`.
 - Software/CI scope is complete. Actual orientation/viewport behavior on iOS Safari/PWA and Android Chrome/PWA remains device QA and is not claimed from CI.
-- Next scanner engineering phase: SC-04 Focus Recovery Policy.
+- SC-04 Focus Recovery Policy is implemented in draft PR #148 at head `262ccc7feee797e80441d64083b093c2a7d78955`: passive focus states, native-autofocus waiting and recovery detection. Software validation/CI and physical optical QA are pending; do not claim device focus recovery from code alone.
