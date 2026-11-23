@@ -1,7 +1,7 @@
 # SC-01A — Worker feasibility and transport study
 
 **Date:** 2026-11-22  
-**Status:** Research note retained. SC-01A/01B Worker source is merged to main in isolation; SC-01C scheduling work is on the current PR. CI/source-contract checks are available. Empirical built-worker transport/browser performance remains BLOCKED pending local/browser execution.  
+**Status:** Source review and API research complete; executable prototype / browser measurements BLOCKED (remote repository-only environment).  
 **Branch:** `docs/scanner-sc01-05-roadmap`  
 **Production source changed:** No.
 
@@ -83,4 +83,4 @@ Report median/P95 with sample size and avoid exporting barcode payloads or persi
 
 **Architecture recommendation:** keep the adapter/session contracts; add Worker execution behind the adapter/runtime boundary only after SC-01A’s actual compatibility and performance proof. VideoFrame is the leading transport candidate, ImageBitmap is the fallback candidate, and OffscreenCanvas is optional worker-side tooling.
 
-**Still not proven:** actual built-Worker transport support/performance in RetailOS browsers, WASM loading under the Pages base path for a Worker runtime, transfer/capture cost, performance improvement, accuracy parity, memory behavior and fallback correctness. User's general deployed scanner validation does not count as Worker prototype runtime QA because the Worker remains unintegrated.
+**Not yet proven:** actual browser/device support for RetailOS’s required APIs, WASM initialization in the built Worker under the Pages base path, transfer/capture cost, performance improvement, accuracy parity, memory behavior, and fallback correctness. SC-01A cannot be marked passed until these are measured in a local browser build and on the required physical-device matrix.

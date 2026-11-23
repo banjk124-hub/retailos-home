@@ -623,3 +623,10 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Reconciled scanner stabilization documents to mark 01B closed, retain SC-01A transport proof as unverified, and stage SC-01C as isolated frame scheduling/backpressure work.
 - SC-01C implementation branch adds bounded scheduling diagnostics (submitted/dispatched/completed/replaced pending/timed out/failed and average/max queue wait/decode duration); it does not integrate Worker into production session.
 - Empirical Worker runtime, transport and optical device QA remain pending.
+
+
+## 2026-11-23 — SC-01C software closure
+
+- SC-01C merged as PR #142 (squash commit `308d4af1721610ef9fe9c6b7e67772a880d5189e`). Latest-head CI #1301, post-merge CI #1302 and Pages deployment #145 all succeeded.
+- Software scope complete: latest-frame-wins bounded pending slot and in-memory scheduling metrics; no production integration or scanner behavior change.
+- Close SC-01C at prototype/software-validation boundary. Worker transport/browser runtime/performance/optical QA is still a prerequisite for any production integration. Next roadmap stage: SC-02 Camera Health Controller.
