@@ -85,3 +85,4 @@ SC-02 implementation adds bounded frame-progress monitoring and recovery in the 
 - Camera health recovery, geometry revision rejection, passive focus recovery and adaptive runtime budget compose through `UniversalScannerSession` and the production WASM decoder adapter. Worker prototype remains isolated.
 - SC-05 adds one cross-layer integration contract test to preflight and consolidates a device/corpus acceptance protocol rather than duplicating subsystem tests or adding another engine.
 - Device/corpus acceptance NOT RUN in the remote session; overall optical/device acceptance remains pending recorded physical runs.
+- SC-05 follow-up audit found SC-04 recovery state/action/guidance were logged by the session but omitted from the diagnostics allowlist/visible QA metrics. Added those three bounded fields to the existing collector and Home QA monitor; no controller or camera behavior added.
