@@ -243,14 +243,15 @@ export class UniversalScannerSession implements ScannerSession {
       && rect.x + rect.width <= 1 + 1e-7
       && rect.y + rect.height <= 1 + 1e-7;
     const nextRegion = valid
-      ? { coordinateSpace: 'source-frame-normalized' as const, rect: { ...rect } }
+      ? { coordinateSpace: 'source-frame-normalized' as const, rect: { ...rect }, geometryVersion: region.geometryVersion }
       : null;
     const previous = this.sourceScanRegion?.rect;
     const next = nextRegion?.rect;
     const changed = !previous || !next
       ? previous !== next
       : previous.x !== next.x || previous.y !== next.y
-        || previous.width !== next.width || previous.height !== next.height;
+        || previous.width !== next.width || previous.height !== next.height
+        || this.sourceScanRegion?.geometryVersion !== nextRegion?.geometryVersion;
     if (changed) {
       this.sourceScanRegion = nextRegion;
       this.regionRevision += 1;
@@ -263,6 +264,7 @@ export class UniversalScannerSession implements ScannerSession {
     return region ? {
       coordinateSpace: 'source-frame-normalized',
       rect: { ...region.rect },
+      geometryVersion: region.geometryVersion,
     } : null;
   }
 
