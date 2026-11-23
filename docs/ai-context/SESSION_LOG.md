@@ -679,3 +679,9 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Added device matrix and benchmark/corpus run protocol. Physical device QA is NOT RUN; final CI pending.
 
 - Follow-up QA audit found passive SC-04 recovery state/action/guidance logged but not retained by the diagnostic collector allowlist or displayed in the Home QA monitor. Added only those three safe fields to the existing metrics path and updated the cross-layer test/documentation. This is observability, not a new controller or camera behavior.
+
+## SC-05 software scope closure — 2026-11-23
+
+- PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final-head CI #1375 passed, post-merge CI #1376 passed and Pages deployment #151 succeeded.
+- PR #150 follow-up strengthens the diagnostic collector fixture for the three focus-recovery fields; CI #1377 passed. The follow-up includes current-phase handoff and acceptance-status reconciliation.
+- Software integration scope is closed. Physical device/corpus acceptance is NOT RUN and remains the release blocker. No real-device or accuracy claim is made.
