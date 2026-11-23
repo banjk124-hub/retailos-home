@@ -243,6 +243,7 @@ export class ScannerDecodeWorkerBridge {
   private async recover(error: ScannerWorkerRuntimeError): Promise<void> {
     if (this.disposed || this.restarting) return;
     this.restarting = true;
+    this.lastError = error;
     this.terminateWorker();
     if (this.restartCount >= MAX_RESTARTS) {
       this.restarting = false;
