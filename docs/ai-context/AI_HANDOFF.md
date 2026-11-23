@@ -1,16 +1,21 @@
-# Current handoff — Scanner SC-02 Camera Health Controller — 2026-11-23
+# Current handoff — Scanner SC-03 Geometry Diagnostics — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Base:** `main` at `0c702c95063b71deabe2f4454e53fe3a678b20d9`  
-**Work branch:** `feat/scanner-sc02-camera-health`  
-**Pull request:** [#144](https://github.com/banjk124-hub/retailos-home/pull/144)  
-**SC-02 head:** `416b168b1b00b858c2b7e34e751e33defb9afb50` — CI #1313 passed.
+**Base:** `main` after SC-02 merge  
+**Work branch:** `feat/scanner-sc03-geometry-diagnostics`  
+**Pull request:** [#146](https://github.com/banjk124-hub/retailos-home/pull/146)  
+**Implementation head validated:** `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab` — CI #1332 passed. Documentation reconciliation commits are being validated in the final PR workflow.
 
 
 ## Current status — 2026-11-23
 
-Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is closed at the isolated prototype/software boundary: PR #142 merged; latest CI #1301, post-merge CI #1302 and Pages deployment #145 passed. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. SC-02 Camera Health Controller software implementation is complete on `feat/scanner-sc02-camera-health` (PR #144, head `416b168b1b00b858c2b7e34e751e33defb9afb50`). CI #1313 passed full preflight, TypeScript, production build, Pages build and bundle comparison. Scope is frame-progress watchdog plus one bounded automatic recovery through the existing serialized session-replacement path. Production decoder remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated. No decoder policy, ROI, barcode validation or Home/Stocktake business-flow changes were intended. Closure boundary is software/CI; deliberate live-camera stall, ended-track recovery, mobile/browser matrix and post-merge production smoke test remain operational QA gates.
-
+- SC-01B/SC-01C and SC-02 software/CI scopes are closed. Production scanner remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated and is not wired into camera/session/Home/Stocktake.
+- SC-02 PR #144 merged as `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`. Post-merge CI #1320 and Pages deployment #147 succeeded.
+- SC-03 Geometry Diagnostics is implemented on PR #146. It fingerprints source/preview/reticle/CSS/viewport geometry, publishes monotonic geometry versions, clears active ROI on geometry drift and rejects stale versions at the platform session boundary. Existing mapper math and strict fail-closed behavior are preserved.
+- CI #1332 passed on implementation head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison. A final CI run is required after this documentation reconciliation.
+- User confirms the deployed app flow is operating normally with no observed errors. This is regression baseline acceptance.
+- Outstanding device QA: orientation/viewport/visualViewport behavior on physical iOS Safari/PWA and Android Chrome/PWA, including resize/orientation transitions while scanning. Do not infer physical-device acceptance from CI.
+- Next roadmap stage after SC-03 software closure: SC-04 Focus Recovery Policy.
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
