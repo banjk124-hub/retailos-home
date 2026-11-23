@@ -1,7 +1,7 @@
 # Scanner stabilization workstream — SC-01 through SC-05
 
 **Status:** SC-01A/01B/01C, SC-02, SC-03 and SC-04 software/CI scope completed at their documented boundaries. SC-04 is merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`. SC-05 software integration contract and QA acceptance protocol are merged via PR #149; physical-device/corpus evidence remains outstanding.
-**Baseline:** main at `e0579fa1734eac989af051c4776cc88de912c946` (SC-05 software merge, 2026-11-23).  
+**Baseline:** main at `661241e721a5510cf3f61c8ba7c3971c82b6a63c` (SC-05 QA follow-up merge, 2026-11-23).  
 **Working branch:** `test/sc05-focus-diagnostics-assertions` (test-only follow-up PR #150)  
 **Execution mode:** staged, evidence-first, reversible. This roadmap does not authorize a production deployment.
 
@@ -138,7 +138,7 @@ Use [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md) for the d
 ### Current status
 
 - Software scope: COMPLETE and merged via PR #149 at `e0579fa1734eac989af051c4776cc88de912c946`; CI #1375, post-merge CI #1376 and Pages deployment #151 passed.
-- Test-only follow-up PR #150 strengthens diagnostic collector coverage for focus-recovery fields; CI #1377 passed.
+- Test-only follow-up PR #150 merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed.
 - Physical-device/corpus matrix: NOT RUN; real devices and a labelled corpus required. This remains a separate operational acceptance/release blocker.
 ## Reversible execution and rollback
 

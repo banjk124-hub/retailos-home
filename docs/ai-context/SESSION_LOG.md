@@ -683,5 +683,5 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 ## SC-05 software scope closure — 2026-11-23
 
 - PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final-head CI #1375 passed, post-merge CI #1376 passed and Pages deployment #151 succeeded.
-- PR #150 follow-up strengthens the diagnostic collector fixture for the three focus-recovery fields; CI #1377 passed. The follow-up includes current-phase handoff and acceptance-status reconciliation.
+- PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed. The follow-up includes current-phase handoff and acceptance-status reconciliation.
 - Software integration scope is closed. Physical device/corpus acceptance is NOT RUN and remains the release blocker. No real-device or accuracy claim is made.

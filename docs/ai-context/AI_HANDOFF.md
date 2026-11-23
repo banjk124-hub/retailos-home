@@ -1,16 +1,16 @@
 # Current handoff — Scanner physical QA acceptance — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Main baseline:** SC-05 software merge `e0579fa1734eac989af051c4776cc88de912c946`  
+**Main baseline:** SC-05 QA follow-up merge `661241e721a5510cf3f61c8ba7c3971c82b6a63c`  
 **Software integration PR:** [#149](https://github.com/banjk124-hub/retailos-home/pull/149) — merged  
-**Test-only diagnostic follow-up:** [#150](https://github.com/banjk124-hub/retailos-home/pull/150) — CI #1377 passed  
+**Test-only diagnostic follow-up:** [#150](https://github.com/banjk124-hub/retailos-home/pull/150) — merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed  
 **Current scope:** Physical device QA + labelled-corpus benchmark; no new scanner code unless the evidence identifies a defect.
 
 ## Current verified status
 
 - SC-01A/01B/01C, SC-02, SC-03, SC-04 and SC-05 software integration scope are closed at their recorded boundaries. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
 - SC-05 PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`. CI #1375 passed on final PR head; post-merge CI #1376 and GitHub Pages deployment #151 passed.
-- PR #150 strengthens the existing diagnostic test to verify focus-recovery state/action/guidance metrics are safely retained; CI #1377 passed.
+- PR #150 strengthens the existing diagnostic test to verify focus-recovery state/action/guidance metrics are safely retained. Final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed.
 - Focus recovery state/action/guidance are visible through the existing Home Scanner QA monitor. No new controller or camera control was added.
 - Physical iOS Safari/PWA, Android low/mid capability, Desktop and optical/corpus scenarios are NOT RUN remotely. Use `SCANNER_SC05_INTEGRATION_QA.md`; do not claim acceptance until actual runs are recorded.
 - Overall release/optical acceptance remains blocked by device QA and corpus evidence. No speculative algorithm work is authorized by this phase.
