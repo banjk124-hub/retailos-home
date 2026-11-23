@@ -153,6 +153,8 @@ SC-05 validates cross-layer composition before introducing any new scanner algor
 
 The cross-layer source-contract test is `scripts/test-scanner-sc05-integration.mjs` and is registered in `scripts/preflight.mjs`. Existing focused regression/decoder-fixture tests remain the detailed subsystem authority. QA device matrix, run-record and local corpus protocol are in [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md).
 
+The SC-04 passive focus recovery state/action/guidance is included in the existing privacy-allowlisted diagnostic collector and surfaced by the Home QA monitor. This adds visibility only; no new controller, camera command or capture path.
+
 Software CI is not physical-device or optical acceptance. No scan-accuracy, false-positive, focus distance, cross-platform or latency threshold may be claimed until a labelled corpus and real-device run records support it. SC-05 release acceptance must show actual test results or list the remaining device/corpus blocker.
 ## 15. Change protocol
 
