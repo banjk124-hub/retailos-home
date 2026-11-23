@@ -17,8 +17,9 @@ This file is the navigation layer for repository documentation. Read the canonic
 |---|---|
 | Scanner unified specification, runtime architecture, consumer contracts, lean QA policy and final release closure | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical investigations and incident evidence (archive only; not active implementation guidance) | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
-
-
+| SC-01 Worker transport feasibility and unresolved empirical proof | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
+| SC-01A/01B/01C → SC-05 stage boundaries and evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
+| SC-05 physical device/corpus QA protocol — acceptance still NOT RUN | [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md) |
 
 
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
@@ -48,7 +49,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 - `AI_HANDOFF.md`: one current handoff at the top; older handoffs are clearly labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
-- Scanner current technical and release truth lives in `SCANNER_ENGINE.md`. Other scanner phase/QA documents are historical references only; use `SCANNER_HISTORY.md` only to investigate a specific historical symptom or recover evidence.
+- `SCANNER_ENGINE.md` is the current production runtime specification. Keep SC-01 Worker research, SC-01→SC-05 evidence gates and SC-05 physical QA protocol indexed while their empirical/device gates remain open. Read `SCANNER_HISTORY.md` only to investigate a specific historical symptom or recover evidence.
 - PWA runtime/release truth lives in `PWA_RUNTIME_RELEASE.md`; every implementation and deployment must follow its separate download-consent and explicit safe-handoff activation contract. Bundle-size analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
 
 ## Historical-document policy
