@@ -39,9 +39,11 @@ export function useScannerPreviewRegionBinding({
     let frameHandle: number | null = null;
     let lastRegionSignature: string | undefined;
     let lastGeometrySignature: string | null = null;
-    let invalidated = false;
+    let disposed = false;
     const revision = new ScannerGeometryRevisionTracker();
     let resizeObserver: ResizeObserver | null = null;
+    let resolutionQuery: MediaQueryList | null = null;
+    let scheduleMeasureRef: (() => void) | null = null;
 
     const publish = (region: ScannerSourceScanRegion | null) => {
       const signature = regionSignature(region);
@@ -71,7 +73,6 @@ export function useScannerPreviewRegionBinding({
     };
 
     const invalidate = () => {
-      invalidated = true;
       revision.invalidate();
       lastGeometrySignature = null;
       // Clear stale source ROI before the next layout read or animation frame.
@@ -80,6 +81,7 @@ export function useScannerPreviewRegionBinding({
 
     const measure = () => {
       frameHandle = null;
+      if (disposed) return;
       if (!enabled) {
         invalidate();
         return;
@@ -95,7 +97,6 @@ export function useScannerPreviewRegionBinding({
       const geometrySignature = readGeometrySignature(video, reticle);
       const geometryRevision = revision.update(geometrySignature);
       if (!geometrySignature || !geometryRevision) {
-        invalidated = true;
         publish(null);
         return;
       }
@@ -104,7 +105,6 @@ export function useScannerPreviewRegionBinding({
         // The first valid measurement also establishes a new version after
         // invalidation; any region from the previous layout is discarded.
         lastGeometrySignature = geometrySignature;
-        invalidated = true;
         publish(null);
       }
 
@@ -119,17 +119,16 @@ export function useScannerPreviewRegionBinding({
         transform: style.transform,
       });
       if (!region) {
-        invalidated = true;
         publish(null);
         return;
       }
 
       const nextRegion = { ...region, geometryVersion: geometryRevision.version };
-      invalidated = false;
       publish(nextRegion);
     };
 
     const scheduleMeasure = () => {
+      if (disposed) return;
       const video = videoRef.current;
       const reticle = reticleRef.current;
       const currentSignature = video && reticle ? readGeometrySignature(video, reticle) : null;
@@ -169,13 +168,21 @@ export function useScannerPreviewRegionBinding({
     window.addEventListener('orientationchange', scheduleMeasure);
     window.visualViewport?.addEventListener('resize', scheduleMeasure);
     window.visualViewport?.addEventListener('scroll', scheduleMeasure);
-    window.matchMedia?.('(resolution: ' + (window.devicePixelRatio || 1) + 'dppx)')
-      .addEventListener?.('change', scheduleMeasure);
+    const bindResolutionQuery = () => {
+      resolutionQuery?.removeEventListener?.('change', scheduleMeasure);
+      resolutionQuery = window.matchMedia?.(`(resolution: ${window.devicePixelRatio || 1}dppx)`) ?? null;
+      resolutionQuery?.addEventListener?.('change', scheduleMeasure, { once: true });
+    };
+    bindResolutionQuery();
 
     measure();
 
+    scheduleMeasureRef = scheduleMeasure;
     return () => {
+      disposed = true;
+      scheduleMeasureRef = null;
       if (frameHandle !== null) window.cancelAnimationFrame(frameHandle);
+      resolutionQuery?.removeEventListener?.('change', scheduleMeasure);
       resizeObserver?.disconnect();
       video.removeEventListener('loadedmetadata', scheduleMeasure);
       video.removeEventListener('loadeddata', scheduleMeasure);
