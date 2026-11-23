@@ -21,7 +21,7 @@ Stabilize the existing scanner engine in bounded stages. Keep CameraSession leas
 | **SC-04** | Focus Recovery Policy | Passive quality-state policy using existing ROI samples; sustained-blur gate, native-autofocus wait, recovery recognition and bounded cooldown. Exit: state transitions/guards pass CI; optical behavior remains device QA. |
 | **SC-05** | Integration & QA | Cross-layer integration contract + existing regression audit, benchmark protocol and physical-device acceptance matrix. Software exit: contract tests, full preflight/build/Pages/PR-base CI, docs sync. Optical/device exit remains separate and requires actual recorded runs. |
 
-Dependencies are sequential: SC-02 builds on the isolated SC-01A/01B/01C Worker scheduling/reporting foundation; SC-03 feeds valid geometry into frame scheduling; SC-04 consumes quality/health evidence and geometry context; SC-05 integrates and validates all stages. Discovery may run in parallel, but production integration must respect this sequence.
+The phases are ordered for evidence and safe review, not as a Worker production migration. SC-02 health operates within the current shared session; SC-03 geometry versions guard the feature-owned ROI; SC-04 observes existing ROI quality; SC-05 validates their integration. SC-01A/01B/01C Worker prototypes remain isolated and their transport/performance proof is a separate gate, not a prerequisite for the existing Main Thread production path.
 
 ## Global protected contracts
 
