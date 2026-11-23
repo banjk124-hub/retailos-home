@@ -648,3 +648,18 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - PR review thread audit: no open inline threads; no submitted reviews requiring changes.
 - Documentation synchronized to close SC-02 at software/CI boundary. Physical camera stall/ended-track recovery, failure injection, close-during-recovery, mobile/browser device matrix and post-merge production smoke test remain outstanding operational QA; they are not represented as passed.
 - PR #144 still requires final base/head/status refresh and successful merge. Next engineering workstream: SC-03 Geometry Diagnostics.
+
+
+## 2026-11-23 — SC-03 Geometry Diagnostics implementation and validation
+
+- Baseline: user confirms deployed app flow currently operates normally with no observed errors; this is regression baseline acceptance.
+- Branch `feat/scanner-sc03-geometry-diagnostics`, PR #146.
+- Existing `scannerGeometry.ts` mapper was retained. SC-03 adds privacy-safe geometry signature inputs for source frame dimensions, video/reticle bounds, CSS object-fit/object-position/transform, viewport/visualViewport and pixel density.
+- Added monotonic geometry revision epochs. Stable signatures do not churn; repeated invalid states remain stable; explicit lifecycle invalidation advances the epoch to reject stale asynchronous work.
+- Feature binding now observes source metadata/resize, ResizeObserver (video/reticle/preview parent), window resize/orientation, visualViewport resize/scroll and device-pixel-ratio media-query changes. Geometry drift clears the previous ROI synchronously before fresh RAF measurement.
+- Source ROI carries geometryVersion; UniversalScannerSession rejects malformed/older versions and retains the latest version floor across ROI clearing.
+- Added signature/epoch tests, stale session revision tests and observer lifecycle/invalidation/cleanup tests to preflight. Existing geometry and preview-region test suites remain enabled.
+- Review fixes after first CI: corrected CSS whitespace/matrix regexes; made repeated invalid signature updates idempotent while keeping explicit invalidation monotonic; test harness expectations verified through CI.
+- CI #1332 (`45141790211`) passed on implementation head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison.
+- Final technical docs reconciled: scanner workstream roadmap, scanner engine contract, scanner history, project context and AI handoff. Final docs-only commits require a fresh CI run on the resulting PR head.
+- Acceptance boundary: close SC-03 at software/CI scope. Physical iOS Safari/PWA and Android Chrome/PWA orientation/viewport acceptance remains a separate device QA gate.
