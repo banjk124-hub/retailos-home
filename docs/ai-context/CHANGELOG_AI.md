@@ -2,6 +2,17 @@
 
 Use append-only entries. Each entry must say what was actually changed and tested.
 
+
+## 2026-11-23 — Scanner ecosystem closure candidate
+
+- Intent: consolidate scanner technical guidance and retire unused prototype/legacy code without changing the proven production scanner runtime.
+- Files: unified `SCANNER_ENGINE.md`; documentation `INDEX.md`; `IMPLEMENTATION_STATUS.md`; `package.json`; `scripts/preflight.mjs`; removed `scannerDecodeWorker.ts`, `scannerDecodeWorkerBridge.ts`, and `test-scanner-worker-prototype.mjs`.
+- Behavior: current scanner architecture, ownership, validation, resource ceilings, consumer integration, privacy policy, lean test policy and release closure are now in one canonical document. Worker experiment is retired from the repository and its npm/preflight wiring removed. No production recognition/camera code changed.
+- Checks run: repository/PR diff review and references search for Worker prototype. Automated CI/build and Pages validation pending; no CI run visible at entry time.
+- Unverified: physical iOS/Android/desktop and low-end optical acceptance remains separate. Cleanup itself must still pass CI.
+- Risks / rollback: revert PR #152 if cleanup breaks CI or discovers a required reference. No scanner runtime behavior or production promotion is authorized by this PR.
+
+
 ## Template
 ### YYYY-MM-DD — Short title
 - Intent:
