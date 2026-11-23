@@ -117,10 +117,5 @@ const recoveryStartIndex = hookSource.indexOf('await startScanner();', recoveryV
 assert.ok(recoverySurfaceIndex >= 0 && recoveryVisibilityGuardIndex > recoverySurfaceIndex && recoveryStartIndex > recoveryVisibilityGuardIndex,
   'recovery rechecks visibility and active state after video surface replacement');
 
-const recoverySurfaceIndex = hookSource.indexOf('const video = await replaceVideoSurface();');
-const recoveryVisibilityGuardIndex = hookSource.indexOf('if (!video || !desiredActiveRef.current || !pageVisibleRef.current || isDocumentHidden()) return;', recoverySurfaceIndex);
-const recoveryStartIndex = hookSource.indexOf('await startScanner();', recoveryVisibilityGuardIndex);
-assert.ok(recoverySurfaceIndex >= 0 && recoveryVisibilityGuardIndex > recoverySurfaceIndex && recoveryStartIndex > recoveryVisibilityGuardIndex,
-  'recovery rechecks visibility and active state after video surface replacement');
 
 console.log('Scanner SC-02 camera health, watchdog, bounded recovery and escalation tests passed.');
