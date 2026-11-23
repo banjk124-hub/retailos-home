@@ -60,6 +60,8 @@ The integration contract is intentionally source-boundary focused. Existing dedi
 - Temporal recognition, torch, symbology/settings, diagnostics privacy
 - Home/Stocktake scanner presentation and exit behavior
 
+The in-app Scanner QA monitor must surface the passive focus recovery state/action/guidance through its existing allowlisted diagnostic metrics; it is not a new controller or a camera command.
+
 A test that uses mocks or generated images does not prove optical performance on a physical camera.
 
 ## 4. Device matrix — run and record actual devices
