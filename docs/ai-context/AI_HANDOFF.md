@@ -10,7 +10,7 @@
 - SC-01A/01B/01C, SC-02, SC-03 and SC-04 software scopes are merged/closed at their recorded boundaries. Worker prototypes remain isolated; production decoder remains Main Thread ZXing-C++ WASM.
 - SC-04 is merged to `main` at `0b6840c9b2872d93920d4eba5f628158e09679b4`; code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348. Real near/far optical focus tests remain outstanding.
 - SC-05 audit found Home and Stocktake already share `useScannerEngine`, `UniversalScannerSession` and module-owned preview ROI. Do not add a new scanner controller or duplicate existing regression fixtures.
-- SC-05 branch adds a cross-layer integration contract test to preflight and a run-ready physical device/corpus QA checklist. No decoder, camera, recognition or retail workflow behavior is intentionally changed.
+- SC-05 branch adds a cross-layer integration contract test to preflight, exposes the existing SC-04 recovery state/action/guidance in the current diagnostic allowlist and QA monitor, and adds a physical device/corpus QA checklist. No decoder, camera, recognition or retail workflow behavior is intentionally changed.
 - Physical iOS Safari/PWA, Android low/mid-tier Chrome/PWA and Desktop QA is NOT RUN by the remote session. The matrix is a release blocker for optical/device acceptance, not something to claim from CI.
 - Next phase after SC-05: only if QA results identify a concrete issue; no speculative pipeline expansion.
 
