@@ -3,7 +3,7 @@
 **Repository:** `banjk124-hub/retailos-home`  
 **Default branch:** `main`  
 **Current main commit:** `661241e721a5510cf3f61c8ba7c3971c82b6a63c` (SC-05 QA follow-up merge)  
-**Latest completed feature:** PR #137 — delta-aware PWA release staging. Merged at the main commit above on 2026-11-16.
+**Latest recorded PWA feature:** PR #137 — delta-aware PWA release staging, merged on 2026-11-16 at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`. Current main is newer due to subsequent scanner phases.
 
 - Delta staging reuses active-cache resources only after exact URL, byte-length and SHA-256 validation. Missing, changed or corrupt resources are downloaded and verified; removed resources are excluded.
 - Update reporting distinguishes network download bytes, verified reused bytes and total candidate release bytes. Temporary storage still needs room for the complete candidate alongside the active release for rollback.
