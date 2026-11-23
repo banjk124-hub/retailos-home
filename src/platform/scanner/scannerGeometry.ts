@@ -138,7 +138,7 @@ export function createScannerGeometrySignature(input: ScannerGeometrySignatureIn
     'geometry-v1',
     ...rounded,
     input.objectFit,
-    input.objectPosition.trim().toLowerCase().replace(/\\s+/g, ' '),
+    input.objectPosition.trim().toLowerCase().replace(/\s+/g, ' '),
     input.transform.trim().toLowerCase(),
   ].join('|');
 }
@@ -146,7 +146,7 @@ export function createScannerGeometrySignature(input: ScannerGeometrySignatureIn
 function resolveGeometryMirror(transform: string): boolean | null {
   const value = transform.trim().toLowerCase();
   if (!value || value === 'none') return false;
-  const match = value.match(/^matrix\\(([^)]+)\\)$/);
+  const match = value.match(/^matrix\(([^)]+)\)$/);
   if (!match) return null;
   const values = match[1].split(',').map((part) => Number(part.trim()));
   if (values.length !== 6 || values.some((part) => !Number.isFinite(part))) return null;
