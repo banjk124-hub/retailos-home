@@ -123,7 +123,7 @@ Recovery is delegated to `useScannerEngine` and reuses the existing serialized s
 
 ## 10. Active stabilization workstream
 
-The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C prototype phases are merged; SC-01C software validation and deployment are complete. The next planned stage is SC-02 Camera Health Controller. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
+The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C and SC-02 software/CI scope are complete at their documented boundaries; SC-02 PR #144 head `416b168b1b00b858c2b7e34e751e33defb9afb50` passed CI #1313 (preflight, TypeScript, production build, Pages build and bundle comparison). SC-03 Geometry Diagnostics is the next planned stage. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Live-camera fault injection, recovery success/failure and device/browser QA remain operational acceptance gates, not CI claims. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
 ## 11. Change protocol
 
 For every scanner change:
