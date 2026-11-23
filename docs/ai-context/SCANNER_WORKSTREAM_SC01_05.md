@@ -78,9 +78,25 @@ SC-02 is isolated in the platform session and does not alter decoder policy or r
 - Tests cover normal frame recovery from mute, stall threshold, successful recovery, second-stall escalation, track-ended signal, bounded attempts and lifecycle cleanup/source contracts.
 
 
-## SC-03 — Geometry Diagnostics
+## SC-03 — Geometry Diagnostics (implementation)
 
-Create a compact geometry signature for source dimensions, preview bounds, object-fit/object-position, mirror/orientation, viewport/safe-area and ROI mapping inputs. Detect stale signature and invalidation when source/preview/viewport/orientation changes. Reconcile preview-space reticle to source-frame ROI and fail closed on inconsistency. Do not modify presentation layout in this phase. Test resize, orientation, visualViewport/safe-area changes, source dimension changes, mirror/object-position variants and stale ROI; export only non-sensitive geometry metadata.
+SC-03 extends the existing pure preview-to-source mapper with an explicit geometry identity and stale-ROI invalidation boundary. It does not rewrite the existing object-fit mapping algorithm or alter reticle/layout styling.
+
+- **Geometry signature:** `createScannerGeometrySignature` fingerprints source frame dimensions, video/reticle bounds, computed `object-fit`, `object-position`, supported transform/mirror state, viewport dimensions, visualViewport offsets/scale and device-pixel ratio. It is a deterministic in-memory signature; no signature is exported or persisted.
+- **Revision epoch:** `ScannerGeometryRevisionTracker` assigns monotonic geometry versions. Stable valid signatures do not churn; stable invalid state remains unpublished; explicit invalidation advances the epoch so delayed work from a previous lifecycle cannot be accepted.
+- **Invalidation triggers:** source metadata/resize, ResizeObserver for video/reticle/preview parent, window resize/orientation, visualViewport resize/scroll and pixel-density media-query changes. If the current fingerprint differs, the old source ROI is cleared synchronously before the next RAF measurement.
+- **Stale-result protection:** the feature binding attaches `geometryVersion` to each source-frame ROI. `UniversalScannerSession` rejects malformed or older versions, preserves the latest version floor across ROI clear, and clears temporal recognition state when the active ROI/version changes.
+- **Fail-closed behavior:** missing/zero-size/unsupported CSS geometry or a reticle outside visible image content publishes null. No inferred center crop, full-frame fallback or stale ROI is used. Existing unsupported length/calc `object-position` and non-horizontal transforms remain unsupported intentionally.
+- **Privacy:** signature inputs are limited to geometry numbers and CSS geometry values. No camera/device identifiers, barcode payloads, employee identifiers, URLs or personal data are read into the signature or diagnostics.
+- **Protected boundaries:** CameraSession acquisition/lease ownership, decoder/backend, frame cadence, ROI mapper semantics, payload validation, Home lookup and Stocktake capture/save flows remain unchanged.
+
+### SC-03 validation and closure boundary
+
+- Existing mapper tests continue to cover cover/contain/fill/none/scale-down, object-position, mirror mapping, Home/Stocktake reticle fixtures and invalid geometry.
+- SC-03 adds deterministic signature sensitivity/normalization, revision epoch, stale session revision rejection, observer event/invalidation and listener cleanup tests, all registered in preflight.
+- PR #146 head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`; RetailOS CI #1332 passed full preflight, TypeScript/production build, PR-base bundle build and bundle comparison.
+- User confirms the deployed app flow has no observed errors and operates normally; this is regression baseline acceptance.
+- Close SC-03 at software/CI scope. Physical orientation/viewport behavior on actual iOS Safari/PWA and Android Chrome/PWA remains device QA; do not infer it from CI.
 
 ## SC-04 — Focus Recovery Policy
 

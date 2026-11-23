@@ -89,6 +89,109 @@ export function parseScannerObjectPosition(value: string): ScannerObjectPosition
   return x === null || y === null ? null : { x, y };
 }
 
+/** Inputs that can change the preview-to-source coordinate transform. */
+export type ScannerGeometrySignatureInput = {
+  sourceWidth: number;
+  sourceHeight: number;
+  videoRect: { left: number; top: number; width: number; height: number };
+  reticleRect: { left: number; top: number; width: number; height: number };
+  objectFit: string;
+  objectPosition: string;
+  transform: string;
+  viewportWidth: number;
+  viewportHeight: number;
+  visualViewportOffsetLeft: number;
+  visualViewportOffsetTop: number;
+  visualViewportScale: number;
+  devicePixelRatio: number;
+};
+
+/**
+ * Stable, privacy-safe fingerprint of geometry inputs only. It deliberately
+ * excludes device IDs, camera IDs, URLs, barcode data and user information.
+ * Rounding suppresses insignificant sub-pixel observer noise while preserving
+ * meaningful layout/source changes.
+ */
+export function createScannerGeometrySignature(input: ScannerGeometrySignatureInput): string | null {
+  if (!input || typeof input !== 'object') return null;
+  const numbers = [
+    input.sourceWidth, input.sourceHeight,
+    input.videoRect?.left, input.videoRect?.top, input.videoRect?.width, input.videoRect?.height,
+    input.reticleRect?.left, input.reticleRect?.top, input.reticleRect?.width, input.reticleRect?.height,
+    input.viewportWidth, input.viewportHeight,
+    input.visualViewportOffsetLeft, input.visualViewportOffsetTop,
+    input.visualViewportScale, input.devicePixelRatio,
+  ];
+  if (!numbers.every(Number.isFinite)
+    || numbers.some((value) => value < 0)
+    || input.sourceWidth <= 0 || input.sourceHeight <= 0
+    || input.videoRect.width <= 0 || input.videoRect.height <= 0
+    || input.reticleRect.width <= 0 || input.reticleRect.height <= 0
+    || input.viewportWidth <= 0 || input.viewportHeight <= 0
+    || input.visualViewportScale <= 0 || input.devicePixelRatio <= 0
+    || !['fill', 'contain', 'cover', 'none', 'scale-down'].includes(input.objectFit)
+    || parseScannerObjectPosition(input.objectPosition) === null
+    || resolveGeometryMirror(input.transform) === null) return null;
+
+  const rounded = numbers.map((value) => Number(value.toFixed(3)).toString());
+  return [
+    'geometry-v1',
+    ...rounded,
+    input.objectFit,
+    input.objectPosition.trim().toLowerCase().replace(/\s+/g, ' '),
+    input.transform.trim().toLowerCase(),
+  ].join('|');
+}
+
+function resolveGeometryMirror(transform: string): boolean | null {
+  const value = transform.trim().toLowerCase();
+  if (!value || value === 'none') return false;
+  const match = value.match(/^matrix\(([^)]+)\)$/);
+  if (!match) return null;
+  const values = match[1].split(',').map((part) => Number(part.trim()));
+  if (values.length !== 6 || values.some((part) => !Number.isFinite(part))) return null;
+  const [a, b, c, d, e, f] = values;
+  if (Math.abs(b) > 1e-7 || Math.abs(c) > 1e-7 || Math.abs(e) > 1e-7 || Math.abs(f) > 1e-7) return null;
+  if (Math.abs(a - 1) <= 1e-7 && Math.abs(d - 1) <= 1e-7) return false;
+  if (Math.abs(a + 1) <= 1e-7 && Math.abs(d - 1) <= 1e-7) return true;
+  return null;
+}
+
+export type ScannerGeometryRevision = {
+  version: number;
+  signature: string;
+};
+
+export class ScannerGeometryRevisionTracker {
+  private version = 0;
+  private signature: string | null = null;
+
+  update(signature: string | null): ScannerGeometryRevision | null {
+    if (!signature) {
+      if (this.signature !== null) {
+        this.signature = null;
+        this.version += 1;
+      }
+      return null;
+    }
+    if (signature !== this.signature) {
+      this.signature = signature;
+      this.version += 1;
+    }
+    return { version: this.version, signature: this.signature };
+  }
+
+  invalidate(): number {
+    // Explicit invalidation advances the epoch to reject delayed work even
+    // when the tracker is already invalid (e.g. observer lifecycle teardown).
+    this.signature = null;
+    this.version += 1;
+    return this.version;
+  }
+
+  getVersion(): number { return this.version; }
+}
+
 type PixelRect = { x: number; y: number; width: number; height: number };
 
 const EPSILON = 1e-7;

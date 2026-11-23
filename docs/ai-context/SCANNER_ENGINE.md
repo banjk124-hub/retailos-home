@@ -121,10 +121,26 @@ Recovery is delegated to `useScannerEngine` and reuses the existing serialized s
 
 **SC-02 evidence:** deterministic controller/source-contract tests are included in preflight. CI/build/deploy are software validation. A deliberate live-camera stall, track-ended injection, recovery success/failure and device matrix remain manual QA gates; do not infer them from CI.
 
-## 10. Active stabilization workstream
+## 10. Geometry Diagnostics (SC-03)
 
-The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C and SC-02 software/CI scope are complete at their documented boundaries; SC-02 PR #144 head `416b168b1b00b858c2b7e34e751e33defb9afb50` passed CI #1313 (preflight, TypeScript, production build, Pages build and bundle comparison). SC-03 Geometry Diagnostics is the next planned stage. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Live-camera fault injection, recovery success/failure and device/browser QA remain operational acceptance gates, not CI claims. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
-## 11. Change protocol
+The existing `scannerGeometry.ts` pure mapper remains the authority for mapping visible preview-content coordinates to the unrotated source frame. SC-03 adds geometry identity and stale-region protection around that mapper; it does not change its object-fit mapping math or the feature-owned reticle layout.
+
+- `createScannerGeometrySignature` fingerprints source dimensions, video/reticle DOMRects, computed object-fit/object-position, supported transform/mirror, window viewport, visualViewport offset/scale and devicePixelRatio. It returns a compact in-memory string and does not persist or export it.
+- `ScannerGeometryRevisionTracker` issues monotonic versions. Repeated stable valid signatures preserve the same version; a valid-to-invalid transition increments once; repeated invalid state does not churn. Explicit lifecycle invalidation always advances the epoch.
+- `useScannerPreviewRegionBinding` observes source metadata/resize, ResizeObserver (video, reticle, preview parent), window resize/orientation, visualViewport resize/scroll and device-pixel-ratio changes. If the measured fingerprint differs from the active one, it clears the prior ROI synchronously before the next RAF measurement.
+- Published source ROI carries `geometryVersion`. `UniversalScannerSession` rejects malformed or older revisions, keeps the latest version floor across clear, and clears temporal recognition state whenever ROI/version changes.
+- Missing, zero-sized, unsupported or inconsistent geometry fails closed to `null`. There is no full-frame, centered or guessed ROI fallback. CSS length/calc object-position and transforms other than identity/horizontal mirror remain deliberately unsupported.
+- Signature/telemetry is geometry-only; it excludes camera/device IDs, barcode payloads, employee identifiers, URLs and personal data.
+
+**SC-03 evidence:** PR #146 head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`; CI #1332 passed full preflight, TypeScript/production build, PR-base baseline build and bundle comparison. Deterministic coverage includes mapper variants, signature inputs, stable/invalid epoch transitions, delayed old-revision rejection, observer invalidation and cleanup.
+
+**Acceptance boundary:** User confirms current app flow has no observed errors and operates normally. Software/CI scope is complete; viewport/orientation behavior on physical iOS Safari/PWA and Android Chrome/PWA remains device QA and is not inferred from CI.
+
+## 11. Active stabilization workstream
+
+The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C and SC-02 software/CI scope are closed at their documented boundaries. SC-03 Geometry Diagnostics software/CI scope is complete in PR #146 and passed CI #1332. SC-04 Focus Recovery Policy is the next planned engineering phase. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Outstanding physical viewport/orientation verification remains a device QA gate. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
+
+## 12. Change protocol
 
 For every scanner change:
 1. Read this document and the exact source/tests involved.

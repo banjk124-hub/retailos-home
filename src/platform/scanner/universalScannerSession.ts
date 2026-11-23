@@ -147,6 +147,7 @@ export class UniversalScannerSession implements ScannerSession {
   readonly id = `scanner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   private currentState: ScannerLifecycleState = 'idle';
   private sourceScanRegion: ScannerSourceScanRegion | null = null;
+  private latestGeometryVersion = -1;
   private stream: MediaStream | null = null;
   private cameraLease: CameraStreamLease | null = null;
   private torchTrack: MediaStreamTrack | null = null;
@@ -226,6 +227,13 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   setScanRegion(region: ScannerSourceScanRegion | null): void {
+    if (region?.geometryVersion !== undefined) {
+      if (!Number.isInteger(region.geometryVersion) || region.geometryVersion < 0
+        || region.geometryVersion < this.latestGeometryVersion) {
+        return;
+      }
+      this.latestGeometryVersion = region.geometryVersion;
+    }
     if (!region || region.coordinateSpace !== 'source-frame-normalized'
       || !region.rect || typeof region.rect !== 'object') {
       if (this.sourceScanRegion !== null) {
@@ -243,14 +251,15 @@ export class UniversalScannerSession implements ScannerSession {
       && rect.x + rect.width <= 1 + 1e-7
       && rect.y + rect.height <= 1 + 1e-7;
     const nextRegion = valid
-      ? { coordinateSpace: 'source-frame-normalized' as const, rect: { ...rect } }
+      ? { coordinateSpace: 'source-frame-normalized' as const, rect: { ...rect }, geometryVersion: region.geometryVersion }
       : null;
     const previous = this.sourceScanRegion?.rect;
     const next = nextRegion?.rect;
     const changed = !previous || !next
       ? previous !== next
       : previous.x !== next.x || previous.y !== next.y
-        || previous.width !== next.width || previous.height !== next.height;
+        || previous.width !== next.width || previous.height !== next.height
+        || this.sourceScanRegion?.geometryVersion !== nextRegion?.geometryVersion;
     if (changed) {
       this.sourceScanRegion = nextRegion;
       this.regionRevision += 1;
@@ -263,6 +272,7 @@ export class UniversalScannerSession implements ScannerSession {
     return region ? {
       coordinateSpace: 'source-frame-normalized',
       rect: { ...region.rect },
+      geometryVersion: region.geometryVersion,
     } : null;
   }
 

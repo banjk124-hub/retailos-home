@@ -156,6 +156,7 @@ const engineSource = await readFile(
   'utf8',
 );
 assert.match(contractSource, /setScanRegion\(region: ScannerSourceScanRegion \| null\): void/);
+assert.match(contractSource, /geometryVersion\?: number/);
 assert.match(engineSource, /sessionRef\.current\?\.setScanRegion\(region\)/);
 
 const setter = sessionSource.match(/setScanRegion\(region:[\s\S]*?\n  \}\n\n  getScanRegion/);
@@ -215,6 +216,7 @@ const session = new UniversalScannerSession({}, {
 const expectedRegion = {
   coordinateSpace: 'source-frame-normalized',
   rect: { x: 0.1, y: 0.2, width: 0.3, height: 0.4 },
+  geometryVersion: 3,
 };
 session.setScanRegion(expectedRegion);
 assert.equal(session.state, 'idle', 'region publication must not start the session');
@@ -231,7 +233,28 @@ session.setScanRegion({
 assert.equal(session.getScanRegion(), null, 'invalid source region must clear instead of clipping/fallback');
 session.setScanRegion(null);
 assert.equal(session.getScanRegion(), null, 'null region must clear the active source ROI');
-assert.equal(session.state, 'idle', 'region clear must not change session lifecycle');
+session.setScanRegion({
+  coordinateSpace: 'source-frame-normalized',
+  rect: { x: 0.2, y: 0.2, width: 0.3, height: 0.4 },
+  geometryVersion: 5,
+});
+assert.equal(session.getScanRegion()?.geometryVersion, 5,
+  'the newest geometry revision is accepted');
+session.setScanRegion({
+  coordinateSpace: 'source-frame-normalized',
+  rect: { x: 0.7, y: 0.2, width: 0.2, height: 0.4 },
+  geometryVersion: 4,
+});
+assert.equal(session.getScanRegion()?.rect.x, 0.2,
+  'a delayed measurement from an older geometry revision cannot overwrite the current ROI');
+session.setScanRegion({
+  coordinateSpace: 'source-frame-normalized',
+  rect: { x: 0.7, y: 0.2, width: 0.2, height: 0.4 },
+  geometryVersion: 5,
+});
+assert.equal(session.getScanRegion()?.rect.x, 0.7,
+  'a fresh measurement in the active geometry revision can update the ROI');
+assert.equal(session.state, 'idle', 'region updates must not change session lifecycle');
 
 const homeComponent = await readFile(
   new URL('../src/features/scanner/components/BarcodeScanner.tsx', import.meta.url),

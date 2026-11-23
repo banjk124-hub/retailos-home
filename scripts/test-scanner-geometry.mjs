@@ -11,7 +11,12 @@ const compiled = ts.transpileModule(source, {
 }).outputText
   .replace("from './contracts';", "from './contracts.js';");
 const moduleUrl = 'data:text/javascript;base64,' + Buffer.from(compiled).toString('base64');
-const { mapPreviewScanRegionToSourceFrame, parseScannerObjectPosition } = await import(moduleUrl);
+const {
+  mapPreviewScanRegionToSourceFrame,
+  parseScannerObjectPosition,
+  createScannerGeometrySignature,
+  ScannerGeometryRevisionTracker,
+} = await import(moduleUrl);
 
 const closeTo = (actual, expected, message, epsilon = 1e-6) => {
   assert.ok(Math.abs(actual - expected) <= epsilon,
@@ -43,6 +48,82 @@ assert.equal(parseScannerObjectPosition('10px 20px'), null,
   'unsupported length-based object-position must not silently default to center');
 assert.equal(parseScannerObjectPosition('calc(50% - 2px) center'), null,
   'unsupported calc object-position must fail explicitly');
+
+// Geometry signatures include source, element, reticle, CSS and viewport inputs.
+const signatureInput = {
+  sourceWidth: 1280,
+  sourceHeight: 720,
+  videoRect: { left: 12, top: 24, width: 390, height: 844 },
+  reticleRect: { left: 43, top: 210, width: 328, height: 472 },
+  objectFit: 'cover',
+  objectPosition: '50% 50%',
+  transform: 'none',
+  viewportWidth: 430,
+  viewportHeight: 932,
+  visualViewportOffsetLeft: 0,
+  visualViewportOffsetTop: 0,
+  visualViewportScale: 1,
+  devicePixelRatio: 2,
+};
+const baseSignature = createScannerGeometrySignature(signatureInput);
+assert.ok(baseSignature, 'valid geometry produces a signature');
+assert.equal(createScannerGeometrySignature({
+  ...signatureInput,
+  objectPosition: '50%   50%',
+}), baseSignature, 'equivalent CSS whitespace does not create a different geometry identity');
+assert.ok(createScannerGeometrySignature({
+  ...signatureInput,
+  transform: 'matrix(-1, 0, 0, 1, 0, 0)',
+}), 'horizontal mirror transform is a supported geometry signature');
+assert.equal(createScannerGeometrySignature({
+  ...signatureInput,
+  transform: 'matrix(0, 1, -1, 0, 0, 0)',
+}), null, 'rotation transform is unsupported and fails closed');
+
+assert.equal(createScannerGeometrySignature({
+  ...signatureInput,
+  videoRect: { ...signatureInput.videoRect, width: 0 },
+}), null, 'zero-size preview invalidates the signature');
+assert.equal(createScannerGeometrySignature({
+  ...signatureInput,
+  objectPosition: 'calc(50% - 2px) center',
+}), null, 'unsupported CSS position fails closed in signature creation');
+for (const [label, override] of [
+  ['source dimensions', { sourceWidth: 1920 }],
+  ['preview origin', { videoRect: { ...signatureInput.videoRect, left: 13 } }],
+  ['preview bounds', { videoRect: { ...signatureInput.videoRect, width: 391 } }],
+  ['reticle bounds', { reticleRect: { ...signatureInput.reticleRect, top: 211 } }],
+  ['object fit', { objectFit: 'contain' }],
+  ['object position', { objectPosition: '25% 50%' }],
+  ['mirror state', { transform: 'matrix(-1, 0, 0, 1, 0, 0)' }],
+  ['viewport dimensions', { viewportHeight: 933 }],
+  ['visual viewport offset', { visualViewportOffsetTop: 1 }],
+  ['visual viewport zoom', { visualViewportScale: 1.1 }],
+  ['pixel density', { devicePixelRatio: 3 }],
+]) {
+  assert.notEqual(
+    createScannerGeometrySignature({ ...signatureInput, ...override }),
+    baseSignature,
+    `${label} must alter geometry identity`,
+  );
+}
+
+const tracker = new ScannerGeometryRevisionTracker();
+const revision1 = tracker.update(baseSignature);
+assert.deepEqual(revision1, { version: 1, signature: baseSignature });
+assert.deepEqual(tracker.update(baseSignature), revision1,
+  'identical geometry must not churn revisions');
+const revision2 = tracker.update(baseSignature + '|changed');
+assert.equal(revision2.version, 2, 'changed geometry advances revision');
+assert.equal(tracker.update(null), null, 'invalid geometry is not publishable');
+assert.equal(tracker.getVersion(), 3, 'invalidating a valid geometry advances revision');
+assert.equal(tracker.update(null), null, 'repeated invalid geometry remains unpublished');
+assert.equal(tracker.getVersion(), 3, 'stable invalid geometry does not churn revisions');
+tracker.invalidate();
+assert.equal(tracker.getVersion(), 4, 'explicit invalidation advances the epoch to reject delayed work');
+const revision5 = tracker.update(baseSignature);
+assert.equal(revision5.version, 5, 'a new valid geometry after invalidation gets a fresh epoch');
+
 
 // Cover: a 16:9 source cropped into a portrait 4:5 preview.
 // The centered viewport is 45% of the source width, with equal vertical bounds.
