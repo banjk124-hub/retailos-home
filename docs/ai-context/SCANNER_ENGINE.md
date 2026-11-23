@@ -149,7 +149,7 @@ The existing ROI focus-quality monitor now exposes a passive state policy: `obse
 PR #148 merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`. CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base bundle comparison on code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. Physical iOS/Android near/far focus QA remains separate.
 ## 14. SC-05 Integration & QA
 
-**Software scope closure:** PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; CI #1375/#1376 and Pages deployment #151 passed. PR #150 adds a test-only diagnostic assertion and CI #1377 passed. Physical optical/device QA remains NOT RUN.
+**Software scope closure:** PR #149 merged at `e0579fa1734ac989af051c4776cc88de912c946`; final PR-head CI #1375, post-merge CI #1376 and Pages deployment #151 passed. PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed. Physical optical/device QA remains NOT RUN.
 
 SC-05 validates cross-layer composition before introducing any new scanner algorithms. The current integration uses one `useScannerEngine` → `UniversalScannerSession` path shared by Home and Stocktake. Camera lease remains in the shared camera service; feature-owned preview ROI and geometry versions are published through the existing hook. Health recovery is bounded, focus guidance is passive, adaptive runtime budget is passed to the production WASM adapter and the Worker prototype remains isolated.
 
