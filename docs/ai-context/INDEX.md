@@ -17,7 +17,9 @@ This file is the navigation layer for repository documentation. Read the canonic
 |---|---|
 | Scanner current architecture, runtime ownership, decoder options, payload rules and acceptance gates | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical investigations, incident notes and migration evidence | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
-| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |\n| Scanner stabilization SC-01A/01B/01C stages through SC-05 and current evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |\n| Worker transport/API research and remaining SC-01A empirical validation matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
+| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |
+| Scanner stabilization SC-01A/01B/01C stages through SC-05 and current evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
+| Worker transport/API research and remaining SC-01A empirical validation matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |

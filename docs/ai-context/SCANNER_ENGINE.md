@@ -125,4 +125,5 @@ For every scanner change:
 4. Preserve Home and Stocktake behavior unless the task explicitly changes their contracts.
 5. Run `npm run preflight`, TypeScript, production build and Pages build through CI.
 6. Record physical-device evidence separately; never infer it from CI.
-7. Update this document only when the implementation contract changes. Put incident observations in the history log with date, evidence, resolution and current status.\n8. For SC-01–05 work, satisfy the phase-specific gates in `SCANNER_WORKSTREAM_SC01_05.md`; do not claim a phase complete from source inspection alone.
+7. Update this document only when the implementation contract changes. Put incident observations in the history log with date, evidence, resolution and current status.
+8. For SC-01–05 work, satisfy the phase-specific gates in `SCANNER_WORKSTREAM_SC01_05.md`; do not claim a phase complete from source inspection alone.
