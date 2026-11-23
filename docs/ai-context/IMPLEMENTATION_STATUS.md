@@ -7,7 +7,7 @@
 
 ## Scanner ecosystem closure (cleanup PR #152 — validation pending)
 - Consolidated scanner technical truth into `SCANNER_ENGINE.md`, covering current production architecture, ownership, consumers, validation, limits, diagnostics/privacy, lean QA policy and final release closure.
-- Retired the unused Worker prototype implementation/bridge, prototype source-contract test, preflight entry and package script. Production scanner behavior is unchanged.
+- Worker implementation/bridge and prototype checks are restored on the cleanup branch pending source audit. No decision on integration or removal has been made.
 - PR #152 is open and no CI run was visible at the time of this update. Do not merge or promote until final-head CI, TypeScript/production build, Pages build and review are verified. Physical optical QA remains a manual release caveat.
 - This closure summary must be carried into the final RetailOS release update/handoff for transfer to the department production account.
 
