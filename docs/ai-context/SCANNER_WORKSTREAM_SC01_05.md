@@ -52,9 +52,13 @@ Single in-flight decode and at most one latest pending frame. Replacing pending 
 - OffscreenCanvas: Worker-side processing surface, optional capability—not a frame transport by itself and not a hard prerequisite.
 - Existing Main Thread decoder: last-resort fallback with bounded cadence/processing budget and same correctness contract.
 
-### SC-01A experiment (current)\n\nSource and API research results are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
-Isolated proof only; no production source edits. Source/API research is complete: VideoFrame is the lead candidate, ImageBitmap the compatibility candidate, OffscreenCanvas optional processing surface, ImageData fallback. Worker bundling, WASM asset resolution, runtime API tests, transport benchmarking and browser/device probes have not been run. The current remote-only repository access cannot execute the Vite build or browser prototype; therefore SC-01A is **research-complete / runtime-proof-pending**, not passed.
+### SC-01A/01B/01C current evidence
 
+SC-01A/01B/01C remain isolated prototypes; no Worker decoder is wired into the production adapter/session. SC-01A transport feasibility notes remain in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md). VideoFrame is still only a candidate transport (ImageBitmap compatibility candidate, OffscreenCanvas optional); no measured transport performance is claimed. SC-01B was merged/deployed and user-confirmed on-device without errors. SC-01C adds scheduling accounting around the existing one-in-flight/latest-pending policy; source-contract tests and CI are the software exit gates, while actual transfer/optical benchmark and device evidence remain required before integration.
+
+SC-01C scheduling policy is intentionally simple: accept incoming decode requests, dispatch immediately when idle, retain only the newest waiting frame while one decode is active, resolve replaced waiting requests as misses, and dispatch the retained newest frame after the active decode completes. It does not add a timer-driven FIFO, parallel decode or synchronous WASM cancellation. Diagnostics are bounded counters/aggregates in memory and contain no payload/device data.
+
+Scheduling implementation may be software-complete before empirical device performance is known; do not promote the prototype to production until the transport, resource and accuracy gates are independently verified.
 ### SC-01 release gates
 No lost frames/resource leaks or stale results; bounded queue; graceful worker failure; fallback maintains exact formats, ROI, processing/candidate order and validation. Benchmark: Main Thread blocking/long tasks, decode P50/P95, exact-match/miss/wrong/false-positive rates, worker startup, transfer cost, memory observations, first-result latency and UI responsiveness. Establish baseline before changes; do not invent target metrics.
 

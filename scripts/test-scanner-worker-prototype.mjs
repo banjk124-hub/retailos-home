@@ -38,6 +38,8 @@ assert.match(bridge, /submitted: 0, dispatched: 0, completed: 0/);
 assert.match(bridge, /this\.schedulingMetrics\.submitted \+= 1/);
 assert.match(bridge, /this\.schedulingMetrics\.dispatched \+= 1/);
 assert.match(bridge, /this\.schedulingMetrics\.replacedPending \+= 1/);
+assert.match(bridge, /this\.schedulingMetrics\.droppedPending \+= 1/);
+assert.match(bridge, /droppedPending: metrics\.droppedPending/);
 assert.match(bridge, /averageQueueWaitMs/);
 assert.match(bridge, /averageDecodeMs/);
 assert.match(bridge, /SC-01C: one active job \+ one replaceable pending frame/);
