@@ -32,8 +32,10 @@ assert.equal(health.getSnapshot(1000).state, 'healthy');
 
 health.trackMuted(1200);
 assert.equal(health.getSnapshot(1200).state, 'degraded', 'mute is a degraded signal, not immediate fatal error');
+health.trackUnmuted(1400);
+assert.equal(health.getSnapshot(1400).state, 'healthy', 'unmute restores health when frame progress is recent');
 health.frame(1500);
-assert.equal(health.getSnapshot(1500).state, 'healthy', 'frame progression restores health after mute');
+assert.equal(health.getSnapshot(1500).state, 'healthy', 'frame progression keeps healthy state after mute recovery');
 
 health.tick(4499);
 assert.equal(health.getSnapshot(4499).state, 'healthy', 'watchdog does not trigger before stall threshold');
