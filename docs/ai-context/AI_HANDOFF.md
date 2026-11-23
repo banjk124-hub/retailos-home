@@ -1,4 +1,4 @@
-# Current handoff — Scanner SC-01A/01B/01C closed — 2026-11-23
+# Current handoff — Scanner SC-02 Camera Health Controller — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Base:** `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
@@ -9,7 +9,7 @@
 
 ## Current status — 2026-11-23
 
-Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is closed at the isolated prototype/software boundary: PR #142 merged; latest CI #1301, post-merge CI #1302 and Pages deployment #145 passed. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. Empirical Worker transport/performance/optical validation remains gated before production integration
+Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is closed at the isolated prototype/software boundary: PR #142 merged; latest CI #1301, post-merge CI #1302 and Pages deployment #145 passed. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. SC-02 Camera Health Controller is under implementation on `feat/scanner-sc02-camera-health`; it adds a frame-progress watchdog and one bounded automatic recovery using existing session replacement. No decoder, ROI, validation or Home/Stocktake flow changes are intended. Live-camera stall/reacquisition QA remains gated
 
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.

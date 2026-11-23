@@ -1,4 +1,4 @@
-# Current repository state — 2026-11-16
+# Current repository state — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Default branch:** `main`  
@@ -189,3 +189,10 @@ Repository source and current tests/config are authoritative for actual behavior
 ### Scanner stabilization status — 2026-11-23
 
 SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merged (PRs #141 and #142); CI and Pages deployment succeeded. SC-01B device update was user-verified without errors. Worker remains an isolated prototype, not connected to the production scanner; production camera/session/ROI/decoder behavior remains unchanged. Empirical Worker transport/browser/device performance remains an integration gate
+
+
+## Scanner SC-02 development
+
+- User confirms main app workflows are currently stable on deployed baseline, with no observed business-flow errors. This is baseline acceptance, not validation of new SC-02 code.
+- SC-02 branch `feat/scanner-sc02-camera-health` implements a bounded frame heartbeat/watchdog and recovery callback. Production decoder remains ZXing-C++ WASM Main Thread; Worker prototypes remain isolated.
+- Automated tests and CI/deploy are pending. Live-camera stall and recovery validation are required after deployment; do not infer device acceptance from CI.

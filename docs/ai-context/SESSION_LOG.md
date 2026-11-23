@@ -630,3 +630,11 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - SC-01C merged as PR #142 (squash commit `308d4af1721610ef9fe9c6b7e67772a880d5189e`). Latest-head CI #1301, post-merge CI #1302 and Pages deployment #145 all succeeded.
 - Software scope complete: latest-frame-wins bounded pending slot and in-memory scheduling metrics; no production integration or scanner behavior change.
 - Close SC-01C at prototype/software-validation boundary. Worker transport/browser runtime/performance/optical QA is still a prerequisite for any production integration. Next roadmap stage: SC-02 Camera Health Controller.
+
+
+## 2026-11-23 — SC-02 Camera Health Controller work initiated
+
+- Baseline: user confirmed current app works normally and business workflows show no errors. This is baseline evidence only.
+- Source audit confirmed existing `UniversalScannerSession` observes track mute/unmute and track-ended, measures frame-callback gaps, and has serialized foreground recovery. SC-02 fills the missing independent frame-progress watchdog and bounded health-state controller.
+- Branch `feat/scanner-sc02-camera-health` adds HEALTHY/DEGRADED/STALLED/RECOVERING/FAILED controller, 1s watchdog, 3s stall threshold, RAF timeline-progress gating, mute/unmute signals, track-ended immediate recovery, and one automatic recovery budget per mounted activation through existing session replacement path.
+- Added focused controller/source-contract test and preflight registration. CI/device validation pending; no decoder, ROI, barcode policy, feature workflow, or production camera ownership changes intended.

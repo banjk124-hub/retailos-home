@@ -52,3 +52,8 @@ When a new reproducible scanner issue occurs, append a compact entry to the rele
 - **Do not repeat:** the specific unsafe or ineffective remediation, if established.
 
 Keep raw sample images in a controlled test corpus, not in personal diagnostic exports. Never store decoded barcode payloads or employee/device identifiers in the incident log.
+
+
+## SC-02 Camera Health Controller
+
+SC-02 implementation adds bounded frame-progress monitoring and recovery in the shared scanner session. A 1-second watchdog detects 3-second frame stalls; native video-frame callbacks are preferred and RAF fallback requires `video.currentTime` progression. Track mute degrades health; track-ended triggers immediate recovery. Recovery uses the existing hook's serialized session-replacement path, one automatic attempt per mounted activation, and failure escalation to scanner ERROR. Deterministic controller/source-contract tests are added to preflight. CI is not physical-camera acceptance; live stall/reacquisition QA remains outstanding.
