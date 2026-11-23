@@ -147,6 +147,7 @@ export class UniversalScannerSession implements ScannerSession {
   readonly id = `scanner-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   private currentState: ScannerLifecycleState = 'idle';
   private sourceScanRegion: ScannerSourceScanRegion | null = null;
+  private latestGeometryVersion = -1;
   private stream: MediaStream | null = null;
   private cameraLease: CameraStreamLease | null = null;
   private torchTrack: MediaStreamTrack | null = null;
@@ -226,6 +227,13 @@ export class UniversalScannerSession implements ScannerSession {
   }
 
   setScanRegion(region: ScannerSourceScanRegion | null): void {
+    if (region?.geometryVersion !== undefined) {
+      if (!Number.isInteger(region.geometryVersion) || region.geometryVersion < 0
+        || region.geometryVersion < this.latestGeometryVersion) {
+        return;
+      }
+      this.latestGeometryVersion = region.geometryVersion;
+    }
     if (!region || region.coordinateSpace !== 'source-frame-normalized'
       || !region.rect || typeof region.rect !== 'object') {
       if (this.sourceScanRegion !== null) {
