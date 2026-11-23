@@ -59,7 +59,7 @@ Format policy summary: retail linear formats use explicit length/check-digit val
 - Camera health/recovery is bounded (at most one automatic recovery attempt per session).
 - Adaptive runtime adjusts within bounded processing budgets; do not add timers, telemetry or metrics without a concrete operational decision they support.
 - Session close/unmount/background transitions must invalidate stale callbacks and release resources.
-- Worker prototype was not adopted: production remains Main Thread. Do not reintroduce Worker transport or prototype dependencies without measured low-end device evidence and a separately reviewed proposal.
+- Worker prototype is isolated from production and retained as an architecture candidate. The SC-01A study explicitly records transport/runtime performance as unverified; do not integrate or remove it until Main Thread vs Worker is evaluated with build, transport, responsiveness, accuracy and low-end device evidence.
 
 ## 6. Home and Stocktake consumers
 Both consumers use the same hook/session. Each owns its reticle, ROI binding and business flow. Home result lookup remains Home-owned; Stocktake entry/confirmation/save remains Stocktake-owned. Scanner teardown must not change retail workflows. Do not fork scanner engines per consumer.
@@ -103,4 +103,4 @@ Closure checklist:
 - [ ] Physical-device acceptance evidence for supported phone/browser matrix
 - [ ] Final cleanup CI and Pages build
 
-**Release handoff:** release candidate is promoted only after cleanup PR CI and Pages build are green, no production scanner behavior is changed by cleanup, and physical QA caveat is carried into release notes. This closure record is intended for the final RetailOS update/release document and production handoff to the department account/email containing production.
+**Release handoff:** scanner ecosystem closure remains a candidate until source audit, cleanup review, CI/Pages build and device acceptance caveat are reconciled. No production promotion is authorized by this candidate.
