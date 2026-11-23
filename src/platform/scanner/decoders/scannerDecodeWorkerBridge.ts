@@ -83,6 +83,7 @@ export class ScannerDecodeWorkerBridge {
       await this.startWorker();
     } catch (error) {
       const firstError = this.toRuntimeError(error, 'init', 'INIT_FAILED');
+      this.lastError = firstError;
       this.terminateWorker();
       if (this.restartCount >= MAX_RESTARTS || this.disposed) throw firstError;
       this.restartCount += 1;
