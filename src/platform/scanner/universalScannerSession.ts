@@ -477,6 +477,10 @@ export class UniversalScannerSession implements ScannerSession {
       cameraRecoveryAttempts: snapshot.recoveryAttempts,
     });
     if (snapshot.state !== 'failed') return;
+    // A terminal camera-health failure must stop decode work and release the camera;
+    // reporting an error while leaving the frame loop alive would be misleading.
+    ++this.generation;
+    void this.teardown(true);
     this.setState('error');
     this.options.onError?.({
       code: 'STREAM_INTERRUPTED',
