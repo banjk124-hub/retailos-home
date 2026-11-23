@@ -1,6 +1,6 @@
 # Scanner Engine — current technical source of truth
 
-**Status:** Current production architecture is ZXing-C++ WASM only. Phase A correctness changes are proposed on branch `fix/scanner-phase-a-contracts-docs`; do not treat them as merged until CI passes and the PR is accepted.
+**Status:** Production scanner remains ZXing-C++ WASM on the Main Thread through the current adapter. SC-01A/01B/01C Worker work is isolated prototype code and is not connected to the production session.
 **Last reconciled:** 2026-11-23
 **Repository:** `banjk124-hub/retailos-home`
 
