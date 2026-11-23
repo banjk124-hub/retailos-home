@@ -1,6 +1,6 @@
 # Scanner stabilization workstream — SC-01 through SC-05
 
-**Status:** SC-01A/01B/01C isolated Worker prototype phases completed and merged. SC-01B deploy/device update was user-verified without errors. SC-01C source-contract validation and post-merge CI + Pages deployment passed. Empirical Worker transport/runtime/optical benchmarks and production integration remain gated.
+**Status:** SC-01A/01B/01C isolated Worker prototype phases completed and merged. SC-01B deploy/device update was user-verified without errors. SC-01C source-contract validation and post-merge CI + Pages deployment passed. SC-02 camera-health implementation and software/CI scope are merged and closed; live-camera recovery/device acceptance remains pending. Empirical Worker transport/runtime/optical benchmarks and production integration remain gated.
 **Baseline:** main at `d0d65f56aca8081953be644ef002d91d9f84e4e4` (source audit baseline, 2026-11-17).  
 **Working branch:** `docs/scanner-sc01-05-roadmap`  
 **Execution mode:** staged, evidence-first, reversible. This roadmap does not authorize a production deployment.
@@ -16,7 +16,7 @@ Stabilize the existing scanner engine in bounded stages. Keep CameraSession leas
 | **SC-01A** | Worker Foundation prototype | Isolated Worker/WASM proof boundary and protocol foundation. Source-contract CI is present; built-worker transport/runtime empirical proof remains unverified. |
 | **SC-01B** | Runtime & Protocol Hardening | Typed/versioned messages, bounded init/decode, generation validation, capped recovery/disposal. CI merged; user reports deploy/device verification PASS. |
 | **SC-01C** | Frame Scheduling | One in-flight + one replaceable latest pending frame; queue/backpressure metrics, drop accounting and bounded timeout. Exit: source contracts + CI passed and merged; device/transport performance remains required before production integration. |
-| **SC-02** | Camera Health Controller | Frame heartbeat, health states, watchdog, recovery cooldown, bounded retry budget, escalation. Exit: stale/paused/ended stream cases reliably detected and recover without loops. |
+| **SC-02** | Camera Health Controller | Frame heartbeat, health states, watchdog, recovery cooldown, bounded retry budget, escalation. **Software exit:** controller/source contracts and CI/build pass. **Device exit:** freeze/paused/ended-stream recovery and failure cleanup verified on representative devices without loops. |
 | **SC-03** | Geometry Diagnostics | Geometry signature, stale detection, invalidation, source/preview reconciliation. Exit: geometry drift/invalid mapping cannot decode with stale ROI; diagnostics are privacy-safe. |
 | **SC-04** | Focus Recovery Policy | Quality decision engine, capability-based actions, policy/cooldowns/budget and controlled physical-device tests. Exit: quality decisions validated; no unsupported autofocus assumption or uncontrolled constraint churn. |
 | **SC-05** | Integration & QA | Home/Stocktake integration, regressions, benchmark, Android/iOS/Desktop and low-end-device matrix, release gate. Exit: CI, measured accuracy/perf and explicit device acceptance complete. |
@@ -75,7 +75,7 @@ SC-02 is isolated in the platform session and does not alter decoder policy or r
 - Watchdog interval 1,000 ms; stall threshold 3,000 ms. These are initial policy constants, not device-optimized measurements.
 - Recovery is routed through the existing hook session-replacement path (retire old session, replace video surface, reacquire camera, await a fresh frame and decoder). Per-controller attempt budget is one, cooldown is 10,000 ms, and the hook caps automatic health recovery to one across session replacement for this mounted scanner activation. Failure escalates to scanner ERROR and requires user close/reopen; no retry loop.
 - Watchdog/track listeners are removed during teardown. Health snapshots contain state/reason/frame age/attempt count only; no barcode payload, device ID or employee data.
-- Tests cover normal frame recovery from mute, stall threshold, successful recovery, second-stall escalation, track-ended signal, bounded attempts and lifecycle cleanup/source contracts.
+- Tests cover deterministic controller transitions (recent-frame mute/unmute, stall threshold, recovery success/failure, second-stall cooldown/budget escalation and track-ended) plus source-contract assertions for session/hook wiring. These are **not** end-to-end camera/session race tests.
 
 
 ## SC-03 — Geometry Diagnostics
@@ -105,14 +105,18 @@ Each phase should be isolated in a small branch/commit and independently reviewa
 
 ## Current evidence limits
 
-SC-00 was source audit only. No baseline benchmark has been executed in this workstream, no live-camera test, and no physical-device QA. All target states, thresholds and technology choices above remain proposals until SC-01A evidence/review.
+SC-00 was source audit only. SC-02's 1s watchdog/3s stall threshold and one automatic recovery are implemented and CI-validated, but they are not device-tuned. No Worker transport benchmark or SC-02 live-camera fault-injection/physical-device QA has been completed. The device acceptance items below remain open; software completion must not be presented as optical or device acceptance.
 
 
-## SC-02 closure record — 2026-11-23
+## SC-02 closure record — 2026-11-23 (evidence reconciled)
 
-- **Status:** software implementation and CI validation complete; PR #144 is the delivery unit. Head at closure review: `416b168b1b00b858c2b7e34e751e33defb9afb50`.
-- **CI evidence:** RetailOS CI #1313 passed the complete preflight, TypeScript/production build, GitHub Pages build and bundle comparison.
-- **Scope delivered:** independent camera-health telemetry states; frame-progress watchdog (1s interval / 3s threshold); native `requestVideoFrameCallback` with RAF `currentTime)-advance fallback; mute/unmute and ended-track signals; one bounded auto-recovery per mounted activation via the existing serialized session replacement; terminal error on failed/exhausted recovery; cleanup on teardown.
-- **Regression boundaries:** decoder backend, decoder allowlist, frame scheduling cadence, ROI, payload validation, barcode recognition order, camera lease owner and Home/Stocktake feature flows remain unchanged by intent. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
-- **Acceptance boundary:** close SC-02 at software/CI scope only. CI does not prove physical camera fault injection or recovery. Before device acceptance, verify frame freeze/stall, mute/unmute, track-ended, successful reacquisition, failed reacquisition/cleanup, close-during-recovery, background/foreground and regular Home/Stocktake scan flows on representative iOS Safari and Android Chrome devices.
-- **Follow-on:** SC-03 Geometry Diagnostics is the next planned engineering phase. Carry outstanding live-camera/device QA into the scanner operational acceptance checklist; do not reopen SC-02 software scope unless a reproducible defect is found.
+- **Status:** software implementation and CI validation complete; PR #144 merged. Final PR head `d7fff2755275b54d52505eb6ec39e04624793817`; merge commit `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`.
+- **PR/main CI:** PR CI #1319 (`45126497812`) and post-merge main CI #1320 (`45126692556`) passed preflight, TypeScript, production/Pages build and bundle comparison.
+- **Deployment:** Pages deployment #147 (`45126692360`) succeeded on merge commit `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`. Follow-up PR #145 head `c203fb36ae1734188e958bc7c3506fb0f95ead08` merged as `53824257486e628635a693a22c893e8d9648d313`; CI #1324 and main CI #1325 passed; Pages deployment #148 (`45139174575`) succeeded on that main commit.
+- **Scope delivered:** independent camera-health telemetry states; frame-progress watchdog (1s interval / 3s threshold); native `requestVideoFrameCallback` with RAF `currentTime`-advance fallback; mute/unmute and ended-track signals; one bounded auto-recovery per mounted activation via the existing serialized session replacement; terminal error on failed/exhausted recovery; teardown cleanup.
+- **Harness import audit:** all 41 `scripts/test-*.mjs` on main were fetched and scanned. The two session-execution harnesses (`test-scanner-decoder-factory.mjs`, `test-scanner-preview-region.mjs`) stub `./scannerCameraHealthController`; `test-scanner-camera-health.mjs` imports the controller directly. Remaining harness matches read source for assertions, not executable session import graphs. No missing SC-02 import stub was found.
+- **Test boundary:** deterministic controller tests and source-contract assertions pass in CI; full session/camera integration, close/background race injection and physical camera behavior are not covered end-to-end.
+- **Regression boundaries:** decoder backend, allowlist, frame cadence, ROI, payload validation, recognition order, camera lease owner and Home/Stocktake flow remain unchanged by intent. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
+- **Outstanding device QA:** freeze/stall, mute/unmute with frame progression, track-ended, successful reacquisition, failed reacquisition and resource cleanup, close-during-recovery, background/foreground and normal Home/Stocktake scan flows on representative iOS Safari/PWA, Android Chrome/PWA and low-end Android. No physical-device QA is claimed.
+- **Governance note:** main branch currently has protection disabled and no required checks enforced. CI evidence is green, but merge gates are not enforced by branch protection.
+- **Follow-on:** SC-03 Geometry Diagnostics is active in PR #146; its latest CI #1332 passed at head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`. Keep SC-03 changes separate; do not reopen SC-02 software scope without a reproducible defect.
