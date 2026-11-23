@@ -135,6 +135,8 @@ export class ScannerDecodeWorkerBridge {
 
   private async startWorker(): Promise<void> {
     if (this.disposed) throw new Error('Scanner Worker bridge disposed.');
+    this.ready = false;
+    this.clearInitTimeout();
     const generation = ++this.generation;
     const worker = new Worker(new URL('./scannerDecodeWorker.ts', import.meta.url), { type: 'module' });
     this.worker = worker;
