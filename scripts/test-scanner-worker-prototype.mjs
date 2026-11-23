@@ -42,7 +42,7 @@ assert.match(bridge, /this\.schedulingMetrics\.droppedPending \+= 1/);
 assert.match(bridge, /droppedPending: metrics\.droppedPending/);
 assert.match(bridge, /averageQueueWaitMs/);
 assert.match(bridge, /averageDecodeMs/);
-assert.match(bridge, /SC-01C: one active job \+ one replaceable pending frame/);
+assert.match(bridge, /SC-01C latest-frame-wins: one active job/);
 assert.match(bridge, /this\.schedulingMetrics\.timedOut \+= 1/);
 assert.match(bridge, /this\.resolveFrame\(this\.latestPending, \[\]\)/);
 assert.match(bridge, /new Uint8ClampedArray\(frame\.frame\.data\)\.buffer/);
