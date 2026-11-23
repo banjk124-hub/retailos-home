@@ -122,7 +122,7 @@ SC-04 extends the existing `ScannerFocusQualityMonitor` into a passive recovery 
 
 Most integration is already implemented in the shared `UniversalScannerSession` and `useScannerEngine`: camera lease, lifecycle/visibility recovery, health controller, strict source-frame ROI, geometry revisions, focus quality, adaptive processing/runtime budget, serialized WASM decode, payload validation and feature-owned result handling. Home and Stocktake both use the same scanner hook and preview-region binding.
 
-SC-05 will not create a new engine or camera orchestration layer. It adds one focused cross-layer source-contract test, registers it in preflight, consolidates the physical QA protocol, and corrects stale current-state documentation.
+SC-05 will not create a new engine or camera orchestration layer. It adds one focused cross-layer source-contract test, registers it in preflight, exposes three existing passive focus-recovery diagnostic fields through the current allowlist/QA monitor, consolidates the physical QA protocol, and corrects stale current-state documentation.
 
 ### Software integration gates
 
