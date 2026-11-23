@@ -1,16 +1,16 @@
 # Current handoff — Scanner SC-04 Focus Recovery Policy — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Base:** `main` after SC-02 merge  
-**Work branch:** `feat/scanner-sc03-geometry-diagnostics`  
-**Pull request:** [#146](https://github.com/banjk124-hub/retailos-home/pull/146)  
-**Implementation head validated:** `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab` — CI #1332 passed. Documentation reconciliation commits are being validated in the final PR workflow.
+**Base:** `main` at SC-03 merge `b388d876f61f6a95991ef3a7f637c6418dcdea5c`  
+**Work branch:** `feat/scanner-sc04-focus-recovery-policy`  
+**Pull request:** [#148](https://github.com/banjk124-hub/retailos-home/pull/148)  
+**Latest head:** `fa4349344eb9fd80d8d487942113ea5560cae6e5` — CI #1348 rerun pending.
 
 
 ## Current status — 2026-11-23
 
 - SC-03 Geometry Diagnostics is merged/deployed at `b388d876f61f6a95991ef3a7f637c6418dcdea5c`; software/CI scope closed, physical viewport/orientation QA still outstanding.
-- SC-04 is in draft PR #148, branch `feat/scanner-sc04-focus-recovery-policy`, head `262ccc7feee797e80441d64083b093c2a7d78955`. It extends the existing focus monitor with passive `observing`/`waiting-native-autofocus`/`recovered` states, preserving the motion gate, sharpness thresholds and cooldown.
+- SC-04 is in draft PR #148, branch `feat/scanner-sc04-focus-recovery-policy`, head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. It extends the existing focus monitor with passive `observing`/`waiting-native-autofocus`/`recovered` states, preserving the motion gate, sharpness thresholds and cooldown.
 - Recovery action is advisory only: wait for native autofocus, steady/adjust distance; zero post-preview camera-constraint writes, no applyConstraints, autofocus re-arm, restart or extra capture. PR CI/build and physical focus QA are pending.
 - Protected: camera lease/acquisition, decoder/recognition order, ROI/geometry, validation, Home/Stocktake business flows, PWA lifecycle/deployment.
 
@@ -20,7 +20,7 @@
 - CI #1332 passed on implementation head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison. A final CI run is required after this documentation reconciliation.
 - User confirms the deployed app flow is operating normally with no observed errors. This is regression baseline acceptance.
 - Outstanding device QA: orientation/viewport/visualViewport behavior on physical iOS Safari/PWA and Android Chrome/PWA, including resize/orientation transitions while scanning. Do not infer physical-device acceptance from CI.
-- Next roadmap stage after SC-03 software closure: SC-04 Focus Recovery Policy.
+- Next scanner phase after SC-04 software closure: SC-05 Integration & QA; do not start until SC-04 CI gate passes.
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
