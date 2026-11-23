@@ -97,4 +97,18 @@ assert.match(hookSource, /automaticHealthRecoveryAttemptsRef\.current \+= 1/, 'a
 assert.match(hookSource, /healthRecoveryHandlerRef\.current = async/, 'recovery is routed through the existing serialized session replacement path');
 assert.match(hookSource, /return sessionRef\.current\?\.state === 'scanning'/, 'recovery is considered successful only when replacement session reaches scanning');
 
+
+// Recovery lifecycle source contracts: serialize attempts, retire before reacquiring,
+// preserve the active/visible guards, and let explicit close await recovery.
+assert.match(hookSource, /if \(recoveryPromiseRef\.current\) return recoveryPromiseRef\.current;/,
+  'health recovery must share one in-flight promise');
+assert.match(hookSource, /const previousSession = sessionRef\.current;\s*sessionRef\.current = null;[\s\S]{0,800}await previousSession\?\.disposeForRecovery\(\);/,
+  'recovery must retire the previous session before replacement');
+assert.match(hookSource, /const video = await replaceVideoSurface\(\);[\s\S]{0,400}await startScanner\(\);/,
+  'recovery must replace the video surface and restart through normal startup');
+assert.match(hookSource, /await recoveryPromiseRef\.current\?\.catch\(\(\) => undefined\);[\s\S]{0,250}const session = sessionRef\.current \?\? recoveryRetiredSessionRef\.current;/,
+  'close must wait for the recovery boundary before closing');
+assert.match(hookSource, /desiredActiveRef\.current = false;\s*pageVisibleRef\.current = false;\s*coordinator\.dispose\(\);/,
+  'unmount disables the lifecycle coordinator before cleanup');
+
 console.log('Scanner SC-02 camera health, watchdog, bounded recovery and escalation tests passed.');

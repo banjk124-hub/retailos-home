@@ -648,3 +648,13 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - PR review thread audit: no open inline threads; no submitted reviews requiring changes.
 - Documentation synchronized to close SC-02 at software/CI boundary. Physical camera stall/ended-track recovery, failure injection, close-during-recovery, mobile/browser device matrix and post-merge production smoke test remain outstanding operational QA; they are not represented as passed.
 - PR #144 still requires final base/head/status refresh and successful merge. Next engineering workstream: SC-03 Geometry Diagnostics.
+
+## 2026-11-23 — SC-02 post-merge audit evidence
+
+- PR #144 merged: final head `d7fff2755275b54d52505eb6ec39e04624793817`; merge/main/deployed SHA `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`.
+- PR CI #1319 (45126497812) passed preflight, TypeScript/production build, Pages build and PR-base bundle comparison; post-merge CI #1320 (45126692556) passed; Pages deployment #147 (45126692360) reported success for exact merge SHA `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`.
+- Latest failure #1312 (45124047128) was preflight-only: the decoder-factory test harness lacked a stub for `scannerCameraHealthController`. Stub added; #1313 and final PR #1319 passed. Tests were not disabled.
+- Harness audit: both dynamic session loaders stub the health-controller import; camera-health test imports the real controller directly and is registered in preflight. Other scanner harnesses inspect source and need no import stub.
+- Critical coverage gap: recovery behavior is tested at controller level and via source-contract checks, not end-to-end camera/session/visibility/close interleavings. Physical device/browser QA remains unperformed.
+- `main` reports `protected=false`; checks are not enforced by branch protection.
+- Next action: add recovery lifecycle integration coverage, configure required CI checks, and complete manual iOS Safari/Android Chrome fault-injection plus Home/Stocktake scanner QA before declaring SC-02 operationally accepted.
