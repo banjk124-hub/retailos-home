@@ -156,6 +156,6 @@ Copy one record per device/workflow run:
 
 ## 9. SC-05 closure boundary
 
-**Software scope:** closed. PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; CI #1375 and post-merge CI #1376 passed, and Pages deployment #151 succeeded. PR #150 adds a test-only assertion for the three focus-recovery metrics; CI #1377 passed.
+**Software scope:** closed. PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final PR-head CI #1375, post-merge CI #1376 and Pages deployment #151 passed. PR #150 test-only assertion merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed.
 
 **Physical optical/device acceptance:** NOT RUN. This gate remains open until run and recorded on real iOS/Android devices and a labelled corpus. If devices or corpus are unavailable, record the blocker; do not fabricate a pass or compensate with speculative code.
