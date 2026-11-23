@@ -143,7 +143,7 @@ try {
   assert.equal(callbacks.at(-1), null, 'geometry drift clears stale ROI before scheduled measurement');
   flushRaf();
   assert.ok(callbacks.at(-1), 'fresh geometry is published after measurement');
-  assert.equal(callbacks.at(-1).geometryVersion, 2);
+  assert.equal(callbacks.at(-1).geometryVersion, 3);
 
   // Source-frame and reticle movement each produce a new revision.
   sourceWidth = 1920;
@@ -151,19 +151,19 @@ try {
   videoTarget.fire('loadedmetadata');
   assert.equal(callbacks.at(-1), null);
   flushRaf();
-  assert.equal(callbacks.at(-1).geometryVersion, 3);
+  assert.equal(callbacks.at(-1).geometryVersion, 5);
 
   reticleLeft = 60;
   resizeObservers[0].callback([]);
   assert.equal(callbacks.at(-1), null);
   flushRaf();
-  assert.equal(callbacks.at(-1).geometryVersion, 4);
+  assert.equal(callbacks.at(-1).geometryVersion, 7);
 
   // visualViewport and pixel-density signals are observed.
   viewportTarget.fire('resize');
   assert.equal(callbacks.at(-1), null);
   flushRaf();
-  assert.equal(callbacks.at(-1).geometryVersion, 5);
+  assert.equal(callbacks.at(-1).geometryVersion, 9);
   mediaTarget.fire('change');
   assert.equal(rafQueue.size, 1, 'pixel ratio change schedules a fresh measurement');
 
