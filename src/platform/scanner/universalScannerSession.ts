@@ -7,6 +7,7 @@ import type {
   ScannerTorchState,
   ScannerSourceScanRegion,
   ScannerCameraRequest,
+  ScannerCameraHealthSnapshot,
 } from './contracts';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from './contracts';
 import { acquireCameraLease, subscribeCameraTrackEnded, type CameraLeaseRequest, type CameraStreamLease } from '../../shared/services/cameraSession';
@@ -18,6 +19,7 @@ import { applyScannerTorch, readScannerTorchState } from './scannerTorch';
 import { ScannerFocusQualityMonitor, type ScannerFocusQualitySample } from './scannerFocusQuality';
 import { ScannerTemporalFrameBuffer } from './scannerTemporalRecognition';
 import { ScannerAdaptiveRuntimeController } from './scannerAdaptiveRuntimeController';
+import { ScannerCameraHealthController, CAMERA_HEALTH_WATCHDOG_INTERVAL_MS, type ScannerCameraHealthSnapshot as HealthSnapshot } from './scannerCameraHealthController';
 
 type VideoReadiness = {
   readyState: number;
@@ -172,6 +174,9 @@ export class UniversalScannerSession implements ScannerSession {
   private startAttemptStartedAt = 0;
   private hasLoggedFirstAcceptedForAttempt = false;
   private lastFrameCallbackAt = 0;
+  private lastHealthVideoTime = 0;
+  private healthWatchdogTimer: number | null = null;
+  private cameraHealth!: ScannerCameraHealthController;
   private longTaskObserver: PerformanceObserver | null = null;
   private layoutShiftObserver: PerformanceObserver | null = null;
   private diagnosticLayoutShiftScore = 0;
@@ -209,6 +214,10 @@ export class UniversalScannerSession implements ScannerSession {
     // reacquire with the same module configuration after the request is spent.
     this.cameraRequest = initialCameraLeaseRequest?.cameraRequest ?? cameraRequest;
     this.lifecycle = new ScannerLifecycleAdapter(this.id, options.lifecycleObserver);
+    this.cameraHealth = new ScannerCameraHealthController(
+      (snapshot) => this.handleCameraHealthSnapshot(snapshot),
+      (snapshot) => this.requestCameraHealthRecovery(snapshot),
+    );
   }
   get state(): ScannerLifecycleState { return this.currentState; }
 
@@ -368,8 +377,8 @@ export class UniversalScannerSession implements ScannerSession {
             trackReadyState: track.readyState,
           });
         };
-        const onMute = () => logTrackEvent('mute');
-        const onUnmute = () => logTrackEvent('unmute');
+        const onMute = () => { logTrackEvent('mute'); this.cameraHealth.trackMuted(performance.now()); };
+        const onUnmute = () => { logTrackEvent('unmute'); this.cameraHealth.trackUnmuted(performance.now()); };
         track.addEventListener('mute', onMute);
         track.addEventListener('unmute', onUnmute);
         this.trackEventCleanups.push(() => {
@@ -380,10 +389,7 @@ export class UniversalScannerSession implements ScannerSession {
       this.unsubscribeTrackEnded?.();
       this.unsubscribeTrackEnded = subscribeCameraTrackEnded((endedStream) => {
         if (this.stream !== endedStream || this.disposed) return;
-        ++this.generation;
-        void this.teardown(false);
-        this.setState('error');
-        this.options.onError?.({ code: 'STREAM_INTERRUPTED', message: 'Kết nối camera bị gián đoạn. Hãy nhấn thử lại để kết nối.', recoverable: true });
+        this.cameraHealth.trackEnded(performance.now());
       });
 
       // The platform engine attaches the stream to the supplied video element
@@ -430,6 +436,9 @@ export class UniversalScannerSession implements ScannerSession {
       this.logStage('camera_to_scanning_ms', performance.now() - this.startAttemptStartedAt);
       this.setState('scanning');
       this.lifecycle.scanning();
+      this.lastHealthVideoTime = this.video.currentTime;
+      this.cameraHealth.start(performance.now());
+      this.startCameraHealthWatchdog(generation);
       this.scheduleNextFrame(generation);
     } catch (cause) {
       if (generation !== this.generation || this.disposed) return;
@@ -457,6 +466,61 @@ export class UniversalScannerSession implements ScannerSession {
     }
   }
 
+  private handleCameraHealthSnapshot(snapshot: ScannerCameraHealthSnapshot): void {
+    try { this.options.onCameraHealthChange?.(snapshot); } catch (error) {
+      console.warn('[RetailOS Scanner] Camera health observer failed:', error instanceof Error ? error.name : 'UnknownError');
+    }
+    console.info('[RetailOS Scanner] Camera health', {
+      cameraHealthState: snapshot.state,
+      cameraHealthReason: snapshot.reason,
+      cameraFrameAgeMs: Math.round(snapshot.frameAgeMs),
+      cameraRecoveryAttempts: snapshot.recoveryAttempts,
+    });
+    if (snapshot.state !== 'failed') return;
+    // A terminal camera-health failure must stop decode work and release the camera;
+    // reporting an error while leaving the frame loop alive would be misleading.
+    ++this.generation;
+    void this.teardown(true);
+    this.setState('error');
+    this.options.onError?.({
+      code: 'STREAM_INTERRUPTED',
+      message: 'Luồng camera không thể tự khôi phục. Hãy đóng máy quét rồi mở lại để thử kết nối.',
+      recoverable: true,
+    });
+  }
+
+
+  private requestCameraHealthRecovery(snapshot: HealthSnapshot): void {
+    const recovery = this.options.onCameraHealthRecoveryRequest;
+    if (!recovery) {
+      this.cameraHealth.completeRecovery(false, performance.now());
+      return;
+    }
+    void recovery(snapshot).then(
+      (success) => this.cameraHealth.completeRecovery(success, performance.now()),
+      () => this.cameraHealth.completeRecovery(false, performance.now()),
+    );
+  }
+
+
+  private startCameraHealthWatchdog(generation: number): void {
+    this.clearCameraHealthWatchdog();
+    const tick = () => {
+      this.healthWatchdogTimer = null;
+      if (this.disposed || generation !== this.generation || this.currentState !== 'scanning') return;
+      this.cameraHealth.tick(performance.now());
+      this.healthWatchdogTimer = window.setTimeout(tick, CAMERA_HEALTH_WATCHDOG_INTERVAL_MS);
+    };
+    this.healthWatchdogTimer = window.setTimeout(tick, CAMERA_HEALTH_WATCHDOG_INTERVAL_MS);
+  }
+
+
+  private clearCameraHealthWatchdog(): void {
+    if (this.healthWatchdogTimer !== null) window.clearTimeout(this.healthWatchdogTimer);
+    this.healthWatchdogTimer = null;
+  }
+
+
   private scheduleNextFrame(generation: number): void {
     if (this.disposed || generation !== this.generation || this.currentState !== 'scanning' || this.frameHandle !== null) return;
     const video = this.video as HTMLVideoElement & {
@@ -467,18 +531,24 @@ export class UniversalScannerSession implements ScannerSession {
       this.frameKind = 'video';
       this.frameHandle = video.requestVideoFrameCallback((now) => {
         this.frameHandle = null;
-        void this.processFrame(now, generation);
+        void this.processFrame(now, generation, 'video');
       });
       return;
     }
     this.frameKind = 'raf';
     this.frameHandle = window.requestAnimationFrame((now) => {
       this.frameHandle = null;
-      void this.processFrame(now, generation);
+      void this.processFrame(now, generation, 'raf');
     });
   }
 
-  private async processFrame(timestamp: number, generation: number): Promise<void> {
+  private async processFrame(timestamp: number, generation: number, source: 'video' | 'raf'): Promise<void> {
+    const healthNow = performance.now();
+    const hasFrameProgress = source === 'video' || this.video.currentTime > this.lastHealthVideoTime + 0.005;
+    if (hasFrameProgress) {
+      this.lastHealthVideoTime = this.video.currentTime;
+      this.cameraHealth.frame(healthNow);
+    }
     const frameGapMs = this.lastFrameCallbackAt > 0 ? timestamp - this.lastFrameCallbackAt : 0;
     if (this.lastFrameCallbackAt > 0) {
       this.diagnosticMaxFrameGapMs = Math.max(this.diagnosticMaxFrameGapMs, frameGapMs);
@@ -765,6 +835,7 @@ export class UniversalScannerSession implements ScannerSession {
       await this.suspendPromise;
       await this.teardown(true);
       this.disposed = true;
+      this.cameraHealth.dispose();
       this.setState('disposed');
     })();
     return this.recoveryDisposePromise;
@@ -798,6 +869,7 @@ export class UniversalScannerSession implements ScannerSession {
       await this.suspendPromise;
       await this.teardown(true);
       this.disposed = true;
+      this.cameraHealth.dispose();
       this.setState('disposed');
       this.lifecycle.disposed();
     })();
@@ -814,6 +886,7 @@ export class UniversalScannerSession implements ScannerSession {
     }
     this.frameHandle = null;
     this.frameKind = null;
+    this.clearCameraHealthWatchdog();
     this.unsubscribeTrackEnded?.();
     this.unsubscribeTrackEnded = null;
     this.trackEventCleanups.splice(0).forEach((cleanup) => cleanup());

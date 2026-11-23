@@ -66,6 +66,18 @@ No lost frames/resource leaks or stale results; bounded queue; graceful worker f
 
 Observe frame progress rather than merely stream/track existence. Define state model (proposed): HEALTHY, DEGRADED, STALLED, RECOVERING, FAILED. Heartbeat must distinguish frame callback progress, video timeline/dimensions and track ready/muted/ended signals. Use thresholds derived from measured device behavior, not arbitrary universal constants. Add recovery cooldown, bounded attempts, reset criteria and escalation (rebind/reacquire only through existing session/lease path). Prevent overlapping recovery, retry storms, and camera ownership violations. Test background/foreground, freeze, mute, track-ended, delayed frame, recovery success/failure, cooldown and exhaustion.
 
+## SC-02 — Camera Health Controller (implementation)
+
+SC-02 is isolated in the platform session and does not alter decoder policy or retail flow.
+- States: HEALTHY, DEGRADED, STALLED, RECOVERING, FAILED (telemetry vocabulary; UI scanner lifecycle remains its own state machine).
+- Heartbeat: `requestVideoFrameCallback` counts decoded-frame progress. RAF fallback counts progress only when `video.currentTime` advances, avoiding a false healthy heartbeat while the video is frozen.
+- Signal: `mute` => DEGRADED; `unmute` returns toward HEALTHY only if recent frame progress exists; `track-ended` requests immediate bounded recovery.
+- Watchdog interval 1,000 ms; stall threshold 3,000 ms. These are initial policy constants, not device-optimized measurements.
+- Recovery is routed through the existing hook session-replacement path (retire old session, replace video surface, reacquire camera, await a fresh frame and decoder). Per-controller attempt budget is one, cooldown is 10,000 ms, and the hook caps automatic health recovery to one across session replacement for this mounted scanner activation. Failure escalates to scanner ERROR and requires user close/reopen; no retry loop.
+- Watchdog/track listeners are removed during teardown. Health snapshots contain state/reason/frame age/attempt count only; no barcode payload, device ID or employee data.
+- Tests cover normal frame recovery from mute, stall threshold, successful recovery, second-stall escalation, track-ended signal, bounded attempts and lifecycle cleanup/source contracts.
+
+
 ## SC-03 — Geometry Diagnostics
 
 Create a compact geometry signature for source dimensions, preview bounds, object-fit/object-position, mirror/orientation, viewport/safe-area and ROI mapping inputs. Detect stale signature and invalidation when source/preview/viewport/orientation changes. Reconcile preview-space reticle to source-frame ROI and fail closed on inconsistency. Do not modify presentation layout in this phase. Test resize, orientation, visualViewport/safe-area changes, source dimension changes, mirror/object-position variants and stale ROI; export only non-sensitive geometry metadata.
@@ -94,3 +106,13 @@ Each phase should be isolated in a small branch/commit and independently reviewa
 ## Current evidence limits
 
 SC-00 was source audit only. No baseline benchmark has been executed in this workstream, no live-camera test, and no physical-device QA. All target states, thresholds and technology choices above remain proposals until SC-01A evidence/review.
+
+
+## SC-02 closure record — 2026-11-23
+
+- **Status:** software implementation and CI validation complete; PR #144 is the delivery unit. Head at closure review: `416b168b1b00b858c2b7e34e751e33defb9afb50`.
+- **CI evidence:** RetailOS CI #1313 passed the complete preflight, TypeScript/production build, GitHub Pages build and bundle comparison.
+- **Scope delivered:** independent camera-health telemetry states; frame-progress watchdog (1s interval / 3s threshold); native `requestVideoFrameCallback` with RAF `currentTime)-advance fallback; mute/unmute and ended-track signals; one bounded auto-recovery per mounted activation via the existing serialized session replacement; terminal error on failed/exhausted recovery; cleanup on teardown.
+- **Regression boundaries:** decoder backend, decoder allowlist, frame scheduling cadence, ROI, payload validation, barcode recognition order, camera lease owner and Home/Stocktake feature flows remain unchanged by intent. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
+- **Acceptance boundary:** close SC-02 at software/CI scope only. CI does not prove physical camera fault injection or recovery. Before device acceptance, verify frame freeze/stall, mute/unmute, track-ended, successful reacquisition, failed reacquisition/cleanup, close-during-recovery, background/foreground and regular Home/Stocktake scan flows on representative iOS Safari and Android Chrome devices.
+- **Follow-on:** SC-03 Geometry Diagnostics is the next planned engineering phase. Carry outstanding live-camera/device QA into the scanner operational acceptance checklist; do not reopen SC-02 software scope unless a reproducible defect is found.

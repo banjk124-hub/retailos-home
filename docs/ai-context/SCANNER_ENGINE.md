@@ -113,10 +113,18 @@ A green CI run proves code contracts and build health, not optical accuracy or p
 
 These are explicit follow-up items, not reasons to reintroduce the retired decoder or rewrite camera/session ownership.
 
-## 9. Active stabilization workstream
+## 9. Camera Health Controller (SC-02)
 
-The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C prototype phases are merged; SC-01C software validation and deployment are complete. The next planned stage is SC-02 Camera Health Controller. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
-## 10. Change protocol
+`ScannerCameraHealthController` observes camera frame progress separately from scanner UI lifecycle. The session starts a 1-second watchdog once decoding enters SCANNING; 3 seconds without frame-progress evidence transitions to STALLED and requests one bounded automatic recovery. Native `requestVideoFrameCallback` is preferred. RAF compatibility mode is considered healthy only when the video media timeline advances (`currentTime` delta greater than 5 ms). `mute` degrades health; `unmute` does not declare healthy without recent frame progress. `track-ended` triggers immediate recovery request.
+
+Recovery is delegated to `useScannerEngine` and reuses the existing serialized session retirement / video-surface replacement / lease reacquisition / fresh-frame startup path. The controller permits one attempt, with a 10-second cooldown policy; the hook also caps automatic health recovery to one for the mounted scanner activation to prevent a new-session loop. Failed or exhausted recovery escalates to scanner ERROR, leaving the user a close/reopen action. Watchdog and track listeners are cleared on teardown. Health callback diagnostics are bounded scalar snapshots only.
+
+**SC-02 evidence:** deterministic controller/source-contract tests are included in preflight. CI/build/deploy are software validation. A deliberate live-camera stall, track-ended injection, recovery success/failure and device matrix remain manual QA gates; do not infer them from CI.
+
+## 10. Active stabilization workstream
+
+The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C and SC-02 software/CI scope are complete at their documented boundaries; SC-02 PR #144 head `416b168b1b00b858c2b7e34e751e33defb9afb50` passed CI #1313 (preflight, TypeScript, production build, Pages build and bundle comparison). SC-03 Geometry Diagnostics is the next planned stage. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Live-camera fault injection, recovery success/failure and device/browser QA remain operational acceptance gates, not CI claims. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
+## 11. Change protocol
 
 For every scanner change:
 1. Read this document and the exact source/tests involved.

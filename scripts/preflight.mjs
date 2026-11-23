@@ -69,6 +69,11 @@ const checks = [
     args: ["scripts/test-scanner-lifecycle.mjs"],
   },
   {
+    name: "Scanner SC-02 camera health and bounded recovery tests",
+    command: process.execPath,
+    args: ["scripts/test-scanner-camera-health.mjs"],
+  },
+  {
     name: "Scanner Worker prototype source-contract tests",
     command: process.execPath,
     args: ["scripts/test-scanner-worker-prototype.mjs"],

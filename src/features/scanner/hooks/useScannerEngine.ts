@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerSourceScanRegion, type ScannerTorchState } from '../../../platform/scanner/contracts';
+import { type ScannerLifecycleObserver, type ScannerLifecycleState, type ScannerSession, type ScannerSourceScanRegion, type ScannerTorchState, type ScannerCameraHealthSnapshot } from '../../../platform/scanner/contracts';
 import { UniversalScannerSession } from '../../../platform/scanner/universalScannerSession';
 import { playScannerFeedback } from '../services/scannerFeedback';
 import { getEnabledScannerSymbologies } from '../services/scannerSettingsStore';
@@ -57,6 +57,8 @@ export function useScannerEngine({
   const pageVisibleRef = useRef(!isDocumentHidden());
   const recoveryRequiredRef = useRef(false);
   const recoveryPromiseRef = useRef<Promise<void> | null>(null);
+  const automaticHealthRecoveryAttemptsRef = useRef(0);
+  const healthRecoveryHandlerRef = useRef<(snapshot: ScannerCameraHealthSnapshot) => Promise<boolean>>(() => Promise.resolve(false));
   const startPromiseRef = useRef<Promise<void> | null>(null);
   const [isStarting, setIsStarting] = useState(true);
   const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -116,6 +118,20 @@ export function useScannerEngine({
       mode,
       sameCodeCooldownMs: scanCooldownMs,
       lifecycleObserver: (event) => lifecycleObserverRef.current?.(event),
+      onCameraHealthRecoveryRequest: async (snapshot) => {
+        if (automaticHealthRecoveryAttemptsRef.current >= 1) return false;
+        automaticHealthRecoveryAttemptsRef.current += 1;
+        return healthRecoveryHandlerRef.current(snapshot);
+      },
+      onCameraHealthChange: (snapshot) => {
+        if (!mountedRef.current || sessionRef.current !== session) return;
+        console.info('[RetailOS Scanner] Health controller update', {
+          state: snapshot.state,
+          reason: snapshot.reason,
+          frameAgeMs: snapshot.frameAgeMs,
+          recoveryAttempts: snapshot.recoveryAttempts,
+        });
+      },
       onTorchStateChange: (state) => {
         if (mountedRef.current && sessionRef.current === session) setTorch(state);
       },
@@ -278,6 +294,13 @@ export function useScannerEngine({
     }
   }, [replaceVideoSurface, startScanner]);
 
+
+  healthRecoveryHandlerRef.current = async () => {
+    await recoverScanner();
+    return sessionRef.current?.state === 'scanning';
+  };
+
+
   const setTorchEnabled = useCallback((enabled: boolean): Promise<ScannerTorchState> => {
     const session = sessionRef.current;
     if (!session) return Promise.resolve(EMPTY_TORCH_STATE);
@@ -292,6 +315,7 @@ export function useScannerEngine({
 
   const closeScanner = useCallback(async () => {
     desiredActiveRef.current = false;
+    automaticHealthRecoveryAttemptsRef.current = 0;
     const pendingLeaseRequest = cameraLeaseRequestRef.current;
     cameraLeaseRequestRef.current = null;
     pendingLeaseRequest?.cancel();

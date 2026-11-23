@@ -630,3 +630,21 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - SC-01C merged as PR #142 (squash commit `308d4af1721610ef9fe9c6b7e67772a880d5189e`). Latest-head CI #1301, post-merge CI #1302 and Pages deployment #145 all succeeded.
 - Software scope complete: latest-frame-wins bounded pending slot and in-memory scheduling metrics; no production integration or scanner behavior change.
 - Close SC-01C at prototype/software-validation boundary. Worker transport/browser runtime/performance/optical QA is still a prerequisite for any production integration. Next roadmap stage: SC-02 Camera Health Controller.
+
+
+## 2026-11-23 — SC-02 Camera Health Controller work initiated
+
+- Baseline: user confirmed current app works normally and business workflows show no errors. This is baseline evidence only.
+- Source audit confirmed existing `UniversalScannerSession` observes track mute/unmute and track-ended, measures frame-callback gaps, and has serialized foreground recovery. SC-02 fills the missing independent frame-progress watchdog and bounded health-state controller.
+- Branch `feat/scanner-sc02-camera-health` adds HEALTHY/DEGRADED/STALLED/RECOVERING/FAILED controller, 1s watchdog, 3s stall threshold, RAF timeline-progress gating, mute/unmute signals, track-ended immediate recovery, and one automatic recovery budget per mounted activation through existing session replacement path.
+- Added focused controller/source-contract test and preflight registration. CI/device validation pending; no decoder, ROI, barcode policy, feature workflow, or production camera ownership changes intended.
+
+
+## 2026-11-23 — SC-02 software/CI closure review
+
+- PR #144 branch `feat/scanner-sc02-camera-health`; implementation head at validation: `416b168b1b00b858c2b7e34e751e33defb9afb50`.
+- CI #1313 (`45125832651`) passed: local-equivalent preflight, TypeScript and production build, Pages build, PR-base bundle baseline and bundle comparison.
+- Previous CI #1312 failure was isolated to `test-scanner-decoder-factory.mjs` missing an isolated-module stub for the new `scannerCameraHealthController` import. Stub added; no test disabled and no production decoder behavior changed.
+- PR review thread audit: no open inline threads; no submitted reviews requiring changes.
+- Documentation synchronized to close SC-02 at software/CI boundary. Physical camera stall/ended-track recovery, failure injection, close-during-recovery, mobile/browser device matrix and post-merge production smoke test remain outstanding operational QA; they are not represented as passed.
+- PR #144 still requires final base/head/status refresh and successful merge. Next engineering workstream: SC-03 Geometry Diagnostics.

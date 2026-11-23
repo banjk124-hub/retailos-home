@@ -1,15 +1,15 @@
-# Current handoff — Scanner SC-01A/01B/01C closed — 2026-11-23
+# Current handoff — Scanner SC-02 Camera Health Controller — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Base:** `main` at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
-**Work branch:** `docs/phase1-ai-context-governance`  
-**Pull request:** [#138](https://github.com/banjk124-hub/retailos-home/pull/138)  
-**Phase 2.1 baseline head:** `eb1dca880a4c17043c963230a64e435903a62713` — CI #1271 passed.
+**Base:** `main` at `0c702c95063b71deabe2f4454e53fe3a678b20d9`  
+**Work branch:** `feat/scanner-sc02-camera-health`  
+**Pull request:** [#144](https://github.com/banjk124-hub/retailos-home/pull/144)  
+**SC-02 head:** `416b168b1b00b858c2b7e34e751e33defb9afb50` — CI #1313 passed.
 
 
 ## Current status — 2026-11-23
 
-Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is closed at the isolated prototype/software boundary: PR #142 merged; latest CI #1301, post-merge CI #1302 and Pages deployment #145 passed. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. Empirical Worker transport/performance/optical validation remains gated before production integration
+Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is closed at the isolated prototype/software boundary: PR #142 merged; latest CI #1301, post-merge CI #1302 and Pages deployment #145 passed. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. SC-02 Camera Health Controller software implementation is complete on `feat/scanner-sc02-camera-health` (PR #144, head `416b168b1b00b858c2b7e34e751e33defb9afb50`). CI #1313 passed full preflight, TypeScript, production build, Pages build and bundle comparison. Scope is frame-progress watchdog plus one bounded automatic recovery through the existing serialized session-replacement path. Production decoder remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated. No decoder policy, ROI, barcode validation or Home/Stocktake business-flow changes were intended. Closure boundary is software/CI; deliberate live-camera stall, ended-track recovery, mobile/browser matrix and post-merge production smoke test remain operational QA gates.
 
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
