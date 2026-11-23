@@ -42,6 +42,8 @@ assert.match(bridge, /private finishFrame\(jobId: number/);
 assert.match(bridge, /Frame-level decode errors fail only that frame/);
 
 // SC-01B runtime and lifecycle contracts.
+assert.match(bridge, /type WorkerCommand =/);
+assert.match(bridge, /satisfies WorkerCommand/);
 assert.match(bridge, /INIT_TIMEOUT_MS = 10_000/);
 assert.match(bridge, /DECODE_TIMEOUT_MS = 5_000/);
 assert.match(bridge, /MAX_RESTARTS = 1/);
