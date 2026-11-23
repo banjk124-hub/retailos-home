@@ -168,7 +168,10 @@ export class ScannerGeometryRevisionTracker {
 
   update(signature: string | null): ScannerGeometryRevision | null {
     if (!signature) {
-      this.invalidate();
+      if (this.signature !== null) {
+        this.signature = null;
+        this.version += 1;
+      }
       return null;
     }
     if (signature !== this.signature) {
@@ -179,8 +182,8 @@ export class ScannerGeometryRevisionTracker {
   }
 
   invalidate(): number {
-    // Every invalidation advances the epoch, even if already invalid. This
-    // prevents a delayed measurement from a previous valid epoch being reused.
+    // Explicit invalidation advances the epoch to reject delayed work even
+    // when the tracker is already invalid (e.g. observer lifecycle teardown).
     this.signature = null;
     this.version += 1;
     return this.version;
