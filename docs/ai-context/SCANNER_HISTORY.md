@@ -86,3 +86,10 @@ SC-02 implementation adds bounded frame-progress monitoring and recovery in the 
 - SC-05 adds one cross-layer integration contract test to preflight and consolidates a device/corpus acceptance protocol rather than duplicating subsystem tests or adding another engine.
 - Device/corpus acceptance NOT RUN in the remote session; overall optical/device acceptance remains pending recorded physical runs.
 - SC-05 follow-up audit found SC-04 recovery state/action/guidance were logged by the session but omitted from the diagnostics allowlist/visible QA metrics. Added those three bounded fields to the existing collector and Home QA monitor; no controller or camera behavior added.
+
+## SC-05 software closure — 2026-11-23
+
+- PR #149 merged to main at `e0579fa1734eac989af051c4776cc88de912c946`. CI #1375 on final PR head passed; post-merge CI #1376 and Pages deployment #151 passed.
+- Added a cross-layer integration contract to preflight, QA-monitor visibility for passive SC-04 recovery metrics, and physical device/corpus acceptance instructions. No new scanner engine or dependency.
+- PR #150 test-only follow-up adds assertions that the recovery state/action/guidance survive diagnostic collection. CI #1377 passed.
+- Software integration scope closed. Physical iOS/Android/Desktop scanner acceptance and measured corpus results NOT RUN; remain the release gate.
