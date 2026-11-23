@@ -194,6 +194,9 @@ const stubs = {
   './scannerAdaptiveRuntimeController': makeDataModule(
     'export class ScannerAdaptiveRuntimeController { getBudget() { return { schemaVersion: 1, mode: "normal", maxImageCandidates: 2, maxGeometryCandidates: 4, reasons: ["test"] }; } observe() { return this.getBudget(); } reset() {} }',
   ),
+  './scannerCameraHealthController': makeDataModule(
+    'export const CAMERA_HEALTH_WATCHDOG_INTERVAL_MS = 1000; export class ScannerCameraHealthController { constructor(onChange, onRecovery) { this.onChange = onChange; this.onRecovery = onRecovery; } start() {} frame() {} trackMuted() {} trackUnmuted() {} trackEnded() {} tick() {} completeRecovery() {} dispose() {} getSnapshot() { return { state: "healthy", reason: "frame-progress", frameAgeMs: 0, recoveryAttempts: 0 }; } }',
+  ),
 };
 let sessionJs = compileModule(sessionSource);
 for (const [specifier, stubUrl] of Object.entries(stubs)) {
