@@ -69,6 +69,19 @@ const baseSignature = createScannerGeometrySignature(signatureInput);
 assert.ok(baseSignature, 'valid geometry produces a signature');
 assert.equal(createScannerGeometrySignature({
   ...signatureInput,
+  objectPosition: '50%   50%',
+}), baseSignature, 'equivalent CSS whitespace does not create a different geometry identity');
+assert.ok(createScannerGeometrySignature({
+  ...signatureInput,
+  transform: 'matrix(-1, 0, 0, 1, 0, 0)',
+}), 'horizontal mirror transform is a supported geometry signature');
+assert.equal(createScannerGeometrySignature({
+  ...signatureInput,
+  transform: 'matrix(0, 1, -1, 0, 0, 0)',
+}), null, 'rotation transform is unsupported and fails closed');
+
+assert.equal(createScannerGeometrySignature({
+  ...signatureInput,
   videoRect: { ...signatureInput.videoRect, width: 0 },
 }), null, 'zero-size preview invalidates the signature');
 assert.equal(createScannerGeometrySignature({
