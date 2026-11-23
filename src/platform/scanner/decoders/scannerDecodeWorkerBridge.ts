@@ -71,10 +71,11 @@ export class ScannerDecodeWorkerBridge {
       await this.startWorker();
     } catch (error) {
       const firstError = this.toRuntimeError(error, 'init', 'INIT_FAILED');
+      this.terminateWorker();
       if (this.restartCount >= MAX_RESTARTS || this.disposed) throw firstError;
       this.restartCount += 1;
-      this.terminateWorker();
       await this.startWorker().catch((retryError) => {
+        this.terminateWorker();
         throw this.toRuntimeError(retryError, 'init', 'INIT_FAILED');
       });
     }
@@ -220,6 +221,7 @@ export class ScannerDecodeWorkerBridge {
     if (this.disposed || error.generation !== this.generation) return;
     this.clearInitTimeout();
     this.ready = false;
+    const failedDuringInit = Boolean(this.initReject);
     this.initReject?.(error);
     this.initReject = null;
     this.initResolve = null;
@@ -227,7 +229,8 @@ export class ScannerDecodeWorkerBridge {
     this.resolveFrame(this.latestPending, []);
     this.inFlight = null;
     this.latestPending = null;
-    void this.recover(error);
+    if (failedDuringInit) this.terminateWorker();
+    else void this.recover(error);
   }
 
   private async recover(error: ScannerWorkerRuntimeError): Promise<void> {
