@@ -2,7 +2,7 @@
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Default branch:** `main`  
-**Current main commit:** `0b6840c9b2872d93920d4eba5f628158e09679b4` (SC-04 merge)  
+**Current main commit:** `661241e721a5510cf3f61c8ba7c3971c82b6a63c` (SC-05 QA follow-up merge)  
 **Latest completed feature:** PR #137 — delta-aware PWA release staging. Merged at the main commit above on 2026-11-16.
 
 - Delta staging reuses active-cache resources only after exact URL, byte-length and SHA-256 validation. Missing, changed or corrupt resources are downloaded and verified; removed resources are excluded.
@@ -213,6 +213,6 @@ SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merge
 
 - SC-04 Focus Recovery Policy merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`; CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base comparison on code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. Physical optical QA has not been run.
 - SC-05 software integration scope is COMPLETE and merged via PR #149 at `e0579fa1734eac989af051c4776cc88de912c946`. CI #1375 on PR head, post-merge CI #1376 and Pages deployment #151 passed. Cross-layer integration contract is registered in preflight; focus-recovery diagnostics are surfaced in the existing QA monitor.
-- PR #150 test-only follow-up strengthens diagnostic collector assertions; CI #1377 passed.
+- PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed.
 - Production remains Main Thread ZXing-C++ WASM. Worker transport/runtime/optical proof remains gated and Worker is not connected.
 - Physical iOS, Android low/mid capability and Desktop acceptance/corpus scenarios are NOT RUN. Device/optical acceptance remains a release blocker until actual runs are recorded.
