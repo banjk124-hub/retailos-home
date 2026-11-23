@@ -112,6 +112,10 @@ assert.match(session, /sample\.motionAvailable && this\.focusQualityMonitor\.obs
   'the shared session observes focus quality passively');
 assert.match(session, /cameraControlChanged: false/,
   'sustained blur diagnostics explicitly confirm that camera controls were not changed');
+assert.ok(session.includes("focusRecoveryAction: 'wait-native-autofocus'"),
+  'the recovery policy recommends passive native autofocus waiting');
+assert.ok(session.includes('cameraConstraintWriteBudget: 0'),
+  'the recovery policy keeps post-preview camera constraint writes disabled');
 assert.doesNotMatch(session, /focusRecoveryRequests|focusRecoveryPending|focusControlEnabled/,
   'the old automatic focus-recovery state is removed');
 
