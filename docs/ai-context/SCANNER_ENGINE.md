@@ -140,7 +140,14 @@ The existing `scannerGeometry.ts` pure mapper remains the authority for mapping 
 
 The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C and SC-02 software/CI scope are closed at their documented boundaries. SC-03 Geometry Diagnostics software/CI scope is complete in PR #146 and passed CI #1332. SC-04 Focus Recovery Policy is the next planned engineering phase. None of the Worker phases is wired into UniversalScannerSession, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Outstanding physical viewport/orientation verification remains a device QA gate. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
 
-## 12. Change protocol
+## 12. SC-04 Focus Recovery Policy
+
+The existing ROI focus-quality monitor now exposes a passive state policy: `observing`, `waiting-native-autofocus`, `recovered`. It only uses existing baseline-scale ROI samples and preserves the stable-motion gate, relative sharpness thresholds, four-sample blur gate and 8-second cooldown. Sustained blur emits bounded guidance to wait for native autofocus and steady/adjust distance; sharpness recovery returns to normal observation.
+
+**Hard boundary:** post-preview camera constraint writes are disabled (`cameraConstraintWriteBudget: 0`). SC-04 does not call `applyConstraints`, re-arm autofocus, restart/reacquire the stream, add a timer, increase frame captures or change decoder candidate budgets. Invalid/moving samples cannot trigger recovery. Existing ROI baseline reset resets the policy. This is a passive observation/recommendation—not a guarantee that physical autofocus succeeded.
+
+PR #148 implementation head `262ccc7feee797e80441d64083b093c2a7d78955`; tests and full CI gates are pending. Physical iOS/Android near/far focus QA remains separate.
+## 13. Change protocol
 
 For every scanner change:
 1. Read this document and the exact source/tests involved.
