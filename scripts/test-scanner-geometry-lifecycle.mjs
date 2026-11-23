@@ -69,6 +69,7 @@ let mediaQuery = null;
 let previewWidth = 390;
 let reticleLeft = 51.2;
 let sourceWidth = 1280;
+let visualViewportScale = 1;
 const video = {
   videoWidth: sourceWidth,
   videoHeight: 720,
@@ -96,7 +97,7 @@ globalThis.window = {
   innerHeight: 932,
   devicePixelRatio: 2,
   visualViewport: {
-    offsetLeft: 0, offsetTop: 0, scale: 1,
+    offsetLeft: 0, offsetTop: 0, get scale() { return visualViewportScale; },
     addEventListener: viewportTarget.addEventListener,
     removeEventListener: viewportTarget.removeEventListener,
   },
@@ -160,6 +161,7 @@ try {
   assert.equal(callbacks.at(-1).geometryVersion, 7);
 
   // visualViewport and pixel-density signals are observed.
+  visualViewportScale = 1.1;
   viewportTarget.fire('resize');
   assert.equal(callbacks.at(-1), null);
   flushRaf();
