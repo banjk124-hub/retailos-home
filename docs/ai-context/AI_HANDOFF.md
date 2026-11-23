@@ -1,27 +1,29 @@
-# Current handoff — Scanner SC-05 Integration & QA — 2026-11-23
+# Current handoff — Scanner physical QA acceptance — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Baseline main:** SC-04 merge `0b6840c9b2872d93920d4eba5f628158e09679b4`  
-**Work branch:** `feat/scanner-sc05-integration-qa`  
-**Scope:** audit integration contracts, add one cross-layer preflight guard, define physical QA protocol and reconcile stale scanner status documents.
+**Main baseline:** SC-05 software merge `e0579fa1734eac989af051c4776cc88de912c946`  
+**Software integration PR:** [#149](https://github.com/banjk124-hub/retailos-home/pull/149) — merged  
+**Test-only diagnostic follow-up:** [#150](https://github.com/banjk124-hub/retailos-home/pull/150) — CI #1377 passed  
+**Current scope:** Physical device QA + labelled-corpus benchmark; no new scanner code unless the evidence identifies a defect.
 
-## Current status
+## Current verified status
 
-- SC-01A/01B/01C, SC-02, SC-03 and SC-04 software scopes are merged/closed at their recorded boundaries. Worker prototypes remain isolated; production decoder remains Main Thread ZXing-C++ WASM.
-- SC-04 is merged to `main` at `0b6840c9b2872d93920d4eba5f628158e09679b4`; code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348. Real near/far optical focus tests remain outstanding.
-- SC-05 audit found Home and Stocktake already share `useScannerEngine`, `UniversalScannerSession` and module-owned preview ROI. Do not add a new scanner controller or duplicate existing regression fixtures.
-- SC-05 branch adds a cross-layer integration contract test to preflight, exposes the existing SC-04 recovery state/action/guidance in the current diagnostic allowlist and QA monitor, and adds a physical device/corpus QA checklist. No decoder, camera, recognition or retail workflow behavior is intentionally changed.
-- Physical iOS Safari/PWA, Android low/mid-tier Chrome/PWA and Desktop QA is NOT RUN by the remote session. The matrix is a release blocker for optical/device acceptance, not something to claim from CI.
-- Next phase after SC-05: only if QA results identify a concrete issue; no speculative pipeline expansion.
+- SC-01A/01B/01C, SC-02, SC-03, SC-04 and SC-05 software integration scope are closed at their recorded boundaries. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
+- SC-05 PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`. CI #1375 passed on final PR head; post-merge CI #1376 and GitHub Pages deployment #151 passed.
+- PR #150 strengthens the existing diagnostic test to verify focus-recovery state/action/guidance metrics are safely retained; CI #1377 passed.
+- Focus recovery state/action/guidance are visible through the existing Home Scanner QA monitor. No new controller or camera control was added.
+- Physical iOS Safari/PWA, Android low/mid capability, Desktop and optical/corpus scenarios are NOT RUN remotely. Use `SCANNER_SC05_INTEGRATION_QA.md`; do not claim acceptance until actual runs are recorded.
+- Overall release/optical acceptance remains blocked by device QA and corpus evidence. No speculative algorithm work is authorized by this phase.
+
 
 ## Protected boundaries
 
-- Single shared camera acquisition/lease owner; scanner feature components must not acquire cameras.
-- Strict module-owned source ROI; invalid or stale geometry fails closed.
-- Production decoder is ZXing-C++ WASM only; Worker prototype is not wired in.
-- Keep payload validation, temporal acceptance, Home lookup, Stocktake form-fill and explicit-save contracts.
-- Diagnostics/benchmark exports must not include decoded payloads or personal/device identifiers.
-- CI evidence, benchmark evidence and physical-device evidence must be recorded separately.
+- Shared camera acquisition/lease ownership; no feature-level camera acquisition.
+- Strict current feature-owned ROI; invalid/stale geometry fails closed.
+- No Worker production integration, decoder changes or candidate-order changes without separate measured decision.
+- Payload validation, temporal policy, Home lookup and Stocktake explicit-save flow remain protected.
+- CI, benchmark and physical-device evidence are reported separately.
+
 
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
