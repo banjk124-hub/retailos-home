@@ -69,6 +69,8 @@ export type ScannerPreviewScanRegion = {
 export type ScannerSourceScanRegion = {
   coordinateSpace: 'source-frame-normalized';
   rect: ScannerNormalizedRect;
+  /** Monotonic feature-owned geometry revision; absent only for legacy callers/tests. */
+  geometryVersion?: number;
 };
 
 /**
