@@ -97,14 +97,20 @@ export function measureScannerFocusQuality(
   };
 }
 
+export type ScannerFocusRecoveryState = 'observing' | 'waiting-native-autofocus' | 'recovered';
+
 /**
- * Detect sustained relative sharpness loss after a previously sharp frame.
- * This monitor is diagnostic only and never changes camera controls.
+ * Passive focus-recovery policy: observes sustained relative sharpness loss,
+ * waits for browser/device autofocus, and detects optical recovery. It never
+ * writes camera constraints, restarts a stream, or owns UI/business flows.
  */
 export class ScannerFocusQualityMonitor {
   private referenceSharpness = 0;
   private consecutiveBlurSamples = 0;
   private lastBlurReportAt = Number.NEGATIVE_INFINITY;
+  private recoveryState: ScannerFocusRecoveryState = 'observing';
+
+  getRecoveryState(): ScannerFocusRecoveryState { return this.recoveryState; }
 
   observe(sample: ScannerFocusQualitySample, timestamp: number): boolean {
     if (!sample.valid || !Number.isFinite(sample.sharpness) || !Number.isFinite(timestamp)) {
@@ -130,6 +136,7 @@ export class ScannerFocusQualityMonitor {
     if (sample.sharpness >= this.referenceSharpness * 0.82) {
       this.referenceSharpness = Math.max(sample.sharpness, this.referenceSharpness * 0.995);
       this.consecutiveBlurSamples = 0;
+      if (this.recoveryState === 'waiting-native-autofocus') this.recoveryState = 'recovered';
       return false;
     }
 
@@ -144,6 +151,7 @@ export class ScannerFocusQualityMonitor {
 
     this.lastBlurReportAt = timestamp;
     this.consecutiveBlurSamples = 0;
+    this.recoveryState = 'waiting-native-autofocus';
     return true;
   }
 
@@ -151,5 +159,6 @@ export class ScannerFocusQualityMonitor {
     this.referenceSharpness = 0;
     this.consecutiveBlurSamples = 0;
     this.lastBlurReportAt = Number.NEGATIVE_INFINITY;
+    this.recoveryState = 'observing';
   }
 }

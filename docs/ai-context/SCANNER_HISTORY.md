@@ -69,3 +69,12 @@ SC-02 implementation adds bounded frame-progress monitoring and recovery in the 
 - CI #1332 passed on head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison.
 - Software/CI scope is closed. Physical iOS Safari/PWA and Android Chrome/PWA orientation/viewport QA remains a separate device acceptance gate; do not infer it from CI.
 - Next roadmap stage after SC-03 software closure: SC-04 Focus Recovery Policy.
+
+## 2026-11-23 — SC-04 Focus Recovery Policy implementation
+
+- PR #148 branch `feat/scanner-sc04-focus-recovery-policy` introduces the passive recovery states `observing`, `waiting-native-autofocus`, and `recovered` inside the existing focus-quality monitor.
+- Reuses existing baseline ROI samples, motion stability guard, sharpness ratios, four-sample blur gate and 8-second cooldown; no second engine, extra frame capture or timer.
+- Sustained blur produces a native-autofocus wait recommendation and simple steadiness/distance guidance; sharpness returning to the reference band marks recovery.
+- Explicit zero post-preview camera-constraint write budget; no `applyConstraints`, autofocus re-arm, camera reacquisition or stream restart. Invalid/moving samples do not trigger the policy.
+- Source tests cover transitions, cooldown, reset, low-texture/motion rejection and zero-camera-write contract. CI #1347 failed at a cooldown-boundary expectation; corrected test passed full CI #1348. Physical device QA remains outstanding.
+- Scope closure: policy software only; real lens focus behavior is not asserted.

@@ -1,21 +1,26 @@
-# Current handoff — Scanner SC-03 Geometry Diagnostics — 2026-11-23
+# Current handoff — Scanner SC-04 Focus Recovery Policy — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Base:** `main` after SC-02 merge  
-**Work branch:** `feat/scanner-sc03-geometry-diagnostics`  
-**Pull request:** [#146](https://github.com/banjk124-hub/retailos-home/pull/146)  
-**Implementation head validated:** `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab` — CI #1332 passed. Documentation reconciliation commits are being validated in the final PR workflow.
+**Base:** `main` at SC-03 merge `b388d876f61f6a95991ef3a7f637c6418dcdea5c`  
+**Work branch:** `feat/scanner-sc04-focus-recovery-policy`  
+**Pull request:** [#148](https://github.com/banjk124-hub/retailos-home/pull/148)  
+**Validation:** code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348; subsequent commits are documentation-only reconciliation.
 
 
 ## Current status — 2026-11-23
 
+- SC-03 Geometry Diagnostics is merged/deployed at `b388d876f61f6a95991ef3a7f637c6418dcdea5c`; software/CI scope closed, physical viewport/orientation QA still outstanding.
+- SC-04 is in PR #148, branch `feat/scanner-sc04-focus-recovery-policy`, head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. It extends the existing focus monitor with passive `observing`/`waiting-native-autofocus`/`recovered` states, preserving the motion gate, sharpness thresholds and cooldown.
+- Recovery action is advisory only: wait for native autofocus, steady/adjust distance; zero post-preview camera-constraint writes, no applyConstraints, autofocus re-arm, restart or extra capture. CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base bundle comparison. Physical focus QA remains pending.
+- Protected: camera lease/acquisition, decoder/recognition order, ROI/geometry, validation, Home/Stocktake business flows, PWA lifecycle/deployment.
+
 - SC-01B/SC-01C and SC-02 software/CI scopes are closed. Production scanner remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated and is not wired into camera/session/Home/Stocktake.
 - SC-02 PR #144 merged as `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`. Post-merge CI #1320 and Pages deployment #147 succeeded.
 - SC-03 Geometry Diagnostics is implemented on PR #146. It fingerprints source/preview/reticle/CSS/viewport geometry, publishes monotonic geometry versions, clears active ROI on geometry drift and rejects stale versions at the platform session boundary. Existing mapper math and strict fail-closed behavior are preserved.
-- CI #1332 passed on implementation head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison. A final CI run is required after this documentation reconciliation.
+- Final SC-03 validation: CI #1339 passed on final PR head `acc6c883f060757d0bb18d4433a7b03167d9f11f`; post-merge CI #1340 and Pages deployment #149 passed on merge commit `b388d876f61f6a95991ef3a7f637c6418dcdea5c`.
 - User confirms the deployed app flow is operating normally with no observed errors. This is regression baseline acceptance.
 - Outstanding device QA: orientation/viewport/visualViewport behavior on physical iOS Safari/PWA and Android Chrome/PWA, including resize/orientation transitions while scanning. Do not infer physical-device acceptance from CI.
-- Next roadmap stage after SC-03 software closure: SC-04 Focus Recovery Policy.
+- SC-04 software/CI scope is complete; next scanner phase is SC-05 Integration & QA, subject to device QA scheduling and scope review.
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 

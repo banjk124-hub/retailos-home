@@ -18,7 +18,7 @@ Stabilize the existing scanner engine in bounded stages. Keep CameraSession leas
 | **SC-01C** | Frame Scheduling | One in-flight + one replaceable latest pending frame; queue/backpressure metrics, drop accounting and bounded timeout. Exit: source contracts + CI passed and merged; device/transport performance remains required before production integration. |
 | **SC-02** | Camera Health Controller | Frame heartbeat, health states, watchdog, recovery cooldown, bounded retry budget, escalation. Exit: stale/paused/ended stream cases reliably detected and recover without loops. |
 | **SC-03** | Geometry Diagnostics | Geometry signature, stale detection, invalidation, source/preview reconciliation. Exit: geometry drift/invalid mapping cannot decode with stale ROI; diagnostics are privacy-safe. |
-| **SC-04** | Focus Recovery Policy | Quality decision engine, capability-based actions, policy/cooldowns/budget and controlled physical-device tests. Exit: quality decisions validated; no unsupported autofocus assumption or uncontrolled constraint churn. |
+| **SC-04** | Focus Recovery Policy | Passive quality-state policy using existing ROI samples; sustained-blur gate, native-autofocus wait, recovery recognition and bounded cooldown. Exit: state transitions/guards pass CI; optical behavior remains device QA. |
 | **SC-05** | Integration & QA | Home/Stocktake integration, regressions, benchmark, Android/iOS/Desktop and low-end-device matrix, release gate. Exit: CI, measured accuracy/perf and explicit device acceptance complete. |
 
 Dependencies are sequential: SC-02 builds on the isolated SC-01A/01B/01C Worker scheduling/reporting foundation; SC-03 feeds valid geometry into frame scheduling; SC-04 consumes quality/health evidence and geometry context; SC-05 integrates and validates all stages. Discovery may run in parallel, but production integration must respect this sequence.
@@ -98,10 +98,24 @@ SC-03 extends the existing pure preview-to-source mapper with an explicit geomet
 - User confirms the deployed app flow has no observed errors and operates normally; this is regression baseline acceptance.
 - Close SC-03 at software/CI scope. Physical orientation/viewport behavior on actual iOS Safari/PWA and Android Chrome/PWA remains device QA; do not infer it from CI.
 
-## SC-04 — Focus Recovery Policy
+## SC-04 — Focus Recovery Policy (implementation)
 
-Separate passive quality measurement from policy decisions. Quality engine provides bounded signals (focus/sharpness, motion, luminance/contrast, stability and sample validity); policy decides whether to wait, sample again, reduce processing load, or attempt a capability-supported camera action. Autofocus is generally browser/device-owned and may not be controllable; actions must be capability-gated, conservative, cooldown-limited and budgeted. Do not infer blur cause or force unsupported constraints. Controlled testing across supported devices/browser combinations is required before enabling active camera actions.
+SC-04 extends the existing `ScannerFocusQualityMonitor` into a passive recovery state policy; it does not add a second controller or touch camera ownership.
 
+- States: `observing` → `waiting-native-autofocus` → `recovered`.
+- Inputs reuse the decoder's existing baseline-scale grayscale ROI samples. No extra capture/readback is introduced.
+- Only valid same-ROI samples with an available motion reference and motion score within the existing stability limit are considered. Invalid/low-texture or motion samples clear the blur streak and do not trigger recovery.
+- Preserve the existing relative sharpness gates (reference threshold, 0.82 recovery band, 0.55 blur ratio, four consecutive samples) and 8-second diagnostic cooldown; thresholds are not presented as device-calibrated.
+- Sustained blur recommends waiting for native autofocus and holding steady/adjusting distance. Sharpness returning to the reference band transitions to `recovered`.
+- Session logs expose state/action and a **zero post-preview camera-constraint write budget**. No `applyConstraints`, autofocus re-arm, stream restart, retry timer, extra camera request or UI state is added.
+- Existing ROI-baseline reset resets recovery state. Decoder, geometry/ROI, 70 ms session cadence, validation, Home/Stocktake workflows and camera lease remain unchanged.
+
+### SC-04 validation and closure boundary
+
+- Tests cover sharp-vs-blurred measurement, invalid texture, motion rejection, sustained blur, native-focus waiting, sharpness recovery, cooldown and reset.
+- PR #148 `feat/scanner-sc04-focus-recovery-policy`; latest head `fa4349344eb9fd80d8d487942113ea5560cae6e5`.
+- CI #1347 exposed a cooldown-boundary assertion error; corrected test passed CI #1348 full preflight, TypeScript, production/Pages build and PR-base bundle comparison.
+- Software state-policy closure must not be confused with optical autofocus acceptance. Physical near/far transitions and focus behavior on iOS Safari/PWA and Android Chrome/PWA in Home and Stocktake remain device QA.
 ## SC-05 — Integration & QA
 
 Integrate through existing session/backend boundary, then verify Home and Stocktake separately. Include lifecycle, ROI/geometry, validation, single/continuous behavior, feedback, capture/save, fallback and update handoff regression. Benchmark baseline vs worker and each accepted controller. Matrix: Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop Chrome, low-end Android. Release gate includes CI, benchmark/corpus evidence, resource/memory checks and explicit physical-device acceptance. CI/build green does not prove optical or device acceptance.
