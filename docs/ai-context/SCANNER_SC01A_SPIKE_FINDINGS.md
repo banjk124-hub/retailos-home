@@ -1,7 +1,7 @@
 # SC-01A — Worker feasibility and transport study
 
 **Date:** 2026-11-22  
-**Status:** Research note retained. SC-01A/01B Worker source is merged to main in isolation; SC-01C scheduling work is on the current PR. CI/source-contract checks are available. Empirical built-worker transport/browser performance remains BLOCKED pending local/browser execution.  
+**Status:** Research note retained. SC-01A/01B/01C source prototype phases are merged to main in isolation. CI/source-contract checks are available. Empirical built-worker transport/browser performance remains BLOCKED pending local/browser execution.  
 **Branch:** `docs/scanner-sc01-05-roadmap`  
 **Production source changed:** No.
 
