@@ -4,7 +4,7 @@
 **Base:** `main` at SC-03 merge `b388d876f61f6a95991ef3a7f637c6418dcdea5c`  
 **Work branch:** `feat/scanner-sc04-focus-recovery-policy`  
 **Pull request:** [#148](https://github.com/banjk124-hub/retailos-home/pull/148)  
-**Latest PR head (docs sync):** `f7389abd1b943998b9938b347a6be53e423b4844`; code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348.
+**Validation:** code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348; subsequent commits are documentation-only reconciliation.
 
 
 ## Current status — 2026-11-23
