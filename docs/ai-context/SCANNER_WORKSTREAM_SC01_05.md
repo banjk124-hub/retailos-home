@@ -58,7 +58,7 @@ SC-01A/01B/01C remain isolated prototypes; no Worker decoder is wired into the p
 
 SC-01C scheduling policy is intentionally simple: accept incoming decode requests, dispatch immediately when idle, retain only the newest waiting frame while one decode is active, resolve replaced waiting requests as misses, and dispatch the retained newest frame after the active decode completes. It does not add a timer-driven FIFO, parallel decode or synchronous WASM cancellation. Diagnostics are bounded counters/aggregates in memory and contain no payload/device data.
 
-SC-01C is closed at the isolated prototype/software-validation boundary. Do not promote the Worker prototype to production until transport, runtime, resource and accuracy gates are independently verified
+SC-01C is closed at the isolated prototype/software-validation boundary. Do not promote the Worker prototype to production until transport, runtime, resource and accuracy gates are independently verified.
 ### SC-01 release gates
 No lost frames/resource leaks or stale results; bounded queue; graceful worker failure; fallback maintains exact formats, ROI, processing/candidate order and validation. Benchmark: Main Thread blocking/long tasks, decode P50/P95, exact-match/miss/wrong/false-positive rates, worker startup, transfer cost, memory observations, first-result latency and UI responsiveness. Establish baseline before changes; do not invent target metrics.
 

@@ -188,4 +188,4 @@ Repository source and current tests/config are authoritative for actual behavior
 
 ### Scanner stabilization status — 2026-11-23
 
-SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merged (PRs #141 and #142); CI and Pages deployment succeeded. SC-01B device update was user-verified without errors. Worker remains an isolated prototype, not connected to the production scanner; production camera/session/ROI/decoder behavior remains unchanged. Empirical Worker transport/browser/device performance remains an integration gate.
+SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merged (PRs #141 and #142); CI and Pages deployment succeeded. SC-01B device update was user-verified without errors. Worker remains an isolated prototype, not connected to the production scanner; production camera/session/ROI/decoder behavior remains unchanged. Empirical Worker transport/browser/device performance remains an integration gate

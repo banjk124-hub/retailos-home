@@ -32,6 +32,18 @@ assert.doesNotMatch(worker, /initialize\(message\)\.then\(\(\) => post\('READY'/
 
 assert.match(bridge, /new Worker\(new URL\('\.\/scannerDecodeWorker\.ts', import\.meta\.url\)/);
 assert.match(bridge, /latest-frame-wins/i);
+assert.match(bridge, /ScannerWorkerFrameSchedulingDiagnostics/);
+assert.match(bridge, /get schedulingDiagnostics/);
+assert.match(bridge, /submitted: 0, dispatched: 0, completed: 0/);
+assert.match(bridge, /this\.schedulingMetrics\.submitted \+= 1/);
+assert.match(bridge, /this\.schedulingMetrics\.dispatched \+= 1/);
+assert.match(bridge, /this\.schedulingMetrics\.replacedPending \+= 1/);
+assert.match(bridge, /this\.schedulingMetrics\.droppedPending \+= 1/);
+assert.match(bridge, /droppedPending: metrics\.droppedPending/);
+assert.match(bridge, /averageQueueWaitMs/);
+assert.match(bridge, /averageDecodeMs/);
+assert.match(bridge, /SC-01C latest-frame-wins: one active job/);
+assert.match(bridge, /this\.schedulingMetrics\.timedOut \+= 1/);
 assert.match(bridge, /this\.resolveFrame\(this\.latestPending, \[\]\)/);
 assert.match(bridge, /new Uint8ClampedArray\(frame\.frame\.data\)\.buffer/);
 assert.match(bridge, /frame\.width \* frame\.height > 1_500_000/);
@@ -57,4 +69,4 @@ assert.match(bridge, /frame\.timeout = setTimeout/);
 assert.match(bridge, /failedDuringInit/);
 assert.match(bridge, /get runtimeError\(\)/);
 assert.match(bridge, /this\.lastError = error/);
-console.log('Scanner SC-01B Worker runtime and protocol source-contract checks passed.');
+console.log('Scanner SC-01A/01B/01C Worker foundation, runtime and scheduling source-contract checks passed.');
