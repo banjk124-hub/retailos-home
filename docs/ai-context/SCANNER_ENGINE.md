@@ -138,7 +138,7 @@ The existing `scannerGeometry.ts` pure mapper remains the authority for mapping 
 
 ## 11. Active stabilization workstream
 
-The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C, SC-02 and SC-03 software/CI scopes are closed at their documented boundaries. SC-04 Focus Recovery Policy is implemented in PR #148; latest head `fa4349344eb9fd80d8d487942113ea5560cae6e5`, with CI #1348 passed after correcting the cooldown-boundary test. Worker phases remain isolated from production session/Home/Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Physical viewport/orientation and focus behavior remain device QA gates. SC-01A transport/API evidence is in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
+The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C, SC-02, SC-03 and SC-04 software/CI scopes are closed at their documented boundaries. SC-04 Focus Recovery Policy is merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4` with CI #1348 passed on its code/test head. Worker phases remain isolated from production session/Home/Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Physical viewport/orientation and focus behavior remain device QA gates. SC-05 Integration & QA is the current phase. SC-01A transport/API evidence is in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
 
 ## 12. SC-04 Focus Recovery Policy
 
@@ -146,8 +146,15 @@ The existing ROI focus-quality monitor now exposes a passive state policy: `obse
 
 **Hard boundary:** post-preview camera constraint writes are disabled (`cameraConstraintWriteBudget: 0`). SC-04 does not call `applyConstraints`, re-arm autofocus, restart/reacquire the stream, add a timer, increase frame captures or change decoder candidate budgets. Invalid/moving samples cannot trigger recovery. Existing ROI baseline reset resets the policy. This is a passive observation/recommendation—not a guarantee that physical autofocus succeeded.
 
-PR #148 implementation head `262ccc7feee797e80441d64083b093c2a7d78955`; tests and full CI gates are pending. Physical iOS/Android near/far focus QA remains separate.
-## 13. Change protocol
+PR #148 merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`. CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base bundle comparison on code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. Physical iOS/Android near/far focus QA remains separate.
+## 14. SC-05 Integration & QA
+
+SC-05 validates cross-layer composition before introducing any new scanner algorithms. The current integration uses one `useScannerEngine` → `UniversalScannerSession` path shared by Home and Stocktake. Camera lease remains in the shared camera service; feature-owned preview ROI and geometry versions are published through the existing hook. Health recovery is bounded, focus guidance is passive, adaptive runtime budget is passed to the production WASM adapter and the Worker prototype remains isolated.
+
+The cross-layer source-contract test is `scripts/test-scanner-sc05-integration.mjs` and is registered in `scripts/preflight.mjs`. Existing focused regression/decoder-fixture tests remain the detailed subsystem authority. QA device matrix, run-record and local corpus protocol are in [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md).
+
+Software CI is not physical-device or optical acceptance. No scan-accuracy, false-positive, focus distance, cross-platform or latency threshold may be claimed until a labelled corpus and real-device run records support it. SC-05 release acceptance must show actual test results or list the remaining device/corpus blocker.
+## 15. Change protocol
 
 For every scanner change:
 1. Read this document and the exact source/tests involved.
