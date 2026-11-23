@@ -43,7 +43,6 @@ export function useScannerPreviewRegionBinding({
     const revision = new ScannerGeometryRevisionTracker();
     let resizeObserver: ResizeObserver | null = null;
     let resolutionQuery: MediaQueryList | null = null;
-    let scheduleMeasureRef: (() => void) | null = null;
 
     const publish = (region: ScannerSourceScanRegion | null) => {
       const signature = regionSignature(region);
@@ -95,17 +94,16 @@ export function useScannerPreviewRegionBinding({
       }
 
       const geometrySignature = readGeometrySignature(video, reticle);
-      const geometryRevision = revision.update(geometrySignature);
-      if (!geometrySignature || !geometryRevision) {
-        publish(null);
-        return;
-      }
-
-      if (geometrySignature !== lastGeometrySignature) {
-        // The first valid measurement also establishes a new version after
-        // invalidation; any region from the previous layout is discarded.
+      const geometryChanged = geometrySignature !== lastGeometrySignature;
+      if (geometryChanged) {
         lastGeometrySignature = geometrySignature;
         publish(null);
+      }
+      const geometryRevision = revision.update(geometrySignature);
+      if (!geometrySignature || !geometryRevision) {
+        lastGeometrySignature = null;
+        publish(null);
+        return;
       }
 
       const style = window.getComputedStyle(video);
@@ -177,10 +175,8 @@ export function useScannerPreviewRegionBinding({
 
     measure();
 
-    scheduleMeasureRef = scheduleMeasure;
     return () => {
       disposed = true;
-      scheduleMeasureRef = null;
       if (frameHandle !== null) window.cancelAnimationFrame(frameHandle);
       resolutionQuery?.removeEventListener?.('change', scheduleMeasure);
       resizeObserver?.disconnect();
