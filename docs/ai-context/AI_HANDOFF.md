@@ -6,6 +6,11 @@
 **Pull request:** [#138](https://github.com/banjk124-hub/retailos-home/pull/138)  
 **Phase 2.1 baseline head:** `eb1dca880a4c17043c963230a64e435903a62713` — CI #1271 passed.
 
+
+## Current status — 2026-11-23
+
+Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is the active isolated Worker frame-scheduling branch, PR #142. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. Empirical Worker transport/performance/optical validation remains gated before production integration.
+
 ## Phase 2.2 scope
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
