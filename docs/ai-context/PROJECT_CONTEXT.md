@@ -195,4 +195,5 @@ SC-01B Worker Runtime & Protocol Hardening and SC-01C Frame Scheduling are merge
 
 - User confirms main app workflows are currently stable on deployed baseline, with no observed business-flow errors. This is baseline acceptance, not validation of new SC-02 code.
 - SC-02 branch `feat/scanner-sc02-camera-health` implements a bounded frame heartbeat/watchdog and recovery callback. Production decoder remains ZXing-C++ WASM Main Thread; Worker prototypes remain isolated.
-- Automated tests and CI/deploy are pending. Live-camera stall and recovery validation are required after deployment; do not infer device acceptance from CI.
+- SC-02 software implementation and CI are complete on PR #144, head `416b168b1b00b858c2b7e34e751e33defb9afb50`; CI #1313 passed full preflight, TypeScript, production build, Pages build and bundle comparison.
+- Closure boundary: source/software and CI gates. Live-camera stall, track-ended recovery, recovery failure/teardown and device/browser matrix are not established by CI; perform these as post-merge operational QA before declaring camera-health behavior device-accepted.
