@@ -1,9 +1,15 @@
-# Current verified implementation status — 2026-11-16
+# Current verified implementation status — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Default branch:** `main`  
 **Current main commit:** `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`  
 **Latest feature:** PR #137, delta-aware PWA release staging — merged.
+
+## Scanner ecosystem closure (cleanup PR #152 — validation pending)
+- Consolidated scanner technical truth into `SCANNER_ENGINE.md`, covering current production architecture, ownership, consumers, validation, limits, diagnostics/privacy, lean QA policy and final release closure.
+- Retired the unused Worker prototype implementation/bridge, prototype source-contract test, preflight entry and package script. Production scanner behavior is unchanged.
+- PR #152 is open and no CI run was visible at the time of this update. Do not merge or promote until final-head CI, TypeScript/production build, Pages build and review are verified. Physical optical QA remains a manual release caveat.
+- This closure summary must be carried into the final RetailOS release update/handoff for transfer to the department production account.
 
 ## Verified repository state
 - PR #137 merged on 2026-11-16 at `8a27eb400115cfabee92d1d2f874213b6a1cb7c8`.
