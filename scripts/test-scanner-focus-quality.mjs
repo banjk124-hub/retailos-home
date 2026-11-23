@@ -73,14 +73,22 @@ assert.equal(monitor.observe(blurredSample, 3500), false);
 assert.equal(monitor.observe(blurredSample, 4000), false);
 assert.equal(monitor.observe(blurredSample, 4500), false);
 assert.equal(monitor.observe(blurredSample, 5000), true,
-  'four sustained low-sharpness samples are reported as a passive blur event');
-assert.equal(monitor.observe(blurredSample, 5500), false,
-  'the monitor rate-limits repeated blur diagnostics');
-assert.equal(monitor.observe(blurredSample, 13500), false);
-assert.equal(monitor.observe(blurredSample, 14000), false);
-assert.equal(monitor.observe(blurredSample, 14500), true,
-  'a later sustained blur can be reported again after the diagnostic cooldown');
+  'four sustained low-sharpness samples trigger the passive recovery policy');
+assert.equal(monitor.getRecoveryState(), 'waiting-native-autofocus');
+assert.equal(monitor.observe(sharpStableSample, 5500), false, 'stable sharpness confirms recovery');
+assert.equal(monitor.getRecoveryState(), 'recovered');
 
+const cooldownMonitor = new ScannerFocusQualityMonitor();
+cooldownMonitor.observe(sharpSample, 100);
+cooldownMonitor.observe(sharpStableSample, 200);
+for (const time of [300, 400, 500]) assert.equal(cooldownMonitor.observe(blurredSample, time), false);
+assert.equal(cooldownMonitor.observe(blurredSample, 600), true);
+assert.equal(cooldownMonitor.getRecoveryState(), 'waiting-native-autofocus');
+assert.equal(cooldownMonitor.observe(movingBlurSample, 700), false, 'motion must not trigger recovery');
+cooldownMonitor.observe(sharpStableSample, 800);
+assert.equal(cooldownMonitor.getRecoveryState(), 'recovered');
+cooldownMonitor.reset();
+assert.equal(cooldownMonitor.getRecoveryState(), 'observing');
 const adapter = await readFile(
   new URL('../src/platform/scanner/decoders/zxingWasmDecoder.ts', import.meta.url),
   'utf8',
