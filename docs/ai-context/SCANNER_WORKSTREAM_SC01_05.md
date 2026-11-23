@@ -113,8 +113,8 @@ SC-04 extends the existing `ScannerFocusQualityMonitor` into a passive recovery 
 ### SC-04 validation and closure boundary
 
 - Tests cover sharp-vs-blurred measurement, invalid texture, motion rejection, sustained blur, native-focus waiting, sharpness recovery, cooldown and reset.
-- PR #148 `feat/scanner-sc04-focus-recovery-policy`; final head `262ccc7feee797e80441d64083b093c2a7d78955`.
-- Full preflight/TypeScript/production/Pages build/PR-base bundle comparison are CI gates; available GitHub status evidence is still pending.
+- PR #148 `feat/scanner-sc04-focus-recovery-policy`; latest head `fa4349344eb9fd80d8d487942113ea5560cae6e5`.
+- CI #1347 exposed a cooldown-boundary assertion error; corrected test is being validated in CI #1348. Full preflight, TypeScript/production/Pages build and PR-base bundle comparison must pass before software closure.
 - Software state-policy closure must not be confused with optical autofocus acceptance. Physical near/far transitions and focus behavior on iOS Safari/PWA and Android Chrome/PWA in Home and Stocktake remain device QA.
 ## SC-05 — Integration & QA
 
