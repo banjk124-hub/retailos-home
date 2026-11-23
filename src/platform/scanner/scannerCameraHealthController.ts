@@ -1,5 +1,5 @@
 export type ScannerCameraHealthState = 'healthy' | 'degraded' | 'stalled' | 'recovering' | 'failed';
-export type ScannerCameraHealthReason = 'frame-progress' | 'track-muted' | 'track-unmuted' | 'frame-stall' | 'track-ended' | 'recovery-started' | 'recovery-succeeded' | 'recovery-failed' | 'recovery-budget-exhausted';
+export type ScannerCameraHealthReason = 'frame-progress' | 'track-muted' | 'track-unmuted' | 'frame-stall' | 'track-ended' | 'recovery-started' | 'recovery-succeeded' | 'recovery-failed' | 'recovery-cooldown' | 'recovery-budget-exhausted';
 export type ScannerCameraHealthSnapshot = {
   state: ScannerCameraHealthState;
   reason: ScannerCameraHealthReason;
@@ -83,8 +83,11 @@ export class ScannerCameraHealthController {
 
   private requestRecovery(reason: 'frame-stall' | 'track-ended', now: number): void {
     this.transition('stalled', reason, now);
-    if (this.recoveryAttempts >= CAMERA_HEALTH_MAX_AUTO_RECOVERY_ATTEMPTS
-      || now - this.lastRecoveryAt < CAMERA_HEALTH_RECOVERY_COOLDOWN_MS) {
+    if (now - this.lastRecoveryAt < CAMERA_HEALTH_RECOVERY_COOLDOWN_MS) {
+      this.transition('failed', 'recovery-cooldown', now);
+      return;
+    }
+    if (this.recoveryAttempts >= CAMERA_HEALTH_MAX_AUTO_RECOVERY_ATTEMPTS) {
       this.transition('failed', 'recovery-budget-exhausted', now);
       return;
     }
