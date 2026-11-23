@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import ts from 'typescript';
 
 const controllerSource = await readFile(new URL('../src/platform/scanner/scannerCameraHealthController.ts', import.meta.url), 'utf8');
-const controllerUrl = 'data:text/javascript;base64,' + Buffer.from(controllerSource).toString('base64');
+const controllerCompiled = ts.transpileModule(controllerSource, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const controllerUrl = 'data:text/javascript;base64,' + Buffer.from(controllerCompiled).toString('base64');
 const controller = await import(controllerUrl);
 const {
   ScannerCameraHealthController,
