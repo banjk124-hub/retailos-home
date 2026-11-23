@@ -57,13 +57,3 @@ Keep raw sample images in a controlled test corpus, not in personal diagnostic e
 ## SC-02 Camera Health Controller
 
 SC-02 implementation adds bounded frame-progress monitoring and recovery in the shared scanner session. A 1-second watchdog detects 3-second frame stalls; native video-frame callbacks are preferred and RAF fallback requires `video.currentTime` progression. Track mute degrades health; track-ended triggers immediate recovery. Recovery uses the existing hook's serialized session-replacement path, one automatic attempt per mounted activation, and failure escalation to scanner ERROR. Deterministic controller/source-contract tests are registered in preflight. PR #144 head `416b168b1b00b858c2b7e34e751e33defb9afb50` passed CI #1313 including full preflight, TypeScript, production and Pages builds, and bundle comparison. Software/CI scope is closed; live stall/reacquisition, ended-track and device/browser matrix remain post-merge operational QA, not claimed as passed.
-
-## SC-02 post-merge evidence correction — 2026-11-23
-
-- PR #144 merged at final head `d7fff2755275b54d52505eb6ec39e04624793817`; merge/main/deployed SHA `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`.
-- PR CI #1319 (45126497812) passed preflight, TypeScript/production build, Pages build and PR-base bundle comparison; post-merge CI #1320 (45126692556) passed; Pages deployment #147 (45126692360) reported success for exact merge SHA `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`.
-- CI #1312 (45124047128) failed preflight in `test-scanner-decoder-factory.mjs` because its dynamically loaded session lacked a stub for the new `scannerCameraHealthController` import. The stub was added; #1313 and final PR #1319 passed. No test was disabled.
-- Import audit: both dynamic `UniversalScannerSession` harnesses (`test-scanner-decoder-factory.mjs`, `test-scanner-preview-region.mjs`) stub the health controller; `test-scanner-camera-health.mjs` imports the real controller directly and is registered in preflight. Other scanner harnesses read source only and need no stub.
-- Coverage gap: tests exercise controller transitions and source-contract wiring, not real camera/session recovery interleavings or close/background/visibility races. Device QA is also unperformed.
-- `main` reports `protected=false`; successful CI was manually observed, not enforced by required branch checks.
-- Manual QA gate: freeze/stall, mute/unmute, track-ended, successful/failed reacquisition, close-during-recovery, background/foreground, Home/Stocktake, iOS Safari and Android Chrome.
