@@ -73,8 +73,8 @@ assert.doesNotMatch(session, /ScannerDecodeWorkerBridge|new Worker/);
 
 // Real WASM integration fixtures and benchmark harness must stay preflight-gated
 // and privacy-preserving (no camera acquisition or exported decoded payload).
-assert.match(decoderIntegration, /ZXingWasmDecoderAdapter/);
-assert.match(decoderIntegration, /validateBarcodePayload|expected/);
+assert.match(decoderIntegration, /zxingWasmDecoder\.ts/, 'fixture harness loads the production WASM adapter source');
+assert.match(decoderIntegration, /expected/, 'decoder fixture suite asserts known expected outputs');
 assert.match(benchmarkHarness, /doesNotMatch\(main, \/getUserMedia/);
 assert.match(benchmarkHarness, /exported result rows must not contain decoded payload values/);
 assert.match(preflight, /test-scanner-sc05-integration\.mjs/);
