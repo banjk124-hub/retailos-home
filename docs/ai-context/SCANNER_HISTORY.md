@@ -57,3 +57,15 @@ Keep raw sample images in a controlled test corpus, not in personal diagnostic e
 ## SC-02 Camera Health Controller
 
 SC-02 implementation adds bounded frame-progress monitoring and recovery in the shared scanner session. A 1-second watchdog detects 3-second frame stalls; native video-frame callbacks are preferred and RAF fallback requires `video.currentTime` progression. Track mute degrades health; track-ended triggers immediate recovery. Recovery uses the existing hook's serialized session-replacement path, one automatic attempt per mounted activation, and failure escalation to scanner ERROR. Deterministic controller/source-contract tests are registered in preflight. PR #144 head `416b168b1b00b858c2b7e34e751e33defb9afb50` passed CI #1313 including full preflight, TypeScript, production and Pages builds, and bundle comparison. Software/CI scope is closed; live stall/reacquisition, ended-track and device/browser matrix remain post-merge operational QA, not claimed as passed.
+
+
+## 2026-11-23 — SC-03 Geometry Diagnostics software closure
+
+- Baseline confirmed by user: deployed app flow currently operates normally with no observed errors. This is regression baseline acceptance, not physical orientation test evidence.
+- PR #146 branch `feat/scanner-sc03-geometry-diagnostics` adds privacy-safe geometry fingerprinting for source dimensions, preview/reticle bounds, CSS fit/position/transform, viewport/visualViewport and pixel density.
+- Added monotonic geometry revision epochs, immediate stale-ROI clear when measured inputs drift, versioned source ROI publication, and a platform-session guard rejecting malformed/older geometry revisions.
+- Retained existing pure mapper math and strict fail-closed behavior. Unsupported CSS length/calc object-position and unsupported transforms remain null; no full-frame/center fallback.
+- Added tests for signature sensitivity/normalization, valid/invalid epoch transitions, source/preview/reticle/viewport changes, stale revision rejection and observer/listener cleanup. Registered in preflight; all existing geometry/preview ROI suites remain enabled.
+- CI #1332 passed on head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison.
+- Software/CI scope is closed. Physical iOS Safari/PWA and Android Chrome/PWA orientation/viewport QA remains a separate device acceptance gate; do not infer it from CI.
+- Next roadmap stage after SC-03 software closure: SC-04 Focus Recovery Policy.
