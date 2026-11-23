@@ -104,6 +104,15 @@ export const DEFAULT_SCANNER_CAMERA_REQUEST: ScannerCameraRequest = {
   maxFrameRate: 30,
 };
 
+/** Runtime health of the live camera frame stream, separate from scanner UI state. */
+export type ScannerCameraHealthState = 'healthy' | 'degraded' | 'stalled' | 'recovering' | 'failed';
+export type ScannerCameraHealthSnapshot = {
+  state: ScannerCameraHealthState;
+  reason: string;
+  frameAgeMs: number;
+  recoveryAttempts: number;
+};
+
 export type ScannerLifecycleState =
   | 'idle'
   | 'requesting'
@@ -218,6 +227,10 @@ export type ScannerOpenOptions = {
   onPreviewReady?: () => void;
   /** Optional technical camera capability updates; presentation stays feature-owned. */
   onTorchStateChange?: (state: ScannerTorchState) => void;
+  /** Internal health telemetry; callbacks must not own or manipulate camera resources. */
+  onCameraHealthChange?: (snapshot: ScannerCameraHealthSnapshot) => void;
+  /** Hook-owned bounded recovery action, invoked at most once by the session controller. */
+  onCameraHealthRecoveryRequest?: (snapshot: ScannerCameraHealthSnapshot) => Promise<boolean>;
   onError?: (error: ScannerError) => void;
 };
 
