@@ -228,6 +228,7 @@ export class ScannerDecodeWorkerBridge {
     if (this.disposed || error.generation !== this.generation) return;
     this.clearInitTimeout();
     this.ready = false;
+    this.lastError = error;
     const failedDuringInit = Boolean(this.initReject);
     this.initReject?.(error);
     this.initReject = null;
@@ -252,7 +253,8 @@ export class ScannerDecodeWorkerBridge {
     this.restartCount += 1;
     try {
       await this.startWorker();
-    } catch {
+    } catch (retryError) {
+      this.lastError = this.toRuntimeError(retryError, 'init', 'INIT_FAILED');
       this.terminateWorker();
     } finally {
       this.restarting = false;
