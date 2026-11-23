@@ -663,3 +663,10 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - CI #1332 (`45141790211`) passed on implementation head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison.
 - Final technical docs reconciled: scanner workstream roadmap, scanner engine contract, scanner history, project context and AI handoff. Final docs-only commits require a fresh CI run on the resulting PR head.
 - Acceptance boundary: close SC-03 at software/CI scope. Physical iOS Safari/PWA and Android Chrome/PWA orientation/viewport acceptance remains a separate device QA gate.
+
+## 2026-11-23 — SC-04 Focus Recovery Policy
+
+- Audited existing focus quality measurement and previous no-post-preview-focus-write contract before implementation.
+- Reused `ScannerFocusQualityMonitor` rather than introducing another controller. Added passive recovery state tracking, native-autofocus wait recommendation, recovery detection and existing cooldown/stability gates.
+- Session logs expose advisory recovery state/action and zero post-preview camera constraint write budget. No camera acquisition, `applyConstraints`, decoder, ROI, cadence or business flow changes.
+- Draft PR #148 head `262ccc7feee797e80441d64083b093c2a7d78955`. Automated CI/build evidence and device optical QA pending.
