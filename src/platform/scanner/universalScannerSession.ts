@@ -725,15 +725,27 @@ export class UniversalScannerSession implements ScannerSession {
     // An unavailable motion reference means the ROI just changed or this is
     // the first sample. Reset the passive blur baseline before comparing again.
     if (!sample.motionAvailable) this.focusQualityMonitor.reset();
+    const previousRecoveryState = this.focusQualityMonitor.getRecoveryState();
     if (sample.motionAvailable && this.focusQualityMonitor.observe(sample, timestamp)) {
       this.focusSustainedBlurEvents += 1;
       console.warn('[RetailOS Scanner] Sustained camera blur observed', {
-        focusQualityStatus: 'sustained-blur-observed',
+        focusRecoveryState: this.focusQualityMonitor.getRecoveryState(),
+        focusRecoveryAction: 'wait-native-autofocus',
+        focusRecoveryGuidance: 'hold-steady-and-adjust-distance-if-needed',
         focusSharpness: sample.sharpness,
         focusEdgeCoverage: sample.edgeCoverage,
         focusMotionScore: sample.motionScore,
         focusSustainedBlurEvents: this.focusSustainedBlurEvents,
         cameraControlChanged: false,
+        cameraConstraintWriteBudget: 0,
+      });
+    } else if (previousRecoveryState === 'waiting-native-autofocus'
+      && this.focusQualityMonitor.getRecoveryState() === 'recovered') {
+      console.info('[RetailOS Scanner] Native focus recovery observed', {
+        focusRecoveryState: 'recovered',
+        focusRecoveryAction: 'resume-normal-observation',
+        cameraControlChanged: false,
+        cameraConstraintWriteBudget: 0,
       });
     }
 
@@ -745,6 +757,7 @@ export class UniversalScannerSession implements ScannerSession {
       focusSharpnessMin: Number(this.focusQualitySharpnessMin.toFixed(2)),
       focusEdgeCoverage: Number((this.focusQualityEdgeCoverageTotal / this.focusQualitySamples).toFixed(4)),
       focusSustainedBlurEvents: this.focusSustainedBlurEvents,
+      focusRecoveryState: this.focusQualityMonitor.getRecoveryState(),
     });
     this.focusQualityStartedAt = now;
     this.focusQualitySamples = 0;
