@@ -670,3 +670,10 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Reused `ScannerFocusQualityMonitor` rather than introducing another controller. Added passive recovery state tracking, native-autofocus wait recommendation, recovery detection and existing cooldown/stability gates.
 - Session logs expose advisory recovery state/action and zero post-preview camera constraint write budget. No camera acquisition, `applyConstraints`, decoder, ROI, cadence or business flow changes.
 - Draft PR #148 head `262ccc7feee797e80441d64083b093c2a7d78955`. Automated CI/build evidence and device optical QA pending.
+
+## 2026-11-23 — SC-05 Integration & QA
+
+- Verified main at SC-04 merge `0b6840c9b2872d93920d4eba5f628158e09679b4`; corrected stale scanner handoff/context claims in branch documentation.
+- Audited Home and Stocktake integration: both use the shared scanner hook and module-owned preview ROI; the session composes camera health, geometry versions, focus policy and adaptive runtime. Production Worker remains disconnected.
+- Added one cross-layer source-contract test and registered it in preflight. No scanner algorithm, decoder behavior, camera flow or dependency change.
+- Added device matrix and benchmark/corpus run protocol. Physical device QA is NOT RUN; final CI pending.
