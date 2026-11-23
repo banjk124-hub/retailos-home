@@ -1,26 +1,28 @@
-# Current handoff — Scanner SC-04 Focus Recovery Policy — 2026-11-23
+# Current handoff — Scanner SC-05 Integration & QA — 2026-11-23
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Base:** `main` at SC-03 merge `b388d876f61f6a95991ef3a7f637c6418dcdea5c`  
-**Work branch:** `feat/scanner-sc04-focus-recovery-policy`  
-**Pull request:** [#148](https://github.com/banjk124-hub/retailos-home/pull/148)  
-**Validation:** code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348; subsequent commits are documentation-only reconciliation.
+**Baseline main:** SC-04 merge `0b6840c9b2872d93920d4eba5f628158e09679b4`  
+**Work branch:** `feat/scanner-sc05-integration-qa`  
+**Scope:** audit integration contracts, add one cross-layer preflight guard, define physical QA protocol and reconcile stale scanner status documents.
 
+## Current status
 
-## Current status — 2026-11-23
+- SC-01A/01B/01C, SC-02, SC-03 and SC-04 software scopes are merged/closed at their recorded boundaries. Worker prototypes remain isolated; production decoder remains Main Thread ZXing-C++ WASM.
+- SC-04 is merged to `main` at `0b6840c9b2872d93920d4eba5f628158e09679b4`; code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5` passed CI #1348. Real near/far optical focus tests remain outstanding.
+- SC-05 audit found Home and Stocktake already share `useScannerEngine`, `UniversalScannerSession` and module-owned preview ROI. Do not add a new scanner controller or duplicate existing regression fixtures.
+- SC-05 branch adds a cross-layer integration contract test to preflight and a run-ready physical device/corpus QA checklist. No decoder, camera, recognition or retail workflow behavior is intentionally changed.
+- Physical iOS Safari/PWA, Android low/mid-tier Chrome/PWA and Desktop QA is NOT RUN by the remote session. The matrix is a release blocker for optical/device acceptance, not something to claim from CI.
+- Next phase after SC-05: only if QA results identify a concrete issue; no speculative pipeline expansion.
 
-- SC-03 Geometry Diagnostics is merged/deployed at `b388d876f61f6a95991ef3a7f637c6418dcdea5c`; software/CI scope closed, physical viewport/orientation QA still outstanding.
-- SC-04 is in PR #148, branch `feat/scanner-sc04-focus-recovery-policy`, head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. It extends the existing focus monitor with passive `observing`/`waiting-native-autofocus`/`recovered` states, preserving the motion gate, sharpness thresholds and cooldown.
-- Recovery action is advisory only: wait for native autofocus, steady/adjust distance; zero post-preview camera-constraint writes, no applyConstraints, autofocus re-arm, restart or extra capture. CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base bundle comparison. Physical focus QA remains pending.
-- Protected: camera lease/acquisition, decoder/recognition order, ROI/geometry, validation, Home/Stocktake business flows, PWA lifecycle/deployment.
+## Protected boundaries
 
-- SC-01B/SC-01C and SC-02 software/CI scopes are closed. Production scanner remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated and is not wired into camera/session/Home/Stocktake.
-- SC-02 PR #144 merged as `7e134f01b8df41d0a6c2d805d78fb1501b9d3631`. Post-merge CI #1320 and Pages deployment #147 succeeded.
-- SC-03 Geometry Diagnostics is implemented on PR #146. It fingerprints source/preview/reticle/CSS/viewport geometry, publishes monotonic geometry versions, clears active ROI on geometry drift and rejects stale versions at the platform session boundary. Existing mapper math and strict fail-closed behavior are preserved.
-- Final SC-03 validation: CI #1339 passed on final PR head `acc6c883f060757d0bb18d4433a7b03167d9f11f`; post-merge CI #1340 and Pages deployment #149 passed on merge commit `b388d876f61f6a95991ef3a7f637c6418dcdea5c`.
-- User confirms the deployed app flow is operating normally with no observed errors. This is regression baseline acceptance.
-- Outstanding device QA: orientation/viewport/visualViewport behavior on physical iOS Safari/PWA and Android Chrome/PWA, including resize/orientation transitions while scanning. Do not infer physical-device acceptance from CI.
-- SC-04 software/CI scope is complete; next scanner phase is SC-05 Integration & QA, subject to device QA scheduling and scope review.
+- Single shared camera acquisition/lease owner; scanner feature components must not acquire cameras.
+- Strict module-owned source ROI; invalid or stale geometry fails closed.
+- Production decoder is ZXing-C++ WASM only; Worker prototype is not wired in.
+- Keep payload validation, temporal acceptance, Home lookup, Stocktake form-fill and explicit-save contracts.
+- Diagnostics/benchmark exports must not include decoded payloads or personal/device identifiers.
+- CI evidence, benchmark evidence and physical-device evidence must be recorded separately.
+
 ## Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
