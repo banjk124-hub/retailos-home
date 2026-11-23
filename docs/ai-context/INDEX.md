@@ -17,7 +17,9 @@ This file is the navigation layer for repository documentation. Read the canonic
 |---|---|
 | Scanner current architecture, runtime ownership, decoder options, payload rules and acceptance gates | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical investigations, incident notes and migration evidence | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
-| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |\n| Locked scanner stabilization plan SC-01–05, phase gates and active SC-01A proof | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |\n| SC-01A Worker transport/API research findings and test matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
+| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |
+| Scanner stabilization SC-01A/01B/01C stages through SC-05 and current evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
+| Worker transport/API research and remaining SC-01A empirical validation matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
@@ -45,7 +47,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 - `AI_HANDOFF.md`: one current handoff at the top; older handoffs are clearly labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
-- Scanner implementation truth lives in `SCANNER_ENGINE.md`; the locked SC-01–05 stabilization sequence and active SC-01A proof plan live in `SCANNER_WORKSTREAM_SC01_05.md`; scanner historical notes are indexed in `SCANNER_HISTORY.md`.
+- Scanner implementation truth lives in `SCANNER_ENGINE.md`; the SC-01A/01B/01C staged Worker plan and evidence gates live in `SCANNER_WORKSTREAM_SC01_05.md`; scanner historical notes are indexed in `SCANNER_HISTORY.md`.
 - PWA runtime/release truth lives in `PWA_RUNTIME_RELEASE.md`; every implementation and deployment must follow its separate download-consent and explicit safe-handoff activation contract. Bundle-size analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
 
 ## Historical-document policy

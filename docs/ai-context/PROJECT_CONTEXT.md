@@ -184,3 +184,8 @@ Repository source and current tests/config are authoritative for actual behavior
 - The original `CAMERA_RELEASED` milestone was renamed to `CAMERA_LEASE_RELEASED`: it confirms release of the session's lease, not necessarily shutdown of a shared physical stream. `DISPOSED` follows completed engine teardown.
 - The original `EXIT_PRESENTATION` event and `notifyExitPresentation()` API were removed. Home and Stocktake own presentation completion locally and never send it to the engine.
 - The original foundation remains historical; the current technical-only contract is documented in ADR-008/ADR-013 and the current implementation status.
+
+
+### Scanner stabilization status — 2026-11-23
+
+SC-01B Worker Runtime & Protocol Hardening is merged (PR #141) and user-reported CI/deployment/device update validation passed. SC-01C continues as isolated frame-scheduling/backpressure instrumentation. The Worker prototype is not connected to the production scanner; production camera/session/ROI/decoder behavior remains unchanged. Empirical Worker transport/browser/device performance remains an integration gate.

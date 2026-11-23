@@ -6,6 +6,11 @@
 **Pull request:** [#138](https://github.com/banjk124-hub/retailos-home/pull/138)  
 **Phase 2.1 baseline head:** `eb1dca880a4c17043c963230a64e435903a62713` — CI #1271 passed.
 
+
+## Current status — 2026-11-23
+
+Scanner SC-01B is closed: PR #141 merged, CI and Pages deploy workflows passed, and user confirms device update validation with no observed errors. SC-01C is the active isolated Worker frame-scheduling branch, PR #142. Production scanner remains Main Thread ZXing WASM; Worker code is not integrated into camera/session/Home/Stocktake. Empirical Worker transport/performance/optical validation remains gated before production integration.
+
 ## Phase 2.2 scope
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
@@ -717,3 +722,10 @@ This was the active task snapshot on 2026-11-08. It is retained as historical ev
 - Run `npm run preflight` after syncing the branch. Current remote editing has not run tests/build or physical device QA.
 - Preserve local changes/untracked files. Keep PR unmerged/undeployed until explicit approval.
 \n\n### PR B corrective audit — CI run #130\n- Run #130 failed at the new lifecycle test, not dependency installation or the existing scanner test.\n- The source-order assertion incorrectly compared method declaration offsets. It was rewritten to inspect execution ordering inside each method boundary.\n- A second real defect was found: the hook declared `lifecycle` in its options type but failed to destructure and forward it. This is fixed and guarded by the test.\n- Await a new CI run on the latest branch head before treating the PR as passing. Local Windows and physical iOS/Android QA remain outstanding.\n\n- Follow-up CI run #137 failed on a brittle string assertion in the test guard (newline escaping); corrected the guard to be whitespace-independent. Recheck latest CI before claiming pass.\n\n\n### PR B CI verification — run #142\n- Latest synchronized branch head `3e67397260993778a69eb1a5d2eb7a8216bd3044` passed GitHub Actions run #142 (`42465469769`). Full preflight passed, including both scanner regression suites and both production builds.\n- Local Windows preflight and physical iOS/Android QA remain outstanding. Keep PR #36 Draft and do not merge/deploy without explicit user approval.\n
+
+## 2026-11-23 — Scanner SC-01B closure / SC-01C scheduling
+
+- SC-01B Runtime & Protocol Hardening merged to main (PR #141, merge commit `f58e7c300f9f51de6c026cbec2b1c4716244891e`); both post-merge CI workflows succeeded. User confirms deploy and physical-device update validation with no observed errors.
+- Worker remains an isolated prototype, not production decoder integration. SC-01C is limited to scheduling/backpressure accounting and source contracts; no camera/session/UI/business flow changes.
+- Scheduling remains one in-flight job + one latest pending frame; older pending work is replaced rather than accumulated FIFO. Metrics are in-memory only and exclude payload/device identifiers.
+- Remaining empirical gates: built Worker runtime/WASM loading, transport/capture performance, optical accuracy, resource/memory and device matrix before integration.
