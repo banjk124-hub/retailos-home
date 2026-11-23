@@ -3,14 +3,14 @@
 Use append-only entries. Each entry must say what was actually changed and tested.
 
 
-## 2026-11-23 — Scanner ecosystem closure candidate
+## 2026-11-23 — Scanner ecosystem audit candidate
 
-- Intent: consolidate scanner technical guidance and retire unused prototype/legacy code without changing the proven production scanner runtime.
-- Files: unified `SCANNER_ENGINE.md`; documentation `INDEX.md`; `IMPLEMENTATION_STATUS.md`; `package.json`; `scripts/preflight.mjs`; removed `scannerDecodeWorker.ts`, `scannerDecodeWorkerBridge.ts`, and `test-scanner-worker-prototype.mjs`.
-- Behavior: current scanner architecture, ownership, validation, resource ceilings, consumer integration, privacy policy, lean test policy and release closure are now in one canonical document. Worker experiment is retired from the repository and its npm/preflight wiring removed. No production recognition/camera code changed.
-- Checks run: repository/PR diff review and references search for Worker prototype. Automated CI/build and Pages validation pending; no CI run visible at entry time.
-- Unverified: physical iOS/Android/desktop and low-end optical acceptance remains separate. Cleanup itself must still pass CI.
-- Risks / rollback: revert PR #152 if cleanup breaks CI or discovers a required reference. No scanner runtime behavior or production promotion is authorized by this PR.
+- Intent: audit the complete scanner ecosystem on `main` before deciding what legacy code, diagnostics, tests or documentation can be cleaned safely.
+- Files: audit finding recorded in `SCANNER_ENGINE.md`; navigation and implementation status revised to preserve Worker and physical QA evidence references.
+- Verified: production runtime ownership, consumers, decoder path, bounded recognition pipeline, 33 scanner preflight references (all target files exist), Worker prototype isolation and unverified transport gates.
+- Findings: QA Monitor max-stage metric mismatch; duplicate diagnostics resets; double collector installation ownership; unused legacy type declarations; incomplete diagnostic schema/UI mapping; documentation drift and pending physical QA.
+- Not done: no production runtime code deleted or modified on `main`; Worker implementation and checks are preserved; no tests/build run in this audit session.
+- Risks / next gates: resolve findings in focused changes with regression tests. Keep PR #152 unmerged and do not promote production until final CI/Pages and device/corpus release gates are reconciled.
 
 
 ## Template
