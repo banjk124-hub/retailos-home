@@ -87,6 +87,11 @@ assert.equal(cooldownMonitor.getRecoveryState(), 'waiting-native-autofocus');
 assert.equal(cooldownMonitor.observe(movingBlurSample, 700), false, 'motion must not trigger recovery');
 cooldownMonitor.observe(sharpStableSample, 800);
 assert.equal(cooldownMonitor.getRecoveryState(), 'recovered');
+for (const time of [900, 1000, 1100, 1200]) assert.equal(cooldownMonitor.observe(blurredSample, time), false, 'cooldown blocks repeat recovery events');
+assert.equal(cooldownMonitor.getRecoveryState(), 'recovered', 'suppressed blur does not change recovery state');
+for (const time of [8500, 8600, 8700]) assert.equal(cooldownMonitor.observe(blurredSample, time), false);
+assert.equal(cooldownMonitor.observe(blurredSample, 8800), true, 'blur can be reported after cooldown');
+assert.equal(cooldownMonitor.getRecoveryState(), 'waiting-native-autofocus');
 cooldownMonitor.reset();
 assert.equal(cooldownMonitor.getRecoveryState(), 'observing');
 const adapter = await readFile(
