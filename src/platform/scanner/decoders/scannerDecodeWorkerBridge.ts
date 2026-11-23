@@ -12,6 +12,12 @@ type WorkerReply =
   | { type: 'ERROR'; protocolVersion: 1; generation: number; jobId?: number; phase?: string; error: string }
   | { type: 'DISPOSED'; protocolVersion: 1; generation: number };
 
+type WorkerCommand =
+  | { type: 'INIT'; protocolVersion: 1; generation: number; formats: ScannerSymbology[] }
+  | { type: 'DECODE'; protocolVersion: 1; generation: number; jobId: number; width: number; height: number; pixels: ArrayBuffer }
+  | { type: 'CANCEL'; protocolVersion: 1; generation: number; jobId: number }
+  | { type: 'DISPOSE'; protocolVersion: 1; generation: number };
+
 type PendingFrame = {
   jobId: number;
   frame: ImageData;
@@ -109,7 +115,7 @@ export class ScannerDecodeWorkerBridge {
 
   cancelCurrent(): void {
     if (!this.worker || !this.inFlight) return;
-    this.worker.postMessage({ type: 'CANCEL', protocolVersion: PROTOCOL_VERSION, generation: this.generation, jobId: this.inFlight.jobId });
+    this.worker.postMessage({ type: 'CANCEL', protocolVersion: PROTOCOL_VERSION, generation: this.generation, jobId: this.inFlight.jobId } satisfies WorkerCommand);
   }
 
   dispose(): void {
@@ -146,7 +152,7 @@ export class ScannerDecodeWorkerBridge {
     this.initTimeout = setTimeout(() => {
       this.failInitializationOrRecover(new ScannerWorkerRuntimeError('Scanner Worker initialization timed out.', { phase: 'init', code: 'INIT_TIMEOUT', generation, recoverable: true }));
     }, INIT_TIMEOUT_MS);
-    worker.postMessage({ type: 'INIT', protocolVersion: PROTOCOL_VERSION, generation, formats: this.formats });
+    worker.postMessage({ type: 'INIT', protocolVersion: PROTOCOL_VERSION, generation, formats: this.formats } satisfies WorkerCommand);
     await ready;
   }
 
@@ -168,7 +174,7 @@ export class ScannerDecodeWorkerBridge {
       width: frame.frame.width,
       height: frame.frame.height,
       pixels,
-    }, [pixels]);
+    } satisfies WorkerCommand, [pixels]);
   }
 
   private finishFrame(jobId: number, results: ScannerWorkerDecodeResult): void {
@@ -278,7 +284,7 @@ export class ScannerDecodeWorkerBridge {
     this.worker = null;
     if (!worker) return;
     if (sendDispose) {
-      try { worker.postMessage({ type: 'DISPOSE', protocolVersion: PROTOCOL_VERSION, generation: this.generation }); } catch { /* termination is authoritative */ }
+      try { worker.postMessage({ type: 'DISPOSE', protocolVersion: PROTOCOL_VERSION, generation: this.generation } satisfies WorkerCommand); } catch { /* termination is authoritative */ }
     }
     worker.terminate();
   }
