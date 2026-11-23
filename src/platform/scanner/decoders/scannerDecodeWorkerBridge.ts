@@ -146,7 +146,7 @@ export class ScannerDecodeWorkerBridge {
         this.send(next);
         return;
       }
-      // SC-01C: one active job + one replaceable pending frame; never build a FIFO backlog.
+      // SC-01C latest-frame-wins: one active job + one replaceable pending frame; never build a FIFO backlog.
       if (this.latestPending) {
         this.schedulingMetrics.replacedPending += 1;
         this.schedulingMetrics.droppedPending += 1;
