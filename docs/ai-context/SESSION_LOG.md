@@ -677,3 +677,5 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Audited Home and Stocktake integration: both use the shared scanner hook and module-owned preview ROI; the session composes camera health, geometry versions, focus policy and adaptive runtime. Production Worker remains disconnected.
 - Added one cross-layer source-contract test and registered it in preflight. No scanner algorithm, decoder behavior, camera flow or dependency change.
 - Added device matrix and benchmark/corpus run protocol. Physical device QA is NOT RUN; final CI pending.
+
+- Follow-up QA audit found passive SC-04 recovery state/action/guidance logged but not retained by the diagnostic collector allowlist or displayed in the Home QA monitor. Added only those three safe fields to the existing metrics path and updated the cross-layer test/documentation. This is observability, not a new controller or camera behavior.
