@@ -615,3 +615,11 @@ Use this log for concise, chronological handoffs across AI agents and chat sessi
 - Storage: quota preflight remains based on the full candidate footprint because the active and candidate release caches coexist.
 - Regression coverage authored for unchanged reuse, same-path changed content, removed resources and network-byte accounting.
 - Verification: no local test/build or GitHub Actions run has yet been observed for this branch. Physical Android/iOS/Desktop acceptance is also outstanding. No merge or deployment.
+
+
+## 2026-11-23 — SC-01B closure and SC-01C frame scheduling
+
+- Closed SC-01B after PR #141 merge; post-merge CI passed for both CI and Pages deploy workflows. User reports updated app on physical device validated without errors.
+- Reconciled scanner stabilization documents to mark 01B closed, retain SC-01A transport proof as unverified, and stage SC-01C as isolated frame scheduling/backpressure work.
+- SC-01C implementation branch adds bounded scheduling diagnostics (submitted/dispatched/completed/replaced pending/timed out/failed and average/max queue wait/decode duration); it does not integrate Worker into production session.
+- Empirical Worker runtime, transport and optical device QA remain pending.

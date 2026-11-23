@@ -1,6 +1,6 @@
 # Scanner stabilization workstream — SC-01 through SC-05
 
-**Status:** PLAN LOCKED — SC-01A source/API research recorded; empirical prototype and measurements remain blocked pending local/browser execution.  
+**Status:** SC-01A isolated Worker foundation and SC-01B runtime hardening merged; SC-01B CI + physical-device acceptance reported PASS by user. SC-01C frame scheduling implementation in progress; transport/optical benchmark and production integration remain separate gates.  
 **Baseline:** main at `d0d65f56aca8081953be644ef002d91d9f84e4e4` (source audit baseline, 2026-11-17).  
 **Working branch:** `docs/scanner-sc01-05-roadmap`  
 **Execution mode:** staged, evidence-first, reversible. This roadmap does not authorize a production deployment.
@@ -13,13 +13,15 @@ Stabilize the existing scanner engine in bounded stages. Keep CameraSession leas
 
 | Stage | Name | Scope / exit gate |
 |---|---|---|
-| **SC-01** | Worker Foundation | Decoder execution boundary, Worker lifecycle/protocol, cancellation, latest-frame-wins/backpressure, transport, capability fallback. Exit: tests + before/after benchmark + unchanged consumer contract. |
+| **SC-01A** | Worker Foundation prototype | Isolated Worker/WASM proof boundary and protocol foundation. Source-contract CI is present; built-worker transport/runtime empirical proof remains unverified. |
+| **SC-01B** | Runtime & Protocol Hardening | Typed/versioned messages, bounded init/decode, generation validation, capped recovery/disposal. CI merged; user reports deploy/device verification PASS. |
+| **SC-01C** | Frame Scheduling | One in-flight + one replaceable latest pending frame; queue/backpressure metrics, drop accounting and bounded timeout. Exit: source contracts + CI; device/transport performance measurements remain required before production integration. |
 | **SC-02** | Camera Health Controller | Frame heartbeat, health states, watchdog, recovery cooldown, bounded retry budget, escalation. Exit: stale/paused/ended stream cases reliably detected and recover without loops. |
 | **SC-03** | Geometry Diagnostics | Geometry signature, stale detection, invalidation, source/preview reconciliation. Exit: geometry drift/invalid mapping cannot decode with stale ROI; diagnostics are privacy-safe. |
 | **SC-04** | Focus Recovery Policy | Quality decision engine, capability-based actions, policy/cooldowns/budget and controlled physical-device tests. Exit: quality decisions validated; no unsupported autofocus assumption or uncontrolled constraint churn. |
 | **SC-05** | Integration & QA | Home/Stocktake integration, regressions, benchmark, Android/iOS/Desktop and low-end-device matrix, release gate. Exit: CI, measured accuracy/perf and explicit device acceptance complete. |
 
-Dependencies are sequential: SC-02 builds on SC-01 execution/reporting; SC-03 feeds valid geometry into frame scheduling; SC-04 consumes quality/health evidence and geometry context; SC-05 integrates and validates all stages. Discovery may run in parallel, but production integration must respect this sequence.
+Dependencies are sequential: SC-02 builds on the isolated SC-01A/01B/01C Worker scheduling/reporting foundation; SC-03 feeds valid geometry into frame scheduling; SC-04 consumes quality/health evidence and geometry context; SC-05 integrates and validates all stages. Discovery may run in parallel, but production integration must respect this sequence.
 
 ## Global protected contracts
 

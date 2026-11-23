@@ -1,7 +1,7 @@
 # Scanner Engine — current technical source of truth
 
 **Status:** Current production architecture is ZXing-C++ WASM only. Phase A correctness changes are proposed on branch `fix/scanner-phase-a-contracts-docs`; do not treat them as merged until CI passes and the PR is accepted.
-**Last reconciled:** 2026-11-15
+**Last reconciled:** 2026-11-23
 **Repository:** `banjk124-hub/retailos-home`
 
 This document describes the current implementation contract. Older investigations and incident notes are indexed in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). They preserve evidence; they do not override this document or the source code.
@@ -113,7 +113,7 @@ A green CI run proves code contracts and build health, not optical accuracy or p
 
 These are explicit follow-up items, not reasons to reintroduce the retired decoder or rewrite camera/session ownership.
 
-## 9. Active stabilization workstream\n\nThe locked SC-01–05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A is the active isolated proof phase. The plan preserves the current camera/session/consumer contracts and does not represent Worker execution, camera health control, geometry diagnostics or focus recovery as implemented. Use that document for phase scope, dependencies, proposed transport tiers, test/benchmark gates and current evidence limits. The SC-01A source/API study and blocked runtime-proof matrix are in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).\n\n## 10. Change protocol
+## 9. Active stabilization workstream\n\nThe staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01B runtime hardening is merged, deployed and user-confirmed on device; SC-01C scheduling accounting is the current isolated work. None of the Worker phases is wired into `UniversalScannerSession`, Home or Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. The SC-01A transport/API evidence and remaining empirical proof gates are recorded in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).\n\n## 10. Change protocol
 
 For every scanner change:
 1. Read this document and the exact source/tests involved.
