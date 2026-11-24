@@ -1,397 +1,49 @@
-# Scanner acceptance — unified recognition pipeline (2026-11-11)
-
-## PR A+B combined — candidate orchestration
-- [x] One shared enhancement pipeline owns baseline/orthogonal/deskew candidate order.
-- [x] Original ROI remains first; no candidate is allowed to widen or recenter the module-owned ROI.
-- [x] Quarter-turn is attempted only after baseline miss.
-- [x] Confidence-gated deskew runs only after baseline and quarter-turn miss.
-- [x] Scale fallback and orientation estimate reuse remain bounded and serialized.
-- [x] Hybrid and GlobalHistogram binarizers remain available for each candidate.
-- [x] Pipeline regression suite is registered in preflight.
-- [x] GitHub Actions run #690 passed full preflight, TypeScript, production and Pages builds on source/test head `81cafa7363f7a2adec80aebfaaa328c54dd47474` (later documentation-only sync at `8f6e0ae`).
-- [ ] Complete diff review confirms camera/session/UI/business behavior is unchanged.
-- [ ] iOS Safari/PWA + Android Chrome/PWA acceptance in Home and Stocktake.
-
-## Recognition coverage — next gates
-- [ ] SCAN-08 optional enhancement candidates: normal, low contrast, low light, noise and clipped/glare fixtures.
-- [ ] SCAN-09 planar perspective and curved-label cases, with negative controls and bounded rectification.
-- [ ] SCAN-10 measured low/mid/high runtime budgets; baseline-first and serialized decode preserved.
-- [ ] Symbology registry tests cover every enabled format and payload validation rule.
-- [ ] Real carrier corpus includes A4/A3/A5 paper, shelf labels, packaging and screens without carrier-specific algorithm branches.
-- [ ] Correct payload, false positives, source-pixel module width, per-stage time, memory and UI responsiveness are recorded separately.
-
-**Acceptance rule:** CI success is not device QA. A synthetic fixture is not a calibrated optical threshold. Do not claim universal optical success, minimum size or maximum distance without measured evidence.
-
----
-
----
-
-# SCAN-05/06 acceptance — merged and user-validated (2026-11-10)
-
-## Source and pipeline
-- [x] Continuous orientation estimator is called from the production ZXing adapter after upright and quarter-turn misses.
-- [x] Angle sign, modulo-180 normalization and inverse rotation are verified.
-- [x] Original and quarter-turned ROI candidates are evaluated in correction order.
-- [x] HybridBinarizer and GlobalHistogramBinarizer are attempted for each candidate.
-- [x] Strict module-owned ROI remains enforced; no full-frame or centered fallback.
-- [x] Estimator attempt, confidence rejection and successful decode diagnostics are distinct.
-- [x] Session minimum decode interval is 70 ms; decoder calls remain serialized.
-- [x] Bounded percentile contrast normalization covers compressed ROI luminance ranges without influencing orientation estimation.
-
-## Automated regression
-- [x] Code 128, EAN-8 and EAN-13 baseline and orthogonal fixtures pass.
-- [x] Continuous positive/negative angle sweep passes through the production adapter.
-- [x] Low-contrast Code 128 fixture (40/255) passes through the production adapter after bounded percentile contrast normalization.
-- [x] Combined 90°/270° plus residual skew passes through the production adapter.
-- [x] Blank, low-texture, ambiguous-orientation and invalid-buffer cases fail closed.
-- [x] ROI exclusion and missing-region cases do not decode outside the reticle.
-- [x] CI #425 passed on the executable source head e0b28787f40db8c811bc7fde912bae2558289198.
-- [x] CI #432 passed full preflight on final PR head c9794a5422aa2d6ace16480c2948c1bae3e0d06b.
-
-## Merge and deployed functional acceptance
-- [x] PR #67 merged to main at 9406ac30d53bc9984912bd1928a32fd78157cf60.
-- [x] User confirms deployment and successful operational testing.
-- [x] User reports good scanner operation and sensitive recognition across multiple processing paths.
-- [x] No blocking post-deployment regression was reported.
-
-## Additional evidence not yet recorded
-- [ ] Detailed iOS Safari/PWA and Android Chrome/PWA × Home/Stocktake × symbology/orientation matrix.
-- [ ] Quantitative overall scanner response time, stage timing, CPU/long-task responsiveness and decode success-rate measurements.
-- [ ] Separate optical tests for reflective packaging, small/far labels, low light and reticle-edge placement.
-
-These additional measurements are not required to describe the user's functional acceptance as complete. Do not mark them passed without evidence.
-
----
-
-# SCAN-04 acceptance — strict module-reticle ROI decoding (2026-11-10)
-
-- [x] SCAN-03 merged at `4804a0b0f06113e43a06e8b171d05dbad6fb1a8f`.
-- [x] User confirms iOS and Android reticle geometry and existing scanner flows were checked without detected issues.
-- [x] Decoder contract requires a `source-frame-normalized` scan-region snapshot.
-- [x] Session passes the current defensive region snapshot to each decoder invocation.
-- [x] Pure pixel crop resolver validates coordinate space, finite values, normalized bounds and source dimensions.
-- [x] Crop bounds floor leading and ceil trailing edges; source edges are clamped.
-- [x] ZXing decodes only the measured reticle ROI; full-frame-first and fixed centered fallback passes are removed.
-- [x] Missing/invalid ROI fails closed; no silent full-frame fallback.
-- [x] Regression suite is registered in `npm run preflight`.
-- [x] GitHub Actions run #324 passed TypeScript, production/Pages builds and full preflight on PR head `31405dae3cd2eb358dce1e11868e861ac4ace1a8`.
-- [x] User confirms SCAN-04 was merged, deployed and the scanner runs normally.
-- [ ] Detailed optical matrix (center/reticle edges, low-light, reflective, small/far labels) recorded separately on iOS and Android.
-- [ ] Review decode-duration/ROI-unavailable diagnostics on representative devices; compare against the pre-SCAN-04 baseline.
-
----
-
-# SCAN-02 acceptance — pure preview/source geometry mapping (merged main, 2026-11-10)
-
-- [x] Pure mapper accepts explicit source and preview dimensions.
-- [x] CSS `fill`, `contain`, `cover`, `none`, and `scale-down` sizing rules are represented.
-- [x] Normalized object-position controls crop alignment for positive and negative free space.
-- [x] Visible content bounds exclude letterbox/pillarbox space.
-- [x] Horizontal mirror is inverted before source-frame normalization.
-- [x] Invalid input returns an explicit failure; no full-frame fallback is produced.
-- [x] Geometry utility does not read DOM/window/video or own camera/session resources.
-- [x] Geometry regression script is registered in `npm run preflight`.
-- [x] Geometry regression, TypeScript production build and full preflight pass on merged main commit `891a3a6c8c85442d0b4a253c1fca43b36b590f1c` (GitHub Actions run #299).
-- [x] GitHub Actions main CI run #299 passed.
-- [x] Home and Stocktake real-device geometry alignment QA — user confirms both iOS and Android checks completed after SCAN-03 deployment without detected issues.
-
----
-
-# SCAN-01 acceptance — input and module configuration contract
-
-- [x] Preview-content and source-frame coordinate spaces have distinct discriminators.
-- [x] Rectangles use normalized fractions and document top-left origin and bounds invariants.
-- [x] Module contract separates scan region from camera request.
-- [x] Camera request values are preferred constraints, independent of display aspect ratio.
-- [x] Current camera request prefers environment / 1920×1080 / 30 FPS ideal / 30 FPS maximum; actual browser-negotiated settings are recorded.
-- [x] Runtime call sites consume the module request through the tap-origin shared lease; PR #76 merged at main baseline `20ce22e4d015d01249d6996f5d5bb55b02bb976c`.
-- [x] Camera lease compatibility, immutable intent and recovery re-acquisition are covered by PR #76 regression tests.
-- [x] GitHub Actions run #610 passed full preflight, TypeScript, production and Pages builds on code/test head `b954b8a784efd6826588097d6d170d94c80964dc`.
-- [ ] Physical iOS Safari/PWA and Android Chrome/PWA acceptance for the camera request bridge recorded separately.
-
----
-
-# SCAN-07 — Adaptive ROI, multi-scale and native camera behavior (PR #78 + focus correction)
-
-## Source/decoder
-- [x] SCAN-02/03 mapping and SCAN-04 strict module ROI remain unchanged.
-- [x] Native ROI sampling replaces the old full-frame 1280 px downscale; ROI bounded to 2048 px width / 1.5 MP native pixels.
-- [x] Camera request prefers 1920×1080, 30 FPS maximum; browser actual settings remain authoritative.
-- [x] 1.5× baseline remains first; 1× and 2× fallback only after a complete baseline miss.
-- [x] Candidate fan-out remains bounded; each additional scale remains capped at 6 MP.
-- [x] SCAN-05/06 orientation, deskew, contrast and both binarizers remain integrated in every scale path.
-- [ ] Final corrective-branch CI passes.
-- [ ] Home and Stocktake both pass real-label accuracy checks.
-
-## Camera focus / shared track controls
-- [x] Continuous focus is an optional advanced preference in the initial `getUserMedia()` request.
-- [x] Unsupported/unexposed focus controls fall back to native camera autofocus.
-- [x] No post-preview focus request, focus re-arm or focus `applyConstraints()` path remains in the session/lease.
-- [x] Focus quality sampling is passive; sustained blur telemetry never changes camera controls.
-- [x] Torch ON/OFF preserves the initial focus preference and negotiated camera constraints.
-- [x] GitHub Actions run #684 passes full preflight, TypeScript, production build and Pages build; no post-preview focus writes or focus-recovery API remain.
-- [ ] iOS Safari/PWA and Android Chrome/PWA confirm smooth native focus behavior during near/far transitions, with no scanner-induced hunting or preview disturbance.
-
-## Physical optical acceptance — both modules
-- [ ] Record actual camera width/height/frameRate/focus capability and mode per device/browser where exposed.
-- [ ] Record barcode type, printed X-dimension/bar width, source ROI pixel height and physical reading distance.
-- [ ] Test near-to-far and far-to-near transitions, rotated labels, moving camera, low light, glare, curved packaging and reticle edges.
-- [ ] Include outside-reticle negative controls; no decode outside module-owned region.
-- [ ] Verify correct payload/check digit, false positives and Home/Stocktake result workflows.
-- [ ] Confirm no camera lock, focus hunting loop, Torch constraint conflict, UI freeze or lifecycle regression.
-- [ ] Do not report end-to-end scanner response time as a SCAN-07 metric. Decoder stage cost may be recorded separately.
-- [ ] Do not claim minimum barcode size or maximum distance until real measurements exist.
-
-**Scope lock:** remain in SCAN-07 until all above gates are accepted. SCAN-08/09 must not begin yet. No outward ROI padding without a module-owned capture-envelope contract.
-
-# Current scanner acceptance gates — capability-gated Torch (2026-11-09)
-
-## Shared Scanner settings — PR #56 (merged to main)
-- [x] Settings dock icon uses the gear-shaped Settings icon.
-- [x] Settings opens a hub with separate Scanner QA Monitor and Scanner preferences entries.
-- [x] Device-local versioned preferences default to vibration enabled and beep volume 50%.
-- [x] Beep volume slider has 11 levels; current merged audio mapping is 50% gain 0.30, 0% mutes, 100% maps to gain 0.60 (PR #57).
-- [x] Shared feedback reads current preferences at accepted-result time; Home/Stocktake cannot override global settings.
-- [x] Unsupported vibration API is surfaced honestly and does not block barcode delivery.
-- [x] Regression test is included in preflight.
-- [x] PR #56 is merged to main at `5eee1a6a565f6263907541dac6af6b4ba77b37be`; full preflight passed on final PR head in GitHub Actions run #42575773839.
-- [ ] Physical Android test confirms vibration toggle ON/OFF and compares beep levels; physical iOS test confirms beep and unsupported-vibration fallback.
-- [x] Follow-up PR #57 adds executable mocked AudioContext/GainNode regression tests; GitHub Actions run #42648085229 passed full preflight on current head `9b0d76a5931a85bd336629348ec98bbd96fb86b4`. This does not replace physical acoustic QA.
-- [ ] User verifies Home lookup, Stocktake form-fill/explicit-save, scanner open/close and lifecycle behavior after the PR #56 build is deployed.
-- [x] User-approved merge is reflected by merge commit `5eee1a6a565f6263907541dac6af6b4ba77b37be`.
-- [ ] Deployment of PR #56 is confirmed separately; do not infer deployment from merge.
-
----
-
-## Production behavior
-- [x] Torch capability is read from the active video track after first usable frame.
-- [x] Home and Stocktake render their own Flash controls only when the active track advertises `torch === true`.
-- [x] Unsupported/rejected Torch remains non-fatal to preview and barcode scanning.
-- [x] Camera acquisition, resolution/FPS, autofocus, decoder and barcode workflow remain independent of optional Torch.
-- [x] iOS Safari/PWA: user confirms Flash works normally.
-- [x] Android Chrome / Samsung Galaxy S23 Ultra: no Torch capability/settings exposed; explicit diagnostic request was API-accepted but physical LED did not illuminate. Device remains unsupported through the normal capability gate.
-- [ ] Additional Android devices that expose `getCapabilities().torch === true`: verify physical ON/OFF, close while on, background/foreground recovery and scanner stability.
-
-## Cleanup acceptance — PR #55
-- [x] Remove PR #53 diagnostic sampler, timers, React state, panel and `scannerDebug` path.
-- [x] Remove PR #54 capability-bypass probe and probe-only contracts/state.
-- [x] Keep production Torch capability, ON/OFF adapter and regression tests.
-- [x] Full `npm run preflight` passes on cleanup PR head; GitHub Actions run #42572378379 is green.
-- [x] Source diff preserves Home/Stocktake business flows and the iOS camera path; no production camera acquisition or decoder changes.
-- [x] PR #55 merge and deployment are user-confirmed. PR #56 merge is recorded above; deployment confirmation remains separate.
-
-Capability is browser/device/camera-mode dependent. A resolved `applyConstraints()` promise is not proof of physical LED activation. Do not infer support from model names or user-agent.
-
----
-
-# Current scanner acceptance gates — post PR #49 (2026-11-09)
-
-## PR #49 — Geometry-neutral engine video readiness
-
-**Main merge:** `1764c858a7d7855950ebe328a3a653d6935fa796`  
-**CI:** GitHub Actions run #200 — full `npm run preflight` passed.  
-**Deployment/device acceptance:** user confirms merged build was deployed and tested without issues.
-
-### Engine boundary
-- [x] Platform startup no longer imports or calls `waitForVideoPresentationLayout()`.
-- [x] Obsolete `src/platform/scanner/videoPresentationLayout.ts` is deleted.
-- [x] Engine does not require a video parent/container, non-zero CSS bounds, matching rectangles, equal aspect ratios or stable DOM geometry before attaching/playing the stream.
-- [x] Technical media readiness remains: decoded media state, intrinsic `videoWidth/videoHeight`, playback state and fresh-frame evidence.
-- [x] Intrinsic media frame dimensions are documented as media validity, not DOM geometry.
-- [x] Startup ordering remains stream attach → play → first usable frame → preview-ready/technical READY → decoder initialization → scanning.
-- [x] Regression tests assert no DOM geometry inspection in the platform session and preserve frame-readiness/startup-order checks.
-
-### Feature-owned presentation
-- [x] Home continues to render its own keyed video element and owns `.barcode-scanner-view` / `.has-preview` presentation.
-- [x] Stocktake continues to render its own keyed video element and owns `.stocktake-scanner-preview` / `.has-preview` presentation.
-- [x] Home and Stocktake retain independent sizing, crop, visibility, overlay and reveal policies.
-- [x] Native video opacity remains 1 with no opacity transition in the current module styles.
-- [x] PR #49 does not modify either feature component or their presentation styles.
-
-### Protected behavior
-- [x] Camera acquisition, lease/refcount and stream ownership remain unchanged.
-- [x] Lifecycle technical event contract and Recovery remain unchanged.
-- [x] Decoder initialization/algorithm/cadence and barcode validation/delivery remain unchanged.
-- [x] Home lookup and Stocktake form-fill, duplicate-row and explicit-save behavior remain unchanged.
-- [x] Regression suite, TypeScript/production build, Pages build and diff checks passed in CI run #200.
-- [x] User confirms deployment and post-deployment testing without issues.
-
-This is the current acceptance record for the PR #49 change. The sections below retain earlier PR and device-test history; their unchecked items are historical records from earlier gates, not outstanding acceptance criteria for PR #49.
-
-
----
-
-## Historical scanner acceptance gates — PR 47A restoration baseline
-
-Source baseline for restoration: pre-PR #46 main (`af694b6e7fc6bbcb0d4869ab33ab8f084bffeb73`). PR #46 was merged, then its shared preview presentation was rolled back in PR 47A after iOS/Android device regressions. PR #31/#32 references below are historical.
-
-## Source-audit facts (not device acceptance)
-- [x] Home tap starts `requestCameraLease()` before scanner UI mounts.
-- [x] Stocktake tap starts `requestCameraLease()` before scanner UI mounts.
-- [x] Request is cancellable before claim and single-claim at session handoff.
-- [x] Preview readiness is distinct from decoder/scanning readiness.
-- [x] Historical PR 47A baseline used 110 ms; current SCAN-05/06 corrective branch uses a 70 ms minimum decode interval with serialized calls.
-- [x] Current hook hardcodes profile `HIGH`; adaptive Low/Mid/High is not implemented.
-- [ ] iOS opening geometry root cause measured and fixed.
-- [ ] Exit fade visually synchronized while camera teardown remains prompt.
-
-## Lifecycle migration status
-
-- [x] PR B — shared event contract and adapter merged.
-- [x] PR C1 — Home consumes lifecycle observer and exit handoff.
-- [x] PR #43 — fresh video surface foreground recovery merged; user confirmed previous preview-shrink defect is gone.
-- [x] PR C2 — Stocktake consumes lifecycle observer and gates unmount on presentation + camera release + disposal; PR #45 merged and user reports no issues.
-- [x] PR 47A restores the pre-PR #46 module-owned preview implementation and removes the shared curtain/component.
-- [ ] PR 47A CI and physical iOS Safari/PWA + Android Chrome/PWA retest.
-
-## PR 47A — Restore module-owned preview presentation
-
-- [x] Home and Stocktake restore their pre-PR #46 video markup and feature-specific CSS.
-- [x] Shared `ScannerPreviewSurface` and curtain CSS are removed.
-- [x] `isPreviewReady` remains the engine's technical readiness signal.
-- [x] Home and Stocktake again own their own reveal classes and presentation behavior.
-- [ ] CI passes on PR 47A head.
-- [ ] iOS test confirms no black → undersized video → resize sequence.
-- [ ] Android test confirms no abrupt/choppy opening transition.
-- [ ] Retry, foreground recovery and reduced-motion behavior are rechecked.
-
-## Historical PR C2 — Stocktake migration acceptance (original lifecycle gate)
-
-- [x] Stocktake passes lifecycleObserver to the shared useScannerEngine.
-- [x] Session identity comes only from the engine event; no feature-created adapter/session ID.
-- [x] Manual close captures the frozen preview before closeScanner().
-- [x] Successful single-result callback captures the frozen preview before the session's automatic close.
-- [x] EXIT_PRESENTATION is emitted by Stocktake when its own matching scanner-stocktake-close animation completes.
-- [x] Parent onClose() is called only after EXIT_REQUESTED, CAMERA_RELEASED, DISPOSED, and presentation completion; event order is not assumed.
-- [x] Completion is idempotent; duplicate animation/lifecycle events cannot close twice.
-- [x] Camera release is never delayed by animation; reduced-motion 1ms animation path remains.
-- [x] StocktakeModule camera lease cancellation, scanner visibility and parent close ownership remain unchanged.
-- [x] Barcode-to-form fill, manual entry, duplicate rows, edit/review and explicit save remain unchanged.
-- [x] Lifecycle regression tests cover manual close and successful single-result close; GitHub Actions run #178 passed full npm run preflight.
-- [x] PR #45 merged; user reports the implementation runs correctly without issues.
-## Device QA — iOS Safari/PWA
-- [ ] First permission grant, deny, dismiss, retry and permission revocation.
-- [ ] Tap-to-request timing and camera permission prompt behavior.
-- [ ] Record getUserMedia, lease, play, first-frame, decoder-init and scanning-ready timings.
-- [ ] Record visualViewport height/offset, safe-area insets and scanner root/card bounds during open transition.
-- [ ] Open/close/reopen rapidly; close while permission is pending.
-- [ ] Exit transition: no dark-only flash; camera is released promptly.
-- [ ] Background/foreground, pagehide/pageshow, track ended and explicit retry.
-- [ ] Home cached lookup and Stocktake form-fill/explicit-save/duplicate rows/manual entry.
-
-## Device QA — Android Chrome/PWA
-- [ ] Repeat the same camera/lifecycle/exit checks.
-- [ ] Record representative low/mid/high device measurements; do not treat one Android device as the entire tier.
-- [ ] Verify no regression in currently stable opening geometry.
-
-## Phase 1.2G bounded completion
-- [x] Source instrumentation exists for acquisition/readiness/decode/teardown and UI phase intervals.
-- [ ] Device traces and repeatable baseline exist.
-- [ ] Any additional optimization is tied to a reproducible defect or measured bottleneck.
-- [ ] Do not claim direct GPU frame-drop, battery or temperature measurement from current telemetry.
-
-## Phase 1.2I — Shared Scanner Engine Completion
-- [ ] Explicit lifecycle/state contract and legal transitions.
-- [ ] Camera request/lease/claim/cancel/release invariants and race tests.
-- [ ] Decoder adapter init/dispose, capability negotiation, typed misses/errors and bounded scheduling.
-- [ ] Feature policy separation for Home, Stocktake and future consumers.
-- [ ] Privacy-safe diagnostics and deterministic tests for failure/race paths.
-- [ ] Profile integration cannot alter correctness or create duplicate streams/decoders.
-
-## Phase 1.2J — Scanner-first Low/Mid/High adaptation
-- [ ] Define observable capability inputs and conservative unknown-device fallback.
-- [ ] Define resource budgets and allowed knobs; separate correctness invariants from tunable work.
-- [ ] Use sustained runtime proxies with hysteresis; do not promise universal battery/thermal APIs.
-- [ ] No unmeasured reduction in resolution, cadence, ROI or fallback decoding.
-- [ ] Verify scan success/accuracy, overall scanner response time, decode cost, UI responsiveness and battery/thermal proxies.
-
-## Phase 1.2K — Cross-platform release gate
-- [ ] iOS Safari/PWA and Android Chrome/PWA evidence recorded.
-- [ ] Home/Stocktake business contracts pass.
-- [ ] Regression tests, TypeScript/build/Pages preflight pass.
-- [ ] Full diff reviewed; explicit user approval before merge/deploy.
-
----
-
 # RetailOS acceptance checklist
 
-## Before implementation
-- [ ] Inspect current branch, status and diff.
-- [ ] Confirm user story and success criteria.
-- [ ] Identify stable IDs, APIs, schema, and affected services.
-- [ ] Record baseline build/test failures.
-- [ ] Plan rollback.
+Use this checklist for cross-feature release readiness. It is not a technical specification. Load the relevant subsystem's canonical document for detailed regression requirements.
 
-## Module library
-- [ ] One canonical registry; no duplicate divergent module lists.
-- [ ] IDs match existing data services/navigation.
-- [ ] Search supports title, description and useful synonyms where appropriate.
-- [ ] Groups are derived consistently and empty groups are handled.
-- [ ] Module UI readiness is distinct from data availability and permissions.
+## Before implementation
+
+- [ ] Inspect current branch, status and diff.
+- [ ] Confirm user story, success criteria and ownership boundaries.
+- [ ] Identify affected stable IDs, APIs, schema and services.
+- [ ] Record baseline test/build failures and rollback point.
+
+## Module library and navigation
+
+- [ ] One canonical module registry; no divergent duplicate lists.
+- [ ] IDs match existing data services and navigation.
+- [ ] Search/grouping use the same source.
 - [ ] Every action routes correctly or reports an honest disabled/integration state.
 - [ ] Loading, empty, stale, error and offline states are explicit where relevant.
 
 ## Responsive UX
-- [ ] Narrow phone (~320–360px)
-- [ ] Typical phone (~390–430px)
-- [ ] Tablet
-- [ ] Desktop / wide viewport
-- [ ] No horizontal overflow or inexplicable blank column.
+
+- [ ] Narrow phone (~320–360 px), typical phone (~390–430 px), tablet and desktop.
+- [ ] No horizontal overflow or inexplicable blank columns.
 - [ ] Bottom navigation does not cover content.
-- [ ] Safe-area insets respected.
-- [ ] Touch targets and text remain usable.
-- [ ] Keyboard focus and reduced motion work.
+- [ ] Safe areas, keyboard focus, touch targets and reduced motion are respected.
 - [ ] Translucency does not harm contrast or performance.
 
-## Regression
-- [ ] Login/session
-- [ ] Module navigation
-- [ ] API request/response contract
-- [ ] IndexedDB/snapshot refresh and stale-state behavior
-- [ ] Barcode camera permission, success and failure
-- [ ] Notifications
-- [ ] PWA/service worker/offline
-- [ ] Vite base path/GitHub Pages
-- [ ] Build and tests pass
+## Cross-feature regression
+
+- [ ] Login/session and permission boundaries.
+- [ ] Module navigation and business workflows.
+- [ ] API request/response contracts.
+- [ ] IndexedDB/snapshot refresh and stale-state behavior.
+- [ ] Camera permission, open/close and failure recovery for camera-backed features.
+- [ ] Barcode decode result is validated before consuming workflows receive it.
+- [ ] Home lookup and Stocktake form-fill/explicit-save, duplicate rows and manual entry remain correct.
+- [ ] Notifications and PWA/service-worker/offline behavior.
+- [ ] Vite base path / GitHub Pages behavior.
+
+For Scanner implementation invariants, source contracts, decoder fixtures and acceptance evidence, use [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). Historical Scanner validation runs are in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
 
 ## Release
-- [ ] Review diff for accidental removals/secrets.
+
+- [ ] Review diff for accidental removals, secrets and generated files.
 - [ ] Confirm rollback point.
-- [ ] Explicit user approval to push/deploy.
+- [ ] Run required tests, preflight, TypeScript, production and Pages builds.
+- [ ] Record CI, physical-device and business-workflow evidence separately.
+- [ ] Obtain explicit user approval before merge/deployment where required.
 - [ ] Record release commit and verified URL.
-
-## Scanner transition — supplemental UX patch
-
-- [ ] Home opens as a full-screen camera surface; no camera card/frame remains.
-- [ ] Stocktake retains its existing scanner frame, dimensions and layout.
-- [ ] Home and Stocktake use independent presentation treatments; no shared UI template is introduced.
-- [ ] Camera acquisition begins from the opening tap; the mounted scanner claims the same pending lease.
-- [ ] Closing before lease handoff cancels safely; a late stream is released without stopping another active lease.
-- [ ] A lease request cannot be claimed twice.
-- [ ] Camera permission denial and explicit retry remain recoverable.
-- [ ] Animation does not gate camera startup, first-frame reveal, decoder readiness or scanner teardown.
-- [ ] First usable video frame is revealed without a standalone loading screen or visible flicker.
-- [ ] prefers-reduced-motion is respected.
-- [ ] iOS Safari/PWA: first permission, denial/retry, rapid open/close, background/foreground and scan result.
-- [ ] Android Chrome/PWA: first permission, denial/retry, rapid open/close, background/foreground and scan result.
-- [ ] Weak-device review: no heavy blur, large promoted layers, continuous animation or material scan regression.
-- [ ] Home cached lookup and Stocktake form-fill/explicit-save, duplicate rows and manual entry still work.
-- [ ] CI and local preflight pass; physical-device evidence is recorded separately.
-
-
-## Scanner lifecycle and exit-transition stabilization — PR #32
-
-- [ ] Home scanner root has the dedicated full-screen class and tap-origin styles.
-- [ ] Home video remains hidden until first usable frame, then reveals without layout jump.
-- [ ] Stocktake preview retains its frame and stable geometry at small and large viewport sizes.
-- [ ] A delayed pause teardown cannot overwrite a newer foreground preview/scanning state.
-- [ ] A stale start completion cannot clear a newer start's loading state.
-- [ ] Manual close and successful single-scan result use the correct module-owned exit treatment.
-- [ ] Home continuous scan mode remains open after an accepted result; close-on-result applies only to single-result mode.
-- [ ] A successful single-result event prevents visibility/foreground recovery from reacquiring the camera during exit.
-- [ ] Camera teardown starts immediately on close/result; exit motion never holds the camera lease.
-- [ ] Reduced-motion mode closes without waiting for animation events.
-- [ ] Rapid close/reopen does not reuse a disposed session or release a newer lease.
-- [ ] iOS Safari/PWA and Android Chrome/PWA pass first-open, permission denial/retry, foreground recovery and result flows.
-- [ ] Low-end Android and small iPhone viewport pass preview geometry and motion checks.
-- [ ] Home lookup and Stocktake explicit-save/manual-entry/duplicate-row behavior remain unchanged.
