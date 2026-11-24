@@ -55,7 +55,7 @@ The repository accumulated multiple Scanner files. They are retained for unique 
 
 | Historical record family | Content retained |
 |---|---|
-| `SCANNER_WORKSTREAM_SC01_05.md`, `SCANNER_SC05_INTEGRATION_QA.md`, `SCANNER_SC01A_SPIKE_FINDINGS.md` | Phase gates, integration protocol, Worker research and device QA checklists |
+| `SCANNER_SC01A_SPIKE_FINDINGS.md` | Worker research and device QA checklist |
 | `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Decoder migration baseline and protected-contract audit |
 | `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md`, `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Native-vs-shared capability decisions and source evidence |
 | `SCANNER_RECOGNITION_PIPELINE.md` | Earlier unified pipeline design and recognition contract |
@@ -111,7 +111,7 @@ The following Scanner-specific details were duplicated in general-purpose logs a
 - Camera request bridge, focus constraints and native autofocus ownership decisions.
 - SC-01 to SC-05 milestones and the PR #153 Worker/QA diagnostics retirement recorded above.
 
-The long-form source audit, phase plans and QA runbooks remain archival evidence in the original paths for now. They are not separate sources of current truth and must not be added to the default AI context load. A subsequent archival deletion/move may remove them only after the full repository backlink scan has been reconciled.
+The long-form source audits, research plans and remaining QA records are retained at their original paths as archival evidence. `SCANNER_WORKSTREAM_SC01_05.md` and `SCANNER_SC05_INTEGRATION_QA.md` remain available as detailed historical records, but are intentionally omitted from the compact inventory above because their phase-level history is already summarized here. None is a current specification or default AI context entry point.
 
 
 ## Scanner-specific decisions migrated from DECISIONS.md
