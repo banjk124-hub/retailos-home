@@ -102,7 +102,7 @@ The inventory is intentionally wider than the decoder replacement boundary. It c
 | `services/captureScannerPreviewFrame.ts` | Frozen preview capture for feature exit presentation | **KEEP** |
 | `services/scannerAudio.ts` | Web Audio unlock and beep | **KEEP** |
 | `services/scannerCapabilities.ts` | Mobile-platform gate using Android/iOS user-agent and touch-iPad checks | **KEEP / clarify naming** — this is not WASM/Worker decoder capability detection |
-| `services/scannerDiagnosticCollector.ts` | Privacy-projected local diagnostic collection | **KEEP / extend carefully** — backend metrics must pass an explicit allowlist |
+| `services/scannerDiagnosticCollector.ts` | Historical local diagnostic collection | **REMOVED** — collector and QA monitor were retired; runtime controller state remains intact |
 | `services/scannerFeedback.ts` | Beep/vibration feedback orchestration | **KEEP** |
 | `services/scannerPreviewRegion.ts` | Visible preview/reticle to source-frame ROI mapping | **KEEP** |
 | `services/scannerSettingsStore.ts` | Local scanner settings persistence | **KEEP** |
@@ -120,7 +120,7 @@ The inventory is intentionally wider than the decoder replacement boundary. It c
 | File | Current responsibility | Phase 0 disposition |
 |---|---|---|
 | `src/features/home/HomeScreen.tsx` | Opens Home scanner, starts tap-origin lease, handles cached lookup | **KEEP / protected consumer** |
-| `src/features/home/components/ScannerQaMonitor.tsx` | Reads, filters and exports scanner diagnostics | **KEEP** |
+| `src/features/home/components/ScannerQaMonitor.tsx` | Historical diagnostic UI | **REMOVED** |
 | `src/features/stocktake/components/StocktakeModule.tsx` | Opens Stocktake scanner, accepts barcode into form and manages explicit save | **KEEP / protected consumer** |
 | `src/features/stocktake/components/StocktakeScanner.tsx` | Stocktake-owned scanner presentation and local exit gate | **KEEP / protected consumer** |
 | `src/features/stocktake/services/stocktakeScannerExitGate.ts` | Joins technical close milestones with Stocktake presentation completion | **KEEP** |
@@ -222,7 +222,7 @@ ZXingDecoderAdapter (current backend)
   └─ decoder diagnostics
              │
              ▼
-scannerDiagnosticCollector → ScannerQaMonitor
+(retired) scannerDiagnosticCollector → ScannerQaMonitor
 ```
 
 ### 3.2 Direct coupling that blocks clean replacement
@@ -573,3 +573,11 @@ PR #114 is merged separately and resolves advisory LOW/MID/HIGH device-profile m
 
 ### Release boundary
 The capability-parity code and deterministic tests do not replace physical optical parity. The same labelled corpus must run through both adapters, followed by iOS Safari/PWA and Android Chrome/PWA QA. Only then can production cutover be proposed; remove `@zxing/library`, `zxingDecoder.ts` and JS-only tests only after the selected WASM backend is accepted and rollback evidence exists.
+
+
+## 2026-11-24 — Scanner ecosystem cleanup follow-up
+
+- Production UI diagnostic collector and Scanner QA Monitor were retired. This removed Home-startup console interception, event buffering and in-app diagnostic exports.
+- Internal camera-health, focus and adaptive runtime controllers and their decision inputs remain protected and unchanged.
+- SC-01 Worker prototype code, bridge and source-contract test were removed because the prototype was never production-integrated and lacked built-asset, device transport, performance and accuracy proof.
+- Production scanner remains Main Thread ZXing-C++ WASM. Developer-only benchmark harness and real-WASM integration fixtures remain.
