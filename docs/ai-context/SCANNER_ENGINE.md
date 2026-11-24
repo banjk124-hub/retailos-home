@@ -1,6 +1,6 @@
 # Scanner Engine — current technical source of truth
 
-**Status:** Production scanner remains ZXing-C++ WASM on the Main Thread through the current adapter. SC-01A/01B/01C Worker work is isolated prototype code and is not connected to the production session.
+**Status:** Production scanner runs ZXing-C++ WASM on the Main Thread through the current adapter. The isolated SC-01 Worker prototype has been removed from the active codebase; no Worker runtime is part of the supported scanner architecture.
 **Last reconciled:** 2026-11-23
 **Repository:** `banjk124-hub/retailos-home`
 
@@ -77,9 +77,9 @@ Do not raise this ceiling based on synthetic performance alone. Any increase mus
 
 Validation changes must include positive and negative fixtures. Do not broadly allow control characters to make a single format pass.
 
-## 6. Diagnostics and privacy
+## 6. Runtime telemetry and privacy
 
-Scanner QA diagnostics are in-memory and use an explicit allowlist. Barcode payloads, camera device identifiers, employee identifiers and persistent device identifiers must not be exported. Add new metrics only when they are non-sensitive, bounded and useful for a named QA question.
+The production UI does not install a console-intercepting diagnostic collector or retain/export a rolling diagnostic event buffer. Runtime controller state remains internal to the session and continues to drive bounded adaptive processing, camera health and passive focus policy. Do not remove or repurpose those controller inputs as part of UI cleanup. Barcode payloads, camera identifiers and employee identifiers must not enter diagnostic output. Benchmark measurements remain in the isolated developer harness under `scripts/scanner-benchmark/`.
 
 Known diagnostic limitation: native ZXing-C++ result geometry/orientation metadata is not yet normalized into the RetailOS `DecoderOutput.geometry` contract. Do not claim position overlays or native rotation hit attribution are available until the adapter, diagnostics allowlist and tests are updated together.
 
@@ -102,7 +102,7 @@ A green CI run proves code contracts and build health, not optical accuracy or p
 
 ## 8. Known limitations / deferred engineering
 
-1. No dedicated scanner Worker boundary yet; WASM decode and image preparation execute through the current adapter path.
+1. Decode and image preparation execute on the Main Thread through the production WASM adapter. Worker experiments were not production-integrated and have been removed from active code; any future Worker proposal requires a new isolated evidence-backed project.
 2. Device profile is advisory; low-end initial camera resolution, cadence and pre-decode budgets are not yet fully adapted.
 3. Geometry generation budget is applied after some candidate preparation work; measure and move the guard earlier only with regression coverage.
 4. Adapter currently discards native `position`, `rotation`, `isMirrored`, `isInverted` and `symbologyIdentifier` metadata.
