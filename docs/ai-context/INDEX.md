@@ -47,4 +47,4 @@ This file is the navigation layer for repository documentation. Read one canonic
 - Scanner current truth: `SCANNER_ENGINE.md`; scanner history: `SCANNER_HISTORY.md`.
 - PWA runtime/release truth: `PWA_RUNTIME_RELEASE.md`.
 
-Historical scanner phase/audit files are non-canonical. The two documents above are the only Scanner entry points; a separate docs-only archival move can reduce the remaining file count after all backlinks are inventoried.
+Scanner documentation has exactly two canonical files: `SCANNER_ENGINE.md` for current implementation truth and `SCANNER_HISTORY.md` for investigations, decisions and historical evidence. Do not create standalone phase/audit documents for Scanner. Add new durable Scanner knowledge to one of these two files; keep unrelated feature documentation out of Scanner context.

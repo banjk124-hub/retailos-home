@@ -14,7 +14,7 @@
 - No active SC-01–SC-05 implementation phase is open.
 
 Canonical implementation specification: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md).
-Historical phase/PR/decision evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Do not use standalone `SCAN_*.md` or `SCANNER_*.md` phase/audit files as current specifications.
+Historical investigations, phase/PR/decision evidence and acceptance boundaries: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Scanner documentation is intentionally limited to these two files; do not create or consult parallel standalone Scanner phase/audit specifications.
 
 **Acceptance boundary:** owner-confirmed stable operation is recorded. This does not constitute quantified barcode accuracy or an exhaustive iOS/Android/low-end-device test matrix. Do not state physical acceptance beyond the actual recorded runs.
 
