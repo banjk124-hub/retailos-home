@@ -1,171 +1,201 @@
-# Scanner Engine — current technical source of truth
+# Scanner Engine — canonical production specification
 
-**Status:** Production scanner runs ZXing-C++ WASM on the Main Thread through the current adapter. The isolated SC-01 Worker prototype has been removed from the active codebase; no Worker runtime is part of the supported scanner architecture.
+**Status:** Production scanner is merged, deployed and confirmed operational by the project owner. This document is the single source of truth for the current implementation.
 **Last reconciled:** 2026-11-24
-**Repository:** `banjk124-hub/retailos-home`
+**Production decoder:** ZXing-C++ WebAssembly through `ZXingWasmDecoderAdapter` on the Main Thread.
+**Consumers:** Home and Stocktake through the shared scanner engine.
 
-This document describes the current implementation contract. Older investigations and incident notes are indexed in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). They preserve evidence; they do not override this document or the source code.
+> Scope boundary: this specification describes the current implementation contract. Historical design, phase-by-phase changes and retired experiments belong in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). A green CI run establishes software/build contracts; it does not establish barcode accuracy or a complete cross-device optical benchmark.
 
-## 1. Runtime architecture
+## 1. Product and runtime overview
+
+RetailOS uses one shared scanner runtime for Home lookup and Stocktake capture. Feature modules own presentation, their video element, reticle and business workflow. Shared scanner infrastructure owns camera lease/session lifecycle, preview readiness, frame scheduling, ROI validation, recognition, decode-result validation and recovery.
 
 ```text
 Home / Stocktake feature
   └─ useScannerEngine
       └─ UniversalScannerSession
-          ├─ camera lease, preview readiness, lifecycle and recovery
+          ├─ camera lease and preview readiness
+          ├─ lifecycle, watchdog and bounded recovery
           ├─ serialized frame scheduling and result policy
-          ├─ strict feature-owned source-frame ROI
+          ├─ feature-owned, strict source-frame ROI
           └─ defaultScannerDecoderFactory
-              └─ ZXingWasmDecoderAdapter (zxing-wasm 3.1.6)
+              └─ ZXingWasmDecoderAdapter
                   └─ scannerEnhancementPipeline
-                      ├─ bounded ROI sampling / scale candidates
-                      ├─ native ZXing-C++ orthogonal rotation, inversion,
-                      │  downscale and format decoding
-                      ├─ shared continuous deskew / geometry candidates
-                      └─ ordered LocalAverage → GlobalHistogram fallback
+                      ├─ bounded ROI sampling and scale candidates
+                      ├─ ZXing-C++ native decode options
+                      ├─ shared deskew / geometry candidates
+                      └─ ordered binarizer fallback
 ```
 
-**Single production decoder:** `ZXingWasmDecoderAdapter` (`zxing-cpp-wasm`). The legacy ZXing JS adapter and `@zxing/library` have been removed. Do not reintroduce dual-engine selection or legacy fallback without a separately reviewed architecture decision.
+There is one production decoder path: ZXing-C++ WASM. The old ZXing JS backend and the isolated Worker prototype are not part of the current runtime. Do not reintroduce dual-engine selection, Worker transport or legacy fallback without a new evidence-backed architecture decision.
 
 ## 2. Ownership boundaries
 
 | Layer | Owns | Must not own |
 |---|---|---|
-| Home / Stocktake | Video element, visible reticle, feature workflow and result consumption | Decoder selection, camera lease internals |
-| Universal session | Camera lease, preview readiness, frame cadence, lifecycle/recovery, serialization, validation handoff and single/continuous policy | Feature presentation or retail business rules |
-| ROI / geometry | Mapping the current feature reticle to source-frame coordinates; fail-closed invalid ROI | Full-frame or inferred-region fallback |
-| Shared recognition pipeline | Bounded sampling, continuous deskew, geometry correction, image-quality and temporal policies | A second implementation of native WASM capabilities |
-| WASM adapter | Native decode options, pixel input, ZXing result normalization and backend diagnostics | Camera acquisition, UI, module policy or business workflow |
+| Home / Stocktake | Video element, visible reticle, feature workflow and result consumption | Decoder choice, camera lease internals |
+| `useScannerEngine` | React integration, activation identity, generation guards, page-visibility recovery and UI-facing state | Retail business rules or duplicate camera ownership |
+| `UniversalScannerSession` | Camera lease, preview readiness, frame cadence, lifecycle/recovery, serialization, validation handoff and single/continuous result policy | Feature presentation |
+| ROI / geometry | Mapping the active feature reticle to source-frame coordinates; rejecting invalid/stale geometry | Full-frame, centered or guessed fallback |
+| Recognition pipeline | Bounded sampling, deskew, geometry correction, image-quality and temporal policies | Duplicating native decoder capabilities |
+| WASM adapter | Native decode options, pixel input, result normalization and backend diagnostics | Camera acquisition, UI or business workflow |
 
-The current module-owned ROI is strict: missing or invalid ROI produces no decode attempt. Never replace it with a full-frame, centered or guessed crop.
+The Home and Stocktake paths must continue to use the same engine/session contract. The current feature reticle is authoritative for ROI. Missing, invalid or stale ROI means no decode attempt.
 
-## 3. Decode contract
+## 3. Camera and session lifecycle
 
-- Production format selection is an explicit RetailOS allowlist. Empty or unsupported format lists fail initialization.
-- Candidate execution is serialized; no stale-frame queue or parallel reader access.
-- Baseline-first ordering is retained. Orthogonal rotation is owned by ZXing-C++; shared processing retains continuous deskew and bounded geometry correction.
-- Native options currently include `tryHarder`, `tryRotate`, `tryInvert`, `tryDownscale`; `tryDenoise` is enabled conditionally when a supported 2D format is requested.
-- Binarizer fallback is `LocalAverage` first, then `GlobalHistogram` on miss.
-- Output payload uses `Plain` text and UTF-8. RetailOS validation remains authoritative after native decoding.
-- One accepted symbol is returned per decode attempt (`maxNumberOfSymbols: 1`).
-- The decoder is lazy-loaded after preview readiness through the shared factory.
+The shared camera service owns stream acquisition and lease semantics. Session initialization waits for preview readiness before lazy-loading the decoder. Session and activation generations prevent stale asynchronous completions from mutating a newer activation.
 
-## 4. Pixel and memory boundary
+Lifecycle handling must preserve:
+- serialized camera recovery and session retirement;
+- fresh video-surface/readiness checks before recognition resumes;
+- page visibility handling without duplicate active sessions;
+- bounded recovery attempts and cooldowns;
+- ordered teardown of frame callbacks, watchdogs, listeners, decoder resources and camera lease.
 
-The source ROI is bounded before candidate generation. The decoder input must also have a single shared hard ceiling:
+Never create a second camera owner in Home, Stocktake, a UI component or the decoder adapter. Never make camera reacquisition a side effect of an ordinary decode miss.
 
+## 4. Frame processing and scheduling
+
+Frame work is serialized. There must be no parallel reads against a single decoder instance, unbounded stale-frame queue or unbounded candidate expansion. Scheduling respects session generation, current ROI revision and adaptive runtime budget.
+
+Temporal recognition may use a small bounded set of recent downscaled frames, isolated by session generation and ROI revision. A new ROI/geometry revision clears stale temporal context. Keep memory and work bounded; do not add a queue to compensate for a slow decoder.
+
+## 5. ROI and geometry contract
+
+- The ROI is feature-owned and mapped from the visible preview/reticle into source-frame coordinates.
+- Invalid, zero-sized, unsupported, inconsistent or stale geometry fails closed to `null`.
+- No full-frame, centered or guessed ROI fallback is permitted.
+- Geometry revisions are monotonic; older revisions cannot overwrite newer ROI state.
+- ROI/revision changes invalidate temporal recognition state.
+- Unsupported CSS positioning/transforms remain unsupported unless mapper behavior and physical layout are separately tested.
+
+The existing pure geometry mapper remains the authority for preview-to-source coordinate mapping. Diagnostics or fingerprints must not become an alternate geometry implementation.
+
+## 6. Recognition pipeline
+
+Recognition is baseline-first and bounded:
+1. Validate session identity, source frame and current ROI.
+2. Prepare bounded ROI input and candidate dimensions.
+3. Run the production ZXing-C++ WASM adapter with the explicit RetailOS format allowlist and configured native options.
+4. Use shared continuous deskew and bounded geometry/image-quality candidates where policy permits.
+5. Apply ordered binarizer fallback.
+6. Normalize the native result and apply RetailOS payload validation.
+7. Enforce the active single/continuous result policy before publishing to the feature.
+
+Do not reorder candidates, broaden format support, add retries or increase image work based only on intuition. Changes require fixtures and measurements for the affected symbologies and conditions.
+
+## 7. Decoder and WASM contract
+
+- Production backend: `ZXingWasmDecoderAdapter` via the shared lazy factory.
+- The legacy ZXing JS engine is retired; no dual-engine selector or automatic legacy fallback.
+- Decoder initialization is lazy and follows preview readiness.
+- RetailOS format selection is an explicit allowlist. Empty or unsupported lists fail initialization.
+- Native options include `tryHarder`, `tryRotate`, `tryInvert` and `tryDownscale`; `tryDenoise` is conditional on supported 2D formats.
+- Binarizer order: `LocalAverage`, then `GlobalHistogram` on miss.
+- Output text is `Plain` UTF-8. RetailOS validation remains authoritative.
+- At most one accepted symbol is returned per attempt.
+- Native result geometry/orientation metadata is not currently normalized into the RetailOS geometry contract. Do not claim position overlays or orientation attribution.
+
+## 8. Pixel and resource budgets
+
+The source ROI and every decode candidate are bounded before expensive work:
 - `MAX_ROI_SOURCE_WIDTH = 2048`
 - `MAX_ROI_SOURCE_PIXELS = 1,500,000`
-- `MAX_DECODE_CANDIDATE_PIXELS = 1,500,000` (implemented in Phase A; planner and WASM guard import the same constant)
+- `MAX_DECODE_CANDIDATE_PIXELS = 1,500,000`
 
-The 1.5× candidate remains the preferred baseline when it fits. If it exceeds the hard input budget, the planner reduces its effective scale. Alternate 1×/2× candidates are also bounded by the same budget and duplicate dimensions are removed. No candidate should be generated only to be rejected by the decoder.
+The preferred 1.5× candidate is reduced when it would exceed the hard budget. Alternate 1×/2× candidates are subject to the same limit and duplicate dimensions are removed. Do not raise these limits without p95 latency and peak-memory evidence on low-end physical devices.
 
-Do not raise this ceiling based on synthetic performance alone. Any increase must include peak-memory and p95 latency evidence on low-end physical devices.
+Temporal state is bounded (maximum three downscaled frames, maximum 640×360, maximum age 700 ms) and scoped to generation plus ROI revision. Adaptive processing gates optional work; it must not remove or weaken the baseline path.
 
-## 5. Payload validation policy
+## 9. Image processing and adaptive runtime
 
-| Symbology | RetailOS validation rule |
+Shared processing modules own deskew, geometry correction, enhancement, scale planning, temporal recognition, focus-quality sampling and adaptive processing policy. Native ZXing-C++ features remain in the adapter. Avoid implementing the same rotation/inversion/scale behavior in both layers.
+
+Adaptive runtime (A1/A2/A3) is a bounded policy over optional candidate work and resource budget. It is not a second decoder and must not create unbounded captures, retries or camera operations. Preserve existing stable-motion and sample-quality guards.
+
+## 10. Camera health and recovery
+
+`ScannerCameraHealthController` observes frame progress independently of UI state:
+- watchdog interval: 1 second after decode enters scanning;
+- stalled threshold: 3 seconds without frame-progress evidence;
+- prefer `requestVideoFrameCallback`; RAF fallback requires video media timeline progression greater than 5 ms;
+- mute degrades health; unmute alone does not declare healthy;
+- track-ended requests immediate recovery;
+- one bounded automatic attempt with a 10-second cooldown policy; mounted activation also caps health recovery to prevent a new-session loop;
+- failed/exhausted recovery escalates to scanner ERROR and user close/reopen.
+
+Recovery delegates to the existing serialized `useScannerEngine` session-retirement, video-surface replacement, lease reacquisition and fresh-frame startup path. All watchdogs and listeners must be cleared on teardown.
+
+## 11. Focus recovery policy
+
+Focus recovery is passive. It reuses existing baseline ROI focus-quality samples and exposes bounded policy states: `observing`, `waiting-native-autofocus`, `recovered`. Sustained blur may guide the user to wait for native autofocus, steady the device or adjust distance; recovery is inferred from measured sharpness returning to its reference band.
+
+Hard boundary: post-preview camera constraint writes remain disabled (`cameraConstraintWriteBudget: 0`). No `applyConstraints`, autofocus re-arm, stream restart/reacquisition, added timer, extra frame capture or decoder-budget increase. Invalid or moving samples cannot trigger the policy. This is guidance, not proof that the physical lens focused successfully.
+
+## 12. Payload validation
+
+| Symbology | RetailOS validation |
 |---|---|
 | EAN-8 / EAN-13 / UPC-A / UPC-E | Exact length and check digit |
-| CODE-128 | Opaque text; reject controls except ASCII GS (29), required by GS1-128 separators |
-| CODE-39 | Shared family includes ZXing-C++ Standard and Extended variants; accept printable ASCII, reject controls |
-| CODE-93 | Printable ASCII, reject controls |
+| CODE-128 | Opaque text; reject controls except ASCII GS (29) for GS1-128 |
+| CODE-39 | Printable ASCII; reject controls; Standard and Extended variants share the family |
+| CODE-93 | Printable ASCII; reject controls |
 | ITF | Even-length numeric payload |
-| CODABAR | Engine output includes A–D start/stop framing; validate one framing character at each end and supported data characters inside |
-| QR / Data Matrix / PDF417 / Aztec / MaxiCode / Micro QR / RSS Expanded | Preserve text payload; reject disallowed control characters |
+| CODABAR | Validate A–D framing at both ends and supported data characters inside |
+| QR / Data Matrix / PDF417 / Aztec / MaxiCode / Micro QR / RSS Expanded | Preserve text; reject disallowed controls |
 | RSS-14 | 14-digit value with check digit |
 
-Validation changes must include positive and negative fixtures. Do not broadly allow control characters to make a single format pass.
+Validation changes require positive and negative fixtures. Do not broadly permit control characters to make one symbology pass.
 
-## 6. Runtime telemetry and privacy
+## 13. Home and Stocktake integration
 
-The production UI does not install a console-intercepting diagnostic collector or retain/export a rolling diagnostic event buffer. Runtime controller state remains internal to the session and continues to drive bounded adaptive processing, camera health and passive focus policy. Do not remove or repurpose those controller inputs as part of UI cleanup. Barcode payloads, camera identifiers and employee identifiers must not enter diagnostic output. Benchmark measurements remain in the isolated developer harness under `scripts/scanner-benchmark/`.
+Home lookup and Stocktake use the shared `useScannerEngine` / `UniversalScannerSession` path. Feature components own their video surfaces, reticle and post-scan workflow; shared infrastructure owns camera and decode lifecycle.
 
-Known decoder limitation: native ZXing-C++ result geometry/orientation metadata is not normalized into the RetailOS `DecoderOutput.geometry` contract. Do not claim position overlays or native rotation hit attribution are available without a separate adapter-level implementation and regression tests.
+Integration changes must verify:
+- open/close and repeated activation;
+- permission denial and camera unavailable;
+- background/foreground and orientation/viewport changes;
+- scan acceptance and duplicate suppression;
+- Home lookup handoff and Stocktake capture/save;
+- teardown leaves no active camera track, callback or stale result.
 
-## 7. Verified capabilities vs. release acceptance
+Do not duplicate scanner engines or fork recognition logic for either feature.
 
-**Automated architecture evidence currently present**
-- WASM-only factory and no-legacy preflight guard.
-- Real WASM adapter integration harness and generated barcode fixtures.
-- Regression tests for ROI, scaling, validation, pipeline ordering, lifecycle, camera health, focus policy and WASM options.
-- TypeScript, production build and Pages build run in CI.
+## 14. Test architecture and evidence
 
-**Still requires optical / physical evidence**
-- Labelled corpus from real supermarket packaging and shelf labels, including negative samples.
-- Exact-match, miss, wrong-decode and false-positive rates by symbology and condition.
-- Glare, blur, motion, curved packaging, low contrast, distance, skew and ROI-edge conditions.
-- iOS Safari/PWA, Android Chrome/PWA and low-end Android acceptance.
-- Home lookup and Stocktake capture/save end-to-end acceptance.
+Automated evidence includes WASM adapter integration fixtures, no-legacy preflight checks, source-contract tests, ROI/geometry regressions, validation tests, pipeline ordering, lifecycle, camera health, focus policy and integration checks. Benchmark harness remains isolated under `scripts/scanner-benchmark/`.
 
-A green CI run proves code contracts and build health, not optical accuracy or physical-device performance.
+A green CI/build/deploy run proves only the contracts and build paths that ran. It does not prove optical accuracy, false-positive rates, focus performance or every device/browser combination. Any performance or accuracy claim must reference measured corpus/device evidence.
 
-## 8. Known limitations / deferred engineering
+## 15. Operational acceptance and current status
 
-1. Decode and image preparation execute on the Main Thread through the production WASM adapter. Worker experiments were not production-integrated and have been removed from active code; any future Worker proposal requires a new isolated evidence-backed project.
-2. Device profile is advisory; low-end initial camera resolution, cadence and pre-decode budgets are not yet fully adapted.
-3. Geometry generation budget is applied after some candidate preparation work; measure and move the guard earlier only with regression coverage.
-4. Adapter currently discards native `position`, `rotation`, `isMirrored`, `isInverted` and `symbologyIdentifier` metadata.
-5. Developer diagnostics are intentionally isolated from the production UI; use the dedicated benchmark harness for repeatable measurements.
-6. `tryDenoise` is experimental and needs A/B optical evidence by 2D symbology.
-7. RGBA → luminance → RGBA conversion may add avoidable allocations; benchmark before changing the input path.
+**Current project status:** scanner stabilization work is closed. PR #153 cleanup was merged, deployed and the project owner confirmed the application flow operates normally without observed errors. The retired Worker prototype and production QA diagnostics collector/monitor are not part of the active product.
+
+**Evidence boundaries:** historical CI results and PR closure evidence are preserved in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Physical test observations confirmed by the owner should not be expanded into untested claims about every iOS, Android or low-end device. No quantified optical accuracy or benchmark threshold is asserted here unless a labelled corpus and run record support it.
+
+Remaining work, if any, is driven by a reproducible issue or a deliberately scoped new acceptance requirement—not by the former SC-01–SC-05 phase plan.
+
+## 16. Known limitations
+
+1. Decode and image preparation execute on the Main Thread through production WASM; the removed Worker prototype was not production-integrated.
+2. Device profile remains advisory; complete low-end initial resolution/cadence adaptation is not claimed.
+3. Some geometry candidate preparation may occur before all candidate-budget checks; measure and cover before refactoring.
+4. Native `position`, `rotation`, `isMirrored`, `isInverted` and `symbologyIdentifier` metadata are not fully normalized into the application result contract.
+5. Developer diagnostics are isolated from production UI. Use the benchmark harness for repeatable measurement.
+6. `tryDenoise` requires A/B optical evidence by 2D symbology.
+7. RGBA → luminance → RGBA conversion may add allocations; benchmark before changing the input path.
 8. EAN-2 / EAN-5 add-on symbols remain ignored by the current reader configuration.
 
-These are explicit follow-up items, not reasons to reintroduce the retired decoder or rewrite camera/session ownership.
+## 17. Change protocol
 
-## 9. Camera Health Controller (SC-02)
-
-`ScannerCameraHealthController` observes camera frame progress separately from scanner UI lifecycle. The session starts a 1-second watchdog once decoding enters SCANNING; 3 seconds without frame-progress evidence transitions to STALLED and requests one bounded automatic recovery. Native `requestVideoFrameCallback` is preferred. RAF compatibility mode is considered healthy only when the video media timeline advances (`currentTime` delta greater than 5 ms). `mute` degrades health; `unmute` does not declare healthy without recent frame progress. `track-ended` triggers immediate recovery request.
-
-Recovery is delegated to `useScannerEngine` and reuses the existing serialized session retirement / video-surface replacement / lease reacquisition / fresh-frame startup path. The controller permits one attempt, with a 10-second cooldown policy; the hook also caps automatic health recovery to one for the mounted scanner activation to prevent a new-session loop. Failed or exhausted recovery escalates to scanner ERROR, leaving the user a close/reopen action. Watchdog and track listeners are cleared on teardown. Health callback diagnostics are bounded scalar snapshots only.
-
-**SC-02 evidence:** deterministic controller/source-contract tests are included in preflight. CI/build/deploy are software validation. A deliberate live-camera stall, track-ended injection, recovery success/failure and device matrix remain manual QA gates; do not infer them from CI.
-
-## 10. Geometry Diagnostics (SC-03)
-
-The existing `scannerGeometry.ts` pure mapper remains the authority for mapping visible preview-content coordinates to the unrotated source frame. SC-03 adds geometry identity and stale-region protection around that mapper; it does not change its object-fit mapping math or the feature-owned reticle layout.
-
-- `createScannerGeometrySignature` fingerprints source dimensions, video/reticle DOMRects, computed object-fit/object-position, supported transform/mirror, window viewport, visualViewport offset/scale and devicePixelRatio. It returns a compact in-memory string and does not persist or export it.
-- `ScannerGeometryRevisionTracker` issues monotonic versions. Repeated stable valid signatures preserve the same version; a valid-to-invalid transition increments once; repeated invalid state does not churn. Explicit lifecycle invalidation always advances the epoch.
-- `useScannerPreviewRegionBinding` observes source metadata/resize, ResizeObserver (video, reticle, preview parent), window resize/orientation, visualViewport resize/scroll and device-pixel-ratio changes. If the measured fingerprint differs from the active one, it clears the prior ROI synchronously before the next RAF measurement.
-- Published source ROI carries `geometryVersion`. `UniversalScannerSession` rejects malformed or older revisions, keeps the latest version floor across clear, and clears temporal recognition state whenever ROI/version changes.
-- Missing, zero-sized, unsupported or inconsistent geometry fails closed to `null`. There is no full-frame, centered or guessed ROI fallback. CSS length/calc object-position and transforms other than identity/horizontal mirror remain deliberately unsupported.
-- Signature/telemetry is geometry-only; it excludes camera/device IDs, barcode payloads, employee identifiers, URLs and personal data.
-
-**SC-03 evidence:** PR #146 head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`; CI #1332 passed full preflight, TypeScript/production build, PR-base baseline build and bundle comparison. Deterministic coverage includes mapper variants, signature inputs, stable/invalid epoch transitions, delayed old-revision rejection, observer invalidation and cleanup.
-
-**Acceptance boundary:** User confirms current app flow has no observed errors and operates normally. Software/CI scope is complete; viewport/orientation behavior on physical iOS Safari/PWA and Android Chrome/PWA remains device QA and is not inferred from CI.
-
-## 11. Active stabilization workstream
-
-The staged SC-01A/01B/01C → SC-02 → SC-03 → SC-04 → SC-05 sequence is tracked in [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md). SC-01A/01B/01C, SC-02, SC-03 and SC-04 software/CI scopes are closed at their documented boundaries. SC-04 Focus Recovery Policy is merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4` with CI #1348 passed on its code/test head. Worker phases remain isolated from production session/Home/Stocktake. Camera ownership, module ROI, decoder allowlist, recognition order and feature workflows remain protected. Physical viewport/orientation and focus behavior remain device QA gates. SC-05 Integration & QA is the current phase. SC-01A transport/API evidence is in [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md).
-
-## 12. SC-04 Focus Recovery Policy
-
-The existing ROI focus-quality monitor now exposes a passive state policy: `observing`, `waiting-native-autofocus`, `recovered`. It only uses existing baseline-scale ROI samples and preserves the stable-motion gate, relative sharpness thresholds, four-sample blur gate and 8-second cooldown. Sustained blur emits bounded guidance to wait for native autofocus and steady/adjust distance; sharpness recovery returns to normal observation.
-
-**Hard boundary:** post-preview camera constraint writes are disabled (`cameraConstraintWriteBudget: 0`). SC-04 does not call `applyConstraints`, re-arm autofocus, restart/reacquire the stream, add a timer, increase frame captures or change decoder candidate budgets. Invalid/moving samples cannot trigger recovery. Existing ROI baseline reset resets the policy. This is a passive observation/recommendation—not a guarantee that physical autofocus succeeded.
-
-PR #148 merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`. CI #1348 passed full preflight, TypeScript, production/Pages build and PR-base bundle comparison on code/test head `fa4349344eb9fd80d8d487942113ea5560cae6e5`. Physical iOS/Android near/far focus QA remains separate.
-## 14. SC-05 Integration & QA
-
-**Software scope closure:** PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final PR-head CI #1375, post-merge CI #1376 and Pages deployment #151 passed. PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed. Physical optical/device QA remains NOT RUN.
-
-SC-05 validates cross-layer composition before introducing any new scanner algorithms. The current integration uses one `useScannerEngine` → `UniversalScannerSession` path shared by Home and Stocktake. Camera lease remains in the shared camera service; feature-owned preview ROI and geometry versions are published through the existing hook. Health recovery is bounded, focus guidance is passive, adaptive runtime budget is passed to the production WASM adapter and no Worker runtime is part of the production path.
-
-The cross-layer source-contract test is `scripts/test-scanner-sc05-integration.mjs` and is registered in `scripts/preflight.mjs`. Existing focused regression/decoder-fixture tests remain the detailed subsystem authority. QA device matrix, run-record and local corpus protocol are in [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md).
-
-The SC-04 passive focus recovery state/action/guidance remains internal to the runtime policy. The former collector and Home QA Monitor were removed; no new controller, camera command or capture path is introduced.
-
-Software CI is not physical-device or optical acceptance. No scan-accuracy, false-positive, focus distance, cross-platform or latency threshold may be claimed until a labelled corpus and real-device run records support it. SC-05 release acceptance must show actual test results or list the remaining device/corpus blocker.
-## 15. Change protocol
-
-For every scanner change:
-1. Read this document and the exact source/tests involved.
+For any future scanner change:
+1. Read this document and inspect the exact current source/tests; historical plans are not implementation instructions.
 2. State the ownership boundary and observable behavior being changed.
-3. Add focused positive, negative and boundary regression tests.
-4. Preserve Home and Stocktake behavior unless the task explicitly changes their contracts.
-5. Run `npm run preflight`, TypeScript, production build and Pages build through CI.
-6. Record physical-device evidence separately; never infer it from CI.
-7. Update this document only when the implementation contract changes. Put incident observations in the history log with date, evidence, resolution and current status.
-8. For SC-01–05 work, satisfy the phase-specific gates in `SCANNER_WORKSTREAM_SC01_05.md`; do not claim a phase complete from source inspection alone.
+3. Prefer the smallest solution that preserves the existing shared architecture.
+4. Add focused positive, negative and boundary regression tests.
+5. Protect Home and Stocktake parity, camera lease ownership, strict ROI and bounded processing.
+6. Run preflight, TypeScript, production build and Pages build in CI.
+7. Record physical-device and optical evidence separately; never infer it from CI.
+8. Update this document only when the production contract changes. Put dated investigation and decision evidence in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
