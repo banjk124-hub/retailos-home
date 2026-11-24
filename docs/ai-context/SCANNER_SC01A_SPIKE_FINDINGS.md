@@ -1,4 +1,4 @@
-# SC-01A — Worker feasibility and transport study
+# Historical — SC-01A Worker feasibility and transport study
 
 **Date:** 2026-11-22  
 **Status:** Research note retained. SC-01A/01B/01C source prototype phases are merged to main in isolation. CI/source-contract checks are available. Empirical built-worker transport/browser performance remains BLOCKED pending local/browser execution.  
@@ -79,7 +79,9 @@ For each transport, use the same corpus, same ROI, same formats/options, warmed 
 
 Report median/P95 with sample size and avoid exporting barcode payloads or persistent device IDs. A live-camera probe must be separated from still-image corpus measurements.
 
-## 6. Current conclusion
+## 6. Historical conclusion
+
+The Worker experiment was never integrated into the production scanner and its source prototype was removed during the scanner ecosystem cleanup. This document is retained only as research history; it is not an active implementation plan.
 
 **Architecture recommendation:** keep the adapter/session contracts; add Worker execution behind the adapter/runtime boundary only after SC-01A’s actual compatibility and performance proof. VideoFrame is the leading transport candidate, ImageBitmap is the fallback candidate, and OffscreenCanvas is optional worker-side tooling.
 
