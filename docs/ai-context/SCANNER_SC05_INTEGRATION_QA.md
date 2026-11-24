@@ -57,10 +57,10 @@ The integration contract is intentionally source-boundary focused. Existing dedi
 - Camera lifecycle, health, bounded recovery and camera request compatibility
 - Focus quality, recovery state, motion/texture rejection and cooldown
 - Enhancement pipeline, scale, image-quality profile and adaptive runtime
-- Temporal recognition, torch, symbology/settings, diagnostics privacy
+- Temporal recognition, torch, symbology/settings, runtime privacy
 - Home/Stocktake scanner presentation and exit behavior
 
-The in-app Scanner QA monitor must surface the passive focus recovery state/action/guidance through its existing allowlisted diagnostic metrics; it is not a new controller or a camera command.
+The former in-app Scanner QA monitor was retired during cleanup. SC-04 focus recovery remains runtime policy; do not reintroduce a production event collector solely to display it.
 
 A test that uses mocks or generated images does not prove optical performance on a physical camera.
 
