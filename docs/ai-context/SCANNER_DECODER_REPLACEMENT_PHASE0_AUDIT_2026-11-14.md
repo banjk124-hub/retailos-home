@@ -140,7 +140,7 @@ All remain part of the regression safety net. Some decoder/pipeline tests will n
 4. `test-scanner-camera-request.mjs`
 5. `test-scanner-decoder-integration.mjs`
 6. `test-scanner-deskew.mjs`
-7. `test-scanner-diagnostics.mjs`
+7. `test-scanner-diagnostics.mjs` (historical; removed with the retired QA collector)
 8. `test-scanner-enhancement-pipeline.mjs`
 9. `test-scanner-focus-quality.mjs`
 10. `test-scanner-geometry.mjs`
@@ -222,7 +222,7 @@ ZXingDecoderAdapter (current backend)
   └─ decoder diagnostics
              │
              ▼
-(retired) scannerDiagnosticCollector → ScannerQaMonitor
+(retired) (retired) scannerDiagnosticCollector → ScannerQaMonitor
 ```
 
 ### 3.2 Direct coupling that blocks clean replacement
