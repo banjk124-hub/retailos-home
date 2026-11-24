@@ -28,7 +28,7 @@ Use the repository [INDEX.md](./INDEX.md) to load the canonical document for the
 
 ## Historical handoffs
 
-Earlier Scanner stabilization, SC-05 physical QA protocol and PWA implementation handoffs are retained below as dated historical records. They do not define the current active task or supersede the canonical specification.
+Earlier Scanner stabilization, SC-05 physical QA protocol and PWA implementation handoffs are retained below as dated historical records. They do not define the current active task or supersede the canonical specification. Use only the two canonical Scanner documents above; do not follow historical phase gates as active work.
 
 # Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
