@@ -1,31 +1,36 @@
-# Current handoff — Scanner physical QA acceptance — 2026-11-23
+# Current handoff — RetailOS development continuation — 2026-11-24
 
-**Repository:** `banjk124-hub/retailos-home`  
-**Main baseline:** SC-05 QA follow-up merge `661241e721a5510cf3f61c8ba7c3971c82b6a63c`  
-**Software integration PR:** [#149](https://github.com/banjk124-hub/retailos-home/pull/149) — merged  
-**Test-only diagnostic follow-up:** [#150](https://github.com/banjk124-hub/retailos-home/pull/150) — merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed  
-**Current scope:** Physical device QA + labelled-corpus benchmark; no new scanner code unless the evidence identifies a defect.
+## Current Scanner baseline
 
-## Current verified status
+Scanner runtime stabilization and cleanup are complete. PR #153 was merged and deployed; the project owner confirmed the application flow operates normally without observed errors.
 
-- SC-01A/01B/01C, SC-02, SC-03, SC-04 and SC-05 software integration scope are closed at their recorded boundaries. Production remains Main Thread ZXing-C++ WASM; Worker prototype remains isolated.
-- SC-05 PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`. CI #1375 passed on final PR head; post-merge CI #1376 and GitHub Pages deployment #151 passed.
-- PR #150 strengthens the existing diagnostic test to verify focus-recovery state/action/guidance metrics are safely retained. Final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed.
-- Focus recovery state/action/guidance are visible through the existing Home Scanner QA monitor. No new controller or camera control was added.
-- Physical iOS Safari/PWA, Android low/mid capability, Desktop and optical/corpus scenarios are NOT RUN remotely. Use `SCANNER_SC05_INTEGRATION_QA.md`; do not claim acceptance until actual runs are recorded.
-- Overall release/optical acceptance remains blocked by device QA and corpus evidence. No speculative algorithm work is authorized by this phase.
+- Current runtime contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md).
+- Historical phase and decision evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
+- Production decoder remains ZXing-C++ WASM on the Main Thread.
+- Home and Stocktake share the common scanner engine/session.
+- The unused Worker prototype and production QA diagnostics collector/monitor were retired in PR #153. Benchmark harness and actual WASM integration tests remain.
+- No active SC-01–SC-05 implementation task is open. Do not revive the Worker or diagnostics roadmap without a new evidence-backed requirement.
 
+## Protected boundaries for future Scanner changes
 
-## Protected boundaries
+- Shared camera acquisition and lease ownership.
+- Strict feature-owned ROI; invalid or stale geometry fails closed.
+- Shared session/lifecycle/recovery and bounded frame scheduling.
+- Single production decoder backend and explicit format allowlist.
+- Home lookup and Stocktake capture/save business workflows.
+- CI evidence is separate from physical device and optical acceptance.
 
-- Shared camera acquisition/lease ownership; no feature-level camera acquisition.
-- Strict current feature-owned ROI; invalid/stale geometry fails closed.
-- No Worker production integration, decoder changes or candidate-order changes without separate measured decision.
-- Payload validation, temporal policy, Home lookup and Stocktake explicit-save flow remain protected.
-- CI, benchmark and physical-device evidence are reported separately.
+## Next action
 
+Use the repository [INDEX.md](./INDEX.md) to load the canonical document for the next user-requested task. Verify branch, PR, CI and deployment state live before making volatile status claims. Prefer the smallest solution that preserves the current architecture.
 
-## Historical handoff — Phase 2.2 scope (2026-11-16)
+---
+
+## Historical handoffs
+
+Earlier Scanner stabilization, SC-05 physical QA protocol and PWA implementation handoffs are retained below as dated historical records. They do not define the current active task or supersede the canonical specification.
+
+# Historical handoff — Phase 2.2 scope (2026-11-16)
 Audit and harden the PWA application release runtime: cache reuse planning, streaming download progress, candidate integrity, staging failure recovery, safe activation, boot health and rollback. Continue directly on PR #138; no parallel branch or PR.
 
 ## Source findings
