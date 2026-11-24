@@ -26,6 +26,10 @@ const [
   source('scripts/preflight.mjs'),
 ]);
 
+// Production Home must not install a console collector or mount a diagnostic event viewer.
+assert.doesNotMatch(await source('src/features/home/HomeScreen.tsx'), /scannerDiagnosticCollector|ScannerQaMonitor|installScannerDiagnosticCollector/);
+assert.doesNotMatch(await source('src/features/home/components/SettingsHub.tsx'), /Scanner QA Monitor|onOpenScannerQa/);
+
 // One camera owner, one session boundary, shared by Home and Stocktake.
 assert.match(cameraService, /navigator\.mediaDevices\.getUserMedia/);
 assert.match(session, /acquireCameraLease/);
