@@ -49,22 +49,61 @@ A Worker prototype was investigated during SC-01, but it did not become part of 
 | SC-05 | PR #149 integration and QA protocol; PR #150 test-only follow-up | Software closure, not quantified optical acceptance |
 | Ecosystem cleanup | PR #153 | Removed unused Worker prototype and production QA diagnostics surface; benchmark and WASM tests retained |
 
-## Historical source inventory
+## Consolidated source records (legacy files removed)
 
-The repository accumulated multiple Scanner files. They are retained for unique forensic context, but are no longer entry points, active specifications or required reading. The canonical Engine and History documents contain the consolidated operational guidance and decision summaries.
+The following 27 standalone Scanner records were reviewed against this archive and the current production source, then consolidated here. Their former files are intentionally deleted so they cannot be mistaken for active specifications or become competing AI context.
 
-| Historical record family | Content retained |
+| Former record | Historical information retained here |
 |---|---|
-| `SCANNER_SC01A_SPIKE_FINDINGS.md` | Worker research and device QA checklist |
-| `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Decoder migration baseline and protected-contract audit |
-| `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md`, `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Native-vs-shared capability decisions and source evidence |
-| `SCANNER_RECOGNITION_PIPELINE.md` | Earlier unified pipeline design and recognition contract |
-| `SCANNER_DECODER_PR05_BENCHMARK_FOUNDATION.md` | Benchmark harness design and measurement methodology |
-| `SCANNER_SOURCE_AUDIT_2026-11-08.md`, `SCANNER_C2_AUDIT_2026-11-08.md` | Initial audits and their point-in-time findings |
-| `SCANNER_BACKGROUND_RECOVERY_AUDIT_2026-11-08.md`, `SCANNER_TORCH_AUDIT_2026-11-09.md`, `SCANNER_AUDIO_LIFECYCLE_2026-11-09.md`, `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md` | Platform, lifecycle, audio and presentation investigations |
-| `SCAN_01_INPUT_CONTRACT.md` – `SCAN_06_BOUNDED_DESKEW.md` | Input, ROI, coordinate, rotation, geometry and deskew stage notes |
-| `SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md`, `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`, `SCAN_07_SYSTEM_SYNCHRONIZATION_AUDIT.md`, `SCAN_08_09_UNIFIED_IMPLEMENTATION.md`, `SCAN_10_ADAPTIVE_IMAGE_QUALITY_A1.md`, `SCAN_11_ADAPTIVE_PROCESSING_A2.md`, `SCAN_12_ADAPTIVE_RUNTIME_A3.md` | Research, synchronization, enhancement and adaptive processing evolution |
-| `SESSION_LOG.md` | Chronological handoffs and issue breadcrumbs |
+| `SCANNER_AUDIO_LIFECYCLE_2026-11-09.md` | Web Audio interruption/recovery behavior, gesture-based resume, non-blocking audio policy and historical tone/gain values (see Audio and Torch decisions below). |
+| `SCANNER_BACKGROUND_RECOVERY_AUDIT_2026-11-08.md` | Lifecycle race conditions, serialized suspend/resume, unclaimed camera-lease cancellation and fresh-frame readiness evidence. |
+| `SCANNER_C2_AUDIT_2026-11-08.md` | Superseded Stocktake exit-gate proposal and the final separation between technical engine milestones and feature-owned presentation completion. |
+| `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Pinned ZXing-C++ source proof for native 180-degree 1D scanline reversal; distinction from full-image orthogonal rotation. |
+| `SCANNER_DECODER_PR05_BENCHMARK_FOUNDATION.md` | Local-only corpus manifest, paired/repeated benchmark methodology, scoring, latency definitions and privacy boundary. |
+| `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Original decoder migration source inventory, adapter boundary, protected contracts, test inventory and explicit absence of quantitative/device baseline. |
+| `SCANNER_RECOGNITION_PIPELINE.md` | Baseline-first recognition design, candidate ordering, symbology extension rules and optical limitations; old cadence/configuration is superseded. |
+| `SCANNER_SC01A_SPIKE_FINDINGS.md` | Worker transport hypotheses (VideoFrame, ImageBitmap, OffscreenCanvas), build/asset risks, bounded backpressure and missing empirical proof; Worker was retired. |
+| `SCANNER_SC05_INTEGRATION_QA.md` | Home/Stocktake integration invariants, device/corpus run matrix, privacy-safe run record and the explicit NOT RUN physical acceptance boundary. |
+| `SCANNER_SOURCE_AUDIT_2026-11-08.md` | Early source observations, tap-origin camera acquisition, preview/exit presentation findings and the later removal of DOM geometry startup gating. |
+| `SCANNER_TORCH_AUDIT_2026-11-09.md` | Capability-gated Torch policy and the tested Android case where resolved API promises did not illuminate the LED. |
+| `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md` | Preview readiness versus scanning readiness, fresh-frame requirement and independent Home/Stocktake video presentation ownership. |
+| `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md` | Native/shared/transferred/deferred decoder capability matrix and the rule against duplicating shared processing in the backend. |
+| `SCANNER_WORKSTREAM_SC01_05.md` | Consolidated SC-01 through SC-05 phase history, implementation boundaries and software/device acceptance separation. |
+| `SCAN_01_INPUT_CONTRACT.md` | Normalized coordinate-space definitions, rectangle invariants and module intent versus shared camera/session ownership. |
+| `SCAN_02_GEOMETRY_MAPPING.md` | Pure preview-to-source mapper, object-fit/object-position/mirror handling and typed fail-closed mapping errors. |
+| `SCAN_03_MODULE_REGION_INTEGRATION.md` | Feature-owned reticle measurement and in-place ROI publication without restarting session resources. |
+| `SCAN_04_STRICT_ROI_DECODING.md` | Strict source-frame crop conversion, floor/ceil edge rounding, hard ROI bounds and no full-frame/center fallback. |
+| `SCAN_05_ORTHOGONAL_ROTATION.md` | Quarter-turn candidate history, native 180-degree 1D reversal and the final 70 ms serialized decode interval. |
+| `SCAN_06_BOUNDED_DESKEW.md` | Continuous orientation estimator, confidence gates, contrast normalization, bounded bilinear correction and synthetic test limits. |
+| `SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` | Research gates for optical corpus, geometry, enhancement, performance adaptation and cross-platform acceptance. |
+| `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md` | Native ROI detail preservation, 1.5x baseline then bounded 1x/2x fallback, and native-autofocus ownership. |
+| `SCAN_07_SYSTEM_SYNCHRONIZATION_AUDIT.md` | Cross-document synchronization findings and corrections to stale implementation/cadence claims. |
+| `SCAN_08_09_UNIFIED_IMPLEMENTATION.md` | Optional enhancement and conservative geometry candidate design, limits and failure modes. |
+| `SCAN_10_ADAPTIVE_IMAGE_QUALITY_A1.md` | Scalar-only multi-label image-quality observations and diagnostic semantics. |
+| `SCAN_11_ADAPTIVE_PROCESSING_A2.md` | Deterministic optional-transform selection, priority and candidate caps; baseline remains first. |
+| `SCAN_12_ADAPTIVE_RUNTIME_A3.md` | Runtime-pressure hysteresis and optional candidate-budget reduction without changing baseline, cadence or camera control. |
+
+### Consolidated subsystem decisions
+
+**Lifecycle and preview.** Early audits found independently handled `visibilitychange`, `pagehide` and `pageshow` signals could race; a hook-lifetime retry cap could block later valid foreground recovery; and a tap-started but not-yet-claimed camera lease could survive backgrounding. The accepted direction serialized lifecycle transitions, cancelled unclaimed leases on suspend/unmount, and required fresh frame evidence (`requestVideoFrameCallback` where available, otherwise media-timeline progression). A timeout must fail readiness rather than promote stale dimensions. Camera acquisition remains tap-origin and single-claim. Preview readiness is distinct from decoder/scanning readiness.
+
+The engine no longer waits for DOM/container geometry before attaching or playing the stream. It attaches the stream, starts playback, waits for usable fresh media, publishes preview readiness, initializes the decoder, then enters scanning. Home and Stocktake each own their video element, reticle, crop, overlay and transition; the shared engine owns only technical media/session readiness. The old C2 audit proposed sending a presentation-completion milestone back into the engine; that model was superseded. Presentation completion remains local to the feature, while the engine emits technical lifecycle/resource milestones only.
+
+**Strict geometry and ROI.** The input contract distinguishes feature-facing `preview-content-normalized` from decoder-facing `source-frame-normalized`, both top-left-origin normalized rectangles with finite positive in-bounds extents. The pure mapper accounts for source dimensions, visible content, `object-fit`, `object-position` and mirroring; it does not query DOM or become a startup barrier. Home and Stocktake publish their own reticle-derived region in place. The decoder resolves normalized edges to source pixels using floor for leading edges and ceil for trailing edges, clamps to source bounds, and rejects absent/invalid/zero-area ROI. No full-frame, centered, guessed or outward-expanded fallback is allowed. Current hard limits and ownership are in SCANNER_ENGINE.md.
+
+**Recognition evolution.** The accepted pipeline preserves an unmodified baseline first, then bounded orientation/deskew and only eligible optional enhancement/geometry candidates. The original ROI remains authoritative; transformations cannot invent barcode data. Upscaling does not restore missing sensor detail. Saturated glare, motion blur, severe defocus, occlusion, missing quiet zones and insufficient source pixels may make a symbol unreadable. Geometry correction was a conservative barcode-envelope model, not general homography or arbitrary 3D dewarping. Candidate count, pixels, allocation and decode serialization remain bounded.
+
+SCAN-05/06 moved from a scheduled quarter-turn attempt and narrow deskew window to same-frame upright → quarter-turn → continuous-angle recovery after misses. The continuous estimator used a 180-bin Sobel orientation histogram, directional-energy/coherence gates, a signed half-turn range, percentile contrast normalization only for compressed luminance, and bounded inverse-angle bilinear correction. Synthetic fixtures cover intermediate angles and low contrast, but they do not establish real-world success percentages. Current runtime values and limits belong only in SCANNER_ENGINE.md; old phase-specific values in the deleted records are historical snapshots.
+
+**Adaptive processing.** A1 reuses existing grayscale ROI observations and emits scalar-only, multi-label findings; it does not retain pixels or issue camera commands. Motion requires a valid temporal reference; a single frame cannot prove motion blur; low sharpness requires valid edge-bearing samples. A2 selects at most two optional enhancement transforms based on actionable findings, bypasses enhancement for glare/clipping, and never delays the baseline fast path. A3 reacts only to sustained runtime pressure with hysteresis and reduces the optional image/geometry candidate tail; it does not change camera constraints, ROI, baseline decode, validation, frame cadence or session lifecycle. Exact current policy is in SCANNER_ENGINE.md.
+
+**Autofocus and Torch.** Continuous autofocus was retained only as a best-effort initial camera-request preference. No post-preview focus `applyConstraints()`, autofocus re-arm, stream restart or focus command is allowed. Focus-quality sampling is passive: low-texture and moving samples are rejected; sustained blur may inform guidance but cannot control the lens. Torch is capability-gated from the active track; unsupported/rejected toggles are non-fatal, track-constraint updates are serialized and preserve unrelated settings, and late results from retired tracks are ignored. A Samsung Galaxy S23 Ultra / Android Chrome probe showed that resolved advanced-constraint promises did not physically illuminate the LED when Torch capability was not exposed; this is device-specific evidence, not a universal Android claim. No model sniffing or capability bypass was accepted.
+
+**Audio feedback.** Audio is independent of camera/session recovery. A closed AudioContext is recreated; a suspended/interrupted context may be resumed best-effort on visibility return, with a direct user gesture as the reliable retry path under browser autoplay policy. Audio failure must never block scanning or barcode acceptance. The 2026-11-09 adjustment recorded a 0.60 linear gain ceiling (0.30 at the default 50% setting), approximately 140 ms tone duration, sine waveform and 1760 Hz frequency. These are historical implementation values; verify current source before changing or asserting them. Physical speaker loudness and all iOS interruption cases were not proven by browser tests.
+
+**Benchmark and acceptance.** The development-only harness was designed for local labelled images and a versioned manifest with strict source-frame ROI, explicit symbology/ground truth and negative controls. Compare identical samples/options in repeated runs and reverse backend order; report exact-match, misses, wrong decodes, false positives, initialization and adapter decode p50/p95 separately. Adapter decode time is not camera-to-result latency. Keep expected/decoded payloads and raw images local; exports contain outcome/metric metadata only. A useful corpus spans enabled symbologies, orientation, ROI edges, lighting, glare, blur, carrier geometry and real iOS/Android device/browser captures. CI/synthetic fixtures cannot prove optical accuracy or physical-device performance. SC-05 software integration closed, but its detailed physical iOS/Android device matrix and labelled-corpus acceptance were recorded as NOT RUN; do not convert that into a pass.
+
+**Worker decision.** Worker research considered VideoFrame first, ImageBitmap fallback, optional OffscreenCanvas and bounded ImageData/ArrayBuffer fallback. All were hypotheses requiring actual Vite/Pages asset loading, browser transport, ownership/disposal, backpressure, cancellation, memory, accuracy and end-to-end performance measurements. The prototype never became production runtime and was removed during PR #153 cleanup. Do not revive Worker architecture from historical research alone.
 
 ## Incident note template
 
