@@ -15,7 +15,7 @@
 
 ### Decoder replacement
 
-The project moved from the legacy ZXing JavaScript decoder to ZXing-C++ WASM. The capability comparison and adapter evidence explain which operations moved to the native backend and which remain shared RetailOS preprocessing/validation responsibilities. The accepted result is a single WASM backend, not a dual-engine arrangement.
+The project moved from the legacy ZXing JavaScript decoder to ZXing-C++ WASM. The capability comparison and adapter evidence explain which operations moved to the native backend and which remain shared RetailOS preprocessing/validation responsibilities. The accepted result is a single WASM backend, not a dual-engine arrangement. Current source inspection on the post-PR-154 main baseline confirms `tryHarder`, `tryRotate`, `tryInvert` and `tryDownscale` are enabled; `tryDenoise` is enabled only when the active format allowlist includes supported 2D formats. ZXing-C++ owns 90°/180°/270° orthogonal search in this configuration, so older PR-07 notes that describe `tryRotate: false` or a shared quarter-turn candidate are historical and superseded. `LocalAverage` is attempted before `GlobalHistogram`; invalid/error reads are rejected before the application result boundary.
 
 ### Recognition pipeline and geometry
 
