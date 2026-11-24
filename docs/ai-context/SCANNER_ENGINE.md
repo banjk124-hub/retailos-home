@@ -81,14 +81,14 @@ Validation changes must include positive and negative fixtures. Do not broadly a
 
 The production UI does not install a console-intercepting diagnostic collector or retain/export a rolling diagnostic event buffer. Runtime controller state remains internal to the session and continues to drive bounded adaptive processing, camera health and passive focus policy. Do not remove or repurpose those controller inputs as part of UI cleanup. Barcode payloads, camera identifiers and employee identifiers must not enter diagnostic output. Benchmark measurements remain in the isolated developer harness under `scripts/scanner-benchmark/`.
 
-Known diagnostic limitation: native ZXing-C++ result geometry/orientation metadata is not yet normalized into the RetailOS `DecoderOutput.geometry` contract. Do not claim position overlays or native rotation hit attribution are available until the adapter, diagnostics allowlist and tests are updated together.
+Known decoder limitation: native ZXing-C++ result geometry/orientation metadata is not normalized into the RetailOS `DecoderOutput.geometry` contract. Do not claim position overlays or native rotation hit attribution are available without a separate adapter-level implementation and regression tests.
 
 ## 7. Verified capabilities vs. release acceptance
 
 **Automated architecture evidence currently present**
 - WASM-only factory and no-legacy preflight guard.
 - Real WASM adapter integration harness and generated barcode fixtures.
-- Regression tests for ROI, scaling, validation, pipeline ordering, lifecycle, diagnostics and WASM options.
+- Regression tests for ROI, scaling, validation, pipeline ordering, lifecycle, camera health, focus policy and WASM options.
 - TypeScript, production build and Pages build run in CI.
 
 **Still requires optical / physical evidence**
@@ -106,7 +106,7 @@ A green CI run proves code contracts and build health, not optical accuracy or p
 2. Device profile is advisory; low-end initial camera resolution, cadence and pre-decode budgets are not yet fully adapted.
 3. Geometry generation budget is applied after some candidate preparation work; measure and move the guard earlier only with regression coverage.
 4. Adapter currently discards native `position`, `rotation`, `isMirrored`, `isInverted` and `symbologyIdentifier` metadata.
-5. Diagnostic collector does not yet retain every emitted geometry / image-quality metric.
+5. Developer diagnostics are intentionally isolated from the production UI; use the dedicated benchmark harness for repeatable measurements.
 6. `tryDenoise` is experimental and needs A/B optical evidence by 2D symbology.
 7. RGBA → luminance → RGBA conversion may add avoidable allocations; benchmark before changing the input path.
 8. EAN-2 / EAN-5 add-on symbols remain ignored by the current reader configuration.
@@ -151,11 +151,11 @@ PR #148 merged to main at `0b6840c9b2872d93920d4eba5f628158e09679b4`. CI #1348 p
 
 **Software scope closure:** PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final PR-head CI #1375, post-merge CI #1376 and Pages deployment #151 passed. PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed. Physical optical/device QA remains NOT RUN.
 
-SC-05 validates cross-layer composition before introducing any new scanner algorithms. The current integration uses one `useScannerEngine` → `UniversalScannerSession` path shared by Home and Stocktake. Camera lease remains in the shared camera service; feature-owned preview ROI and geometry versions are published through the existing hook. Health recovery is bounded, focus guidance is passive, adaptive runtime budget is passed to the production WASM adapter and the Worker prototype remains isolated.
+SC-05 validates cross-layer composition before introducing any new scanner algorithms. The current integration uses one `useScannerEngine` → `UniversalScannerSession` path shared by Home and Stocktake. Camera lease remains in the shared camera service; feature-owned preview ROI and geometry versions are published through the existing hook. Health recovery is bounded, focus guidance is passive, adaptive runtime budget is passed to the production WASM adapter and no Worker runtime is part of the production path.
 
 The cross-layer source-contract test is `scripts/test-scanner-sc05-integration.mjs` and is registered in `scripts/preflight.mjs`. Existing focused regression/decoder-fixture tests remain the detailed subsystem authority. QA device matrix, run-record and local corpus protocol are in [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md).
 
-The SC-04 passive focus recovery state/action/guidance is included in the existing privacy-allowlisted diagnostic collector and surfaced by the Home QA monitor. This adds visibility only; no new controller, camera command or capture path.
+The SC-04 passive focus recovery state/action/guidance remains internal to the runtime policy. The former collector and Home QA Monitor were removed; no new controller, camera command or capture path is introduced.
 
 Software CI is not physical-device or optical acceptance. No scan-accuracy, false-positive, focus distance, cross-platform or latency threshold may be claimed until a labelled corpus and real-device run records support it. SC-05 release acceptance must show actual test results or list the remaining device/corpus blocker.
 ## 15. Change protocol
