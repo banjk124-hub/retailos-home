@@ -51,7 +51,7 @@ The audit inventory is grouped by responsibility, rather than treating every fil
 | Platform scanner | 23 | Session, contracts, decoder, recognition policy and transforms |
 | Feature scanner | 16 | React bridge, Home scanner UI, settings, diagnostics and feature services |
 | Shared camera services | 3 | Camera lease, safe camera diagnostics and frame capture |
-| Feature consumers / QA | 5 | Home, Stocktake, Stocktake exit gate and Scanner QA Monitor |
+| Feature consumers / QA (historical inventory) | 4 | Home, Stocktake, Stocktake exit gate; the former Scanner QA Monitor was removed later |
 | Scanner-related styles | 3 | QA/settings styles and Stocktake scanner presentation styles |
 | Scanner tests | 24 | Recognition, validation, lifecycle, camera, presentation and diagnostics |
 | Scanner architecture / phase docs | 26 | Current architecture, dated audits, phase records and handoff/status docs |
