@@ -1,7 +1,7 @@
 # Scanner Engine — current technical source of truth
 
 **Status:** Production scanner runs ZXing-C++ WASM on the Main Thread through the current adapter. The isolated SC-01 Worker prototype has been removed from the active codebase; no Worker runtime is part of the supported scanner architecture.
-**Last reconciled:** 2026-11-23
+**Last reconciled:** 2026-11-24
 **Repository:** `banjk124-hub/retailos-home`
 
 This document describes the current implementation contract. Older investigations and incident notes are indexed in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). They preserve evidence; they do not override this document or the source code.
