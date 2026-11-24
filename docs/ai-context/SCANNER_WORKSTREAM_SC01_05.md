@@ -13,15 +13,15 @@ Stabilize the existing scanner engine in bounded stages. Keep CameraSession leas
 
 | Stage | Name | Scope / exit gate |
 |---|---|---|
-| **SC-01A** | Worker Foundation prototype | Isolated Worker/WASM proof boundary and protocol foundation. Source-contract CI is present; built-worker transport/runtime empirical proof remains unverified. |
-| **SC-01B** | Runtime & Protocol Hardening | Typed/versioned messages, bounded init/decode, generation validation, capped recovery/disposal. CI merged; user reports deploy/device verification PASS. |
-| **SC-01C** | Frame Scheduling | One in-flight + one replaceable latest pending frame; queue/backpressure metrics, drop accounting and bounded timeout. Exit: source contracts + CI passed and merged; device/transport performance remains required before production integration. |
+| **SC-01A** | Worker Foundation investigation | Historical isolated Worker/WASM investigation. Prototype code was removed during cleanup; built-worker transport/runtime empirical proof was never accepted. |
+| **SC-01B** | Worker protocol prototype (historical) | Worker protocol source work was not connected to production and was removed during cleanup; no Worker runtime acceptance is claimed. |
+| **SC-01C** | Worker frame scheduling prototype (historical) | Prototype source and source-contract test were removed; transport/performance parity was not proven and no production integration occurred. |
 | **SC-02** | Camera Health Controller | Frame heartbeat, health states, watchdog, recovery cooldown, bounded retry budget, escalation. Exit: stale/paused/ended stream cases reliably detected and recover without loops. |
 | **SC-03** | Geometry Diagnostics | Geometry signature, stale detection, invalidation, source/preview reconciliation. Exit: geometry drift/invalid mapping cannot decode with stale ROI; diagnostics are privacy-safe. |
 | **SC-04** | Focus Recovery Policy | Passive quality-state policy using existing ROI samples; sustained-blur gate, native-autofocus wait, recovery recognition and bounded cooldown. Exit: state transitions/guards pass CI; optical behavior remains device QA. |
 | **SC-05** | Integration & QA | Cross-layer integration contract + existing regression audit, benchmark protocol and physical-device acceptance matrix. Software exit: contract tests, full preflight/build/Pages/PR-base CI, docs sync. Optical/device exit remains separate and requires actual recorded runs. |
 
-The phases are ordered for evidence and safe review, not as a Worker production migration. SC-02 health operates within the current shared session; SC-03 geometry versions guard the feature-owned ROI; SC-04 observes existing ROI quality; SC-05 validates their integration. SC-01A/01B/01C Worker prototypes remain isolated and their transport/performance proof is a separate gate, not a prerequisite for the existing Main Thread production path.
+The phases are ordered for evidence and safe review, not as a Worker production migration. SC-02 health operates within the current shared session; SC-03 geometry versions guard the feature-owned ROI; SC-04 observes existing ROI quality; SC-05 validates their integration. SC-01A/01B/01C Worker prototype work was retired from active code. Production remains the proven Main Thread path; a future Worker project must start with an explicit new decision and empirical acceptance criteria.
 
 ## Global protected contracts
 
@@ -37,7 +37,7 @@ The phases are ordered for evidence and safe review, not as a Worker production 
 ## SC-01 — Worker Foundation
 
 ### Target boundary
-Main Thread retains video/camera, session, ROI publication, scheduling, UI and result gate. Worker receives only owned frame data plus immutable decode-job context, performs pixel/image preparation and ZXing WASM decode, and returns decode output/diagnostics. Worker must not validate retail payloads, perform lookup, invoke UI, or own camera/session state.
+Historical design note only: the proposed Worker boundary would have retained camera/session/ROI ownership on Main Thread. This proposal was never promoted and has been removed from active source.
 
 ### Protocol and identity
 Versioned message envelope: protocol version, worker generation, session ID + session generation, job ID, message type. INIT/READY handshake; DECODE/RESULT; CANCEL; DISPOSE/DISPOSED; bounded ERROR. Ignore stale generation/session/job responses. Freeze per-job ROI/settings snapshot.
@@ -58,7 +58,7 @@ SC-01A/01B/01C remain isolated prototypes; no Worker decoder is wired into the p
 
 SC-01C scheduling policy is intentionally simple: accept incoming decode requests, dispatch immediately when idle, retain only the newest waiting frame while one decode is active, resolve replaced waiting requests as misses, and dispatch the retained newest frame after the active decode completes. It does not add a timer-driven FIFO, parallel decode or synchronous WASM cancellation. Diagnostics are bounded counters/aggregates in memory and contain no payload/device data.
 
-SC-01C is closed at the isolated prototype/software-validation boundary. Do not promote the Worker prototype to production until transport, runtime, resource and accuracy gates are independently verified.
+SC-01C prototype source has been retired. Worker transport, runtime, resource and accuracy gates were never satisfied; do not infer production readiness from source-contract tests.
 ### SC-01 release gates
 No lost frames/resource leaks or stale results; bounded queue; graceful worker failure; fallback maintains exact formats, ROI, processing/candidate order and validation. Benchmark: Main Thread blocking/long tasks, decode P50/P95, exact-match/miss/wrong/false-positive rates, worker startup, transfer cost, memory observations, first-result latency and UI responsiveness. Establish baseline before changes; do not invent target metrics.
 
@@ -126,7 +126,7 @@ SC-05 will not create a new engine or camera orchestration layer. It adds one fo
 
 ### Software integration gates
 
-- `scripts/test-scanner-sc05-integration.mjs`: guard single camera owner, shared Home/Stocktake path, ROI publishing/close gating, bounded health recovery, SC-03 revision rejection, SC-04 passive focus, adaptive runtime wiring, WASM-only production factory, isolated Worker prototype and benchmark privacy.
+- `scripts/test-scanner-sc05-integration.mjs`: guard single camera owner, shared Home/Stocktake path, ROI publishing/close gating, bounded health recovery, SC-03 revision rejection, SC-04 passive focus, adaptive runtime wiring, WASM-only production factory and benchmark privacy.
 - Existing scanner tests remain specialized; SC-05 does not duplicate their fixtures or change their algorithms.
 - CI must run full preflight, TypeScript, production build, Pages build and PR-base/bundle comparison on the final PR head.
 - Review changed paths and bundle/dependency delta; reject unrelated source changes.
