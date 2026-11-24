@@ -15,7 +15,6 @@ This document is the source of truth for modal/overlay lifecycle, page scroll lo
 | Module library | `HomeScreen` + `MotionSheet` | Sheet/dialog | Home owns lock until exit animation completes |
 | Settings | `SettingsHub` | Dialog | Home + SettingsHub acquire coordinated locks |
 | Scanner settings | `ScannerSettingsPanel` | Dialog | Home + panel acquire coordinated locks |
-| Scanner QA | `ScannerQaMonitor` | Dialog | Home + monitor acquire coordinated locks |
 | Stocktake | `StocktakeModule` | Full-screen on mobile, centered panel on desktop | Module acquires lock |
 | Stocktake Import | `StocktakeImportModule` | Full-screen on mobile, workspace panel on desktop | Module acquires lock |
 | Notification popover | `HomeScreen` | Non-modal anchored popover | No page lock by design |
@@ -28,7 +27,6 @@ This document is the source of truth for modal/overlay lifecycle, page scroll lo
 - The original inline overflow value is restored only when the final owner releases.
 - Separate documents have independent state.
 - `src/shared/hooks/useBodyScrollLock.ts` binds acquisition/release to React effect lifecycle.
-- Home holds a parent lock across full-screen/modal handoffs so switching Settings → Scanner QA/Scanner Settings or Library → Stocktake does not momentarily unlock the page. Child surfaces may acquire their own lock safely.
 - Do not add independent `previousOverflow` snapshot/restore logic to a new overlay. Use the shared hook or explicitly document why the surface is non-modal.
 
 ## Layout and responsive contract
@@ -47,7 +45,6 @@ This document is the source of truth for modal/overlay lifecycle, page scroll lo
 - React hook: `src/shared/hooks/useBodyScrollLock.ts`
 - Home owner/state: `src/features/home/HomeScreen.tsx`
 - Settings styles: `src/styles/scanner-settings.css`
-- Scanner QA styles: `src/styles/scanner-qa-monitor.css`
 - Home overlay styles: `src/styles/mobile-tuning.css`, `src/styles/home-ux.css`
 - Stocktake styles: `src/features/stocktake/components/stocktake.css`
 - Stocktake Import styles: `src/features/stocktake-import/components/stocktake-import.css`
