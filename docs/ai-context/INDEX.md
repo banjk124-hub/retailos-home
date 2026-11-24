@@ -1,42 +1,39 @@
 # Documentation index
 
-This file is the navigation layer for repository documentation. Read the canonical document for a topic; do not copy the same implementation history into several files.
+This file is the navigation layer for repository documentation. Read one canonical source per topic; do not duplicate implementation history across files.
 
 ## Start here
 
-1. `AGENTS.md` — operating rules, selective context policy and safety contract.
-2. `PROJECT_CONTEXT.md` — durable product facts and current top-level repository state.
+1. `AGENTS.md` — operating rules and context policy.
+2. `PROJECT_CONTEXT.md` — durable product facts and repository context.
 3. `IMPLEMENTATION_STATUS.md` — verified implementation state and outstanding acceptance gates.
-4. Select the relevant canonical topic document from the table below; read `ARCHITECTURE.md` only when the task touches an architecture decision or protected contract.
-5. Load `.github/skills/retailos-core/SKILL.md` and only the task skill needed for the request (audit, technical research or implementation).
-6. `prompts/START_HERE.md` — concise session-start and task prompts.
+4. Select the canonical topic document below. Read `ARCHITECTURE.md` only for tasks touching architecture decisions or protected contracts.
+5. Load only the relevant task skill. `prompts/START_HERE.md` contains session-start prompts.
 
-## Topic sources of truth
+## Canonical topic sources
 
 | Topic | Canonical document |
 |---|---|
-| Scanner current architecture, runtime ownership, decoder options, payload rules and acceptance gates | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
-| Scanner historical investigations, incident notes and migration evidence | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
-| Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |
-| Scanner stabilization SC-01A/01B/01C stages through SC-05 and current evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
-| SC-05 cross-layer scanner integration and physical-device/corpus QA protocol | [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md) |
+| Scanner current architecture, ownership, lifecycle, ROI, pipeline, decoder, limits, validation, tests and current status | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
+| Scanner historical phases, investigations, decisions, incidents and cleanup history | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
+| Scanner future priorities | [ROADMAP.md](./ROADMAP.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
 | Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
 | UI interaction responsiveness | `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` |
-| PWA runtime, user-approved downloads, Update Center, explicit safe-handoff activation, complete offline payload, data separation and rollback | [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) |
+| PWA runtime and release contract | [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) |
 | Bundle analysis, code splitting and performance evidence | [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md) |
 | Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
 | Export utilities | `modules/EXPORT_FILE.md` |
-| Login Phase 2 historical changes | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
+| Login Phase 2 history | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
 
 ## AI context loading policy
 
-- The default session-start set is `AGENTS.md`, this index, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`.
-- Load only the canonical topic document(s), relevant skill and source files required by the task. `ARCHITECTURE.md` is not a mandatory full read for an unrelated UI or documentation task.
-- Historical documents are opt-in evidence for a specific investigation; never bulk-load the archive.
-- Verify volatile repository facts (branch, commit, PR, CI, deployment) against GitHub before updating current-state documents.
-- Keep exploratory technology research clearly separate from accepted architecture decisions. Update canonical decisions only after an explicit decision and validation.
+- Default session-start set: `AGENTS.md`, this index, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`.
+- For scanner work, load `SCANNER_ENGINE.md` first. Load `SCANNER_HISTORY.md` only for a specific historical question or incident.
+- Do not load multiple old scanner phase documents as competing specifications.
+- Verify volatile facts (branch, commit, PR, CI, deployment) against GitHub before updating current-state documents.
+- Separate exploratory research from accepted architecture. Update canonical decisions only after validation.
 
 ## Document ownership
 
@@ -44,12 +41,10 @@ This file is the navigation layer for repository documentation. Read the canonic
 - `ARCHITECTURE.md`: accepted decisions and invariants; no repeated per-commit logs.
 - `IMPLEMENTATION_STATUS.md`: current verified state and outstanding acceptance gates.
 - `ROADMAP.md`: future work and exit criteria, not a duplicate architecture spec.
-- `AI_HANDOFF.md`: one current handoff at the top; older handoffs are clearly labelled historical.
+- `AI_HANDOFF.md`: one current handoff at top; old handoffs labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
-- `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
-- Scanner implementation truth lives in `SCANNER_ENGINE.md`; SC-01 Worker investigations remain historical evidence in `SCANNER_HISTORY.md`; scanner phase closure and outstanding physical acceptance gates remain in `SCANNER_WORKSTREAM_SC01_05.md` and `SCANNER_SC05_INTEGRATION_QA.md`.
-- PWA runtime/release truth lives in `PWA_RUNTIME_RELEASE.md`; every implementation and deployment must follow its separate download-consent and explicit safe-handoff activation contract. Bundle-size analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
+- `CHANGELOG_AI.md`: concise implementation evidence, not repeated session narratives.
+- Scanner current truth: `SCANNER_ENGINE.md`; scanner history: `SCANNER_HISTORY.md`.
+- PWA runtime/release truth: `PWA_RUNTIME_RELEASE.md`.
 
-## Historical-document policy
-
-Historical audits, phase plans and incident notes are retained when they contain unique evidence, symptoms, decisions or regression clues. They must not appear as competing current specifications. When an old document conflicts with current source or the relevant canonical contract (SCANNER_ENGINE.md or PWA_RUNTIME_RELEASE.md), treat it as a historical snapshot and verify the exact resolving change before acting.
+Historical scanner phase/audit files are non-canonical. The two documents above are the only Scanner entry points; a separate docs-only archival move can reduce the remaining file count after all backlinks are inventoried.
