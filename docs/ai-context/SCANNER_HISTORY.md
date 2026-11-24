@@ -102,6 +102,13 @@ PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final PR-head CI #
 
 PR #153, `chore(scanner): retire unused diagnostics and Worker prototype`, removed the Home-startup console collector, QA Monitor UI/settings entry/QA styling and exports, and the unused Worker prototype/bridge/test/command. Orphan capability types were removed; `ScannerPoint` was retained because it is still used by the result contract. Runtime camera/session/decoder/ROI/recovery logic was not the cleanup target. CI #1389 passed preflight, TypeScript/production build, Pages build and bundle comparison. The project owner subsequently confirmed merge, deployment and stable operation without observed errors.
 
-## Archive disposition
+## Consolidated history from repository-wide documents
 
-The remaining phase/audit files are archival records only. They should not be added to the AI default context set or linked as current implementation documentation. Keep them until a complete backlink inventory confirms they can be moved or removed without breaking historical references. Their contents are not canonical.
+The following Scanner-specific details were duplicated in general-purpose logs and are now treated as part of this archive:
+- Early scanner foundation, camera lease ownership and lifecycle fixes (2026-11-05 to 2026-11-08).
+- Home/Stocktake presentation ownership, first-frame readiness and Torch/audio feedback decisions (2026-11-08 to 2026-11-09).
+- Module-owned input contract, geometry/ROI, rotation, deskew, adaptive image processing and WASM migration (2026-11-10 to 2026-11-14).
+- Camera request bridge, focus constraints and native autofocus ownership decisions.
+- SC-01 to SC-05 milestones and the PR #153 Worker/QA diagnostics retirement recorded above.
+
+The long-form source audit, phase plans and QA runbooks remain archival evidence in the original paths for now. They are not separate sources of current truth and must not be added to the default AI context load. A subsequent archival deletion/move may remove them only after the full repository backlink scan has been reconciled.
