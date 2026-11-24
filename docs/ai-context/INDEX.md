@@ -19,7 +19,6 @@ This file is the navigation layer for repository documentation. Read the canonic
 | Scanner historical investigations, incident notes and migration evidence | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
 | Scanner implementation priorities and exit criteria | [ROADMAP.md](./ROADMAP.md) |
 | Scanner stabilization SC-01A/01B/01C stages through SC-05 and current evidence gates | [SCANNER_WORKSTREAM_SC01_05.md](./SCANNER_WORKSTREAM_SC01_05.md) |
-| Worker transport/API research and remaining SC-01A empirical validation matrix | [SCANNER_SC01A_SPIKE_FINDINGS.md](./SCANNER_SC01A_SPIKE_FINDINGS.md) |
 | SC-05 cross-layer scanner integration and physical-device/corpus QA protocol | [SCANNER_SC05_INTEGRATION_QA.md](./SCANNER_SC05_INTEGRATION_QA.md) |
 | Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
 | Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
@@ -48,7 +47,7 @@ This file is the navigation layer for repository documentation. Read the canonic
 - `AI_HANDOFF.md`: one current handoff at the top; older handoffs are clearly labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence; avoid repeating complete session narratives.
-- Scanner implementation truth lives in `SCANNER_ENGINE.md`; the SC-01A/01B/01C staged Worker plan and evidence gates live in `SCANNER_WORKSTREAM_SC01_05.md`; scanner historical notes are indexed in `SCANNER_HISTORY.md`.
+- Scanner implementation truth lives in `SCANNER_ENGINE.md`; SC-01 Worker investigations remain historical evidence in `SCANNER_HISTORY.md`; scanner phase closure and outstanding physical acceptance gates remain in `SCANNER_WORKSTREAM_SC01_05.md` and `SCANNER_SC05_INTEGRATION_QA.md`.
 - PWA runtime/release truth lives in `PWA_RUNTIME_RELEASE.md`; every implementation and deployment must follow its separate download-consent and explicit safe-handoff activation contract. Bundle-size analysis remains in `PERFORMANCE_BUNDLE_PWA.md`.
 
 ## Historical-document policy
