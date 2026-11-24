@@ -64,11 +64,6 @@ const checks = [
     args: ["scripts/test-scanner-camera-request.mjs"],
   },
   {
-    name: "Scanner recovery diagnostics privacy and export tests",
-    command: process.execPath,
-    args: ["scripts/test-scanner-diagnostics.mjs"],
-  },
-  {
     name: "Scanner lifecycle contract regression tests",
     command: process.execPath,
     args: ["scripts/test-scanner-lifecycle.mjs"],
@@ -77,11 +72,6 @@ const checks = [
     name: "Scanner SC-02 camera health and bounded recovery tests",
     command: process.execPath,
     args: ["scripts/test-scanner-camera-health.mjs"],
-  },
-  {
-    name: "Scanner Worker prototype source-contract tests",
-    command: process.execPath,
-    args: ["scripts/test-scanner-worker-prototype.mjs"],
   },
   {
     name: "Scanner torch capability regression tests",

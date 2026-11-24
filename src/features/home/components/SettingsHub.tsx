@@ -1,4 +1,4 @@
-import { Activity, BellRing, ChevronLeft, ChevronRight, ScanBarcode, Settings, X, Download, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BellRing, ChevronLeft, ChevronRight, ScanBarcode, Settings, X, Download, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT, type UpdateCenterEntry } from '../../../shared/pwa/updateCenterStore';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
@@ -7,7 +7,6 @@ import '../../../styles/scanner-settings.css';
 type Props = {
   onClose: () => void;
   onOpenScannerSettings: () => void;
-  onOpenScannerQa: () => void;
 };
 
 function requestUpdateAction(action: 'download' | 'activate') {
@@ -69,7 +68,7 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
   </section>;
 }
 
-export default function SettingsHub({ onClose, onOpenScannerSettings, onOpenScannerQa }: Props) {
+export default function SettingsHub({ onClose, onOpenScannerSettings }: Props) {
   const [updateEntry, setUpdateEntry] = useState(readUpdateCenterEntry);
   const [showUpdateCenter, setShowUpdateCenter] = useState(false);
   useEffect(() => { const sync = () => setUpdateEntry(readUpdateCenterEntry()); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
@@ -103,7 +102,6 @@ export default function SettingsHub({ onClose, onOpenScannerSettings, onOpenScan
       <div className="scanner-settings-section-label">MÁY QUÉT BARCODE</div>
       <div className="scanner-settings-menu">
         <button type="button" className="scanner-settings-menu-item" onClick={onOpenScannerSettings}><span className="scanner-settings-menu-icon"><ScanBarcode size={20} /></span><span className="scanner-settings-menu-copy"><strong>Cài đặt máy quét</strong><small>Điều chỉnh âm báo và phản hồi rung khi quét</small></span><ChevronRight size={18} /></button>
-        <button type="button" className="scanner-settings-menu-item" onClick={onOpenScannerQa}><span className="scanner-settings-menu-icon is-diagnostic"><Activity size={20} /></span><span className="scanner-settings-menu-copy"><strong>Scanner QA Monitor</strong><small>Theo dõi camera, hiệu năng và xuất dữ liệu kiểm thử</small></span><ChevronRight size={18} /></button>
       </div>
       <p className="scanner-settings-footnote">Các tùy chọn máy quét được lưu trên thiết bị và dùng chung cho Home, Kiểm kê cùng các chức năng Scanner khác.</p>
     </section>

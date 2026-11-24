@@ -8,7 +8,6 @@ const downloadFile = readFileSync('src/shared/downloadFile.ts', 'utf8');
 const stocktakeExport = readFileSync('src/features/stocktake/services/stocktakeExport.ts', 'utf8');
 const dock = readFileSync('src/shared/navigation/LiquidDock.tsx', 'utf8');
 const stocktakeImport = readFileSync('src/features/stocktake-import/components/StocktakeImportModule.tsx', 'utf8');
-const scannerQa = readFileSync('src/features/home/components/ScannerQaMonitor.tsx', 'utf8');
 const exportFormats = readFileSync('src/features/data/exportFormats.ts', 'utf8');
 
 assert.ok(dataService.includes('export async function getCachedModuleSnapshots('), 'The shared batch reader must be exported.');
@@ -42,7 +41,6 @@ assert.ok(downloadFile.includes('URL.revokeObjectURL(url)'), 'The shared downloa
 for (const [name, source] of [
   ['Stocktake export', stocktakeExport],
   ['Stocktake Import', stocktakeImport],
-  ['Scanner QA', scannerQa],
   ['Snapshot export', exportFormats],
 ]) {
   assert.ok(source.includes("from '../../../shared/downloadFile'") || source.includes("from '../../shared/downloadFile'"), `${name} must use the shared download helper.`);

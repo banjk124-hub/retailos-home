@@ -23,11 +23,6 @@ assert.match(hook, /detectScannerDeviceProfile\(\)/);
 assert.match(hook, /profileReason: deviceProfile\.reason/);
 const contracts = await read('../src/platform/scanner/contracts.ts');
 assert.match(contracts, /ScannerProfileName = 'LOW' \| 'MID' \| 'HIGH'/);
-const collector = await read('../src/features/scanner/services/scannerDiagnosticCollector.ts');
-assert.match(collector, /'deviceProfile', 'deviceProfileReason'/);
-const monitor = await read('../src/features/home/components/ScannerQaMonitor.tsx');
-assert.match(monitor, /deviceProfileReason/);
-assert.match(monitor, /'deviceProfile','deviceProfileReason'/);
 
 const session = await read('../src/platform/scanner/universalScannerSession.ts');
 assert.match(session, /deviceProfile: this\.options\.profile/);
@@ -35,9 +30,7 @@ assert.match(session, /deviceProfileReason: this\.options\.profileReason/);
 assert.match(session, /const minDecodeIntervalMs = 70/);
 assert.match(session, /this\.options\.formats/);
 
-const emitBlock = session.slice(session.indexOf('private emitDiagnostics()'));
-assert.match(emitBlock, /this\.diagnosticDecodeDurationTotalMs = 0/);
-assert.match(emitBlock, /this\.diagnosticDecodeDurationMaxMs = 0/);
+assert.match(session, /recordDecodeDuration/);
 const processBlock = session.slice(session.indexOf('private async processFrame'), session.indexOf('private handleFocusQuality'));
 assert.match(processBlock, /recordDecodeDuration/);
 

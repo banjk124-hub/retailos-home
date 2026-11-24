@@ -16,11 +16,11 @@ assert.match(app, /lazy\(\(\) => import\('\.\/features\/home\/HomeScreen'\)\)/);
 assert.doesNotMatch(app, /import HomeScreen from/);
 for (const component of [
   'BarcodeScanner', 'StocktakeModule', 'StocktakeImportModule',
-  'ScannerQaMonitor', 'SettingsHub', 'ScannerSettingsPanel'
+  'SettingsHub', 'ScannerSettingsPanel'
 ]) {
   assert.match(home, new RegExp('const ' + component + ' = lazy\\('));
 }
-assert.doesNotMatch(home, /import (?:BarcodeScanner|StocktakeModule|StocktakeImportModule|ScannerQaMonitor|SettingsHub|ScannerSettingsPanel) from/);
+assert.doesNotMatch(home, /import (?:BarcodeScanner|StocktakeModule|StocktakeImportModule|SettingsHub|ScannerSettingsPanel) from/);
 assert.match(exportFormats, /await import\('jszip'\)/);
 assert.match(exportFormats, /await import\('pptxgenjs'\)/);
 assert.doesNotMatch(stocktakeImport, /import JSZip from 'jszip'/, 'Stocktake Import must not eagerly load JSZip when the module opens.');

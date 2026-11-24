@@ -90,12 +90,10 @@ assert.match(settingsPanel, /previewScannerBeep/, 'beep preview uses the real au
 assert.match(settingsPanel, /isScannerVibrationSupported/, 'unsupported vibration APIs are detected');
 
 const settingsHub = await read('../src/features/home/components/SettingsHub.tsx');
-assert.match(settingsHub, /Scanner QA Monitor/);
 assert.match(settingsHub, /Cài đặt máy quét/);
 const home = await read('../src/features/home/HomeScreen.tsx');
 assert.match(home, /setShowSettings\(true\)/);
 assert.match(home, /<SettingsHub/);
-assert.match(home, /<ScannerQaMonitor/);
 assert.match(home, /<ScannerSettingsPanel/);
 
 const iconRegistry = await read('../src/shared/icons/icon.registry.ts');

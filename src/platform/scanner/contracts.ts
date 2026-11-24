@@ -188,32 +188,6 @@ export type ScannerResult = {
   };
 };
 
-export type ScannerCameraProfile = {
-  name: ScannerProfileName;
-  preferredWidth: number;
-  preferredHeight: number;
-  preferredFrameRate?: number;
-  facingMode: 'environment' | 'user';
-};
-
-export type ScannerActualCameraSettings = {
-  width?: number;
-  height?: number;
-  frameRate?: number;
-  facingMode?: string;
-  deviceId?: string;
-};
-
-export type ScannerCapabilities = {
-  secureContext: boolean;
-  mediaDevices: boolean;
-  getUserMedia: boolean;
-  requestVideoFrameCallback: boolean;
-  worker: boolean;
-  webAssembly: boolean;
-  vibration: boolean;
-};
-
 export type ScannerOpenOptions = {
   /** Advisory device capability tier; runtime pressure remains the adaptation authority. */
   profile: ScannerProfileName;
