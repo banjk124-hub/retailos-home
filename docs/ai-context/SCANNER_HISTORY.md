@@ -17,7 +17,7 @@ The Worker prototype and the in-app Scanner QA diagnostics collector/monitor wer
 | Record | What it preserves | How to use it now |
 |---|---|---|
 | `SCANNER_SC01A_SPIKE_FINDINGS.md` | Source/API feasibility review for Worker transports, Vite and ZXing WASM; empirical proof pending | Transport remains exploratory; no measured transport is accepted
-| `SCANNER_WORKSTREAM_SC01_05.md` | SC-01A/01B/01C Worker prototype sequence through SC-05 Integration & QA; 01B merged/device-verified by user, 01C scheduling prototype/software validation closed; empirical Worker gates pending | Current stage plan; use with `SCANNER_ENGINE.md`, not as evidence of production Worker integration
+| `SCANNER_WORKSTREAM_SC01_05.md` | SC-01A/01B/01C Worker prototype history through SC-05 Integration & QA; Worker transport/production integration was not accepted | Historical workstream and remaining device QA; use with `SCANNER_ENGINE.md` as a record of prior decisions, not as an active Worker project
 | `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Replacement baseline, risk inventory and protected contracts before WASM production cutover | Historical migration evidence; current state is in SCANNER_ENGINE.md |
 | `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md` | Capability-by-capability comparison and rationale for native vs shared responsibilities | Historical adoption decisions; check current adapter options before changing |
 | `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Source evidence supporting native WASM capabilities | Evidence reference, not a runtime specification |
