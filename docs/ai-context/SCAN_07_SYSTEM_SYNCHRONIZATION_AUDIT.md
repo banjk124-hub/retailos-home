@@ -2,13 +2,13 @@
 
 **Historical audit baseline:** PR #78; the focus correction was subsequently merged by PR #79 at `2a33931ae97528cbabf59781b2995d457da7a3f6`.
 **Status:** camera/focus findings below remain valid historical engineering evidence. The original SCAN-07-only scope lock is superseded by the unified recognition pipeline roadmap and PR #80.
-**Current recognition architecture:** `docs/ai-context/SCANNER_RECOGNITION_PIPELINE.md`.
+**Current recognition architecture:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). The remaining SCAN/SCANNER files are historical snapshots; this audit preserves source findings from its date only.
 
 ## Scope update — 2026-11-11
 
-PR #79 is merged. The scanner must no longer remain blocked in a camera-platform-only loop. Recognition work now proceeds as one coordinated pipeline:
-- SCAN-05/06 candidate ordering is being centralized in `scannerEnhancementPipeline.ts` (PR #80).
-- SCAN-08 image enhancement and SCAN-09 perspective/curved-label correction are the next recognition stages after the pipeline foundation passes CI and review; they do not require another camera-platform rewrite.
+At this historical point, PR #79 had merged. The scanner was no longer blocked in a camera-platform-only loop. Recognition work proceeded as one coordinated pipeline:
+- SCAN-05/06 candidate ordering was centralized in `scannerEnhancementPipeline.ts` (PR #80).
+- SCAN-08 image enhancement and SCAN-09 perspective/curved-label correction were proposed future stages at that time; current implementation is defined in SCANNER_ENGINE.md.
 - Camera focus/lifecycle/device acceptance remains a parallel quality lane. It is not a blanket prerequisite that prevents algorithm work from progressing.
 - The strict ROI, camera ownership, validation and module workflow protections in this audit remain in force.
 
