@@ -31,7 +31,6 @@ import { isPushConfigured, subscribeForPushNotifications } from '../notification
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
-import { installScannerDiagnosticCollector } from '../scanner/services/scannerDiagnosticCollector';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
 import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
 declare const __RETAILOS_BUILD_ID__: string;
@@ -39,7 +38,6 @@ declare const __RETAILOS_BUILD_ID__: string;
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
 const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
 const StocktakeImportModule = lazy(() => import('../stocktake-import/components/StocktakeImportModule'));
-const ScannerQaMonitor = lazy(() => import('./components/ScannerQaMonitor'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
  
@@ -47,7 +45,6 @@ const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSet
 const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>) => <BarcodeScanner {...props} />);
 const MemoizedStocktakeModule = memo((props: React.ComponentProps<typeof StocktakeModule>) => <StocktakeModule {...props} />);
 const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>) => <StocktakeImportModule {...props} />);
-const MemoizedScannerQaMonitor = memo((props: React.ComponentProps<typeof ScannerQaMonitor>) => <ScannerQaMonitor {...props} />);
 const MemoizedSettingsHub = memo((props: React.ComponentProps<typeof SettingsHub>) => <SettingsHub {...props} />);
 const MemoizedScannerSettingsPanel = memo((props: React.ComponentProps<typeof ScannerSettingsPanel>) => <ScannerSettingsPanel {...props} />);
 
@@ -121,19 +118,10 @@ export default function HomeScreen({
     return () => window.removeEventListener('retailos:open-settings', openSettings);
   }, []);
   const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
-  const [showScannerQa, setShowScannerQa] = useState(false);
   const [showScannerSettings, setShowScannerSettings] = useState(false);
   const closeSettings = useCallback(() => {
     setShowSettings(false);
     setActiveNav('home');
-  }, []);
-  const openScannerQa = useCallback(() => {
-    setShowSettings(false);
-    setShowScannerQa(true);
-  }, []);
-  const closeScannerQa = useCallback(() => {
-    setShowScannerQa(false);
-    setShowSettings(true);
   }, []);
   const openScannerSettings = useCallback(() => {
     setShowSettings(false);
@@ -192,7 +180,7 @@ export default function HomeScreen({
   const [toast, setToast] = useState('');
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
-    || isBarcodeScannerOpen || showSettings || showScannerQa || showScannerSettings
+    || isBarcodeScannerOpen || showSettings || showScannerSettings
     || isStocktakeOpen || isStocktakeImportOpen || Boolean(barcodeLookup),
   );
   const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
@@ -237,7 +225,6 @@ export default function HomeScreen({
       setPushSetupStatus('error');
     }
   };
-  useEffect(() => installScannerDiagnosticCollector(), []);
   useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
   useEffect(() => {
@@ -800,8 +787,7 @@ export default function HomeScreen({
       onSelect={handleNav}
       action={dockAction}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} onOpenScannerQa={openScannerQa} /></Suspense>}
-    {showScannerQa && <Suspense fallback={<ModuleLoadingSurface title="Scanner QA Monitor" onClose={closeScannerQa} />}><MemoizedScannerQaMonitor onClose={closeScannerQa} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
