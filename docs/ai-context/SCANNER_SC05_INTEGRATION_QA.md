@@ -33,7 +33,7 @@ Not in scope:
 | Camera health | Frame progress, track mute/end and watchdog flow through bounded session recovery; at most one automatic health recovery per session. |
 | Focus | Quality is sampled from existing decoder ROI pixels. Blur guidance is advisory, native autofocus remains device-owned, and post-preview camera constraint writes remain zero. |
 | Runtime adaptation | Runtime pressure adjusts only optional image/geometry candidate budgets; baseline recognition and validation remain protected. |
-| Decoder | Production remains one lazy ZXing-C++ WASM adapter. Worker prototype is not production-connected. |
+| Decoder | Production remains one lazy ZXing-C++ WASM adapter on Main Thread. Worker prototype was removed during cleanup and is not an available fallback. |
 | Recognition/result | Serialized decode, format allowlist, payload validation, temporal/cooldown policy and accepted-result boundary remain authoritative. |
 | Home | Product lookup is triggered by the scanner result in the existing Home feature path. Single/continuous semantics remain unchanged. |
 | Stocktake | Scan result populates the existing workflow; exit gate, capture/form-fill and explicit save remain feature-owned. |
