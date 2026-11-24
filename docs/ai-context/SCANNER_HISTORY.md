@@ -58,7 +58,7 @@ The repository accumulated multiple Scanner files. They are retained for unique 
 | `SCANNER_WORKSTREAM_SC01_05.md`, `SCANNER_SC05_INTEGRATION_QA.md`, `SCANNER_SC01A_SPIKE_FINDINGS.md` | Phase gates, integration protocol, Worker research and device QA checklists |
 | `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Decoder migration baseline and protected-contract audit |
 | `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md`, `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Native-vs-shared capability decisions and source evidence |
-| `SCANNER_DECODER_PR04_RECOGNITION_PIPELINE.md`, `SCANNER_RECOGNITION_PIPELINE.md` | Earlier pipeline decomposition and recognition contract |
+| `SCANNER_RECOGNITION_PIPELINE.md` | Earlier unified pipeline design and recognition contract |
 | `SCANNER_DECODER_PR05_BENCHMARK_FOUNDATION.md` | Benchmark harness design and measurement methodology |
 | `SCANNER_SOURCE_AUDIT_2026-11-08.md`, `SCANNER_C2_AUDIT_2026-11-08.md` | Initial audits and their point-in-time findings |
 | `SCANNER_BACKGROUND_RECOVERY_AUDIT_2026-11-08.md`, `SCANNER_TORCH_AUDIT_2026-11-09.md`, `SCANNER_AUDIO_LIFECYCLE_2026-11-09.md`, `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md` | Platform, lifecycle, audio and presentation investigations |
