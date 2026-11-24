@@ -12,8 +12,7 @@
     "preflight": "node scripts/preflight.mjs",
     "test:scanner": "node scripts/test-scanner-validation.mjs",
     "test:scanner:lifecycle": "node scripts/test-scanner-lifecycle.mjs",
-    "analyze:bundle": "npm run build:pages && node scripts/report-bundle.mjs",
-    "test:scanner:worker-prototype": "node scripts/test-scanner-worker-prototype.mjs"
+    "analyze:bundle": "npm run build:pages && node scripts/report-bundle.mjs"
   },
   "dependencies": {
     "jszip": "^3.10.2",
