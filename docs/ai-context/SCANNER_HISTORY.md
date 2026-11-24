@@ -1,97 +1,107 @@
-# Scanner technical history and incident index
+# Scanner History — investigations, decisions and phase evidence
 
-**Purpose:** preserve historical evidence without presenting old designs, workarounds or unfinished proposals as current implementation instructions.
+**Purpose:** preserve implementation archaeology without presenting historical plans as current production instructions.
+**Current production specification:** [SCANNER_ENGINE.md](./SCANNER_ENGINE.md).
 
-## Reading rule
+## Reading rules
 
-The Worker prototype and the in-app Scanner QA diagnostics collector/monitor were removed from the active codebase during the scanner ecosystem cleanup. Historical records below preserve why those experiments existed and what evidence was missing; they are not a statement that the code remains present or supported.
+1. `SCANNER_ENGINE.md` is the only current Scanner specification.
+2. This document is an archive of investigations, phase work, incidents and decisions. Some recorded symptoms were fixed; some proposals were never adopted.
+3. The Worker prototype and production QA diagnostics collector/monitor were retired from active code during scanner cleanup. They are historical only, not supported runtime features.
+4. Verify any old finding against current source and CI before acting. Do not reapply a historical workaround without reproducing the symptom.
+5. Do not treat CI as optical/device acceptance.
 
-1. Use [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) for the current runtime contract.
-2. Use [INDEX.md](./INDEX.md) for the repository-wide documentation map.
-3. The records below are historical evidence. A note may describe a defect that has since been fixed, a proposed architecture that was not adopted, or a test result tied to an old commit.
-4. Before acting on a historical note, verify its symptom against current source and current CI. Do not reapply a fix solely because an old note recommends it.
-5. Do not delete an incident note merely because its implementation is obsolete. Update its status and link to the resolving PR/commit when known.
+## Evolution summary
 
-## Migration records
+### Decoder replacement
 
-| Record | What it preserves | How to use it now |
+The project moved from the legacy ZXing JavaScript decoder to ZXing-C++ WASM. The capability comparison and adapter evidence explain which operations moved to the native backend and which remain shared RetailOS preprocessing/validation responsibilities. The accepted result is a single WASM backend, not a dual-engine arrangement.
+
+### Recognition pipeline and geometry
+
+Earlier stages extracted a common recognition pipeline, source-frame ROI mapping, rotation/deskew, geometry correction, enhancement and bounded scale generation. The sequence of SCAN-01 through SCAN-12 documents the evolution from input contracts through adaptive runtime. These stage documents are retained as historical evidence, not separate current subsystems.
+
+### Adaptive processing (A1/A2/A3)
+
+A1 quality profiling, A2 adaptive processing and A3 runtime budgeting progressively bounded optional image work. The current production contract and hard resource limits are in SCANNER_ENGINE.md; the old plans preserve rationale and sequencing.
+
+### Camera health and focus recovery
+
+SC-02 introduced frame-progress health monitoring and bounded recovery through the existing session lifecycle. SC-03 added geometry signature/revision protection while preserving the existing mapper and fail-closed ROI contract. SC-04 added passive focus guidance with a zero post-preview camera-constraint write budget. The implementation boundaries are documented in the canonical engine specification.
+
+### Integration and closure
+
+SC-05 consolidated shared Home/Stocktake composition and added a cross-layer source-contract check. Its software scope closed through PR #149 and test-only follow-up PR #150. Physical device/corpus acceptance was tracked separately; do not interpret software closure as an exhaustive optical/device validation.
+
+### Worker and diagnostics retirement
+
+A Worker prototype was investigated during SC-01, but it did not become part of the production runtime. It lacked production integration and sufficient transport/device parity evidence. During scanner ecosystem cleanup PR #153, the unused Worker prototype and the production-facing diagnostics collector/QA Monitor surface were removed. The production path remains Main Thread ZXing-C++ WASM. The benchmark harness and actual WASM integration tests were retained.
+
+## Phase and PR evidence
+
+| Milestone | Evidence / change | Historical boundary |
 |---|---|---|
-| `SCANNER_SC01A_SPIKE_FINDINGS.md` | Source/API feasibility review for Worker transports, Vite and ZXing WASM; empirical proof pending | Transport remains exploratory; no measured transport is accepted
-| `SCANNER_WORKSTREAM_SC01_05.md` | SC-01A/01B/01C Worker prototype history through SC-05 Integration & QA; Worker transport/production integration was not accepted | Historical workstream and remaining device QA; use with `SCANNER_ENGINE.md` as a record of prior decisions, not as an active Worker project
-| `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Replacement baseline, risk inventory and protected contracts before WASM production cutover | Historical migration evidence; current state is in SCANNER_ENGINE.md |
-| `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md` | Capability-by-capability comparison and rationale for native vs shared responsibilities | Historical adoption decisions; check current adapter options before changing |
-| `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Source evidence supporting native WASM capabilities | Evidence reference, not a runtime specification |
-| `SCANNER_DECODER_PR04_RECOGNITION_PIPELINE.md` | Earlier pipeline extraction decisions | Superseded where it describes legacy backend behavior |
-| `SCANNER_DECODER_PR05_BENCHMARK_FOUNDATION.md` | Benchmark harness design and measurement definitions | Reuse methodology; update measurements against current WASM-only engine |
-| `SCANNER_RECOGNITION_PIPELINE.md` | Original unified recognition pipeline design and early acceptance contract | Historical; current pipeline order and backend ownership are defined in SCANNER_ENGINE.md |
-| `SCANNER_SOURCE_AUDIT_2026-11-08.md` | Initial scanner source audit and defects observed at that time | Consult only when reproducing a matching historical symptom |
-| `SCANNER_C2_AUDIT_2026-11-08.md` | C2 audit findings and remediation context | Historical audit |
-| `SCANNER_BACKGROUND_RECOVERY_AUDIT_2026-11-08.md` | Background/foreground recovery symptoms and lifecycle findings | Preserve as incident evidence; verify current lifecycle source first |
-| `SCANNER_TORCH_AUDIT_2026-11-09.md` | Torch capability investigation and device limitations | Historical platform evidence |
-| `SCANNER_AUDIO_LIFECYCLE_2026-11-09.md` | Audio feedback lifecycle observations | Historical incident/implementation evidence |
-| `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md` | Camera presentation and preview behavior audit | Historical UI evidence |
-| `SCAN_01_INPUT_CONTRACT.md` – `SCAN_06_BOUNDED_DESKEW.md` | Original staged ROI, coordinate, rotation and deskew implementation notes | Detailed implementation archaeology; do not treat stage labels as separate runtime engines |
-| `SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md` | Research and proposals for later scanner stages | Proposal archive; check current roadmap before implementing |
-| `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md` | Original adaptive ROI and scale design | Historical scale policy; current pixel limits are in SCANNER_ENGINE.md |
-| `SCAN_07_SYSTEM_SYNCHRONIZATION_AUDIT.md` | Cross-layer synchronization issues and accepted fixes | Keep as a regression clue; confirm current source |
-| `SCAN_08_09_UNIFIED_IMPLEMENTATION.md` | Combined enhancement/geometry implementation history | Historical implementation record |
-| `SCAN_10_ADAPTIVE_IMAGE_QUALITY_A1.md` | A1 quality profile rationale | Historical design record; current behavior in source |
-| `SCAN_11_ADAPTIVE_PROCESSING_A2.md` | A2 processing plan rationale | Historical design record; current behavior in source |
-| `SCAN_12_ADAPTIVE_RUNTIME_A3.md` | A3 runtime budget rationale | Historical design record; current behavior in source |
-| `SESSION_LOG.md` | Chronological implementation handoffs and observed symptoms | Incident breadcrumbs; not the current contract |
+| Decoder migration | PR07 capability adoption and decoder capability evidence | Current adapter contract is authoritative in SCANNER_ENGINE.md |
+| SC-01A / SC-01B / SC-01C | Worker transport investigation/prototype | No production Worker path accepted |
+| SC-02 | PR #144, camera health controller | Bounded recovery software contract; physical fault injection remains separate |
+| SC-03 | PR #146, geometry diagnostics/revision guard | Preserved pure mapper and fail-closed ROI |
+| SC-04 | PR #148, passive focus recovery | No camera constraint writes or autofocus command |
+| SC-05 | PR #149 integration and QA protocol; PR #150 test-only follow-up | Software closure, not quantified optical acceptance |
+| Ecosystem cleanup | PR #153 | Removed unused Worker prototype and production QA diagnostics surface; benchmark and WASM tests retained |
 
-## Incident note format
+## Historical source inventory
 
-When a new reproducible scanner issue occurs, append a compact entry to the relevant historical record or create a dated incident note with:
+The repository has accumulated multiple scanner documents. Their unique detail should be consulted selectively; none overrides SCANNER_ENGINE.md.
+
+| Historical record family | Content retained |
+|---|---|
+| `SCANNER_WORKSTREAM_SC01_05.md`, `SCANNER_SC05_INTEGRATION_QA.md`, `SCANNER_SC01A_SPIKE_FINDINGS.md` | Phase gates, integration protocol, Worker research and device QA checklists |
+| `SCANNER_DECODER_REPLACEMENT_PHASE0_AUDIT_2026-11-14.md` | Decoder migration baseline and protected-contract audit |
+| `SCANNER_WASM_CAPABILITY_ADOPTION_PR07.md`, `SCANNER_DECODER_CAPABILITY_EVIDENCE_PR07.md` | Native-vs-shared capability decisions and source evidence |
+| `SCANNER_DECODER_PR04_RECOGNITION_PIPELINE.md`, `SCANNER_RECOGNITION_PIPELINE.md` | Earlier pipeline decomposition and recognition contract |
+| `SCANNER_DECODER_PR05_BENCHMARK_FOUNDATION.md` | Benchmark harness design and measurement methodology |
+| `SCANNER_SOURCE_AUDIT_2026-11-08.md`, `SCANNER_C2_AUDIT_2026-11-08.md` | Initial audits and their point-in-time findings |
+| `SCANNER_BACKGROUND_RECOVERY_AUDIT_2026-11-08.md`, `SCANNER_TORCH_AUDIT_2026-11-09.md`, `SCANNER_AUDIO_LIFECYCLE_2026-11-09.md`, `SCANNER_VIDEO_PRESENTATION_AUDIT_2026-11-09.md` | Platform, lifecycle, audio and presentation investigations |
+| `SCAN_01_INPUT_CONTRACT.md` – `SCAN_06_BOUNDED_DESKEW.md` | Input, ROI, coordinate, rotation, geometry and deskew stage notes |
+| `SCAN_07_11_RESEARCH_AND_IMPLEMENTATION_PLAN.md`, `SCAN_07_ADAPTIVE_ROI_MULTISCALE.md`, `SCAN_07_SYSTEM_SYNCHRONIZATION_AUDIT.md`, `SCAN_08_09_UNIFIED_IMPLEMENTATION.md`, `SCAN_10_ADAPTIVE_IMAGE_QUALITY_A1.md`, `SCAN_11_ADAPTIVE_PROCESSING_A2.md`, `SCAN_12_ADAPTIVE_RUNTIME_A3.md` | Research, synchronization, enhancement and adaptive processing evolution |
+| `SESSION_LOG.md` | Chronological handoffs and issue breadcrumbs |
+
+## Incident note template
+
+For a new reproducible scanner incident, record:
 
 - **Observed:** exact user-visible or measured symptom.
-- **Environment:** device class, OS, browser/PWA, module and scanner mode.
-- **Evidence:** logs, metrics, sample image identifier (never barcode payload or personal data), commit and reproduction steps.
-- **Cause:** confirmed / suspected / unknown. Never label a hypothesis as confirmed.
-- **Resolution:** PR/commit and changed contract.
-- **Regression guard:** test or acceptance check added.
+- **Environment:** device class, OS, browser/PWA, feature and scan mode.
+- **Evidence:** reproduction steps, safe metrics, sample-image reference and commit.
+- **Cause:** confirmed / suspected / unknown.
+- **Resolution:** PR/commit and changed behavior.
+- **Regression guard:** test or acceptance check.
 - **Status:** open / mitigated / fixed / not reproducible / superseded.
-- **Do not repeat:** the specific unsafe or ineffective remediation, if established.
 
-Keep raw sample images in a controlled test corpus, not in personal diagnostic exports. Never store decoded barcode payloads or employee/device identifiers in the incident log.
+Never record decoded barcode payloads, employee identifiers, camera IDs or personal data in diagnostics/history.
 
+## Detailed historical phase notes
 
-## SC-02 Camera Health Controller
+### SC-02 — Camera Health Controller
 
-SC-02 implementation adds bounded frame-progress monitoring and recovery in the shared scanner session. A 1-second watchdog detects 3-second frame stalls; native video-frame callbacks are preferred and RAF fallback requires `video.currentTime` progression. Track mute degrades health; track-ended triggers immediate recovery. Recovery uses the existing hook's serialized session-replacement path, one automatic attempt per mounted activation, and failure escalation to scanner ERROR. Deterministic controller/source-contract tests are registered in preflight. PR #144 head `416b168b1b00b858c2b7e34e751e33defb9afb50` passed CI #1313 including full preflight, TypeScript, production and Pages builds, and bundle comparison. Software/CI scope is closed; live stall/reacquisition, ended-track and device/browser matrix remain post-merge operational QA, not claimed as passed.
+Added bounded frame-progress monitoring and recovery in the shared session. A 1-second watchdog detected 3-second frame stalls; native video-frame callbacks were preferred and RAF fallback required media timeline progression. Track mute degraded health; track-ended requested immediate recovery. Recovery used the existing serialized session replacement path, one automatic attempt per mounted activation and error escalation on exhaustion. PR #144 and CI evidence are preserved in the historical records. Live stall/reacquisition and device/browser matrix results must be treated as separate evidence.
 
+### SC-03 — Geometry Diagnostics
 
-## 2026-11-23 — SC-03 Geometry Diagnostics software closure
+Added privacy-safe geometry fingerprints, monotonic revision epochs, stale-ROI clearing and older-revision rejection while preserving the existing pure mapper. Invalid geometry remained fail-closed; no full-frame/center fallback was added. PR #146 and CI #1332 evidence were recorded. Physical iOS/Android viewport/orientation behavior was not inferred from CI.
 
-- Baseline confirmed by user: deployed app flow currently operates normally with no observed errors. This is regression baseline acceptance, not physical orientation test evidence.
-- PR #146 branch `feat/scanner-sc03-geometry-diagnostics` adds privacy-safe geometry fingerprinting for source dimensions, preview/reticle bounds, CSS fit/position/transform, viewport/visualViewport and pixel density.
-- Added monotonic geometry revision epochs, immediate stale-ROI clear when measured inputs drift, versioned source ROI publication, and a platform-session guard rejecting malformed/older geometry revisions.
-- Retained existing pure mapper math and strict fail-closed behavior. Unsupported CSS length/calc object-position and unsupported transforms remain null; no full-frame/center fallback.
-- Added tests for signature sensitivity/normalization, valid/invalid epoch transitions, source/preview/reticle/viewport changes, stale revision rejection and observer/listener cleanup. Registered in preflight; all existing geometry/preview ROI suites remain enabled.
-- CI #1332 passed on head `d4b8fcae54901f53cf45b4ebf7a73fc6436516ab`: full preflight, TypeScript/production build, PR-base build and bundle comparison.
-- Software/CI scope is closed. Physical iOS Safari/PWA and Android Chrome/PWA orientation/viewport QA remains a separate device acceptance gate; do not infer it from CI.
-- Next roadmap stage after SC-03 software closure: SC-04 Focus Recovery Policy.
+### SC-04 — Focus Recovery Policy
 
-## 2026-11-23 — SC-04 Focus Recovery Policy implementation
+Added passive states `observing`, `waiting-native-autofocus` and `recovered`, reusing baseline ROI samples, motion guard, four-sample blur gate and cooldown. No `applyConstraints`, autofocus re-arm, stream restart/reacquisition, extra capture or added timer. PR #148 merged at `0b6840c9b2872d93920d4eba5f628158e09679b4`; CI #1348 passed. Physical lens behavior remained a separate device observation.
 
-- PR #148 branch `feat/scanner-sc04-focus-recovery-policy` introduces the passive recovery states `observing`, `waiting-native-autofocus`, and `recovered` inside the existing focus-quality monitor.
-- Reuses existing baseline ROI samples, motion stability guard, sharpness ratios, four-sample blur gate and 8-second cooldown; no second engine, extra frame capture or timer.
-- Sustained blur produces a native-autofocus wait recommendation and simple steadiness/distance guidance; sharpness returning to the reference band marks recovery.
-- Explicit zero post-preview camera-constraint write budget; no `applyConstraints`, autofocus re-arm, camera reacquisition or stream restart. Invalid/moving samples do not trigger the policy.
-- Source tests cover transitions, cooldown, reset, low-texture/motion rejection and zero-camera-write contract. CI #1347 failed at a cooldown-boundary expectation; corrected test passed full CI #1348. Physical device QA remains outstanding.
-- Scope closure: policy software only; real lens focus behavior is not asserted.
+### SC-05 — Integration & QA
 
-## 2026-11-23 — SC-05 Integration & QA audit
+PR #149 merged at `e0579fa1734eac989af051c4776cc88de912c946`; final PR-head CI #1375, post-merge CI #1376 and Pages deployment #151 passed. PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; CI #1384, post-merge CI #1385 and Pages deployment #152 passed. Software integration scope closed. Physical optical/device acceptance was tracked separately and must not be claimed without run records.
 
-- Audited current main at SC-04 merge. Home BarcodeScanner and StocktakeScanner already share `useScannerEngine` and the feature-owned preview-region binding. Shared camera service retains acquisition/lease ownership.
-- Camera health recovery, geometry revision rejection, passive focus recovery and adaptive runtime budget compose through `UniversalScannerSession` and the production WASM decoder adapter. Worker prototype was removed from active code after the production scope was closed; production remains Main Thread WASM.
-- SC-05 adds one cross-layer integration contract test to preflight and consolidates a device/corpus acceptance protocol rather than duplicating subsystem tests or adding another engine.
-- Device/corpus acceptance NOT RUN in the remote session; overall optical/device acceptance remains pending recorded physical runs.
-- SC-05 follow-up audit found SC-04 recovery state/action/guidance were logged by the session but omitted from the diagnostics allowlist/visible QA metrics. The original SC-05 follow-up added bounded focus recovery fields to the former local QA collector/monitor. That observation-only subsystem was later retired during cleanup; no controller or camera behavior was changed.
+### 2026-11-24 — Scanner ecosystem cleanup
 
-## SC-05 software closure — 2026-11-23
+PR #153, `chore(scanner): retire unused diagnostics and Worker prototype`, removed the Home-startup console collector, QA Monitor UI/settings entry/QA styling and exports, and the unused Worker prototype/bridge/test/command. Orphan capability types were removed; `ScannerPoint` was retained because it is still used by the result contract. Runtime camera/session/decoder/ROI/recovery logic was not the cleanup target. CI #1389 passed preflight, TypeScript/production build, Pages build and bundle comparison. The project owner subsequently confirmed merge, deployment and stable operation without observed errors.
 
-- PR #149 merged to main at `e0579fa1734eac989af051c4776cc88de912c946`. CI #1375 on final PR head passed; post-merge CI #1376 and Pages deployment #151 passed.
-- Added a cross-layer integration contract to preflight, QA-monitor visibility for passive SC-04 recovery metrics, and physical device/corpus acceptance instructions. No new scanner engine or dependency.
-- PR #150 test-only follow-up merged at `661241e721a5510cf3f61c8ba7c3971c82b6a63c`; final-head CI #1384, post-merge CI #1385 and Pages deployment #152 passed. The diagnostic fixture asserts recovery state/action/guidance survive collection.
-- Software integration scope closed. Physical iOS/Android/Desktop scanner acceptance and measured corpus results NOT RUN; remain the release gate.
+## Archive disposition
+
+Do not delete source audit/phase records solely because they describe retired implementations: they preserve why decisions were made and what regressions were considered. They may be moved into a dedicated archive directory in a separate docs-only change after link inventory is available. Their contents are historical, not canonical.
