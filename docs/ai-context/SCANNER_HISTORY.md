@@ -4,6 +4,8 @@
 
 ## Reading rule
 
+The Worker prototype and the in-app Scanner QA diagnostics collector/monitor were removed from the active codebase during the scanner ecosystem cleanup. Historical records below preserve why those experiments existed and what evidence was missing; they are not a statement that the code remains present or supported.
+
 1. Use [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) for the current runtime contract.
 2. Use [INDEX.md](./INDEX.md) for the repository-wide documentation map.
 3. The records below are historical evidence. A note may describe a defect that has since been fixed, a proposed architecture that was not adopted, or a test result tied to an old commit.
@@ -82,10 +84,10 @@ SC-02 implementation adds bounded frame-progress monitoring and recovery in the 
 ## 2026-11-23 — SC-05 Integration & QA audit
 
 - Audited current main at SC-04 merge. Home BarcodeScanner and StocktakeScanner already share `useScannerEngine` and the feature-owned preview-region binding. Shared camera service retains acquisition/lease ownership.
-- Camera health recovery, geometry revision rejection, passive focus recovery and adaptive runtime budget compose through `UniversalScannerSession` and the production WASM decoder adapter. Worker prototype remains isolated.
+- Camera health recovery, geometry revision rejection, passive focus recovery and adaptive runtime budget compose through `UniversalScannerSession` and the production WASM decoder adapter. Worker prototype was removed from active code after the production scope was closed; production remains Main Thread WASM.
 - SC-05 adds one cross-layer integration contract test to preflight and consolidates a device/corpus acceptance protocol rather than duplicating subsystem tests or adding another engine.
 - Device/corpus acceptance NOT RUN in the remote session; overall optical/device acceptance remains pending recorded physical runs.
-- SC-05 follow-up audit found SC-04 recovery state/action/guidance were logged by the session but omitted from the diagnostics allowlist/visible QA metrics. Added those three bounded fields to the existing collector and Home QA monitor; no controller or camera behavior added.
+- SC-05 follow-up audit found SC-04 recovery state/action/guidance were logged by the session but omitted from the diagnostics allowlist/visible QA metrics. The original SC-05 follow-up added bounded focus recovery fields to the former local QA collector/monitor. That observation-only subsystem was later retired during cleanup; no controller or camera behavior was changed.
 
 ## SC-05 software closure — 2026-11-23
 
