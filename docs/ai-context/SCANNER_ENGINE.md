@@ -88,7 +88,7 @@ Do not reorder candidates, broaden format support, add retries or increase image
 - Legacy ZXing JS engine is retired; no dual-engine selector or automatic legacy fallback.
 - Decoder initialization is lazy and follows preview readiness.
 - RetailOS format selection is an explicit allowlist. Empty or unsupported lists fail initialization.
-- Native options include `tryHarder`, `tryRotate`, `tryInvert` and `tryDownscale`; `tryDenoise` is conditional on supported 2D formats.
+- Current native options are explicit: `tryHarder: true`, `tryRotate: true` (ZXing-C++ owns 90°/180°/270° orthogonal search), `tryInvert: true`, `tryDownscale: true`, and `tryDenoise: true` only when the active allowlist includes supported 2D formats. These settings are defined in `zxingWasmOptions.ts`; do not add duplicate shared orthogonal-rotation candidates.
 - Binarizer order: `LocalAverage`, then `GlobalHistogram` on miss.
 - Output text is `Plain` UTF-8. RetailOS validation remains authoritative.
 - At most one accepted symbol is returned per attempt.
