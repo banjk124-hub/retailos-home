@@ -51,7 +51,7 @@ A Worker prototype was investigated during SC-01, but it did not become part of 
 
 ## Historical source inventory
 
-The repository has accumulated multiple scanner documents. Their unique detail should be consulted selectively; none overrides SCANNER_ENGINE.md.
+The repository accumulated multiple Scanner files. They are retained for unique forensic context, but are no longer entry points, active specifications or required reading. The canonical Engine and History documents contain the consolidated operational guidance and decision summaries.
 
 | Historical record family | Content retained |
 |---|---|
@@ -104,4 +104,4 @@ PR #153, `chore(scanner): retire unused diagnostics and Worker prototype`, remov
 
 ## Archive disposition
 
-Do not delete source audit/phase records solely because they describe retired implementations: they preserve why decisions were made and what regressions were considered. They may be moved into a dedicated archive directory in a separate docs-only change after link inventory is available. Their contents are historical, not canonical.
+The remaining phase/audit files are archival records only. They should not be added to the AI default context set or linked as current implementation documentation. Keep them until a complete backlink inventory confirms they can be moved or removed without breaking historical references. Their contents are not canonical.
