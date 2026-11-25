@@ -1,6 +1,6 @@
 # UI/UX Rebuild Implementation Plan
 
-**Status:** M0 reset in progress. The earlier generated-admin concept is historical only; the active Art Direction and craft standard is `UI_UX_M0_ART_DIRECTION_RESET.md`. Cross-surface high-fidelity validation, owner acceptance and source implementation remain open.
+**Status:** M0-A structural design preparation. The governing reference contract is `UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md`; image=structure, video=motion/state, RetailOS=brand/business/data authority. Earlier concept boards and Art Direction experiments are historical only. Source-verified structural studies and owner acceptance remain open.
 **Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Working documentation branch:** `docs/uiux-architecture-00b-00c`
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
@@ -22,11 +22,11 @@ This is a product-wide presentation and interaction rebuild, not a rewrite of th
 
 The initial M0 direction and concept board did not meet the required visual distinction. They are retained as historical structure exploration only. The governing M0 execution contract is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image = structural composition; video = motion, feedback and state behavior; RetailOS = brand, business semantics, data truth and architecture. The source analysis is [UI_UX_M0_REFERENCE_REASSESSMENT.md](./UI_UX_M0_REFERENCE_REASSESSMENT.md). Do not lock RetailOS to amber or green; compare distinct RetailOS-native directions against real operational content. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md) remains an earlier exploration, not the latest authority. RetailOS red remains the brand signature; amber is an additional accent with separate semantic rules.
 
-M0 now proceeds by source reassessment → 2–3 genuinely distinct RetailOS Art Direction explorations → signature screens → responsive/motion studies → cross-surface owner decision. Do not use a generic sidebar + repeated white-card dashboard as the visual benchmark.
+M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references.
 
 ## 1.1 M0 — product-wide visual decision gate
 
-M0 scope is product-wide; the active visual direction is defined in [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md). The earlier [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) is historical exploration. Its scope is the entire RetailOS experience: application shell, core workspaces, operational workflows, system surfaces and shared design language. Home is one validation surface, not the scope boundary. The two user-provided samples are used separately as visual-composition and interaction/state references; RetailOS brand and operational constraints remain authoritative.
+M0 scope is product-wide: application shell, core workspaces, operational workflows, system surfaces and shared design language. The governing authority is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines interface structure/composition; the video defines motion/feedback/state behavior; RetailOS defines its brand, business semantics, data truth and architecture. Neither reference is a palette or product template. Home is one validation surface, not the scope boundary. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md), [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) and [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md) are exploratory/historical, not governing specifications.
 
 M0 exit requires high-fidelity prototypes across representative surfaces, desktop/tablet/mobile validation, typography/color/contrast decisions, low/mid-range performance validation and explicit owner acceptance. No application-source migration begins merely because the direction document exists.
 
