@@ -1,52 +1,32 @@
-# RetailOS engineering roadmap — current state 2026-11-25
+# RetailOS roadmap — 2026-11-25
 
-## Current priorities
+## Governing direction
 
-1. Complete review and validation of the active PWA runtime / AI workflow PRs; their individual status is tracked in their PRs and canonical PWA/AI documents.
-2. Preserve the production baseline and avoid creating parallel workstreams without a reproduced issue or a defined acceptance requirement.
-3. Promote stable development releases to the shared department environment only after explicit human acceptance and separate production readiness checks.
+All new and continuing RetailOS work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). Do not maintain parallel product-wide UI/UX plans or competing status tables.
 
-## Scanner — production stabilization closed
+## UI/UX — next sequence
 
-**Status:** Scanner runtime stabilization and cleanup are complete. PR #153 cleanup is merged/deployed and the project owner confirmed the app operates normally without observed errors.
+1. **M0 direction and technology:** audit current source and actual screens; use the image as structural/visual reference and video as motion/feedback reference; RetailOS remains authoritative for brand, operational semantics and architecture. Evaluate framework, routing, styling, component, icon, image, typography and motion options before committing.
+2. **Representative prototype:** implement real source-backed examples across representative desktop, tablet and mobile surfaces; inspect the running app and obtain owner acceptance.
+3. **M1 foundation:** implement only the approved design foundations and components required by actual consumers.
+4. **M2+ migration:** replace current Shell/navigation and existing screens/workspaces in bounded slices. Add feature-owned components when a real workflow needs them; promote to shared only after cross-feature value is proven.
+5. **Consolidation and acceptance:** retire superseded code with evidence; validate accessibility, motion, responsive behavior, performance, protected contracts and release readiness.
 
-- Production decoder remains ZXing-C++ WASM on the Main Thread.
-- Home and Stocktake share the same scanner engine/session path.
-- The unused Worker prototype and production QA diagnostics collector/monitor were retired in PR #153.
-- Benchmark harness and real WASM integration tests remain.
-- No active SC-01–SC-05 implementation phase or Worker migration is planned.
+Do not call token migration, a mockup, a documentation phase or Login-only responsive tests a completed product-wide redesign. Do not prebuild speculative future features.
 
-Canonical current contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). Historical phase evidence and retired experiments: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
+## Scanner — closed
 
-Future Scanner work is issue-driven only. Reopen a workstream when a reproducible defect, measurable performance bottleneck, new product requirement or explicitly requested acceptance task exists. Any proposal must identify its evidence, smallest viable change, regression coverage and device/corpus validation plan before implementation.
+Scanner runtime stabilization and cleanup are complete. Current implementation truth: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); historical evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Reopen only for a reproducible defect, measured bottleneck, new requirement or explicit acceptance task. UI redesign must not reopen Scanner Engine internals.
 
-## Scanner follow-up evidence boundary
+## Other domain roadmaps/contracts
 
-The project owner's operational confirmation is not a quantified optical benchmark and does not imply exhaustive iOS, Android or low-end-device coverage. Do not create an open-ended diagnostics or Worker roadmap to close hypothetical risks. When optical accuracy or cross-device compatibility becomes a concrete release requirement, create a labelled corpus and record real device/browser run data.
+- PWA release: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md)
+- Performance and bundle: [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md)
+- Overlay lifecycle: [UI_OVERLAY_ARCHITECTURE.md](./UI_OVERLAY_ARCHITECTURE.md)
+- Import workflow: [STOCKTAKE_FILE_IMPORT.md](./STOCKTAKE_FILE_IMPORT.md)
 
-## Other canonical roadmaps
+## Governance
 
-- PWA release and runtime contract: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
-- AI capability architecture and evaluation: [AI_CAPABILITY_SYSTEM.md](./AI_CAPABILITY_SYSTEM.md), [AI_CAPABILITY_EVALUATION.md](./AI_CAPABILITY_EVALUATION.md).
-- Bundle and performance evidence: [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md).
-
-## Roadmap governance
-
-- Keep this file focused on current priorities and exit criteria; move completed implementation narratives to history/changelog.
-- Verify branch, PR, CI and deployment facts against GitHub before updating status.
-- Do not treat green CI as physical-device, optical or business-process acceptance.
-- Prefer deleting duplicate plans or replacing them with links over maintaining parallel status tables.
-
-## UI/UX architecture and full experience redesign
-
-**Status:** Phase 00 is closed in merged PR #160 at `main` commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. The Phase 01 semantic Design Foundation was merged in PR #161 at `e0902ddabc572783b1ce284fda39168e91d595e6`. Its browser verification and evidence-driven Login responsive continuation are active in PR #162; no deployment or production promotion is authorized.
-
-- Active PR: [#162 — Responsive browser verification baseline](https://github.com/banjk124-hub/retailos-home/pull/162), branch `feat/uiux-phase-01-foundation`.
-- Source batches establish semantic tokens, align mobile motion aliases with shared Motion, connect Brand typography, migrate body, Glass, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical semantic roles, correct the small Login department label's contrast, extend contract tests and record source-level motion/CSS ownership findings.
-- Existing Glass materials and protected feature/platform contracts remain intact; no broad CSS deletion, new font package, or second design system is introduced.
-- Be Vietnam Pro is the leading Vietnamese typography candidate for evaluation, not yet selected or bundled.
-- Foundation CI #1519 passed on the merged PR #161 source head. Exact latest-head CI #1574 passed on PR #162 head `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`, including reduced-motion/power-conserve browser coverage, semantic Home/Login/mobile brand-color guards, Login typography-token assertions and all five responsive Login viewports. The compact-landscape 844×390 screenshot was reviewed after the fit/dock-clearance correction. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review, broader workspace coverage and physical-device acceptance.
-- Do not merge or deploy Phase 01 until source review, browser/responsive visual QA and remaining owner/device acceptance are recorded.
-- Phase 00's image/video authority remains: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
-- Current App/Auth/Home source remains the AS-IS baseline. The target Shell/navigation migration is a later phase and is not part of Phase 01.
-- PR #157 remains a stale draft on an old base; do not merge by default.
+- Verify live branch, PR, CI and deployment before updating status.
+- No merge without explicit owner approval; no deployment without explicit authorization.
+- CI, visual acceptance, physical-device acceptance, business workflow acceptance and production promotion are distinct.
