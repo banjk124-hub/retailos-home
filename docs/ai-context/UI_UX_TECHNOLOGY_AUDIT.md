@@ -84,6 +84,14 @@ The repository therefore has 25 CSS files in total, including feature-owned styl
 
 **Required next audit before CSS migration:** selector usage, import graph, specificity/cascade map, computed-style ownership, media-query overlap, dead selector evidence, feature chunk boundaries and screenshot regression coverage. Do not remove a stylesheet based on filename or visual impression alone.
 
+### 2.5 Existing UI assets and systems are not preservation constraints
+
+The inventory above is an audit of what exists, not a requirement to keep it. Brand, Glass, Motion, Icons, LiquidDock, CSS files, logo assets, component implementations and copy may be redesigned, consolidated, replaced or removed when they do not support the approved target experience.
+
+Before removal, trace consumers, responsibilities, state ownership, accessibility behavior, event lifecycle and CSS dependencies. Replace behavior deliberately, verify regressions, then remove superseded code/assets/styles. Do not layer a new design over old styles indefinitely; do not delete code based only on its age or appearance.
+
+The audit distinguishes **implementation evidence** from **protected contracts**. The former may change; the latter require explicit preservation or a documented migration.
+
 ## 3. Browser-native capability inventory
 
 The following table separates current source usage from future capability recommendations.
