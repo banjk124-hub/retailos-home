@@ -8,6 +8,5 @@ export { MotionSheet } from './MotionSheet';
 export type { MotionOrigin } from './MotionSheet';
 export { MOTION_CONFIG } from './motion.config';
 export { MOTION_PRESETS } from './motion.presets';
-export { MOTION_TOKENS } from './motion.tokens';
 export type { MotionPhase, MotionState } from './motion.tokens';
-export { attachMotionPhaseVariables, getMotionOrigin, resolveMotionPhase } from './transitions';
+export { getMotionOrigin } from './transitions';

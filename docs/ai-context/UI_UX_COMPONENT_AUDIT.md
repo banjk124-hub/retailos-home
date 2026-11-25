@@ -1,9 +1,9 @@
 # UI/UX Component Inventory and Ownership Audit — Batch 00F
 
-**Status:** Source-level component inventory and migration decisions complete; no component or application code changed.
-**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Audit date:** 2026-11-25
-**Working documentation branch:** `docs/uiux-architecture-00b-00c`
+**Status:** Initial source-level component inventory and migration decisions recorded; complete consumer/cascade proof remains open. One confirmed unimported CSS file is retired on the Phase 00 audit branch; no component or application runtime code changed.
+**Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Original audit date:** 2026-11-25
+**Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. The original detailed inventory is not a claim that the complete runtime consumer graph or selector-level CSS audit is closed.
 **Purpose:** Identify the current UI component system, ownership, consumers, duplication, coupling, migration disposition and the shared component contracts required by the 00E workspace architecture.
 
 ## 1. Audit method and evidence boundary
@@ -27,7 +27,7 @@ This is not a visual QA report, computed-style audit, accessibility certificatio
 6. Icon rendering has two public render paths (`Icon` and `MotionIcon`) alongside direct `lucide-react` imports. The semantic registries exist, but they are not yet the sole rendering path.
 7. `LiquidDock` is tightly coupled to the current Home section-navigation model and a central quick-action slot. It is a replaceable navigation presentation, not the future navigation contract.
 8. Overlay lifecycle is partly shared (reference-counted body scroll lock) and partly duplicated across owners. A reusable focus-trap/overlay-stack manager is explicitly not implemented in the overlay architecture document.
-9. The stylesheet system has 25 CSS files. The 87,145-byte `mobile-tuning.css` and multiple Home stylesheet generations are high-risk ownership/cascade areas. File size alone does not prove dead CSS or duplicate selectors.
+9. The audited main baseline had 25 CSS files; the Phase 00 branch has 24 after retiring an unimported Home Phase 2 stylesheet. `mobile-tuning.css` is 87,143 bytes at the audited baseline, and multiple active Home stylesheet generations remain high-risk ownership/cascade areas. File size alone does not prove dead CSS or duplicate selectors.
 10. Existing lazy-loading and regression tests are important architecture, not incidental implementation. A visual rebuild must preserve code-splitting boundaries and the existing scanner, PWA, Stocktake and Import behavior.
 
 ## 3. Current component and subsystem inventory
@@ -81,6 +81,30 @@ This is not a visual QA report, computed-style audit, accessibility certificatio
 | Body scroll lock | `useBodyScrollLock` + reference-counted `acquireBodyScrollLock` | Single shared manager, multiple owners | **Keep as canonical service**. Do not introduce another overflow snapshot/restore implementation. |
 | PWA Update Prompt | `PwaUpdatePrompt` + PWA store/runtime services | Global release state controller and visible prompt; mounted from main | **Keep controller and release contract; refactor view/integration later**. Do not move activation decisions into App Shell or Settings presentation. |
 
+### 3.5 Confirmed direct consumer graph — static import/search pass
+
+The following is the direct source-consumer map confirmed against the audited tree. It is deliberately not labelled a complete transitive runtime graph.
+
+| Shared export / service | Direct consumers confirmed | Consequence for migration |
+|---|---|---|
+| `GlassSurface` | `MotionButton`, `LiquidDock`, `LoginDock`, `LoginForm`, `ModuleLibraryEngine`, `HomeScreen` | Cross-feature presentation dependency; migrate consumers before retiring Glass CSS/API. |
+| `MotionPresence` | `BrandMotion`, `MotionCard`, `LoginForm` | Keep enter/exit behavior and state semantics stable until these consumers migrate. |
+| `MotionButton` | `LoginForm` | Narrow current consumer; assess whether its Glass composition is still useful in the target Login design. |
+| `MotionPage` | `LoginExperience` | Login transition dependency. |
+| `MotionSheet` | `HomeScreen` | Home module-library sheet and its exit/scroll-lock lifecycle. |
+| `MotionProvider` / `MotionBoundary` | `main.tsx`; Boundary consumes Provider state | App-root preference and reduced-motion boundary. |
+| `Brand` / `BrandMark` | App identity, LoginHero, HomeScreen, ExperienceBackground | Brand lockup and mark have multiple surfaces; replace assets without losing identity semantics. |
+| `BrandMotion` | `App.tsx`, `LoginHero` | Separate identity and Login motion callsites. |
+| `ExperienceBackground` | `App.tsx` | Global scene/background presentation. |
+| `Icon` / semantic icon registry | LoginDock, LoginHero, App, LoginForm, HomeScreen and feature metadata | Preserve semantic module/department mapping; direct Lucide imports remain elsewhere. |
+| `MotionIcon` | App, Login components, Home, LiquidDock and other feature presentation | Motion remains opt-in; not all icons need animation. |
+| `LiquidDock` | `HomeScreen` | Current section-navigation presentation only; not a route registry. |
+| `AppErrorBoundary` | `main.tsx`, `HomeScreen`, `StocktakeModule` | Root and feature fallback responsibilities must remain intact. |
+| `useBodyScrollLock` | `HomeScreen`, `SettingsHub`, `ScannerSettingsPanel`, `StocktakeModule`, `StocktakeImportModule` | Shared cross-feature service; do not fork or replace without an overlay ownership migration. |
+| `PwaUpdatePrompt` | `main.tsx` | Global presentation adapter; PWA release controller remains protected. |
+
+Static search does not resolve every alias/re-export, conditional/dynamic import, JSX spread, portal, runtime class construction or CSS-only selector. The remaining graph must be completed before retiring any shared export or broad stylesheet family.
+
 ## 4. Shared component API assessment
 
 ### 4.1 GlassSurface is not a semantic design-system primitive
@@ -96,6 +120,8 @@ Assessment:
 Decision: do not simply rename GlassSurface to Surface. 00G/00H should define semantic primitives such as PageSurface, Panel, ActionSurface and OverlaySurface only where their contracts differ. Prefer native elements and explicit action semantics.
 
 ### 4.2 Motion wrappers overlap in purpose
+
+Phase 00 consumer tracing found no runtime consumer for the exported `MOTION_TOKENS` object or the imperative helpers `resolveMotionPhase` and `attachMotionPhaseVariables`; the only matches were their own declarations and barrel exports. These three unused public APIs are removed on the Phase 00 branch. Active motion wrappers, phase/state types, presets, config and `getMotionOrigin` remain. This does not consolidate or redesign the active Motion system.
 
 Confirmed:
 - `MotionPresence` adds motion preset/state/phase attributes to a configurable element.
@@ -135,7 +161,7 @@ Confirmed:
 
 Decision:
 - Keep feature ownership and the existing body-lock service.
-- 00G/00H must define a single overlay contract for Dialog, Sheet, Popover and nested confirmation, including topmost Escape handling, focus entry/return, focus containment, backdrop policy, safe-area viewport and nested ownership.
+- 00G/00H must define per-surface contracts for Dialog, Sheet, Popover and nested confirmation, including topmost Escape handling, focus entry/return, focus containment, backdrop policy, safe-area viewport and nested ownership.
 - Only create a shared overlay stack/focus manager if the contract and current callsites demonstrate it is necessary. Do not silently add a second body-lock service.
 - Do not use a single all-purpose Overlay component with dozens of props.
 
@@ -143,12 +169,12 @@ Decision:
 
 ### 5.1 Confirmed stylesheet inventory
 
-The current source tree contains 25 CSS files:
+The audited `main` baseline contains 25 CSS files; the Phase 00 audit branch contains 24 after removal of one unreferenced file:
 
 | Area | Files | Size / note |
 |---|---|---|
-| Global foundations | `base.css`, `theme.css`, `responsive.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css` | Eight stylesheets imported by `main.tsx`; `mobile-tuning.css` is 87,145 bytes |
-| Home generations | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css`, `home-phase2.css` | Six files; multiple generations share the Home surface |
+| Global foundations | `base.css`, `theme.css`, `responsive.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css` | Eight stylesheets imported by `main.tsx`; `mobile-tuning.css` is 87,143 bytes |
+| Active Home generations | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css` | Five imported files; 39 repeated selector strings across the five-file cascade. `home-phase2.css` was unimported and is retired on the Phase 00 branch. |
 | Login | `login-experience.css` | 22,218 bytes; imported by LoginExperience |
 | Scanner settings | `scanner-settings.css` | 7,113 bytes; imported by SettingsHub and ScannerSettingsPanel |
 | Scanner transition | `scanner-transition.css` | 8,723 bytes; imported by Home BarcodeScanner and StocktakeScanner |
@@ -167,7 +193,7 @@ The current source tree contains 25 CSS files:
 
 ### 5.3 Required next action before deleting or consolidating CSS
 
-No CSS file is approved for deletion in 00F. Before any removal:
+No bundled CSS file is approved for deletion by this inventory. The Phase 00 audit branch retires only `home-phase2.css`, proven absent from the source import graph. Before any further removal:
 1. Build selector-to-element usage mapping across JSX/TSX, templates and runtime-generated class names.
 2. Identify duplicate selectors, specificity collisions, media-query overlap and `!important` overrides.
 3. Capture computed styles for representative desktop/tablet/mobile states.
@@ -182,12 +208,12 @@ The source-level inventory confirms fragmentation and high maintenance risk; it 
 | Hotspot | Evidence | Risk | Required response |
 |---|---|---|---|
 | HomeScreen orchestration | ~54 KB component; many local states and multiple workflow launchers/overlays | Shell/navigation, overview, notifications and workflow entry are coupled | Split by ownership and destination; keep feature state out of shell |
-| Home CSS | Six Home stylesheets plus global mobile overrides | Cascade order and visual ownership difficult to reason about | Establish one Home/workspace style owner and retire generations only after selector audit |
+| Home CSS | Five active Home stylesheets plus global mobile overrides | Cascade order and visual ownership difficult to reason about | Establish one Home/workspace style owner and retire generations only after selector audit |
 | SettingsHub | Settings + Update Center + scanner settings routing in one dialog flow | Settings destination and nested detail navigation coupled | Convert to workspace navigation while preserving PWA and scanner settings contracts |
 | StocktakeModule | ~32.6 KB, multiple screens and workflow states | Presentation changes can accidentally change save/revision/export transitions | Extract screen composition/presentational regions; keep state machine/service calls in feature |
 | StocktakeImportModule | ~46.3 KB, import, conflict, table editing, output and history | UI abstraction can corrupt dirty/validation/export/persistence semantics | Decompose by workflow region; preserve feature-local state and exact output contract |
 | Scanner UI duplication | Home and Stocktake have separate camera shells but shared engine | Forcing both into one configurable component risks lifecycle coupling | Share only stable presentation primitives; retain two feature-owned shells and existing engine integration |
-| Overlay behavior | Multiple local backdrops/Escape/focus handlers; shared body lock; no focus stack | Nested surfaces can disagree about topmost Escape and focus return | Define overlay stack/focus contract before broad migration |
+| Overlay behavior | Multiple local backdrops/Escape/focus handlers; shared body lock; no focus stack | Nested surfaces can disagree about topmost Escape and focus return | Prefer native dialog semantics for standard modals and feature-owned contracts for specialized surfaces; add a shared stack only if traced cases require it |
 | Icon rendering | Registry + Icon + MotionIcon + direct Lucide imports | Repeated meanings can drift; motion is inconsistently applied | One static render contract with semantic registry; motion opt-in |
 | Material abstraction | GlassSurface generic wrapper and many direct material CSS surfaces | Material labels can become a visual constraint instead of task semantics | Define semantic surface roles; blur remains selective |
 | PWA UI | Global PwaUpdatePrompt controller plus Settings UpdateCenter view/store events | Presentation could accidentally absorb release logic | Keep runtime controller and release state independent of shell/UI |
@@ -297,7 +323,7 @@ Do not create all components as a framework up front. Implement only after 00G s
 
 ### Source-audit checks still open
 
-- Complete import/callsite graph for every exported shared component and each CSS selector.
+- Complete transitive import/callsite graph for every exported shared component and each CSS selector.
 - JSX/runtime-generated class selector coverage and computed-style collision analysis.
 - Full accessibility audit including focus containment, screen-reader announcement order and keyboard traversal.
 - Desktop/tablet/mobile screenshots and physical-device performance.
@@ -317,7 +343,7 @@ Do not create all components as a framework up front. Implement only after 00G s
 - [x] 00H acceptance/migration blueprint documented; owner approval remains open.
 - [ ] Owner acceptance before implementation.
 
-**00F completion means the source-level inventory and ownership decisions are documented. No component is approved for immediate deletion or replacement solely by this audit.**
+**00F completion means the source-level inventory and ownership decisions are documented. No shared component or bundled CSS family is approved for immediate deletion or replacement solely by this audit.**
 ## 20. Design-system evolution and contribution governance
 
 The component inventory is an audit of what exists today, not a cap on what RetailOS may build. The shared system must evolve with operational requirements.

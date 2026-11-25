@@ -1,8 +1,9 @@
 # UI/UX Acceptance and Migration Blueprint — Batch 00H
 
-**Status:** Proposed execution/acceptance contract. Owner approval is required before application-source migration.
-**Source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Documentation branch:** `docs/uiux-architecture-00b-00c`
+**Status:** Proposed execution/acceptance contract, reconciled against the Phase 00 audit. Owner approval is required before application-source migration.
+**Verified audit baseline:** `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`
+**Current audit record:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md)
+**Documentation branch:** `docs/uiux-phase-00-audit-closure`
 **Depends on:** 00B Technology Audit, 00C Screen Map, 00D Design System Specification, 00E Information Architecture, 00F Component Ownership Audit, 00G Screen Blueprints.
 **Scope:** Define measurable acceptance, implementation slices, test gates, rollout/rollback and decisions required to authorize the first UI implementation.
 
@@ -19,11 +20,11 @@ Decision vocabulary:
 - **Blocked:** a required dependency, decision or acceptance has not been satisfied.
 
 Current status:
-- 00B–00G are documented on the documentation branch.
-- No new UI dependency has been installed.
+- 00B–00G source/design documentation exists and is indexed; this does not mean all acceptance gates are closed.
+- Phase 00 repository reconciliation is recorded in `UI_UX_PHASE_00_AUDIT.md`.
 - No new UI dependency has been installed.
 - No physical-device acceptance is claimed.
-- 00E navigation, 00D visual system, typography and contrast decisions still require owner acceptance/prototype validation.
+- 00E navigation/history, 00D visual system, typography, contrast and device matrix still require owner acceptance/prototype validation.
 - 00F full selector-level CSS/computed-style proof and complete runtime consumer graph remain open. These are mandatory before deleting shared CSS/components, but they do not block isolated additive prototypes that preserve all old consumers.
 
 ## 2. Scope boundaries
@@ -182,7 +183,23 @@ The current preflight script itself was verified to invoke these checks. Individ
 | iOS Home Screen PWA | Standalone, portrait/landscape, offline/update | Standalone safe area, PWA update and navigation |
 | Low-end Android reference | Cold and warm launch, repeated navigation, long lists/tables, blur/images/motion on/off | Input acknowledgement, long tasks, scroll stability, memory/thermal behavior |
 
-Record exact device model, OS/browser version, viewport, PWA/tab mode, build ID and test date. “Mobile tested” without this information is not acceptance evidence.
+**Recommended repeatable viewport set (design/CI baseline, not a substitute for physical devices):**
+
+| Class | Viewport | Why it is included |
+|---|---:|---|
+| Compact desktop | 1280 × 720 | Office laptop and short-height workspace constraints |
+| Standard desktop | 1440 × 900 | Primary desktop composition |
+| Wide desktop | 1920 × 1080 | Use extra width for real work surfaces without stretching content |
+| Narrow desktop / tablet landscape | 1024 × 768 | Navigation collapse and dense workspace transition |
+| Tablet portrait | 768 × 1024 | Touch-first master/detail and navigation |
+| Compact Android | 360 × 800 | Low-end/mobile width and keyboard constraints |
+| Standard mobile | 390 × 844 | Common modern phone composition |
+| Wide mobile | 412 × 915 | Larger mobile width and safe-area behavior |
+| Compact iPhone fallback | 375 × 667 | Short viewport and older device constraints |
+| Short landscape | 844 × 390 | Keyboard/browser chrome and bounded overlay behavior |
+| Narrow fallback | 320 × 568 | Minimum-width clipping and reachable actions |
+
+Record exact physical device model, OS/browser version, actual viewport, PWA/tab mode, build ID and test date. “Mobile tested” without this information is not acceptance evidence.
 
 ### 5.4 Visual and functional test scenarios
 
@@ -242,7 +259,7 @@ Any diff touching a protected implementation area is a scope breach unless the P
 
 ## 7. CSS, component and architecture cleanup gate
 
-The source audit found 25 CSS files, several Home stylesheet generations and a large mobile tuning stylesheet. File size, age or name alone does not prove dead code.
+The audited main baseline had 25 CSS files; the Phase 00 audit branch has 24 after retiring the unimported `home-phase2.css`. Five active Home stylesheets and the large mobile tuning stylesheet remain cascade/ownership risks. File size, age or name alone does not prove dead code.
 
 Before deleting or consolidating a CSS/component system:
 1. Enumerate imports and runtime consumers from the implementation branch.
@@ -259,7 +276,7 @@ The 00F consumer graph and selector audit are an explicit prerequisite for broad
 ## 8. Rollout, branch and merge policy
 
 - Start each source implementation slice from the then-current `main`, not the documentation branch.
-- Keep documentation PR #156 separate from application implementation PRs unless the owner explicitly chooses another arrangement.
+- Keep documentation/governance changes separate from application implementation PRs unless the owner explicitly chooses another arrangement.
 - Use a dedicated branch/PR per bounded slice or tightly coupled pair.
 - Rebase/merge current main before final acceptance and rerun tests on the final head.
 - Keep PRs small enough to review the full protected-boundary diff.

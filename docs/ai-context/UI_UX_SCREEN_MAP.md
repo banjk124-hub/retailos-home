@@ -1,7 +1,8 @@
 # UI/UX Screen and Interaction Map — Batch 00C
 
 **Status:** Source-traced AS-IS map and TO-BE information-architecture proposal; 00E completed, 00F component ownership audit documented separately.
-**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Current source revalidation:** selected App/Auth/Home and feature-ownership facts were rechecked at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`; see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). This does not replace a complete callsite/runtime graph.
 **Audit date:** 2026-11-25
 **Purpose:** Describe every confirmed screen/surface, entry point, interaction and important state transition before redesigning layout or navigation.
 
@@ -491,7 +492,7 @@ The following screens must receive a dedicated screen specification before imple
 ## 9. Batch 00E — Information Architecture and Navigation decision
 
 **Status:** Source-grounded architecture decision; implementation proposal, not yet implemented.
-**Decision baseline:** current `main` at `2003ea24966755d0ad4e0298b34422b053267e77`, with source re-check of Home navigation and module registry on 2026-11-25.
+**Original decision baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`. Selected Home navigation and module-registry facts were rechecked at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` on 2026-11-25; see `UI_UX_PHASE_00_AUDIT.md`.
 **Purpose:** Define how RetailOS is organized as an operational workspace, how users move between work, and which navigation state belongs in the URL, browser history, feature state or transient overlay.
 
 ### 9.1 Source facts that constrain the decision
@@ -569,10 +570,17 @@ Use these stable, human-readable destination identities as the target route cont
 Adopt browser-native History API behind one typed navigation adapter as the initial implementation candidate. Do not add a routing dependency unless the later route/error/loading requirements demonstrate a concrete gap.
 
 History semantics:
+
+
+**History-state implementation note (proposal; owner acceptance still required):** the adapter should distinguish workspace route entries from same-URL transient entries. Store only a small typed marker (for example, entry kind, overlay owner/id and restoration policy) in `history.state`; never serialize employee data, barcode results, workbook contents, dirty form payloads or camera/session handles. Route parsing remains the authority for workspace identity. The adapter should expose one topmost-back dispatch contract to feature owners rather than importing feature internals into the shell.
 - Primary destination changes and opening a full operational workspace create navigable history entries.
 - Selecting a library group may create a history entry when it is a shareable/discoverable destination; closing/back returns to the library and restores search/category context.
 - Internal feature steps (e.g. Stocktake home → scan → review; Import import → history) remain owned by the feature state machine. They may intercept Back only when the feature explicitly defines a safe transition.
-- Transient overlays do not automatically become routes. Dialogs/popovers/quick lookup/scanner remain transient unless a future requirement establishes shareable state or a necessary browser-history contract.
+- Transient overlays do not become route destinations. A popover, toast or inline disclosure stays local and does not create a history entry.
+- A blocking, dismissible surface that must close on browser Back may add a **same-URL transient history entry** containing only a non-sensitive overlay token/owner marker. The URL path remains the current workspace; this is history state, not a route.
+- Back consumes only the topmost registered dismissible transient entry. The owning feature performs its normal close/cleanup path; the shell must not directly mutate feature state or bypass dirty-work guards.
+- Forward restoration is opt-in per overlay type. Scanner/camera surfaces, permission prompts, destructive confirmations and unsaved operational drafts are never automatically reopened. If Forward reaches a non-restorable transient marker, normalize that entry to the current workspace state without reacquiring resources.
+- A surface that cannot safely participate in this contract remains outside browser history; its explicit close/Escape behavior stays feature-owned. Do not make every popover a history entry.
 - Back priority: close the topmost dismissible transient surface; otherwise leave the current feature-local step if that feature supports safe back; otherwise navigate to the previous workspace/history entry; if no safe previous entry exists, go to `/home`.
 - Escape and browser Back are not interchangeable when the feature has unsaved work or a destructive/irreversible operation. Confirm or block navigation using the owning feature's existing rules.
 - Forward navigation restores the previous workspace where safe. Do not resurrect a stale camera session or reopen a permission prompt automatically.

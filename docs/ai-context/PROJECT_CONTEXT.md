@@ -1,20 +1,18 @@
-# Current repository state — 2026-11-23
+# Current repository state — 2026-11-25
 
-**Repository:** `banjk124-hub/retailos-home`  
-**Default branch:** `main`  
-**Current main commit:** Verify live on GitHub before relying on a SHA.  
-**Latest recorded PWA feature:** PR #137 — delta-aware PWA release staging. Verify current PR and deployment status live on GitHub.
+**Repository:** `banjk124-hub/retailos-home`
+**Default branch:** `main`
+**Verified main baseline:** `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` (PR #159 merge commit).
+**Current UI/UX audit:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md).
 
-- Delta staging reuses active-cache resources only after exact URL, byte-length and SHA-256 validation. Missing, changed or corrupt resources are downloaded and verified; removed resources are excluded.
-- Update reporting distinguishes network download bytes, verified reused bytes and total candidate release bytes. Temporary storage still needs room for the complete candidate alongside the active release for rollback.
-- PR #137 final-head CI #1250 passed full preflight, TypeScript, production/Pages builds and PR-base bundle comparison. Post-merge main CI run `43802257547` passed; GitHub Pages deployment run `43802257688` passed. These are automated pipeline results, not physical-device acceptance.
-- Physical Android Chrome/PWA, iOS Safari/Home Screen PWA, desktop and low-end Android acceptance remains a separate validation gate. Do not claim device acceptance from CI or deployment.
-- Production baseline includes PR #119; the user previously confirmed that baseline was merged and deployed. The current delta-staging feature is merged to the development repository's `main`; this does not imply transfer to the separate shared production account/repository or Cloudflare environment.
-- Canonical PWA release contract: `PWA_RUNTIME_RELEASE.md`. Application Release Lifecycle and Data Lifecycle remain independent; data-only refresh/recalculation using existing logic must not trigger an app release, reload or release-cache cleanup.
-- AI workflow source of truth: `AGENTS.md`, `docs/ai-context/INDEX.md`, `docs/ai-context/AI_CAPABILITY_SYSTEM.md`, the composable CORE/task skills under `.github/skills/`, and `prompts/START_HERE.md`. Load context selectively; historical snapshots below are retained for evidence, not current-state authority.
-
-
-## Scanner subsystem
-
-Scanner implementation truth is maintained in [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). Historical Scanner decisions and phases are in [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Do not duplicate scanner architecture, implementation details or phase status in this project summary.
-
+- PR #159 merged the open/evolving design-system architecture: Core Foundation, Shared Design System and Feature Experience. This is an architecture principle, not evidence that a formal new component/token implementation has shipped.
+- RetailOS is undergoing a product-wide presentation and interaction redesign. Work is source-first in the existing React/Vite repository; Figma is optional/historical reference material, not a delivery or acceptance dependency.
+- Reference authority: supplied image defines structural composition; supplied video defines motion/feedback/state behavior; RetailOS remains authoritative for brand, business semantics, data truth and architecture.
+- Current source still mounts App/Auth/Home; Home owns section navigation and multiple feature/overlay entry points. A route-based multi-workspace shell and typed browser-history adapter remain target architecture, not current implementation.
+- Existing shared Brand, Glass, Motion, Icon, LiquidDock, body-scroll-lock and PWA presentation systems are candidates for evolution, not mandatory preservation or automatic target components.
+- Authentication/session, module registry identity/readiness, snapshot/cache, Scanner Engine, Stocktake/Import persistence/output, overlay body-scroll-lock and PWA release lifecycle are protected contracts during presentation migration.
+- Scanner runtime stabilization and ecosystem cleanup are closed. Current implementation truth is in `SCANNER_ENGINE.md`; historical investigations are in `SCANNER_HISTORY.md`. Do not reopen SC-01–SC-05 for the UI redesign.
+- Development GitHub Pages is not the shared department production environment or production promotion. Merge, deployment and production transfer remain separate approvals.
+- PR #159 head CI #1465 passed. Post-merge main CI #1466 and GitHub Pages deployment #159 both completed successfully on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These are automated pipeline/deployment results, not physical-device acceptance.
+- Phase 00 audit is in Draft PR #160. It retires the unimported `home-phase2.css` and three unused Motion public APIs, records the source consumer/import graph, route-history proposal, overlay boundary and viewport baseline. PR #160 head `6305f471169f6d16997a355d8adc5931cb6f2b54` passed RetailOS CI #1493; no merge or deployment has been performed.
+- Current volatile branch/PR/CI/deployment state must still be verified live before future status claims.

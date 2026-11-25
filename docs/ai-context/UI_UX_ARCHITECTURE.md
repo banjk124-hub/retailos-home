@@ -109,7 +109,7 @@ A visual redesign may change the first three, but must not silently change the f
 
 - App Shell owns global navigation, workspace outlet, global header and cross-screen context.
 - Design System owns tokens, primitives, reusable components and interaction patterns.
-- Shared Platform owns cross-feature overlay coordination, motion preferences, download lifecycle and PWA integration.
+- Shared Platform owns the reference-counted body-scroll-lock coordinator, motion preferences, download lifecycle and PWA integration. Overlay content, focus entry/return and close behavior remain feature-owned unless a specific shared contract is accepted.
 - Feature modules own workflow content, feature state, validation, persistence and feature-specific error states.
 - Domain/platform contracts own Scanner, PWA release, authentication, snapshot and local data invariants.
 
@@ -304,17 +304,15 @@ Short landscape, split-screen, keyboard-open and browser-chrome changes must be 
 
 ### 5.5 Navigation and browser history
 
-Target navigation is workspace-based. Before implementation, define:
-- Stable route IDs and mapping to existing module IDs.
-- Which screens deserve a URL.
-- Back behavior from overlays vs workspace navigation.
-- Refresh/reopen behavior.
-- Deep-link behavior and permission checks.
-- Scroll restoration.
-- Unsaved-work guard.
-- Unknown route and unavailable module behavior.
+Target navigation is workspace-based. The source-grounded route and history proposal is specified in [UI_UX_SCREEN_MAP.md §9](./UI_UX_SCREEN_MAP.md); it remains an owner-acceptance gate, not an implemented router.
 
-Default proposal: start with a small typed navigation adapter over the browser History API. Add a routing dependency only after a demonstrated need for nested route matching, loaders, route boundaries or complex deep-link ownership.
+- Use stable workspace paths mapped to existing module/library IDs; do not create a parallel business registry.
+- Start with one small typed adapter over the browser History API. Add a router dependency only after a demonstrated need for nested matching, loaders, route boundaries or complex deep-link ownership.
+- Workspace navigation changes create route history entries. Reload/direct URL restores the workspace identity and safe non-sensitive view context.
+- Transient overlays do not become route destinations. A blocking dismissible overlay may use a same-URL history-state marker so browser Back closes it without changing workspace path; popovers/toasts remain local.
+- Forward restoration is opt-in. Camera/permission surfaces and unsaved operational drafts must never reopen automatically.
+- Feature-local steps and dirty state remain feature-owned; the shell asks the feature for a navigation guard rather than inspecting its internals.
+- Unknown/unavailable destinations resolve truthfully and provide a safe path to Home.
 
 ## 6. Interaction and state contract
 
@@ -348,12 +346,12 @@ Interaction rules:
 
 Existing canonical contract: `UI_OVERLAY_ARCHITECTURE.md`.
 
-- Use HTML Dialog as the first candidate for standard modal behavior.
+- Prefer native HTML Dialog semantics for standard modal behavior after compatibility and lifecycle validation; retain feature-owned custom surfaces for specialized camera/data workspaces.
 - Use Popover API as progressive enhancement for non-modal anchored surfaces.
 - Use custom React surfaces where a feature needs specialized camera, bounded workspace, nested review or complex close lifecycle.
-- All modal behavior must preserve shared body scroll-lock ownership, safe-area layout, focus restoration and nested surface semantics.
+- All modal behavior must preserve the single shared body scroll-lock owner, safe-area layout, focus entry/return and nested surface semantics. Full focus containment is not currently implemented; do not claim it until tested.
 - Do not use Popover for modal confirmations.
-- Do not migrate every existing overlay in one global change.
+- Do not add a generic overlay stack/focus manager unless traced nested use cases prove that native dialog semantics plus feature-owned close/back contracts are insufficient.\n- Do not migrate every existing overlay in one global change.
 - Native APIs must be wrapped only where the wrapper adds consistent ownership/accessibility/fallback behavior.
 
 ## 8. Motion system contract

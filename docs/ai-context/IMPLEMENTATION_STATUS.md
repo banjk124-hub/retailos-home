@@ -1,11 +1,28 @@
-# Current verified implementation status — 2026-11-24
+# Current verified implementation status — 2026-11-25
 
 **Repository:** `banjk124-hub/retailos-home`
 **Default branch:** `main`
+**Verified baseline:** `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`
+**Phase 00 audit:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md)
+
+## UI/UX redesign
+
+- PR #159 (`docs(ui): define evolving design-system architecture`) is merged at the verified baseline above.
+- PR-head RetailOS CI run #1465 passed on `27966f571dd25ec15e6815ce034f6799c8ad47f8`.
+- Post-merge RetailOS CI #1466 and GitHub Pages deployment #159 both completed successfully on merge commit `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`.
+- These automated results do not establish physical-device or visual acceptance.
+- The redesign is product-wide and source-first in the existing React/Vite repository. Figma is optional and is not a delivery dependency.
+- The open/evolving design-system principle is documented: Core Foundation, Shared Design System and Feature Experience. No new design-system runtime implementation is claimed.
+- Current App/Auth/Home composition remains in source. The proposed App Shell, route/history adapter and new visual foundation are not yet implemented.
+- Phase 00 audit is in Draft PR #160. Direct source import/export consumers and all 24 CSS import paths are mapped; the unimported `home-phase2.css` and three unconsumed Motion public APIs are removed. Route/history, overlay and viewport proposals are documented.
+- PR #160 head `6305f471169f6d16997a355d8adc5931cb6f2b54` passed RetailOS CI #1493. It remains unmerged.
+- Remaining gates: browser computed-style/cascade validation, owner acceptance of navigation/visual/overlay decisions, physical reference-device selection and authorization of the first runtime slice.
+- PR #157 is still a draft/open Login CSS-only change based on an older main commit; it is not accepted as a redesign implementation slice. Do not merge by default.
+- No UI source migration, production deployment or physical-device acceptance is claimed by this documentation audit.
 
 ## Scanner
 
-**Status:** Production scanner stabilization and ecosystem cleanup are complete. PR #153 was merged and deployed; the project owner confirmed the app flow operates normally without observed errors.
+**Status:** Production scanner stabilization and ecosystem cleanup are complete. PR #153 was merged/deployed; the project owner confirmed the app flow operates normally without observed errors.
 
 - Production backend is ZXing-C++ WASM through `ZXingWasmDecoderAdapter` on the Main Thread.
 - Home and Stocktake share the same scanner engine/session contract.
@@ -13,22 +30,17 @@
 - Benchmark harness and actual WASM integration tests remain.
 - No active SC-01–SC-05 implementation phase is open.
 
-Canonical implementation specification: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md).
-Historical investigations, phase/PR/decision evidence and acceptance boundaries: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Scanner documentation is intentionally limited to these two files; do not create or consult parallel standalone Scanner phase/audit specifications.
+Canonical implementation specification: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). Historical investigations and phase evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
 
-**Acceptance boundary:** owner-confirmed stable operation is recorded. This does not constitute quantified barcode accuracy or an exhaustive iOS/Android/low-end-device test matrix. Do not state physical acceptance beyond the actual recorded runs.
+**Acceptance boundary:** owner-confirmed stable operation is recorded. This does not constitute quantified barcode accuracy or exhaustive iOS/Android/low-end-device acceptance.
 
 ## PWA runtime / release management
 
-See [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) for the current release integrity, staging, consent, safe handoff, boot health and rollback contract. Check the active PR and current GitHub Actions before stating volatile branch/CI/deployment status.
-
-## AI workflow and project intelligence
-
-See [AI_CAPABILITY_SYSTEM.md](./AI_CAPABILITY_SYSTEM.md) and [AI_CAPABILITY_EVALUATION.md](./AI_CAPABILITY_EVALUATION.md) for canonical architecture and evaluation criteria. Verify current PR/merge status directly in GitHub.
+See [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) for the current release integrity, staging, consent, safe handoff, boot health and rollback contract. Verify current PR, CI and deployment live before making volatile claims.
 
 ## General verification rules
 
 - The development repository's GitHub Pages deployment is not production-account promotion.
-- CI verifies only the tests and build jobs that actually ran.
+- CI verifies only the tests and build jobs that actually ran on the exact commit.
 - Record physical-device, optical and business-workflow acceptance separately from software/CI status.
-- Keep current status concise. Put implementation archaeology in the appropriate history document.
+- Keep this file concise; implementation archaeology belongs in canonical history documents.

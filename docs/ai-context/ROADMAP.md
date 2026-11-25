@@ -1,4 +1,4 @@
-# RetailOS engineering roadmap — current state 2026-11-24
+# RetailOS engineering roadmap — current state 2026-11-25
 
 ## Current priorities
 
@@ -39,12 +39,15 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** 00B–00H architecture and source audits are documented on the open Draft PR #156. M0-A has an initial editable Figma batch; review defects and remaining frames are tracked in `UI_UX_M0_A_EXECUTION_RECORD.md`. No application source migration has started.
+**Status:** Phase 00 audit is recorded in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). PR #159 is merged to `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`; PR-head CI #1465 passed; post-merge main CI #1466 and GitHub Pages deployment #159 also passed on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. Physical-device acceptance remains separate and is not inferred from CI/deployment.
 
-- Canonical reference authority: [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image=structure, video=motion/state, RetailOS=brand/business/data authority.
-- M0-A structural specification: [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).\n- M0-A execution evidence and Figma frames: [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md).
-- M0-B temporal/motion contract: same reference roles contract, with feature-owned state and data-correctness constraints.
-- Source truth: [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md), [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md), [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
-- Design and implementation contracts: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md), [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md), [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md), [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md), [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
+- Product-wide redesign is source-first in the existing React/Vite repository. Figma is optional reference material, not a delivery dependency or acceptance gate.
+- Reference roles remain strict: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
+- Design-system architecture is open/evolving: Core Foundation, Shared Design System and Feature Experience. Feature-specific layouts/components are valid when task semantics require them.
+- Current source still uses the existing App/Auth/Home composition; the target Shell, route/history adapter and formal foundation are not yet implemented.
+- Phase 00 architecture principles are closed, but repository reconciliation, shared consumer graph, selector-level CSS audit and owner decision gates remain open. No broad source migration is authorized by documentation completion alone.
+- PR #157 remains a draft on an old base with a legacy Login CSS-only change; it is not a required redesign milestone and must not be merged by default.
 
-**Next gates:** implement representative structural surfaces directly in React/CSS, validate desktop/tablet/mobile composition and source-to-workflow ownership, then integrate M0-B motion behavior. Do not merge the two reference roles, fabricate workflow/data states or couple motion to business state. Each source slice is independently reviewed and tested; merge/deploy remains separately gated.
+**Current Phase 00 work:** Draft PR #160 records the source consumer/import graph, retires one unimported stylesheet and three unused Motion APIs, clarifies route/history and overlay policy, and defines repeatable responsive viewport baselines. Its head `6305f471169f6d16997a355d8adc5931cb6f2b54` passed RetailOS CI #1493. It is not merged.
+
+**Next gate:** browser computed-style/cascade validation, then owner acceptance for route/history, desktop navigation, visual foundation, overlay/focus strategy, physical reference devices and the first bounded source slice. Scanner Engine remains closed; only an optional, isolated presentation slice may be considered later.

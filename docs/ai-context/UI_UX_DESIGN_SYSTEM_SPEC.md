@@ -1,8 +1,8 @@
 # RetailOS Design System Specification — Batch 00D
 
 **Status:** Proposed specification; no design tokens or application styles are implemented by this document.
-**Audit baseline:** main at 2003ea24966755d0ad4e0298b34422b053267e77
-**Working branch:** docs/uiux-architecture-00b-00c
+**Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. Proposed tokens remain unimplemented.
 **Date:** 2026-11-25
 **Purpose:** Define the target RetailOS visual language and the implementation contract for foundations, typography, color, layout, materials, components, motion, responsive behavior and performance before source migration begins.
 
@@ -107,9 +107,9 @@ Implication: motion foundations exist, but the target needs one motion vocabular
 
 ### 2.6 CSS ownership and cascade risk
 
-The repository has 25 CSS files. main.tsx imports eight global stylesheets plus Brand, Motion, Glass tokens/materials and LiquidDock CSS. HomeScreen imports five Home stylesheets: home.css, home-ux.css, home-engine.css, home-redesign.css and home-architecture.css. The Home styles are layered in addition to global theme, responsive, mobile, performance, adaptive and native-experience styles.
+The audited main baseline had 25 CSS files; the Phase 00 audit branch has 24 after retiring the unimported `home-phase2.css`. `main.tsx` imports eight global stylesheets plus Brand, Motion, Glass tokens/materials and LiquidDock CSS. HomeScreen imports five Home stylesheets: home.css, home-ux.css, home-engine.css, home-redesign.css and home-architecture.css. The Home styles are layered in addition to global theme, responsive, mobile, performance, adaptive and native-experience styles.
 
-mobile-tuning.css is approximately 87 KB and includes broad touch rules, large mobile overrides, repeated media-query sections and some !important declarations. Home and theme CSS also contain overlapping selectors and literals. The exact set of dead selectors and computed winning declarations has not yet been established.
+`mobile-tuning.css` is approximately 87 KB and includes broad touch rules, large mobile overrides, repeated media-query sections and some !important declarations. Home and theme CSS also contain overlapping selectors and literals. The exact set of dead selectors and computed winning declarations has not yet been established.
 
 Implication: CSS migration must begin with selector/cascade and consumer analysis. Do not delete or rewrite styles based only on file names. Do not add another override stylesheet as the new design-system layer.
 
@@ -155,7 +155,7 @@ Feature modules compose patterns; they do not create new global token sets.
 - Component layer owns reusable visual and interaction behavior.
 - App Shell owns global navigation, page frame and cross-workspace context.
 - Feature modules own domain-specific composition, validation and persistence.
-- Shared platform owns overlay coordination, motion preference, PWA release and shared browser lifecycle.
+- Shared platform currently owns reference-counted body-scroll-lock coordination, motion preference, PWA release and shared browser lifecycle. Focus containment and a global overlay stack are not implemented and are not assumed by this design.
 
 One responsibility must have one canonical implementation. Temporary compatibility aliases are allowed only with an owner and removal milestone.
 
