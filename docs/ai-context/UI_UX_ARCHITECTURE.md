@@ -581,3 +581,32 @@ This document is a target architecture proposal created during documentation bat
 M0 follows [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): the supplied image is the structural/compositional reference; the supplied video is the motion/feedback/state reference; RetailOS remains authoritative for brand, business semantics, data truth and architecture. These sources must not be blended into a copied palette or product behavior.
 
 Motion is presentation-only. Feature/controller state changes first; animation reflects the already-derived state. Animation completion must never commit business data or advance a workflow. Async results must be tied to the current request/session generation; stale responses cannot overwrite newer data. Transitions must not trigger duplicate fetches, writes, subscriptions or camera lifecycle operations. Latest state wins, interruption converges to source state, and reduced-motion/low-performance fallbacks preserve function. Existing feature ownership, overlay/body-lock and PWA/Scanner contracts remain authoritative.
+## 3.5 Evolving design architecture — accepted product principle
+
+RetailOS uses an **open, evolving design system**, not a closed component catalogue or a fixed visual template. Shared consistency defines the product's recognizable language and quality bar; it does not require every workspace to use the same layout, component inventory or interaction pattern.
+
+The architecture has three complementary layers:
+
+1. **Core Foundation** — brand identity, semantic color meaning, typography principles, visual hierarchy, spacing/rhythm conventions, accessibility, responsive principles, motion philosophy and performance expectations. These establish coherence, not a finite list of permitted components or layouts.
+2. **Shared Design System** — reusable tokens, primitives, components and patterns that have demonstrated cross-feature value. This layer is intentionally extensible: new tokens, variants, components and patterns may be proposed, added, evolved, deprecated or retired as product needs change.
+3. **Feature Experience** — feature-owned compositions, specialized controls, layouts and interactions designed for a particular operational task. A feature may create a new solution when the shared system does not fit; it is not required to force its workflow into an existing generic component.
+
+### Contribution and evolution rules
+
+- Start from the user task and operational truth, not from the current component inventory.
+- Reuse a shared component when its semantic responsibility and behavior genuinely match. Visual resemblance alone is not sufficient.
+- Create a feature-owned component or pattern when the task needs a distinct interaction, information density, lifecycle or performance profile.
+- Validate the new solution in its owning feature before considering it for shared adoption.
+- Promote it to shared only when reuse is real and the abstraction remains coherent across consumers. Do not promote merely to increase the shared catalogue.
+- A shared contribution must document its semantic purpose, API, variants, states, accessibility, responsive behavior, performance implications, ownership and migration impact.
+- Existing shared components may gain variants or be redesigned when evidence supports it. Shared status is not a prohibition on change.
+- Feature-specific exceptions are allowed when justified by task requirements; document the reason and keep them within the feature boundary.
+- When a shared primitive or pattern is replaced, migrate its consumers and retire the old implementation instead of maintaining indefinite parallel systems.
+
+### Consistency without uniformity
+
+Consistency means recognizable RetailOS identity, coherent semantic state, predictable interaction feedback, accessible behavior and compatible quality/performance standards. It does **not** mean identical page templates, card grids, colors, navigation arrangements or controls across all workspaces.
+
+A Scanner capture surface, Stocktake workbench and Import review workspace should be recognizably RetailOS while remaining optimized for their different jobs. The system must support both shared solutions and purpose-built feature experiences.
+
+This principle supersedes any interpretation of the component inventory or expected-component lists as a closed or mandatory catalogue.
