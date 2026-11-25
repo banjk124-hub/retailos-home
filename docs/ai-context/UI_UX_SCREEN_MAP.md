@@ -16,6 +16,16 @@ This document is derived from the current source tree, not from intended future 
 - Business logic, data contracts, scanner runtime and persistence remain owned by their current feature/domain contracts.
 - This map records UI behavior; it does not authorize changing stable IDs, API payloads, IndexedDB schemas or PWA lifecycle.
 
+## 1.1 Redesign scope
+
+The AS-IS map records existing behavior; it does not constrain the TO-BE visual result. During redesign, every visible and interactive layer may be reconsidered or replaced, including copy, status wording and presentation, content order, layout, navigation, components, logo/wordmark, icons, buttons, controls, typography, imagery, materials and motion.
+
+Use the screen map to recover behavior and contracts—not to reproduce current appearance. For every TO-BE screen, start with the desired user outcome and information hierarchy, then decide which existing behaviors/components should be retained, migrated, replaced or removed.
+
+Any visual replacement must preserve the truth of the underlying state and action. A redesigned status label must still map to the same business state; a redesigned control must preserve its action/permission semantics; a replaced component must not silently drop persistence, keyboard, focus, offline or lifecycle behavior.
+
+No current component, logo, icon, button, wording or layout is visually protected. Domain/data contracts and the explicitly protected platform boundaries remain protected unless a separate migration plan is approved.
+
 ## 2. Current application journey
 
 ### 2.1 Root journey
