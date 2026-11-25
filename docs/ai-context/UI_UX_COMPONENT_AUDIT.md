@@ -121,6 +121,8 @@ Decision: do not simply rename GlassSurface to Surface. 00G/00H should define se
 
 ### 4.2 Motion wrappers overlap in purpose
 
+Phase 00 consumer tracing found no runtime consumer for the exported `MOTION_TOKENS` object or the imperative helpers `resolveMotionPhase` and `attachMotionPhaseVariables`; the only matches were their own declarations and barrel exports. These three unused public APIs are removed on the Phase 00 branch. Active motion wrappers, phase/state types, presets, config and `getMotionOrigin` remain. This does not consolidate or redesign the active Motion system.
+
 Confirmed:
 - `MotionPresence` adds motion preset/state/phase attributes to a configurable element.
 - `MotionCard` is a thin wrapper around MotionPresence.
