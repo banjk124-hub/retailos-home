@@ -63,7 +63,30 @@ A focused GitHub code-search pass confirmed these direct consumers on the audite
 
 This is a targeted direct-import map, not a complete transitive runtime consumer graph. It does not cover every export, dynamic class, portal, CSS selector, runtime branch or indirect composition. The 00F full consumer/cascade audit remains open.
 
-### 3.5 Validation infrastructure
+### 3.5 CSS import graph and selector-level findings
+
+The source import graph was checked at the audited baseline. Import ownership and order are:
+
+| Import owner | Stylesheets in source order | Result |
+|---|---|---|
+| `src/main.tsx` | `base.css`, `responsive.css`, `theme.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css`, then Brand, Motion, Glass tokens/materials and LiquidDock CSS | Global presentation is layered through a fixed entrypoint; global selectors and tokens are cross-feature. |
+| `LoginExperience.tsx` | `login-experience.css` | Login-owned presentation. |
+| `HomeScreen.tsx` | `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css` → `home-architecture.css` | Five active Home generations are imported in this order. |
+| `SettingsHub.tsx`, `ScannerSettingsPanel.tsx` | `scanner-settings.css` | Shared settings presentation; not Scanner Engine. |
+| `BarcodeScanner.tsx`, `StocktakeScanner.tsx` | `scanner-transition.css` | Shared scanner presentation transition stylesheet; engine remains protected. |
+| `StocktakeModule.tsx` | `stocktake.css` | Feature-owned. |
+| `StocktakeImportModule.tsx` | `stocktake-import.css` | Feature-owned. |
+| `PwaUpdatePrompt.tsx` | `pwa-update-prompt.css` | PWA release presentation; lifecycle contract protected. |
+
+**Confirmed orphan:** `src/styles/home-phase2.css` exists in the repository but is not imported by `main.tsx`, `HomeScreen.tsx` or any other source file found by repository code search. Its only search hit was documentation. It is therefore not part of the current Vite CSS import graph and cannot style the running application. It is safe to retire as an unreferenced stylesheet; no runtime behavior should change when it is removed.
+
+**Confirmed cascade hotspot:** a static selector comparison across the five active Home stylesheets found 39 exact selector strings repeated across more than one file. Examples include `.app-shell`, `.topbar`, `.content-wrap`, `.section-heading`, `.search-field`, `.home-spotlight`, `.spotlight-main-content`, `.spotlight-notifications`, `.library-engine` and `.topbar-dock`. These overlaps are not automatically defects: later declarations may be intentional responsive/state overrides. They do mean ownership and source order must be documented before consolidation.
+
+**Legacy selector candidates:** repository code search returned only stylesheet matches (no current JSX/TSX consumer) for selectors such as `.sidebar`, `.hero-card`, `.metrics-grid`, `.module-card`, `.module-grid`, `.login-screen`, `.login-showcase`, `.activity-row` and `.attention-item`. This is evidence of likely legacy CSS, not permission to delete whole blocks: global tokens, responsive fallbacks, selectors used by non-TSX markup and runtime-composed classes still require verification.
+
+**Limits of this pass:** GitHub code search and static selector comparison do not compute browser styles, enumerate every dynamic class string, evaluate CSS cascade layers/specificity under all media states, or inspect portals and runtime-generated DOM. No claim of full computed-style proof or visual regression coverage is made. Broad removal of `theme.css`, `responsive.css` or `mobile-tuning.css` remains blocked.
+
+### 3.6 Validation infrastructure
 
 - `scripts/preflight.mjs` runs broad scanner, Home, overlay, interaction, Stocktake Import, production build, GitHub Pages build, bundle-boundary and PWA checks.
 - Existing focused tests cover body-scroll-lock and overlay viewport/layout contracts. The inspected preflight does not establish a dedicated browser-history/navigation regression suite or a general focus-trap/overlay-stack suite.
@@ -126,7 +149,7 @@ Each slice must name exact files/callsites, owners, protected contracts, tests, 
 - [x] Stale PR/baseline/Figma status conflicts identified.
 - [x] Update PROJECT_CONTEXT, IMPLEMENTATION_STATUS and ROADMAP to the verified current state.
 - [x] Reconcile stale PR #156 / Figma / old-baseline statements across the active plan and 00H blueprint; historical audit baselines are explicitly labelled as original evidence.
-- [ ] Complete the shared export/runtime consumer graph and selector-level CSS audit before cleanup decisions.
+- [ ] Complete the shared export/runtime consumer graph, dynamic-class/portal trace and browser computed-style audit before broad CSS consolidation.\n- [x] Trace stylesheet import ownership/order and identify the unimported `home-phase2.css` orphan plus repeated Home selectors; broad legacy CSS retirement remains blocked.
 - [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
 - [ ] Confirm device matrix and visual acceptance method.
 
