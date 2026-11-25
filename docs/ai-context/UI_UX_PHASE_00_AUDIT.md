@@ -107,8 +107,8 @@ Each slice must name exact files/callsites, owners, protected contracts, tests, 
 - [x] Existing preflight and overlay/body-lock test coverage inspected.
 - [x] Product-wide scope, reference roles, source-first workflow, feature freedom and protected boundaries consolidated.
 - [x] Stale PR/baseline/Figma status conflicts identified.
-- [ ] Update PROJECT_CONTEXT, IMPLEMENTATION_STATUS and ROADMAP to the verified current state.
-- [ ] Reconcile stale PR #156 / Figma / old-baseline statements across UI/UX plan and 00H blueprint.
+- [x] Update PROJECT_CONTEXT, IMPLEMENTATION_STATUS and ROADMAP to the verified current state.
+- [x] Reconcile stale PR #156 / Figma / old-baseline statements across the active plan and 00H blueprint; historical audit baselines are explicitly labelled as original evidence.
 - [ ] Complete the shared export/runtime consumer graph and selector-level CSS audit before cleanup decisions.
 - [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
 - [ ] Confirm device matrix and visual acceptance method.
