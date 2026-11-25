@@ -15,8 +15,7 @@
 
 ## M0 status
 - Direction anchors are confirmed.
-- Documentation reconciliation is active on PR #163.
-- Existing M0 records contain useful audits but conflict on amber accents, reference scope and restrictive motion language; treat them as historical until reconciled.
+- **M0-0 documentation consolidation and plugin parity audit: complete on the PR branch.**
 - M0-A source-backed representative screens/responsive visual acceptance: open.
 - M0-B motion/interaction study: open.
 - M0-C cross-surface integration: open.
@@ -26,9 +25,12 @@
 ## Merged work — do not overstate
 PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged. They provide audit records, semantic tokens and limited consumer migrations/browser coverage; they do not implement product-wide UI/UX or the target App Shell.
 
-## Open PRs — last observed; recheck live
-- PR #163 documentation/Product Skill consolidation: open Draft at head `cb8c05de5b996efcfc321d63470c498e6f14194c`; RetailOS CI run #45598222361 passed on that head. Not merge approval.
-- PR #157 legacy Login tablet CSS slice: open Draft at head `03467e4d0a111a3e0b4a4b0001e0cb8bcaf70608`; reconcile against merged PR #162, do not merge by default.
+## Open PRs — recheck live
+- PR #163: documentation/Product Skill/M0 consolidation; open Draft at last check. Verify current exact head and CI before review; no merge approval is implied.
+- PR #157: legacy Login tablet CSS slice; open Draft at last check. Reconcile against merged PR #162, do not merge by default.
+
+## Plugin parity
+Private RetailOS Product Studio is now v0.1.3. Its current `SKILL.md`, root manifest and Codex manifest were inspected after release. The skill explicitly encodes the owner-confirmed burgundy/dark-red identity, Vietnamese-first typography, authentic retail imagery, image art-direction/composition role, video motion/interaction role, open feature-specific design system, protected contracts and M0-before-M1 gate. Repository/plugin direction is aligned at the audited release. Recheck parity whenever either authority changes.
 
 ## Scanner
 Runtime stabilization and ecosystem cleanup are closed; owner confirmed normal app flow without observed errors. Production decoder is ZXing-C++ WASM via `ZXingWasmDecoderAdapter` on Main Thread. Home and Stocktake share Scanner Engine/session contract. Retired Worker prototype and production QA diagnostics collector/monitor remain retired. No active SC-01–SC-05 phase. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Operational stability is not quantified optical accuracy or exhaustive device acceptance.
