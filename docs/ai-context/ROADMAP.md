@@ -48,4 +48,6 @@ The project owner's operational confirmation is not a quantified optical benchma
 - Phase 00 architecture principles are closed, but repository reconciliation, shared consumer graph, selector-level CSS audit and owner decision gates remain open. No broad source migration is authorized by documentation completion alone.
 - PR #157 remains a draft on an old base with a legacy Login CSS-only change; it is not a required redesign milestone and must not be merged by default.
 
-**Next gate:** finish the remaining Phase 00 audit items and obtain explicit owner acceptance for route/history, desktop navigation, visual foundation, overlay/focus strategy, device matrix and the first bounded source slice. Scanner Engine remains closed; only an optional, isolated presentation slice may be considered later.
+**Current Phase 00 work:** Draft PR #160 records the source consumer/import graph, retires one unimported stylesheet and three unused Motion APIs, clarifies route/history and overlay policy, and defines repeatable responsive viewport baselines. Its head `88914292b31e9c53b7c13c8b4537928dabc33633` passed RetailOS CI #1491. It is not merged.
+
+**Next gate:** browser computed-style/cascade validation, then owner acceptance for route/history, desktop navigation, visual foundation, overlay/focus strategy, physical reference devices and the first bounded source slice. Scanner Engine remains closed; only an optional, isolated presentation slice may be considered later.
