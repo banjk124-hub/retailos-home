@@ -27,7 +27,7 @@ PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser
 
 ## Governance batches
 - BATCH 00 audit record: PR #165, Draft; review/merge pending.
-- BATCH 01 canonical governance: dependent Draft PR; review and exact-head CI pending.
+- BATCH 01 canonical governance: PR #166, Draft and dependent on PR #165; review and exact-head CI pending.
 - Product Studio remains v0.1.3. Plugin parity update is intentionally deferred until repository standards are reviewed and accepted.
 
 ## PR state verified 2026-11-26
