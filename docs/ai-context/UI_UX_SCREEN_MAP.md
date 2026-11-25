@@ -492,7 +492,7 @@ The following screens must receive a dedicated screen specification before imple
 ## 9. Batch 00E — Information Architecture and Navigation decision
 
 **Status:** Source-grounded architecture decision; implementation proposal, not yet implemented.
-**Decision baseline:** current `main` at `2003ea24966755d0ad4e0298b34422b053267e77`, with source re-check of Home navigation and module registry on 2026-11-25.
+**Original decision baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`. Selected Home navigation and module-registry facts were rechecked at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` on 2026-11-25; see `UI_UX_PHASE_00_AUDIT.md`.
 **Purpose:** Define how RetailOS is organized as an operational workspace, how users move between work, and which navigation state belongs in the URL, browser history, feature state or transient overlay.
 
 ### 9.1 Source facts that constrain the decision
