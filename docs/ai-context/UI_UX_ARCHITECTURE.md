@@ -572,3 +572,10 @@ The design system and new UI/UX are complete only when:
 ## 17. Current acceptance boundary
 
 This document is a target architecture proposal created during documentation batches 00B/00C. It does not mean the new design system, shell, routes, tokens, components or screen layouts have already been implemented or physically accepted.
+
+
+## M0 reference authority and motion correctness
+
+M0 follows [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): the supplied image is the structural/compositional reference; the supplied video is the motion/feedback/state reference; RetailOS remains authoritative for brand, business semantics, data truth and architecture. These sources must not be blended into a copied palette or product behavior.
+
+Motion is presentation-only. Feature/controller state changes first; animation reflects the already-derived state. Animation completion must never commit business data or advance a workflow. Async results must be tied to the current request/session generation; stale responses cannot overwrite newer data. Transitions must not trigger duplicate fetches, writes, subscriptions or camera lifecycle operations. Latest state wins, interruption converges to source state, and reduced-motion/low-performance fallbacks preserve function. Existing feature ownership, overlay/body-lock and PWA/Scanner contracts remain authoritative.
