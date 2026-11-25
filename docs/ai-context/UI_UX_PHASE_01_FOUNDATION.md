@@ -110,7 +110,8 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 
 - The first five-viewport screenshot review found the 844×390 desktop-landscape layout expanded to a 631px full-page capture. The fixed Login dock and vertically dense form were competing for limited height.
 - Added a bounded `min-width: 761px` / `max-height: 520px` presentation rule: preserve the two-column composition, reduce only the vertical density of Login, hide the non-essential hero footer, and reserve bottom clearance for the utility dock.
-- Added a browser regression assertion that this viewport must fit within its 390px document height without vertical page overflow. Other viewports retain their existing responsive rules.
+- The first compact rule reduced the full-page height from 631px to 471px but still exposed box-model/padding overhead and dock collision risk. The correction now uses border-box sizing, removes the non-essential panel icon at this constrained height, tightens only Login's vertical rhythm and feedback reservation, and keeps the form controls usable.
+- Browser regression now requires the document to fit within the 390px viewport and asserts at least 8px clearance between the Login panel and fixed utility dock. Other viewports retain their existing responsive rules.
 - This is a targeted presentation correction; authentication state, form validation, employee lookup, session persistence and dock actions are unchanged. Exact-head CI and screenshot review are pending.
 
 ### 3.13 Global focus-token ownership
