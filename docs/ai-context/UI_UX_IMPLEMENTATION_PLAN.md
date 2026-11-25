@@ -461,7 +461,8 @@ Each shared component specification must contain:
 - 00D: source-level design-system audit and proposed specification documented in `UI_UX_DESIGN_SYSTEM_SPEC.md`; contrast/font/device validation remains open.
 - 00E: source-grounded information architecture/navigation decision documented in `UI_UX_SCREEN_MAP.md` §9; implementation not started and owner acceptance remains open.
 - 00F: source-level component inventory and ownership decisions documented in `UI_UX_COMPONENT_AUDIT.md`; selector-level CSS audit, complete consumer graph and physical validation remain open.
-- 00G: screen-level blueprints documented in `UI_UX_SCREEN_BLUEPRINTS.md`; high-fidelity prototype and owner acceptance remain open.\n- 00H: acceptance matrix, exact migration slices, rollback and owner decision gate remain open.
+- 00G: screen-level blueprints documented in `UI_UX_SCREEN_BLUEPRINTS.md`; high-fidelity prototype and owner acceptance remain open.
+- 00H: acceptance matrix, exact migration slices, rollback and owner decision gate remain open.
 - Application source changes: none in this documentation batch.
 - Dependencies installed: none.
 - Merge/deploy: not performed.
