@@ -25,8 +25,11 @@ function tokenValue(name) {
   const match = theme.match(new RegExp(`^\\s*${name}:\\s*([^;]+);`, "m"));
   assert.ok(match, `Missing token declaration: ${name}`);
   const value = match[1].trim();
-  const reference = value.match(/^var\\((--[\\w-]+)/);
-  return reference ? tokenValue(reference[1]) : value;
+  if (value.startsWith("var(")) {
+    const reference = value.slice(4).split(/[),]/, 1)[0].trim();
+    return tokenValue(reference);
+  }
+  return value;
 }
 
 function luminance(hex) {
@@ -58,8 +61,8 @@ for (const token of contrastTokens) {
   );
 }
 
-assert.match(mobile, /--motion-standard:\\s*var\\(--motion-ease-standard\\)/);
-assert.match(mobile, /--motion-duration:\\s*var\\(--motion-duration-interaction\\)/);
+assert.ok(mobile.includes("--motion-standard: var(--motion-ease-standard)"));
+assert.ok(mobile.includes("--motion-duration: var(--motion-duration-interaction)"));
 assert.ok(motion.includes("@media (prefers-reduced-motion: reduce)"));
 assert.ok(motion.includes(':root[data-power-mode="conserve"]'));
 assert.ok(glassTokens.includes(':root[data-power-mode="conserve"]'));
