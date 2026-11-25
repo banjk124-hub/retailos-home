@@ -1,6 +1,6 @@
 # UI/UX Rebuild Implementation Plan
 
-**Status:** M0-A structural design preparation. The governing reference contract is `UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md`; image=structure, video=motion/state, RetailOS=brand/business/data authority. Earlier concept boards and Art Direction experiments are historical only. Source-verified structural studies and owner acceptance remain open.
+**Status:** M0-A in progress. First editable Figma studies exist for Login, Home, Module Library, Stocktake, Stocktake Import and Settings/Update Center. See [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md) for node IDs, reviewed frames, defects and remaining gates. Source-verified structural studies and owner acceptance remain open.
 **Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Working documentation branch:** `docs/uiux-architecture-00b-00c`
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
@@ -22,7 +22,7 @@ This is a product-wide presentation and interaction rebuild, not a rewrite of th
 
 The initial M0 direction and concept board did not meet the required visual distinction. They are retained as historical structure exploration only. The governing M0 execution contract is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image = structural composition; video = motion, feedback and state behavior; RetailOS = brand, business semantics, data truth and architecture. The source analysis is [UI_UX_M0_REFERENCE_REASSESSMENT.md](./UI_UX_M0_REFERENCE_REASSESSMENT.md). Do not import amber or green palettes from the references. Exact RetailOS token values remain open pending structural prototype and contrast review. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md) remains historical exploration, not the current authority.
 
-M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references. M0-A's source-grounded baseline is [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).
+M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references. M0-A's source-grounded baseline is [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md); actual Figma deliverables and review status are tracked in [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md).
 
 ## 1.2 M0 — product-wide visual decision gate
 
