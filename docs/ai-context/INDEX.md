@@ -20,7 +20,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 | Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
 | Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
 | Implementable screen blueprints for desktop, tablet, mobile, states, component ownership and acceptance | [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md) |
-| Acceptance gates, migration slices, regression matrix, rollout and rollback | [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md) |
+| Product-wide M0 visual/interaction direction and reference analysis | [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) |\n| Acceptance gates, migration slices, regression matrix, rollout and rollback | [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md) |
 | UI/UX rebuild phases, priorities, documentation goals, acceptance and rollback | [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md) |
 | Scanner current architecture, ownership, lifecycle, ROI, pipeline, decoder, limits, validation, tests and current status | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical phases, investigations, decisions, incidents and cleanup history | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
@@ -38,7 +38,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 ## AI context loading policy
 
 - Default session-start set: `AGENTS.md`, this index, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`.
-- For UI/UX architecture, start with `UI_UX_ARCHITECTURE.md`; load `UI_UX_DESIGN_SYSTEM_SPEC.md` for tokens/material/motion/brand, and the technology audit, screen map and implementation plan according to the task.
+- For UI/UX architecture, start with `UI_UX_ARCHITECTURE.md`; load `UI_UX_M0_GLOBAL_DIRECTION.md` for the accepted/proposed product-wide experience direction, then the design-system, technology, screen and migration documents required by the task.
 - For scanner work, load `SCANNER_ENGINE.md` first. Load `SCANNER_HISTORY.md` only for a specific historical question or incident.
 - Do not load multiple old scanner phase documents as competing specifications.
 - Verify volatile facts (branch, commit, PR, CI, deployment) against GitHub before updating current-state documents.
@@ -59,7 +59,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
 - `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
 - `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
-- `UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md`: acceptance gates, migration sequence, test/device matrix, protected-boundary regression, rollout and rollback.
+- `UI_UX_M0_GLOBAL_DIRECTION.md`: reference analysis and product-wide visual/interaction direction for M0.\n- `UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md`: acceptance gates, migration sequence, test/device matrix, protected-boundary regression, rollout and rollback.
 - `UI_UX_IMPLEMENTATION_PLAN.md`: implementation sequencing, acceptance and rollback.
 - Scanner current truth: `SCANNER_ENGINE.md`; scanner history: `SCANNER_HISTORY.md`.
 - PWA runtime/release truth: `PWA_RUNTIME_RELEASE.md`.
