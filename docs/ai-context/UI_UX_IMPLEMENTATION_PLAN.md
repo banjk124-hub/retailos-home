@@ -84,7 +84,7 @@ Do not retain an old logo, icon, button, component, text string or layout merely
 | 00A | Reference interpretation | Visual/motion intent separated from literal copying |
 | 00B | Technology and browser capability audit | Dependencies, native APIs, compatibility and install gate documented |
 | 00C | Screen/interaction map | Existing screens, states, workflows and target screen inventory traced |
-| 00D | Design System specification | Tokens, typography, color, materials, spacing, elevation, motion and status semantics defined |
+| 00D | [Design System specification](./UI_UX_DESIGN_SYSTEM_SPEC.md) | Current token/material/brand/motion audit and target system contract documented; final visual validation gates identified |
 | 00E | Information Architecture and Navigation | Shell, route identity, workspace hierarchy, back behavior and deep-link policy decided |
 | 00F | Component inventory and ownership | Existing components audited; keep/refactor/replace/create decisions documented |
 | 00G | Screen blueprints | Every P0/P1 screen has desktop/tablet/mobile layout, interaction and state specification |
@@ -92,9 +92,9 @@ Do not retain an old logo, icon, button, component, text string or layout merely
 
 Do not begin broad UI source changes before 00D–00H are sufficiently specified.
 
-### Technology decision gate (applies across Phase 00–10)
+### Technology and design-system decision gate (applies across Phase 00–10)
 
-The audit's initial native-first recommendations are starting hypotheses, not restrictions. During 00D–00F, re-evaluate the stack against the combined reference direction and RetailOS product requirements. If the current React/CSS/native foundation cannot deliver the required navigation, composition, motion, accessibility or responsive behavior cleanly, select and integrate a suitable framework/router/library. Record alternatives, compatibility, bundle/runtime cost, ownership, migration, tests and rollback. Paid services or changes to protected data/backend/security contracts remain separate approval gates.
+The audit's initial native-first recommendations are starting hypotheses, not restrictions. During 00D–00F, re-evaluate the stack, brand assets, typography, component systems, materials and motion against the combined reference direction and RetailOS product requirements. If the current React/CSS/native foundation cannot deliver the required navigation, composition, motion, accessibility or responsive behavior cleanly, select and integrate a suitable framework/router/library. Record alternatives, compatibility, bundle/runtime cost, ownership, migration, tests and rollback. Paid services or changes to protected data/backend/security contracts remain separate approval gates.
 
 A selected technology must simplify or materially improve the final system. It must not become another permanent layer beside an existing subsystem that performs the same job.
 
@@ -111,10 +111,10 @@ Deliver:
 - Component documentation format.
 
 Implementation constraints:
-- Keep the current Brand and Lucide icon system.
-- Reconcile existing Glass/Motion tokens rather than creating a second set.
+- Brand mark, wordmark, Lucide registry, Glass and Motion are candidates, not mandatory survivors; retain, replace or consolidate based on target design and evidence.
+- Reuse or replace current token/material/motion systems through one canonical ownership model; do not create a second parallel system.
 - Do not migrate every component at once.
-- Remove legacy CSS only after selector and computed-style usage is verified.
+- Remove legacy CSS only after selector, consumer and computed-style usage is verified.
 
 Acceptance:
 - Token coverage for all current P0 surfaces.
@@ -458,7 +458,8 @@ Each shared component specification must contain:
 
 - Batch 00B technology audit: source and official-document research complete; local/browser/device execution not performed.
 - Batch 00C screen map: source trace and target inventory complete; physical validation not performed.
-- 00D–00H: not started.
+- 00D: source-level design-system audit and proposed specification documented in `UI_UX_DESIGN_SYSTEM_SPEC.md`; contrast/font/device validation remains open.
+- 00E–00H: not started.
 - Application source changes: none in this documentation batch.
 - Dependencies installed: none.
 - Merge/deploy: not performed.
