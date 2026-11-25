@@ -36,3 +36,15 @@ The project owner's operational confirmation is not a quantified optical benchma
 - Verify branch, PR, CI and deployment facts against GitHub before updating status.
 - Do not treat green CI as physical-device, optical or business-process acceptance.
 - Prefer deleting duplicate plans or replacing them with links over maintaining parallel status tables.
+
+## UI/UX architecture and full experience redesign
+
+**Status:** 00B–00H architecture and source audits are documented on the open Draft PR #156. M0-A has an initial editable Figma batch; review defects and remaining frames are tracked in `UI_UX_M0_A_EXECUTION_RECORD.md`. No application source migration has started.
+
+- Canonical reference authority: [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image=structure, video=motion/state, RetailOS=brand/business/data authority.
+- M0-A structural specification: [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).\n- M0-A execution evidence and Figma frames: [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md).
+- M0-B temporal/motion contract: same reference roles contract, with feature-owned state and data-correctness constraints.
+- Source truth: [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md), [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md), [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
+- Design and implementation contracts: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md), [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md), [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md), [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md), [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
+
+**Next gates:** implement representative structural surfaces directly in React/CSS, validate desktop/tablet/mobile composition and source-to-workflow ownership, then integrate M0-B motion behavior. Do not merge the two reference roles, fabricate workflow/data states or couple motion to business state. Each source slice is independently reviewed and tested; merge/deploy remains separately gated.

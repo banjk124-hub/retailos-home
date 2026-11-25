@@ -26,8 +26,22 @@
 | Shared components | `src/shared/components/` | error boundary, shared surfaces and component contracts |
 | Motion system | `src/shared/motion/` | motion tokens, transitions, reduced-motion and lifecycle |
 | Brand and icons | `src/shared/brand/`, `src/shared/icons/` | shared visual identity and icon registry |
+| Glass system | `src/shared/components/glass/` | material tokens and GlassSurface ownership |
 | Shared hooks/config | `src/shared/hooks/`, `src/shared/config/` | cross-feature hook behavior and canonical configuration |
 | Styles | `src/styles/` and feature-local styles | import order, cascade, breakpoints, safe areas and ownership; do not add permanent override layers without a migration plan |
+
+## UI/UX architecture documents
+
+The following documents define the target design system and are documentation-only proposals until accepted and implemented:
+
+- [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md): product-wide visual, component, layout, motion, accessibility, performance and future-module contract.
+- [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md): source-audited target tokens, typography, brand, color, material, component, motion and responsive specification.
+- [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md): current component inventory, keep/refactor/replace/create decisions, coupling hotspots and migration gates.
+- [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md): dependency/browser-native capability inventory and compatibility decisions.
+- [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md): source-traced current screens, states, workflows and target screen inventory.
+- [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md): phased rebuild plan, documentation goals, acceptance and rollback.
+
+The target `src/app/` and `src/design-system/` directories described in the architecture are proposals, not current repository paths. Do not import from them until an approved implementation creates them.
 
 ## Validation map
 
