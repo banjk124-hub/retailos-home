@@ -1,8 +1,8 @@
 # UI/UX Rebuild Implementation Plan
 
 **Status:** Proposed delivery plan based on Batch 00B/00C.
-**Baseline:** \`main\` at \`2003ea24966755d0ad4e0298b34422b053267e77\`
-**Working documentation branch:** \`docs/uiux-architecture-00b-00c\`
+**Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Working documentation branch:** `docs/uiux-architecture-00b-00c`
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
 
 ## 1. Objective
@@ -276,17 +276,17 @@ The sequence is dependency-based, not a calendar estimate. Design System and Nav
 
 Use existing scripts where applicable:
 
-- \`scripts/test-ui-interaction-immediacy.mjs\`
-- \`scripts/test-overlay-layout-contract.mjs\`
-- \`scripts/test-body-scroll-lock.mjs\`
-- \`scripts/test-home-performance.mjs\`
-- \`scripts/test-home-cache-batching.mjs\`
-- \`scripts/test-bundle-boundaries.mjs\`
-- \`scripts/test-stocktake-import.mjs\`
+- `scripts/test-ui-interaction-immediacy.mjs`
+- `scripts/test-overlay-layout-contract.mjs`
+- `scripts/test-body-scroll-lock.mjs`
+- `scripts/test-home-performance.mjs`
+- `scripts/test-home-cache-batching.mjs`
+- `scripts/test-bundle-boundaries.mjs`
+- `scripts/test-stocktake-import.mjs`
 - Existing Scanner regression scripts selected by the changed presentation boundary.
 - PWA release/cache/runtime tests for any Update Center or shell lifecycle change.
 
-Run \`npm run preflight\`, TypeScript, production build and Pages build on the final implementation PR head. This documentation branch has not run local npm commands or browser tests.
+Run `npm run preflight`, TypeScript, production build and Pages build on the final implementation PR head. This documentation branch has not run local npm commands or browser tests.
 
 ### 7.2 Visual/responsive matrix
 
@@ -358,16 +358,16 @@ Required document set:
 
 | Document | Goal | Required content |
 |---|---|---|
-| \`UI_UX_ARCHITECTURE.md\` | Product-wide UI contract | Design principles, system layers, tokens, materials, components, patterns, layout, motion, accessibility, performance, extension and governance |
-| \`UI_UX_TECHNOLOGY_AUDIT.md\` | Technology decisions | Direct dependencies, browser APIs, compatibility, keep/refactor/replace/create/install decisions and proof gates |
-| \`UI_UX_SCREEN_MAP.md\` | Screen and workflow truth | AS-IS screens, navigation, actions, states, errors, ownership and TO-BE screen inventory |
-| \`UI_UX_IMPLEMENTATION_PLAN.md\` | Delivery sequence | Phases, priorities, dependencies, files/areas, acceptance, risk and rollback |
+| `UI_UX_ARCHITECTURE.md` | Product-wide UI contract | Design principles, system layers, tokens, materials, components, patterns, layout, motion, accessibility, performance, extension and governance |
+| `UI_UX_TECHNOLOGY_AUDIT.md` | Technology decisions | Direct dependencies, browser APIs, compatibility, keep/refactor/replace/create/install decisions and proof gates |
+| `UI_UX_SCREEN_MAP.md` | Screen and workflow truth | AS-IS screens, navigation, actions, states, errors, ownership and TO-BE screen inventory |
+| `UI_UX_IMPLEMENTATION_PLAN.md` | Delivery sequence | Phases, priorities, dependencies, files/areas, acceptance, risk and rollback |
 | Screen specifications (one per meaningful screen or coherent feature group) | Implementable design blueprint | Layout at desktop/tablet/mobile, content hierarchy, component inventory, state transitions, responsive and accessibility behavior |
 | Component specifications (only for shared components) | Reusable API contract | Purpose, props, variants, states, responsive rules, accessibility, motion, examples and anti-patterns |
-| \`UI_OVERLAY_ARCHITECTURE.md\` | Overlay lifecycle | Shared scroll lock, modal/popover behavior, viewport and ownership |
-| \`UI_INTERACTION_RESPONSIVENESS_AUDIT.md\` | Input response | First feedback, intentional delays and regression assertions |
-| \`PWA_RUNTIME_RELEASE.md\` | Release safety | Consent, staging, activation, blockers, boot health and rollback |
-| \`SCANNER_ENGINE.md\` | Scanner runtime | Engine/session/camera/decoder contract |
+| `UI_OVERLAY_ARCHITECTURE.md` | Overlay lifecycle | Shared scroll lock, modal/popover behavior, viewport and ownership |
+| `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` | Input response | First feedback, intentional delays and regression assertions |
+| `PWA_RUNTIME_RELEASE.md` | Release safety | Consent, staging, activation, blockers, boot health and rollback |
+| `SCANNER_ENGINE.md` | Scanner runtime | Engine/session/camera/decoder contract |
 
 Do not create a document for every small component. Group related component contracts where practical. Do not duplicate feature data contracts into the UI documents.
 
