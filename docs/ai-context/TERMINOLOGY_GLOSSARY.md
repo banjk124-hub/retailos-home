@@ -46,7 +46,7 @@
 | Shared component | Component with proven multiple consumers, stable semantics, explicit ownership and tests. |
 | Pattern | Reusable solution to a repeated interaction/engineering responsibility; not necessarily one shared visual component. |
 | Batch | Bounded set of related work with explicit scope, exit criteria and evidence. |
-| Gate | A verifiable condition that must pass before the next phase or action. |
+| Gate | A verifiable condition that must pass before the next phase or action. |\n| Playwright | Browser automation tool used for interaction assertions, repeatable viewport inspection, screenshots and trace capture; not a physical-device test or production dependency. |\n| Browser-verified | Evidence from a named browser and viewport/profile; does not imply Device-accepted. |
 
 ## 4. Runtime, data and release
 
