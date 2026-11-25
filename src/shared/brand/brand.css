@@ -29,7 +29,7 @@
 
 .brand-name {
   color: var(--retailos-brand-ink);
-  font: 800 22px/1 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  font: var(--font-weight-heavy) var(--font-size-xl)/1 var(--font-family-ui);
   letter-spacing: -1.1px;
 }
 
@@ -93,7 +93,7 @@
 }
 
 .retailos-brand--splash .brand-name {
-  font-size: 34px;
+  font-size: var(--font-size-heading-lg);
 }
 
 .retailos-brand--splash .brand-caption {
