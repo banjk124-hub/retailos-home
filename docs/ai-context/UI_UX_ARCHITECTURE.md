@@ -1,7 +1,7 @@
 # RetailOS UI/UX Architecture and Design System Contract
 
 **Status:** Proposed target architecture. This document becomes canonical only after review/acceptance.
-**Audit baseline:** \`main\` at \`2003ea24966755d0ad4e0298b34422b053267e77\`
+**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Date:** 2026-11-25
 **Purpose:** Define the product-wide visual, interaction, component, layout, motion, accessibility, performance and extension rules that every current and future RetailOS screen must follow.
 
@@ -24,7 +24,7 @@ The product is not optimized for decorative novelty. Business clarity, operation
 
 Reference set supplied by the project owner:
 - Pinterest visual reference: https://pin.it/2KpGqGCos
-- Video reference: \`ScreenRecording_11-24-2026 20-25-21_1.mp4\`
+- Video reference: `ScreenRecording_11-24-2026 20-25-21_1.mp4`
 
 ### 2.1 Visual language to carry forward
 
@@ -57,7 +57,7 @@ Rules:
 - Avoid animating layout, large shadows, filters, background positions and large lists continuously.
 - Avoid animating every table row or every card on screen.
 - Do not use backdrop blur as a default material for every surface.
-- Respect \`prefers-reduced-motion\` and the app's power-conserve behavior.
+- Respect `prefers-reduced-motion` and the app's power-conserve behavior.
 - First visual acknowledgement must be immediate; the animation may continue after feedback begins.
 - Scanner frame/decode cadence and camera lifecycle must never wait for decorative UI animation.
 
@@ -110,7 +110,7 @@ Do not create a universal component that takes dozens of unrelated props to imit
 
 Target source organization (proposal; do not move code until a migration plan is accepted):
 
-\`\`\`text
+```text
 src/
 ├── app/
 │   ├── shell/
@@ -143,7 +143,7 @@ src/
     ├── scanner/
     ├── stocktake/
     └── stocktake-import/
-\`\`\`
+```
 
 This is the target conceptual ownership map. Existing paths remain authoritative until each migration slice is implemented, tested and accepted.
 
@@ -166,7 +166,7 @@ The canonical token contract must define:
 
 No feature should invent raw colors, arbitrary radii or one-off spacing when a semantic token exists.
 
-Token names must describe meaning, not a specific component or current color value. Example roles: \`surface-page\`, \`surface-panel\`, \`text-primary\`, \`text-muted\`, \`border-subtle\`, \`action-primary\`, \`status-warning\`.
+Token names must describe meaning, not a specific component or current color value. Example roles: `surface-page`, `surface-panel`, `text-primary`, `text-muted`, `border-subtle`, `action-primary`, `status-warning`.
 
 ### 4.2 Typography
 
@@ -337,7 +337,7 @@ Interaction rules:
 
 ## 7. Overlay and native API policy
 
-Existing canonical contract: \`UI_OVERLAY_ARCHITECTURE.md\`.
+Existing canonical contract: `UI_OVERLAY_ARCHITECTURE.md`.
 
 - Use HTML Dialog as the first candidate for standard modal behavior.
 - Use Popover API as progressive enhancement for non-modal anchored surfaces.
@@ -349,7 +349,7 @@ Existing canonical contract: \`UI_OVERLAY_ARCHITECTURE.md\`.
 
 ## 8. Motion system contract
 
-Existing canonical implementation: \`src/shared/motion/\`.
+Existing canonical implementation: `src/shared/motion/`.
 
 Motion is part of interaction feedback, not a decoration layer.
 
@@ -472,14 +472,14 @@ The UI/UX documentation set must remain small and non-duplicative.
 
 | Document | Owns | Must not duplicate |
 |---|---|---|
-| \`UI_UX_ARCHITECTURE.md\` (this document) | Product-wide design principles, system layers, tokens/components/patterns, layout, motion, accessibility, performance and extension rules | Feature business logic and per-PR history |
-| \`UI_UX_TECHNOLOGY_AUDIT.md\` | Dependency/browser API inventory, compatibility and install/no-install decisions | Full design system specification |
-| \`UI_UX_SCREEN_MAP.md\` | Current screens, workflows, states, navigation and target screen inventory | Detailed parser/data contracts |
-| \`UI_UX_IMPLEMENTATION_PLAN.md\` | Ordered delivery phases, dependencies, acceptance and rollback | Repeated implementation history |
-| \`UI_OVERLAY_ARCHITECTURE.md\` | Overlay lifecycle, scroll lock, viewport and ownership | General component catalog |
-| \`UI_INTERACTION_RESPONSIVENESS_AUDIT.md\` | Input response findings and source-level regression rules | New design direction |
-| \`SCANNER_ENGINE.md\` | Scanner runtime and integration contract | UI system-wide principles |
-| \`PWA_RUNTIME_RELEASE.md\` | Application release lifecycle and safety | Generic UI update styling |
+| `UI_UX_ARCHITECTURE.md` (this document) | Product-wide design principles, system layers, tokens/components/patterns, layout, motion, accessibility, performance and extension rules | Feature business logic and per-PR history |
+| `UI_UX_TECHNOLOGY_AUDIT.md` | Dependency/browser API inventory, compatibility and install/no-install decisions | Full design system specification |
+| `UI_UX_SCREEN_MAP.md` | Current screens, workflows, states, navigation and target screen inventory | Detailed parser/data contracts |
+| `UI_UX_IMPLEMENTATION_PLAN.md` | Ordered delivery phases, dependencies, acceptance and rollback | Repeated implementation history |
+| `UI_OVERLAY_ARCHITECTURE.md` | Overlay lifecycle, scroll lock, viewport and ownership | General component catalog |
+| `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` | Input response findings and source-level regression rules | New design direction |
+| `SCANNER_ENGINE.md` | Scanner runtime and integration contract | UI system-wide principles |
+| `PWA_RUNTIME_RELEASE.md` | Application release lifecycle and safety | Generic UI update styling |
 
 When an issue is domain-specific, update its canonical domain document and link from this architecture. Do not create duplicate specifications.
 
