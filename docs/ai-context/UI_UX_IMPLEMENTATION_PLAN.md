@@ -483,3 +483,7 @@ Each shared component specification must contain:
 - Application source work: proceeds on isolated implementation branches in bounded slices.
 - Dependencies: do not add unless a demonstrated source-level gap justifies them.
 - Merge/deploy: not performed without separate approval.
+
+## 12. Repository-first execution update
+
+The first bounded M0 source slice is open as [PR #157](https://github.com/banjk124-hub/retailos-home/pull/157): tablet Login composition and layout-stable focus. It changes only `src/styles/login-experience.css`; CI run #1454 passed on head `03467e4d0a111a3e0b4a4b0001e0cb8bcaf70608`. This establishes the source-first workflow, not completion of M0 or visual/device acceptance. Continue with one source-owned surface at a time, and do not merge/deploy without explicit approval.
