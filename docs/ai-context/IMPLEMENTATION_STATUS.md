@@ -13,7 +13,7 @@
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
-- Exact source-head GitHub Actions run #1518 passed on `31f2ed23fbbd189cf796029cb955fac348c1c2d6` (full preflight, TypeScript, production build, Pages build and PR-base bundle comparison). Browser visual QA and physical-device acceptance remain open; no merge or deployment is claimed.
+- Exact source-head GitHub Actions run #1519 previously passed on `accc89cf23f9c668bfd7286718c5d4b17a1c139c`. The current batch adds Playwright Chromium smoke tests against the built GitHub Pages artifact at five desktop/tablet/mobile/short-landscape viewports, with screenshot artifacts in CI. The new exact-head CI result is pending; browser smoke coverage is not full visual acceptance and does not replace iOS/Android physical-device QA. No merge or deployment is claimed.
 - PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner
