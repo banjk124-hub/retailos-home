@@ -20,17 +20,17 @@ This is a product-wide presentation and interaction rebuild, not a rewrite of th
 
 ## 1.1 M0 reset — active Art Direction
 
-The initial M0 direction and concept board did not meet the required visual distinction. They are retained as historical structure exploration only. The governing M0 execution contract is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image = structural composition; video = motion, feedback and state behavior; RetailOS = brand, business semantics, data truth and architecture. The source analysis is [UI_UX_M0_REFERENCE_REASSESSMENT.md](./UI_UX_M0_REFERENCE_REASSESSMENT.md). Do not lock RetailOS to amber or green; compare distinct RetailOS-native directions against real operational content. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md) remains an earlier exploration, not the latest authority. RetailOS red remains the brand signature; amber is an additional accent with separate semantic rules.
+The initial M0 direction and concept board did not meet the required visual distinction. They are retained as historical structure exploration only. The governing M0 execution contract is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image = structural composition; video = motion, feedback and state behavior; RetailOS = brand, business semantics, data truth and architecture. The source analysis is [UI_UX_M0_REFERENCE_REASSESSMENT.md](./UI_UX_M0_REFERENCE_REASSESSMENT.md). Do not import amber or green palettes from the references. Exact RetailOS token values remain open pending structural prototype and contrast review. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md) remains historical exploration, not the current authority.
 
-M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references.
+M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references. M0-A's source-grounded baseline is [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).
 
-## 1.1 M0 — product-wide visual decision gate
+## 1.2 M0 — product-wide visual decision gate
 
 M0 scope is product-wide: application shell, core workspaces, operational workflows, system surfaces and shared design language. The governing authority is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines interface structure/composition; the video defines motion/feedback/state behavior; RetailOS defines its brand, business semantics, data truth and architecture. Neither reference is a palette or product template. Home is one validation surface, not the scope boundary. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md), [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) and [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md) are exploratory/historical, not governing specifications.
 
 M0 exit requires high-fidelity prototypes across representative surfaces, desktop/tablet/mobile validation, typography/color/contrast decisions, low/mid-range performance validation and explicit owner acceptance. No application-source migration begins merely because the direction document exists.
 
-## 1.2 M0 cross-surface prototype review
+## 1.3 M0 cross-surface prototype review
 
 The first cross-surface concept and its explicit limitations are recorded in [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md). It covers Login, Module Library, Stocktake, Stocktake Import, Notifications, Settings/Update Center, Scanner presentation-only and mobile composition. This is a concept review, not final high-fidelity acceptance: individual screen frames, source-verified labels/state semantics, responsive validation, accessibility/contrast and low-end device evidence remain open.
 
