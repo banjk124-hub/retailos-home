@@ -109,7 +109,7 @@ A visual redesign may change the first three, but must not silently change the f
 
 - App Shell owns global navigation, workspace outlet, global header and cross-screen context.
 - Design System owns tokens, primitives, reusable components and interaction patterns.
-- Shared Platform owns cross-feature overlay coordination, motion preferences, download lifecycle and PWA integration.
+- Shared Platform owns the reference-counted body-scroll-lock coordinator, motion preferences, download lifecycle and PWA integration. Overlay content, focus entry/return and close behavior remain feature-owned unless a specific shared contract is accepted.
 - Feature modules own workflow content, feature state, validation, persistence and feature-specific error states.
 - Domain/platform contracts own Scanner, PWA release, authentication, snapshot and local data invariants.
 
