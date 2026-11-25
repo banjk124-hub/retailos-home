@@ -18,7 +18,8 @@ const requiredThemeTokens = [
   "--font-size-body", "--font-size-heading", "--font-variant-data",
   "--space-inset-default", "--space-section", "--radius-control",
   "--radius-panel", "--elevation-1", "--elevation-4", "--focus-outline",
-  "--layout-content-max"
+  "--layout-content-max", "--focus-outline-color", "--focus-outline-width",
+  "--focus-outline-offset", "--focus-outline-shadow"
 ];
 
 assert.ok(!theme.includes("\\n"), "Theme CSS must not contain escaped newline sequences");
@@ -91,6 +92,13 @@ assert.ok(theme.includes("color: var(--color-text-primary, var(--text-primary));
 assert.ok(theme.includes("font-family: var(--font-family-ui, var(--font-family-sans));"));
 assert.ok(theme.includes("font-size: var(--font-size-body, var(--font-size-md));"));
 assert.ok(theme.includes("line-height: var(--line-height-normal, var(--line-height-body));"));
+assert.ok(theme.includes("--brand-focus-ring: var(--focus-outline-color);"));
+assert.ok(theme.includes("--focus-ring-width: var(--focus-outline-width);"));
+assert.ok(theme.includes("--focus-ring-offset: var(--focus-outline-offset);"));
+assert.ok(theme.includes("--focus-ring-shadow: var(--focus-outline-shadow);"));
+assert.ok(theme.includes("outline: var(--focus-outline, var(--focus-ring-width) solid var(--brand-focus-ring));"));
+assert.ok(theme.includes("outline-offset: var(--focus-outline-offset, var(--focus-ring-offset));"));
+assert.ok(theme.includes("box-shadow: var(--focus-outline-shadow, var(--focus-ring-shadow));"));
 assert.ok(loginStyles.includes("var(--color-text-primary, var(--text-primary))"));
 assert.ok(loginStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
 assert.ok(loginStyles.includes("var(--color-text-muted, var(--text-muted))"));
