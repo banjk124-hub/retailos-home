@@ -14,7 +14,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 
 | Topic | Canonical document |
 |---|---|
-| Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |\n| Design tokens, typography, brand, color semantics, materials, component foundations, responsive and motion specification | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
+| Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |\n| Design tokens, typography, brand, color semantics, materials, component foundations, responsive and motion specification | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |\n| Existing component inventory, ownership, keep/refactor/replace/create decisions and migration risks | [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md) |
 | Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
 | Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
 | UI/UX rebuild phases, priorities, documentation goals, acceptance and rollback | [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md) |
@@ -49,7 +49,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `AI_HANDOFF.md`: one current handoff at top; old handoffs labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence, not repeated session narratives.
-- `UI_UX_ARCHITECTURE.md`: product-wide design and component contract.\n- `UI_UX_DESIGN_SYSTEM_SPEC.md`: concrete design-system specification and source audit.
+- `UI_UX_ARCHITECTURE.md`: product-wide design and component contract.\n- `UI_UX_DESIGN_SYSTEM_SPEC.md`: concrete design-system specification and source audit.\n- `UI_UX_COMPONENT_AUDIT.md`: source-level component inventory, ownership, coupling and migration decisions.
 - `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
 - `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
 - `UI_UX_IMPLEMENTATION_PLAN.md`: implementation sequencing, acceptance and rollback.
