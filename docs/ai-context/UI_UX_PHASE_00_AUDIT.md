@@ -47,7 +47,23 @@ The existing 00B–00H material provides a substantial design and migration blue
 - The current repository contains 16 files under `src/styles/`, in addition to feature/shared CSS files. File count, size, age or naming is not proof of unused CSS.
 - The current shared components are candidates for redesign, replacement or retirement; none is automatically the target design system merely because it exists.
 
-### 3.4 Validation infrastructure
+### 3.4 Partial shared-consumer trace
+
+A focused GitHub code-search pass confirmed these direct consumers on the audited source tree:
+
+| Shared API | Confirmed source consumers | Audit implication |
+|---|---|---|
+| `GlassSurface` | `MotionButton`, `LiquidDock`, `LoginDock`, `LoginForm`, `ModuleLibraryEngine`, `HomeScreen` | Not safe to retire based on a single-screen review; trace wrapper composition and CSS dependencies. |
+| `MotionCard` | `ModuleLibraryEngine` | Current direct usage is narrow; still inspect wrapper semantics and CSS before removal. |
+| `MotionPage` | `LoginExperience` | Login transition dependency must be considered in a Login slice. |
+| `MotionSheet` | `HomeScreen` | Home owns the module-library sheet entry; preserve its close/lock lifecycle. |
+| `BrandMotion` | `App`, `LoginHero` | Identity and Login have separate motion callsites. |
+| `LiquidDock` | `HomeScreen` | Current section navigation is Home-owned, not a global route shell. |
+| `useBodyScrollLock` | `HomeScreen`, `SettingsHub`, `ScannerSettingsPanel`, `StocktakeModule`, `StocktakeImportModule` | Shared lock is cross-feature infrastructure; do not fork it during overlay redesign. |
+
+This is a targeted direct-import map, not a complete transitive runtime consumer graph. It does not cover every export, dynamic class, portal, CSS selector, runtime branch or indirect composition. The 00F full consumer/cascade audit remains open.
+
+### 3.5 Validation infrastructure
 
 - `scripts/preflight.mjs` runs broad scanner, Home, overlay, interaction, Stocktake Import, production build, GitHub Pages build, bundle-boundary and PWA checks.
 - Existing focused tests cover body-scroll-lock and overlay viewport/layout contracts. The inspected preflight does not establish a dedicated browser-history/navigation regression suite or a general focus-trap/overlay-stack suite.
