@@ -56,7 +56,7 @@ A visual change can still alter the way an operator experiences a protected beha
 
 M0 is product-wide, not Home-only. M0-A structural design is specified in [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md). The governing separation of references and motion correctness is defined in [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines structural composition; the video defines motion, feedback and state behavior; RetailOS remains authoritative for brand, business semantics and data truth.
 
-Before M1, validate the shared language across Login, Application Shell, Home Overview, Module Library, Stocktake, Stocktake Import, Scanner presentation (presentation-only), Settings/Update Center, Search/Notifications and responsive shell. M0 does not authorize source migration, Scanner Engine changes or business/platform contract changes. A Home-only mockup does not satisfy M0.
+Before M1 is declared complete, validate the shared language across Login, Application Shell, Home Overview, Module Library, Stocktake, Stocktake Import, Scanner presentation (presentation-only), Settings/Update Center, Search/Notifications and responsive shell. M0 does not authorize source migration, Scanner Engine changes or business/platform contract changes. A Home-only mockup does not satisfy M0.
 
 Motion acceptance must prove that animation is presentation-only, cannot commit/advance business state, does not trigger duplicate requests/writes/subscriptions, rejects stale async results, converges correctly when interrupted, and retains full function under reduced-motion/low-performance modes.
 
