@@ -13,6 +13,7 @@
 | Product direction, workflow, protected boundaries | [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md) |
 | Active M0 direction, work packages and acceptance | [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) |
 | M0-A current source baseline audit | [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) |
+| M0-A1 source-grounded screen blueprints | [UI_UX_M0_A1_SCREEN_BLUEPRINTS.md](./UI_UX_M0_A1_SCREEN_BLUEPRINTS.md) |
 | Verified implementation state | [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) |
 | Current handoff | [AI_HANDOFF.md](./AI_HANDOFF.md) |
 | Durable product/repository facts | [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md) |
