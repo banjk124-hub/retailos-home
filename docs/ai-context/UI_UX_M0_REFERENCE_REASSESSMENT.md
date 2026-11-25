@@ -1,3 +1,7 @@
+> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+
+---
+
 # RetailOS M0 — Reference Reassessment & Product-wide Direction
 
 **Status:** Active reassessment input for M0. This document corrects the interpretation of the two supplied reference files. It is a design-direction proposal, not owner-approved final tokens or implementation.
