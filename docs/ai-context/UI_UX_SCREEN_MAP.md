@@ -1,7 +1,8 @@
 # UI/UX Screen and Interaction Map — Batch 00C
 
 **Status:** Source-traced AS-IS map and TO-BE information-architecture proposal; 00E completed, 00F component ownership audit documented separately.
-**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Current source revalidation:** selected App/Auth/Home and feature-ownership facts were rechecked at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`; see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). This does not replace a complete callsite/runtime graph.
 **Audit date:** 2026-11-25
 **Purpose:** Describe every confirmed screen/surface, entry point, interaction and important state transition before redesigning layout or navigation.
 
