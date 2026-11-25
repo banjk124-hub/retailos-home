@@ -19,7 +19,7 @@ The existing 00B–00H material provides a substantial design and migration blue
 - After merge, RetailOS CI #1466 and GitHub Pages deployment #159 both completed successfully on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These do not establish physical-device acceptance.
 - The current default branch tree resolves at the merge commit above; recursive tree response was not truncated (260 files).
 - PR #157 remains open and draft, targets an older base (`2003ea24966755d0ad4e0298b34422b053267e77`) and contains only a legacy Login CSS adjustment. It is not an approved redesign slice and is not a dependency of Phase 00. Do not merge it by default; re-evaluate or close it when its owner confirms it is superseded.
-- Phase 00 audit branch head `19ad166ed17fe82e3dfbbd2ef833ca64b67ced8c` passed RetailOS CI #1486, including local-equivalent preflight, TypeScript/production and Pages builds, and bundle comparison. This is CI evidence, not browser/device acceptance.
+- Phase 00 audit branch head `88914292b31e9c53b7c13c8b4537928dabc33633` passed RetailOS CI #1491, including local-equivalent preflight, TypeScript/production and Pages builds, and bundle comparison. This is CI evidence, not browser/device acceptance.
 - No production deployment or production promotion is authorized by this audit.
 
 ## 3. Source-grounded AS-IS findings
