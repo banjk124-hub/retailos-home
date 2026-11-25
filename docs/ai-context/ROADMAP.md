@@ -39,18 +39,12 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** Documentation architecture proposed on branch `docs/uiux-architecture-00b-00c`; 00B–00H are documented, not yet merged or implemented.
+**Status:** 00B–00H architecture and source audits are documented on the open Draft PR #156. M0 reference roles are now explicit; M0-A structural design is in progress. No application source migration has started.
 
-- Batch 00B: dependency/browser-native capability audit and compatibility decisions are documented in [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
-- Batch 00C: current screen/workflow/state trace and target screen inventory are documented in [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md).
-- Product-wide design system and future-module extension contract: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md).
-- Batch 00D: source-audited design-system specification, including current token fragmentation, typography/font asset inventory, Glass/Motion systems, responsive rules and proposed target foundations: [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md).
-- Batch 00F: source-level component ownership and migration-risk audit: [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md).
-- Batch 00G: P0/P1 screen blueprints, responsive compositions, state/ownership contracts, accessibility, motion/performance and regression acceptance: [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md).
-- Batch 00H: acceptance gates, migration slices, test/device matrix, protected-boundary regression and rollback: [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md).
-- Phased implementation, documentation goals, acceptance and rollback: [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
+- Canonical reference authority: [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image=structure, video=motion/state, RetailOS=brand/business/data authority.
+- M0-A structural specification: [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).
+- M0-B temporal/motion contract: same reference roles contract, with feature-owned state and data-correctness constraints.
+- Source truth: [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md), [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md), [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
+- Design and implementation contracts: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md), [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md), [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md), [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md), [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
 
-**Next gates:** owner review/acceptance of 00D–00H decisions, high-fidelity M0 prototype and authorization of the first implementation slice. 00E information architecture/navigation decision is documented in `UI_UX_SCREEN_MAP.md` §9; 00F source-level component ownership audit is documented in `UI_UX_COMPONENT_AUDIT.md`; 00G screen-level implementation blueprints are documented in `UI_UX_SCREEN_BLUEPRINTS.md`. 00H is documented; high-fidelity prototype, owner acceptance, device target confirmation and source implementation remain open. 00D remains source-audit/specification complete but visual contrast, font candidate and physical-device validation are open gates for implementation. Do not begin a broad visual refactor or add dependencies until these gates define the implementation scope and regression plan.
-
-**Protected boundaries:** authentication/session, stable module IDs, snapshot/cache contracts, Scanner Engine/camera lifecycle, Stocktake and Stocktake Import persistence/output, shared overlay scroll-lock, PWA release lifecycle and GitHub Pages build/deployment.
-
+**Next gates:** finish M0-A individual high-fidelity structural frames, validate desktop/tablet/mobile composition and source-to-frame ownership, then proceed to M0-B motion studies. Do not merge the two reference roles, fabricate workflow/data states or begin source migration before M0 acceptance.
