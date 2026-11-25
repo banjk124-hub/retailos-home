@@ -107,9 +107,9 @@ Implication: motion foundations exist, but the target needs one motion vocabular
 
 ### 2.6 CSS ownership and cascade risk
 
-The repository has 25 CSS files. main.tsx imports eight global stylesheets plus Brand, Motion, Glass tokens/materials and LiquidDock CSS. HomeScreen imports five Home stylesheets: home.css, home-ux.css, home-engine.css, home-redesign.css and home-architecture.css. The Home styles are layered in addition to global theme, responsive, mobile, performance, adaptive and native-experience styles.
+The audited main baseline had 25 CSS files; the Phase 00 audit branch has 24 after retiring the unimported `home-phase2.css`. `main.tsx` imports eight global stylesheets plus Brand, Motion, Glass tokens/materials and LiquidDock CSS. HomeScreen imports five Home stylesheets: home.css, home-ux.css, home-engine.css, home-redesign.css and home-architecture.css. The Home styles are layered in addition to global theme, responsive, mobile, performance, adaptive and native-experience styles.
 
-mobile-tuning.css is approximately 87 KB and includes broad touch rules, large mobile overrides, repeated media-query sections and some !important declarations. Home and theme CSS also contain overlapping selectors and literals. The exact set of dead selectors and computed winning declarations has not yet been established.
+`mobile-tuning.css` is approximately 87 KB and includes broad touch rules, large mobile overrides, repeated media-query sections and some !important declarations. Home and theme CSS also contain overlapping selectors and literals. The exact set of dead selectors and computed winning declarations has not yet been established.
 
 Implication: CSS migration must begin with selector/cascade and consumer analysis. Do not delete or rewrite styles based only on file names. Do not add another override stylesheet as the new design-system layer.
 
