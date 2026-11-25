@@ -4,7 +4,7 @@ All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX
 
 ## UI/UX — M0 before M1
 1. **M0-0 — Documentation consolidation: MERGED to main via PR #163.** Canonical docs reconciled; historical M0 evidence demoted; Product Studio v0.1.3 audited and aligned. One active spec and one status.
-2. **M0-A — Structural/visual direction:** Batch A0 source baseline audit recorded on `feat/m0-a-source-audit-foundation`; next complete screen ownership/state mapping and high-fidelity responsive blueprints for Login, Shell, Home, Module Library, Stocktake, Import and Settings/Update Center. Owner acceptance precedes production-facing visual implementation.
+2. **M0-A — Structural/visual direction:** Batch A0 source baseline and A1.1 blueprints for Login, Shell, Home and Module Library recorded on `feat/m0-a-source-audit-foundation`; next complete Stocktake, Import and Settings/Update Center blueprints, then high-fidelity editable prototypes and owner review. Owner acceptance precedes production-facing visual implementation.
 3. **M0-B — Motion/interaction:** derive observable patterns from video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior.
 4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
 5. **M0-D — Technology, quality and owner acceptance:** evidence-based technology decisions, accessibility, browser/device/performance validation and explicit owner acceptance.
