@@ -260,7 +260,7 @@ The 00F consumer graph and selector audit are an explicit prerequisite for broad
 ## 8. Rollout, branch and merge policy
 
 - Start each source implementation slice from the then-current `main`, not the documentation branch.
-- Keep documentation PR #156 separate from application implementation PRs unless the owner explicitly chooses another arrangement.
+- Keep documentation/governance changes separate from application implementation PRs unless the owner explicitly chooses another arrangement.
 - Use a dedicated branch/PR per bounded slice or tightly coupled pair.
 - Rebase/merge current main before final acceptance and rerun tests on the final head.
 - Keep PRs small enough to review the full protected-boundary diff.
