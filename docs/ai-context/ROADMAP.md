@@ -1,15 +1,18 @@
-# RetailOS roadmap — 2026-11-25
+# RetailOS roadmap — 2026-11-26
 
 All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX sequencing and acceptance are governed only by [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). No parallel product-wide UI/UX plans.
 
 ## UI/UX — M0 before M1
-1. **M0-0 — Documentation consolidation: COMPLETE on PR #163 branch.** Canonical docs reconciled; historical M0 evidence demoted; Product Studio v0.1.3 audited and aligned. One active spec and one status.
-2. **M0-A — Structural/visual direction:** source audit, high-fidelity representative surfaces, burgundy identity, Vietnamese typography, retail imagery, composition and responsive layouts.
+1. **M0-0 — Documentation consolidation: MERGED to main via PR #163.** Canonical docs reconciled; historical M0 evidence demoted; Product Studio v0.1.3 audited and aligned. One active spec and one status.
+2. **M0-A — Structural/visual direction:** Batch A0 source baseline audit recorded on `feat/m0-a-source-audit-foundation`; next complete screen ownership/state mapping and high-fidelity responsive blueprints for Login, Shell, Home, Module Library, Stocktake, Import and Settings/Update Center. Owner acceptance precedes production-facing visual implementation.
 3. **M0-B — Motion/interaction:** derive observable patterns from video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior.
 4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
 5. **M0-D — Technology, quality and owner acceptance:** evidence-based technology decisions, accessibility, browser/device/performance validation and explicit owner acceptance.
 
 **M1 is blocked until M0-D completes and the owner explicitly accepts M0.** Documentation completion alone does not authorize source-wide migration or new dependencies.
+
+## M0-A current baseline
+See [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md). Main baseline: `4e654ffb519d8b124f3edbbbda4f65fe550052ef`. No source UI or business logic changed in Batch A0.
 
 ## Scanner — closed
 Scanner stabilization and cleanup are complete. Current contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); history: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Reopen only for reproducible defect, measured bottleneck, new requirement or explicit acceptance. UI redesign must not reopen engine internals.
