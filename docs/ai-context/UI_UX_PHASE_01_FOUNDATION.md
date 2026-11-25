@@ -59,7 +59,7 @@ Contrast calculations for the new primary/secondary/muted text and brand/status 
 
 ### 3.4 Regression guard
 
-Added `scripts/test-design-foundation-contract.mjs` and registered it in `scripts/preflight.mjs`. It checks required semantic tokens, compatibility aliases, shared motion references, reduced-motion and power-conserve hooks.
+Added `scripts/test-design-foundation-contract.mjs` and registered it in `scripts/preflight.mjs`. It checks required semantic tokens, compatibility aliases, shared motion references, reduced-motion and power-conserve hooks, and rejects literal escaped-newline sequences in the canonical theme stylesheet. The source audit found and corrected one malformed escaped-newline sequence in the tertiary-text compatibility alias before final validation.
 
 ### 3.5 CSS ownership recheck
 
