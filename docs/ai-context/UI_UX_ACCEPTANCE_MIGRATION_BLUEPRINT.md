@@ -183,7 +183,23 @@ The current preflight script itself was verified to invoke these checks. Individ
 | iOS Home Screen PWA | Standalone, portrait/landscape, offline/update | Standalone safe area, PWA update and navigation |
 | Low-end Android reference | Cold and warm launch, repeated navigation, long lists/tables, blur/images/motion on/off | Input acknowledgement, long tasks, scroll stability, memory/thermal behavior |
 
-Record exact device model, OS/browser version, viewport, PWA/tab mode, build ID and test date. “Mobile tested” without this information is not acceptance evidence.
+**Recommended repeatable viewport set (design/CI baseline, not a substitute for physical devices):**
+
+| Class | Viewport | Why it is included |
+|---|---:|---|
+| Compact desktop | 1280 × 720 | Office laptop and short-height workspace constraints |
+| Standard desktop | 1440 × 900 | Primary desktop composition |
+| Wide desktop | 1920 × 1080 | Use extra width for real work surfaces without stretching content |
+| Narrow desktop / tablet landscape | 1024 × 768 | Navigation collapse and dense workspace transition |
+| Tablet portrait | 768 × 1024 | Touch-first master/detail and navigation |
+| Compact Android | 360 × 800 | Low-end/mobile width and keyboard constraints |
+| Standard mobile | 390 × 844 | Common modern phone composition |
+| Wide mobile | 412 × 915 | Larger mobile width and safe-area behavior |
+| Compact iPhone fallback | 375 × 667 | Short viewport and older device constraints |
+| Short landscape | 844 × 390 | Keyboard/browser chrome and bounded overlay behavior |
+| Narrow fallback | 320 × 568 | Minimum-width clipping and reachable actions |
+
+Record exact physical device model, OS/browser version, actual viewport, PWA/tab mode, build ID and test date. “Mobile tested” without this information is not acceptance evidence.
 
 ### 5.4 Visual and functional test scenarios
 
