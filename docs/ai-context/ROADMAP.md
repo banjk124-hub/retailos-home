@@ -5,7 +5,7 @@ All work follows RETAILOS_PRODUCT_SKILL.md. UI/UX sequencing and acceptance are 
 ## Governance consolidation
 1. **BATCH 00 — Inventory/source lock:** audit record created on PR #165; review/merge pending.
 2. **BATCH 01 — Canonical standard and decision architecture:** implemented on a dependent Draft PR; owner review and CI pending. Includes component/pattern governance, technology radar, terminology glossary, deprecation register, decision lifecycle and canonical navigation/ownership.
-3. **BATCH 02 — Product Studio parity:** only after repository standards are accepted; update private plugin skill/manifests and validate cross-chat scenarios.
+3. **BATCH 02 — Product Studio parity:** only after BATCH 01 is owner-accepted and merged; update private plugin skill/manifests and validate cross-chat scenarios.
 4. **BATCH 03 — Cross-source validation:** validate repository docs, plugin, source and execution workflow; resolve remaining contradictions and close governance gates.
 
 No governance PR is merged merely because its content is drafted. No plugin release is published until canonical repository standards are accepted.
@@ -27,3 +27,17 @@ PWA: PWA_RUNTIME_RELEASE.md · Performance: PERFORMANCE_BUNDLE_PWA.md · Overlay
 
 ## Governance
 Verify live branch/PR/CI/deployment before status updates. No merge without explicit owner approval; no deployment without explicit authorization. CI, visual acceptance, device acceptance, workflow acceptance and production promotion are distinct.
+
+
+### BATCH 01 exit gates — before BATCH 02
+- [ ] Canonical ownership and PD-007 explicitly reviewed and owner-accepted.
+- [x] Six governance requirements G-01…G-06 are operationalized across the Product Skill and dedicated registers.
+- [x] Component/pattern reuse and lifecycle rules are defined without forcing uniform feature layouts.
+- [x] Technology evaluation includes prototype, compatibility, cost, security, maintenance, performance, fallback and rollback evidence.
+- [x] Playwright browser verification and screenshot/trace evidence are defined; physical-device acceptance remains separate.
+- [x] Canonical terminology and status vocabulary are defined.
+- [x] Deprecation/removal requires consumer, behavior, replacement, risk, test and rollback evidence.
+- [ ] Cross-document consistency review and exact-head CI verification complete.
+- [ ] PR #165 dependency order and PR #166 review/merge completed with explicit owner approval.
+
+BATCH 01 remains in review. Checked items indicate documentation content exists on the PR branch; they do not mean owner acceptance, CI pass or merge.
