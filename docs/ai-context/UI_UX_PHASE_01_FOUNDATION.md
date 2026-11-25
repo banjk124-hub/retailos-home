@@ -106,6 +106,13 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 - Native experience notification states now consume --color-status-success and --color-status-danger; adaptive notification states consume --color-status-warning and --color-status-danger.
 - These are value-preserving substitutions: the semantic tokens resolve to the existing brand/status colors. No new color, theme or department state was introduced.
 - Regression contracts assert representative brand and status consumers. Contrast validation remains limited to the declared solid foreground tokens against white; notification tint/background combinations still need browser-level review.
+### 3.14 Compact desktop-landscape Login correction
+
+- The first five-viewport screenshot review found the 844×390 desktop-landscape layout expanded to a 631px full-page capture. The fixed Login dock and vertically dense form were competing for limited height.
+- Added a bounded `min-width: 761px` / `max-height: 520px` presentation rule: preserve the two-column composition, reduce only the vertical density of Login, hide the non-essential hero footer, and reserve bottom clearance for the utility dock.
+- Added a browser regression assertion that this viewport must fit within its 390px document height without vertical page overflow. Other viewports retain their existing responsive rules.
+- This is a targeted presentation correction; authentication state, form validation, employee lookup, session persistence and dock actions are unchanged. Exact-head CI and screenshot review are pending.
+
 ### 3.13 Global focus-token ownership
 
 - The global `:focus-visible` treatment in `theme.css` now consumes the canonical focus outline, offset and shadow roles.
