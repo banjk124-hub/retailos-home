@@ -49,6 +49,8 @@ See PWA_RUNTIME_RELEASE.md. Verify live PR/CI/deployment before volatile claims.
 CI proves only checks run on the exact commit. Browser emulation is not physical-device acceptance. Development Pages is not department production promotion. Merge, deployment and production transfer are separate approval gates.
 
 ## BATCH 01 verification additions
-- Playwright is specified as the preferred browser automation and visual feedback layer for browser-relevant implementation; no package or runtime dependency has been installed in this documentation batch.
+- Playwright already exists in the audited main baseline: `@playwright/test` devDependency, `test:browser` script, Chromium config, Login responsive suite and CI browser-smoke/artifact steps. BATCH 01 formalizes and extends the usage standard; it does not introduce a second test stack or add a dependency.
+- Existing browser coverage is Login-focused (five viewport profiles plus reduced-motion/power-conserve assertions). Other workflows/screens are not thereby browser-verified.
 - Playwright screenshots and assertions are distinct evidence: screenshots support visual inspection; assertions verify behavior. Browser emulation does not establish physical-device acceptance.
+- No package/runtime dependency or CI workflow was changed in this documentation batch.
 - Exact-head workflow query for the latest BATCH 01 commit returned no PR workflow runs. CI-passed is therefore not claimed.
