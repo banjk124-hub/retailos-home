@@ -11,7 +11,7 @@ const adaptiveStyles = readFileSync("src/styles/adaptive-appearance.css", "utf8"
 const stocktakeImportStyles = readFileSync("src/features/stocktake-import/components/stocktake-import.css", "utf8");
 
 const requiredThemeTokens = [
-  "--color-brand-primary", "--color-text-primary", "--color-text-secondary",
+  "--color-brand-primary", "--color-brand-subtle", "--color-text-primary", "--color-text-secondary",
   "--color-text-muted", "--color-surface-canvas", "--color-surface-panel",
   "--color-border-subtle", "--color-status-success", "--color-status-warning",
   "--color-status-danger", "--color-status-info", "--font-family-ui",
@@ -112,6 +112,11 @@ assert.ok(stocktakeImportStyles.includes("var(--color-text-primary, var(--text-p
 assert.ok(stocktakeImportStyles.includes("var(--color-text-secondary, var(--text-secondary,#687386))"));
 assert.ok(theme.includes(".eyebrow { color: var(--color-brand-primary); }"));
 assert.ok(theme.includes(".side-nav-item.active { color: var(--color-brand-strong);"));
+const homeTheme = theme.slice(theme.indexOf("/* Home: restrained red/white system"));
+assert.ok(homeTheme.includes("var(--color-brand-subtle)"), "Home surfaces must consume the semantic brand-subtle role");
+assert.ok(homeTheme.includes("var(--color-brand-primary)"), "Home accents must consume the semantic brand-primary role");
+assert.ok(!homeTheme.includes("#fff0f1"), "Home consumers must not hardcode the canonical brand-subtle color");
+assert.ok(!/#d92736(?![0-9a-f])/i.test(homeTheme), "Home consumers must not hardcode the canonical brand-primary color");
 assert.ok(nativeStyles.includes("var(--color-status-success, var(--color-success))"));
 assert.ok(nativeStyles.includes("var(--color-status-danger, var(--color-error))"));
 assert.ok(adaptiveStyles.includes("var(--color-status-warning, var(--color-warning))"));
