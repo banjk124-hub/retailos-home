@@ -504,6 +504,34 @@ When an issue is domain-specific, update its canonical domain document and link 
 - Performance/bundle constraints.
 - Regression tests and physical acceptance.
 
+## 14. Full presentation-layer redesign authority
+
+The redesign is authorized to replace, remove, rewrite, reorder or completely reconstruct **any presentational element** when necessary to achieve the approved target experience. This is not limited to rearranging existing components or reskinning the current UI.
+
+The editable presentation scope includes, without limitation:
+- All visible text: headings, labels, helper copy, descriptions, empty-state copy, error messages, tooltips and microcopy.
+- Status presentation: names, wording, colors, badges, icons, hierarchy and visual grouping. The underlying state meaning, transition rules and truthfulness must remain correct.
+- Information architecture and composition: content order, grouping, density, alignment, navigation placement, screen hierarchy and responsive arrangement.
+- Components and interaction patterns: cards, panels, tables, menus, dialogs, drawers, sheets, tabs, navigation, search, filters, forms and feedback surfaces.
+- Brand presentation: logo mark, wordmark, lockups, brand motion, imagery, illustration and visual motifs. The product name and organizational identity must not be changed without an explicit product decision.
+- Controls and assets: icons, buttons, inputs, switches, selectors, typography, fonts, surfaces, borders, shadows, materials, animations and transitions.
+- Existing shared UI systems: Brand, Glass, Motion, Icons, LiquidDock and current CSS/component implementations may be retained, refactored, replaced or retired based on the target design and audit evidence.
+
+**No current visual artifact is grandfathered in.** Existing implementation is a source of behavior and technical evidence, not a visual constraint. A new design may depart substantially from the current screen if it improves clarity, efficiency, accessibility, consistency and the combined reference direction.
+
+### Boundary between presentation freedom and protected contracts
+
+Visual freedom does not authorize accidental changes to domain behavior. Before replacing an element, identify whether it owns only presentation or also owns a protected behavior/data contract.
+
+- Text and status wording may change; the underlying business status, validation result, permission, operation outcome and data freshness must remain truthful.
+- A button may be redesigned, moved or replaced; its action, authorization, idempotency and completion semantics must remain intact.
+- An icon or logo may be replaced; stable module IDs, route identity, employee identity and product naming contracts remain unchanged unless separately decided.
+- A component may be removed or rebuilt; its persistence, keyboard/focus behavior, scroll-lock ownership, event lifecycle and feature integration must be preserved or deliberately migrated.
+- A screen may be reordered or split; unsaved work, browser history, deep links, offline access and workflow transitions must remain valid.
+- A visual state may be redesigned; no fake success, fabricated activity, misleading empty state or false availability may be introduced.
+
+Every major replacement must include an old-to-new responsibility map, consumer/callsite inventory, migration steps, regression coverage and a removal plan for the superseded implementation. Do not keep old and new versions active indefinitely merely to avoid cleanup.
+
 ## 14. Decision governance
 
 Status labels:
