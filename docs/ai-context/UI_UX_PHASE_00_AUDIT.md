@@ -112,11 +112,11 @@ The source import graph was checked at the audited baseline. Import ownership an
 
 | ID | Decision / evidence needed | Current disposition | Gate |
 |---|---|---|---|
-| P00-01 | Route identity, History API adapter, back/forward, reload, deep links and unknown paths | Proposed; no route adapter found in current App/Home composition | Before Shell implementation |
+| P00-01 | Route identity, History API adapter, back/forward, reload, deep links and unknown paths | 00E defines a typed History API adapter and stable workspace paths; same-URL transient history entries are now specified for Back-dismissable overlays. Owner acceptance remains open. | Before Shell implementation |
 | P00-02 | Desktop navigation form and workspace composition | Prototype/owner decision required | Before Shell implementation |
 | P00-03 | Typography and Vietnamese glyph/weight/load/offline validation | No final font decision | Before foundation implementation |
 | P00-04 | Final brand palette, semantic status contrast, material and photography direction | Principles accepted; exact values/asset direction remain open | Before foundation implementation |
-| P00-05 | Shared focus manager/overlay stack | Not implemented; source has shared body lock only | Prove nested/focus use cases before adding |
+| P00-05 | Shared focus manager/overlay stack | Not implemented; shared body lock exists. 00E proposes a single topmost-back dispatch contract but does not justify a full focus/overlay framework yet. | Prove nested/focus use cases before adding |
 | P00-06 | Full selector-level CSS usage/computed-style audit | Not completed | Mandatory before broad CSS deletion/consolidation |
 | P00-07 | Complete shared component/export consumer graph, including dynamic class/portal use | Partial inventory only | Mandatory before retiring shared systems |
 | P00-08 | Exact desktop/tablet/iOS/Android/low-end reference device matrix | Not confirmed | Before device acceptance |
@@ -155,7 +155,7 @@ Each slice must name exact files/callsites, owners, protected contracts, tests, 
 - [x] Retire the unimported `home-phase2.css` orphan and three unconsumed Motion public APIs.
 - [x] Identify repeated Home selectors and legacy CSS-only selector candidates.
 - [ ] Complete selector-to-element matching and browser computed-style/cascade validation across responsive and state combinations; broad legacy CSS retirement remains blocked.
-- [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
+- [x] Refine the 00E browser-history proposal to distinguish workspace routes from same-URL transient overlay entries and non-restorable camera/permission state.\n- [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
 - [ ] Confirm device matrix and visual acceptance method.
 
 **Phase 00 status:** architecture principles are closed; repository/documentation reconciliation and source-level cleanup audits remain in progress. No Phase 01/02 implementation is authorized until the required owner decisions and scope gates are met.
