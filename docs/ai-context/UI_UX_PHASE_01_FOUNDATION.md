@@ -1,6 +1,6 @@
 # UI/UX Phase 01 — Design Foundation Implementation Record
 
-**Status:** In progress — foundation token/runtime batch implemented; full Phase 01 acceptance is not yet claimed.
+**Status:** In progress — foundation token/runtime batch implemented and exact-head CI passed; full Phase 01 visual/device acceptance is not yet claimed.
 **Repository:** `banjk124-hub/retailos-home`
 **Base:** `main` at `2b7f724a2518f2f2ae913e676490f46e23015cdf` (PR #160 merge).
 **Branch:** `feat/uiux-phase-01-foundation`
@@ -93,7 +93,7 @@ The direct-use search is not a proof of all runtime composition. `MotionButton` 
 | 01E Spacing, radius, elevation, focus | Partial | Semantic tokens implemented. Consumer migration and keyboard/focus audit remain |
 | 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases. Feature-specific literal durations/choreography audit remains |
 | 01G CSS architecture | Partial | Canonical token source established. Full selector/computed-style ownership and cascade consolidation remain |
-| 01H Integration & acceptance | Not started | Requires preflight/CI, responsive browser evidence, accessibility and device acceptance |
+| 01H Integration & acceptance | Partial | Exact-head CI #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9`; responsive browser evidence, accessibility and device acceptance remain open |
 
 ## 5. Explicit non-decisions
 
@@ -106,8 +106,8 @@ The direct-use search is not a proof of all runtime composition. `MotionButton` 
 
 ## 6. Validation required before Phase 01 closure
 
-1. Run the new foundation contract test and full `npm run preflight` on the exact PR head.
-2. Pass TypeScript, production build, GitHub Pages build, bundle-boundary and all existing feature tests.
+1. [x] Run the new foundation contract test and full `npm run preflight` on exact head `728ce44052a4628e577b4075b3ed753cf5b4b9f9` (GitHub Actions run #1506).
+2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and all existing feature tests on the same exact head.
 3. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
 4. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
 5. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
@@ -124,4 +124,4 @@ Continue the remaining Phase 01 batches on this branch only after reviewing the 
 - Migration of only directly verified shared consumers to semantic tokens.
 - Phase 01 acceptance record and synchronized INDEX / IMPLEMENTATION_STATUS / ROADMAP / handoff documents.
 
-Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
+Exact-head CI evidence: [run #1506](https://github.com/banjk124-hub/retailos-home/actions/runs/45564676736). Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.

@@ -13,7 +13,7 @@
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
-- No CI, browser visual QA, physical-device acceptance, merge or deployment is claimed for this Phase 01 branch yet.
+- Exact-head GitHub Actions run #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9` (full preflight, TypeScript, production build, Pages build and bundle comparison). Browser visual QA and physical-device acceptance remain open; no merge or deployment is claimed.
 - PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner

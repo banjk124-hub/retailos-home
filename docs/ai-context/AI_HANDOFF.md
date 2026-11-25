@@ -24,4 +24,4 @@ Read [INDEX.md](./INDEX.md), then load only the canonical documents and source/t
 - Current source changes: semantic tokens in `src/styles/theme.css`; Brand typography token consumption; mobile legacy motion aliases routed to shared Motion tokens; new design-foundation contract test registered in preflight.
 - Preserve the existing Glass system, App/Auth/Home composition and all protected business/platform contracts. Do not delete CSS or change font dependencies until the documented evidence/acceptance gate is met.
 - Be Vietnam Pro is the leading Vietnamese font candidate for comparison, not a selected or shipped dependency.
-- Do not claim Phase 01 complete, merge or deploy until exact-head CI, browser/responsive visual QA, accessibility/contrast and owner/device acceptance are recorded.
+- Exact-head CI run #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9`. Do not claim Phase 01 complete, merge or deploy until browser/responsive visual QA, accessibility/contrast and owner/device acceptance are recorded.

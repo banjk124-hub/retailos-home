@@ -45,8 +45,8 @@ The project owner's operational confirmation is not a quantified optical benchma
 - The first source batch establishes semantic tokens, aligns mobile motion aliases with the shared Motion system, connects Brand typography, adds a contrast/token contract test and records source audit evidence.
 - Existing Glass materials and protected feature/platform contracts remain intact; no broad CSS deletion, new font package, or second design system is introduced.
 - Be Vietnam Pro is the leading Vietnamese typography candidate for evaluation, not yet selected or bundled.
-- Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass role acceptance, computed-style/cascade review, responsive visual QA and full exact-head CI.
-- Do not merge or deploy Phase 01 until the PR's CI and review gates pass and remaining owner/device acceptance is recorded.
+- Exact-head CI run #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass role acceptance, computed-style/cascade review and responsive visual QA.
+- Do not merge or deploy Phase 01 until source review, browser/responsive visual QA and remaining owner/device acceptance are recorded.
 - Phase 00's image/video authority remains: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
 - Current App/Auth/Home source remains the AS-IS baseline. The target Shell/navigation migration is a later phase and is not part of Phase 01.
 - PR #157 remains a stale draft on an old base; do not merge by default.
