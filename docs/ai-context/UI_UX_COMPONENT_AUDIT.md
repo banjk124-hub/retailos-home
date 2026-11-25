@@ -318,3 +318,19 @@ Do not create all components as a framework up front. Implement only after 00G s
 - [ ] Owner acceptance before implementation.
 
 **00F completion means the source-level inventory and ownership decisions are documented. No component is approved for immediate deletion or replacement solely by this audit.**
+## 20. Design-system evolution and contribution governance
+
+The component inventory is an audit of what exists today, not a cap on what RetailOS may build. The shared system must evolve with operational requirements.
+
+- Core Foundation defines identity and quality principles; it is not a fixed component whitelist.
+- Shared components are reusable solutions with explicit semantic responsibility.
+- Feature-owned components are valid first-class architecture when a workflow needs specialized behavior, density, lifecycle or performance.
+- New features may create new controls, patterns, tokens or variants when existing shared solutions are insufficient.
+- A feature-owned solution may remain local or become a Shared Candidate after real cross-feature reuse is demonstrated.
+- Do not generalize from visual similarity alone; compare semantics, state, accessibility and interaction behavior.
+- Do not force feature workflows into generic components or create mega-components to avoid adding a new component.
+- Shared components may evolve or be replaced. Migrate consumers and retire superseded implementations rather than preserving parallel systems indefinitely.
+
+Use the lifecycle: Experimental → Feature-owned → Shared Candidate → Shared Stable → Deprecated → Retired. Not every component passes through every state; feature-owned may remain local permanently.
+
+A contribution to Shared Stable must include its problem/consumer evidence, semantic contract, API/variants/states, responsive and accessibility behavior, motion policy, performance impact, tests, ownership and migration/rollback plan. The purpose is controlled evolution, not bureaucracy.

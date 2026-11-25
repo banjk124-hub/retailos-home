@@ -487,3 +487,19 @@ Each shared component specification must contain:
 ## 12. Repository-first execution update
 
 The first bounded M0 source slice is open as [PR #157](https://github.com/banjk124-hub/retailos-home/pull/157): tablet Login composition and layout-stable focus. It changes only `src/styles/login-experience.css`; CI run #1454 passed on head `03467e4d0a111a3e0b4a4b0001e0cb8bcaf70608`. This establishes the source-first workflow, not completion of M0 or visual/device acceptance. Continue with one source-owned surface at a time, and do not merge/deploy without explicit approval.
+## 3.1 Accepted design-system evolution principle
+
+The Design System is open and extensible, not a closed component catalogue. Core Foundation defines RetailOS identity and shared quality principles; Shared Design System contains reusable solutions with demonstrated value; Feature Experience remains free to create specialized layouts, controls and interactions when the operational task requires them.
+
+Do not assume the current inventory is the complete future component set. New features may introduce new components, patterns, tokens or variants. They may remain feature-owned or be contributed to the shared system after validation. Reuse is based on semantic responsibility and behavior, not visual resemblance.
+
+### Required evolution workflow
+
+1. Identify the operational need and why existing shared solutions do not fit.
+2. Design and implement the smallest coherent feature-owned solution.
+3. Validate functional correctness, visual quality, responsive behavior, accessibility and performance in its real workflow.
+4. Assess whether independent features genuinely need the same semantic solution.
+5. If shared adoption is justified, define a focused API, variants, states, ownership, tests and migration path.
+6. Evolve, deprecate or retire prior shared solutions only after consumer impact and rollback are understood.
+
+Consistency means recognizable RetailOS identity, semantic meaning, interaction quality and engineering standards—not identical layouts or a fixed set of controls. This principle applies to every phase and future module.

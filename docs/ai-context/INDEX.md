@@ -15,8 +15,8 @@ This file is the navigation layer for repository documentation. Read one canonic
 | Topic | Canonical document |
 |---|---|
 | Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |
-| Design tokens, typography, brand, color semantics, materials, component foundations, responsive and motion specification | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
-| Existing component inventory, ownership, keep/refactor/replace/create decisions and migration risks | [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md) |
+| Design tokens, typography, brand, color semantics, materials, component foundations, responsive, motion and evolving contribution lifecycle | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
+| Existing component inventory, ownership, keep/refactor/replace/create decisions, migration risks and feature-to-shared contribution governance | [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md) |
 | Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
 | Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
 | Implementable screen blueprints for desktop, tablet, mobile, states, component ownership and acceptance | [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md) |
@@ -61,8 +61,8 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence, not repeated session narratives.
 - `UI_UX_ARCHITECTURE.md`: product-wide design and component contract.
-- `UI_UX_DESIGN_SYSTEM_SPEC.md`: concrete design-system specification and source audit.
-- `UI_UX_COMPONENT_AUDIT.md`: source-level component inventory, ownership, coupling and migration decisions.
+- `UI_UX_DESIGN_SYSTEM_SPEC.md`: concrete design-system specification, source audit and open component/token contribution lifecycle.
+- `UI_UX_COMPONENT_AUDIT.md`: source-level component inventory, ownership, coupling, migration decisions and the lifecycle for feature-owned/shared contributions.
 - `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
 - `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
 - `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
