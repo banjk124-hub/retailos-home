@@ -68,10 +68,10 @@
 .notification-status-notice {
   margin: 0 0 8px;
   padding: 9px 11px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--color-border-subtle, var(--border-soft));
   border-radius: 12px;
-  background: var(--surface-muted);
-  color: var(--text-secondary);
+  background: var(--color-surface-subtle, var(--surface-muted));
+  color: var(--color-text-secondary, var(--text-secondary));
   font-size: 11px;
   line-height: 1.5;
 }
@@ -92,9 +92,9 @@
 
 .notification-empty--loading,
 .notification-status-notice--loading {
-  border-color: var(--border-soft);
-  background: var(--surface-muted);
-  color: var(--text-secondary);
+  border-color: var(--color-border-subtle, var(--border-soft));
+  background: var(--color-surface-subtle, var(--surface-muted));
+  color: var(--color-text-secondary, var(--text-secondary));
 }
 
 .topbar-action-button.notification-button.notice-state-partial:not(.selected) {

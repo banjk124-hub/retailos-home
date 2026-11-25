@@ -5,6 +5,10 @@ const theme = readFileSync("src/styles/theme.css", "utf8");
 const mobile = readFileSync("src/styles/mobile-tuning.css", "utf8");
 const motion = readFileSync("src/shared/motion/motion.css", "utf8");
 const glassTokens = readFileSync("src/shared/components/glass/glass.tokens.css", "utf8");
+const loginStyles = readFileSync("src/styles/login-experience.css", "utf8");
+const nativeStyles = readFileSync("src/styles/native-experience.css", "utf8");
+const adaptiveStyles = readFileSync("src/styles/adaptive-appearance.css", "utf8");
+const stocktakeImportStyles = readFileSync("src/features/stocktake-import/components/stocktake-import.css", "utf8");
 
 const requiredThemeTokens = [
   "--color-brand-primary", "--color-text-primary", "--color-text-secondary",
@@ -87,6 +91,17 @@ assert.ok(theme.includes("color: var(--color-text-primary, var(--text-primary));
 assert.ok(theme.includes("font-family: var(--font-family-ui, var(--font-family-sans));"));
 assert.ok(theme.includes("font-size: var(--font-size-body, var(--font-size-md));"));
 assert.ok(theme.includes("line-height: var(--line-height-normal, var(--line-height-body));"));
+assert.ok(loginStyles.includes("var(--color-text-primary, var(--text-primary))"));
+assert.ok(loginStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
+assert.ok(nativeStyles.includes("var(--color-border-subtle, var(--border-soft))"));
+assert.ok(nativeStyles.includes("var(--color-surface-raised, var(--surface-raised))"));
+assert.ok(nativeStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
+assert.ok(adaptiveStyles.includes("var(--color-border-subtle, var(--border-soft))"));
+assert.ok(adaptiveStyles.includes("var(--color-surface-subtle, var(--surface-muted))"));
+assert.ok(adaptiveStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
+assert.ok(stocktakeImportStyles.includes("var(--color-text-primary, var(--text-primary, #172033))"));
+assert.ok(stocktakeImportStyles.includes("var(--color-text-secondary, var(--text-secondary,#687386))"));
 
 
-console.log("Design foundation contract passed: semantic tokens, canonical body and Glass text consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
+
+console.log("Design foundation contract passed: semantic tokens, canonical body, Glass, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
