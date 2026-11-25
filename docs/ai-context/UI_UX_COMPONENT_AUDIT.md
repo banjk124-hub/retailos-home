@@ -1,6 +1,6 @@
 # UI/UX Component Inventory and Ownership Audit — Batch 00F
 
-**Status:** Source-level component inventory and migration decisions complete; no component or application code changed.
+**Status:** Initial source-level component inventory and migration decisions recorded; complete consumer/cascade proof remains open. One confirmed unimported CSS file is retired on the Phase 00 audit branch; no component or application runtime code changed.
 **Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Original audit date:** 2026-11-25
 **Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. The original detailed inventory is not a claim that the complete runtime consumer graph or selector-level CSS audit is closed.
@@ -27,7 +27,7 @@ This is not a visual QA report, computed-style audit, accessibility certificatio
 6. Icon rendering has two public render paths (`Icon` and `MotionIcon`) alongside direct `lucide-react` imports. The semantic registries exist, but they are not yet the sole rendering path.
 7. `LiquidDock` is tightly coupled to the current Home section-navigation model and a central quick-action slot. It is a replaceable navigation presentation, not the future navigation contract.
 8. Overlay lifecycle is partly shared (reference-counted body scroll lock) and partly duplicated across owners. A reusable focus-trap/overlay-stack manager is explicitly not implemented in the overlay architecture document.
-9. The stylesheet system has 25 CSS files. The 87,145-byte `mobile-tuning.css` and multiple Home stylesheet generations are high-risk ownership/cascade areas. File size alone does not prove dead CSS or duplicate selectors.
+9. The audited main baseline had 25 CSS files; the Phase 00 branch has 24 after retiring an unimported Home Phase 2 stylesheet. `mobile-tuning.css` is 87,143 bytes at the audited baseline, and multiple active Home stylesheet generations remain high-risk ownership/cascade areas. File size alone does not prove dead CSS or duplicate selectors.
 10. Existing lazy-loading and regression tests are important architecture, not incidental implementation. A visual rebuild must preserve code-splitting boundaries and the existing scanner, PWA, Stocktake and Import behavior.
 
 ## 3. Current component and subsystem inventory
@@ -143,12 +143,12 @@ Decision:
 
 ### 5.1 Confirmed stylesheet inventory
 
-The current source tree contains 25 CSS files:
+The audited `main` baseline contains 25 CSS files; the Phase 00 audit branch contains 24 after removal of one unreferenced file:
 
 | Area | Files | Size / note |
 |---|---|---|
-| Global foundations | `base.css`, `theme.css`, `responsive.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css` | Eight stylesheets imported by `main.tsx`; `mobile-tuning.css` is 87,145 bytes |
-| Home generations | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css`, `home-phase2.css` | Six files; multiple generations share the Home surface |
+| Global foundations | `base.css`, `theme.css`, `responsive.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css` | Eight stylesheets imported by `main.tsx`; `mobile-tuning.css` is 87,143 bytes |
+| Active Home generations | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css` | Five imported files; 39 repeated selector strings across the five-file cascade. `home-phase2.css` was unimported and is retired on the Phase 00 branch. |
 | Login | `login-experience.css` | 22,218 bytes; imported by LoginExperience |
 | Scanner settings | `scanner-settings.css` | 7,113 bytes; imported by SettingsHub and ScannerSettingsPanel |
 | Scanner transition | `scanner-transition.css` | 8,723 bytes; imported by Home BarcodeScanner and StocktakeScanner |
