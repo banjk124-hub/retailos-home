@@ -1,7 +1,7 @@
 # RetailOS M0 — Governing Experience Direction
 
 **Authority:** Sole active M0 specification; supersedes conflicting M0 proposals.  
-**Status:** Owner direction confirmed; documentation reconciliation in progress. M0 remains open; M1 is not authorized.
+**Status:** M0-0 documentation consolidation is complete on this branch. Owner direction is confirmed; M0 remains open and M1 is not authorized.
 
 ## 1. Owner-confirmed direction
 
