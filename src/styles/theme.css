@@ -77,17 +77,17 @@
   --color-text-muted: #6f6870;
   --color-text-inverse: #fff;
   --color-surface-canvas: #fffafa;
-  --color-surface-panel: #fff;
-  --color-surface-raised: #fff;
-  --color-surface-subtle: #f6eff0;
-  --color-surface-input: #fff;
+  --color-surface-panel: rgba(255,255,255,.82);
+  --color-surface-raised: rgba(255,255,255,.92);
+  --color-surface-subtle: rgba(246,239,240,.86);
+  --color-surface-input: rgba(255,255,255,.9);
   --color-border-subtle: rgba(105,77,83,.18);
   --color-border-strong: rgba(105,77,83,.34);
   --color-status-success: #187456;
-  --color-status-warning: #875014;
+  --color-status-warning: #98601f;
   --color-status-danger: #b42332;
   --color-status-info: #356a8d;
-  --color-status-neutral: #625b62;
+  --color-status-neutral: #716970;
 
   /* Typography roles: no remote font dependency; platform fallback remains authoritative. */
   --font-family-ui: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -148,7 +148,7 @@
   /* Compatibility aliases; migrate consumers before removing these names. */
   --text-primary: var(--color-text-primary);
   --text-secondary: var(--color-text-secondary);
-  --text-muted: var(--color-text-muted);
+  --color-text-tertiary: #918890;\n  --text-muted: var(--color-text-tertiary);
   --surface-page: var(--color-surface-canvas);
   --surface-card: var(--color-surface-panel);
   --surface-raised: var(--color-surface-raised);
