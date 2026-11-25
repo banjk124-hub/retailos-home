@@ -1,27 +1,24 @@
-# Current handoff — RetailOS engineering continuation
+# Current handoff — RetailOS
 
-**Current Scanner baseline:** runtime stabilization and ecosystem cleanup are complete. PR #153 was merged and deployed; the project owner confirmed the current application flow operates normally without observed errors.
+**Governing standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). Load it before any RetailOS task, including new features and work continued from another chat.
 
-- Current implementation contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md). Scanner context is intentionally consolidated into this file and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) only; do not create parallel Scanner phase/audit files.
-- Historical decisions and phase evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
-- Production decoder: ZXing-C++ WASM on the Main Thread.
-- Home and Stocktake use the shared Scanner Engine/session.
-- The unused Worker prototype and production diagnostics collector/QA Monitor were retired. Benchmark harness and real WASM integration tests remain.
-- No SC-01–SC-05 workstream is active.
+## Current verified context
 
-## Engineering boundaries
-
-Preserve shared camera lease ownership, session lifecycle/recovery, strict feature-owned ROI, bounded recognition, decoder allowlist, payload validation, and Home/Stocktake workflow contracts. Do not revive retired Worker or production diagnostics paths without a reproducible requirement and evidence-backed proposal.
+- Repository: `banjk124-hub/retailos-home`; default branch: `main`.
+- Latest verified main after UI foundation PR #162 merge: `3cd2d5bf7a3d1339a6c55baa1c16c74f6ebece2c` (verify live before acting).
+- PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged.
+- **Important product truth:** these phases did not deliver the new product-wide UI. The current app still uses the existing App/Auth/Home composition; new App Shell/workspace composition remains a target, not a shipped implementation. Token migration and Login responsive checks are not equivalent to the requested redesign.
+- No new product-wide UI deployment or production promotion is established by those merges. Verify current Pages/deployment state before making claims.
+- The next valid UI/UX work is to follow the Product Skill's M0 direction/technology gate, create source-backed representative prototypes and obtain owner acceptance before the larger foundation/shell migration.
+- Scanner stabilization is closed and owner-confirmed operationally. Current implementation contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); historical evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Do not reopen Scanner Engine internals for UI work.
+- PWA, overlays, Stocktake and Import retain their domain-specific contracts. Load only the one relevant to the task.
 
 ## Task start protocol
 
-Read [INDEX.md](./INDEX.md), then load only the canonical documents and source/tests relevant to the requested task. Verify live branch, PR, CI and deployment state before changing volatile status. Prefer the smallest solution that satisfies the requirement.
-## UI/UX active handoff — Phase 01
+1. Read the Product Skill and [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md).
+2. Verify current branch, main SHA, open PRs, CI and deployment against GitHub.
+3. Inspect exact source callsites and tests; recover prior owner decisions without asking the user to repeat them.
+4. Work in bounded batches, execute and verify; inspect rendered UI before asking for device acceptance.
+5. Update the canonical status and report exact evidence.
 
-- Phase 00 is closed at merged main commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`; see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md).
-- Phase 01 Design Foundation source foundation was merged in PR [#161](https://github.com/banjk124-hub/retailos-home/pull/161) at `e0902ddabc572783b1ce284fda39168e91d595e6`. Follow-up browser verification and evidence-driven Login responsive work are active in [PR #162](https://github.com/banjk124-hub/retailos-home/pull/162) on branch `feat/uiux-phase-01-foundation`. It adds Playwright Chromium smoke coverage against the production Pages build at five responsive viewports, including keyboard focus, compact-landscape fit and dock clearance.
-- Read [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md) for exact implemented scope, evidence and open gates.
-- Current source changes: semantic tokens in `src/styles/theme.css`; Brand typography token consumption; body, Glass, Login, native/adaptive presentation and Stocktake Import text consume canonical roles; Brand/status consumers use semantic colors; the small Login department label uses the AA-checked muted role; mobile legacy motion aliases route to shared Motion tokens; design-foundation contract tests run in preflight.
-- Preserve the existing Glass system, App/Auth/Home composition and all protected business/platform contracts. Do not delete CSS or change font dependencies until the documented evidence/acceptance gate is met.
-- Be Vietnam Pro is the leading Vietnamese font candidate for comparison, not a selected or shipped dependency.
-- Exact latest-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`, including Home/Login/mobile semantic brand-color guards, Login typography-token checks, reduced-motion/power-conserve browser coverage and the five responsive Login viewports. The 844×390 screenshot was reviewed after the compact-landscape correction. Do not claim Phase 01 complete or device-accepted until all browser coverage, real-surface accessibility/contrast and owner/device acceptance are recorded.
+No merge without explicit owner approval. No deployment without explicit authorization.
