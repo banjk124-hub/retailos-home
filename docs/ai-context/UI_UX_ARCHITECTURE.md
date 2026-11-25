@@ -24,33 +24,33 @@ The interface must make operational work:
 
 The product is not optimized for decorative novelty. Business clarity, operational safety and responsiveness outrank visual effects.
 
-## 2. Design references and interpretation
+## 2. Design reference authority and interpretation
 
-Reference set supplied by the project owner:
-- Pinterest visual reference: https://pin.it/2KpGqGCos
-- Video reference: `ScreenRecording_11-24-2026 20-25-21_1.mp4`
+The project owner assigned separate responsibilities to the two supplied references. The governing contract is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md).
 
-### 2.1 Visual language to carry forward
+- **Image reference = structural/visual composition.** Use its modular composition, deliberate hierarchy, varied proportions, negative space, dimensional surfaces and intentional light/dark treatments as quality references.
+- **Video reference = temporal/interaction behavior.** Use its observed progressive content readiness, stable framing, interaction feedback and state transitions as motion/experience references. Do not infer exact durations, easing, gesture physics or hidden logic.
+- **RetailOS = product authority.** RetailOS defines its own brand, Vietnamese operational language, business semantics, data truth, component ownership and platform architecture.
 
-- Modular composition: distinct work areas with clear hierarchy.
-- Asymmetric composition where information priority justifies different space allocation.
-- Strong card hierarchy: primary task, summary, secondary information and supporting action are not visually equal.
-- Layered surfaces and restrained material depth.
-- Compact navigation that remains discoverable and directly operable.
-- Selective real photography as an editorial/brand layer, not a replacement for operational information.
-- A consistent visual identity across desktop and mobile.
+These sources must not be blended into one copied palette or product design. Do not import the image's amber/yellow palette or the video's green palette as RetailOS brand tokens. Do not copy the source products' health, finance, shopping-assistant or recommendation semantics.
 
-Do not copy the reference palette, product-specific cards, exact layout or branded assets. RetailOS keeps its own red/white brand identity and Vietnamese operational language.
+### 2.1 Structural principles
 
-### 2.2 Motion language to carry forward
+- Modular composition with intentional information hierarchy.
+- Asymmetric allocation only where it communicates task priority.
+- Strong card/surface role differentiation; avoid identical repeated dashboard tiles.
+- Layered surfaces and controlled material depth.
+- Compact, discoverable navigation appropriate to each viewport.
+- Selective authentic retail imagery, never a substitute for operational information.
+- Consistent RetailOS identity across desktop, tablet and mobile.
 
-- Spatial UI: surfaces have a clear relationship in depth and hierarchy.
-- Soft Motion: transitions communicate cause and destination, not decoration.
-- Progressive reveal: content becomes available in understandable stages.
-- Layered interface: overlays and workspaces feel connected to their trigger/context.
-- Floating navigation only where it remains reachable and does not cover work.
+### 2.2 Motion principles
 
-The video is a short screen recording, not a complete interaction specification. Only observed behavior and agreed design intent may be treated as requirements; do not invent hidden gestures or unobserved transitions.
+- Progressive reveal only when driven by real content readiness.
+- Stable geometry while content changes.
+- Motion communicates cause, focus, destination or state; it never creates business state.
+- First visual acknowledgement is immediate; motion never blocks input or task completion.
+- Exact timings and choreography are specified in M0-B after inspecting feature state contracts.
 
 ### 2.3 Motion/performance constraint
 
@@ -62,8 +62,10 @@ Rules:
 - Avoid animating every table row or every card on screen.
 - Do not use backdrop blur as a default material for every surface.
 - Respect `prefers-reduced-motion` and the app's power-conserve behavior.
-- First visual acknowledgement must be immediate; the animation may continue after feedback begins.
-- Scanner frame/decode cadence and camera lifecycle must never wait for decorative UI animation.
+- Motion is presentation-only; it must not trigger duplicate requests, writes, subscriptions or platform lifecycle actions.
+- Async results must be tied to current request/session identity; stale responses cannot replace newer state.
+- Interrupted transitions converge to the current source state.
+- Scanner frame/decode cadence and camera lifecycle never wait for decorative UI animation.
 
 ## 3. Architecture principles
 
