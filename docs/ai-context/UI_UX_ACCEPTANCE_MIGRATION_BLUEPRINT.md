@@ -351,3 +351,16 @@ The following are product/architecture choices and remain proposals until approv
 - [ ] First implementation slice is authorized.
 
 **Completion statement:** 00H documentation is complete when this blueprint is linked from the canonical docs and the PR. It does not mean product decisions are accepted, source migration is authorized, tests have run, or devices have passed. The next valid action after owner approval is M0 visual prototype, not a broad UI code rewrite.
+## 2.4 Open design-system evolution is an acceptance principle
+
+Acceptance must not penalize a feature for introducing a new component or layout when the operational task requires it. Nor should acceptance reward reuse when reuse weakens task fit.
+
+Reviewers must verify:
+- The feature first considered existing shared solutions and documented why they fit or do not fit.
+- Any new feature-owned component has a clear semantic responsibility and does not duplicate an existing solution without reason.
+- A proposed shared contribution has demonstrated cross-feature value; shared promotion is not required for a feature to be accepted.
+- Shared additions remain focused, composable and documented; no universal mega-component or indefinite duplicate system is introduced.
+- Brand identity, semantic state, accessibility, responsive quality, motion safety and performance remain coherent across the product.
+- Feature-specific exceptions are justified by workflow needs and remain owned within the feature.
+
+Consistency is a quality contract, not visual uniformity. Different workspaces may use different compositions and interaction models when that is the best way to perform their tasks.
