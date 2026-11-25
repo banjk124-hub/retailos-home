@@ -44,7 +44,7 @@ The first cross-surface concept and its explicit limitations are recorded in [UI
 2. Module Library has 5 groups and 9 workflow IDs. Seven entries are currently marked integrating; only Stocktake and Stocktake Import have dedicated workflows in the audited feature tree.
 3. Login, Home, Scanner, Stocktake and Stocktake Import already have working feature-owned UI and state.
 4. Shared Brand, Glass, Motion, Icon and LiquidDock systems already exist.
-5. The current CSS tree has 25 CSS files, including multiple Home stylesheet generations and a global import stack.
+5. The audited main baseline had 25 CSS files; the Phase 00 audit branch has 24 after retiring the unimported `home-phase2.css`. Five active Home stylesheets still layer over the global import stack.
 6. There is no installed UI framework, animation library, router, chart library, data-grid library or form library.
 7. Browser-native Dialog, Popover and Document View Transition are not currently the established implementation.
 8. There are existing source-level tests for overlays, input immediacy, Home performance, bundle boundaries, Scanner, Stocktake Import and PWA behavior.
