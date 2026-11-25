@@ -127,7 +127,7 @@
   background: rgba(217,39,54,.07);
 }
 .login-hero__department>span:last-child { display: grid; min-width: 0; gap: 2px; }
-.login-hero__department small { color: var(--text-muted); font-size: 9px; font-weight: 750; letter-spacing: .1em; }
+.login-hero__department small { color: var(--color-text-muted, var(--text-muted)); font-size: 9px; font-weight: 750; letter-spacing: .1em; }
 .login-hero__department strong { overflow: hidden; color: var(--color-text-primary, var(--text-primary)); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .login-hero__foot { color: var(--color-text-secondary, var(--text-secondary)); font-size: 9px; font-weight: 750; letter-spacing: .11em; }
 .login-hero__foot>span:first-child { display: inline-flex; align-items: center; gap: 9px; }

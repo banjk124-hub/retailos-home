@@ -93,6 +93,7 @@ assert.ok(theme.includes("font-size: var(--font-size-body, var(--font-size-md));
 assert.ok(theme.includes("line-height: var(--line-height-normal, var(--line-height-body));"));
 assert.ok(loginStyles.includes("var(--color-text-primary, var(--text-primary))"));
 assert.ok(loginStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
+assert.ok(loginStyles.includes("var(--color-text-muted, var(--text-muted))"));
 assert.ok(nativeStyles.includes("var(--color-border-subtle, var(--border-soft))"));
 assert.ok(nativeStyles.includes("var(--color-surface-raised, var(--surface-raised))"));
 assert.ok(nativeStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
