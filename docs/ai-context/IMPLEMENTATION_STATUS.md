@@ -2,7 +2,7 @@
 
 **Repository:** `banjk124-hub/retailos-home`
 **Default branch:** `main`
-**Verified baseline:** `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`
+**Verified baseline:** `e0902ddabc572783b1ce284fda39168e91d595e6` (Phase 01 foundation PR #161 merged)
 **Phase 00 audit:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md)
 
 ## UI/UX redesign
@@ -13,7 +13,7 @@
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
-- Exact source-head GitHub Actions run #1519 previously passed on `accc89cf23f9c668bfd7286718c5d4b17a1c139c`. The current batch adds Playwright Chromium smoke tests against the built GitHub Pages artifact at five desktop/tablet/mobile/short-landscape viewports, with screenshot artifacts in CI. The new exact-head CI result is pending; browser smoke coverage is not full visual acceptance and does not replace iOS/Android physical-device QA. No merge or deployment is claimed.
+- Foundation source-head GitHub Actions run #1519 passed before the browser suite was added. The first browser run #1529 passed preflight, TypeScript/production build, Pages build and bundle comparison, but failed all five viewports on an assertion that sampled the Glass focus opacity mid-transition. The test now waits for the transition to settle before asserting. A new exact-head CI run is pending. Browser smoke coverage is not full visual acceptance and does not replace iOS/Android physical-device QA. PR #162 remains open; no merge or deployment is claimed.
 - PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner
