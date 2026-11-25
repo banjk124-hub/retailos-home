@@ -88,7 +88,17 @@ The source import graph was checked at the audited baseline. Import ownership an
 
 **Limits of this pass:** GitHub code search and static selector comparison do not compute browser styles, enumerate every dynamic class string, evaluate CSS cascade layers/specificity under all media states, or inspect portals and runtime-generated DOM. No claim of full computed-style proof or visual regression coverage is made. Broad removal of `theme.css`, `responsive.css` or `mobile-tuning.css` remains blocked.
 
-### 3.6 Validation infrastructure
+### 3.6 Overlay/focus ownership findings
+
+- `UI_OVERLAY_ARCHITECTURE.md` confirms the shared layer owns only reference-counted body-scroll locking; content, close behavior and feature state remain feature-owned.
+- Home has separate Escape/focus effects for Calendar, Notice Detail and Module Library; focus is moved on open and returned to the trigger/fallback on close for these surfaces.
+- SettingsHub and ScannerSettingsPanel move focus to their close/back controls and own Escape/backdrop handling locally.
+- The current implementation uses custom `div` backdrops with `role="dialog"`/`aria-modal="true"` rather than a shared focus-trap manager. The overlay specification explicitly states focus containment is not proven.
+- Existing automated tests prove body-lock reference counting and selected viewport/layout contracts, not Tab/Shift+Tab containment, topmost Escape behavior across arbitrary nested surfaces or screen-reader focus order.
+
+**Recommendation:** keep `bodyScrollLock.js` as the only shared scroll-lock coordinator. Prefer native `<dialog>` semantics for standard modal dialogs where compatibility and lifecycle tests pass. Keep Scanner, Stocktake and Import as feature-owned specialized surfaces. Do not create a generic overlay stack/focus manager by default; first prove a nested case that cannot be safely handled by native dialog semantics plus the feature owner's explicit close/back contract. Browser and physical-device focus/scroll acceptance remains mandatory.
+
+### 3.7 Validation infrastructure
 
 - `scripts/preflight.mjs` runs broad scanner, Home, overlay, interaction, Stocktake Import, production build, GitHub Pages build, bundle-boundary and PWA checks.
 - Existing focused tests cover body-scroll-lock and overlay viewport/layout contracts. The inspected preflight does not establish a dedicated browser-history/navigation regression suite or a general focus-trap/overlay-stack suite.
@@ -116,7 +126,7 @@ The source import graph was checked at the audited baseline. Import ownership an
 | P00-02 | Desktop navigation form and workspace composition | Prototype/owner decision required | Before Shell implementation |
 | P00-03 | Typography and Vietnamese glyph/weight/load/offline validation | No final font decision | Before foundation implementation |
 | P00-04 | Final brand palette, semantic status contrast, material and photography direction | Principles accepted; exact values/asset direction remain open | Before foundation implementation |
-| P00-05 | Shared focus manager/overlay stack | Not implemented; shared body lock exists. 00E proposes a single topmost-back dispatch contract but does not justify a full focus/overlay framework yet. | Prove nested/focus use cases before adding |
+| P00-05 | Shared focus manager/overlay stack | Shared reference-counted body lock is implemented. Focus entry/return and Escape handling are feature-local; no focus containment or shared stack exists. Recommend native `dialog` for standard modal surfaces and feature-owned custom surfaces for scanner/data workspaces; do not add a generic overlay manager unless real nested-stack cases cannot be handled by these contracts. | Validate native dialog compatibility and nested feature cases before Shell implementation |
 | P00-06 | Full selector-level CSS usage/computed-style audit | Not completed | Mandatory before broad CSS deletion/consolidation |
 | P00-07 | Complete shared component/export consumer graph, including dynamic class/portal use | Partial inventory only | Mandatory before retiring shared systems |
 | P00-08 | Exact desktop/tablet/iOS/Android/low-end reference device matrix | Not confirmed | Before device acceptance |
