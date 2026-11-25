@@ -14,7 +14,8 @@ This file is the navigation layer for repository documentation. Read one canonic
 
 | Topic | Canonical document |
 |---|---|
-| Phase 00 repository audit, verified baseline, closed architecture principles and unresolved decision gates | [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md) |\n| Phase 01 Design Foundation implementation, source evidence, workstream status and acceptance gates | [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md) |
+| Phase 00 repository audit, verified baseline, closed architecture principles and unresolved decision gates | [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md) |
+| Phase 01 Design Foundation implementation, source evidence, workstream status and acceptance gates | [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md) |
 | Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |
 | Design tokens, typography, brand, color semantics, materials, component foundations, responsive, motion and evolving contribution lifecycle | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
 | Existing component inventory, ownership, keep/refactor/replace/create decisions, migration risks and feature-to-shared contribution governance | [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md) |
@@ -61,7 +62,8 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `AI_HANDOFF.md`: one current handoff at top; old handoffs labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence, not repeated session narratives.
-- `UI_UX_ARCHITECTURE.md`: product-wide design and component contract.\n- `UI_UX_PHASE_01_FOUNDATION.md`: current Phase 01 source implementation, evidence and open acceptance gates.
+- `UI_UX_ARCHITECTURE.md`: product-wide design and component contract.
+- `UI_UX_PHASE_01_FOUNDATION.md`: current Phase 01 source implementation, evidence and open acceptance gates.
 - `UI_UX_DESIGN_SYSTEM_SPEC.md`: concrete design-system specification, source audit and open component/token contribution lifecycle.
 - `UI_UX_COMPONENT_AUDIT.md`: source-level component inventory, ownership, coupling, migration decisions and the lifecycle for feature-owned/shared contributions.
 - `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
