@@ -49,7 +49,7 @@ for (const viewport of viewports) {
       rippleOpacity: getComputedStyle(element.querySelector('.login-form__focus-ripple')!).opacity,
     }));
     expect(glassFocus.boxShadow).not.toBe('none');
-    expect(glassFocus.rippleOpacity).toBe('1');
+    await expect.poll(async () => page.locator('.login-form__focus-ripple').evaluate((element) => getComputedStyle(element).opacity)).toBe('1');
 
     await employeeCode.fill('0');
     await page.keyboard.press('Tab');
