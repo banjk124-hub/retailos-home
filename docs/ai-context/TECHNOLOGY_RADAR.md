@@ -62,8 +62,16 @@ No new runtime dependency, framework migration, backend/service, architecture ch
 | Typography | Inter/system fallback; final Vietnamese font remains open | DEFER selection until glyph, readability, license, payload and offline validation |
 | Imagery | Retail photography not yet shipped in source assets at audited baseline | EVALUATE licensed local/versioned asset pipeline; no vendor selected |
 | Routing/App Shell | No route-based App Shell at audited baseline | DEFER technology selection until M0-approved product/IA and source constraints exist |
+| Browser automation | `@playwright/test` is already a devDependency; `test:browser`, `playwright.config.ts`, Login responsive tests and CI execution already exist | KEEP existing baseline; extend coverage by real workflow need, not by adding a second browser-test stack |
 
 This table records observed baseline and current disposition only. It does not grant permission for dependency changes or imply a final product decision.
+
+### Playwright baseline evidence (main at 4e654ffb519d8b124f3edbbbda4f65fe550052ef)
+- `package.json`: `@playwright/test` is a development dependency and `test:browser` runs `playwright test`.
+- `playwright.config.ts`: Chromium, Pages-base preview server, trace retained on failure and screenshot on failure.
+- `tests/browser/login-responsive.spec.ts`: Login smoke coverage at 1440×900, 900×1024, 390×844, 360×740 and 844×390; includes layout overflow, keyboard focus, reduced-motion and power-conserve assertions, plus screenshots.
+- `.github/workflows/ci.yml`: CI installs Chromium, runs the browser smoke suite against the Pages build and uploads screenshots/traces as artifacts.
+- This is an existing Login-focused baseline, not yet product-wide UI verification. Extend it with focused user journeys and visual evidence for the screens actually changed. Preserve the current CI pipeline unless a measured gap justifies a scoped change.
 
 ## 6. Rejected and deferred candidates
 
