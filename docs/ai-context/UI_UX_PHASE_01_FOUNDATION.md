@@ -110,7 +110,7 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 
 - The Login stylesheet's exact `#d92736` primary-brand consumers now use `var(--color-brand-primary)` for panel icon/eyebrow, focused input icon, hero eyebrow/title accent and remaining Login accent details.
 - This is value-preserving: the canonical token resolves to the same existing `#d92736`. The design-foundation contract rejects reintroducing the raw value into Login CSS.
-- No Login state, form, focus, motion or Glass behavior changed. Exact-head CI is pending.
+- No Login state, form, focus, motion or Glass behavior changed. Exact latest-head CI #1560 passed on `baafaee7d31e4172bff6dbb1900eeb4dbdb119ff`, including the semantic-color contract and browser suite.
 
 ### 3.16 Home brand-color consumer migration
 
