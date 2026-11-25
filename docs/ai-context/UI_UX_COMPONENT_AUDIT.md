@@ -1,9 +1,9 @@
 # UI/UX Component Inventory and Ownership Audit — Batch 00F
 
 **Status:** Source-level component inventory and migration decisions complete; no component or application code changed.
-**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Audit date:** 2026-11-25
-**Working documentation branch:** `docs/uiux-architecture-00b-00c`
+**Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Original audit date:** 2026-11-25
+**Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. The original detailed inventory is not a claim that the complete runtime consumer graph or selector-level CSS audit is closed.
 **Purpose:** Identify the current UI component system, ownership, consumers, duplication, coupling, migration disposition and the shared component contracts required by the 00E workspace architecture.
 
 ## 1. Audit method and evidence boundary
