@@ -1,7 +1,7 @@
 # UI/UX Technology Audit — Batch 00B
 
 **Status:** Source audit and official-browser research completed; recommendations are proposals, not accepted implementation changes.
-**Audit baseline:** \`main\` at \`2003ea24966755d0ad4e0298b34422b053267e77\`
+**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Audit date:** 2026-11-25
 **Scope:** Runtime dependencies, browser-native capabilities, existing UI foundations, CSS ownership, browser compatibility and future UI/UX implementation constraints.
 **Source rule:** AS-IS findings below are based on the audited source tree and package lock. TO-BE recommendations must not be read as implemented behavior.
@@ -23,9 +23,9 @@ The repository already owns reusable Brand, Glass, Motion, Icon and LiquidDock s
 At the audited main commit:
 
 - 245 tracked blob files.
-- 152 files under \`src/\`.
-- 25 CSS files under \`src/\`.
-- 41 \`scripts/test-*.mjs\` files.
+- 152 files under `src/`.
+- 25 CSS files under `src/`.
+- 41 `scripts/test-*.mjs` files.
 - 9 registered RetailModule IDs and 5 module-library groups.
 - 6 direct runtime dependencies and 6 direct development dependencies in package.json.
 
@@ -53,32 +53,32 @@ No new package is required merely to create buttons, forms, menus, dialogs, resp
 
 | Existing source | Current role | Audit direction |
 |---|---|---|
-| \`src/shared/brand/\` | Brand mark, wordmark and brand motion | Keep as brand source of truth |
-| \`src/shared/components/glass/\` | GlassSurface and material tokens | Keep; use selectively, not on every surface |
-| \`src/shared/motion/\` | Motion provider, boundary, page, card, button, presence, sheet, tokens and presets | Keep; consolidate policy and remove duplicate motion definitions only after usage audit |
-| \`src/shared/icons/\` | Icon registry, presets and MotionIcon | Keep; do not import arbitrary icons inconsistently across features |
-| \`src/shared/navigation/\` | LiquidDock and dock interaction | Keep as current navigation implementation; redesign its role and layout rather than replacing by default |
-| \`src/shared/services/bodyScrollLock.js\` and hook | Cross-feature modal scroll-lock coordination | Protected shared behavior |
-| \`src/shared/pwa/\` | Update Center, update safety and release runtime | Protected platform behavior |
-| \`src/shared/downloadFile.ts\` | Shared Blob/object-URL download lifecycle | Reuse |
-| \`src/shared/hooks/useAdaptiveAppearance.ts\` | Appearance and user preference adaptation | Inspect before extending |
-| \`src/shared/hooks/useBodyScrollLock.ts\` | React binding for shared lock manager | Reuse |
+| `src/shared/brand/` | Brand mark, wordmark and brand motion | Keep as brand source of truth |
+| `src/shared/components/glass/` | GlassSurface and material tokens | Keep; use selectively, not on every surface |
+| `src/shared/motion/` | Motion provider, boundary, page, card, button, presence, sheet, tokens and presets | Keep; consolidate policy and remove duplicate motion definitions only after usage audit |
+| `src/shared/icons/` | Icon registry, presets and MotionIcon | Keep; do not import arbitrary icons inconsistently across features |
+| `src/shared/navigation/` | LiquidDock and dock interaction | Keep as current navigation implementation; redesign its role and layout rather than replacing by default |
+| `src/shared/services/bodyScrollLock.js` and hook | Cross-feature modal scroll-lock coordination | Protected shared behavior |
+| `src/shared/pwa/` | Update Center, update safety and release runtime | Protected platform behavior |
+| `src/shared/downloadFile.ts` | Shared Blob/object-URL download lifecycle | Reuse |
+| `src/shared/hooks/useAdaptiveAppearance.ts` | Appearance and user preference adaptation | Inspect before extending |
+| `src/shared/hooks/useBodyScrollLock.ts` | React binding for shared lock manager | Reuse |
 
 ### 2.4 Current style entry and CSS ownership
 
-\`src/main.tsx\` imports global styles in this order:
+`src/main.tsx` imports global styles in this order:
 
-1. \`base.css\`
-2. \`responsive.css\`
-3. \`theme.css\`
-4. \`interactions.css\`
-5. \`mobile-tuning.css\`
-6. \`performance.css\`
-7. \`adaptive-appearance.css\`
-8. \`native-experience.css\`
+1. `base.css`
+2. `responsive.css`
+3. `theme.css`
+4. `interactions.css`
+5. `mobile-tuning.css`
+6. `performance.css`
+7. `adaptive-appearance.css`
+8. `native-experience.css`
 9. Brand, Motion, Glass token/material and LiquidDock styles
 
-\`HomeScreen.tsx\` additionally imports five Home stylesheets: \`home.css\`, \`home-ux.css\`, \`home-engine.css\`, \`home-redesign.css\` and \`home-architecture.css\`.
+`HomeScreen.tsx` additionally imports five Home stylesheets: `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css` and `home-architecture.css`.
 
 The repository therefore has 25 CSS files in total, including feature-owned styles. The current Home cascade has multiple generations of layout and visual rules. This is a confirmed maintainability risk; it is not proof that every selector is redundant or that all files should be deleted.
 
@@ -94,12 +94,12 @@ The following table separates current source usage from future capability recomm
 | Media Queries | responsive and performance styles | Viewport, input and preference adaptation | Keep for global breakpoints/preferences |
 | Container Queries | No confirmed current use in the audited UI styles | Component adapts to available container width | Adopt progressively for reusable components |
 | HTML Form / Input / Select | Login, Stocktake and Import | Native form semantics and controls | Prefer native controls unless workflow requires custom behavior |
-| Constraint Validation API | Login uses native form semantics but \`noValidate\`; explicit validation is used in features | Browser validation | Use selectively; do not replace business validation |
-| HTML \`<dialog>\` | No confirmed \`<dialog>\` usage; current overlays use custom div/section surfaces and ARIA roles | Native modal/non-modal dialog, top layer and browser semantics | Evaluate for simple modal patterns; retain custom feature shells where their layout/lifecycle requires it |
+| Constraint Validation API | Login uses native form semantics but `noValidate`; explicit validation is used in features | Browser validation | Use selectively; do not replace business validation |
+| HTML `<dialog>` | No confirmed `<dialog>` usage; current overlays use custom div/section surfaces and ARIA roles | Native modal/non-modal dialog, top layer and browser semantics | Evaluate for simple modal patterns; retain custom feature shells where their layout/lifecycle requires it |
 | Popover API | No confirmed use | Non-modal anchored menus and popovers | Progressive enhancement only; fallback required |
-| Document View Transition API | No confirmed \`document.startViewTransition\` usage | Same-document transition between React UI states | Optional enhancement after shell/navigation design; CSS/React fallback is mandatory |
+| Document View Transition API | No confirmed `document.startViewTransition` usage | Same-document transition between React UI states | Optional enhancement after shell/navigation design; CSS/React fallback is mandatory |
 | CSS Transitions / Animations | Extensively used | Lightweight interaction and transition effects | Keep; standardize tokens and restrict expensive properties |
-| \`prefers-reduced-motion\` | Existing motion hook and CSS media queries | User accessibility preference | Mandatory system-wide policy |
+| `prefers-reduced-motion` | Existing motion hook and CSS media queries | User accessibility preference | Mandatory system-wide policy |
 | ResizeObserver | Scanner preview geometry hook | Observe element geometry changes | Keep in scanner-specific ownership |
 | VisualViewport | Scanner viewport and geometry hooks | Keyboard/browser-chrome viewport geometry | Keep in scanner/platform ownership; do not duplicate globally |
 | matchMedia | Adaptive appearance, motion, dock and viewport behavior | Media and preference observation | Reuse existing hooks where applicable |
