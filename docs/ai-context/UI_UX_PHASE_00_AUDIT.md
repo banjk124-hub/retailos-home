@@ -61,7 +61,9 @@ A focused GitHub code-search pass confirmed these direct consumers on the audite
 | `LiquidDock` | `HomeScreen` | Current section navigation is Home-owned, not a global route shell. |
 | `useBodyScrollLock` | `HomeScreen`, `SettingsHub`, `ScannerSettingsPanel`, `StocktakeModule`, `StocktakeImportModule` | Shared lock is cross-feature infrastructure; do not fork it during overlay redesign. |
 
-The public Motion barrel also exposed `MOTION_TOKENS`, `resolveMotionPhase` and `attachMotionPhaseVariables`, but repository-wide source search found no consumer beyond their own declarations/barrel exports. These unused APIs were removed on the Phase 00 branch; the active `MotionPhase`/`MotionState` types, presets, config, wrappers and `getMotionOrigin` remain.\n\nThis is a targeted direct-import map, not a complete transitive runtime consumer graph. It does not cover every export, dynamic class, portal, CSS selector, runtime branch or indirect composition. The 00F full consumer/cascade audit remains open.
+The public Motion barrel also exposed `MOTION_TOKENS`, `resolveMotionPhase` and `attachMotionPhaseVariables`, but repository-wide source search found no consumer beyond their own declarations/barrel exports. These unused APIs were removed on the Phase 00 branch; the active `MotionPhase`/`MotionState` types, presets, config, wrappers and `getMotionOrigin` remain.
+
+This is a targeted direct-import map, not a complete transitive runtime consumer graph. It does not cover every export, dynamic class, portal, CSS selector, runtime branch or indirect composition. The 00F full consumer/cascade audit remains open.
 
 ### 3.5 CSS import graph and selector-level findings
 
@@ -78,7 +80,7 @@ The source import graph was checked at the audited baseline. Import ownership an
 | `StocktakeImportModule.tsx` | `stocktake-import.css` | Feature-owned. |
 | `PwaUpdatePrompt.tsx` | `pwa-update-prompt.css` | PWA release presentation; lifecycle contract protected. |
 
-**Confirmed orphan:** `src/styles/home-phase2.css` exists in the repository but is not imported by `main.tsx`, `HomeScreen.tsx` or any other source file found by repository code search. Its only search hit was documentation. It is therefore not part of the current Vite CSS import graph and cannot style the running application. It is safe to retire as an unreferenced stylesheet; no runtime behavior should change when it is removed.
+**Confirmed orphan retired:** `src/styles/home-phase2.css` existed at the parent `main` baseline but had no import/reference in application source; its only code-search hit was documentation. It was removed on this branch. The branch tree now has 24 CSS files, all accounted for in the import graph; no unreferenced CSS file remains.
 
 **Confirmed cascade hotspot:** a static selector comparison across the five active Home stylesheets found 39 exact selector strings repeated across more than one file. Examples include `.app-shell`, `.topbar`, `.content-wrap`, `.section-heading`, `.search-field`, `.home-spotlight`, `.spotlight-main-content`, `.spotlight-notifications`, `.library-engine` and `.topbar-dock`. These overlaps are not automatically defects: later declarations may be intentional responsive/state overrides. They do mean ownership and source order must be documented before consolidation.
 
@@ -149,7 +151,10 @@ Each slice must name exact files/callsites, owners, protected contracts, tests, 
 - [x] Stale PR/baseline/Figma status conflicts identified.
 - [x] Update PROJECT_CONTEXT, IMPLEMENTATION_STATUS and ROADMAP to the verified current state.
 - [x] Reconcile stale PR #156 / Figma / old-baseline statements across the active plan and 00H blueprint; historical audit baselines are explicitly labelled as original evidence.
-- [ ] Complete the shared export/runtime consumer graph, dynamic-class/portal trace and browser computed-style audit before broad CSS consolidation.\n- [x] Trace stylesheet import ownership/order and identify the unimported `home-phase2.css` orphan plus repeated Home selectors; broad legacy CSS retirement remains blocked.
+- [x] Map direct shared component imports/exports and account for all CSS files in the static import graph.
+- [x] Retire the unimported `home-phase2.css` orphan and three unconsumed Motion public APIs.
+- [x] Identify repeated Home selectors and legacy CSS-only selector candidates.
+- [ ] Complete selector-to-element matching and browser computed-style/cascade validation across responsive and state combinations; broad legacy CSS retirement remains blocked.
 - [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
 - [ ] Confirm device matrix and visual acceptance method.
 
