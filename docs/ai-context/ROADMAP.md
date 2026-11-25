@@ -36,3 +36,17 @@ The project owner's operational confirmation is not a quantified optical benchma
 - Verify branch, PR, CI and deployment facts against GitHub before updating status.
 - Do not treat green CI as physical-device, optical or business-process acceptance.
 - Prefer deleting duplicate plans or replacing them with links over maintaining parallel status tables.
+
+## UI/UX architecture and full experience redesign
+
+**Status:** Documentation architecture proposed on branch `docs/uiux-architecture-00b-00c`; not yet merged or implemented.
+
+- Batch 00B: dependency/browser-native capability audit and compatibility decisions are documented in [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
+- Batch 00C: current screen/workflow/state trace and target screen inventory are documented in [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md).
+- Product-wide design system and future-module extension contract: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md).
+- Phased implementation, documentation goals, acceptance and rollback: [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
+
+**Next gates:** 00D design-system specification; 00E information architecture/navigation decision; 00F component ownership audit; 00G screen blueprints; 00H acceptance and migration blueprint. Do not begin a broad visual refactor or add dependencies until these gates define the implementation scope and regression plan.
+
+**Protected boundaries:** authentication/session, stable module IDs, snapshot/cache contracts, Scanner Engine/camera lifecycle, Stocktake and Stocktake Import persistence/output, shared overlay scroll-lock, PWA release lifecycle and GitHub Pages build/deployment.
+
