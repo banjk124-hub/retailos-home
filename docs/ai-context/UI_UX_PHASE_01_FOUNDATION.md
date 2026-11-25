@@ -48,7 +48,7 @@ Contrast calculations for the new primary/secondary/muted text and brand/status 
 - `--font-family-sans` now resolves through `--font-family-ui`.
 - Body/heading line-height aliases resolve through shared semantic line-height tokens.
 - Brand wordmark typography consumes the shared family, weight and size tokens.
-- No font file is bundled. Inter remains a preferred installed-font candidate with platform fallbacks; Vietnamese glyph coverage and rendering on target iOS/Android devices remain an explicit acceptance gate. Do not describe a custom Vietnamese font as selected or shipped.
+- No font file is bundled. **Be Vietnam Pro is the leading candidate for evaluation** because its maintainers specifically refined Vietnamese diacritics; Fontsource records 419-language coverage, nine weights and SIL OFL-1.1 licensing. See [Fontsource family details](https://fontsource.org/fonts/be-vietnam-pro/about), [self-hosting/package guidance](https://fontsource.org/fonts/be-vietnam-pro/use) and [upstream Google Fonts metadata](https://github.com/google/fonts/tree/main/ofl/bevietnampro). Recommended evaluation set: regular 400, medium 500, semibold 600 and bold 700, self-hosted WOFF2 with local fallback and no remote runtime dependency. This is a recommendation, not a shipped/selected font; compare against the current Inter/system stack on real Login, Home, Stocktake and Import screens before adoption.
 
 ### 3.3 Motion ownership
 
@@ -92,7 +92,7 @@ The direct-use search is not a proof of all runtime composition. `MotionButton` 
 ## 5. Explicit non-decisions
 
 - No dark theme is introduced; light appearance remains the verified baseline.
-- No font package or remote font loading is introduced until the Vietnamese glyph, licensing, bundle and offline decision is evidence-based.
+- No font package or remote font loading is introduced in this batch. Be Vietnam Pro is the recommended evaluation candidate; package adoption remains gated by visual comparison, WOFF2 payload measurement, license-file inclusion and offline/device validation.
 - No Glass variant is removed based on naming or assumed redundancy.
 - No CSS file or selector block is deleted based only on file size, age, naming or static text search.
 - No feature workspace is forced into generic cards, common density or a universal component.
