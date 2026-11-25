@@ -100,13 +100,13 @@
 }
 
 .ro-button--secondary {
-  color: var(--text-primary);
-  border-color: var(--border-soft);
-  background: var(--surface-raised);
+  color: var(--color-text-primary, var(--text-primary));
+  border-color: var(--color-border-subtle, var(--border-soft));
+  background: var(--color-surface-raised, var(--surface-raised));
 }
 
 .ro-button--ghost {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary, var(--text-secondary));
   background: transparent;
 }
 
@@ -180,7 +180,7 @@
 }
 
 .app-shell .home-search-field > .ro-icon-motion {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary, var(--text-secondary));
 }
 
 .app-shell .app-library-modal,
@@ -231,7 +231,7 @@
   gap: 8px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-soft);
+  border-top: 1px solid var(--color-border-subtle, var(--border-soft));
 }
 
 .push-notification-setup__status {
@@ -239,7 +239,7 @@
   align-items: flex-start;
   gap: 7px;
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary, var(--text-secondary));
   font-size: 11px;
   line-height: 1.5;
 }
@@ -250,11 +250,11 @@
 }
 
 .push-notification-setup__status.is-ready {
-  color: var(--color-success);
+  color: var(--color-status-success, var(--color-success));
 }
 
 .push-notification-setup__status.is-error {
-  color: var(--color-error);
+  color: var(--color-status-danger, var(--color-error));
 }
 
 .push-notification-setup__action {

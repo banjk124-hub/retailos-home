@@ -39,15 +39,14 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** Phase 00 audit is recorded in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). PR #159 is merged to `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`; PR-head CI #1465 passed; post-merge main CI #1466 and GitHub Pages deployment #159 also passed on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. Physical-device acceptance remains separate and is not inferred from CI/deployment.
+**Status:** Phase 00 is closed in merged PR #160 at `main` commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. Phase 01 Design Foundation is active in PR #161; it is not merged and no deployment is authorized.
 
-- Product-wide redesign is source-first in the existing React/Vite repository. Figma is optional reference material, not a delivery dependency or acceptance gate.
-- Reference roles remain strict: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
-- Design-system architecture is open/evolving: Core Foundation, Shared Design System and Feature Experience. Feature-specific layouts/components are valid when task semantics require them.
-- Current source still uses the existing App/Auth/Home composition; the target Shell, route/history adapter and formal foundation are not yet implemented.
-- Phase 00 architecture principles are closed, but repository reconciliation, shared consumer graph, selector-level CSS audit and owner decision gates remain open. No broad source migration is authorized by documentation completion alone.
-- PR #157 remains a draft on an old base with a legacy Login CSS-only change; it is not a required redesign milestone and must not be merged by default.
-
-**Current Phase 00 work:** Draft PR #160 records the source consumer/import graph, retires one unimported stylesheet and three unused Motion APIs, clarifies route/history and overlay policy, and defines repeatable responsive viewport baselines. Its head `6305f471169f6d16997a355d8adc5931cb6f2b54` passed RetailOS CI #1493. It is not merged.
-
-**Next gate:** browser computed-style/cascade validation, then owner acceptance for route/history, desktop navigation, visual foundation, overlay/focus strategy, physical reference devices and the first bounded source slice. Scanner Engine remains closed; only an optional, isolated presentation slice may be considered later.
+- Active PR: [#161 — Phase 01 Design Foundation](https://github.com/banjk124-hub/retailos-home/pull/161), branch `feat/uiux-phase-01-foundation`.
+- Source batches establish semantic tokens, align mobile motion aliases with shared Motion, connect Brand typography, migrate body, Glass, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical semantic roles, correct the small Login department label's contrast, extend contract tests and record source-level motion/CSS ownership findings.
+- Existing Glass materials and protected feature/platform contracts remain intact; no broad CSS deletion, new font package, or second design system is introduced.
+- Be Vietnam Pro is the leading Vietnamese typography candidate for evaluation, not yet selected or bundled.
+- Exact source-head CI run #1518 passed on `31f2ed23fbbd189cf796029cb955fac348c1c2d6`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review and responsive visual QA.
+- Do not merge or deploy Phase 01 until source review, browser/responsive visual QA and remaining owner/device acceptance are recorded.
+- Phase 00's image/video authority remains: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
+- Current App/Auth/Home source remains the AS-IS baseline. The target Shell/navigation migration is a later phase and is not part of Phase 01.
+- PR #157 remains a stale draft on an old base; do not merge by default.

@@ -5,9 +5,9 @@
 **Implementation branches:** create each bounded `feat/uiux-*` branch from the then-current `main`; do not reuse stale branches or PR #157 as a baseline.
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
 
-## Phase 00 audit reconciliation — 2026-11-25
+## Phase 00 closure and Phase 01 execution — 2026-11-25
 
-The current source baseline, closed architecture principles, protected boundaries and unresolved gates are consolidated in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). PR #159 is merged; Figma is optional and not a delivery dependency. Current App/Auth/Home source remains the AS-IS baseline. No Shell, route adapter or formal new design-system runtime is claimed as implemented. Phase 00 is not fully closed until the remaining consumer/CSS audits and owner decision gates in the audit record are resolved.
+Phase 00 is closed in merged PR #160 at main commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. Its verified findings and protected boundaries remain in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). Phase 01 is underway on `feat/uiux-phase-01-foundation`; current source changes and remaining acceptance gates are recorded in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md). The first batch establishes semantic tokens, aligns legacy mobile motion aliases with the shared Motion system, connects Brand typography and adds a preflight contract test. This is not Phase 01 closure: font/device validation, contrast/computed-style evidence, material role mapping, consumer migration and full integration acceptance remain open.
 
 ## 1. Objective
 

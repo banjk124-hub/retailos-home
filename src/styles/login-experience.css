@@ -53,7 +53,7 @@
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(8px,2vw,28px) 0;
-  color: var(--text-primary);
+  color: var(--color-text-primary, var(--text-primary));
 }
 .login-hero__brand,.login-hero__foot {
   display: flex;
@@ -66,7 +66,7 @@
   border: 1px solid rgba(102,58,66,.12);
   border-radius: 999px;
   background: rgba(255,255,255,.62);
-  color: var(--text-secondary);
+  color: var(--color-text-secondary, var(--text-secondary));
   font-size: 10px;
   font-weight: 750;
   letter-spacing: .12em;
@@ -87,7 +87,7 @@
 .login-hero__eyebrow svg { color: var(--brand-color-primary); }
 .login-hero__message h1 {
   margin: 22px 0 16px;
-  color: var(--text-primary);
+  color: var(--color-text-primary, var(--text-primary));
   font-size: clamp(48px,6.4vw,86px);
   font-weight: 760;
   letter-spacing: -.075em;
@@ -99,7 +99,7 @@
 .login-hero__message > p {
   max-width: 34ch;
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary, var(--text-secondary));
   font-size: clamp(14px,1.4vw,17px);
   line-height: 1.7;
   text-shadow: none;
@@ -127,9 +127,9 @@
   background: rgba(217,39,54,.07);
 }
 .login-hero__department>span:last-child { display: grid; min-width: 0; gap: 2px; }
-.login-hero__department small { color: var(--text-muted); font-size: 9px; font-weight: 750; letter-spacing: .1em; }
-.login-hero__department strong { overflow: hidden; color: var(--text-primary); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.login-hero__foot { color: var(--text-secondary); font-size: 9px; font-weight: 750; letter-spacing: .11em; }
+.login-hero__department small { color: var(--color-text-muted, var(--text-muted)); font-size: 9px; font-weight: 750; letter-spacing: .1em; }
+.login-hero__department strong { overflow: hidden; color: var(--color-text-primary, var(--text-primary)); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.login-hero__foot { color: var(--color-text-secondary, var(--text-secondary)); font-size: 9px; font-weight: 750; letter-spacing: .11em; }
 .login-hero__foot>span:first-child { display: inline-flex; align-items: center; gap: 9px; }
 .login-hero__foot i { width: 7px; height: 7px; border-radius: 50%; background: #e83243; box-shadow: 0 0 0 4px rgba(232,50,67,.12); }
 .login-hero__scroll { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid rgba(102,58,66,.18); border-radius: 50%; }
@@ -237,7 +237,7 @@
   margin-inline: auto;
   padding: 8px 10px 8px 14px;
   border-radius: 21px;
-  color: var(--text-primary);
+  color: var(--color-text-primary, var(--text-primary));
   transition: opacity var(--motion-duration-standard) var(--motion-ease-standard),transform var(--motion-duration-standard) var(--motion-spring-responsive);
 }
 .login-dock__identity,.login-dock__help-trigger { display: flex; align-items: center; gap: 10px; }
@@ -253,8 +253,8 @@
   color: #fff;
 }
 .login-dock__identity>span:last-child { display: grid; gap: 2px; }
-.login-dock__identity strong { color: var(--text-primary); font-size: 11px; }
-.login-dock__identity small { color: var(--text-secondary); font-size: 9px; }
+.login-dock__identity strong { color: var(--color-text-primary, var(--text-primary)); font-size: 11px; }
+.login-dock__identity small { color: var(--color-text-secondary, var(--text-secondary)); font-size: 9px; }
 .login-dock__help { position: relative; }
 .login-dock__help-trigger {
   min-width: 100px;
@@ -262,7 +262,7 @@
   justify-content: center;
   padding: 0 13px;
   border-radius: 14px;
-  color: var(--text-primary);
+  color: var(--color-text-primary, var(--text-primary));
   font-size: 11px;
   font-weight: 720;
   list-style: none;

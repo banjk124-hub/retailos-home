@@ -68,10 +68,10 @@
 .notification-status-notice {
   margin: 0 0 8px;
   padding: 9px 11px;
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--color-border-subtle, var(--border-soft));
   border-radius: 12px;
-  background: var(--surface-muted);
-  color: var(--text-secondary);
+  background: var(--color-surface-subtle, var(--surface-muted));
+  color: var(--color-text-secondary, var(--text-secondary));
   font-size: 11px;
   line-height: 1.5;
 }
@@ -87,26 +87,26 @@
 .notification-status-notice--unavailable {
   border-color: rgba(180,35,50,.22);
   background: rgba(255,235,237,.8);
-  color: var(--color-error);
+  color: var(--color-status-danger, var(--color-error));
 }
 
 .notification-empty--loading,
 .notification-status-notice--loading {
-  border-color: var(--border-soft);
-  background: var(--surface-muted);
-  color: var(--text-secondary);
+  border-color: var(--color-border-subtle, var(--border-soft));
+  background: var(--color-surface-subtle, var(--surface-muted));
+  color: var(--color-text-secondary, var(--text-secondary));
 }
 
 .topbar-action-button.notification-button.notice-state-partial:not(.selected) {
   border-color: rgba(180,83,38,.3);
   background: linear-gradient(145deg,rgba(255,241,224,.96),rgba(250,224,199,.88));
-  color: var(--color-warning);
+  color: var(--color-status-warning, var(--color-warning));
 }
 
 .topbar-action-button.notification-button.notice-state-unavailable:not(.selected) {
   border-color: rgba(180,35,50,.28);
   background: linear-gradient(145deg,rgba(255,235,237,.96),rgba(250,215,220,.9));
-  color: var(--color-error);
+  color: var(--color-status-danger, var(--color-error));
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
