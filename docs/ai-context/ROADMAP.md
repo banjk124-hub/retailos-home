@@ -39,7 +39,7 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** Phase 00 audit is recorded in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). PR #159 is merged to `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`; PR-head CI #1465 passed. Post-merge main CI/deployment and physical-device acceptance are separate evidence and are not inferred from that PR run.
+**Status:** Phase 00 audit is recorded in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). PR #159 is merged to `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`; PR-head CI #1465 passed; post-merge main CI #1466 and GitHub Pages deployment #159 also passed on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. Physical-device acceptance remains separate and is not inferred from CI/deployment.
 
 - Product-wide redesign is source-first in the existing React/Vite repository. Figma is optional reference material, not a delivery dependency or acceptance gate.
 - Reference roles remain strict: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
