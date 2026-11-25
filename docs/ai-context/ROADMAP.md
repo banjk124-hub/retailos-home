@@ -1,4 +1,4 @@
-# RetailOS engineering roadmap — current state 2026-11-24
+# RetailOS engineering roadmap — current state 2026-11-25
 
 ## Current priorities
 
