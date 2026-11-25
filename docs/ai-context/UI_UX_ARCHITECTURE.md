@@ -67,13 +67,16 @@ Rules:
 
 ## 3. Architecture principles
 
-### 3.1 Native-first, React-owned, feature-specialized
+### 3.1 Outcome-first technology, clear ownership
 
-1. Browser Native: use HTML, CSS and Web APIs for standard behavior.
-2. Shared React UI: use the existing shared systems for reusable application components.
-3. Feature UI: create specialized components only where business workflow, state or lifecycle requires them.
+Choose technology by the quality of the result and the total cost of ownership—not by a native-first or keep-the-current-stack rule.
 
-A native API is not automatically the right answer for every context. It must fit the behavior and have a compatibility/fallback plan.
+1. Browser-native capabilities are candidates for standard behavior when they provide the best compatibility and UX.
+2. React and existing shared systems are candidates when they provide the cleanest reusable application structure.
+3. Frameworks, routers and specialist libraries are valid choices when they materially improve navigation, composition, motion, accessibility, maintainability or delivery quality.
+4. Feature-owned components are appropriate when workflow, state or lifecycle requires specialization.
+
+Every choice must have a compatibility/fallback plan, measured performance profile and explicit ownership. Prefer one canonical implementation per responsibility; when replacing a system, migrate consumers and retire the superseded system instead of maintaining parallel stacks.
 
 ### 3.2 Single design language, multiple workspace layouts
 
@@ -532,7 +535,7 @@ Visual freedom does not authorize accidental changes to domain behavior. Before 
 
 Every major replacement must include an old-to-new responsibility map, consumer/callsite inventory, migration steps, regression coverage and a removal plan for the superseded implementation. Do not keep old and new versions active indefinitely merely to avoid cleanup.
 
-## 14. Decision governance
+## 15. Decision governance
 
 Status labels:
 - **Observed:** verified in source or test.
@@ -552,7 +555,7 @@ Changes to tokens, component APIs, route identity, global navigation or shared l
 - rollback plan,
 - updated canonical docs.
 
-## 15. Acceptance definition
+## 16. Acceptance definition
 
 The design system and new UI/UX are complete only when:
 - Existing and future screens share the same token and component vocabulary.
@@ -566,6 +569,6 @@ The design system and new UI/UX are complete only when:
 - Feature business contracts remain unchanged unless separately approved.
 - CI, browser testing and physical-device acceptance are reported separately.
 
-## 16. Current acceptance boundary
+## 17. Current acceptance boundary
 
 This document is a target architecture proposal created during documentation batches 00B/00C. It does not mean the new design system, shell, routes, tokens, components or screen layouts have already been implemented or physically accepted.
