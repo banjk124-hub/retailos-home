@@ -9,6 +9,10 @@
 
 RetailOS is an operational workspace for supermarket and store operations, not a collection of unrelated AppSheet-like forms.
 
+The final product must synthesize the strongest usable qualities of both approved visual references into a distinct RetailOS visual and interaction language. The references are inputs, not templates to copy. RetailOS must retain its own brand identity, operational clarity and recognizable interaction grammar.
+
+Technology choices are means to that product outcome, not preservation goals. The team may adopt, replace or combine frameworks, routers, component systems and specialist libraries when evidence shows they are needed. The architecture must remain coherent: one clear owner per concern, one canonical token/component layer and no indefinite parallel systems or CSS override stacks.
+
 The interface must make operational work:
 - Clear: the user knows where they are, what state the work is in and what action comes next.
 - Fast: common actions are direct, visible and require minimal navigation.
