@@ -13,7 +13,7 @@
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
-- Foundation source-head GitHub Actions run #1519 passed before the browser suite was added. The first browser run #1529 passed preflight, TypeScript/production build, Pages build and bundle comparison, but failed all five viewports on an assertion that sampled the Glass focus opacity mid-transition. The test now waits for the transition to settle before asserting. A new exact-head CI run is pending. Browser smoke coverage is not full visual acceptance and does not replace iOS/Android physical-device QA. PR #162 remains open; no merge or deployment is claimed.
+- Foundation source-head GitHub Actions run #1519 passed. Browser verification run #1532 passed on commit `3d4b02eae11a8f0c68c6cfdf0c8dcd511535aa1a`: preflight, production/Pages build, bundle comparison and all five Playwright viewports. Screenshot review then identified vertical overflow at 844×390 (631px full-page capture). A targeted compact-landscape Login correction and a vertical-fit regression assertion have been added; their exact-head CI is pending. Browser smoke coverage is not full visual acceptance and does not replace iOS/Android physical-device QA. PR #162 remains open; no merge or deployment is claimed.
 - PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner
