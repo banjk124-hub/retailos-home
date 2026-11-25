@@ -89,7 +89,8 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 - [x] Establish one active M0 specification and one current status.
 
 **M0-A — Structural/visual direction**
-- [ ] Audit source ownership and actual screens.
+- [x] Establish initial source baseline audit for root/Auth/Home/Library/Settings/Stocktake/Import and visual foundations (Batch A0 record).
+- [ ] Complete detailed computed-style, screen-state and cross-viewport ownership audit for all representative screens.
 - [ ] Produce individual high-fidelity surfaces for Login, Shell, Home, Module Library, Stocktake, Import and Settings/Update Center.
 - [ ] Demonstrate desktop/tablet/mobile, brand anchors and selective light/dark treatments.
 - [ ] Map controls, metrics and states to real owners; obtain owner acceptance.
@@ -115,7 +116,7 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 
 ## 8. Current status and exit criteria
 
-Owner direction is confirmed, but M0 remains open. Existing M0 records contain useful audits but conflict on amber accents, reference scope and restrictive motion language; treat them as historical evidence until reconciled. Concept boards/Figma frames are not implementation or acceptance evidence. PR #157 is an open Draft Login CSS slice, not product-wide M0 completion; reconcile against merged PR #162 and do not merge by default. PR #160–#162 did not ship product-wide redesign or the target App Shell. No M1 authorization exists.
+Owner direction is confirmed, M0-0 is merged, and M0-A Batch A0 source baseline audit is recorded. M0 remains open. Existing M0 records contain useful audits but conflict on amber accents, reference scope and restrictive motion language; treat them as historical evidence until reconciled. Concept boards/Figma frames are not implementation or acceptance evidence. PR #157 is an open Draft Login CSS slice, not product-wide M0 completion; reconcile against merged PR #162 and do not merge by default. PR #160–#162 did not ship product-wide redesign or the target App Shell. No M1 authorization exists.
 
 M0 exits only after owner-approved direction is demonstrated in individual source-grounded screens; brand anchors are integrated; both reference roles are represented without copying; desktop/tablet/mobile are inspected; real workflows/data are verified; motion/interruption/reduced-motion/low-end behavior is tested; technology choices are evidenced; accessibility/performance/protected contracts pass; CI/browser/device evidence is accurately separated; and the owner explicitly accepts M0 and authorizes M1.
 
