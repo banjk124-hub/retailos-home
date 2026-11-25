@@ -20,7 +20,7 @@ Decision vocabulary:
 
 Current status:
 - 00B–00G are documented on the documentation branch.
-- No UI application source has been changed by this workstream.
+- No new UI dependency has been installed.
 - No new UI dependency has been installed.
 - No physical-device acceptance is claimed.
 - 00E navigation, 00D visual system, typography and contrast decisions still require owner acceptance/prototype validation.
