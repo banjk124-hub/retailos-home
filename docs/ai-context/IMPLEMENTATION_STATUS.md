@@ -1,9 +1,9 @@
-# Current verified implementation status — 2026-11-25
+# Current verified implementation status — 2026-11-26
 
-**Repository:** `banjk124-hub/retailos-home`  
-**Product standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
-**Active M0 specification:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md)  
-**Last verified main:** `3cd2d5bf7a3d1339a6c55baa1c16c74f6ebece2c` — recheck before future work.
+**Repository:** banjk124-hub/retailos-home  
+**Product standard:** RETAILOS_PRODUCT_SKILL.md  
+**Active M0 specification:** UI_UX_M0_GOVERNING_SPEC.md  
+**Last verified main:** 4e654ffb519d8b124f3edbbbda4f65fe550052ef — recheck before future work.
 
 ## UI/UX — owner-confirmed direction
 - Burgundy/dark-red brand remains dominant.
@@ -15,8 +15,8 @@
 
 ## M0 status
 - Direction anchors are confirmed.
-- **M0-0 documentation consolidation and plugin parity audit: complete on the PR branch.**
-- M0-A source-backed representative screens/responsive visual acceptance: open.
+- **M0-0 documentation consolidation and Product Studio v0.1.3 parity audit: merged to main via PR #163.**
+- M0-A source-backed representative screens/responsive visual acceptance: open. PR #164 contains source baseline and initial Login/Shell/Home/Library blueprints; remaining screens, source prototypes and owner acceptance are open.
 - M0-B motion/interaction study: open.
 - M0-C cross-surface integration: open.
 - M0-D technology/quality/owner acceptance: open.
@@ -25,18 +25,25 @@
 ## Merged work — do not overstate
 PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged. They provide audit records, semantic tokens and limited consumer migrations/browser coverage; they do not implement product-wide UI/UX or the target App Shell.
 
-## Open PRs — recheck live
-- PR #163: documentation/Product Skill/M0 consolidation; open Draft at last check. Verify current exact head and CI before review; no merge approval is implied.
-- PR #157: legacy Login tablet CSS slice; open Draft at last check. Reconcile against merged PR #162, do not merge by default.
+## Governance batches
+- BATCH 00 audit record: PR #165, Draft; review/merge pending.
+- BATCH 01 canonical governance: dependent Draft PR; review and exact-head CI pending.
+- Product Studio remains v0.1.3. Plugin parity update is intentionally deferred until repository standards are reviewed and accepted.
+
+## PR state verified 2026-11-26
+- PR #163: merged to main at 4e654ffb519d8b124f3edbbbda4f65fe550052ef.
+- PR #164: open Draft, M0-A source audit/blueprints. Figma-dependent language is being corrected; source-code prototype workflow is the governing path.
+- PR #165: open Draft, BATCH 00 inventory audit.
+- PR #157: closed, unmerged. Its legacy Login tablet CSS is not accepted source behavior; preserve as PR history and do not merge by default.
 
 ## Plugin parity
-Private RetailOS Product Studio is now v0.1.3. Its current `SKILL.md`, root manifest and Codex manifest were inspected after release. The skill explicitly encodes the owner-confirmed burgundy/dark-red identity, Vietnamese-first typography, authentic retail imagery, image art-direction/composition role, video motion/interaction role, open feature-specific design system, protected contracts and M0-before-M1 gate. Repository/plugin direction is aligned at the audited release. Recheck parity whenever either authority changes.
+Private RetailOS Product Studio is v0.1.3. Its skill and manifests were inspected. It covers the approved identity, references, open design system, protected contracts and bounded workflow, but does not yet fully operationalize the six governance requirements. Upgrade is scheduled only after BATCH 01 repository standards are reviewed and accepted.
 
 ## Scanner
-Runtime stabilization and ecosystem cleanup are closed; owner confirmed normal app flow without observed errors. Production decoder is ZXing-C++ WASM via `ZXingWasmDecoderAdapter` on Main Thread. Home and Stocktake share Scanner Engine/session contract. Retired Worker prototype and production QA diagnostics collector/monitor remain retired. No active SC-01–SC-05 phase. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Operational stability is not quantified optical accuracy or exhaustive device acceptance.
+Runtime stabilization and ecosystem cleanup are closed; owner confirmed normal app flow without observed errors. Production decoder is ZXing-C++ WASM via ZXingWasmDecoderAdapter on Main Thread. Home and Stocktake share Scanner Engine/session contract. Retired Worker prototype and production QA diagnostics collector/monitor remain retired. No active SC-01–SC-05 phase. See SCANNER_ENGINE.md and SCANNER_HISTORY.md. Operational stability is not quantified optical accuracy or exhaustive device acceptance.
 
 ## PWA / release
-See [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md). Verify live PR/CI/deployment before volatile claims.
+See PWA_RUNTIME_RELEASE.md. Verify live PR/CI/deployment before volatile claims.
 
 ## Verification rules
 CI proves only checks run on the exact commit. Browser emulation is not physical-device acceptance. Development Pages is not department production promotion. Merge, deployment and production transfer are separate approval gates.
