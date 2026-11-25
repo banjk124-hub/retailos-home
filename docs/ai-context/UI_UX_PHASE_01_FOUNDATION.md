@@ -41,7 +41,7 @@ Added semantic roles for:
 
 Existing variable names remain as compatibility aliases to semantic tokens. This is an incremental migration contract, not permission to delete legacy names while consumers remain.
 
-Contrast calculations for selected text/status foregrounds against pure white are above WCAG AA 4.5:1. These calculations do not validate tinted surfaces, translucent Glass compositing, images, gradients, disabled states or every component state; browser-level contrast review remains open.
+Contrast calculations for the new primary/secondary/muted text and brand/status foreground tokens against pure white are above WCAG AA 4.5:1. The legacy tertiary alias preserves its historical #918890 value (approximately 3.43:1 on white) for visual compatibility; it must not be used for essential small text. These calculations do not validate tinted surfaces, translucent Glass compositing, images, gradients, disabled states or every component state; browser-level contrast review remains open.
 
 ### 3.2 Typography ownership
 
