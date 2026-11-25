@@ -1,9 +1,13 @@
 # UI/UX Rebuild Implementation Plan
 
 **Status:** M0 is executed directly in the RetailOS repository. Figma studies are historical/optional only and are not a delivery dependency or acceptance gate. Active evidence is the source implementation, running application, automated checks and responsive review recorded in implementation PRs.
-**Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Working implementation branch:** isolated `feat/uiux-m0-*` branches from current `main`; PR #156 remains a separate documentation review.
+**Verified documentation baseline:** `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` (PR #159 merge commit).
+**Implementation branches:** create each bounded `feat/uiux-*` branch from the then-current `main`; do not reuse stale branches or PR #157 as a baseline.
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
+
+## Phase 00 audit reconciliation — 2026-11-25
+
+The current source baseline, closed architecture principles, protected boundaries and unresolved gates are consolidated in [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md). PR #159 is merged; Figma is optional and not a delivery dependency. Current App/Auth/Home source remains the AS-IS baseline. No Shell, route adapter or formal new design-system runtime is claimed as implemented. Phase 00 is not fully closed until the remaining consumer/CSS audits and owner decision gates in the audit record are resolved.
 
 ## 1. Objective
 
