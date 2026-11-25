@@ -106,6 +106,14 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 - Native experience notification states now consume --color-status-success and --color-status-danger; adaptive notification states consume --color-status-warning and --color-status-danger.
 - These are value-preserving substitutions: the semantic tokens resolve to the existing brand/status colors. No new color, theme or department state was introduced.
 - Regression contracts assert representative brand and status consumers. Contrast validation remains limited to the declared solid foreground tokens against white; notification tint/background combinations still need browser-level review.
+### 3.12 Running-browser verification foundation
+
+- The repository already contained the locked `@playwright/test` dependency; this batch adds a maintained Playwright config and a responsive Login smoke suite without adding packages or changing the lockfile.
+- CI builds the GitHub Pages production artifact, launches that artifact through Vite preview at the real `/retailos-home/` base path, installs Chromium and runs browser checks at desktop (1440×900), tablet (900×1024), mobile (390×844), compact mobile (360×740) and short landscape (844×390).
+- Each viewport verifies the Login composition, employee-code input, submit control, horizontal overflow and uncaught page errors; it captures a screenshot as a CI artifact. The test focuses the employee-code input to verify a basic keyboard-focus path.
+- This is the first executable browser smoke baseline, not full visual-regression approval. It does not validate authenticated Home workflows, every overlay/state, screenshot pixel diffs, actual Safari/WebKit, Android Chrome, physical device performance, Glass compositing contrast or the complete keyboard journey.
+- Browser screenshots and traces are retained as workflow artifacts; generated local test output is git-ignored. Browser acceptance remains evidence-led and must expand as additional redesigned surfaces are implemented.
+
 ### 3.9 Motion and CSS ownership — static audit update
 
 The 24-file CSS tree still contains feature-specific timing declarations across Home, Login, Stocktake/Import, Scanner presentation, LiquidDock and PWA update surfaces. These include choreography, progress indicators, close transitions and reduced-motion overrides. They are not all duplicates and must not be normalized mechanically. `mobile-tuning.css` remains a large global override layer (87,240 bytes at this branch head) with both interaction timing and responsive presentation rules. The next migration requires browser computed-style evidence by viewport/state; no selector deletion or bulk duration replacement is justified by static search alone.
@@ -121,7 +129,7 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 | 01E Spacing, radius, elevation, focus | Partial | Semantic tokens implemented; body typography roles are now consumed. Spacing/elevation consumer migration and keyboard/focus audit remain |
 | 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases. Feature-specific literal durations/choreography audit remains |
 | 01G CSS architecture | Partial | Canonical token source established. Full selector/computed-style ownership and cascade consolidation remain |
-| 01H Integration & acceptance | Partial | Exact-head CI #1513 passed on source commit `a12db10379aca098e6969d89a76ab35df1472f58`; responsive browser evidence, real-surface contrast, accessibility and device acceptance remain open |
+| 01H Integration & acceptance | Partial | Source CI passed previously; Playwright Chromium smoke coverage now runs against the built Pages artifact at five responsive viewports and uploads screenshots. Exact-head browser CI result, full surface coverage, real-surface contrast, accessibility and physical-device acceptance remain open |
 
 ## 5. Explicit non-decisions
 
@@ -136,12 +144,13 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 
 1. [x] Run the new foundation contract test and full `npm run preflight` on source commit `31f2ed23fbbd189cf796029cb955fac348c1c2d6` (GitHub Actions run #1518).
 2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and PR-base bundle comparison on the same exact source commit.
-3. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
-4. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
-5. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
-6. Validate desktop, tablet, iOS Safari/PWA, Android low/mid-range, narrow mobile and short landscape.
-7. Verify reduced-motion and power-conserve behavior, touch target and keyboard focus.
-8. Record exact evidence and rollback in the implementation PR; no CI result is treated as physical-device acceptance.
+3. [ ] Pass the new Playwright Chromium browser smoke suite on the exact PR head and review its five viewport screenshots.
+4. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
+5. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
+6. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
+7. Validate desktop, tablet, iOS Safari/PWA, Android low/mid-range, narrow mobile and short landscape.
+8. Verify reduced-motion and power-conserve behavior, touch target and keyboard focus.
+9. Record exact evidence and rollback in the implementation PR; no CI result is treated as physical-device acceptance.
 
 ## 7. Next bounded work
 
