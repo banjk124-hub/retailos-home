@@ -525,3 +525,40 @@ No source implementation, package installation, logo replacement or stylesheet d
 - [ ] Selector-level computed-style/dead-CSS audit: not performed in this GitHub source review.
 - [ ] Browser/device visual acceptance: not performed.
 - [ ] Application source changes or dependencies: none in Batch 00D.
+## 4.7 Open extension model and component contribution lifecycle
+
+The Design System is an evolving platform, not a closed list of approved components. The Core Foundation defines the common RetailOS language and quality constraints; it does not prescribe every future screen or control.
+
+Use three layers:
+- **Core Foundation:** brand, semantic meaning, typography, hierarchy, spacing conventions, accessibility, responsive principles, motion and performance principles.
+- **Shared Design System:** reusable tokens, primitives, components and patterns that have demonstrated cross-feature value.
+- **Feature Experience:** feature-owned layouts, compositions, controls and interaction patterns specialized for a task.
+
+A new feature is not limited to the current shared catalogue. If no existing component fits its operational need, create a feature-owned solution. Do not distort a generic component or add dozens of unrelated props to force reuse.
+
+### Component lifecycle
+
+| State | Meaning | Promotion/exit rule |
+|---|---|---|
+| Experimental | Being explored in a bounded feature/prototype | Validate task fit, accessibility, responsive behavior and performance |
+| Feature-owned | Stable solution owned by one feature | Keep local unless genuine cross-feature reuse emerges |
+| Shared Candidate | Reuse is demonstrated across independent consumers | Review semantic fit, API, variants, ownership and migration cost |
+| Shared Stable | Accepted reusable contract | Document API, states, accessibility, responsive and performance behavior |
+| Deprecated | A replacement is preferred | Publish migration guidance and migrate consumers |
+| Retired | No supported consumer remains | Remove after consumer and regression verification |
+
+Promotion is not automatic: two visually similar components may have different semantics and should remain separate. Conversely, a feature-originated component may become a shared contribution when its behavior proves broadly useful.
+
+### Contribution requirements
+
+A proposed shared contribution records:
+- Problem and consumers it serves.
+- Why existing shared components are insufficient.
+- Semantic responsibility and explicit non-goals.
+- API, variants and state contract.
+- Responsive, keyboard, touch and assistive-technology behavior.
+- Motion/reduced-motion behavior where applicable.
+- Performance and bundle impact.
+- Ownership, tests, migration and rollback.
+
+Shared components must remain composable and focused. Do not create a universal mega-component. The shared catalogue may grow, change or shrink as product evidence evolves.
