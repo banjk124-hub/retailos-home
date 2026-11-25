@@ -155,7 +155,8 @@ Each slice must name exact files/callsites, owners, protected contracts, tests, 
 - [x] Retire the unimported `home-phase2.css` orphan and three unconsumed Motion public APIs.
 - [x] Identify repeated Home selectors and legacy CSS-only selector candidates.
 - [ ] Complete selector-to-element matching and browser computed-style/cascade validation across responsive and state combinations; broad legacy CSS retirement remains blocked.
-- [x] Refine the 00E browser-history proposal to distinguish workspace routes from same-URL transient overlay entries and non-restorable camera/permission state.\n- [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
+- [x] Refine the 00E browser-history proposal to distinguish workspace routes from same-URL transient overlay entries and non-restorable camera/permission state.
+- [ ] Owner explicitly accepts remaining P00 decisions and authorizes the first source slice.
 - [ ] Confirm device matrix and visual acceptance method.
 
 **Phase 00 status:** architecture principles are closed; repository/documentation reconciliation and source-level cleanup audits remain in progress. No Phase 01/02 implementation is authorized until the required owner decisions and scope gates are met.
