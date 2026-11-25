@@ -50,10 +50,10 @@
   --retail-glass: rgba(255,255,255,.72);
   --retail-glass-line: rgba(255,255,255,.84);
   --retail-red-shadow: 0 14px 35px rgba(191,31,49,.14);
-  --brand-focus-ring: rgba(189,38,53,.68);
-  --focus-ring-width: 3px;
-  --focus-ring-offset: 3px;
-  --focus-ring-shadow: 0 0 0 4px rgba(217,39,54,.12);
+  --brand-focus-ring: var(--focus-outline-color);
+  --focus-ring-width: var(--focus-outline-width);
+  --focus-ring-offset: var(--focus-outline-offset);
+  --focus-ring-shadow: var(--focus-outline-shadow);
   --surface-page: #fffafa;
   --surface-card: rgba(255,255,255,.82);
   --surface-raised: rgba(255,255,255,.92);
@@ -137,8 +137,11 @@
 
   /* Focus and responsive layout contracts. */
   --focus-color: #a91829;
-  --focus-outline: 2px solid var(--focus-color);
+  --focus-outline-color: rgba(189,38,53,.68);
+  --focus-outline-width: 3px;
+  --focus-outline: var(--focus-outline-width) solid var(--focus-outline-color);
   --focus-outline-offset: 3px;
+  --focus-outline-shadow: 0 0 0 4px rgba(217,39,54,.12);
   --layout-content-max: 1440px;
   --layout-page-gutter: clamp(1rem, 2.4vw, 2rem);
   --layout-breakpoint-mobile: 700px;
@@ -171,9 +174,9 @@ body {
 }
 ::selection { background: #ffd9dd; color: #75101c; }
 button:focus-visible,input:focus-visible,select:focus-visible {
-  outline: var(--focus-ring-width) solid var(--brand-focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-shadow);
+  outline: var(--focus-outline, var(--focus-ring-width) solid var(--brand-focus-ring));
+  outline-offset: var(--focus-outline-offset, var(--focus-ring-offset));
+  box-shadow: var(--focus-outline-shadow, var(--focus-ring-shadow));
 }
 
 .eyebrow { color: var(--color-brand-primary); }
