@@ -1,24 +1,24 @@
 # Current handoff — RetailOS
 
-**Governing standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). Load it before any RetailOS task, including new features and work continued from another chat.
+**Governing standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
+**Active M0 specification:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md).
 
-## Current verified context
-
+## Current context
 - Repository: `banjk124-hub/retailos-home`; default branch: `main`.
-- Latest verified main after UI foundation PR #162 merge: `3cd2d5bf7a3d1339a6c55baa1c16c74f6ebece2c` (verify live before acting).
-- PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged.
-- **Important product truth:** these phases did not deliver the new product-wide UI. The current app still uses the existing App/Auth/Home composition; new App Shell/workspace composition remains a target, not a shipped implementation. Token migration and Login responsive checks are not equivalent to the requested redesign.
-- No new product-wide UI deployment or production promotion is established by those merges. Verify current Pages/deployment state before making claims.
-- The next valid UI/UX work is to follow the Product Skill's M0 direction/technology gate, create source-backed representative prototypes and obtain owner acceptance before the larger foundation/shell migration.
-- Scanner stabilization is closed and owner-confirmed operationally. Current implementation contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); historical evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Do not reopen Scanner Engine internals for UI work.
-- PWA, overlays, Stocktake and Import retain their domain-specific contracts. Load only the one relevant to the task.
+- Last verified main after PR #162: `3cd2d5bf7a3d1339a6c55baa1c16c74f6ebece2c`; verify live before acting.
+- PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged; they did not deliver product-wide redesign or the target App Shell.
+- Owner-confirmed direction: burgundy/dark-red brand, Vietnamese-first typography, authentic retail imagery; image guides art direction/composition; video guides motion/interaction; remaining art is adapted, not copied.
+- M0 remains open. Documentation reconciliation is active. M0-A representative screens, M0-B motion study, M0-C integration and M0-D technology/quality/owner acceptance remain open. No M1 authorization.
+- PR #163 is the documentation Draft; verify its current head and CI before continuing. Earlier CI pass does not cover later commits automatically.
+- PR #157 remains an open Draft for legacy Login CSS; reconcile against PR #162, do not merge by default.
+- Scanner stabilization is closed and owner-confirmed operationally. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md); do not reopen engine internals for UI work.
+- PWA, overlays, Stocktake and Import retain domain contracts; load only what the task needs.
 
-## Task start protocol
-
-1. Read the Product Skill and [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md).
-2. Verify current branch, main SHA, open PRs, CI and deployment against GitHub.
-3. Inspect exact source callsites and tests; recover prior owner decisions without asking the user to repeat them.
-4. Work in bounded batches, execute and verify; inspect rendered UI before asking for device acceptance.
-5. Update the canonical status and report exact evidence.
+## Task start
+1. Read Product Skill and IMPLEMENTATION_STATUS; for UI/UX also read M0 governing spec.
+2. Verify branch, main SHA, open PRs, CI and deployment.
+3. Inspect source callsites/tests and recover recorded decisions without asking the user to repeat them.
+4. Work in bounded batches; inspect rendered UI before requesting device acceptance.
+5. Update canonical status and report exact evidence.
 
 No merge without explicit owner approval. No deployment without explicit authorization.
