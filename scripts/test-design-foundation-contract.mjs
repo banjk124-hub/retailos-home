@@ -102,6 +102,8 @@ assert.ok(theme.includes("box-shadow: var(--focus-outline-shadow, var(--focus-ri
 assert.ok(loginStyles.includes("var(--color-text-primary, var(--text-primary))"));
 assert.ok(loginStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
 assert.ok(loginStyles.includes("var(--color-text-muted, var(--text-muted))"));
+assert.ok(loginStyles.includes("var(--color-brand-primary)"), "Login must consume the canonical primary brand role");
+assert.ok(!loginStyles.includes("#d92736"), "Login must not hardcode the canonical primary brand color");
 assert.ok(nativeStyles.includes("var(--color-border-subtle, var(--border-soft))"));
 assert.ok(nativeStyles.includes("var(--color-surface-raised, var(--surface-raised))"));
 assert.ok(nativeStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
