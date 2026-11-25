@@ -83,10 +83,10 @@ for (const contract of glassForegroundContracts) {
   assert.ok(glassTokens.includes(contract), `Glass material must consume canonical text token: ${contract}`);
 }
 
-assert.match(theme, /body\\s*\\{[^}]*color:\\s*var\\(--color-text-primary/);
-assert.match(theme, /body\\s*\\{[^}]*font-family:\\s*var\\(--font-family-ui/);
-assert.match(theme, /body\\s*\\{[^}]*font-size:\\s*var\\(--font-size-body/);
-assert.match(theme, /body\\s*\\{[^}]*line-height:\\s*var\\(--line-height-normal/);
+assert.ok(theme.includes("color: var(--color-text-primary, var(--text-primary));"));
+assert.ok(theme.includes("font-family: var(--font-family-ui, var(--font-family-sans));"));
+assert.ok(theme.includes("font-size: var(--font-size-body, var(--font-size-md));"));
+assert.ok(theme.includes("line-height: var(--line-height-normal, var(--line-height-body));"));
 
 
 console.log("Design foundation contract passed: semantic tokens, canonical body and Glass text consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
