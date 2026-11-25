@@ -61,6 +61,21 @@ Contrast calculations for the new primary/secondary/muted text and brand/status 
 
 Added `scripts/test-design-foundation-contract.mjs` and registered it in `scripts/preflight.mjs`. It checks required semantic tokens, compatibility aliases, shared motion references, reduced-motion and power-conserve hooks.
 
+### 3.5 Glass material consumer audit
+
+Direct source search on the Phase 00 main baseline found the following `GlassSurface` material callsites:
+
+| Variant | Verified direct use | Phase 01 disposition |
+|---|---|---|
+| `soft` | Login employee surface; Module Library group surface | Keep as low-emphasis translucent surface pending visual review |
+| `frosted` | Login form panel | Keep as focused high-opacity/blur surface; validate low-power fallback |
+| `floating` | LoginDock and LiquidDock | Keep for floating navigation/dock role |
+| `control` | Login form controls, LoginDock help trigger, Home push setup notice | Keep for interactive/control surfaces; review brand tone separately |
+| `dark` | LoginDock help content | Keep as feature-specific dark context |
+| `elevated` | No direct `GlassSurface material="elevated"` JSX callsite found in the repository-wide exact search | Do not delete yet: compatibility aliases and external/dynamic typed consumers must be checked before retiring a public variant |
+
+The direct-use search is not a proof of all runtime composition. `MotionButton` accepts a material prop, and CSS compatibility aliases use elevated terminology independently of the `GlassSurface` variant. Therefore this pass records ownership and evidence but does not remove or rename variants.
+
 ## 4. Phase 01 workstream status
 
 | Batch | Status | Evidence / remaining work |
