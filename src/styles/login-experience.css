@@ -682,25 +682,25 @@
     display: none;
   }
   .login-experience__panel {
-    padding: 16px 20px;
+    padding: 12px 18px;
     border-radius: 22px;
   }
   .login-panel__icon {
     display: none;
   }
   .login-panel__heading h2 {
-    margin: 5px 0;
+    margin: 3px 0;
     font-size: 30px;
   }
   .login-panel__identity-slot {
-    min-height: 26px;
+    min-height: 22px;
   }
   .login-panel__identity-slot > p {
     font-size: 11px;
   }
   .login-form {
-    gap: 8px;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 8px;
   }
   .login-form__field {
     gap: 6px;
@@ -712,7 +712,7 @@
     min-height: 42px;
   }
   .login-form__feedback-slot {
-    min-height: 16px;
+    min-height: 10px;
   }
   .login-form__submit {
     min-height: 44px;
