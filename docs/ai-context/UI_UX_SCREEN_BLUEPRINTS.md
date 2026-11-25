@@ -611,3 +611,10 @@ Final implementation PR must run repository preflight, TypeScript, production bu
 - [ ] Source implementation and device validation; intentionally not part of 00G.
 
 **Completion statement:** 00G is a documentation blueprint, not a source-code implementation or approval to start broad UI changes. Proceed to 00H to turn these blueprints into an acceptance matrix, exact migration slices, rollback plan and owner decision gate.
+## 1.5 Extensible design language — feature freedom and shared contribution
+
+This blueprint defines structural principles and representative workspace compositions; it does not freeze the future component inventory or prescribe one template for every feature.
+
+A workspace may introduce a purpose-built composition, control or pattern when its task requires it. It should reuse shared solutions when semantic responsibility and interaction behavior match, not merely because two elements look alike. New solutions may remain feature-owned or be proposed for shared adoption after validation and demonstrated reuse.
+
+The common language is maintained through RetailOS identity, semantic state, typography principles, quality of interaction, accessibility, responsive behavior and performance—not through identical cards, columns or controls. New module requirements are allowed to expand the system.
