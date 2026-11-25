@@ -77,3 +77,42 @@ for (const viewport of viewports) {
     expect(focusStyle.boxShadow).not.toBe('none');
   });
 }
+
+test('Login respects reduced-motion and power-conserve presentation', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./', { waitUntil: 'networkidle' });
+
+  const reducedMotion = await page.evaluate(() => {
+    const panel = document.querySelector('.login-experience__panel')!;
+    const glass = document.querySelector('.login-form__input-wrap')!;
+    const durations = getComputedStyle(glass).transitionDuration.split(',').map((value) => {
+      const duration = value.trim();
+      return duration.endsWith('ms')
+        ? Number.parseFloat(duration) / 1000
+        : Number.parseFloat(duration);
+    });
+    return {
+      preferenceActive: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      panelAnimation: getComputedStyle(panel).animationName,
+      panelTransitionSeconds: Math.max(...durations),
+    };
+  });
+
+  expect(reducedMotion.preferenceActive).toBe(true);
+  expect(reducedMotion.panelAnimation).toBe('none');
+  expect(reducedMotion.panelTransitionSeconds).toBeLessThanOrEqual(0.00001);
+
+  const powerConserve = await page.evaluate(() => {
+    document.documentElement.dataset.powerMode = 'conserve';
+    const panel = document.querySelector('.login-experience__panel')!;
+    const control = document.querySelector('.login-form__input-wrap')!;
+    return {
+      panelBackdrop: getComputedStyle(panel).backdropFilter,
+      controlBackdrop: getComputedStyle(control).backdropFilter,
+    };
+  });
+
+  expect(powerConserve.panelBackdrop).toContain('blur(8px)');
+  expect(powerConserve.controlBackdrop).toContain('blur(0px)');
+});
