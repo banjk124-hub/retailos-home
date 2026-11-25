@@ -16,4 +16,12 @@ Preserve shared camera lease ownership, session lifecycle/recovery, strict featu
 ## Task start protocol
 
 Read [INDEX.md](./INDEX.md), then load only the canonical documents and source/tests relevant to the requested task. Verify live branch, PR, CI and deployment state before changing volatile status. Prefer the smallest solution that satisfies the requirement.
+## UI/UX active handoff — Phase 01
 
+- Phase 00 is closed at merged main commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`; see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md).
+- Active work is PR [#161 — Phase 01 Design Foundation](https://github.com/banjk124-hub/retailos-home/pull/161), branch `feat/uiux-phase-01-foundation`.
+- Read [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md) for exact implemented scope, evidence and open gates.
+- Current source changes: semantic tokens in `src/styles/theme.css`; Brand typography token consumption; mobile legacy motion aliases routed to shared Motion tokens; new design-foundation contract test registered in preflight.
+- Preserve the existing Glass system, App/Auth/Home composition and all protected business/platform contracts. Do not delete CSS or change font dependencies until the documented evidence/acceptance gate is met.
+- Be Vietnam Pro is the leading Vietnamese font candidate for comparison, not a selected or shipped dependency.
+- Do not claim Phase 01 complete, merge or deploy until exact-head CI, browser/responsive visual QA, accessibility/contrast and owner/device acceptance are recorded.
