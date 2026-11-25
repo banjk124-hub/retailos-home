@@ -486,3 +486,165 @@ The following screens must receive a dedicated screen specification before imple
 - [x] TO-BE workspace architecture and screen inventory proposed.
 - [ ] Physical-device interaction validation: not performed in this documentation audit.
 - [ ] Detailed wireframes and per-screen acceptance specs: next design phase, not part of 00C.
+
+
+## 9. Batch 00E — Information Architecture and Navigation decision
+
+**Status:** Source-grounded architecture decision; implementation proposal, not yet implemented.
+**Decision baseline:** current `main` at `2003ea24966755d0ad4e0298b34422b053267e77`, with source re-check of Home navigation and module registry on 2026-11-25.
+**Purpose:** Define how RetailOS is organized as an operational workspace, how users move between work, and which navigation state belongs in the URL, browser history, feature state or transient overlay.
+
+### 9.1 Source facts that constrain the decision
+
+The current implementation is not a route-based application:
+- `App.tsx` owns login, identity recognition, authenticated Home mount, logout and PWA transition safety.
+- `HomeScreen.tsx` owns a single long-scroll page, section-derived active navigation, the module library, quick lookup and multiple overlays.
+- Current navigation IDs are `home`, `modules`, `activity`, `settings`. Home/Modules/Activity scroll to sections; Settings opens an overlay.
+- `homeStateStore.ts` persists `activeNav`, search and `scrollY` under `retailos.homeUi.v1`.
+- `moduleRegistry.ts` owns 5 library IDs and 9 workflow IDs. Workflow IDs and library IDs are separate identities. Seven workflows are marked `integrating`; Stocktake and Stocktake Import have dedicated feature workflows.
+- Module Library search filters registry metadata; selecting a library group opens a sheet. It does not currently route to a separate module workspace.
+- Stocktake and Stocktake Import already own multi-state workflows and persistence. Their internal state must remain feature-owned.
+- Scanner and manual barcode lookup are contextual quick actions, not module-library destinations.
+
+These are implementation facts, not the target structure. In particular, the current scroll position and overlay state must not become the long-term application navigation model.
+
+### 9.2 Product information hierarchy — accepted 00E target
+
+RetailOS is organized around **workspaces and tasks**, not around a dashboard containing every feature.
+
+1. **Application level:** authenticated identity, global navigation, global search/quick lookup, notifications, connectivity and release/update context.
+2. **Primary workspace level:** Home Overview, Module Library, Activity (only when backed by real activity data), Settings.
+3. **Operational workspace level:** a real module workflow such as Stocktake or Stocktake Import.
+4. **Feature-local level:** the workflow's own steps, tabs, filters, review state, history and dialogs.
+5. **Transient action level:** scanner, barcode result, confirmation, notice detail and contextual popovers.
+
+A workspace must have one clear purpose, one primary action and a visible current context. Do not put every module's controls on Home or make every small interaction a new route.
+
+### 9.3 Target shell composition
+
+**Desktop / office**
+- Persistent application frame with a compact, collapsible primary navigation rail/sidebar.
+- Global header owns current workspace context, employee/department identity, global search/quick lookup entry, notifications and profile/settings entry.
+- Main workspace uses the available width; data-heavy workflows may use a two-column or master/detail composition where it improves throughput.
+- Breadcrumbs or a clear workspace title identify the current location and parent. Do not use breadcrumbs as a substitute for primary navigation.
+- Sidebar remains available without overlaying the work area. At narrow desktop widths it may collapse to icon rail with accessible labels/tooltips.
+
+**Tablet**
+- Navigation may use a compact rail or drawer according to available width and input mode.
+- Preserve workspace context and keep the primary action visible.
+- Do not simply scale the desktop sidebar and dense desktop columns down.
+
+**Mobile**
+- One primary task/workspace occupies the screen.
+- Use a compact bottom navigation for top-level destinations, with safe-area padding; the global quick lookup/scanner action remains directly reachable but must not obscure navigation or the active task.
+- Use a contextual top bar for back, title and essential actions.
+- Secondary navigation belongs in a sheet/drawer or within the workspace, not a miniature desktop sidebar.
+- Avoid floating controls over editable tables, bottom actions, keyboard or system gesture areas.
+
+**Responsive behavior is based on available space and interaction constraints, not device labels alone.** The final breakpoints and exact visual treatment remain a 00G/00H validation task.
+
+### 9.4 Primary destinations and route identity
+
+Use these stable, human-readable destination identities as the target route contract. They are URL identities, not new business IDs.
+
+| Destination | Target path | Owner | Navigation behavior |
+|---|---|---|---|
+| Home Overview | `/home` | Home feature | Primary destination |
+| Module Library | `/modules` | Home/Module Library | Search, category discovery and readiness |
+| Library group | `/modules/:libraryId` | Module Library | Optional deep link to a selected group; ID must be validated against registry |
+| Operational workflow | `/workspaces/:moduleId` | Feature router/registry adapter | Only open a workflow that actually exists and is ready |
+| Activity | `/activity` | Activity feature | Keep unavailable/empty truth explicit; do not fabricate records |
+| Settings | `/settings` | Settings feature | Addressable workspace; may retain a dialog presentation only when entry context and history semantics are correct |
+
+**Route identity rules**
+- Existing `ModuleLibraryId` and `RetailModuleId` values remain unchanged. Route parameters must validate against these registries; do not create a second module registry.
+- Snapshot/cache IDs are not route IDs and must not be inferred from workflow IDs.
+- Unknown paths resolve to a deliberate not-found/unsupported state with a safe route back to Home; never silently open a different module.
+- A registry item marked `integrating` must not navigate to a fake workspace. Show a truthful status/detail view and a clear return path.
+- Only `stocktake` and `stocktake-import` are confirmed dedicated operational workflows in this audit baseline. Other module paths remain unavailable until their feature screens and contracts exist.
+- Preserve the product name and employee/session identity; presentation labels can change independently from stable IDs.
+
+### 9.5 Navigation history and back behavior
+
+Adopt browser-native History API behind one typed navigation adapter as the initial implementation candidate. Do not add a routing dependency unless the later route/error/loading requirements demonstrate a concrete gap.
+
+History semantics:
+- Primary destination changes and opening a full operational workspace create navigable history entries.
+- Selecting a library group may create a history entry when it is a shareable/discoverable destination; closing/back returns to the library and restores search/category context.
+- Internal feature steps (e.g. Stocktake home → scan → review; Import import → history) remain owned by the feature state machine. They may intercept Back only when the feature explicitly defines a safe transition.
+- Transient overlays do not automatically become routes. Dialogs/popovers/quick lookup/scanner remain transient unless a future requirement establishes shareable state or a necessary browser-history contract.
+- Back priority: close the topmost dismissible transient surface; otherwise leave the current feature-local step if that feature supports safe back; otherwise navigate to the previous workspace/history entry; if no safe previous entry exists, go to `/home`.
+- Escape and browser Back are not interchangeable when the feature has unsaved work or a destructive/irreversible operation. Confirm or block navigation using the owning feature's existing rules.
+- Forward navigation restores the previous workspace where safe. Do not resurrect a stale camera session or reopen a permission prompt automatically.
+- Reload/direct URL must restore the destination and its non-sensitive view context. It must not claim that an unsaved draft was persisted.
+- Never place employee secrets, raw workbook data, barcode result payloads or unsaved operational data in the URL.
+
+### 9.6 State ownership and persistence
+
+| State | Owner | Persistence / URL rule |
+|---|---|---|
+| Authenticated employee/session | Auth services | Existing session store only; not route state |
+| Current top-level destination | App navigation adapter | URL + browser history |
+| Selected library group | Module Library | URL when shareable; validate ID |
+| Library search/filter | Module Library | Local view state; optional query params only after explicit UX decision |
+| Current workflow identity | Feature router/registry adapter | URL path uses stable workflow ID |
+| Workflow step, dirty edits, selection | Feature module | Feature-owned state/persistence; never duplicate in shell |
+| Scanner camera/session lifecycle | Scanner platform/feature | Transient, never restored by URL/history |
+| Barcode lookup result | Lookup feature | Transient/local state; never serialize result payload to URL |
+| Global notices/update state | Existing notification/PWA owners | Existing stores/events remain authoritative |
+| Scroll position | Workspace/feature | Restore opportunistically per workspace; do not use global scrollY as route identity |
+
+The existing `retailos.homeUi.v1` storage may be migrated only for useful Home search/scroll preferences. The `activeNav` field is legacy section-navigation state and must not override a valid URL on startup. Any storage migration must be versioned and preserve safe fallback behavior.
+
+### 9.7 Entry, exit and unsaved-work policy
+
+- A full workspace has a stable title, parent destination and explicit Back/Home path.
+- The shell must not unmount a feature merely because a global overlay or unrelated Home state changed.
+- Before leaving a feature with dirty/unsaved work, ask the feature owner for a navigation guard decision. The shell does not inspect feature internals or guess.
+- A successful save/export is confirmed only by the feature's actual completion result.
+- Cancel/close behavior remains feature-owned for Stocktake, Import, Scanner and destructive dialogs.
+- Opening Scanner from quick lookup is an action transition, not a route to a second scanner implementation. Preserve the existing camera lease and engine integration.
+- Logout retains the existing release-camera, session-clear and cache-clear sequence.
+
+### 9.8 Destination inventory and readiness
+
+| Destination / surface | 00E disposition | Reason |
+|---|---|---|
+| Home Overview | P0 workspace | Operational starting point; content hierarchy redesigned in 00G |
+| Module Library | P0 workspace | Canonical discovery surface for current and future modules |
+| Stocktake | P0 operational workspace | Existing dedicated workflow and persistence |
+| Stocktake Import | P0 operational workspace | Existing dedicated workflow and persistence |
+| Settings | P0 workspace/surface | Existing settings and Update Center contracts |
+| Scanner / Barcode Lookup | P0 transient action | Preserve scanner lifecycle; not a duplicate module route |
+| Notifications | P1 global surface | Existing snapshot notices and push setup; keep source truth |
+| Activity | P2 / gated | Current UI is empty placeholder; promote only when a real activity source exists |
+| Inventory, Price, Products, Orders, Delivery, Sales, Product Dates | Future / gated | Registry entries are not proof of complete workflows |
+
+### 9.9 Migration sequence
+
+1. Implement a typed route/destination contract and route parser without changing feature UI.
+2. Add the App Shell frame and workspace outlet; keep current Home and features mounted through an adapter.
+3. Map Home and Module Library to their destinations; migrate Home section state without allowing legacy `activeNav` to override URL.
+4. Mount Stocktake and Stocktake Import as full workspaces through existing feature entry components; retain their internal state machines and persistence.
+5. Move Settings into its destination while preserving Update Center and scanner settings behavior.
+6. Add navigation guards and topmost-overlay Back behavior using existing overlay ownership; do not create a second scroll-lock manager.
+7. Retire old section-scroll navigation and LiquidDock only after all consumers, keyboard behavior and responsive navigation are migrated and regression-tested.
+
+Do not implement this migration during 00E. It is a Phase 02 implementation task after 00F–00H and explicit acceptance.
+
+### 9.10 00E exit criteria
+
+- [x] Current navigation, registry identities and feature boundaries traced to source.
+- [x] Product hierarchy and destination classes defined.
+- [x] Desktop/tablet/mobile shell responsibilities specified.
+- [x] Route identity and module readiness rules defined.
+- [x] Browser Back/Forward, reload, deep-link and unknown-route behavior specified.
+- [x] State ownership and URL serialization boundaries defined.
+- [x] Dirty-work and transient overlay policy defined.
+- [x] Migration sequence and protected boundaries documented.
+- [ ] 00F component ownership inventory completed.
+- [ ] 00G screen blueprints completed.
+- [ ] 00H acceptance/migration plan approved.
+- [ ] User acceptance of this proposed IA before implementation.
+
+**00E completion means the architecture decision is documented. It does not mean routing, App Shell or navigation has been implemented or tested.**
