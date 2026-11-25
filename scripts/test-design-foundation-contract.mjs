@@ -71,5 +71,22 @@ assert.ok(glassTokens.includes(':root[data-power-mode="conserve"]'));
 assert.ok(theme.includes("--color-warning: var(--color-status-warning)"));
 assert.ok(theme.includes("--color-error: var(--color-status-danger)"));
 assert.ok(theme.includes("--surface-card: var(--color-surface-panel)"));
+const glassForegroundContracts = [
+  "--glass-soft-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
+  "--glass-frosted-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
+  "--glass-elevated-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
+  "--glass-floating-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
+  "--glass-control-foreground: var(--color-text-primary, var(--text-primary, #302a30));"
+];
 
-console.log("Design foundation contract passed: semantic tokens, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
+for (const contract of glassForegroundContracts) {
+  assert.ok(glassTokens.includes(contract), `Glass material must consume canonical text token: ${contract}`);
+}
+
+assert.match(theme, /body\\s*\\{[^}]*color:\\s*var\\(--color-text-primary/);
+assert.match(theme, /body\\s*\\{[^}]*font-family:\\s*var\\(--font-family-ui/);
+assert.match(theme, /body\\s*\\{[^}]*font-size:\\s*var\\(--font-size-body/);
+assert.match(theme, /body\\s*\\{[^}]*line-height:\\s*var\\(--line-height-normal/);
+
+
+console.log("Design foundation contract passed: semantic tokens, canonical body and Glass text consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");

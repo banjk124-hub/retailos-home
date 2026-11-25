@@ -164,10 +164,10 @@
 }
 
 body {
-  color: var(--text-primary);
-  font-family: var(--font-family-sans);
-  font-size: var(--font-size-md);
-  line-height: var(--line-height-body);
+  color: var(--color-text-primary, var(--text-primary));
+  font-family: var(--font-family-ui, var(--font-family-sans));
+  font-size: var(--font-size-body, var(--font-size-md));
+  line-height: var(--line-height-normal, var(--line-height-body));
 }
 ::selection { background: #ffd9dd; color: #75101c; }
 button:focus-visible,input:focus-visible,select:focus-visible {
