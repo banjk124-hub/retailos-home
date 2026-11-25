@@ -1,11 +1,11 @@
 # RetailOS M0 — Cross-Surface Prototype Review
 
-**Status:** Visual concept prototype v0.2 generated for product-wide review. It is not production UI, source implementation or final owner-approved design.
+**Status:** Historical structural concept v0.2. Superseded as visual direction by [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md). Retain only for screen coverage and workflow refinement notes; not the visual quality benchmark.
 **Parent direction:** [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md)
 **Reference inputs:** `IMG_1574.jpeg` and `ScreenRecording_11-24-2026 20-25-21_1(1).mp4`.
 **Scope:** Login, core experiences, operational workspaces, system surfaces and mobile composition.
 
-## 1. Prototype intent
+## 1. Prototype intent\n\nThis board is not accepted as the target Art Direction. Its uniform admin layout, repeated cards and conventional red/white dashboard treatment are the exact weaknesses addressed by the M0 reset.
 
 This prototype expands the first M0 concept beyond Home. It tests whether a single RetailOS design language can support:
 - Identity and entry (Login).
