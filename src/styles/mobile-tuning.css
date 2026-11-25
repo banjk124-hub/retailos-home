@@ -1,7 +1,8 @@
 /* Mobile usability pass: prioritize legibility and reliable touch targets. */
 :root {
-  --motion-standard: cubic-bezier(.22,.72,.18,1);
-  --motion-duration: 420ms;
+  /* Legacy aliases now resolve to the shared Motion foundation. */
+  --motion-standard: var(--motion-ease-standard);
+  --motion-duration: var(--motion-duration-interaction);
 }
 
 button,
