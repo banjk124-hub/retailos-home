@@ -1,8 +1,8 @@
 # UI/UX Screen Blueprints — Batch 00G
 
 **Status:** Screen-level implementation blueprints proposed; owner acceptance and 00H migration/acceptance gate remain open.
-**Source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Architecture baseline:** 00B–00F documentation on `docs/uiux-architecture-00b-00c`
+**Original source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
+**Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These remain target blueprints, not current implementation facts.
 **Purpose:** Convert the source-traced screen map and component ownership audit into implementable screen contracts. This document defines the target experience, not current implementation facts.
 
 ## 1. Design intent and operating constraints
