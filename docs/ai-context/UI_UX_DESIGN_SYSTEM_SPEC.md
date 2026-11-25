@@ -155,7 +155,7 @@ Feature modules compose patterns; they do not create new global token sets.
 - Component layer owns reusable visual and interaction behavior.
 - App Shell owns global navigation, page frame and cross-workspace context.
 - Feature modules own domain-specific composition, validation and persistence.
-- Shared platform owns overlay coordination, motion preference, PWA release and shared browser lifecycle.
+- Shared platform currently owns reference-counted body-scroll-lock coordination, motion preference, PWA release and shared browser lifecycle. Focus containment and a global overlay stack are not implemented and are not assumed by this design.
 
 One responsibility must have one canonical implementation. Temporary compatibility aliases are allowed only with an owner and removal milestone.
 
