@@ -4,7 +4,7 @@
 **Audited repository:** `banjk124-hub/retailos-home`
 **Audited ref:** `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` (merge commit for PR #159)
 **Audit date:** 2026-11-25
-**Change scope:** Documentation/architecture governance plus retirement of one confirmed unimported CSS file. No bundled runtime style, dependency, business logic, Scanner Engine, persistence, PWA lifecycle or deployment behavior is intentionally changed.
+**Change scope:** Documentation/architecture governance plus retirement of one confirmed unimported CSS file and three unused Motion public APIs. No bundled runtime style, active component behavior, dependency, business logic, Scanner Engine, persistence, PWA lifecycle or deployment behavior is intentionally changed.
 
 ## 1. Executive result
 
@@ -61,7 +61,7 @@ A focused GitHub code-search pass confirmed these direct consumers on the audite
 | `LiquidDock` | `HomeScreen` | Current section navigation is Home-owned, not a global route shell. |
 | `useBodyScrollLock` | `HomeScreen`, `SettingsHub`, `ScannerSettingsPanel`, `StocktakeModule`, `StocktakeImportModule` | Shared lock is cross-feature infrastructure; do not fork it during overlay redesign. |
 
-This is a targeted direct-import map, not a complete transitive runtime consumer graph. It does not cover every export, dynamic class, portal, CSS selector, runtime branch or indirect composition. The 00F full consumer/cascade audit remains open.
+The public Motion barrel also exposed `MOTION_TOKENS`, `resolveMotionPhase` and `attachMotionPhaseVariables`, but repository-wide source search found no consumer beyond their own declarations/barrel exports. These unused APIs were removed on the Phase 00 branch; the active `MotionPhase`/`MotionState` types, presets, config, wrappers and `getMotionOrigin` remain.\n\nThis is a targeted direct-import map, not a complete transitive runtime consumer graph. It does not cover every export, dynamic class, portal, CSS selector, runtime branch or indirect composition. The 00F full consumer/cascade audit remains open.
 
 ### 3.5 CSS import graph and selector-level findings
 
