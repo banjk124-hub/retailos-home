@@ -31,6 +31,34 @@ This is a product-wide presentation and interaction rebuild, not a rewrite of th
 
 Implication: rebuild by establishing a system and migrating feature surfaces in controlled slices. Do not start by installing a component framework or rewriting every screen in one branch.
 
+## 2.1 Redesign authority and scope
+
+This project is a full presentation and interaction redesign, not a preservation exercise. Any existing presentational element may be rewritten, replaced, relocated, removed or rebuilt when required by the target experience.
+
+This authority explicitly includes:
+- Text, labels, headings, helper copy, status names, empty/error/loading messages and microcopy.
+- Status visualizations, badges, indicators, colors, iconography and their placement.
+- Screen order, content hierarchy, navigation composition, layout, density and responsive structure.
+- Components, patterns, controls, buttons, forms, tables, dialogs, sheets, menus and feedback surfaces.
+- Logo mark, wordmark, brand lockup, icon set, photography, illustrations, typography, fonts, materials, motion and visual effects.
+- Existing shared systems and stylesheets, including Brand, Glass, Motion, Icons, LiquidDock and legacy Home CSS.
+
+The target is not to make the existing UI look newer. It is to create a coherent RetailOS product language by combining the strongest qualities of both references and redesigning every screen and interaction around operational use.
+
+For each screen, review from the blank-page perspective first: what information belongs here, what is primary, what can be removed, what should be combined or separated, and what interaction best serves the task? Only then map existing behaviors and implementation contracts onto the new design.
+
+**Non-negotiable boundary:** presentation may change freely; business meaning and protected platform contracts may not change accidentally. Status semantics, permissions, validation, action outcomes, data truth, module IDs, employee/session identity, Scanner Engine lifecycle, Stocktake/Import persistence and PWA release safety must be preserved or migrated under a separate explicit plan.
+
+Every replacement must document:
+1. Existing responsibility and all consumers/callsites.
+2. Target replacement and its interaction/state contract.
+3. Data, persistence, accessibility and lifecycle behavior to preserve.
+4. Migration and regression tests.
+5. Deletion criteria for obsolete components/styles/assets.
+6. Rollback path.
+
+Do not retain an old logo, icon, button, component, text string or layout merely because it is already implemented. Do not delete a working behavior simply because its current presentation is being replaced.
+
 ## 3. Delivery principles
 
 - One canonical design system.
