@@ -1,7 +1,7 @@
 # UI/UX Screen and Interaction Map — Batch 00C
 
 **Status:** Source-traced AS-IS map and TO-BE information-architecture proposal.
-**Audit baseline:** \`main\` at \`2003ea24966755d0ad4e0298b34422b053267e77\`
+**Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Audit date:** 2026-11-25
 **Purpose:** Describe every confirmed screen/surface, entry point, interaction and important state transition before redesigning layout or navigation.
 
@@ -20,7 +20,7 @@ This document is derived from the current source tree, not from intended future 
 
 ### 2.1 Root journey
 
-\`\`\`text
+```text
 Browser / PWA launch
   └─ App boot
       ├─ No valid EmployeeSession
@@ -30,9 +30,9 @@ Browser / PWA launch
       │               └─ Home Workspace
       └─ Existing EmployeeSession
           └─ Home Workspace
-\`\`\`
+```
 
-Confirmed root states in \`src/App.tsx\`:
+Confirmed root states in `src/App.tsx`:
 
 | State | Entry condition | UI / action | Exit |
 |---|---|---|---|
@@ -41,10 +41,10 @@ Confirmed root states in \`src/App.tsx\`:
 | home | Existing or newly authenticated session | Lazy-loaded HomeScreen | Logout |
 | logout transition | Logout initiated | Camera stream released; transition blocker active | Session and cached module data cleared; return to login |
 | Home chunk loading | Authenticated HomeScreen is lazy-loaded | Visible loading surface | HomeScreen mounted |
-| offline | \`navigator.onLine\` is false | Offline status/banner | Online event |
+| offline | `navigator.onLine` is false | Offline status/banner | Online event |
 
 Protected root behavior:
-- \`readSession\`, \`saveSession\`, \`clearSession\` own session persistence.
+- `readSession`, `saveSession`, `clearSession` own session persistence.
 - Local employee lookup/authentication belongs to auth services.
 - Home readiness reports to the Service Worker using the current BUILD_ID.
 - PWA update blockers prevent release handoff during app transitions.
@@ -52,17 +52,17 @@ Protected root behavior:
 
 ### 2.2 Login Experience
 
-Owner: \`src/features/auth/screens/LoginExperience.tsx\`
+Owner: `src/features/auth/screens/LoginExperience.tsx`
 
 Current component composition:
-- \`LoginHero\`
-- \`LoginForm\`
-- \`LoginDock\`
+- `LoginHero`
+- `LoginForm`
+- `LoginDock`
 - Existing Brand, Glass and Motion components
 
 State machine:
 
-\`\`\`text
+```text
 idle
  ├─ input changes ───────────────> idle (clear prior error)
  └─ submit valid non-empty code ─> submitting
@@ -70,7 +70,7 @@ idle
                                   └─ local auth success ─> success
                                                           └─ authenticated callback
                                                              └─ identity recognition
-\`\`\`
+```
 
 Confirmed interactions:
 - Employee code input is numeric-only at input handling.
@@ -95,7 +95,7 @@ TO-BE direction:
 
 ## 3. Current Home Workspace and navigation
 
-Owner: \`src/features/home/HomeScreen.tsx\`
+Owner: `src/features/home/HomeScreen.tsx`
 
 ### 3.1 Home is currently one long-scroll page
 
@@ -117,7 +117,7 @@ The Home page currently contains:
 6. Footer and version label.
 7. Floating LiquidDock with primary navigation and a central quick-lookup action.
 
-The active navigation state is derived from scroll position and persisted with search text and scrollY in \`retailos.homeUi.v1\`.
+The active navigation state is derived from scroll position and persisted with search text and scrollY in `retailos.homeUi.v1`.
 
 **Important:** this is section navigation, not a route-based multi-screen application. The current module library opens a group sheet; it does not navigate every module into a distinct routed workspace.
 
@@ -144,7 +144,7 @@ Lookup uses cached module snapshots. It must not present “not found” when a 
 
 ### 3.3 Module Library
 
-Owner: \`HomeModuleLibrarySection\`, \`ModuleLibraryEngine\`, \`moduleRegistry.ts\`.
+Owner: `HomeModuleLibrarySection`, `ModuleLibraryEngine`, `moduleRegistry.ts`.
 
 Five current library groups:
 
@@ -201,7 +201,7 @@ TO-BE direction:
 
 ### 4.1 Overlay ownership rules
 
-Existing canonical source: \`UI_OVERLAY_ARCHITECTURE.md\`.
+Existing canonical source: `UI_OVERLAY_ARCHITECTURE.md`.
 
 - Home owns Home overlay state and its page scroll lock.
 - Settings and Scanner Settings own their content and close behavior.
@@ -221,11 +221,11 @@ Current visible release states:
 - staged and waiting for explicit activation confirmation
 - error / activation blocked
 
-The design must preserve the separate user decisions for download consent and activation consent, persistent deferral, business-safe blockers, multi-window safety and rollback. See \`PWA_RUNTIME_RELEASE.md\`.
+The design must preserve the separate user decisions for download consent and activation consent, persistent deferral, business-safe blockers, multi-window safety and rollback. See `PWA_RUNTIME_RELEASE.md`.
 
 ## 5. Stocktake workflow map
 
-Owner: \`src/features/stocktake/components/StocktakeModule.tsx\`
+Owner: `src/features/stocktake/components/StocktakeModule.tsx`
 
 Current screen enum:
 
@@ -265,7 +265,7 @@ Persistence and PWA update blockers are part of the workflow contract. Do not re
 
 ## 6. Stocktake Import workflow map
 
-Owner: \`src/features/stocktake-import/components/StocktakeImportModule.tsx\`
+Owner: `src/features/stocktake-import/components/StocktakeImportModule.tsx`
 
 Current top-level view enum:
 
@@ -313,7 +313,7 @@ Key invariants:
 - The zone navigator and data workspace have separate viewport/scroll responsibilities.
 - A file operation must not be reported successful before it completes.
 
-Canonical domain contracts: \`STOCKTAKE_FILE_IMPORT.md\` and \`modules/EXPORT_FILE.md\`. This screen map does not replace them.
+Canonical domain contracts: `STOCKTAKE_FILE_IMPORT.md` and `modules/EXPORT_FILE.md`. This screen map does not replace them.
 
 ## 7. Cross-cutting interaction/state model
 
@@ -330,7 +330,7 @@ Every future screen and component must model relevant state dimensions separatel
 | validationStatus | valid, warning, invalid, blocked |
 | updateSafetyStatus | safe, blocked with reason, waiting for confirmation |
 
-Do not collapse these into a single \`available\` or \`isReady\` boolean.
+Do not collapse these into a single `available` or `isReady` boolean.
 
 ### Interaction response contract
 
@@ -344,13 +344,13 @@ Do not collapse these into a single \`available\` or \`isReady\` boolean.
 - Focus returns to the initiating control when appropriate.
 - Touch targets, safe areas and keyboard avoidance are part of the component contract.
 
-Existing source: \`UI_INTERACTION_RESPONSIVENESS_AUDIT.md\`, \`UI_OVERLAY_ARCHITECTURE.md\`, \`ACCEPTANCE_CHECKLIST.md\`.
+Existing source: `UI_INTERACTION_RESPONSIVENESS_AUDIT.md`, `UI_OVERLAY_ARCHITECTURE.md`, `ACCEPTANCE_CHECKLIST.md`.
 
 ## 8. Target information architecture (TO-BE proposal)
 
 The future UI must move from “one long Home page plus overlays” to a consistent application shell and explicit workspaces.
 
-\`\`\`text
+```text
 RetailOS App
 ├─ Authentication
 │  ├─ Login
@@ -382,7 +382,7 @@ RetailOS App
       ├─ Product Dates Workspace (when implemented)
       ├─ Stocktake Workspace
       └─ Stocktake Import Workspace
-\`\`\`
+```
 
 This is a target navigation model, not an accepted route implementation. The route strategy must be decided in the architecture phase. A small typed History API adapter is the default candidate; add a router dependency only if nested routes, deep links, loaders, route-level error boundaries or route data ownership justify it.
 
@@ -444,24 +444,24 @@ The following screens must receive a dedicated screen specification before imple
 
 | Concern | Primary source |
 |---|---|
-| Root auth/session/identity | \`src/App.tsx\` |
-| Login states | \`src/features/auth/screens/LoginExperience.tsx\`, LoginForm, LoginHero |
-| Home layout/navigation/overlays | \`src/features/home/HomeScreen.tsx\` |
-| Home UI persistence | \`src/features/home/homeStateStore.ts\` |
-| Module IDs/groups/readiness | \`src/features/home/moduleRegistry.ts\` |
-| Library search | \`src/features/home/components/HomeModuleLibrarySection.tsx\` |
-| Dock behavior | \`src/shared/navigation/LiquidDock.tsx\` |
-| Settings and Update Center | \`src/features/home/components/SettingsHub.tsx\` |
-| Home scanner | \`src/features/scanner/components/BarcodeScanner.tsx\` |
-| Stocktake screens | \`src/features/stocktake/components/StocktakeModule.tsx\` |
-| Stocktake persistence | \`src/features/stocktake/services/stocktakeLocalStore.ts\` |
-| Stocktake Import screens | \`src/features/stocktake-import/components/StocktakeImportModule.tsx\` |
-| Import parser/history | \`src/features/stocktake-import/services/\` |
-| Overlay lifecycle | \`UI_OVERLAY_ARCHITECTURE.md\` |
-| Input response | \`UI_INTERACTION_RESPONSIVENESS_AUDIT.md\` |
-| PWA release lifecycle | \`PWA_RUNTIME_RELEASE.md\` |
-| Scanner contracts | \`SCANNER_ENGINE.md\` |
-| Import business contract | \`STOCKTAKE_FILE_IMPORT.md\` |
+| Root auth/session/identity | `src/App.tsx` |
+| Login states | `src/features/auth/screens/LoginExperience.tsx`, LoginForm, LoginHero |
+| Home layout/navigation/overlays | `src/features/home/HomeScreen.tsx` |
+| Home UI persistence | `src/features/home/homeStateStore.ts` |
+| Module IDs/groups/readiness | `src/features/home/moduleRegistry.ts` |
+| Library search | `src/features/home/components/HomeModuleLibrarySection.tsx` |
+| Dock behavior | `src/shared/navigation/LiquidDock.tsx` |
+| Settings and Update Center | `src/features/home/components/SettingsHub.tsx` |
+| Home scanner | `src/features/scanner/components/BarcodeScanner.tsx` |
+| Stocktake screens | `src/features/stocktake/components/StocktakeModule.tsx` |
+| Stocktake persistence | `src/features/stocktake/services/stocktakeLocalStore.ts` |
+| Stocktake Import screens | `src/features/stocktake-import/components/StocktakeImportModule.tsx` |
+| Import parser/history | `src/features/stocktake-import/services/` |
+| Overlay lifecycle | `UI_OVERLAY_ARCHITECTURE.md` |
+| Input response | `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` |
+| PWA release lifecycle | `PWA_RUNTIME_RELEASE.md` |
+| Scanner contracts | `SCANNER_ENGINE.md` |
+| Import business contract | `STOCKTAKE_FILE_IMPORT.md` |
 
 ## 11. Exit criteria — Batch 00C
 
