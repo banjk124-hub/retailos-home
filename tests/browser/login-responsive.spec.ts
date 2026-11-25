@@ -35,9 +35,15 @@ for (const viewport of viewports) {
       documentHeight: document.documentElement.scrollHeight,
       loginPanelBottom: document.querySelector('.login-experience__panel')?.getBoundingClientRect().bottom ?? 0,
       dockTop: document.querySelector('.login-dock')?.getBoundingClientRect().top ?? 0,
+      rootFontSize: getComputedStyle(document.documentElement).fontSize,
+      employeeInputFontSize: getComputedStyle(document.querySelector('.login-form__input-wrap input')!).fontSize,
+      employeeLabelFontSize: getComputedStyle(document.querySelector('.login-form__field > label')!).fontSize,
     }));
     expect(layout.documentWidth, 'document must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.bodyWidth, 'body must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
+    expect(layout.rootFontSize).toBe('16px');
+    expect(layout.employeeInputFontSize).toBe('16px');
+    expect(layout.employeeLabelFontSize).toBe('12px');
     if (viewport.name === 'short-landscape') {
       expect(layout.documentHeight, 'compact landscape Login must fit without vertical page overflow').toBeLessThanOrEqual(layout.viewportHeight + 1);
       expect(layout.loginPanelBottom + 8, 'Login panel must not collide with the fixed utility dock').toBeLessThanOrEqual(layout.dockTop);
