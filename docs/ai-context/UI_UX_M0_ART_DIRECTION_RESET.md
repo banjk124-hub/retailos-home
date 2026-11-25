@@ -1,3 +1,7 @@
+> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+
+---
+
 # RetailOS M0 Reset — Art Direction & Craft Standard
 
 **Status:** Reset proposal replacing the earlier M0 visual direction as the active design exploration. Requires owner review; not a final accepted design system.

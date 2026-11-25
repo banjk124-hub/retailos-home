@@ -1,3 +1,7 @@
+> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+
+---
+
 # RetailOS M0 — Cross-Surface Prototype Review
 
 **Status:** Historical structural concept v0.2. Superseded as visual direction by [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md). Retain only for screen coverage and workflow refinement notes; not the visual quality benchmark.
