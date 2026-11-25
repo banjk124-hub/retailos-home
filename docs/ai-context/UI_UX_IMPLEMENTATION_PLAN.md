@@ -1,8 +1,8 @@
 # UI/UX Rebuild Implementation Plan
 
-**Status:** M0-A in progress. First editable Figma studies exist for Login, Home, Module Library, Stocktake, Stocktake Import and Settings/Update Center. See [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md) for node IDs, reviewed frames, defects and remaining gates. Source-verified structural studies and owner acceptance remain open.
+**Status:** M0 is executed directly in the RetailOS repository. Figma studies are historical/optional only and are not a delivery dependency or acceptance gate. Active evidence is the source implementation, running application, automated checks and responsive review recorded in implementation PRs.
 **Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Working documentation branch:** `docs/uiux-architecture-00b-00c`
+**Working implementation branch:** isolated `feat/uiux-m0-*` branches from current `main`; PR #156 remains a separate documentation review.
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
 
 ## 1. Objective
@@ -22,13 +22,13 @@ This is a product-wide presentation and interaction rebuild, not a rewrite of th
 
 The initial M0 direction and concept board did not meet the required visual distinction. They are retained as historical structure exploration only. The governing M0 execution contract is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image = structural composition; video = motion, feedback and state behavior; RetailOS = brand, business semantics, data truth and architecture. The source analysis is [UI_UX_M0_REFERENCE_REASSESSMENT.md](./UI_UX_M0_REFERENCE_REASSESSMENT.md). Do not import amber or green palettes from the references. Exact RetailOS token values remain open pending structural prototype and contrast review. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md) remains historical exploration, not the current authority.
 
-M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references. M0-A's source-grounded baseline is [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md); actual Figma deliverables and review status are tracked in [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md).
+M0 proceeds in two independent tracks: M0-A structural design (image-derived, RetailOS-native) and M0-B temporal/interaction design (video-derived, state/data-safe). M0-C integrates them; M0-D validates product-wide quality and owner acceptance. Do not blend the references. M0-A's source-grounded baseline is [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md); direct repository implementation and review evidence are tracked in implementation PRs and [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md).
 
 ## 1.2 M0 — product-wide visual decision gate
 
 M0 scope is product-wide: application shell, core workspaces, operational workflows, system surfaces and shared design language. The governing authority is [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines interface structure/composition; the video defines motion/feedback/state behavior; RetailOS defines its brand, business semantics, data truth and architecture. Neither reference is a palette or product template. Home is one validation surface, not the scope boundary. [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md), [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) and [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md) are exploratory/historical, not governing specifications.
 
-M0 exit requires high-fidelity prototypes across representative surfaces, desktop/tablet/mobile validation, typography/color/contrast decisions, low/mid-range performance validation and explicit owner acceptance. No application-source migration begins merely because the direction document exists.
+M0 exit requires representative source-implemented surfaces, desktop/tablet/mobile validation, typography/color/contrast decisions, low/mid-range performance validation and explicit owner acceptance. Work proceeds in bounded source-first vertical slices; each slice must pass its own acceptance and regression gates. Figma is optional and must not block implementation.
 
 ## 1.3 M0 cross-surface prototype review
 
@@ -106,7 +106,7 @@ Do not retain an old logo, icon, button, component, text string or layout merely
 | 00G | [Screen blueprints](./UI_UX_SCREEN_BLUEPRINTS.md) | P0/P1 screens have desktop/tablet/mobile layout, interaction, state, ownership, accessibility and performance contracts |
 | 00H | [Acceptance and migration blueprint](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md) | Acceptance matrix, protected boundaries, migration slices, regression/device gates and rollback documented; owner decisions remain explicit gates |
 
-Do not begin broad UI source changes before 00G–00H are sufficiently specified and the proposed 00E navigation contract is accepted.
+Do not begin a broad rewrite. Implement one bounded vertical slice at a time after source ownership, protected contracts, acceptance checks and rollback are understood. Shell/navigation migration remains gated by explicit route/history and unsaved-work decisions.
 
 ### Technology and design-system decision gate (applies across Phase 00–10)
 
@@ -477,8 +477,9 @@ Each shared component specification must contain:
 - 00D: source-level design-system audit and proposed specification documented in `UI_UX_DESIGN_SYSTEM_SPEC.md`; contrast/font/device validation remains open.
 - 00E: source-grounded information architecture/navigation decision documented in `UI_UX_SCREEN_MAP.md` §9; implementation not started and owner acceptance remains open.
 - 00F: source-level component inventory and ownership decisions documented in `UI_UX_COMPONENT_AUDIT.md`; selector-level CSS audit, complete consumer graph and physical validation remain open.
-- 00G: screen-level blueprints documented in `UI_UX_SCREEN_BLUEPRINTS.md`; high-fidelity prototype and owner acceptance remain open.
-- 00H: acceptance/migration blueprint documented in `UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md`; owner approval, high-fidelity prototype and device targets remain open.
-- Application source changes: none in this documentation batch.
-- Dependencies installed: none.
-- Merge/deploy: not performed.
+- 00G: screen-level blueprints documented in `UI_UX_SCREEN_BLUEPRINTS.md`; direct in-repository implementation and owner acceptance remain open.
+- 00H: acceptance/migration blueprint documented in `UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md`; source-level validation, owner approval for merge/release and device targets remain open.
+- Figma: historical/optional only; no further Figma work is planned.
+- Application source work: proceeds on isolated implementation branches in bounded slices.
+- Dependencies: do not add unless a demonstrated source-level gap justifies them.
+- Merge/deploy: not performed without separate approval.
