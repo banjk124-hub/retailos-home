@@ -24,7 +24,7 @@ At the audited main commit:
 
 - 245 tracked blob files.
 - 152 files under `src/`.
-- 25 CSS files under `src/`.
+- 24 CSS files under `src/` on the Phase 00 audit branch (25 at the audited main baseline; one unimported file retired).
 - 41 `scripts/test-*.mjs` files.
 - 9 registered RetailModule IDs and 5 module-library groups.
 - 6 direct runtime dependencies and 6 direct development dependencies in package.json.
@@ -80,7 +80,7 @@ No new package is required merely to create buttons, forms, menus, dialogs, resp
 
 `HomeScreen.tsx` additionally imports five Home stylesheets: `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css` and `home-architecture.css`.
 
-The repository therefore has 25 CSS files in total, including feature-owned styles. The current Home cascade has multiple generations of layout and visual rules. This is a confirmed maintainability risk; it is not proof that every selector is redundant or that all files should be deleted.
+The audited main baseline had 25 CSS files in total, including feature-owned styles; the Phase 00 audit branch has 24 after retiring the unimported `home-phase2.css`. The active Home cascade still has five imported generations of layout and visual rules. This is a confirmed maintainability risk; it is not proof that every selector is redundant or that all files should be deleted.
 
 **Required next audit before CSS migration:** selector usage, import graph, specificity/cascade map, computed-style ownership, media-query overlap, dead selector evidence, feature chunk boundaries and screenshot regression coverage. Do not remove a stylesheet based on filename or visual impression alone.
 
@@ -183,7 +183,7 @@ Do not reject a framework, router or library merely because RetailOS does not cu
 
 1. No single canonical UI/UX architecture document currently defines tokens, components, layout, navigation, motion, responsive behavior and extension rules together.
 2. Home uses a long page with section navigation and multiple overlays rather than a first-class workspace navigation contract.
-3. Global and Home CSS ownership is distributed across 13 entry-level/global and Home stylesheets, with 25 CSS files across the full source tree.
+3. Global and Home CSS ownership is distributed across 13 entry-level/global and Home stylesheets, with 24 CSS files across the Phase 00 audit branch (25 on its parent main baseline).
 4. Shared Glass and Motion foundations exist, but there is no complete documented component inventory, variant contract, accessibility contract or contribution recipe.
 5. The current route model is state-driven and has no installed routing package. A route strategy has not been accepted.
 6. The current module registry contains future/integrating modules; the UI architecture must not treat their presence as proof of a completed workflow.
