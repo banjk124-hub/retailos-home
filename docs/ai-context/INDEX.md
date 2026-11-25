@@ -14,22 +14,27 @@ This file is the navigation layer for repository documentation. Read one canonic
 
 | Topic | Canonical document |
 |---|---|
+| Product-wide UI/UX principles, design system, component ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |
+| Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
+| Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
+| UI/UX rebuild phases, priorities, documentation goals, acceptance and rollback | [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md) |
 | Scanner current architecture, ownership, lifecycle, ROI, pipeline, decoder, limits, validation, tests and current status | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical phases, investigations, decisions, incidents and cleanup history | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
 | Scanner future priorities | [ROADMAP.md](./ROADMAP.md) |
-| Cross-feature overlays, scroll locking and viewport behavior | `UI_OVERLAY_ARCHITECTURE.md` |
-| Physical desktop/Android/iOS UI acceptance | `UI_OVERLAY_ACCEPTANCE.md` |
-| Home performance reconciliation | `HOME_PERFORMANCE_RECONCILIATION.md` |
-| UI interaction responsiveness | `UI_INTERACTION_RESPONSIVENESS_AUDIT.md` |
+| Cross-feature overlays, scroll locking and viewport behavior | [UI_OVERLAY_ARCHITECTURE.md](./UI_OVERLAY_ARCHITECTURE.md) |
+| Physical desktop/Android/iOS UI acceptance | [UI_OVERLAY_ACCEPTANCE.md](./UI_OVERLAY_ACCEPTANCE.md) |
+| Home performance reconciliation | [HOME_PERFORMANCE_RECONCILIATION.md](./HOME_PERFORMANCE_RECONCILIATION.md) |
+| UI interaction responsiveness | [UI_INTERACTION_RESPONSIVENESS_AUDIT.md](./UI_INTERACTION_RESPONSIVENESS_AUDIT.md) |
 | PWA runtime and release contract | [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) |
 | Bundle analysis, code splitting and performance evidence | [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md) |
-| Stocktake import file contract | `STOCKTAKE_FILE_IMPORT.md` |
-| Export utilities | `modules/EXPORT_FILE.md` |
-| Login Phase 2 history | `docs/implementation/LOGIN_PHASE2_HISTORY.md` |
+| Stocktake import file contract | [STOCKTAKE_FILE_IMPORT.md](./STOCKTAKE_FILE_IMPORT.md) |
+| Export utilities | [modules/EXPORT_FILE.md](./modules/EXPORT_FILE.md) |
+| Login Phase 2 history | [docs/implementation/LOGIN_PHASE2_HISTORY.md](../implementation/LOGIN_PHASE2_HISTORY.md) |
 
 ## AI context loading policy
 
 - Default session-start set: `AGENTS.md`, this index, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`.
+- For UI/UX architecture, start with `UI_UX_ARCHITECTURE.md`; load the technology audit, screen map and implementation plan according to the task.
 - For scanner work, load `SCANNER_ENGINE.md` first. Load `SCANNER_HISTORY.md` only for a specific historical question or incident.
 - Do not load multiple old scanner phase documents as competing specifications.
 - Verify volatile facts (branch, commit, PR, CI, deployment) against GitHub before updating current-state documents.
@@ -44,7 +49,13 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `AI_HANDOFF.md`: one current handoff at top; old handoffs labelled historical.
 - `SESSION_LOG.md`: chronological session breadcrumbs.
 - `CHANGELOG_AI.md`: concise implementation evidence, not repeated session narratives.
+- `UI_UX_ARCHITECTURE.md`: product-wide design and component contract.
+- `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
+- `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
+- `UI_UX_IMPLEMENTATION_PLAN.md`: implementation sequencing, acceptance and rollback.
 - Scanner current truth: `SCANNER_ENGINE.md`; scanner history: `SCANNER_HISTORY.md`.
 - PWA runtime/release truth: `PWA_RUNTIME_RELEASE.md`.
+- Overlay lifecycle truth: `UI_OVERLAY_ARCHITECTURE.md`.
+- UI input responsiveness evidence: `UI_INTERACTION_RESPONSIVENESS_AUDIT.md`.
 
 Scanner documentation has exactly two canonical files: `SCANNER_ENGINE.md` for current implementation truth and `SCANNER_HISTORY.md` for investigations, decisions and historical evidence. Do not create standalone phase/audit documents for Scanner. Add new durable Scanner knowledge to one of these two files; keep unrelated feature documentation out of Scanner context.
