@@ -39,7 +39,9 @@ Implication: rebuild by establishing a system and migrating feature surfaces in 
 - One motion vocabulary.
 - One semantic state vocabulary.
 - Feature-owned business logic and persistence.
-- Native-first for standard browser behavior.
+- Outcome-first technology selection: native APIs, existing dependencies and new frameworks/libraries are all eligible; choose by evidence, not ideology.
+- A framework, router or specialist library may be added or replace current code when it materially improves the intended experience or reduces complexity/risk.
+- Every adoption must include a consolidation plan; do not create parallel component, routing, animation or styling systems without a bounded migration reason.
 - Shared components only for genuinely shared structure/behavior.
 - Visual parity is not enough; workflows and failure states must remain correct.
 - Each slice is independently reviewable, testable and reversible.
@@ -61,6 +63,12 @@ Implication: rebuild by establishing a system and migrating feature surfaces in 
 | 00H | Acceptance and migration blueprint | Test matrix, protected boundaries, rollout slices and rollback plan approved |
 
 Do not begin broad UI source changes before 00D–00H are sufficiently specified.
+
+### Technology decision gate (applies across Phase 00–10)
+
+The audit's initial native-first recommendations are starting hypotheses, not restrictions. During 00D–00F, re-evaluate the stack against the combined reference direction and RetailOS product requirements. If the current React/CSS/native foundation cannot deliver the required navigation, composition, motion, accessibility or responsive behavior cleanly, select and integrate a suitable framework/router/library. Record alternatives, compatibility, bundle/runtime cost, ownership, migration, tests and rollback. Paid services or changes to protected data/backend/security contracts remain separate approval gates.
+
+A selected technology must simplify or materially improve the final system. It must not become another permanent layer beside an existing subsystem that performs the same job.
 
 ### Phase 01 — Design System foundation
 
@@ -85,7 +93,7 @@ Acceptance:
 - No unexplained hardcoded colors/radii/spacing in newly touched components.
 - Existing Home/Scanner/Stocktake/Import tests remain green.
 - Desktop and mobile screenshots reviewed.
-- No new UI dependency unless separately approved.
+- No unjustified UI dependency. A justified framework/library is permitted under the Technology decision gate and must be included in the migration and acceptance evidence.
 
 ### Phase 02 — App Shell and navigation
 
