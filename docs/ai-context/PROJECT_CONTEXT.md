@@ -13,4 +13,5 @@
 - Authentication/session, module registry identity/readiness, snapshot/cache, Scanner Engine, Stocktake/Import persistence/output, overlay body-scroll-lock and PWA release lifecycle are protected contracts during presentation migration.
 - Scanner runtime stabilization and ecosystem cleanup are closed. Current implementation truth is in `SCANNER_ENGINE.md`; historical investigations are in `SCANNER_HISTORY.md`. Do not reopen SC-01–SC-05 for the UI redesign.
 - Development GitHub Pages is not the shared department production environment or production promotion. Merge, deployment and production transfer remain separate approvals.
-- Current volatile branch/PR/CI/deployment state must be verified live. PR #159 head CI #1465 passed; this is not post-merge CI or physical-device acceptance.
+- PR #159 head CI #1465 passed. Post-merge main CI #1466 and GitHub Pages deployment #159 both completed successfully on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These are automated pipeline/deployment results, not physical-device acceptance.
+- Current volatile branch/PR/CI/deployment state must still be verified live before future status claims.
