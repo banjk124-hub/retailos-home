@@ -1,6 +1,6 @@
 # RetailOS Design System Specification — Batch 00D
 
-**Status:** Proposed specification; no design tokens or application styles are implemented by this document.
+**Status:** Governing design-system specification. Phase 01 implementation evidence and deviations are tracked in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); not every proposed token, material role or component migration is implemented.
 **Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. Proposed tokens remain unimplemented.
 **Date:** 2026-11-25
