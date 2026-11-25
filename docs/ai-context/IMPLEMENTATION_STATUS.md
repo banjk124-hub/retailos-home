@@ -1,9 +1,9 @@
-# Current verified implementation status — 2026-11-25
+# Current verified implementation status — 2026-11-26
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Product standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
 **Active M0 specification:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md)  
-**Last verified main:** `3cd2d5bf7a3d1339a6c55baa1c16c74f6ebece2c` — recheck before future work.
+**Last verified main:** `4e654ffb519d8b124f3edbbbda4f65fe550052ef` — M0-0 PR #163 merged; verify live before future work.
 
 ## UI/UX — owner-confirmed direction
 - Burgundy/dark-red brand remains dominant.
@@ -15,8 +15,8 @@
 
 ## M0 status
 - Direction anchors are confirmed.
-- **M0-0 documentation consolidation and plugin parity audit: complete on the PR branch.**
-- M0-A source-backed representative screens/responsive visual acceptance: open.
+- **M0-0 documentation consolidation and plugin parity audit: merged to main via PR #163.**
+- M0-A source baseline audit Batch A0: completed on branch `feat/m0-a-source-audit-foundation`; full visual direction, screen blueprints and owner acceptance remain open. See [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md).
 - M0-B motion/interaction study: open.
 - M0-C cross-surface integration: open.
 - M0-D technology/quality/owner acceptance: open.
@@ -26,11 +26,19 @@
 PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged. They provide audit records, semantic tokens and limited consumer migrations/browser coverage; they do not implement product-wide UI/UX or the target App Shell.
 
 ## Open PRs — recheck live
-- PR #163: documentation/Product Skill/M0 consolidation; open Draft at last check. Verify current exact head and CI before review; no merge approval is implied.
-- PR #157: legacy Login tablet CSS slice; open Draft at last check. Reconcile against merged PR #162, do not merge by default.
+- PR #163: documentation/Product Skill/M0 consolidation; merged to main at `4e654ffb519d8b124f3edbbbda4f65fe550052ef`.
+- PR #157: legacy Login tablet CSS slice; still open Draft and based on an older main baseline. Reconcile exact diff against PR #162 and current M0-A direction; do not merge by default.
 
 ## Plugin parity
 Private RetailOS Product Studio is now v0.1.3. Its current `SKILL.md`, root manifest and Codex manifest were inspected after release. The skill explicitly encodes the owner-confirmed burgundy/dark-red identity, Vietnamese-first typography, authentic retail imagery, image art-direction/composition role, video motion/interaction role, open feature-specific design system, protected contracts and M0-before-M1 gate. Repository/plugin direction is aligned at the audited release. Recheck parity whenever either authority changes.
+
+## M0-A source baseline findings
+- Home is still a long-scroll surface; no route-based App Shell is implemented.
+- HomeScreen is approximately 54 KB and owns several cross-surface state domains; map ownership before extraction.
+- `mobile-tuning.css` is 87,267 bytes; CSS cascade requires computed-style evidence before cleanup.
+- Current brand token is `#d92736` / deep `#a91829`; final burgundy values remain open.
+- Current font stack is Inter/system; no retail photography is checked into public/source assets.
+- Responsive Playwright baseline is Login-only; other representative screens need coverage.
 
 ## Scanner
 Runtime stabilization and ecosystem cleanup are closed; owner confirmed normal app flow without observed errors. Production decoder is ZXing-C++ WASM via `ZXingWasmDecoderAdapter` on Main Thread. Home and Stocktake share Scanner Engine/session contract. Retired Worker prototype and production QA diagnostics collector/monitor remain retired. No active SC-01–SC-05 phase. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Operational stability is not quantified optical accuracy or exhaustive device acceptance.
