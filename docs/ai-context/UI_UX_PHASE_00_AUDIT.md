@@ -123,13 +123,13 @@ The source import graph was checked at the audited baseline. Import ownership an
 | ID | Decision / evidence needed | Current disposition | Gate |
 |---|---|---|---|
 | P00-01 | Route identity, History API adapter, back/forward, reload, deep links and unknown paths | 00E defines a typed History API adapter and stable workspace paths; same-URL transient history entries are now specified for Back-dismissable overlays. Owner acceptance remains open. | Before Shell implementation |
-| P00-02 | Desktop navigation form and workspace composition | Prototype/owner decision required | Before Shell implementation |
+| P00-02 | Desktop navigation form and workspace composition | 00E recommends persistent collapsible rail/sidebar on desktop, adaptive rail/drawer on tablet and compact bottom navigation on mobile. Exact widths/composition require visual validation and owner acceptance. | Before Shell implementation |
 | P00-03 | Typography and Vietnamese glyph/weight/load/offline validation | No final font decision | Before foundation implementation |
 | P00-04 | Final brand palette, semantic status contrast, material and photography direction | Principles accepted; exact values/asset direction remain open | Before foundation implementation |
 | P00-05 | Shared focus manager/overlay stack | Shared reference-counted body lock is implemented. Focus entry/return and Escape handling are feature-local; no focus containment or shared stack exists. Recommend native `dialog` for standard modal surfaces and feature-owned custom surfaces for scanner/data workspaces; do not add a generic overlay manager unless real nested-stack cases cannot be handled by these contracts. | Validate native dialog compatibility and nested feature cases before Shell implementation |
 | P00-06 | Full selector-level CSS usage/computed-style audit | Not completed | Mandatory before broad CSS deletion/consolidation |
 | P00-07 | Complete shared component/export consumer graph, including dynamic class/portal use | Partial inventory only | Mandatory before retiring shared systems |
-| P00-08 | Exact desktop/tablet/iOS/Android/low-end reference device matrix | Not confirmed | Before device acceptance |
+| P00-08 | Exact desktop/tablet/iOS/Android/low-end reference device matrix | A repeatable viewport baseline is now documented in 00H (320–1920px widths); physical reference device models and OS/browser versions remain unconfirmed. | Before device acceptance |
 | P00-09 | First source slice ordering and exact scope | Recommend foundation validation → shell skeleton, but dependent on P00-01–04 | Owner authorization required |
 | P00-10 | Activity event source/schema/retention/permissions | No verified event source | Keep Activity gated |
 | P00-11 | Open PR #157 disposition | Stale draft on old base; not a required dependency | Owner decision; do not merge by default |
