@@ -67,6 +67,99 @@
   --blue: var(--retail-red);
   --blue-dark: var(--retail-red-deep);
   --glass: var(--retail-glass);
+
+  /* RetailOS Design Foundation — canonical semantic roles. */
+  --color-brand-primary: var(--brand-color-primary);
+  --color-brand-strong: var(--brand-color-primary-deep);
+  --color-brand-subtle: var(--brand-color-primary-soft);
+  --color-text-primary: #302a30;
+  --color-text-secondary: #716970;
+  --color-text-muted: #6f6870;
+  --color-text-inverse: #fff;
+  --color-surface-canvas: #fffafa;
+  --color-surface-panel: #fff;
+  --color-surface-raised: #fff;
+  --color-surface-subtle: #f6eff0;
+  --color-surface-input: #fff;
+  --color-border-subtle: rgba(105,77,83,.18);
+  --color-border-strong: rgba(105,77,83,.34);
+  --color-status-success: #187456;
+  --color-status-warning: #875014;
+  --color-status-danger: #b42332;
+  --color-status-info: #356a8d;
+  --color-status-neutral: #625b62;
+
+  /* Typography roles: no remote font dependency; platform fallback remains authoritative. */
+  --font-family-ui: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-data: var(--font-family-ui);
+  --font-size-2xs: .6875rem;
+  --font-size-caption: .75rem;
+  --font-size-label: .8125rem;
+  --font-size-body-sm: .875rem;
+  --font-size-body: 1rem;
+  --font-size-body-lg: 1.125rem;
+  --font-size-heading-sm: 1.25rem;
+  --font-size-heading: 1.5rem;
+  --font-size-heading-lg: clamp(1.625rem, 2.4vw, 2rem);
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-heavy: 800;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
+  --letter-spacing-label: .045em;
+  --font-variant-data: tabular-nums lining-nums;
+
+  /* 4px spacing rhythm with semantic aliases. */
+  --space-0: 0;
+  --space-0-5: .125rem;
+  --space-1-5: .375rem;
+  --space-7: 1.75rem;
+  --space-12: 3rem;
+  --space-inline-compact: var(--space-2);
+  --space-inline-default: var(--space-3);
+  --space-inset-compact: var(--space-3);
+  --space-inset-default: var(--space-4);
+  --space-section: var(--space-8);
+
+  /* Surface geometry and elevation roles. */
+  --radius-xs: .375rem;
+  --radius-control: .75rem;
+  --radius-panel: 1rem;
+  --radius-feature: 1.5rem;
+  --elevation-0: none;
+  --elevation-1: 0 1px 3px rgba(45,25,30,.06);
+  --elevation-2: 0 8px 24px rgba(45,25,30,.08);
+  --elevation-3: 0 16px 40px rgba(45,25,30,.14);
+  --elevation-4: 0 24px 64px rgba(35,17,22,.22);
+
+  /* Focus and responsive layout contracts. */
+  --focus-color: #a91829;
+  --focus-outline: 2px solid var(--focus-color);
+  --focus-outline-offset: 3px;
+  --layout-content-max: 1440px;
+  --layout-page-gutter: clamp(1rem, 2.4vw, 2rem);
+  --layout-breakpoint-mobile: 700px;
+  --layout-breakpoint-tablet: 1024px;
+  --layout-breakpoint-wide: 1440px;
+
+  /* Compatibility aliases; migrate consumers before removing these names. */
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --surface-page: var(--color-surface-canvas);
+  --surface-card: var(--color-surface-panel);
+  --surface-raised: var(--color-surface-raised);
+  --surface-muted: var(--color-surface-subtle);
+  --surface-input: var(--color-surface-input);
+  --border-soft: var(--color-border-subtle);
+  --color-success: var(--color-status-success);
+  --color-warning: var(--color-status-warning);
+  --color-error: var(--color-status-danger);
+  --color-info: var(--color-status-info);
+  --color-neutral: var(--color-status-neutral);
 }
 
 body {
