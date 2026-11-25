@@ -44,7 +44,17 @@ for (const viewport of viewports) {
 
     await page.keyboard.press('Tab');
     await expect(employeeCode).toBeFocused();
-    const focusStyle = await employeeCode.evaluate((element) => {
+    const glassFocus = await page.locator('.login-form__input-wrap').evaluate((element) => ({
+      boxShadow: getComputedStyle(element).boxShadow,
+      rippleOpacity: getComputedStyle(element.querySelector('.login-form__focus-ripple')!).opacity,
+    }));
+    expect(glassFocus.boxShadow).not.toBe('none');
+    expect(glassFocus.rippleOpacity).toBe('1');
+
+    await employeeCode.fill('0');
+    await page.keyboard.press('Tab');
+    await expect(submit).toBeFocused();
+    const focusStyle = await submit.evaluate((element) => {
       const style = getComputedStyle(element);
       return {
         outlineWidth: style.outlineWidth,
