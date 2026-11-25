@@ -110,13 +110,13 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 
 - The Home redesign's `--ro-red-soft` local alias and the remaining mobile-tuning soft-red surface now delegate to `--color-brand-subtle`, retaining the exact `#fff0f1` fallback for compatibility.
 - The contract test now covers the canonical Home section, Home redesign alias and mobile-tuning consumer. No feature-specific colors or alpha overlays were normalized.
-- Exact-head CI is pending.
+- Exact latest-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`, including the expanded color-token contract and five-viewport browser suite.
 
 ### 3.18 Login typography consumer migration
 
 - Login's form label, panel helper, input, primary action, employee identity metadata and help heading now consume the canonical label/caption/body/body-sm typography roles where their previous pixel values exactly matched the token scale at the default 16px root.
 - The existing resolved values remain 12px, 13px, 14px and 16px at the default root; the use of rem-based semantic tokens also allows these roles to scale with the root font size rather than remaining fixed pixels.
-- The design-foundation contract guards token ownership, and Playwright checks the computed root/input/field-label sizes across all five responsive viewports. Exact-head CI is pending.
+- The design-foundation contract guards token ownership, and Playwright checks the computed root/input/field-label sizes across all five responsive viewports. Exact-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`.
 
 ### 3.17 Login primary-brand consumer migration
 
@@ -128,13 +128,13 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 
 - The canonical Home stylesheet section in `theme.css` now consumes `--color-brand-subtle` for its repeated soft-red surfaces and `--color-brand-primary` for exact primary-red accents, including the active navigation edge, hero gradient stop and FMCG brand motion color.
 - The substitutions resolve to the existing exact values (`#fff0f1` and `#d92736`); no color, opacity, gradient stop or state meaning was changed. Eight-digit alpha colors and nearby but non-identical feature tones remain untouched.
-- The design-foundation contract now rejects raw canonical brand hex values in the Home consumer section and requires the semantic roles. Exact-head preflight is pending.
+- The design-foundation contract rejects raw canonical brand hex values in the Home consumer section and requires the semantic roles. Exact-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`.
 
 ### 3.15 Reduced-motion and power-conserve browser contract
 
 - Added a browser test that emulates the operating-system `prefers-reduced-motion: reduce` setting and verifies Login Glass transitions collapse to the 0.01ms policy and the panel animation is disabled.
 - The same test activates the existing `data-power-mode="conserve"` presentation contract and checks the actual computed Glass backdrop values: the frosted panel uses the defined 8px reduced blur and the control surface uses 0px blur.
-- This validates existing presentation policies without changing the motion provider, user preference persistence, Glass material definitions or app runtime state. Exact-head CI is pending.
+- This validates existing presentation policies without changing the motion provider, user preference persistence, Glass material definitions or app runtime state. Exact-head CI #1560 and #1574 passed.
 
 ### 3.14 Compact desktop-landscape Login correction
 
@@ -189,7 +189,7 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 
 1. [x] Run the new foundation contract test and full `npm run preflight` on source commit `31f2ed23fbbd189cf796029cb955fac348c1c2d6` (GitHub Actions run #1518).
 2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and PR-base bundle comparison on the same exact source commit.
-3. [ ] Pass the new Playwright Chromium browser smoke suite on the exact PR head and review its five viewport screenshots.
+3. [x] Pass the Playwright Chromium Login browser smoke suite on the exact PR head and review the five responsive viewport screenshots; latest evidence: CI #1574.
 4. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
 5. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
 6. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
@@ -206,4 +206,4 @@ Continue the remaining Phase 01 batches on this branch only after reviewing the 
 - Migration of only directly verified shared consumers to semantic tokens.
 - Phase 01 acceptance record and synchronized INDEX / IMPLEMENTATION_STATUS / ROADMAP / handoff documents.
 
-Foundation source CI evidence: [run #1519](https://github.com/banjk124-hub/retailos-home/actions/runs/45567211808). The first browser run [#1529](https://github.com/banjk124-hub/retailos-home/actions/runs/45569610388) passed preflight, TypeScript/build, Pages build and bundle comparison, but failed because the CSS opacity transition was sampled mid-flight. The assertion now waits for its settled value. The initial responsive suite passed in #1532; screenshot-driven compact-landscape corrections then progressed through #1539 and #1542 before #1545 passed the viewport-fit and dock-clearance gates. Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
+Foundation source CI evidence: [run #1519](https://github.com/banjk124-hub/retailos-home/actions/runs/45567211808). The first browser run [#1529](https://github.com/banjk124-hub/retailos-home/actions/runs/45569610388) exposed an assertion that sampled the CSS opacity transition mid-flight; the test now waits for its settled value. Screenshot-driven compact-landscape corrections progressed through #1539 and #1542 before #1545 passed the viewport-fit and dock-clearance gates. Subsequent exact-head CI #1560, #1564, #1569 and #1574 passed the expanded motion, semantic color and Login typography contracts. Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
