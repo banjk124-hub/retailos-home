@@ -39,10 +39,10 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** 00B–00H architecture and source audits are documented on the open Draft PR #156. M0 reference roles are now explicit; M0-A structural design is in progress. No application source migration has started.
+**Status:** 00B–00H architecture and source audits are documented on the open Draft PR #156. M0-A has an initial editable Figma batch; review defects and remaining frames are tracked in `UI_UX_M0_A_EXECUTION_RECORD.md`. No application source migration has started.
 
 - Canonical reference authority: [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md): image=structure, video=motion/state, RetailOS=brand/business/data authority.
-- M0-A structural specification: [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).
+- M0-A structural specification: [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md).\n- M0-A execution evidence and Figma frames: [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md).
 - M0-B temporal/motion contract: same reference roles contract, with feature-owned state and data-correctness constraints.
 - Source truth: [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md), [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md), [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
 - Design and implementation contracts: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md), [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md), [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md), [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md), [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
