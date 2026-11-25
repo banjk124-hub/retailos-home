@@ -17,6 +17,8 @@ const requiredThemeTokens = [
   "--layout-content-max"
 ];
 
+assert.ok(!theme.includes("\\n"), "Theme CSS must not contain escaped newline sequences");
+
 for (const token of requiredThemeTokens) {
   assert.ok(theme.includes(token), `Missing canonical foundation token: ${token}`);
 }
