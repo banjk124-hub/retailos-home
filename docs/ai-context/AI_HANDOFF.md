@@ -14,7 +14,7 @@
 
 ## Governance continuation
 - PR #165 records BATCH 00 inventory and contradiction findings; open Draft, review/merge pending.
-- BATCH 01 is being implemented on a dependent branch based on the BATCH 00 audit branch. It defines component/pattern governance, technology evaluation, glossary, deprecation/removal, decision lifecycle and canonical navigation.
+- BATCH 01 is implemented on dependent PR #166, based on the BATCH 00 audit branch; review and exact-head CI pending. It defines component/pattern governance, technology evaluation, glossary, deprecation/removal, decision lifecycle and canonical navigation.
 - Product Studio remains v0.1.3. Do not update plugin until repository standards are reviewed and accepted.
 - PR #164 is the M0-A source baseline/blueprint branch. Its Figma blocker language is being removed. Source-code prototypes and running browser inspection are the required validation path.
 - PR #157 is closed and unmerged; do not treat its legacy CSS as accepted implementation.
