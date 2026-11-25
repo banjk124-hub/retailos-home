@@ -243,7 +243,7 @@ Any diff touching a protected implementation area is a scope breach unless the P
 
 ## 7. CSS, component and architecture cleanup gate
 
-The source audit found 25 CSS files, several Home stylesheet generations and a large mobile tuning stylesheet. File size, age or name alone does not prove dead code.
+The audited main baseline had 25 CSS files; the Phase 00 audit branch has 24 after retiring the unimported `home-phase2.css`. Five active Home stylesheets and the large mobile tuning stylesheet remain cascade/ownership risks. File size, age or name alone does not prove dead code.
 
 Before deleting or consolidating a CSS/component system:
 1. Enumerate imports and runtime consumers from the implementation branch.
