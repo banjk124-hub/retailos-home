@@ -8,6 +8,12 @@
 
 ## 1. Design intent and product language
 
+**Reference authority:** [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md) is governing. The image informs structural composition only; the video informs motion/feedback/state behavior only; RetailOS defines brand, business semantics and data truth. Never merge the reference palettes or copy their product semantics.
+
+**M0-A structure:** [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md) is the current source-grounded structural specification. Exact tokens, fonts, navigation geometry and component styling remain proposals until individual screen prototypes and contrast/device checks are accepted.
+
+**M0-B motion:** motion and animation are presentation-only. They must reflect source-owned state, never drive business state, persistence, fetches, writes, subscriptions or platform lifecycle.
+
 RetailOS is an operational workspace, not a generic admin template and not an AppSheet skin.
 
 The target language combines:
