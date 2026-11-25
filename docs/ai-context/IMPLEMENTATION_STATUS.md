@@ -9,11 +9,11 @@
 
 - Phase 00 is closed in merged PR #160; merge commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`.
 - Phase 01 implementation is underway on `feat/uiux-phase-01-foundation`, based on that main commit.
-- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, and adds a foundation contract test to preflight.
+- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, migrates body and five light Glass material foregrounds to canonical text tokens, and extends the foundation contract test.
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
-- Exact-head GitHub Actions run #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9` (full preflight, TypeScript, production build, Pages build and bundle comparison). Browser visual QA and physical-device acceptance remain open; no merge or deployment is claimed.
+- Exact source-head GitHub Actions run #1513 passed on `a12db10379aca098e6969d89a76ab35df1472f58` (full preflight, TypeScript, production build, Pages build and PR-base bundle comparison). Browser visual QA and physical-device acceptance remain open; no merge or deployment is claimed.
 - PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner

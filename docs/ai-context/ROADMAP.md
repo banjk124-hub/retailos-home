@@ -42,10 +42,10 @@ The project owner's operational confirmation is not a quantified optical benchma
 **Status:** Phase 00 is closed in merged PR #160 at `main` commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. Phase 01 Design Foundation is active in PR #161; it is not merged and no deployment is authorized.
 
 - Active PR: [#161 — Phase 01 Design Foundation](https://github.com/banjk124-hub/retailos-home/pull/161), branch `feat/uiux-phase-01-foundation`.
-- The first source batch establishes semantic tokens, aligns mobile motion aliases with the shared Motion system, connects Brand typography, adds a contrast/token contract test and records source audit evidence.
+- Source batches establish semantic tokens, align mobile motion aliases with shared Motion, connect Brand typography, migrate body and five light Glass material foregrounds to canonical text roles, extend contract tests and record source-level motion/CSS ownership findings.
 - Existing Glass materials and protected feature/platform contracts remain intact; no broad CSS deletion, new font package, or second design system is introduced.
 - Be Vietnam Pro is the leading Vietnamese typography candidate for evaluation, not yet selected or bundled.
-- Exact-head CI run #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass role acceptance, computed-style/cascade review and responsive visual QA.
+- Exact source-head CI run #1513 passed on `a12db10379aca098e6969d89a76ab35df1472f58`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review and responsive visual QA.
 - Do not merge or deploy Phase 01 until source review, browser/responsive visual QA and remaining owner/device acceptance are recorded.
 - Phase 00's image/video authority remains: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
 - Current App/Auth/Home source remains the AS-IS baseline. The target Shell/navigation migration is a later phase and is not part of Phase 01.

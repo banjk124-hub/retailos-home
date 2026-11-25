@@ -21,7 +21,7 @@ Read [INDEX.md](./INDEX.md), then load only the canonical documents and source/t
 - Phase 00 is closed at merged main commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`; see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md).
 - Active work is PR [#161 — Phase 01 Design Foundation](https://github.com/banjk124-hub/retailos-home/pull/161), branch `feat/uiux-phase-01-foundation`.
 - Read [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md) for exact implemented scope, evidence and open gates.
-- Current source changes: semantic tokens in `src/styles/theme.css`; Brand typography token consumption; mobile legacy motion aliases routed to shared Motion tokens; new design-foundation contract test registered in preflight.
+- Current source changes: semantic tokens in `src/styles/theme.css`; Brand typography token consumption; body and five light Glass material foregrounds consume canonical text roles; mobile legacy motion aliases route to shared Motion tokens; design-foundation contract tests run in preflight.
 - Preserve the existing Glass system, App/Auth/Home composition and all protected business/platform contracts. Do not delete CSS or change font dependencies until the documented evidence/acceptance gate is met.
 - Be Vietnam Pro is the leading Vietnamese font candidate for comparison, not a selected or shipped dependency.
-- Exact-head CI run #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9`. Do not claim Phase 01 complete, merge or deploy until browser/responsive visual QA, accessibility/contrast and owner/device acceptance are recorded.
+- Exact source-head CI run #1513 passed on `a12db10379aca098e6969d89a76ab35df1472f58`. Do not claim Phase 01 complete, merge or deploy until browser/responsive visual QA, real-surface accessibility/contrast and owner/device acceptance are recorded.

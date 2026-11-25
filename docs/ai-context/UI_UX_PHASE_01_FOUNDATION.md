@@ -1,6 +1,6 @@
 # UI/UX Phase 01 — Design Foundation Implementation Record
 
-**Status:** In progress — foundation token/runtime batch implemented and exact-head CI passed; full Phase 01 visual/device acceptance is not yet claimed.
+**Status:** In progress — semantic foundation and first canonical text-token consumer migration implemented; exact-head CI passed; full Phase 01 visual/device acceptance is not yet claimed.
 **Repository:** `banjk124-hub/retailos-home`
 **Base:** `main` at `2b7f724a2518f2f2ae913e676490f46e23015cdf` (PR #160 merge).
 **Branch:** `feat/uiux-phase-01-foundation`
@@ -86,18 +86,29 @@ The direct-use search is not a proof of all runtime composition. `MotionButton` 
 
 Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the standard record for semantic responsibility, ownership, API/composition, state mapping, responsive behavior, accessibility, motion, performance, tests, migration and rollback. It is a documentation contract, not a mandate to create a shared component for every repeated visual pattern.
 
+### 3.8 First semantic-token consumer migration
+
+- `body` now consumes the canonical text, UI font-family, body-size and normal line-height roles directly, with legacy aliases retained as CSS fallbacks.
+- The five light Glass material foregrounds (`soft`, `frosted`, `elevated`, `floating`, `control`) now resolve through `--color-text-primary`, retaining the legacy `--text-primary` and literal fallback chain. `dark` remains explicitly white because it is a distinct dark material context.
+- The resolved values are unchanged (`#302a30` for the five light materials and white for dark); this is an ownership migration, not a visual restyle.
+- The contract test now asserts these canonical consumers. It does not claim composited contrast for the translucent materials; real-background and low-power visual validation remains open.
+
+### 3.9 Motion and CSS ownership — static audit update
+
+The 24-file CSS tree still contains feature-specific timing declarations across Home, Login, Stocktake/Import, Scanner presentation, LiquidDock and PWA update surfaces. These include choreography, progress indicators, close transitions and reduced-motion overrides. They are not all duplicates and must not be normalized mechanically. `mobile-tuning.css` remains a large global override layer (87,240 bytes at this branch head) with both interaction timing and responsive presentation rules. The next migration requires browser computed-style evidence by viewport/state; no selector deletion or bulk duration replacement is justified by static search alone.
+
 ## 4. Phase 01 workstream status
 
 | Batch | Status | Evidence / remaining work |
 |---|---|---|
 | 01A Brand & visual foundation | Partial | Brand identity retained; semantic brand roles and Brand typography connected. Full screen-level art direction and asset review remain |
 | 01B Typography | Partial | Shared type roles and aliases implemented. Vietnamese font asset selection, licensing, glyph and device review remain |
-| 01C Color & status semantics | Partial | Semantic roles and compatibility aliases implemented. Full contrast matrix across real component/surface states remains |
-| 01D Materials & depth | Audit complete / implementation pending | Existing Glass system retained. Need role map, fallback validation and computed-style review before reducing variants |
-| 01E Spacing, radius, elevation, focus | Partial | Semantic tokens implemented. Consumer migration and keyboard/focus audit remain |
+| 01C Color & status semantics | Partial | Semantic roles and compatibility aliases implemented; body and five light Glass foreground consumers now use canonical text roles. Full contrast matrix across real component/surface states remains |
+| 01D Materials & depth | Partial | Direct Glass material roles are audited and five light material foregrounds consume canonical text; opacity/blur/compositing, fallback and computed-style validation remain |
+| 01E Spacing, radius, elevation, focus | Partial | Semantic tokens implemented; body typography roles are now consumed. Spacing/elevation consumer migration and keyboard/focus audit remain |
 | 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases. Feature-specific literal durations/choreography audit remains |
 | 01G CSS architecture | Partial | Canonical token source established. Full selector/computed-style ownership and cascade consolidation remain |
-| 01H Integration & acceptance | Partial | Exact-head CI #1506 passed on `728ce44052a4628e577b4075b3ed753cf5b4b9f9`; responsive browser evidence, accessibility and device acceptance remain open |
+| 01H Integration & acceptance | Partial | Exact-head CI #1513 passed on source commit `a12db10379aca098e6969d89a76ab35df1472f58`; responsive browser evidence, real-surface contrast, accessibility and device acceptance remain open |
 
 ## 5. Explicit non-decisions
 
@@ -110,8 +121,8 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 
 ## 6. Validation required before Phase 01 closure
 
-1. [x] Run the new foundation contract test and full `npm run preflight` on exact head `728ce44052a4628e577b4075b3ed753cf5b4b9f9` (GitHub Actions run #1506).
-2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and all existing feature tests on the same exact head.
+1. [x] Run the new foundation contract test and full `npm run preflight` on source commit `a12db10379aca098e6969d89a76ab35df1472f58` (GitHub Actions run #1513).
+2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and PR-base bundle comparison on the same exact source commit.
 3. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
 4. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
 5. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
@@ -128,4 +139,4 @@ Continue the remaining Phase 01 batches on this branch only after reviewing the 
 - Migration of only directly verified shared consumers to semantic tokens.
 - Phase 01 acceptance record and synchronized INDEX / IMPLEMENTATION_STATUS / ROADMAP / handoff documents.
 
-Exact-head CI evidence: [run #1506](https://github.com/banjk124-hub/retailos-home/actions/runs/45564676736). Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
+Exact-head source CI evidence: [run #1513](https://github.com/banjk124-hub/retailos-home/actions/runs/45565743240). Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
