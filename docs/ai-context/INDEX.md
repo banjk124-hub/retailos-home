@@ -21,6 +21,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 | Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
 | Implementable screen blueprints for desktop, tablet, mobile, states, component ownership and acceptance | [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md) |
 | Product-wide M0 visual/interaction direction and reference analysis | [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) |
+| Cross-surface M0 prototype review, screen-level refinements and open validation | [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md) |
 | Acceptance gates, migration slices, regression matrix, rollout and rollback | [UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md](./UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md) |
 | UI/UX rebuild phases, priorities, documentation goals, acceptance and rollback | [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md) |
 | Scanner current architecture, ownership, lifecycle, ROI, pipeline, decoder, limits, validation, tests and current status | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
@@ -61,6 +62,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
 - `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
 - `UI_UX_M0_GLOBAL_DIRECTION.md`: reference analysis and product-wide visual/interaction direction for M0.
+- `UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md`: cross-surface concept review, per-screen refinement requirements and M0 exit status.
 - `UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md`: acceptance gates, migration sequence, test/device matrix, protected-boundary regression, rollout and rollback.
 - `UI_UX_IMPLEMENTATION_PLAN.md`: implementation sequencing, acceptance and rollback.
 - Scanner current truth: `SCANNER_ENGINE.md`; scanner history: `SCANNER_HISTORY.md`.
