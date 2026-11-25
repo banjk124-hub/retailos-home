@@ -16,7 +16,7 @@
 ## M0 status
 - Direction anchors are confirmed.
 - **M0-0 documentation consolidation and plugin parity audit: merged to main via PR #163.**
-- M0-A source baseline audit Batch A0: completed on branch `feat/m0-a-source-audit-foundation`; full visual direction, screen blueprints and owner acceptance remain open. See [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md).
+- M0-A Batch A0 source baseline audit and A1.1 screen blueprint pack (Login, App Shell, Home, Module Library): recorded on branch `feat/m0-a-source-audit-foundation`. A1.2 high-fidelity editable visual prototypes, palette/font/image validation and owner acceptance remain open. See [source audit](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) and [screen blueprints](./UI_UX_M0_A1_SCREEN_BLUEPRINTS.md).
 - M0-B motion/interaction study: open.
 - M0-C cross-surface integration: open.
 - M0-D technology/quality/owner acceptance: open.
