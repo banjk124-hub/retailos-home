@@ -161,7 +161,7 @@ Confirmed:
 
 Decision:
 - Keep feature ownership and the existing body-lock service.
-- 00G/00H must define a single overlay contract for Dialog, Sheet, Popover and nested confirmation, including topmost Escape handling, focus entry/return, focus containment, backdrop policy, safe-area viewport and nested ownership.
+- 00G/00H must define per-surface contracts for Dialog, Sheet, Popover and nested confirmation, including topmost Escape handling, focus entry/return, focus containment, backdrop policy, safe-area viewport and nested ownership.
 - Only create a shared overlay stack/focus manager if the contract and current callsites demonstrate it is necessary. Do not silently add a second body-lock service.
 - Do not use a single all-purpose Overlay component with dozens of props.
 
@@ -213,7 +213,7 @@ The source-level inventory confirms fragmentation and high maintenance risk; it 
 | StocktakeModule | ~32.6 KB, multiple screens and workflow states | Presentation changes can accidentally change save/revision/export transitions | Extract screen composition/presentational regions; keep state machine/service calls in feature |
 | StocktakeImportModule | ~46.3 KB, import, conflict, table editing, output and history | UI abstraction can corrupt dirty/validation/export/persistence semantics | Decompose by workflow region; preserve feature-local state and exact output contract |
 | Scanner UI duplication | Home and Stocktake have separate camera shells but shared engine | Forcing both into one configurable component risks lifecycle coupling | Share only stable presentation primitives; retain two feature-owned shells and existing engine integration |
-| Overlay behavior | Multiple local backdrops/Escape/focus handlers; shared body lock; no focus stack | Nested surfaces can disagree about topmost Escape and focus return | Define overlay stack/focus contract before broad migration |
+| Overlay behavior | Multiple local backdrops/Escape/focus handlers; shared body lock; no focus stack | Nested surfaces can disagree about topmost Escape and focus return | Prefer native dialog semantics for standard modals and feature-owned contracts for specialized surfaces; add a shared stack only if traced cases require it |
 | Icon rendering | Registry + Icon + MotionIcon + direct Lucide imports | Repeated meanings can drift; motion is inconsistently applied | One static render contract with semantic registry; motion opt-in |
 | Material abstraction | GlassSurface generic wrapper and many direct material CSS surfaces | Material labels can become a visual constraint instead of task semantics | Define semantic surface roles; blur remains selective |
 | PWA UI | Global PwaUpdatePrompt controller plus Settings UpdateCenter view/store events | Presentation could accidentally absorb release logic | Keep runtime controller and release state independent of shell/UI |
