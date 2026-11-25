@@ -1,3 +1,7 @@
+> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+
+---
+
 # UI/UX Rebuild Implementation Plan
 
 **Status:** M0 is executed directly in the RetailOS repository. Figma studies are historical/optional only and are not a delivery dependency or acceptance gate. Active evidence is the source implementation, running application, automated checks and responsive review recorded in implementation PRs.
