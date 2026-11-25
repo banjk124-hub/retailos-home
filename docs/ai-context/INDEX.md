@@ -43,7 +43,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 ## AI context loading policy
 
 - Default session-start set: `AGENTS.md`, this index, `PROJECT_CONTEXT.md` and `IMPLEMENTATION_STATUS.md`.
-- For UI/UX architecture, start with `UI_UX_ARCHITECTURE.md`; load `UI_UX_M0_GLOBAL_DIRECTION.md` for the accepted/proposed product-wide experience direction, then the design-system, technology, screen and migration documents required by the task.
+- For UI/UX work, start with `UI_UX_ARCHITECTURE.md` and `UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md`. The image is the structural reference; the video is the motion/state reference; RetailOS is authoritative for brand, business semantics and data truth. Load the screen map, component audit and relevant feature contracts before designing a surface.
 - For scanner work, load `SCANNER_ENGINE.md` first. Load `SCANNER_HISTORY.md` only for a specific historical question or incident.
 - Do not load multiple old scanner phase documents as competing specifications.
 - Verify volatile facts (branch, commit, PR, CI, deployment) against GitHub before updating current-state documents.
@@ -66,7 +66,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
 - `UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md`: governing separation of structural reference, motion reference and RetailOS data/architecture authority.
 - `UI_UX_M0_REFERENCE_REASSESSMENT.md`: direct evidence analysis of both supplied sources.
-- `UI_UX_M0_ART_DIRECTION_RESET.md`: prior Art Direction reset exploration; use the reassessment as the newer governing direction.
+- `UI_UX_M0_ART_DIRECTION_RESET.md`: historical exploration; not the active design authority.
 - `UI_UX_M0_GLOBAL_DIRECTION.md`: earlier M0 exploration; retain as history, not the current visual quality benchmark.
 - `UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md`: cross-surface concept review, per-screen refinement requirements and M0 exit status.
 - `UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md`: acceptance gates, migration sequence, test/device matrix, protected-boundary regression, rollout and rollback.
