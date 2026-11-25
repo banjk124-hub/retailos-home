@@ -16,7 +16,7 @@
 - PR #165 records BATCH 00 inventory and contradiction findings; open Draft, review/merge pending.
 - BATCH 01 is implemented on dependent PR #166, based on the BATCH 00 audit branch; review and exact-head CI pending. It defines component/pattern governance, technology evaluation, glossary, deprecation/removal, decision lifecycle and canonical navigation.
 - Product Studio remains v0.1.3. Do not update plugin until repository standards are reviewed and accepted.
-- PR #164 is the M0-A source baseline/blueprint branch. Its Figma blocker language is being removed. Source-code prototypes and running browser inspection are the required validation path.
+- PR #164 is the M0-A source baseline/blueprint branch. PR #164 body and branch-local handoff now explicitly remove Figma as a dependency/blocker; source-code prototypes and running-browser inspection remain the required validation path. Source-code prototypes and running browser inspection are the required validation path.
 - PR #157 is closed and unmerged; do not treat its legacy CSS as accepted implementation.
 
 ## Task start
@@ -29,3 +29,9 @@
 7. Update canonical status and report exact evidence.
 
 No merge without explicit owner approval. No deployment without explicit authorization.
+
+## BATCH 01 continuation gates
+- Verify the full Product Skill and Technology Radar are intact before relying on them; both include the Playwright-assisted workflow and the complete pre-existing governance content.
+- Review PR #165 first because PR #166 is based on its branch. Do not merge either without explicit owner approval.
+- Confirm exact-head CI after the latest commits; no workflow run is currently reported for the latest BATCH 01 head.
+- Obtain owner review of PD-007 (canonical document ownership model) and the complete BATCH 01 standards before starting BATCH 02.
