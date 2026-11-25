@@ -14,7 +14,7 @@ The current direct runtime dependencies are React 18, React DOM, Lucide React, J
 
 The repository already owns reusable Brand, Glass, Motion, Icon and LiquidDock systems. The main problem is not absence of components; it is that the current presentation is distributed across several global and feature stylesheets, while Home is still a long-scroll screen with state-driven overlays rather than a coherent multi-workspace navigation model.
 
-**Decision direction:** browser-native first, existing React/shared systems second, specialized RetailOS components only where workflow complexity justifies them. No dependency is approved for installation by this audit.
+**Decision direction:** outcome-driven and evidence-based. Browser-native APIs and existing React/shared systems are valid starting points, not constraints. Frameworks, routers and libraries may be introduced, replaced or removed when they materially improve the target product and pass the safety/performance gates below. This audit does not pre-approve a specific package; it establishes how to choose one without protecting legacy decisions or accumulating overlapping systems.
 
 ## 2. Audited baseline and inventory
 
@@ -47,7 +47,7 @@ These counts are repository-tree observations, not performance metrics.
 | @playwright/test | ^1.64.1 | Browser automation/test dependency | Keep until a maintained replacement is demonstrated |
 | @types/* | declared in package.json | Type declarations | Keep |
 
-No new package is required merely to create buttons, forms, menus, dialogs, responsive grids, tables, cards, transitions or standard feedback surfaces.
+No new package is required merely to create buttons, forms, menus, dialogs, responsive grids, tables, cards, transitions or standard feedback surfaces. However, if the combined reference direction and RetailOS requirements cannot be achieved cleanly with the current stack, select a suitable framework/router/library rather than forcing a brittle custom implementation.
 
 ### 2.3 Existing internal UI systems
 
@@ -159,9 +159,9 @@ Research basis: official MDN documentation and browser compatibility information
 | Font package | No font package declared | No package needed; evaluate a self-hosted WOFF2 font asset and Vietnamese glyph coverage before selection |
 | Image/asset service | No service dependency | Do not add; use versioned local assets, responsive images and lazy loading |
 
-### Dependency approval gate
+### Technology selection and dependency gate
 
-A new dependency may be proposed only when all conditions are satisfied:
+Do not reject a framework, router or library merely because RetailOS does not currently use it. Do not add one merely because it is popular. A new dependency or platform-level replacement may proceed within this UI/UX rebuild when the technical case is documented and all conditions below are satisfied:
 
 1. A concrete product/workflow requirement is documented.
 2. Existing browser APIs, React, current shared components and installed dependencies are insufficient.
@@ -169,7 +169,7 @@ A new dependency may be proposed only when all conditions are satisfied:
 4. Bundle, startup, memory, offline, security, license, maintenance and low-end-device costs are recorded.
 5. The dependency is lazy-loaded when it is not required on the critical path.
 6. A fallback, test plan, rollback and owner are defined.
-7. The user explicitly approves installation.
+7. The implementation plan records the selected option, migration boundary, owner and rollback. The user has authorized the team to introduce or replace technology when it is genuinely required to meet the product objective; separate confirmation is still required for new paid services, material recurring costs, security-sensitive changes, backend/data-contract changes or changes outside the approved UI/UX scope.
 
 ## 6. Confirmed implementation gaps
 
