@@ -3,7 +3,7 @@
 All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX sequencing and acceptance are governed only by [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). No parallel product-wide UI/UX plans.
 
 ## UI/UX — M0 before M1
-1. **M0-0 — Documentation consolidation:** reconcile Product Skill, M0, index, status, roadmap, handoff and plugin skill. One active spec and one status.
+1. **M0-0 — Documentation consolidation: COMPLETE on PR #163 branch.** Canonical docs reconciled; historical M0 evidence demoted; Product Studio v0.1.3 audited and aligned. One active spec and one status.
 2. **M0-A — Structural/visual direction:** source audit, high-fidelity representative surfaces, burgundy identity, Vietnamese typography, retail imagery, composition and responsive layouts.
 3. **M0-B — Motion/interaction:** derive observable patterns from video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior.
 4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
