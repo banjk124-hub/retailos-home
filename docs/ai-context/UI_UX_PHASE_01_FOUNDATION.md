@@ -95,6 +95,13 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 
 ### 3.10 Brand and status token consumer migration
 
+### 3.11 Small-text contrast correction
+
+- The Login department metadata label previously consumed the legacy tertiary color (#918890), which measures 3.43:1 against pure white and is below WCAG AA for normal text.
+- It now consumes --color-text-muted (#6f6870), which measures 5.40:1 against pure white. The legacy tertiary alias remains for compatibility but is not used for this small Login label.
+- The regression contract asserts that this Login consumer stays on the canonical muted role. This check is still a solid-white calculation; it does not establish contrast over every image, Glass surface or state.
+
+
 - Home-level brand accents in the canonical theme stylesheet now consume --color-brand-primary and --color-brand-strong rather than the legacy --retail-red aliases. The aliases remain available for unmigrated consumers.
 - Native experience notification states now consume --color-status-success and --color-status-danger; adaptive notification states consume --color-status-warning and --color-status-danger.
 - These are value-preserving substitutions: the semantic tokens resolve to the existing brand/status colors. No new color, theme or department state was introduced.
@@ -109,7 +116,7 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 |---|---|---|
 | 01A Brand & visual foundation | Partial | Brand identity retained; semantic brand roles and Brand typography connected. Full screen-level art direction and asset review remain |
 | 01B Typography | Partial | Shared type roles and aliases implemented. Vietnamese font asset selection, licensing, glyph and device review remain |
-| 01C Color & status semantics | Partial | Brand, status, body, Glass, Login, native/adaptive and Stocktake Import consumers now use canonical semantic roles. Full contrast matrix across real component/surface states remains |
+| 01C Color & status semantics | Partial | Brand, status, body, Glass, Login, native/adaptive and Stocktake Import consumers use canonical roles; the small Login department label now uses the AA-checked muted role. Full real-surface contrast matrix remains |
 | 01D Materials & depth | Partial | Direct Glass material roles are audited and five light material foregrounds consume canonical text; opacity/blur/compositing, fallback and computed-style validation remain |
 | 01E Spacing, radius, elevation, focus | Partial | Semantic tokens implemented; body typography roles are now consumed. Spacing/elevation consumer migration and keyboard/focus audit remain |
 | 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases. Feature-specific literal durations/choreography audit remains |
@@ -127,7 +134,7 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 
 ## 6. Validation required before Phase 01 closure
 
-1. [x] Run the new foundation contract test and full `npm run preflight` on source commit `ab30afe017fd93ce7c8ee70d18b78839b4d8f78f` (GitHub Actions run #1516).
+1. [x] Run the new foundation contract test and full `npm run preflight` on source commit `31f2ed23fbbd189cf796029cb955fac348c1c2d6` (GitHub Actions run #1518).
 2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and PR-base bundle comparison on the same exact source commit.
 3. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
 4. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
@@ -145,4 +152,4 @@ Continue the remaining Phase 01 batches on this branch only after reviewing the 
 - Migration of only directly verified shared consumers to semantic tokens.
 - Phase 01 acceptance record and synchronized INDEX / IMPLEMENTATION_STATUS / ROADMAP / handoff documents.
 
-Exact-head source CI evidence: [run #1516](https://github.com/banjk124-hub/retailos-home/actions/runs/45566456063). Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
+Exact-head source CI evidence: [run #1518](https://github.com/banjk124-hub/retailos-home/actions/runs/45567024868). Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.

@@ -42,10 +42,10 @@ The project owner's operational confirmation is not a quantified optical benchma
 **Status:** Phase 00 is closed in merged PR #160 at `main` commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. Phase 01 Design Foundation is active in PR #161; it is not merged and no deployment is authorized.
 
 - Active PR: [#161 — Phase 01 Design Foundation](https://github.com/banjk124-hub/retailos-home/pull/161), branch `feat/uiux-phase-01-foundation`.
-- Source batches establish semantic tokens, align mobile motion aliases with shared Motion, connect Brand typography, migrate body, Glass, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical semantic roles, extend contract tests and record source-level motion/CSS ownership findings.
+- Source batches establish semantic tokens, align mobile motion aliases with shared Motion, connect Brand typography, migrate body, Glass, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical semantic roles, correct the small Login department label's contrast, extend contract tests and record source-level motion/CSS ownership findings.
 - Existing Glass materials and protected feature/platform contracts remain intact; no broad CSS deletion, new font package, or second design system is introduced.
 - Be Vietnam Pro is the leading Vietnamese typography candidate for evaluation, not yet selected or bundled.
-- Exact source-head CI run #1516 passed on `ab30afe017fd93ce7c8ee70d18b78839b4d8f78f`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review and responsive visual QA.
+- Exact source-head CI run #1518 passed on `31f2ed23fbbd189cf796029cb955fac348c1c2d6`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review and responsive visual QA.
 - Do not merge or deploy Phase 01 until source review, browser/responsive visual QA and remaining owner/device acceptance are recorded.
 - Phase 00's image/video authority remains: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
 - Current App/Auth/Home source remains the AS-IS baseline. The target Shell/navigation migration is a later phase and is not part of Phase 01.
