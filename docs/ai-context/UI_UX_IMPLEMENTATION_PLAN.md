@@ -86,11 +86,11 @@ Do not retain an old logo, icon, button, component, text string or layout merely
 | 00C | Screen/interaction map | Existing screens, states, workflows and target screen inventory traced |
 | 00D | [Design System specification](./UI_UX_DESIGN_SYSTEM_SPEC.md) | Current token/material/brand/motion audit and target system contract documented; final visual validation gates identified |
 | 00E | Information Architecture and Navigation | Shell, route identity, workspace hierarchy, back behavior and deep-link policy decided |
-| 00F | Component inventory and ownership | Existing components audited; keep/refactor/replace/create decisions documented |
+| 00F | [Component inventory and ownership](./UI_UX_COMPONENT_AUDIT.md) | Source-level inventory, ownership, keep/refactor/replace/create decisions and migration risks documented; selector/callsite/device proof gates remain open |
 | 00G | Screen blueprints | Every P0/P1 screen has desktop/tablet/mobile layout, interaction and state specification |
 | 00H | Acceptance and migration blueprint | Test matrix, protected boundaries, rollout slices and rollback plan approved |
 
-Do not begin broad UI source changes before 00F–00H are sufficiently specified and the proposed 00E navigation contract is accepted.
+Do not begin broad UI source changes before 00G–00H are sufficiently specified and the proposed 00E navigation contract is accepted.
 
 ### Technology and design-system decision gate (applies across Phase 00–10)
 
@@ -460,7 +460,8 @@ Each shared component specification must contain:
 - Batch 00C screen map: source trace and target inventory complete; physical validation not performed.
 - 00D: source-level design-system audit and proposed specification documented in `UI_UX_DESIGN_SYSTEM_SPEC.md`; contrast/font/device validation remains open.
 - 00E: source-grounded information architecture/navigation decision documented in `UI_UX_SCREEN_MAP.md` §9; implementation not started and owner acceptance remains open.
-- 00F–00H: not started.
+- 00F: source-level component inventory and ownership decisions documented in `UI_UX_COMPONENT_AUDIT.md`; selector-level CSS audit, complete consumer graph and physical validation remain open.
+- 00G–00H: not started.
 - Application source changes: none in this documentation batch.
 - Dependencies installed: none.
 - Merge/deploy: not performed.
