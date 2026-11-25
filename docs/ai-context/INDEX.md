@@ -20,7 +20,9 @@ This file is the navigation layer for repository documentation. Read one canonic
 | Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
 | Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
 | Implementable screen blueprints for desktop, tablet, mobile, states, component ownership and acceptance | [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md) |
-| M0-A source-grounded product-wide structural blueprint | [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md) |\n| M0-A source-first implementation and acceptance evidence (historical Figma studies are optional only) | [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md) |\n| M0 reference roles and motion-safe state contract (image=structure, video=motion) | [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md) |
+| M0-A source-grounded product-wide structural blueprint | [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md) |
+| M0-A source-first implementation and acceptance evidence | [UI_UX_M0_A_EXECUTION_RECORD.md](./UI_UX_M0_A_EXECUTION_RECORD.md) |
+| M0 reference roles and motion-safe state contract (image=structure, video=motion) | [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md) |
 | M0 reference reassessment: direct evidence from image/video and product-wide synthesis | [UI_UX_M0_REFERENCE_REASSESSMENT.md](./UI_UX_M0_REFERENCE_REASSESSMENT.md) |
 | M0 reset: reference-derived Art Direction and craft standard | [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md) |
 | Product-wide M0 visual/interaction direction and reference analysis (historical exploration) | [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) |
@@ -64,7 +66,9 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
 - `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
 - `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
-- `UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md`: source-grounded static structure and responsive composition contract for M0-A.\n- `UI_UX_M0_A_EXECUTION_RECORD.md`: Figma frame IDs, screenshot review evidence, defects, tooling limits and remaining exit gates.\n- `UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md`: governing separation of structural reference, motion reference and RetailOS data/architecture authority.
+- `UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md`: source-grounded static structure and responsive composition contract for M0-A.
+- `UI_UX_M0_A_EXECUTION_RECORD.md`: Figma frame IDs, screenshot review evidence, defects, tooling limits and remaining exit gates.
+- `UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md`: governing separation of structural reference, motion reference and RetailOS data/architecture authority.
 - `UI_UX_M0_REFERENCE_REASSESSMENT.md`: direct evidence analysis of both supplied sources.
 - `UI_UX_M0_ART_DIRECTION_RESET.md`: historical exploration; not the active design authority.
 - `UI_UX_M0_GLOBAL_DIRECTION.md`: earlier M0 exploration; retain as history, not the current visual quality benchmark.
