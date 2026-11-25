@@ -1,6 +1,6 @@
 # UI/UX Rebuild Implementation Plan
 
-**Status:** Proposed delivery plan; 00B–00D documented and 00E information architecture/navigation decision documented on the current documentation branch.
+**Status:** Proposed delivery plan; 00B–00G documented on the current documentation branch. 00H acceptance/migration blueprint and owner approval remain open.
 **Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Working documentation branch:** `docs/uiux-architecture-00b-00c`
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
@@ -87,7 +87,7 @@ Do not retain an old logo, icon, button, component, text string or layout merely
 | 00D | [Design System specification](./UI_UX_DESIGN_SYSTEM_SPEC.md) | Current token/material/brand/motion audit and target system contract documented; final visual validation gates identified |
 | 00E | Information Architecture and Navigation | Shell, route identity, workspace hierarchy, back behavior and deep-link policy decided |
 | 00F | [Component inventory and ownership](./UI_UX_COMPONENT_AUDIT.md) | Source-level inventory, ownership, keep/refactor/replace/create decisions and migration risks documented; selector/callsite/device proof gates remain open |
-| 00G | Screen blueprints | Every P0/P1 screen has desktop/tablet/mobile layout, interaction and state specification |
+| 00G | [Screen blueprints](./UI_UX_SCREEN_BLUEPRINTS.md) | P0/P1 screens have desktop/tablet/mobile layout, interaction, state, ownership, accessibility and performance contracts |
 | 00H | Acceptance and migration blueprint | Test matrix, protected boundaries, rollout slices and rollback plan approved |
 
 Do not begin broad UI source changes before 00G–00H are sufficiently specified and the proposed 00E navigation contract is accepted.
@@ -461,7 +461,7 @@ Each shared component specification must contain:
 - 00D: source-level design-system audit and proposed specification documented in `UI_UX_DESIGN_SYSTEM_SPEC.md`; contrast/font/device validation remains open.
 - 00E: source-grounded information architecture/navigation decision documented in `UI_UX_SCREEN_MAP.md` §9; implementation not started and owner acceptance remains open.
 - 00F: source-level component inventory and ownership decisions documented in `UI_UX_COMPONENT_AUDIT.md`; selector-level CSS audit, complete consumer graph and physical validation remain open.
-- 00G–00H: not started.
+- 00G: screen-level blueprints documented in `UI_UX_SCREEN_BLUEPRINTS.md`; high-fidelity prototype and owner acceptance remain open.\n- 00H: acceptance matrix, exact migration slices, rollback and owner decision gate remain open.
 - Application source changes: none in this documentation batch.
 - Dependencies installed: none.
 - Merge/deploy: not performed.
