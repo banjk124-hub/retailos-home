@@ -1,32 +1,21 @@
 # RetailOS roadmap — 2026-11-25
 
-## Governing direction
+All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX sequencing and acceptance are governed only by [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). No parallel product-wide UI/UX plans.
 
-All new and continuing RetailOS work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). Do not maintain parallel product-wide UI/UX plans or competing status tables.
+## UI/UX — M0 before M1
+1. **M0-0 — Documentation consolidation:** reconcile Product Skill, M0, index, status, roadmap, handoff and plugin skill. One active spec and one status.
+2. **M0-A — Structural/visual direction:** source audit, high-fidelity representative surfaces, burgundy identity, Vietnamese typography, retail imagery, composition and responsive layouts.
+3. **M0-B — Motion/interaction:** derive observable patterns from video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior.
+4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
+5. **M0-D — Technology, quality and owner acceptance:** evidence-based technology decisions, accessibility, browser/device/performance validation and explicit owner acceptance.
 
-## UI/UX — next sequence
-
-1. **M0 direction and technology:** audit current source and actual screens; use the image as structural/visual reference and video as motion/feedback reference; RetailOS remains authoritative for brand, operational semantics and architecture. Evaluate framework, routing, styling, component, icon, image, typography and motion options before committing.
-2. **Representative prototype:** implement real source-backed examples across representative desktop, tablet and mobile surfaces; inspect the running app and obtain owner acceptance.
-3. **M1 foundation:** implement only the approved design foundations and components required by actual consumers.
-4. **M2+ migration:** replace current Shell/navigation and existing screens/workspaces in bounded slices. Add feature-owned components when a real workflow needs them; promote to shared only after cross-feature value is proven.
-5. **Consolidation and acceptance:** retire superseded code with evidence; validate accessibility, motion, responsive behavior, performance, protected contracts and release readiness.
-
-Do not call token migration, a mockup, a documentation phase or Login-only responsive tests a completed product-wide redesign. Do not prebuild speculative future features.
+**M1 is blocked until M0-D completes and the owner explicitly accepts M0.** Documentation completion alone does not authorize source-wide migration or new dependencies.
 
 ## Scanner — closed
+Scanner stabilization and cleanup are complete. Current contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); history: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Reopen only for reproducible defect, measured bottleneck, new requirement or explicit acceptance. UI redesign must not reopen engine internals.
 
-Scanner runtime stabilization and cleanup are complete. Current implementation truth: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); historical evidence: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Reopen only for a reproducible defect, measured bottleneck, new requirement or explicit acceptance task. UI redesign must not reopen Scanner Engine internals.
-
-## Other domain roadmaps/contracts
-
-- PWA release: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md)
-- Performance and bundle: [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md)
-- Overlay lifecycle: [UI_OVERLAY_ARCHITECTURE.md](./UI_OVERLAY_ARCHITECTURE.md)
-- Import workflow: [STOCKTAKE_FILE_IMPORT.md](./STOCKTAKE_FILE_IMPORT.md)
+## Other domain contracts
+PWA: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) · Performance: [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md) · Overlay: [UI_OVERLAY_ARCHITECTURE.md](./UI_OVERLAY_ARCHITECTURE.md) · Import: [STOCKTAKE_FILE_IMPORT.md](./STOCKTAKE_FILE_IMPORT.md)
 
 ## Governance
-
-- Verify live branch, PR, CI and deployment before updating status.
-- No merge without explicit owner approval; no deployment without explicit authorization.
-- CI, visual acceptance, physical-device acceptance, business workflow acceptance and production promotion are distinct.
+Verify live branch/PR/CI/deployment before status updates. No merge without explicit owner approval; no deployment without explicit authorization. CI, visual acceptance, device acceptance, workflow acceptance and production promotion are distinct.
