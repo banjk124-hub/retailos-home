@@ -1,6 +1,6 @@
 # UI/UX Rebuild Implementation Plan
 
-**Status:** Proposed delivery plan based on Batch 00B/00C.
+**Status:** Proposed delivery plan; 00B–00D documented and 00E information architecture/navigation decision documented on the current documentation branch.
 **Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Working documentation branch:** `docs/uiux-architecture-00b-00c`
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
@@ -90,7 +90,7 @@ Do not retain an old logo, icon, button, component, text string or layout merely
 | 00G | Screen blueprints | Every P0/P1 screen has desktop/tablet/mobile layout, interaction and state specification |
 | 00H | Acceptance and migration blueprint | Test matrix, protected boundaries, rollout slices and rollback plan approved |
 
-Do not begin broad UI source changes before 00D–00H are sufficiently specified.
+Do not begin broad UI source changes before 00F–00H are sufficiently specified and the proposed 00E navigation contract is accepted.
 
 ### Technology and design-system decision gate (applies across Phase 00–10)
 
@@ -459,7 +459,8 @@ Each shared component specification must contain:
 - Batch 00B technology audit: source and official-document research complete; local/browser/device execution not performed.
 - Batch 00C screen map: source trace and target inventory complete; physical validation not performed.
 - 00D: source-level design-system audit and proposed specification documented in `UI_UX_DESIGN_SYSTEM_SPEC.md`; contrast/font/device validation remains open.
-- 00E–00H: not started.
+- 00E: source-grounded information architecture/navigation decision documented in `UI_UX_SCREEN_MAP.md` §9; implementation not started and owner acceptance remains open.
+- 00F–00H: not started.
 - Application source changes: none in this documentation batch.
 - Dependencies installed: none.
 - Merge/deploy: not performed.
