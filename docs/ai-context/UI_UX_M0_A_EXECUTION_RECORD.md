@@ -50,3 +50,15 @@ A screen is accepted only when the implementation PR evidences:
 - [ ] Owner accepts product-wide structural direction.
 
 **M0-A remains in progress.** Historical Figma frames are not evidence of source implementation or device acceptance. Continue from the repository and record exact source commits, tests and limitations.
+
+## 5. First source implementation slice — Login responsive composition
+
+- PR: https://github.com/banjk124-hub/retailos-home/pull/157
+- Branch: `feat/uiux-m0-login-responsive`
+- Commit: `03467e4d0a111a3e0b4a4b0001e0cb8bcaf70608`
+- Changed file: `src/styles/login-experience.css` only.
+- Adds a tablet-specific stacked composition for 761–1024px and short-landscape handling.
+- Removes focus-within panel scaling; uses a stable outline so the panel does not shift while the user interacts with the form.
+- Protected auth/session, employee lookup, identity handoff, PWA, data and Scanner contracts are untouched.
+- RetailOS CI run #1454 passed on the exact PR head, including local-equivalent preflight, TypeScript and production build/bundle checks.
+- Browser screenshot review and physical tablet/device QA have not yet been performed. CI success is not visual/device acceptance.
