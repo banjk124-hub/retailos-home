@@ -1,18 +1,15 @@
-# Current repository state — 2026-11-25
+# RetailOS project context — durable facts
 
 **Repository:** `banjk124-hub/retailos-home`
 **Default branch:** `main`
-**Verified main baseline:** `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` (PR #159 merge commit).
-**Current UI/UX audit:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md).
+**Governing product/design/engineering workflow:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)
 
-- PR #159 merged the open/evolving design-system architecture: Core Foundation, Shared Design System and Feature Experience. This is an architecture principle, not evidence that a formal new component/token implementation has shipped.
-- RetailOS is undergoing a product-wide presentation and interaction redesign. Work is source-first in the existing React/Vite repository; Figma is optional/historical reference material, not a delivery or acceptance dependency.
-- Reference authority: supplied image defines structural composition; supplied video defines motion/feedback/state behavior; RetailOS remains authoritative for brand, business semantics, data truth and architecture.
-- Current source still mounts App/Auth/Home; Home owns section navigation and multiple feature/overlay entry points. A route-based multi-workspace shell and typed browser-history adapter remain target architecture, not current implementation.
-- Existing shared Brand, Glass, Motion, Icon, LiquidDock, body-scroll-lock and PWA presentation systems are candidates for evolution, not mandatory preservation or automatic target components.
-- Authentication/session, module registry identity/readiness, snapshot/cache, Scanner Engine, Stocktake/Import persistence/output, overlay body-scroll-lock and PWA release lifecycle are protected contracts during presentation migration.
-- Scanner runtime stabilization and ecosystem cleanup are closed. Current implementation truth is in `SCANNER_ENGINE.md`; historical investigations are in `SCANNER_HISTORY.md`. Do not reopen SC-01–SC-05 for the UI redesign.
-- Development GitHub Pages is not the shared department production environment or production promotion. Merge, deployment and production transfer remain separate approvals.
-- PR #159 head CI #1465 passed. Post-merge main CI #1466 and GitHub Pages deployment #159 both completed successfully on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These are automated pipeline/deployment results, not physical-device acceptance.
-- Phase 00 audit is in Draft PR #160. It retires the unimported `home-phase2.css` and three unused Motion public APIs, records the source consumer/import graph, route-history proposal, overlay boundary and viewport baseline. PR #160 head `6305f471169f6d16997a355d8adc5931cb6f2b54` passed RetailOS CI #1493; no merge or deployment has been performed.
-- Current volatile branch/PR/CI/deployment state must still be verified live before future status claims.
+- RetailOS is a React/Vite PWA for supermarket and retail operations. Development GitHub Pages uses base path `/retailos-home/`.
+- The product target is a modern OS-like operational workspace, not an AppSheet reskin. Its design language is RetailOS-owned; the supplied image is a structural/visual reference and the supplied video is a motion/feedback/state reference.
+- Design is component-led and visual-first, with concise text, purposeful iconography and imagery, varied workspace compositions, professional desktop, adaptive tablet and task-focused mobile. Sophisticated effects are allowed when purpose and runtime cost are justified.
+- The design system is open and evolutionary: establish language and shared foundations, redesign existing features, and add future components only when real needs emerge. Do not invent future workflows or build speculative component catalogues.
+- Frameworks, component libraries, icon/image tooling, typography and motion libraries are evaluated before adoption/replacement; no technology is presumed mandatory.
+- Preserve Auth/session, module registry, cache/data truth, Scanner Engine, Stocktake/Import persistence, overlay and PWA release contracts unless a separately approved migration requires change.
+- Scanner runtime stabilization is closed. See `SCANNER_ENGINE.md` and `SCANNER_HISTORY.md`; do not create parallel Scanner workstreams.
+- Development account/Pages testing is separate from shared department production promotion. Merge, deploy and transfer require explicit authorization.
+- Current implementation status is maintained only in [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md). Verify volatile GitHub facts live.
