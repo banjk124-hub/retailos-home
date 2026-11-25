@@ -92,7 +92,7 @@ No merge without explicit owner approval. No deployment without explicit deploym
 
 This document and the installable `RetailOS Product Studio` skill are the governing product workflow. The repository index and handoff must point here. Keep one concise current-status surface; detailed evidence belongs in the owning domain/history document. Preserve unique historical evidence, but mark superseded plans as non-authoritative. Resolve contradictions with current source/PR evidence or mark them unresolved — never guess. Keep Scanner knowledge only in `SCANNER_ENGINE.md` and `SCANNER_HISTORY.md`.
 
-The repository copy is the source for packaged skill updates. Keep the plugin skill synchronized with this standard when releasing new versions.
+Treat the plugin skill and repository standard as a paired authority: the repository standard preserves durable product rules, while the plugin skill adds the operational procedure needed to execute them in ChatGPT/Codex. Any change to one must be checked against the other before release.
 
 ## 11. Reporting
 
