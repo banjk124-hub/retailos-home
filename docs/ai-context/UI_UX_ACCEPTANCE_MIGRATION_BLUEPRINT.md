@@ -54,7 +54,7 @@ A visual change can still alter the way an operator experiences a protected beha
 
 ## 2.3 M0 global visual decision gate
 
-M0 is product-wide, not Home-only. The governing separation of references and motion correctness is defined in [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines structural composition; the video defines motion, feedback and state behavior; RetailOS remains authoritative for brand, business semantics and data truth.
+M0 is product-wide, not Home-only. M0-A structural design is specified in [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md). The governing separation of references and motion correctness is defined in [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines structural composition; the video defines motion, feedback and state behavior; RetailOS remains authoritative for brand, business semantics and data truth.
 
 Before M1, validate the shared language across Login, Application Shell, Home Overview, Module Library, Stocktake, Stocktake Import, Scanner presentation (presentation-only), Settings/Update Center, Search/Notifications and responsive shell. M0 does not authorize source migration, Scanner Engine changes or business/platform contract changes. A Home-only mockup does not satisfy M0.
 
@@ -109,7 +109,7 @@ A slice is accepted only when all applicable gates below pass. A not-applicable 
 
 | Slice | Priority | Scope | Prerequisites | Exit gate |
 |---|---|---|---|---|
-| M0 — Visual decision prototype | P0 | One high-fidelity Shell + Home composition; compare desktop and mobile; validate typography, imagery, surface/material and navigation density | Owner confirms visual direction and device targets | One approved visual direction; no production source migration required |
+| M0-A — Structural design | P0 | Source-grounded, individually inspectable structures for Login, Shell, Home, Module Library, Stocktake, Stocktake Import and Settings/Update Center; desktop/mobile plus tablet adaptations for shell and operational workspaces | Owner accepts product-wide structural language; no reference palette/product semantics copied | All visible labels/actions/states map to source owners; responsive compositions and protected contracts reviewed | One approved visual direction; no production source migration required |
 | M1 — Design foundation | P0 | Semantic tokens, typography decision, primitive controls, status semantics, surface roles, motion/reduced-motion policy | M0; 00D decisions accepted; font/contrast checks | Token/primitive tests and sample screen visual review; no second parallel token system |
 | M2 — App Shell skeleton | P0 | AppShell, destination adapter, Desktop/Mobile Navigation, GlobalHeader, WorkspaceOutlet, loading/error boundary | 00E route/back contract accepted; M1 minimum tokens; route/lazy-load map | Auth/session, deep link/reload/back, focus, dirty guard, offline and bundle tests |
 | M3 — Login presentation | P0 | Login composition and identity handoff presentation | M1; shell/auth integration contract | Local auth, session restore/logout, numeric input, offline and reduced-motion checks |
