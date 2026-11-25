@@ -107,6 +107,16 @@ mobile-tuning.css is approximately 87 KB and includes broad touch rules, large m
 
 Implication: CSS migration must begin with selector/cascade and consumer analysis. Do not delete or rewrite styles based only on file names. Do not add another override stylesheet as the new design-system layer.
 
+### 2.8 Feature-level visual divergence
+
+The feature CSS confirms that the design language is not yet fully shared:
+- Scanner Settings and Stocktake define many independent warm-red/neutral values directly in feature selectors.
+- Scanner presentation uses a deliberate dark camera surface with translucent controls; this is a feature-specific context and should remain visually distinct where camera legibility requires it.
+- Stocktake Import uses neutral/blue fallback tokens such as surface-elevated, surface-secondary, text-tertiary and border-subtle, while several import controls/statuses define independent blue, green, amber and red literals.
+- Stocktake and Import use separate panel, button, table, status, spacing and radius rules instead of a fully shared operational-workspace component contract.
+
+Implication: the target system must support semantic feature contexts and data-workspace density without forcing every feature into one color or material. Consolidation should normalize shared roles and state meanings, not flatten legitimate task-specific surfaces or status colors.
+
 ### 2.7 Brand, icons and imagery
 
 - Brand is a React component system with BrandMark, BrandWordmark and BrandMotion.
