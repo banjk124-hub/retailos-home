@@ -176,23 +176,23 @@ button:focus-visible,input:focus-visible,select:focus-visible {
   box-shadow: var(--focus-ring-shadow);
 }
 
-.eyebrow { color: var(--retail-red); }
+.eyebrow { color: var(--color-brand-primary); }
 
 /* Home: restrained red/white system, glass used only for floating surfaces */
 .app-shell { background: radial-gradient(ellipse at 75% -15%,rgba(255,222,226,.55),transparent 34%),#fffafa; }
 .sidebar { background: rgba(255,255,255,.88); border-right-color: #f1e7e8; }
 .workspace-avatar,.footer-mark { background: linear-gradient(145deg,#e94150,#b81d2c); }
-.side-nav-item.active { color: var(--retail-red-deep); background: #fff0f1; box-shadow: inset 3px 0 #d92736; }
-.side-nav-item.active svg,.mobile-nav button.active { color: var(--retail-red); }
-.nav-dot,.status-pulse,.hero-live-dot { background: var(--retail-red); }
+.side-nav-item.active { color: var(--color-brand-strong); background: #fff0f1; box-shadow: inset 3px 0 #d92736; }
+.side-nav-item.active svg,.mobile-nav button.active { color: var(--color-brand-primary); }
+.nav-dot,.status-pulse,.hero-live-dot { background: var(--color-brand-primary); }
 .system-status { background: #fff0f1; color: #b32130; border-color: #f7d9dc; }
-.icon-button.selected,.mobile-nav button.active .mobile-nav-icon { background: #fff0f1; color: var(--retail-red); }
+.icon-button.selected,.mobile-nav button.active .mobile-nav-icon { background: #fff0f1; color: var(--color-brand-primary); }
 .topbar { background: var(--glass-surface-elevated); border-bottom-color: var(--glass-border-elevated); backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); }
 .top-profile:hover { background: #fff0f1; }
 .top-avatar,.profile-avatar { background: linear-gradient(145deg,#e94150,#b81d2c); }
 .welcome-copy .eyebrow,.section-kicker { color: #bd3441; }
 .user-context-chip,.date-chip { border-color: var(--glass-border-card); background: var(--glass-surface-card); box-shadow: var(--shadow-card), var(--glass-highlight); backdrop-filter: blur(var(--glass-blur-card)) saturate(var(--glass-saturation-card)); -webkit-backdrop-filter: blur(var(--glass-blur-card)) saturate(var(--glass-saturation-card)); }
-.context-avatar,.date-icon { background: #fff0f1; color: var(--retail-red); }
+.context-avatar,.date-icon { background: #fff0f1; color: var(--color-brand-primary); }
 .hero-card { background: linear-gradient(118deg,#a91728 0%,#d92736 52%,#ed5b66 100%); box-shadow: 0 20px 45px rgba(178,28,44,.19), inset 0 1px 0 rgba(255,255,255,.22); }
 .hero-orb.orb-one { background: rgba(255,255,255,.08); }
 .hero-orb.orb-two { background: rgba(255,220,224,.1); }
@@ -211,7 +211,7 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .version-pill,.attention-count { color: #b41f2d; background: #fff0f1; border-color: #f4d6d9; }
 .mobile-nav { background: linear-gradient(130deg,rgba(255,255,255,.91),rgba(255,248,249,.88)); border-color: rgba(255,255,255,.95); box-shadow: 0 8px 28px rgba(92,34,40,.12), inset 0 1px 0 #fff; }
 .toast-message { border-color: var(--glass-border-elevated); background: var(--glass-surface-elevated); box-shadow: var(--shadow-elevated), var(--glass-highlight); backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); }
-.toast-check { color: #fff; background: var(--retail-red); }
+.toast-check { color: #fff; background: var(--color-brand-primary); }
 
 /* Department states: each department has its own icon tint and motion signature. */
 .dept-icon-fmcg { color:#c51e30!important; background:#fff0f1!important; }

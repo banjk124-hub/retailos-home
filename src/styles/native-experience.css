@@ -250,11 +250,11 @@
 }
 
 .push-notification-setup__status.is-ready {
-  color: var(--color-success);
+  color: var(--color-status-success, var(--color-success));
 }
 
 .push-notification-setup__status.is-error {
-  color: var(--color-error);
+  color: var(--color-status-danger, var(--color-error));
 }
 
 .push-notification-setup__action {

@@ -101,7 +101,14 @@ assert.ok(adaptiveStyles.includes("var(--color-surface-subtle, var(--surface-mut
 assert.ok(adaptiveStyles.includes("var(--color-text-secondary, var(--text-secondary))"));
 assert.ok(stocktakeImportStyles.includes("var(--color-text-primary, var(--text-primary, #172033))"));
 assert.ok(stocktakeImportStyles.includes("var(--color-text-secondary, var(--text-secondary,#687386))"));
+assert.ok(theme.includes(".eyebrow { color: var(--color-brand-primary); }"));
+assert.ok(theme.includes(".side-nav-item.active { color: var(--color-brand-strong);"));
+assert.ok(nativeStyles.includes("var(--color-status-success, var(--color-success))"));
+assert.ok(nativeStyles.includes("var(--color-status-danger, var(--color-error))"));
+assert.ok(adaptiveStyles.includes("var(--color-status-warning, var(--color-warning))"));
+assert.ok(adaptiveStyles.includes("var(--color-status-danger, var(--color-error))"));
 
 
 
-console.log("Design foundation contract passed: semantic tokens, canonical body, Glass, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
+
+console.log("Design foundation contract passed: semantic tokens, canonical body, Brand, status, Glass, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");

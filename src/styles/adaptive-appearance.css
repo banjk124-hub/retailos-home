@@ -87,7 +87,7 @@
 .notification-status-notice--unavailable {
   border-color: rgba(180,35,50,.22);
   background: rgba(255,235,237,.8);
-  color: var(--color-error);
+  color: var(--color-status-danger, var(--color-error));
 }
 
 .notification-empty--loading,
@@ -100,13 +100,13 @@
 .topbar-action-button.notification-button.notice-state-partial:not(.selected) {
   border-color: rgba(180,83,38,.3);
   background: linear-gradient(145deg,rgba(255,241,224,.96),rgba(250,224,199,.88));
-  color: var(--color-warning);
+  color: var(--color-status-warning, var(--color-warning));
 }
 
 .topbar-action-button.notification-button.notice-state-unavailable:not(.selected) {
   border-color: rgba(180,35,50,.28);
   background: linear-gradient(145deg,rgba(255,235,237,.96),rgba(250,215,220,.9));
-  color: var(--color-error);
+  color: var(--color-status-danger, var(--color-error));
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
