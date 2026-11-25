@@ -9,7 +9,7 @@
 
 - Phase 00 is closed in merged PR #160; merge commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`.
 - Phase 01 implementation is underway on `feat/uiux-phase-01-foundation`, based on that main commit.
-- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, migrates body, five light Glass materials, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical roles, corrects the small Login department label's contrast and extends the foundation contract test.
+- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, migrates body, five light Glass materials, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical roles, corrects the small Login department label's contrast, routes global focus-visible treatment through semantic focus tokens without changing its resolved appearance, and extends the foundation contract test.
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
