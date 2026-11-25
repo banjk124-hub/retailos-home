@@ -14,4 +14,5 @@
 - Scanner runtime stabilization and ecosystem cleanup are closed. Current implementation truth is in `SCANNER_ENGINE.md`; historical investigations are in `SCANNER_HISTORY.md`. Do not reopen SC-01–SC-05 for the UI redesign.
 - Development GitHub Pages is not the shared department production environment or production promotion. Merge, deployment and production transfer remain separate approvals.
 - PR #159 head CI #1465 passed. Post-merge main CI #1466 and GitHub Pages deployment #159 both completed successfully on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These are automated pipeline/deployment results, not physical-device acceptance.
+- Phase 00 audit is in Draft PR #160. It retires the unimported `home-phase2.css` and three unused Motion public APIs, records the source consumer/import graph, route-history proposal, overlay boundary and viewport baseline. PR #160 head `88914292b31e9c53b7c13c8b4537928dabc33633` passed RetailOS CI #1491; no merge or deployment has been performed.
 - Current volatile branch/PR/CI/deployment state must still be verified live before future status claims.
