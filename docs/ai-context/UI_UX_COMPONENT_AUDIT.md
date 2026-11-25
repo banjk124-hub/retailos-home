@@ -313,8 +313,8 @@ Do not create all components as a framework up front. Implement only after 00G s
 - [x] Map existing regression tests to future component migration.
 - [ ] Full selector-level CSS usage/dead-style audit.
 - [ ] Complete runtime consumer graph for every shared export.
-- [ ] 00G screen blueprints define exact consumers and component APIs.
-- [ ] 00H migration/acceptance plan approved.
+- [x] 00G screen blueprints define screen-level composition, state and ownership contracts; exact source callsite/API proof remains an implementation prerequisite.
+- [x] 00H acceptance/migration blueprint documented; owner approval remains open.
 - [ ] Owner acceptance before implementation.
 
 **00F completion means the source-level inventory and ownership decisions are documented. No component is approved for immediate deletion or replacement solely by this audit.**
