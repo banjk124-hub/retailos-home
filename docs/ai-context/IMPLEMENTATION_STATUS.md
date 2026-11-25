@@ -2,18 +2,18 @@
 
 **Repository:** `banjk124-hub/retailos-home`
 **Default branch:** `main`
-**Verified baseline:** `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`
+**Verified baseline:** `e0902ddabc572783b1ce284fda39168e91d595e6` (Phase 01 foundation PR #161 merged)
 **Phase 00 audit:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md)
 
 ## UI/UX redesign
 
 - Phase 00 is closed in merged PR #160; merge commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`.
-- Phase 01 implementation is underway on `feat/uiux-phase-01-foundation`, based on that main commit.
-- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, migrates body, five light Glass materials, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical roles, corrects the small Login department label's contrast and extends the foundation contract test.
+- Phase 01 foundation source was merged in PR #161 at `e0902ddabc572783b1ce284fda39168e91d595e6`. Follow-up implementation and browser verification continue in PR #162 on `feat/uiux-phase-01-foundation`, based on that main commit.
+- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, migrates body, five light Glass materials, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical roles, corrects the small Login department label's contrast, routes global focus-visible treatment through semantic focus tokens without changing its resolved appearance, extends the foundation contract test, routes Home, Login and mobile's exact brand-subtle/primary color consumers through semantic roles with regression guards, migrates Login typography consumers to the shared type scale with computed-size browser assertions, and adds browser checks for reduced-motion and power-conserve Glass presentation.
 - No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
 - Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
 - Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
-- Exact source-head GitHub Actions run #1518 passed on `31f2ed23fbbd189cf796029cb955fac348c1c2d6` (full preflight, TypeScript, production build, Pages build and PR-base bundle comparison). Browser visual QA and physical-device acceptance remain open; no merge or deployment is claimed.
+- Foundation source-head GitHub Actions run #1519 passed. Browser verification run #1532 passed on commit `3d4b02eae11a8f0c68c6cfdf0c8dcd511535aa1a`: preflight, production/Pages build, bundle comparison and all five Playwright viewports. Screenshot review identified vertical overflow at 844×390 (631px full-page capture). The first compact rule reduced it to 471px but did not satisfy the new viewport-fit gate. The second iteration reduced document height to 401px. The third passed the 390px document-height gate but still had approximately 7.7px panel/dock overlap. The current iteration hides only the redundant helper paragraph at the constrained landscape breakpoint, collapses its empty slot and retains 44px controls. Exact-head CI #1545 passed all build, bundle and five-viewport browser checks; the final 844×390 screenshot confirms no vertical overflow and visible clearance between the panel and dock. Exact latest-head CI #1560 passed, including reduced-motion/power-conserve Glass browser coverage and semantic Home/Login brand-color regression checks. The new Login typography-token migration and five-viewport computed-size assertions are pending exact-head CI. Safari/Android landscape, broader workspace coverage and physical-device performance remain open. Browser smoke coverage is not full visual acceptance and does not replace iOS/Android physical-device QA. PR #162 remains open; no merge or deployment is claimed.
 - PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner

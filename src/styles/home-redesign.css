@@ -3,7 +3,7 @@
 :root {
   --ro-red: #e51f2d;
   --ro-red-deep: #a90f22;
-  --ro-red-soft: #fff0f1;
+  --ro-red-soft: var(--color-brand-subtle, #fff0f1);
   --ro-ink: #19171c;
   --ro-muted: #77737e;
   --ro-radius-xl: 30px;

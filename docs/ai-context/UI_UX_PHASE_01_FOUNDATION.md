@@ -106,6 +106,59 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 - Native experience notification states now consume --color-status-success and --color-status-danger; adaptive notification states consume --color-status-warning and --color-status-danger.
 - These are value-preserving substitutions: the semantic tokens resolve to the existing brand/status colors. No new color, theme or department state was introduced.
 - Regression contracts assert representative brand and status consumers. Contrast validation remains limited to the declared solid foreground tokens against white; notification tint/background combinations still need browser-level review.
+### 3.19 Home/mobile soft-brand surface alignment
+
+- The Home redesign's `--ro-red-soft` local alias and the remaining mobile-tuning soft-red surface now delegate to `--color-brand-subtle`, retaining the exact `#fff0f1` fallback for compatibility.
+- The contract test now covers the canonical Home section, Home redesign alias and mobile-tuning consumer. No feature-specific colors or alpha overlays were normalized.
+- Exact latest-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`, including the expanded color-token contract and five-viewport browser suite.
+
+### 3.18 Login typography consumer migration
+
+- Login's form label, panel helper, input, primary action, employee identity metadata and help heading now consume the canonical label/caption/body/body-sm typography roles where their previous pixel values exactly matched the token scale at the default 16px root.
+- The existing resolved values remain 12px, 13px, 14px and 16px at the default root; the use of rem-based semantic tokens also allows these roles to scale with the root font size rather than remaining fixed pixels.
+- The design-foundation contract guards token ownership, and Playwright checks the computed root/input/field-label sizes across all five responsive viewports. Exact-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`.
+
+### 3.17 Login primary-brand consumer migration
+
+- The Login stylesheet's exact `#d92736` primary-brand consumers now use `var(--color-brand-primary)` for panel icon/eyebrow, focused input icon, hero eyebrow/title accent and remaining Login accent details.
+- This is value-preserving: the canonical token resolves to the same existing `#d92736`. The design-foundation contract rejects reintroducing the raw value into Login CSS.
+- No Login state, form, focus, motion or Glass behavior changed. Exact latest-head CI #1560 passed on `baafaee7d31e4172bff6dbb1900eeb4dbdb119ff`, including the semantic-color contract and browser suite.
+
+### 3.16 Home brand-color consumer migration
+
+- The canonical Home stylesheet section in `theme.css` now consumes `--color-brand-subtle` for its repeated soft-red surfaces and `--color-brand-primary` for exact primary-red accents, including the active navigation edge, hero gradient stop and FMCG brand motion color.
+- The substitutions resolve to the existing exact values (`#fff0f1` and `#d92736`); no color, opacity, gradient stop or state meaning was changed. Eight-digit alpha colors and nearby but non-identical feature tones remain untouched.
+- The design-foundation contract rejects raw canonical brand hex values in the Home consumer section and requires the semantic roles. Exact-head CI #1574 passed on `fb7556b17aabb750d386846cccf3a6fb8cd8c7e6`.
+
+### 3.15 Reduced-motion and power-conserve browser contract
+
+- Added a browser test that emulates the operating-system `prefers-reduced-motion: reduce` setting and verifies Login Glass transitions collapse to the 0.01ms policy and the panel animation is disabled.
+- The same test activates the existing `data-power-mode="conserve"` presentation contract and checks the actual computed Glass backdrop values: the frosted panel uses the defined 8px reduced blur and the control surface uses 0px blur.
+- This validates existing presentation policies without changing the motion provider, user preference persistence, Glass material definitions or app runtime state. Exact-head CI #1560 and #1574 passed.
+
+### 3.14 Compact desktop-landscape Login correction
+
+- The first five-viewport screenshot review found the 844×390 desktop-landscape layout expanded to a 631px full-page capture. The fixed Login dock and vertically dense form were competing for limited height.
+- Added a bounded `min-width: 761px` / `max-height: 520px` presentation rule: preserve the two-column composition, reduce only the vertical density of Login, hide the non-essential hero footer, and reserve bottom clearance for the utility dock.
+- The first compact rule reduced the full-page height from 631px to 471px but still exposed box-model/padding overhead and dock collision risk. The next iteration reduced it to 401px; screenshot evidence showed the panel still overlapped the dock by about 6px. The next iteration passed the 390px document-height gate but still measured approximately 7.7px of panel/dock overlap. The current correction removes the redundant helper paragraph only at this short landscape breakpoint, collapses its empty identity slot and preserves the employee-code label, placeholder and 44px controls. The browser gate checks document height and an 8px panel-to-dock clearance.
+- Browser regression now requires the document to fit within the 390px viewport and asserts at least 8px clearance between the Login panel and fixed utility dock. Other viewports retain their existing responsive rules.
+- This is a targeted presentation correction; authentication state, form validation, employee lookup, session persistence and dock actions are unchanged. Exact-head CI #1545 passed on `ec399a927c0360a43e94d21dfebe52e36978a40f`; the 844×390 screenshot now fits the 390px viewport and visibly separates the Login panel from the fixed dock. The employee-code label/input and submit control remain visible, with 44px control heights. This validates Chromium desktop-landscape only; mobile Safari/Android landscape still require later device evidence.
+
+### 3.13 Global focus-token ownership
+
+- The global `:focus-visible` treatment in `theme.css` now consumes the canonical focus outline, offset and shadow roles.
+- Legacy `--brand-focus-ring`, `--focus-ring-width`, `--focus-ring-offset` and `--focus-ring-shadow` remain compatibility aliases to the semantic tokens.
+- The resolved treatment is value-preserving: 3px outline, 3px offset and the existing 4px translucent red halo. This changes token ownership, not focus appearance or selector coverage.
+- The design-foundation contract test asserts both semantic ownership and compatibility aliases. Feature-local focus treatments remain independently owned until their resolved behavior is reviewed.
+
+### 3.12 Running-browser verification foundation
+
+- The repository already contained the locked `@playwright/test` dependency; this batch adds a maintained Playwright config and a responsive Login smoke suite without adding packages or changing the lockfile.
+- CI builds the GitHub Pages production artifact, launches that artifact through Vite preview at the real `/retailos-home/` base path, installs Chromium and runs browser checks at desktop (1440×900), tablet (900×1024), mobile (390×844), compact mobile (360×740) and short landscape (844×390).
+- Each viewport verifies the Login composition, employee-code input, submit control, horizontal overflow and uncaught page errors; it captures a screenshot as a CI artifact. A real Tab-key interaction must focus the employee-code input and reveal its existing Glass container focus halo; the test waits for the CSS opacity transition to settle before asserting the final state. After entering a non-submitted test value, the next Tab must focus the submit button and expose the computed 3px solid outline, 3px offset and focus halo.
+- This is the first executable browser smoke baseline, not full visual-regression approval. It does not validate authenticated Home workflows, every overlay/state, screenshot pixel diffs, actual Safari/WebKit, Android Chrome, physical device performance, Glass compositing contrast or the complete keyboard journey.
+- Browser screenshots and traces are retained as workflow artifacts; generated local test output is git-ignored. Browser acceptance remains evidence-led and must expand as additional redesigned surfaces are implemented.
+
 ### 3.9 Motion and CSS ownership — static audit update
 
 The 24-file CSS tree still contains feature-specific timing declarations across Home, Login, Stocktake/Import, Scanner presentation, LiquidDock and PWA update surfaces. These include choreography, progress indicators, close transitions and reduced-motion overrides. They are not all duplicates and must not be normalized mechanically. `mobile-tuning.css` remains a large global override layer (87,240 bytes at this branch head) with both interaction timing and responsive presentation rules. The next migration requires browser computed-style evidence by viewport/state; no selector deletion or bulk duration replacement is justified by static search alone.
@@ -116,12 +169,12 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 |---|---|---|
 | 01A Brand & visual foundation | Partial | Brand identity retained; semantic brand roles and Brand typography connected. Full screen-level art direction and asset review remain |
 | 01B Typography | Partial | Shared type roles and aliases implemented. Vietnamese font asset selection, licensing, glyph and device review remain |
-| 01C Color & status semantics | Partial | Brand, status, body, Glass, Login, native/adaptive and Stocktake Import consumers use canonical roles; the small Login department label now uses the AA-checked muted role. Full real-surface contrast matrix remains |
+| 01C Color & status semantics | Partial | Brand, status, body, Glass, Login, native/adaptive and Stocktake Import consumers use canonical roles; Home, Login and mobile's exact brand-subtle/primary consumers now use semantic roles with value-preserving contract guards; the small Login department label uses the AA-checked muted role. Full real-surface contrast matrix remains |
 | 01D Materials & depth | Partial | Direct Glass material roles are audited and five light material foregrounds consume canonical text; opacity/blur/compositing, fallback and computed-style validation remain |
-| 01E Spacing, radius, elevation, focus | Partial | Semantic tokens implemented; body typography roles are now consumed. Spacing/elevation consumer migration and keyboard/focus audit remain |
-| 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases. Feature-specific literal durations/choreography audit remains |
+| 01E Spacing, radius, elevation, focus | Partial | Semantic focus outline/offset/shadow now own the global focus-visible treatment without changing its resolved appearance. Spacing/radius/elevation consumer migration and full keyboard/focus audit remain |
+| 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases; browser coverage now verifies reduced-motion transition/animation policy and the existing power-conserve Glass blur values on Login. Feature-specific literal durations/choreography audit remains |
 | 01G CSS architecture | Partial | Canonical token source established. Full selector/computed-style ownership and cascade consolidation remain |
-| 01H Integration & acceptance | Partial | Exact-head CI #1513 passed on source commit `a12db10379aca098e6969d89a76ab35df1472f58`; responsive browser evidence, real-surface contrast, accessibility and device acceptance remain open |
+| 01H Integration & acceptance | Partial | Source CI passed previously; Playwright Chromium smoke coverage now runs against the built Pages artifact at five responsive viewports and uploads screenshots. Exact-head browser CI result, full surface coverage, real-surface contrast, accessibility and physical-device acceptance remain open |
 
 ## 5. Explicit non-decisions
 
@@ -136,12 +189,13 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 
 1. [x] Run the new foundation contract test and full `npm run preflight` on source commit `31f2ed23fbbd189cf796029cb955fac348c1c2d6` (GitHub Actions run #1518).
 2. [x] Pass TypeScript, production build, GitHub Pages build, bundle-boundary and PR-base bundle comparison on the same exact source commit.
-3. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
-4. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
-5. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
-6. Validate desktop, tablet, iOS Safari/PWA, Android low/mid-range, narrow mobile and short landscape.
-7. Verify reduced-motion and power-conserve behavior, touch target and keyboard focus.
-8. Record exact evidence and rollback in the implementation PR; no CI result is treated as physical-device acceptance.
+3. [x] Pass the Playwright Chromium Login browser smoke suite on the exact PR head and review the five responsive viewport screenshots; latest evidence: CI #1574.
+4. Review computed styles and cascade on Login, Home, Settings, Stocktake, Import and Scanner presentation surfaces.
+5. Validate text/status contrast on actual backgrounds, including translucent and dark contexts.
+6. Validate Vietnamese diacritics, mixed codes, tabular quantities/prices and long labels at representative widths.
+7. Validate desktop, tablet, iOS Safari/PWA, Android low/mid-range, narrow mobile and short landscape.
+8. Verify reduced-motion and power-conserve behavior, touch target and keyboard focus.
+9. Record exact evidence and rollback in the implementation PR; no CI result is treated as physical-device acceptance.
 
 ## 7. Next bounded work
 
@@ -152,4 +206,4 @@ Continue the remaining Phase 01 batches on this branch only after reviewing the 
 - Migration of only directly verified shared consumers to semantic tokens.
 - Phase 01 acceptance record and synchronized INDEX / IMPLEMENTATION_STATUS / ROADMAP / handoff documents.
 
-Exact-head source CI evidence: [run #1518](https://github.com/banjk124-hub/retailos-home/actions/runs/45567024868). Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
+Foundation source CI evidence: [run #1519](https://github.com/banjk124-hub/retailos-home/actions/runs/45567211808). The first browser run [#1529](https://github.com/banjk124-hub/retailos-home/actions/runs/45569610388) exposed an assertion that sampled the CSS opacity transition mid-flight; the test now waits for its settled value. Screenshot-driven compact-landscape corrections progressed through #1539 and #1542 before #1545 passed the viewport-fit and dock-clearance gates. Subsequent exact-head CI #1560, #1564, #1569 and #1574 passed the expanded motion, semantic color and Login typography contracts. Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.

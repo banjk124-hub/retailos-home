@@ -1223,7 +1223,7 @@ button:not(:disabled):active {
   place-items: center;
   border-radius: 14px;
   color: #c52635;
-  background: #fff0f1;
+  background: var(--color-brand-subtle, #fff0f1);
 }
 .calendar-modal-title h2 {
   margin: 0;

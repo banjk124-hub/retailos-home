@@ -52,6 +52,22 @@ jobs:
           REPORT_DIST_DIR=baseline/dist node scripts/report-bundle.mjs
           node scripts/compare-bundle-reports.mjs
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run responsive browser smoke tests against the Pages build
+        run: npm run test:browser
+
+      - name: Upload responsive browser screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: retailos-ui-browser-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.zip
+          if-no-files-found: warn
+
       - name: Upload bundle analysis evidence
         if: always()
         uses: actions/upload-artifact@v4

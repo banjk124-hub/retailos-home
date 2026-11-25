@@ -9,6 +9,8 @@ coverage/
 
 # Test logs and temporary artifacts
 .playwright-mcp/
+test-results/
+playwright-report/
 
 # Environment secrets
 .env
