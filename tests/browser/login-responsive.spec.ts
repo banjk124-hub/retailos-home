@@ -29,11 +29,16 @@ for (const viewport of viewports) {
 
     const layout = await page.evaluate(() => ({
       viewportWidth: document.documentElement.clientWidth,
+      viewportHeight: document.documentElement.clientHeight,
       documentWidth: document.documentElement.scrollWidth,
       bodyWidth: document.body.scrollWidth,
+      documentHeight: document.documentElement.scrollHeight,
     }));
     expect(layout.documentWidth, 'document must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.bodyWidth, 'body must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
+    if (viewport.name === 'short-landscape') {
+      expect(layout.documentHeight, 'compact landscape Login must fit without vertical page overflow').toBeLessThanOrEqual(layout.viewportHeight + 1);
+    }
     expect(pageErrors, 'application must not throw uncaught page errors').toEqual([]);
 
     await page.screenshot({
