@@ -8,7 +8,7 @@
 - Last verified main after PR #162: `3cd2d5bf7a3d1339a6c55baa1c16c74f6ebece2c`; verify live before acting.
 - PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser baseline are merged; they did not deliver product-wide redesign or the target App Shell.
 - Owner-confirmed direction: burgundy/dark-red brand, Vietnamese-first typography, authentic retail imagery; image guides art direction/composition; video guides motion/interaction; remaining art is adapted, not copied.
-- M0 remains open. Documentation reconciliation is active. M0-A representative screens, M0-B motion study, M0-C integration and M0-D technology/quality/owner acceptance remain open. No M1 authorization.
+- M0-0 documentation consolidation is complete on the PR branch; Product Studio v0.1.3 skill/manifests were audited and aligned with the governing M0 direction. M0 remains open: M0-A representative screens, M0-B motion study, M0-C integration and M0-D technology/quality/owner acceptance remain open. No M1 authorization.
 - PR #163 is the documentation Draft; verify its current head and CI before continuing. Earlier CI pass does not cover later commits automatically.
 - PR #157 remains an open Draft for legacy Login CSS; reconcile against PR #162, do not merge by default.
 - Scanner stabilization is closed and owner-confirmed operationally. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md); do not reopen engine internals for UI work.
