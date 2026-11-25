@@ -148,7 +148,8 @@
   /* Compatibility aliases; migrate consumers before removing these names. */
   --text-primary: var(--color-text-primary);
   --text-secondary: var(--color-text-secondary);
-  --color-text-tertiary: #918890;\n  --text-muted: var(--color-text-tertiary);
+  --color-text-tertiary: #918890;
+  --text-muted: var(--color-text-tertiary);
   --surface-page: var(--color-surface-canvas);
   --surface-card: var(--color-surface-panel);
   --surface-raised: var(--color-surface-raised);
