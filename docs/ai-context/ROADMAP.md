@@ -39,13 +39,13 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** Phase 00 is closed in merged PR #160 at `main` commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. Phase 01 Design Foundation is active in PR #161; it is not merged and no deployment is authorized.
+**Status:** Phase 00 is closed in merged PR #160 at `main` commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`. The Phase 01 semantic Design Foundation was merged in PR #161 at `e0902ddabc572783b1ce284fda39168e91d595e6`. Its browser verification and evidence-driven Login responsive continuation are active in PR #162; no deployment or production promotion is authorized.
 
-- Active PR: [#161 — Phase 01 Design Foundation](https://github.com/banjk124-hub/retailos-home/pull/161), branch `feat/uiux-phase-01-foundation`.
+- Active PR: [#162 — Responsive browser verification baseline](https://github.com/banjk124-hub/retailos-home/pull/162), branch `feat/uiux-phase-01-foundation`.
 - Source batches establish semantic tokens, align mobile motion aliases with shared Motion, connect Brand typography, migrate body, Glass, Login, native/adaptive presentation, Stocktake Import text and Brand/status consumers to canonical semantic roles, correct the small Login department label's contrast, extend contract tests and record source-level motion/CSS ownership findings.
 - Existing Glass materials and protected feature/platform contracts remain intact; no broad CSS deletion, new font package, or second design system is introduced.
 - Be Vietnam Pro is the leading Vietnamese typography candidate for evaluation, not yet selected or bundled.
-- Exact source-head CI run #1518 passed on `31f2ed23fbbd189cf796029cb955fac348c1c2d6`. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review and responsive visual QA.
+- Foundation CI #1519 passed on the merged PR #161 source head. Browser CI #1547 passed on the documentation-updated PR #162 head `952b152c369f42e6c91fd7e83e029140e6599e28`; #1545 passed the five viewport checks and its compact-landscape screenshot was reviewed. A further reduced-motion/power-conserve browser contract test is pending exact-head CI. Phase 01 still requires font decision/device validation, contrast checks on real translucent/dark surfaces, Glass fallback/role acceptance, computed-style/cascade review, broader workspace coverage and physical-device acceptance.
 - Do not merge or deploy Phase 01 until source review, browser/responsive visual QA and remaining owner/device acceptance are recorded.
 - Phase 00's image/video authority remains: image = structure/composition; video = motion/feedback/state; RetailOS = brand, business semantics, data truth and architecture.
 - Current App/Auth/Home source remains the AS-IS baseline. The target Shell/navigation migration is a later phase and is not part of Phase 01.
