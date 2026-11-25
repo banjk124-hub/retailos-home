@@ -14,7 +14,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 
 | Topic | Canonical document |
 |---|---|
-| Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |
+| Phase 00 repository audit, verified baseline, closed architecture principles and unresolved decision gates | [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md) |\n| Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |
 | Design tokens, typography, brand, color semantics, materials, component foundations, responsive, motion and evolving contribution lifecycle | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
 | Existing component inventory, ownership, keep/refactor/replace/create decisions, migration risks and feature-to-shared contribution governance | [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md) |
 | Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
