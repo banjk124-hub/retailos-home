@@ -1,8 +1,9 @@
 # UI/UX Acceptance and Migration Blueprint — Batch 00H
 
-**Status:** Proposed execution/acceptance contract. Owner approval is required before application-source migration.
-**Source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Documentation branch:** `docs/uiux-architecture-00b-00c`
+**Status:** Proposed execution/acceptance contract, reconciled against the Phase 00 audit. Owner approval is required before application-source migration.
+**Verified audit baseline:** `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`
+**Current audit record:** [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md)
+**Documentation branch:** `docs/uiux-phase-00-audit-closure`
 **Depends on:** 00B Technology Audit, 00C Screen Map, 00D Design System Specification, 00E Information Architecture, 00F Component Ownership Audit, 00G Screen Blueprints.
 **Scope:** Define measurable acceptance, implementation slices, test gates, rollout/rollback and decisions required to authorize the first UI implementation.
 
@@ -19,11 +20,11 @@ Decision vocabulary:
 - **Blocked:** a required dependency, decision or acceptance has not been satisfied.
 
 Current status:
-- 00B–00G are documented on the documentation branch.
-- No new UI dependency has been installed.
+- 00B–00G source/design documentation exists and is indexed; this does not mean all acceptance gates are closed.
+- Phase 00 repository reconciliation is recorded in `UI_UX_PHASE_00_AUDIT.md`.
 - No new UI dependency has been installed.
 - No physical-device acceptance is claimed.
-- 00E navigation, 00D visual system, typography and contrast decisions still require owner acceptance/prototype validation.
+- 00E navigation/history, 00D visual system, typography, contrast and device matrix still require owner acceptance/prototype validation.
 - 00F full selector-level CSS/computed-style proof and complete runtime consumer graph remain open. These are mandatory before deleting shared CSS/components, but they do not block isolated additive prototypes that preserve all old consumers.
 
 ## 2. Scope boundaries
