@@ -7,18 +7,14 @@
 
 ## UI/UX redesign
 
-- PR #159 (`docs(ui): define evolving design-system architecture`) is merged at the verified baseline above.
-- PR-head RetailOS CI run #1465 passed on `27966f571dd25ec15e6815ce034f6799c8ad47f8`.
-- Post-merge RetailOS CI #1466 and GitHub Pages deployment #159 both completed successfully on merge commit `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`.
-- These automated results do not establish physical-device or visual acceptance.
-- The redesign is product-wide and source-first in the existing React/Vite repository. Figma is optional and is not a delivery dependency.
-- The open/evolving design-system principle is documented: Core Foundation, Shared Design System and Feature Experience. No new design-system runtime implementation is claimed.
-- Current App/Auth/Home composition remains in source. The proposed App Shell, route/history adapter and new visual foundation are not yet implemented.
-- Phase 00 audit is in Draft PR #160. Direct source import/export consumers and all 24 CSS import paths are mapped; the unimported `home-phase2.css` and three unconsumed Motion public APIs are removed. Route/history, overlay and viewport proposals are documented.
-- PR #160 head `6305f471169f6d16997a355d8adc5931cb6f2b54` passed RetailOS CI #1493. It remains unmerged.
-- Remaining gates: browser computed-style/cascade validation, owner acceptance of navigation/visual/overlay decisions, physical reference-device selection and authorization of the first runtime slice.
-- PR #157 is still a draft/open Login CSS-only change based on an older main commit; it is not accepted as a redesign implementation slice. Do not merge by default.
-- No UI source migration, production deployment or physical-device acceptance is claimed by this documentation audit.
+- Phase 00 is closed in merged PR #160; merge commit `2b7f724a2518f2f2ae913e676490f46e23015cdf`.
+- Phase 01 implementation is underway on `feat/uiux-phase-01-foundation`, based on that main commit.
+- Current batch adds semantic foundation tokens in `src/styles/theme.css`, routes legacy mobile motion aliases through shared Motion tokens, connects Brand wordmark typography, and adds a foundation contract test to preflight.
+- No custom font asset is shipped or selected; Vietnamese glyph/device validation remains open.
+- Existing Glass variants and protected feature/platform contracts are retained. No broad CSS deletion or runtime rewrite is claimed.
+- Phase 01A–01G are partial or pending as detailed in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); Phase 01H integration/acceptance is not complete.
+- No CI, browser visual QA, physical-device acceptance, merge or deployment is claimed for this Phase 01 branch yet.
+- PR #157 remains a stale draft based on an older baseline; do not merge by default.
 
 ## Scanner
 
