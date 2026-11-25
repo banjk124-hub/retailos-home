@@ -42,7 +42,20 @@ for (const viewport of viewports) {
       animations: 'disabled',
     });
 
-    await employeeCode.focus();
+    await page.keyboard.press('Tab');
     await expect(employeeCode).toBeFocused();
+    const focusStyle = await employeeCode.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outlineWidth: style.outlineWidth,
+        outlineStyle: style.outlineStyle,
+        outlineOffset: style.outlineOffset,
+        boxShadow: style.boxShadow,
+      };
+    });
+    expect(focusStyle.outlineWidth).toBe('3px');
+    expect(focusStyle.outlineStyle).toBe('solid');
+    expect(focusStyle.outlineOffset).toBe('3px');
+    expect(focusStyle.boxShadow).not.toBe('none');
   });
 }
