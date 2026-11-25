@@ -32,7 +32,7 @@ PR #160 Phase 00 audit, #161 Design Foundation and #162 responsive Login/browser
 
 ## PR state verified 2026-11-26
 - PR #163: merged to main at 4e654ffb519d8b124f3edbbbda4f65fe550052ef.
-- PR #164: open Draft, M0-A source audit/blueprints. Figma-dependent language is being corrected; source-code prototype workflow is the governing path.
+- PR #164: open Draft, M0-A source audit/blueprints. PR #164 body and branch-local handoff now explicitly state that Figma is not a dependency, blocker or acceptance surface; source-code prototypes and running-browser inspection are the required path.
 - PR #165: open Draft, BATCH 00 inventory audit.
 - PR #157: closed, unmerged. Its legacy Login tablet CSS is not accepted source behavior; preserve as PR history and do not merge by default.
 
@@ -47,3 +47,8 @@ See PWA_RUNTIME_RELEASE.md. Verify live PR/CI/deployment before volatile claims.
 
 ## Verification rules
 CI proves only checks run on the exact commit. Browser emulation is not physical-device acceptance. Development Pages is not department production promotion. Merge, deployment and production transfer are separate approval gates.
+
+## BATCH 01 verification additions
+- Playwright is specified as the preferred browser automation and visual feedback layer for browser-relevant implementation; no package or runtime dependency has been installed in this documentation batch.
+- Playwright screenshots and assertions are distinct evidence: screenshots support visual inspection; assertions verify behavior. Browser emulation does not establish physical-device acceptance.
+- Exact-head workflow query for the latest BATCH 01 commit returned no PR workflow runs. CI-passed is therefore not claimed.
