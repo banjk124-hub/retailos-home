@@ -106,6 +106,12 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 - Native experience notification states now consume --color-status-success and --color-status-danger; adaptive notification states consume --color-status-warning and --color-status-danger.
 - These are value-preserving substitutions: the semantic tokens resolve to the existing brand/status colors. No new color, theme or department state was introduced.
 - Regression contracts assert representative brand and status consumers. Contrast validation remains limited to the declared solid foreground tokens against white; notification tint/background combinations still need browser-level review.
+### 3.19 Home/mobile soft-brand surface alignment
+
+- The Home redesign's `--ro-red-soft` local alias and the remaining mobile-tuning soft-red surface now delegate to `--color-brand-subtle`, retaining the exact `#fff0f1` fallback for compatibility.
+- The contract test now covers the canonical Home section, Home redesign alias and mobile-tuning consumer. No feature-specific colors or alpha overlays were normalized.
+- Exact-head CI is pending.
+
 ### 3.18 Login typography consumer migration
 
 - Login's form label, panel helper, input, primary action, employee identity metadata and help heading now consume the canonical label/caption/body/body-sm typography roles where their previous pixel values exactly matched the token scale at the default 16px root.
@@ -163,7 +169,7 @@ The 24-file CSS tree still contains feature-specific timing declarations across 
 |---|---|---|
 | 01A Brand & visual foundation | Partial | Brand identity retained; semantic brand roles and Brand typography connected. Full screen-level art direction and asset review remain |
 | 01B Typography | Partial | Shared type roles and aliases implemented. Vietnamese font asset selection, licensing, glyph and device review remain |
-| 01C Color & status semantics | Partial | Brand, status, body, Glass, Login, native/adaptive and Stocktake Import consumers use canonical roles; Home and Login's exact brand-subtle/primary consumers now use semantic roles with value-preserving contract guards; the small Login department label uses the AA-checked muted role. Full real-surface contrast matrix remains |
+| 01C Color & status semantics | Partial | Brand, status, body, Glass, Login, native/adaptive and Stocktake Import consumers use canonical roles; Home, Login and mobile's exact brand-subtle/primary consumers now use semantic roles with value-preserving contract guards; the small Login department label uses the AA-checked muted role. Full real-surface contrast matrix remains |
 | 01D Materials & depth | Partial | Direct Glass material roles are audited and five light material foregrounds consume canonical text; opacity/blur/compositing, fallback and computed-style validation remain |
 | 01E Spacing, radius, elevation, focus | Partial | Semantic focus outline/offset/shadow now own the global focus-visible treatment without changing its resolved appearance. Spacing/radius/elevation consumer migration and full keyboard/focus audit remain |
 | 01F Motion foundation | Partial | Shared token ownership restored for mobile aliases; browser coverage now verifies reduced-motion transition/animation policy and the existing power-conserve Glass blur values on Login. Feature-specific literal durations/choreography audit remains |
