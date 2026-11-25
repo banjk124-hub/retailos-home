@@ -15,7 +15,8 @@ The existing 00B–00H material provides a substantial design and migration blue
 ## 2. Verified repository baseline
 
 - PR #159, `docs(ui): define evolving design-system architecture`, is merged. Merge commit: `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`.
-- PR #159 head: `27966f571dd25ec15e6815ce034f6799c8ad47f8`; its PR-triggered RetailOS CI run #1465 completed successfully. This is PR-head CI evidence, not a post-merge main run or device acceptance.
+- PR #159 head: `27966f571dd25ec15e6815ce034f6799c8ad47f8`; PR-triggered RetailOS CI #1465 completed successfully.
+- After merge, RetailOS CI #1466 and GitHub Pages deployment #159 both completed successfully on `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. These do not establish physical-device acceptance.
 - The current default branch tree resolves at the merge commit above; recursive tree response was not truncated (260 files).
 - PR #157 remains open and draft, targets an older base (`2003ea24966755d0ad4e0298b34422b053267e77`) and contains only a legacy Login CSS adjustment. It is not an approved redesign slice and is not a dependency of Phase 00. Do not merge it by default; re-evaluate or close it when its owner confirms it is superseded.
 - No source implementation or production deployment is authorized by this audit.
