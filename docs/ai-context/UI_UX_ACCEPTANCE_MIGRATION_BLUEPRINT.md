@@ -52,7 +52,17 @@ Current status:
 
 A visual change can still alter the way an operator experiences a protected behavior. The owning feature must demonstrate that the behavior remains intact.
 
-## 2.3 M0 global visual decision gate\n\nM0 is product-wide, not Home-only. The governing separation of references and motion correctness is defined in [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines structural composition; the video defines motion/feedback/state behavior; RetailOS remains authoritative for brand, business semantics and data truth. Before M1, validate the shared language across Login, Home Overview, Module Library, Stocktake, Stocktake Import, Scanner presentation (presentation-only), Settings/Update Center, Search/Notifications and responsive shell. M0 does not authorize source migration, Scanner Engine changes or business/platform contract changes. A Home-only mockup does not satisfy M0. Motion acceptance must prove that animation is presentation-only, cannot commit/advance business state, does not trigger duplicate requests/writes/subscriptions, rejects stale async results, converges correctly when interrupted, and retains full function under reduced-motion/low-performance modes.\n\nThe first cross-surface concept review is recorded in [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md). The concept board is not sufficient for M0 exit; separate readable frames, source-verified workflow semantics, responsive variants, accessibility and low-end performance evidence remain mandatory.\n\n## 3. Acceptance model
+## 2.3 M0 global visual decision gate
+
+M0 is product-wide, not Home-only. The governing separation of references and motion correctness is defined in [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md). The image defines structural composition; the video defines motion, feedback and state behavior; RetailOS remains authoritative for brand, business semantics and data truth.
+
+Before M1, validate the shared language across Login, Application Shell, Home Overview, Module Library, Stocktake, Stocktake Import, Scanner presentation (presentation-only), Settings/Update Center, Search/Notifications and responsive shell. M0 does not authorize source migration, Scanner Engine changes or business/platform contract changes. A Home-only mockup does not satisfy M0.
+
+Motion acceptance must prove that animation is presentation-only, cannot commit/advance business state, does not trigger duplicate requests/writes/subscriptions, rejects stale async results, converges correctly when interrupted, and retains full function under reduced-motion/low-performance modes.
+
+The previous cross-surface concept is historical only. Separate readable frames, source-verified workflow semantics, responsive variants, accessibility and low-end performance evidence remain mandatory.
+
+## 3. Acceptance model
 
 A slice is accepted only when all applicable gates below pass. A not-applicable gate must include a short reason; it must not be silently omitted.
 
