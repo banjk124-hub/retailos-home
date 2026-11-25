@@ -39,15 +39,15 @@ The project owner's operational confirmation is not a quantified optical benchma
 
 ## UI/UX architecture and full experience redesign
 
-**Status:** Documentation architecture proposed on branch `docs/uiux-architecture-00b-00c`; 00B–00E are documented, not yet merged or implemented.
+**Status:** Documentation architecture proposed on branch `docs/uiux-architecture-00b-00c`; 00B–00G are documented, not yet merged or implemented.
 
 - Batch 00B: dependency/browser-native capability audit and compatibility decisions are documented in [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md).
 - Batch 00C: current screen/workflow/state trace and target screen inventory are documented in [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md).
 - Product-wide design system and future-module extension contract: [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md).
 - Batch 00D: source-audited design-system specification, including current token fragmentation, typography/font asset inventory, Glass/Motion systems, responsive rules and proposed target foundations: [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md).
-- Phased implementation, documentation goals, acceptance and rollback: [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
+- Batch 00F: source-level component ownership and migration-risk audit: [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md).\n- Batch 00G: P0/P1 screen blueprints, responsive compositions, state/ownership contracts, accessibility, motion/performance and regression acceptance: [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md).\n- Phased implementation, documentation goals, acceptance and rollback: [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md).
 
-**Next gates:** 00G screen blueprints; 00H acceptance and migration blueprint. 00E information architecture/navigation decision is documented in `UI_UX_SCREEN_MAP.md` §9; 00F source-level component ownership audit is documented in `UI_UX_COMPONENT_AUDIT.md`. Owner acceptance and implementation remain open. 00D remains source-audit/specification complete but visual contrast, font candidate and physical-device validation are open gates for implementation. Do not begin a broad visual refactor or add dependencies until these gates define the implementation scope and regression plan.
+**Next gates:** 00H acceptance and migration blueprint, then owner acceptance. 00E information architecture/navigation decision is documented in `UI_UX_SCREEN_MAP.md` §9; 00F source-level component ownership audit is documented in `UI_UX_COMPONENT_AUDIT.md`; 00G screen-level implementation blueprints are documented in `UI_UX_SCREEN_BLUEPRINTS.md`. High-fidelity prototype, owner acceptance and source implementation remain open. 00D remains source-audit/specification complete but visual contrast, font candidate and physical-device validation are open gates for implementation. Do not begin a broad visual refactor or add dependencies until these gates define the implementation scope and regression plan.
 
 **Protected boundaries:** authentication/session, stable module IDs, snapshot/cache contracts, Scanner Engine/camera lifecycle, Stocktake and Stocktake Import persistence/output, shared overlay scroll-lock, PWA release lifecycle and GitHub Pages build/deployment.
 
