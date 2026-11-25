@@ -82,6 +82,10 @@ Direct source search on the Phase 00 main baseline found the following `GlassSur
 
 The direct-use search is not a proof of all runtime composition. `MotionButton` accepts a material prop, and CSS compatibility aliases use elevated terminology independently of the `GlassSurface` variant. Therefore this pass records ownership and evidence but does not remove or rename variants.
 
+### 3.7 Component documentation format
+
+Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the standard record for semantic responsibility, ownership, API/composition, state mapping, responsive behavior, accessibility, motion, performance, tests, migration and rollback. It is a documentation contract, not a mandate to create a shared component for every repeated visual pattern.
+
 ## 4. Phase 01 workstream status
 
 | Batch | Status | Evidence / remaining work |

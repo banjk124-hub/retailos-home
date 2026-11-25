@@ -286,6 +286,8 @@ Rules:
 
 ## 6. Component and interaction foundations
 
+Use [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) to document shared candidates and materially changed feature-owned components. Keep the record proportional to risk; a visual resemblance alone is not grounds for promotion to shared.
+
 ### 6.1 Primitives
 
 Required primitives:

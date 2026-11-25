@@ -15,6 +15,7 @@ This file is the navigation layer for repository documentation. Read one canonic
 | Topic | Canonical document |
 |---|---|
 | Phase 00 repository audit, verified baseline, closed architecture principles and unresolved decision gates | [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md) |
+| Reusable component specification template and lifecycle contract | [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) |
 | Phase 01 Design Foundation implementation, source evidence, workstream status and acceptance gates | [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md) |
 | Product-wide UI/UX principles, system ownership, layout, motion, accessibility, performance and future-module extension | [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md) |
 | Design tokens, typography, brand, color semantics, materials, component foundations, responsive, motion and evolving contribution lifecycle | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
