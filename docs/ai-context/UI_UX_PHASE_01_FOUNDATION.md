@@ -106,6 +106,12 @@ Added [UI_COMPONENT_SPEC_TEMPLATE.md](./UI_COMPONENT_SPEC_TEMPLATE.md) as the st
 - Native experience notification states now consume --color-status-success and --color-status-danger; adaptive notification states consume --color-status-warning and --color-status-danger.
 - These are value-preserving substitutions: the semantic tokens resolve to the existing brand/status colors. No new color, theme or department state was introduced.
 - Regression contracts assert representative brand and status consumers. Contrast validation remains limited to the declared solid foreground tokens against white; notification tint/background combinations still need browser-level review.
+### 3.18 Login typography consumer migration
+
+- Login's form label, panel helper, input, primary action, employee identity metadata and help heading now consume the canonical label/caption/body/body-sm typography roles where their previous pixel values exactly matched the token scale at the default 16px root.
+- The existing resolved values remain 12px, 13px, 14px and 16px at the default root; the use of rem-based semantic tokens also allows these roles to scale with the root font size rather than remaining fixed pixels.
+- The design-foundation contract guards token ownership, and Playwright checks the computed root/input/field-label sizes across all five responsive viewports. Exact-head CI is pending.
+
 ### 3.17 Login primary-brand consumer migration
 
 - The Login stylesheet's exact `#d92736` primary-brand consumers now use `var(--color-brand-primary)` for panel icon/eyebrow, focused input icon, hero eyebrow/title accent and remaining Login accent details.
