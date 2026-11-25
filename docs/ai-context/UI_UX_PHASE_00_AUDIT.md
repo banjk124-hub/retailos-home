@@ -4,7 +4,7 @@
 **Audited repository:** `banjk124-hub/retailos-home`
 **Audited ref:** `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` (merge commit for PR #159)
 **Audit date:** 2026-11-25
-**Change scope:** Documentation and architecture governance only. No runtime source, dependency, business logic, Scanner Engine, persistence, PWA lifecycle or deployment changes.
+**Change scope:** Documentation/architecture governance plus retirement of one confirmed unimported CSS file. No bundled runtime style, dependency, business logic, Scanner Engine, persistence, PWA lifecycle or deployment behavior is intentionally changed.
 
 ## 1. Executive result
 
@@ -44,7 +44,7 @@ The existing 00B–00H material provides a substantial design and migration blue
 - Shared source currently includes Brand, Glass, Motion, Icon, LiquidDock, adaptive appearance, body-scroll-lock and PWA presentation systems.
 - `src/main.tsx` imports the global base/responsive/theme/interaction/mobile/performance/adaptive/native styles and shared Brand/Motion/Glass/Dock styles.
 - `HomeScreen.tsx` imports five Home stylesheet generations: `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, and `home-architecture.css`. This confirms a cascade/ownership hotspot, not that any particular selector is dead.
-- The current repository contains 16 files under `src/styles/`, in addition to feature/shared CSS files. File count, size, age or naming is not proof of unused CSS.
+- The audited `main` baseline contained 16 files under `src/styles/`; the working audit branch removes the unimported `home-phase2.css`, leaving 15. The branch tree contains 24 CSS files overall. File count, size, age or naming is not proof of unused CSS.
 - The current shared components are candidates for redesign, replacement or retirement; none is automatically the target design system merely because it exists.
 
 ### 3.4 Partial shared-consumer trace
