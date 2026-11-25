@@ -8,7 +8,9 @@
 ## UI/UX redesign
 
 - PR #159 (`docs(ui): define evolving design-system architecture`) is merged at the verified baseline above.
-- PR-head RetailOS CI run #1465 completed successfully on `27966f571dd25ec15e6815ce034f6799c8ad47f8`. This does not establish a post-merge main run, deployment or device acceptance.
+- PR-head RetailOS CI run #1465 passed on `27966f571dd25ec15e6815ce034f6799c8ad47f8`.
+- Post-merge RetailOS CI #1466 and GitHub Pages deployment #159 both completed successfully on merge commit `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`.
+- These automated results do not establish physical-device or visual acceptance.
 - The redesign is product-wide and source-first in the existing React/Vite repository. Figma is optional and is not a delivery dependency.
 - The open/evolving design-system principle is documented: Core Foundation, Shared Design System and Feature Experience. No new design-system runtime implementation is claimed.
 - Current App/Auth/Home composition remains in source. The proposed App Shell, route/history adapter and new visual foundation are not yet implemented.
