@@ -150,9 +150,9 @@
   border-radius: 16px;
   background: linear-gradient(145deg,#fff,#ffebed);
   box-shadow: 0 8px 22px rgba(188,24,43,.1),inset 0 1px 0 #fff;
-  color: #d92736;
+  color: var(--color-brand-primary);
 }
-.login-panel__eyebrow { color: #d92736; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+.login-panel__eyebrow { color: var(--color-brand-primary); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
 .login-panel__heading h2 { margin: 9px 0 6px; color: var(--login-text); font-size: clamp(30px,3vw,38px); font-weight: 760; letter-spacing: -.06em; line-height: 1.08; }
 .login-panel__heading>p { min-height: 24px; margin: 0; color: var(--login-muted); font-size: 13px; line-height: 1.55; }
 .login-form { display: grid; gap: 17px; margin-top: 26px; }
@@ -186,7 +186,7 @@
 .login-form__input-wrap:focus-within .login-form__focus-ripple { opacity: 1; }
 .login-form__input-wrap>.ro-icon-motion { flex: 0 0 auto; }
 .login-form__input-wrap .ro-icon-motion svg { transition: transform var(--motion-duration-standard) var(--motion-spring-responsive),color var(--motion-duration-standard) var(--motion-ease-standard); }
-.login-form__input-wrap:focus-within .ro-icon-motion svg { color: #d92736; transform: scale(1.08); }
+.login-form__input-wrap:focus-within .ro-icon-motion svg { color: var(--color-brand-primary); transform: scale(1.08); }
 .login-form__input-wrap input {
   width: 100%;
   min-width: 0;
@@ -470,9 +470,9 @@
   --login-border: rgba(105, 35, 46, .16);
   color: #211b1d;
 }
-.login-hero__eyebrow { color: #d92736; }
+.login-hero__eyebrow { color: var(--color-brand-primary); }
 .login-hero__message h1 { color: #211b1d; }
-.login-hero__message h1 span { color: #d92736; }
+.login-hero__message h1 span { color: var(--color-brand-primary); }
 .login-hero__edition {
   border-color: rgba(105,35,46,.12);
   background: rgba(255,255,255,.62);
@@ -488,7 +488,7 @@
 .login-panel__icon {
   background: linear-gradient(145deg,#fff,#fff0f2);
   border-color: rgba(217,39,54,.16);
-  color: #d92736;
+  color: var(--color-brand-primary);
 }
 .login-panel__identity-slot {
   min-height: 56px;
@@ -521,7 +521,7 @@
   border: 1px solid rgba(217,39,54,.16);
   border-radius: 12px;
   background: linear-gradient(145deg,#fff,#ffe7ea);
-  color: #d92736;
+  color: var(--color-brand-primary);
 }
 .login-panel__employee-copy {
   display: grid;
@@ -551,7 +551,7 @@
   margin-left: auto;
   place-items: center;
   border-radius: 50%;
-  background: #d92736;
+  background: var(--color-brand-primary);
   color: white;
 }
 .login-form { gap: 13px; margin-top: 18px; }
