@@ -14,7 +14,9 @@
 - The redesign is product-wide and source-first in the existing React/Vite repository. Figma is optional and is not a delivery dependency.
 - The open/evolving design-system principle is documented: Core Foundation, Shared Design System and Feature Experience. No new design-system runtime implementation is claimed.
 - Current App/Auth/Home composition remains in source. The proposed App Shell, route/history adapter and new visual foundation are not yet implemented.
-- Phase 00 architecture decisions are consolidated; repository reconciliation, full shared consumer graph, selector-level CSS/computed-style audit and owner decision gates remain open.
+- Phase 00 audit is in Draft PR #160. Direct source import/export consumers and all 24 CSS import paths are mapped; the unimported `home-phase2.css` and three unconsumed Motion public APIs are removed. Route/history, overlay and viewport proposals are documented.
+- PR #160 head `88914292b31e9c53b7c13c8b4537928dabc33633` passed RetailOS CI #1491. It remains unmerged.
+- Remaining gates: browser computed-style/cascade validation, owner acceptance of navigation/visual/overlay decisions, physical reference-device selection and authorization of the first runtime slice.
 - PR #157 is still a draft/open Login CSS-only change based on an older main commit; it is not accepted as a redesign implementation slice. Do not merge by default.
 - No UI source migration, production deployment or physical-device acceptance is claimed by this documentation audit.
 
