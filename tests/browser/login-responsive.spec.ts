@@ -33,11 +33,14 @@ for (const viewport of viewports) {
       documentWidth: document.documentElement.scrollWidth,
       bodyWidth: document.body.scrollWidth,
       documentHeight: document.documentElement.scrollHeight,
+      loginPanelBottom: document.querySelector('.login-experience__panel')?.getBoundingClientRect().bottom ?? 0,
+      dockTop: document.querySelector('.login-dock')?.getBoundingClientRect().top ?? 0,
     }));
     expect(layout.documentWidth, 'document must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.bodyWidth, 'body must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
     if (viewport.name === 'short-landscape') {
       expect(layout.documentHeight, 'compact landscape Login must fit without vertical page overflow').toBeLessThanOrEqual(layout.viewportHeight + 1);
+      expect(layout.loginPanelBottom + 8, 'Login panel must not collide with the fixed utility dock').toBeLessThanOrEqual(layout.dockTop);
     }
     expect(pageErrors, 'application must not throw uncaught page errors').toEqual([]);
 
