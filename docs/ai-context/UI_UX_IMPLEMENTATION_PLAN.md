@@ -1,6 +1,6 @@
 # UI/UX Rebuild Implementation Plan
 
-**Status:** Proposed delivery plan; 00B–00H documentation and the initial product-wide M0 direction are documented on the current documentation branch. Cross-surface high-fidelity validation, owner acceptance and source implementation remain open.
+**Status:** M0 reset in progress. The earlier generated-admin concept is historical only; the active Art Direction and craft standard is `UI_UX_M0_ART_DIRECTION_RESET.md`. Cross-surface high-fidelity validation, owner acceptance and source implementation remain open.
 **Baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Working documentation branch:** `docs/uiux-architecture-00b-00c`
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
@@ -18,7 +18,17 @@ Deliver one coherent RetailOS experience that:
 
 This is a product-wide presentation and interaction rebuild, not a rewrite of the data/backend/platform architecture.
 
-## 1.1 M0 — product-wide visual decision gate\n\nM0 is defined in [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md). Its scope is the entire RetailOS experience: application shell, core workspaces, operational workflows, system surfaces and shared design language. Home is one validation surface, not the scope boundary. The two user-provided samples are used separately as visual-composition and interaction/state references; RetailOS brand and operational constraints remain authoritative.\n\nM0 exit requires high-fidelity prototypes across representative surfaces, desktop/tablet/mobile validation, typography/color/contrast decisions, low/mid-range performance validation and explicit owner acceptance. No application-source migration begins merely because the direction document exists.\n\n## 1.2 M0 cross-surface prototype review\n\nThe first cross-surface concept and its explicit limitations are recorded in [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md). It covers Login, Module Library, Stocktake, Stocktake Import, Notifications, Settings/Update Center, Scanner presentation-only and mobile composition. This is a concept review, not final high-fidelity acceptance: individual screen frames, source-verified labels/state semantics, responsive validation, accessibility/contrast and low-end device evidence remain open.\n\n## 2. Baseline findings that shape the plan
+## 1.1 M0 reset — active Art Direction\n\nThe initial M0 direction and concept board did not meet the required visual distinction. They are retained as historical structure exploration only. The active direction is [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md), based on direct inspection of the reference image: warm amber/sand field, deliberate light/dark pairing, dimensional role-based surfaces, editorial type and numeric hierarchy, asymmetric composition and compact tactile navigation. RetailOS red remains the brand signature; amber is an additional accent with separate semantic rules.\n\nM0 now proceeds by Art Direction boards → signature screens → responsive compositions → interaction/motion study → cross-surface owner decision. Do not use a generic sidebar + repeated white-card dashboard as the visual benchmark.\n\n## 1.1 M0 — product-wide visual decision gate
+
+M0 scope is product-wide; the active visual direction is defined in [UI_UX_M0_ART_DIRECTION_RESET.md](./UI_UX_M0_ART_DIRECTION_RESET.md). The earlier [UI_UX_M0_GLOBAL_DIRECTION.md](./UI_UX_M0_GLOBAL_DIRECTION.md) is historical exploration. Its scope is the entire RetailOS experience: application shell, core workspaces, operational workflows, system surfaces and shared design language. Home is one validation surface, not the scope boundary. The two user-provided samples are used separately as visual-composition and interaction/state references; RetailOS brand and operational constraints remain authoritative.
+
+M0 exit requires high-fidelity prototypes across representative surfaces, desktop/tablet/mobile validation, typography/color/contrast decisions, low/mid-range performance validation and explicit owner acceptance. No application-source migration begins merely because the direction document exists.
+
+## 1.2 M0 cross-surface prototype review
+
+The first cross-surface concept and its explicit limitations are recorded in [UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md](./UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md). It covers Login, Module Library, Stocktake, Stocktake Import, Notifications, Settings/Update Center, Scanner presentation-only and mobile composition. This is a concept review, not final high-fidelity acceptance: individual screen frames, source-verified labels/state semantics, responsive validation, accessibility/contrast and low-end device evidence remain open.
+
+## 2. Baseline findings that shape the plan
 
 1. Current Home is a single long-scroll screen with section navigation: Home, Module, Activity and Settings.
 2. Module Library has 5 groups and 9 workflow IDs. Seven entries are currently marked integrating; only Stocktake and Stocktake Import have dedicated workflows in the audited feature tree.
