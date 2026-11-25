@@ -61,7 +61,13 @@ Contrast calculations for the new primary/secondary/muted text and brand/status 
 
 Added `scripts/test-design-foundation-contract.mjs` and registered it in `scripts/preflight.mjs`. It checks required semantic tokens, compatibility aliases, shared motion references, reduced-motion and power-conserve hooks.
 
-### 3.5 Glass material consumer audit
+### 3.5 CSS ownership recheck
+
+A recursive tree read at the Phase 00 main commit confirms 24 tracked CSS files. The source graph still has eight global style imports plus Brand, Motion, Glass tokens/materials and LiquidDock; Home adds five ordered stylesheets. Static source review confirms repeated selectors between `responsive.css` and `mobile-tuning.css`, between Home stylesheet generations, and between global theme and feature rules.
+
+These overlaps are intentional in some cases (responsive overrides and state variants) and risky in others. Static text matching cannot determine the winning declaration for every viewport/state, generated class or portal. No broad CSS consolidation/deletion is performed in this phase batch. The existing Phase 00 computed-style gate remains mandatory before retiring selectors or stylesheet generations.
+
+### 3.6 Glass material consumer audit
 
 Direct source search on the Phase 00 main baseline found the following `GlassSurface` material callsites:
 
