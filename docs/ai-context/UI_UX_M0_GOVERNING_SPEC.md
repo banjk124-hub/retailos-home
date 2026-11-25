@@ -84,9 +84,9 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 **M0-0 — Documentation consolidation**
 - [x] Confirm image = art direction/composition; video = motion/interaction; RetailOS = brand/business/architecture.
 - [x] Confirm burgundy, Vietnamese-first typography and authentic retail imagery.
-- [ ] Reconcile M0 records, Product Skill, INDEX, status, roadmap and handoff.
-- [ ] Verify Product Studio plugin skill consistency.
-- [ ] Establish one active M0 specification and one current status.
+- [x] Reconcile M0 records, Product Skill, INDEX, status, roadmap, PROJECT_CONTEXT and handoff.
+- [x] Audit Product Studio v0.1.3 skill and manifests against the governing M0 direction.
+- [x] Establish one active M0 specification and one current status.
 
 **M0-A — Structural/visual direction**
 - [ ] Audit source ownership and actual screens.
