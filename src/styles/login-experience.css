@@ -693,7 +693,10 @@
     font-size: 30px;
   }
   .login-panel__identity-slot {
-    min-height: 22px;
+    min-height: 0;
+  }
+  .login-panel__identity-slot > p {
+    display: none;
   }
   .login-panel__identity-slot > p {
     font-size: 11px;
