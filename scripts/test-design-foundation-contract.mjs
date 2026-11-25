@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const theme = readFileSync("src/styles/theme.css", "utf8");
 const mobile = readFileSync("src/styles/mobile-tuning.css", "utf8");
+const homeRedesign = readFileSync("src/styles/home-redesign.css", "utf8");
 const motion = readFileSync("src/shared/motion/motion.css", "utf8");
 const glassTokens = readFileSync("src/shared/components/glass/glass.tokens.css", "utf8");
 const loginStyles = readFileSync("src/styles/login-experience.css", "utf8");
@@ -123,6 +124,8 @@ assert.ok(homeTheme.includes("var(--color-brand-subtle)"), "Home surfaces must c
 assert.ok(homeTheme.includes("var(--color-brand-primary)"), "Home accents must consume the semantic brand-primary role");
 assert.ok(!homeTheme.includes("#fff0f1"), "Home consumers must not hardcode the canonical brand-subtle color");
 assert.ok(!/#d92736(?![0-9a-f])/i.test(homeTheme), "Home consumers must not hardcode the canonical brand-primary color");
+assert.ok(homeRedesign.includes("--ro-red-soft: var(--color-brand-subtle, #fff0f1);"), "Home redesign soft-red alias must delegate to the canonical brand-subtle role");
+assert.ok(mobile.includes("background: var(--color-brand-subtle, #fff0f1);"), "Mobile soft-red surface must consume the canonical brand-subtle role");
 assert.ok(nativeStyles.includes("var(--color-status-success, var(--color-success))"));
 assert.ok(nativeStyles.includes("var(--color-status-danger, var(--color-error))"));
 assert.ok(adaptiveStyles.includes("var(--color-status-warning, var(--color-warning))"));
