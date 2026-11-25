@@ -18,7 +18,8 @@ This file is the navigation layer for repository documentation. Read one canonic
 | Design tokens, typography, brand, color semantics, materials, component foundations, responsive and motion specification | [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md) |
 | Existing component inventory, ownership, keep/refactor/replace/create decisions and migration risks | [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md) |
 | Runtime dependencies, browser-native APIs, compatibility and install/no-install decisions | [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md) |
-| Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |\n| Implementable screen blueprints for desktop, tablet, mobile, states, component ownership and acceptance | [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md) |
+| Current screens, navigation, workflow states and target screen inventory | [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md) |
+| Implementable screen blueprints for desktop, tablet, mobile, states, component ownership and acceptance | [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md) |
 | UI/UX rebuild phases, priorities, documentation goals, acceptance and rollback | [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md) |
 | Scanner current architecture, ownership, lifecycle, ROI, pipeline, decoder, limits, validation, tests and current status | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) |
 | Scanner historical phases, investigations, decisions, incidents and cleanup history | [SCANNER_HISTORY.md](./SCANNER_HISTORY.md) |
@@ -55,7 +56,8 @@ This file is the navigation layer for repository documentation. Read one canonic
 - `UI_UX_DESIGN_SYSTEM_SPEC.md`: concrete design-system specification and source audit.
 - `UI_UX_COMPONENT_AUDIT.md`: source-level component inventory, ownership, coupling and migration decisions.
 - `UI_UX_TECHNOLOGY_AUDIT.md`: browser/dependency evidence and technology decisions.
-- `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.\n- `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
+- `UI_UX_SCREEN_MAP.md`: screen/workflow truth and target information architecture.
+- `UI_UX_SCREEN_BLUEPRINTS.md`: implementable screen-level layout, state, responsive, accessibility, performance and acceptance contracts.
 - `UI_UX_IMPLEMENTATION_PLAN.md`: implementation sequencing, acceptance and rollback.
 - Scanner current truth: `SCANNER_ENGINE.md`; scanner history: `SCANNER_HISTORY.md`.
 - PWA runtime/release truth: `PWA_RUNTIME_RELEASE.md`.
