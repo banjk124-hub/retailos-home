@@ -268,13 +268,11 @@
 }
 
 :root[data-power-mode="conserve"] .liquid-dock {
-  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   backdrop-filter: none;
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .liquid-dock {
-    background-color: rgba(255, 255, 255, .95);
+@supports not ((backdrop-filter: none;
   }
 }
 
