@@ -13,7 +13,7 @@
   }
 
   .page-floating-dock::before,
-  .page-glass-highlight {
+  .page-floating-highlight {
     display: none;
     animation: none;
   }
