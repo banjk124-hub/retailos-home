@@ -24,11 +24,12 @@
 | Cross-feature acceptance | ACCEPTANCE_CHECKLIST.md |
 
 ## M0-A working documents
-- [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) — refreshed source audit against main after PR #167.
+- [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) — current source baseline and screen ownership.
+- [UI_UX_M0_A1_ARCHITECTURE_AUDIT.md](./UI_UX_M0_A1_ARCHITECTURE_AUDIT.md) — completed source architecture audit, responsibility map, protected contracts, findings and next gate.
 - [UI_UX_M0_A1_SCREEN_BLUEPRINTS.md](./UI_UX_M0_A1_SCREEN_BLUEPRINTS.md) — seven source-grounded screen blueprints: Login, proposed Shell, Home, Library, Stocktake, Import and Settings/Update Center.
 - [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) — direction and acceptance authority.
 
-These are design/audit artifacts, not owner-approved final designs or permission for broad implementation. Next is source/runtime visual prototyping and owner review.
+These are design/audit artifacts, not owner-approved final designs or permission for broad implementation. M0-A1 is source-level complete; CSS/runtime evidence is the next separate gate.
 
 ## Domain contracts
 | Domain | Owner |
@@ -56,7 +57,7 @@ Superseded proposal documents removed in BATCH 02 are recorded in DEPRECATION_RE
 `AI_CAPABILITY_SYSTEM.md` and `AI_CAPABILITY_EVALUATION.md` describe the repository CORE/TASK/DOMAIN skill architecture and evaluation. Repository skills remain active; the private Product Studio plugin is a companion, not a replacement.
 
 ## Context rules
-- Start with Product Skill and current status; for UI/UX also load the M0 Governing Spec and M0-A documents.
+- Start with Product Skill and current status; for UI/UX also load the M0 Governing Spec and current M0-A documents.
 - Verify live branch, commit, PR, CI and deployment before volatile claims or edits.
 - Read owning domain contracts before protected changes.
 - Check decisions, architecture, deprecation and technology records before major changes.
