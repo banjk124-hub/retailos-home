@@ -294,7 +294,7 @@ assert.ok(stocktakeModuleSource.includes('Barcode trùng nhau được giữ ngu
   'review continues to preserve duplicate barcode rows');
 
 const stocktakeTransitionCss = await readFile(
-  new URL('../src/features/scanner/scanner-transition.css', import.meta.url),
+  new URL('../src/features/stocktake/components/stocktake-scanner-presentation.css', import.meta.url),
   'utf8',
 );
 assert.match(stocktakeTransitionCss, /scanner-stocktake-close 1ms linear both/,
