@@ -181,7 +181,9 @@ The audited `main` baseline contains 25 CSS files; the Phase 00 audit branch con
 | Active Home generations | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css` | Five imported files; 39 repeated selector strings across the five-file cascade. `home-phase2.css` was unimported and is retired on the Phase 00 branch. |
 | Login | `login-experience.css` | 22,218 bytes; imported by LoginExperience |
 | Scanner settings | `scanner-settings.css` | 7,113 bytes; imported by SettingsHub and ScannerSettingsPanel |
-| Scanner transition | `scanner-transition.css` | 8,723 bytes; imported by Home BarcodeScanner and StocktakeScanner |
+| Home scanner presentation | `barcode-scanner-presentation.css` | Home-owned; imported by BarcodeScanner |
+| Stocktake scanner presentation | `stocktake-scanner-presentation.css` | Stocktake-owned; imported by StocktakeScanner |
+| Shared scanner control | `scanner-shared-controls.css` | Minimal torch-control styling imported by both scanner surfaces |
 | Stocktake | `stocktake.css` | 12,037 bytes; imported by StocktakeModule |
 | Stocktake Import | `stocktake-import.css` | 50,389 bytes; imported by StocktakeImportModule |
 | Brand / Glass / Motion / Navigation / PWA | `brand.css`, `glass.tokens.css`, `glass.materials.css`, `motion.css`, `LiquidDock.css`, `pwa-update-prompt.css` | Shared styles imported at app entry or by the owning lazy feature |
