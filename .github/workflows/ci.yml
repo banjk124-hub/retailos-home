@@ -55,16 +55,17 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run responsive browser smoke tests against the Pages build
+      - name: Run responsive and runtime evidence tests against the Pages build
         run: npm run test:browser
 
-      - name: Upload responsive browser screenshots and traces
+      - name: Upload responsive and runtime evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: retailos-ui-browser-evidence
+          name: retailos-ui-runtime-evidence
           path: |
             test-results/**/*.png
+            test-results/**/*.json
             test-results/**/*.zip
           if-no-files-found: warn
 
