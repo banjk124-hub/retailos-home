@@ -63,3 +63,36 @@
 .scanner-settings-update-icon { position:relative; }
 .scanner-settings-update-icon i { position:absolute; top:5px; right:5px; width:8px; height:8px; border:2px solid #f9e9eb; border-radius:50%; background:#b52537; }
 .scanner-settings-update-tag { flex:0 0 auto; padding:5px 7px; border-radius:99px; background:#fae9eb; color:#ad2638; font-size:8px; font-weight:900; letter-spacing:.5px; }
+
+
+/* Greenfield Settings Experience — presentation only; existing settings controllers stay authoritative. */
+.settings-experience{width:min(100%,660px);padding:clamp(18px,3vw,28px);border-color:rgba(255,255,255,.9);background:linear-gradient(155deg,#fff 0%,#fbf7f8 58%,#f7eff1 100%);border-radius:26px}
+.settings-experience__header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:19px;border-bottom:1px solid #eee4e7}
+.settings-experience__identity{display:flex;align-items:center;gap:13px;min-width:0}
+.settings-experience__mark{width:48px;height:48px;display:grid;place-items:center;flex:0 0 auto;border:1px solid #f1dce0;border-radius:16px;background:linear-gradient(145deg,#fff1f3,#f8e4e8);color:#ad2639;box-shadow:inset 0 1px #fff}
+.settings-experience__identity h2{margin:3px 0;font-size:clamp(21px,4vw,25px);font-weight:780;letter-spacing:-.7px;color:#30252a}
+.settings-experience__identity p{margin:0;color:#887b81;font-size:11px}
+.settings-experience__intro{position:relative;display:grid;gap:7px;margin:19px 0 23px;padding:18px 19px;overflow:hidden;border:1px solid #f0dfe3;border-radius:19px;background:linear-gradient(112deg,#fff7f8 0%,#fff 74%);box-shadow:0 8px 24px rgba(105,35,51,.045)}
+.settings-experience__intro:after{content:"";position:absolute;right:-28px;top:-42px;width:142px;height:142px;border:1px solid rgba(181,37,55,.09);border-radius:50%;box-shadow:0 0 0 18px rgba(181,37,55,.025),0 0 0 38px rgba(181,37,55,.018)}
+.settings-experience__intro-kicker{color:#b02a3b;font-size:8px;font-weight:900;letter-spacing:1.3px}
+.settings-experience__intro strong{position:relative;z-index:1;color:#392a30;font-size:17px;font-weight:780;letter-spacing:-.35px}
+.settings-experience__intro p{position:relative;z-index:1;max-width:470px;margin:0;color:#82757b;font-size:11px;line-height:1.55}
+.settings-experience__group{display:grid;gap:10px;margin-top:21px}
+.settings-experience__group-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 3px}
+.settings-experience__group-heading span{color:#514149;font-size:12px;font-weight:800}
+.settings-experience__group-heading small{color:#a3979d;font-size:8px;font-weight:850;letter-spacing:1px}
+.settings-experience__item{display:flex;align-items:center;gap:13px;width:100%;min-height:78px;padding:13px 14px;border:1px solid #eee3e6;border-radius:17px;background:rgba(255,255,255,.94);color:#44343b;text-align:left;cursor:pointer;box-shadow:0 3px 12px rgba(54,24,34,.025);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.settings-experience__item:hover{transform:translateY(-1px);border-color:#e7c9d0;box-shadow:0 8px 20px rgba(54,24,34,.07)}
+.settings-experience__item:active{transform:scale(.995)}
+.settings-experience__item>svg{flex:0 0 auto;color:#a3989d}
+.settings-experience__item-icon{position:relative;width:43px;height:43px;display:grid;place-items:center;flex:0 0 auto;border:1px solid #f0e1e4;border-radius:14px;background:#fbf1f3;color:#ad2639}
+.settings-experience__item-icon--update{background:#fff0f2}
+.settings-experience__item-icon i{position:absolute;top:4px;right:4px;width:8px;height:8px;border:2px solid #fff0f2;border-radius:50%;background:#b52537}
+.settings-experience__item .scanner-settings-menu-copy strong{font-size:13px}
+.settings-experience__item .scanner-settings-menu-copy small{font-size:10px;line-height:1.45}
+.settings-experience__item.has-pending-update{border-color:rgba(181,37,55,.27);background:linear-gradient(110deg,#fff 0%,#fff7f8 100%)}
+.settings-experience__note{margin:0 3px;color:#8a7d82;font-size:10px;line-height:1.55}
+.settings-experience__footer{display:flex;align-items:center;gap:8px;margin-top:25px;padding-top:14px;border-top:1px solid #eee4e7;color:#978a90;font-size:9px}
+.settings-experience__footer-dot{width:6px;height:6px;border-radius:50%;background:#4d9a72;box-shadow:0 0 0 3px rgba(77,154,114,.12)}
+@media(max-width:520px){.settings-experience{padding:17px;border-radius:21px}.settings-experience__intro{padding:16px}.settings-experience__item{min-height:74px;padding:11px}}
+@media(prefers-reduced-motion:reduce){.settings-experience__item{transition:none}.settings-experience__item:hover,.settings-experience__item:active{transform:none}}
