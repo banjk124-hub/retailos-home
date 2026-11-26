@@ -6,7 +6,7 @@
 RetailOS is a modern operational workspace / OS-like environment for supermarket and retail operations—not an AppSheet reskin, generic admin dashboard or unrelated form collection. It must be distinctive, premium, operationally accurate, professional on desktop, adaptive on tablet, task-focused on mobile and usable on average/lower-end devices.
 
 ## 2. Identity and references
-The sole active UI/UX direction is UI_UX_M0_GOVERNING_SPEC.md.
+The sole active UI/UX direction and greenfield implementation contract is EXPERIENCE_BUILD_STANDARD.md.
 Owner-confirmed anchors: burgundy/dark-red brand; Vietnamese-first typography; authentic supermarket/retail imagery. The supplied image guides art direction/composition; the video guides motion/transitions/interaction feedback. RetailOS owns business meaning, data truth and architecture. Do not import amber/yellow or green as brand colors, copy reference products/layouts, or invent exact motion values.
 
 ## 3. Open design system and reuse
@@ -62,35 +62,25 @@ Authorities:
 
 Do not ask the user to repeat recorded decisions. Do not replace execution with generic narration.
 
-## 9. UI/UX sequence
-- M0: follow UI_UX_M0_GOVERNING_SPEC.md: source-grounded visual direction, motion/interaction, cross-surface integration, technology evaluation and owner acceptance.
-- M1: only after explicit M0 acceptance; implement approved foundations and components required by real consumers.
-- M2+: migrate Shell/navigation and existing workspaces in bounded slices, composing per viewport and preserving real states/data.
-- Consolidate only with consumer/cascade evidence; validate accessibility, motion, browser/device behavior, performance and protected contracts.
-A plan, mockup, token file or test alone does not complete a phase.
+## 9. UI/UX implementation
+Follow EXPERIENCE_BUILD_STANDARD.md. Rebuild the Experience Layer as a greenfield product surface; do not restyle or inherit the legacy UI as the visual/component foundation. Inspect legacy source only to preserve business behavior, contracts, lifecycle ownership and regression constraints. Keep the existing Business Core stable and connect the new experience through thin adapters. Deliver visible, working vertical slices; do not introduce M0/M1 audit gates or broad legacy CSS audits as prerequisites.
 
 ## 10. Verification and release
 Inspect scripts before use. Run applicable focused tests, preflight, production build and Pages build. Record exact commit/results. Inspect desktop/tablet/mobile renderings; physical-device checks are separate from browser emulation and CI. Measure bundle, lazy chunks, cold/warm entry, input feedback, long tasks, CPU and memory. No merge without explicit owner approval; no deployment without explicit authorization.
 
 ## 11. Documentation governance
-This file is the product-wide authority. INDEX is navigation authority; IMPLEMENTATION_STATUS is verified state; AI_HANDOFF is continuation point; domain contracts own technical invariants; UI_UX_M0_GOVERNING_SPEC is the sole active M0 specification. Detailed component, technology, terminology and removal policies live in their linked canonical registers; do not duplicate their contents here.
+This file is the product-wide authority. INDEX is navigation authority; IMPLEMENTATION_STATUS is verified state; AI_HANDOFF is continuation point; domain contracts own technical invariants; EXPERIENCE_BUILD_STANDARD is the sole UI/UX implementation authority. Detailed component, technology, terminology and removal policies live in their linked canonical registers; do not duplicate their contents here.
 
 ## 12. Reporting
 Report Kết luận, Đã thực hiện, Bằng chứng, Chưa hoàn tất/rủi ro, Bước tiếp theo. Use Vietnamese by default and exact technical terms. Never claim unverified work/tests/merge/deployment/acceptance.
 
-## 13. Playwright-assisted implementation and verification
-Use Playwright as the preferred browser automation and visual feedback layer for browser-relevant implementation work. It should help the engineer inspect the real application while coding—not merely run a final test after implementation.
-
-Workflow:
-1. Inspect the existing package scripts, test stack, app entry points, routing and test fixtures before adding or changing tooling.
-2. Start the actual RetailOS development build and verify the target workflow in a real browser context.
-3. Capture repeatable screenshots at agreed desktop, tablet and mobile viewport profiles. Use them to inspect composition, hierarchy, typography, image treatment, responsive transitions, clipping, overlap, density and overlay placement.
-4. Exercise the actual interactions and meaningful states, including keyboard/focus behavior, loading, empty, error and success states as relevant.
-5. Use assertions for behavior; use screenshots for visual inspection. Capture Playwright traces, console errors and failed requests when a test fails.
-6. Prefer semantic locators (role, label, text) and stable test IDs only when necessary. Avoid brittle selectors based on CSS implementation details.
-7. Keep browser tests focused on user journeys and integration boundaries; do not duplicate lower-level unit tests.
-8. Separate deterministic screenshot setup from motion verification. Snapshot tests may stabilize time/data/animation, but motion, reduced-motion and interruption behavior must also be checked in a non-snapshot run.
-9. Treat browser emulation as Browser-verified only. Physical-device checks remain mandatory for device-specific behavior such as camera permissions, scanner, vibration, installability and low-end performance.
-10. Do not add Playwright to the production runtime/bundle. Tooling dependencies and CI integration require a scoped change, package/CI audit and owner approval; do not silently install or expand CI in a documentation batch.
-
-For each relevant task, report browser/version or project browser profile, viewport, command, assertions, screenshot/trace evidence, failures and remaining device checks. Never claim Device-accepted from Playwright alone.
+## 13. Lean browser testing
+Use Playwright to verify real user journeys, not to generate recurring diagnostic archives.
+- Keep a small smoke suite for Login, authenticated Home and the feature changed in the current slice.
+- Cover representative desktop, tablet and mobile profiles; add a viewport only for a demonstrated layout risk.
+- Assert user-visible behavior through roles, labels and actions. Avoid brittle CSS/cascade assertions and selector inventories.
+- Keep traces/screenshots on failure. Do not dump the full DOM, computed styles, CSS rules or all-screen screenshots on every CI run.
+- Run domain regression tests when their source/contracts change; Scanner tests are scoped to Scanner changes and planned integration/release gates.
+- Run full regression before major integration acceptance and production promotion, not for every documentation or small visual change.
+- Browser emulation is not physical-device acceptance. Perform device-specific QA on coherent feature slices and before release.
+- Do not add Playwright to the production runtime/bundle.
