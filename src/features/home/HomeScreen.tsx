@@ -180,6 +180,7 @@ export default function HomeScreen({
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
   const calendarDialogRef = useRef<HTMLElement>(null);
+  const barcodeResultDialogRef = useRef<HTMLElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
   const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
   const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
@@ -609,7 +610,7 @@ export default function HomeScreen({
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
       if (event.target === event.currentTarget) setBarcodeLookup(null);
     }}>
-      <section className="barcode-result-card" role="dialog" aria-modal="true" aria-labelledby="barcode-result-title">
+      <section ref={barcodeResultDialogRef} tabIndex={-1} className="barcode-result-card" role="dialog" aria-modal="true" aria-labelledby="barcode-result-title">
         <header className="barcode-result-header">
           <span className={`barcode-result-icon ${barcodeLookup.records && barcodeLookup.records.length > 0 ? 'is-found' : ''}`}>
             {barcodeLookup.records && barcodeLookup.records.length > 0 ? <Check size={21} /> : <ScanBarcode size={21} />}
