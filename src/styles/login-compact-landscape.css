@@ -1,0 +1,144 @@
+/* Compact landscape login layout.
+   The utility dock participates in document flow instead of overlaying the form. */
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 761px) and (max-width: 900px) {
+  .login-experience {
+    box-sizing: border-box;
+    display: grid;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-content: stretch;
+    align-items: stretch;
+    gap: 8px;
+    overflow: hidden;
+    padding: max(10px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  }
+
+  .login-experience__layout {
+    display: grid;
+    width: min(100%, 980px);
+    min-height: 0;
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, .86fr);
+    align-items: center;
+    gap: clamp(20px, 4vw, 48px);
+  }
+
+  .login-hero {
+    min-height: 0;
+    height: 100%;
+    justify-content: center;
+    gap: 12px;
+    padding: 0;
+  }
+
+  .login-hero__message {
+    padding: 8px 0;
+  }
+
+  .login-hero__message h1 {
+    margin: 10px 0 8px;
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1;
+  }
+
+  .login-hero__message > p,
+  .login-hero__department,
+  .login-hero__foot {
+    display: none;
+  }
+
+  .login-experience__panel {
+    min-width: 0;
+    padding: 15px 19px;
+    border-radius: 20px;
+    transform: none;
+  }
+
+  .login-experience__panel:focus-within {
+    transform: none;
+  }
+
+  .login-panel__icon {
+    display: none;
+  }
+
+  .login-panel__heading h2 {
+    margin: 5px 0 3px;
+    font-size: 27px;
+  }
+
+  .login-panel__identity-slot {
+    min-height: 30px;
+  }
+
+  .login-panel__identity-slot > p {
+    font-size: 11px;
+  }
+
+  .login-form {
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .login-form__field {
+    gap: 5px;
+  }
+
+  .login-form__input-wrap {
+    min-height: 42px;
+    padding-inline: 12px;
+    border-radius: 12px;
+  }
+
+  .login-form__input-wrap input {
+    min-height: 40px;
+  }
+
+  .login-form__feedback-slot {
+    min-height: 30px;
+  }
+
+  .login-form__error,
+  .login-form__success {
+    min-height: 28px;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .login-form__submit {
+    min-height: 44px;
+  }
+
+  .login-form__submit-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .login-dock {
+    position: relative;
+    inset: auto;
+    width: min(100%, 430px);
+    max-width: 100%;
+    min-height: 44px;
+    margin: 0 auto;
+    padding: 4px 8px;
+    border-radius: 15px;
+  }
+
+  .login-dock__identity-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .login-dock__help-trigger {
+    min-height: 34px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 761px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .login-experience__panel,
+  .login-dock {
+    transition: none;
+  }
+}
