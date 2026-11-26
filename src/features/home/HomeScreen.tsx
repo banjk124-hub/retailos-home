@@ -16,6 +16,8 @@ import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice }
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
+import { OperationalHome } from '../../experience/home/OperationalHome';
+import { MODULE_REGISTRY } from './moduleRegistry';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
 import { LiquidDock } from '../../shared/navigation';
@@ -26,6 +28,7 @@ import '../../styles/home-ux.css';
 import '../../styles/home-engine.css';
 import '../../styles/home-redesign.css';
 import '../../styles/home-architecture.css';
+import '../../experience/home/operational-home.css';
 import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
 import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
@@ -690,92 +693,26 @@ export default function HomeScreen({
       {isOffline && <div className="offline-banner"><Activity size={16} aria-hidden="true" /> Ngoại tuyến</div>}
 
       <div className="content-wrap home-content">
-        <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} id="home" aria-label="Không gian RetailOS">
-          <div className="spotlight-brand-scene" aria-hidden="true">
-            <BrandMark />
-          </div>
-          <div className="spotlight-glow" />
-          <div className="spotlight-main-content">
-            <div className="spotlight-copy">
-              <div className="spotlight-kicker"><span className="spotlight-kicker-mark"><BrandMark /></span> RETAIL OPERATIONS</div>
-              <h2>Vận hành<br /><span>thật rõ.</span></h2>
-              <p>Công cụ bán lẻ, một không gian làm việc.</p>
-              <button className="spotlight-button spotlight-tools-button" type="button" aria-label="Mở thư viện chức năng" title="Thư viện chức năng" onClick={() => { document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
-                <Grid2X2 size={17} /><span>Khám phá chức năng</span><ArrowRight size={15} />
-              </button>
-            </div>
-            <div className="spotlight-notifications hero-notice-panel" aria-label="Cảnh báo từ snapshot">
-              <button
-                type="button"
-                className="spotlight-notifications-heading spotlight-notifications-toggle"
-                aria-label={isMobileViewport ? `${areSpotlightNotificationsExpanded ? 'Thu gọn' : 'Mở rộng'} nhóm cảnh báo` : `Cảnh báo từ snapshot, ${priorityNotices.length} cảnh báo`}
-                aria-expanded={!isMobileViewport || areSpotlightNotificationsExpanded}
-                aria-controls="spotlight-notification-list"
-                onClick={() => {
-                  if (isMobileViewport) setAreSpotlightNotificationsExpanded((expanded) => !expanded);
-                }}
-              >
-                <Bell size={13} /><span>CẢNH BÁO</span><span className="spotlight-notifications-count">{priorityNotices.length}</span>{priorityNotices.length > 0 && <i />}<ChevronDown className="spotlight-notifications-chevron" size={15} />
-              </button>
-              <div
-                className="spotlight-notification-list"
-                id="spotlight-notification-list"
-                aria-label="Thông báo ưu tiên"
-              >
-                {priorityNotices.length === 0 && <div className={`spotlight-notification-empty spotlight-notification-empty--${snapshotNoticeStatus}`} role="status">
-                  {snapshotNoticeStatusMessage}
-                </div>}
-                {priorityNotices.length > 0 && snapshotNoticeStatus !== 'ready' && snapshotNoticeStatus !== 'empty' && <div className={`spotlight-notification-empty spotlight-notification-empty--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</div>}
-                {priorityNotices.map((notice, index) => {
-                  const NoticeIcon = getModuleIcon(notice.moduleId);
-                  const isCollapsedGroupPreview = isMobileViewport && !areSpotlightNotificationsExpanded && index === 0;
-                  return <button
-                    key={notice.id}
-                    type="button"
-                    className={`spotlight-notification ${notice.tone} ${isCollapsedGroupPreview ? 'spotlight-notification-group-preview' : ''}`}
-                    aria-label={isCollapsedGroupPreview
-                      ? `Mở rộng nhóm cảnh báo, ${priorityNotices.length} cảnh báo`
-                      : `Mở cảnh báo: ${notice.title}`}
-                    aria-expanded={isCollapsedGroupPreview ? false : undefined}
-                    aria-controls={isCollapsedGroupPreview ? 'spotlight-notification-list' : undefined}
-                    aria-hidden={isMobileViewport && !areSpotlightNotificationsExpanded && index > 0}
-                    onClick={(event) => {
-                      if (isCollapsedGroupPreview) {
-                        setAreSpotlightNotificationsExpanded(true);
-                        return;
-                      }
-                      openNotice(notice, event.currentTarget);
-                    }}
-                  >
-                    <span className="spotlight-notification-icon"><MotionIcon icon={NoticeIcon} variant="module" size={15} /></span>
-                    <span className="spotlight-notification-copy">
-                      <span className="spotlight-notification-meta"><strong>RetailOS</strong><span>·</span><span>{notice.category}</span></span>
-                      <strong className="spotlight-notification-title">{notice.title}</strong>
-                      <span className="spotlight-notification-summary">{notice.summary}</span>
-                    </span>
-                    <ArrowUpRight size={14} className="spotlight-notification-arrow" />
-                  </button>;
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="spotlight-art hero-calendar-panel">
-            <div className="spotlight-orbit orbit-one" />
-            <div className="spotlight-orbit orbit-two" />
-            <button ref={calendarButtonRef} type="button" className="spotlight-glass-tile spotlight-tile-main" aria-label="Mở lịch chi tiết" onClick={openCalendar}>
-              <div className="calendar-tile-heading">
-                <span className="spotlight-tile-icon"><CalendarDays size={18} /></span>
-                <span className="calendar-tile-date"><strong>{calendarNow.getDate()}</strong><small>{calendarNow.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</small></span>
-              </div>
-              <div className="calendar-week" role="group" aria-label="Các ngày trong tuần">
-                {calendarWeek.map(({ date, weekday, day, isToday }) => <span key={date.toISOString()} className={`calendar-day ${isToday ? 'today' : ''}`}><small>{weekday}</small><strong>{day}</strong></span>)}
-              </div>
-              <span className="calendar-open-hint"><span>Mở lịch</span><ArrowUpRight size={13} /></span>
-            </button>
-            <div className="spotlight-glass-tile spotlight-tile-float"><span className={`spotlight-dept-icon dept-icon-${department.id}`}><DepartmentIcon size={15} /></span><span>{department.label}</span></div>
-            <span className="spotlight-glass-chip"><Sparkles size={13} /> {department.label}</span>
-          </div>
-        </section>
+        <OperationalHome
+          employee={employee}
+          department={department}
+          notices={priorityNotices}
+          noticeStatus={snapshotNoticeStatus}
+          noticeStatusMessage={snapshotNoticeStatusMessage}
+          onOpenModule={(module) => {
+            if (module.id === 'stocktake') {
+              setIsStocktakeOpen(true);
+              return;
+            }
+            if (module.id === 'stocktake-import') {
+              setIsStocktakeImportOpen(true);
+              return;
+            }
+            announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot không đồng nghĩa với workflow đã triển khai.`);
+          }}
+          onOpenNotice={openNotice}
+          onOpenCalendar={openCalendar}
+        />
 
         <HomeModuleLibrarySection
           initialSearch={initialUiState.search}
