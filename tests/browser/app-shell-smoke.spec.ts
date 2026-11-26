@@ -17,7 +17,7 @@ async function openHome(page: Page) {
   const viewport = page.viewportSize();
   if (viewport && viewport.width <= 700) {
     await expect(page.locator('.retailos-experience__mobile-footer')).toBeVisible();
-    await page.getByRole('button', { name: 'Chức năng' }).click();
+    await page.locator('.retailos-experience__mobile-footer').getByRole('button', { name: 'Chức năng' }).click();
   } else {
     await expect(page.locator('.retailos-experience__rail')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
