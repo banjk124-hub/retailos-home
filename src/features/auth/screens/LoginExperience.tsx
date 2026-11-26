@@ -64,7 +64,7 @@ export default function LoginExperience({ onAuthenticated }: Props) {
 
   const updateCode = (value: string) => {
     if (status === 'submitting' || status === 'success') return;
-    setEmployeeCode(value.replace(/\\D/g, ''));
+    setEmployeeCode(value.replace(/\D/g, ''));
     setStatus('idle');
     setError('');
     setPendingSession(null);
@@ -125,7 +125,7 @@ export default function LoginExperience({ onAuthenticated }: Props) {
             <div className="retail-login__identity" aria-live="polite">
               {matchedEmployee && matchedDepartment ? (
                 <div className="retail-login__employee" id="retail-login-match">
-                  <span className="retail-login__employee-avatar">{matchedEmployee.name.split(/\\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toUpperCase()).join('')}</span>
+                  <span className="retail-login__employee-avatar">{matchedEmployee.name.split(/\s+/).filter(Boolean).slice(-2).map((part) => part[0]?.toUpperCase()).join('')}</span>
                   <span><b>{matchedEmployee.name}</b><small>{matchedDepartment.label} · {matchedDepartment.tagline}</small></span>
                   <ShieldCheck size={18} />
                 </div>
