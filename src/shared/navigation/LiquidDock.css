@@ -269,6 +269,7 @@
 
 :root[data-power-mode="conserve"] .liquid-dock {
   backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 @supports not ((backdrop-filter: none;
