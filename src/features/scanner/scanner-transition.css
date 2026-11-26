@@ -88,7 +88,6 @@
   border-radius: 14px;
   background: rgba(18,14,17,.48);
   backdrop-filter: none;
-  backdrop-filter: none;
   color: #fff;
 }
 .barcode-scanner-header-copy > span {
@@ -114,7 +113,6 @@
   border: 1px solid rgba(255,255,255,.25);
   border-radius: 15px;
   background: rgba(18,14,17,.5);
-  backdrop-filter: none;
   backdrop-filter: none;
   color: #fff;
   pointer-events: auto;
@@ -145,7 +143,6 @@
   background: rgba(25,13,18,.78);
   color: #ffe0e4;
   font-size: 12px;
-  backdrop-filter: none;
   backdrop-filter: none;
 }
 .barcode-scanner.scanner-home-transition .barcode-scanner-retry {
@@ -240,7 +237,6 @@
   border: 1px solid rgba(255,255,255,.25);
   border-radius: 15px;
   background: rgba(18,14,17,.5);
-  backdrop-filter: none;
   backdrop-filter: none;
   color: #fff;
   pointer-events: auto;
