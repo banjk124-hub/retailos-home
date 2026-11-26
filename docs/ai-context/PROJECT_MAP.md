@@ -30,18 +30,19 @@
 | Shared hooks/config | `src/shared/hooks/`, `src/shared/config/` | cross-feature hook behavior and canonical configuration |
 | Styles | `src/styles/` and feature-local styles | import order, cascade, breakpoints, safe areas and ownership; do not add permanent override layers without a migration plan |
 
-## UI/UX architecture documents
+## UI/UX documentation ownership
 
-The following documents define the target design system and are documentation-only proposals until accepted and implemented:
+Current authorities:
+- [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md): product-wide principles and execution workflow.
+- [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md): sole active M0 visual/interaction direction and acceptance gate.
+- [COMPONENT_AND_PATTERN_GOVERNANCE.md](./COMPONENT_AND_PATTERN_GOVERNANCE.md): component/pattern ownership and reuse.
+- [TECHNOLOGY_RADAR.md](./TECHNOLOGY_RADAR.md): current technology evaluation.
+- [ROADMAP.md](./ROADMAP.md): current phase sequencing.
+- [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md): lifecycle and treatment of superseded files.
 
-- [UI_UX_ARCHITECTURE.md](./UI_UX_ARCHITECTURE.md): product-wide visual, component, layout, motion, accessibility, performance and future-module contract.
-- [UI_UX_DESIGN_SYSTEM_SPEC.md](./UI_UX_DESIGN_SYSTEM_SPEC.md): source-audited target tokens, typography, brand, color, material, component, motion and responsive specification.
-- [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md): current component inventory, keep/refactor/replace/create decisions, coupling hotspots and migration gates.
-- [UI_UX_TECHNOLOGY_AUDIT.md](./UI_UX_TECHNOLOGY_AUDIT.md): dependency/browser-native capability inventory and compatibility decisions.
-- [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md): source-traced current screens, states, workflows and target screen inventory.
-- [UI_UX_IMPLEMENTATION_PLAN.md](./UI_UX_IMPLEMENTATION_PLAN.md): phased rebuild plan, documentation goals, acceptance and rollback.
+Legacy UI/UX documents remain historical evidence and are not task entry points. See INDEX.md and DEPRECATION_REGISTER.md for the explicit file-level treatment. In particular, do not treat UI_UX_ARCHITECTURE.md, UI_UX_IMPLEMENTATION_PLAN.md, UI_UX_DESIGN_SYSTEM_SPEC.md or UI_UX_M0_ART_DIRECTION_RESET.md as active specifications. Verify current implementation against source and domain contracts.
 
-The target `src/app/` and `src/design-system/` directories described in the architecture are proposals, not current repository paths. Do not import from them until an approved implementation creates them.
+The target `src/app/` and `src/design-system/` directories described in historical architecture proposals are not current repository paths. Do not import from them until an approved implementation creates them.
 
 ## Validation map
 
