@@ -61,7 +61,7 @@ export function LoginForm({
               preset="presence"
               className="login-panel__employee-presence"
             >
-              <GlassSurface variant="panel" className="login-panel__employee">
+              <Surface variant="panel" className="login-panel__employee">
                 <span className="login-panel__employee-icon">
                   <MotionIcon icon={EmployeeDepartmentIcon} variant="department" state="success" size={19} />
                 </span>
@@ -72,7 +72,7 @@ export function LoginForm({
                 <span className="login-panel__employee-check">
                   <MotionIcon icon={Check} variant="secure" state="success" size={15} />
                 </span>
-              </GlassSurface>
+              </Surface>
             </MotionPresence>
           ) : (
             <p>Nhập mã nhân viên được cấp để tiếp tục.</p>
@@ -83,7 +83,7 @@ export function LoginForm({
       <form className="login-form" onSubmit={onSubmit} noValidate>
         <div className="login-form__field">
           <label htmlFor="login-employee-code"><span>Mã nhân viên</span></label>
-          <GlassSurface variant="control" className="login-form__input-wrap" interactive data-surface-state={status === 'error' ? 'error' : undefined}>
+          <Surface variant="control" className="login-form__input-wrap" interactive data-surface-state={status === 'error' ? 'error' : undefined}>
             <span className="login-form__focus-ripple" aria-hidden="true" />
             <MotionIcon icon={UserRound} variant="secure" state={status === 'error' ? 'error' : undefined} size={18} />
             <input
@@ -100,7 +100,7 @@ export function LoginForm({
               aria-describedby={status === 'error' ? 'login-error' : undefined}
               required
             />
-          </GlassSurface>
+          </Surface>
         </div>
 
         <div className="login-form__feedback-slot" aria-live="polite">
@@ -147,6 +147,6 @@ export function LoginForm({
           {status === 'submitting' && <span className="login-form__energy motion-energy-sweep" aria-hidden="true" />}
         </MotionButton>
       </form>
-    </GlassSurface>
+    </Surface>
   );
 }
