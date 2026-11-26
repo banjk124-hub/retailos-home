@@ -48,7 +48,7 @@ collectFiles("src", new Set([".css"]), cssFiles);
 for (const path of cssFiles) {
   const css = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   for (const className of retiredClasses) {
-    const selectorToken = new RegExp(`\\\\.${className}(?![A-Za-z0-9_-])`);
+    const selectorToken = new RegExp(`\\.${className}(?![A-Za-z0-9_-])`);
     assert.equal(
       selectorToken.test(css),
       false,
