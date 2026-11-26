@@ -156,3 +156,31 @@ test('Activity Center update signal opens Update Center directly', async ({ page
   await expect(page.getByRole('dialog', { name: 'Trung tâm cập nhật' })).toBeVisible();
   await expect(page.getByRole('dialog', { name: 'Cài đặt' })).toHaveCount(0);
 });
+
+test('greenfield operational workspaces open with responsive presentation and one main landmark', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  const library = page.locator('.retailos-library');
+  await library.getByRole('button', { name: /Mở thư viện Kiểm kê/ }).click();
+  const detail = page.getByRole('dialog', { name: 'Kiểm kê' });
+  await expect(detail).toBeVisible();
+
+  await detail.getByRole('button', { name: 'Kiểm kê. Đã triển khai' }).click();
+  const stocktake = page.getByRole('dialog', { name: 'Kiểm kê' });
+  await expect(stocktake).toBeVisible();
+  await expect(stocktake.locator('.stocktake-zone-form')).toBeVisible();
+  await expect(page.locator('main')).toHaveCount(1);
+  const stocktakeWidth = await stocktake.evaluate((node) => node.getBoundingClientRect().width);
+  expect(stocktakeWidth).toBeGreaterThan(720);
+  await stocktake.getByRole('button', { name: 'Đóng kiểm kê' }).click();
+
+  await library.getByRole('button', { name: /Mở thư viện Kiểm kê/ }).click();
+  const importDetail = page.getByRole('dialog', { name: 'Kiểm kê' });
+  await importDetail.getByRole('button', { name: 'Xuất file. Đã triển khai' }).click();
+  const importer = page.getByRole('dialog', { name: 'Xuất file' });
+  await expect(importer).toBeVisible();
+  await expect(importer.locator('.stocktake-import-add-file')).toBeVisible();
+  await expect(page.locator('main')).toHaveCount(1);
+  const importWidth = await importer.evaluate((node) => node.getBoundingClientRect().width);
+  expect(importWidth).toBeGreaterThan(1000);
+});
