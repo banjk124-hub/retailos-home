@@ -267,10 +267,6 @@
   transform: none !important;
 }
 
-:root[data-power-mode="conserve"] .liquid-dock {
-  
-  
-}
 
 @supports not ((
   }
