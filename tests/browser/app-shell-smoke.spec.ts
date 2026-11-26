@@ -185,3 +185,40 @@ test('greenfield operational workspaces open with responsive presentation and on
   const importWidth = await importer.evaluate((node) => node.getBoundingClientRect().width);
   expect(importWidth).toBeGreaterThan(1000);
 });
+
+
+test('modal dialogs contain keyboard focus and keep the active dialog on top', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+
+  const settingsTrigger = page.getByRole('button', { name: 'Cài đặt hệ thống' });
+  await settingsTrigger.click();
+  const settings = page.getByRole('dialog', { name: 'Cài đặt' });
+  await expect(settings).toBeVisible();
+
+  const closeSettings = settings.getByRole('button', { name: 'Đóng cài đặt' });
+  const lastSettingsAction = settings.getByRole('button', { name: /Cài đặt máy quét/ });
+  await expect(closeSettings).toBeFocused();
+
+  await lastSettingsAction.focus();
+  await page.keyboard.press('Tab');
+  await expect(closeSettings).toBeFocused();
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(lastSettingsAction).toBeFocused();
+
+  await settings.getByRole('button', { name: /Trung tâm cập nhật/ }).click();
+  const updateCenter = page.getByRole('dialog', { name: 'Trung tâm cập nhật' });
+  await expect(updateCenter).toBeVisible();
+  const updateBack = updateCenter.getByRole('button', { name: 'Quay lại cài đặt' });
+  await updateBack.focus();
+  await page.keyboard.press('Shift+Tab');
+  await expect(updateCenter).toContainText('Trung tâm cập nhật');
+  await expect(updateBack).not.toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(settings).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(settings).toBeHidden();
+  await expect(settingsTrigger).toBeFocused();
+});
