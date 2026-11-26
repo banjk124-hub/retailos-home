@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 
 const retiredClasses = [
@@ -29,6 +29,29 @@ function collectFiles(directory, extensions, output) {
 }
 
 collectFiles("src", sourceExtensions, sourceFiles);
+
+const homeScreen = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
+const homeRedesign = readFileSync("src/styles/home-redesign.css", "utf8");
+assert.equal(
+  homeScreen.includes("home-architecture.css"),
+  false,
+  "HomeScreen must not import the retired architecture stylesheet",
+);
+assert.equal(
+  existsSync("src/styles/home-architecture.css"),
+  false,
+  "The consolidated Home architecture stylesheet must remain retired",
+);
+assert.match(
+  homeRedesign,
+  /Consolidated from home-architecture\.css/,
+  "The former architecture rules must remain consolidated after the Home presentation layer",
+);
+assert.match(
+  homeRedesign,
+  /\.app-shell \.module-availability/,
+  "A unique architecture-owned selector must remain after consolidation",
+);
 
 for (const className of retiredClasses) {
   const token = new RegExp(
