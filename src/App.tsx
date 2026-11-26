@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useSta
 
 declare const __RETAILOS_BUILD_ID__: string;
 import LoginExperience from './features/auth/screens/LoginExperience';
+import { AuthenticatedShell } from './experience/shell/AuthenticatedShell';
+import './experience/shell/authenticated-shell.css';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';
@@ -284,16 +286,25 @@ export default function App() {
         </div>
       }>
         <div className={isLeavingHome ? 'app-transition-leave' : ''}>
-          <HomeScreen
-          employee={employee}
-          department={department}
-          onLogout={handleLogout}
-          isEnteringHome={isEnteringHome}
-          isOffline={isOffline}
-          canInstall={canInstall}
+          <AuthenticatedShell
+            employee={employee}
+            department={department}
+            isOffline={isOffline}
+            canInstall={canInstall}
             onInstall={handleInstall}
-            onBootReady={reportBootHealthy}
-          />
+            onLogout={handleLogout}
+          >
+            <HomeScreen
+              employee={employee}
+              department={department}
+              onLogout={handleLogout}
+              isEnteringHome={isEnteringHome}
+              isOffline={isOffline}
+              canInstall={canInstall}
+              onInstall={handleInstall}
+              onBootReady={reportBootHealthy}
+            />
+          </AuthenticatedShell>
         </div>
       </Suspense>
     </div>
