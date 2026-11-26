@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [service, rules, home, library, engine, registry, homeState, dock, packageJson, packageLock] = await Promise.all([
+const [service, rules, home, library, engine, registry, homeState, dock, experienceLibrary, packageJson, packageLock] = await Promise.all([
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/home/snapshotNoticeRules.ts'),
   read('../src/features/home/HomeScreen.tsx'),
@@ -12,6 +12,7 @@ const [service, rules, home, library, engine, registry, homeState, dock, package
   read('../src/features/home/moduleRegistry.ts'),
   read('../src/features/home/homeStateStore.ts'),
   read('../src/shared/navigation/LiquidDock.tsx'),
+  read('../src/experience/library/ExperienceModuleLibrary.tsx'),
   read('../package.json'),
   read('../package-lock.json'),
 ]);
@@ -36,12 +37,16 @@ assert.doesNotMatch(home, /setInterval\(updateCalendar,\s*60_000\)/);
 assert.match(home, /nextMidnight/);
 assert.match(home, /visibilitychange/);
 assert.equal((home.match(/window\.addEventListener\('scroll'/g) ?? []).length, 1);
-assert.match(home, /<HomeModuleLibrarySection/);
+assert.match(home, /<ExperienceModuleLibrary/);
+assert.match(home, /experience\/library\/ExperienceModuleLibrary/);
 assert.doesNotMatch(home, /filteredModules|visibleLibraries|MODULE_REGISTRY/);
 assert.match(home, /const \[initialUiState\] = useState\(readHomeUiState\)/);
 assert.doesNotMatch(registry, /function getModulesForLibrary\(/);
 assert.doesNotMatch(homeState, /activeFilter/);
 assert.match(library, /export const HomeModuleLibrarySection = memo\(/);
+assert.match(experienceLibrary, /export const ExperienceModuleLibrary = memo\(/);
+assert.match(experienceLibrary, /MODULE_LIBRARIES/);
+assert.match(experienceLibrary, /toLocaleLowerCase\('vi'\)/);
 assert.match(library, /useState\(initialSearch\)/);
 assert.match(engine, /export const ModuleLibraryEngine = memo\(/);
 assert.match(dock, /export const LiquidDock = memo\(/);
