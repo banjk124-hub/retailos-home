@@ -28,7 +28,7 @@ async function openHome(page: Page) {
   await expect(page.locator('.retailos-home__module')).toHaveCount(9);
   await expect(page.getByRole('button', { name: 'Thông báo' })).toBeVisible();
   await page.getByRole('button', { name: 'Thông báo' }).click();
-  await expect(page.locator('#retailos-home-signals')).toBeInViewport();
+  await expect(page.locator('#activity')).toBeInViewport();
 }
 
 test('authenticated Home opens without runtime errors or horizontal overflow', async ({ page }) => {
