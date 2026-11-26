@@ -9,7 +9,7 @@ import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
-import { GlassSurface } from '../../shared/components/glass';
+import { Surface } from '../../shared/components/surface/Surface';
 import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
@@ -662,9 +662,9 @@ export default function HomeScreen({
                   {pushSetupStatus === 'unsupported' && <p className="push-notification-setup__status is-error" role="status">Trình duyệt này không hỗ trợ thông báo đẩy.</p>}
                   {pushSetupStatus === 'needs-install' && <p className="push-notification-setup__status" role="status">Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.</p>}
                   {pushSetupStatus === 'error' && <p className="push-notification-setup__status is-error" role="alert">{pushSetupError}</p>}
-                  {(pushSetupStatus === 'idle' || pushSetupStatus === 'prompt' || pushSetupStatus === 'error') && <GlassSurface
+                  {(pushSetupStatus === 'idle' || pushSetupStatus === 'prompt' || pushSetupStatus === 'error') && <Surface
                     as="button"
-                    material="control"
+                    variant="control"
                     interactive
                     className="push-notification-setup__action ro-button"
                     type="button"
