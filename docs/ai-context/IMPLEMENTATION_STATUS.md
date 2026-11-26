@@ -1,7 +1,7 @@
 # Current implementation status — 2026-11-26
 
 **Repository:** `banjk124-hub/retailos-home`  
-**Current UI/UX authority:** [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md)  
+**UI/UX authority:** [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md)  
 **Engineering authority:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)
 
 ## Product direction
@@ -11,17 +11,17 @@
 
 ## Current implementation candidate — PR #174
 - Branch: `feat/retailos-greenfield-experience`; PR #174 remains Draft and unmerged.
-- Current source slice: Login presentation rebuilt as a new responsive composition while retaining existing employee-code authentication and session handoff.
+- First source/runtime slice: new responsive employee Login presentation; existing employee-code authentication and session handoff remain intact.
 - This is only the first vertical slice. Authenticated App Shell/Home, Library, Stocktake, Import and Settings presentation have not yet been rebuilt.
 - No owner visual acceptance, physical-device acceptance, merge or deployment is implied.
 
-## Test and CI policy change in progress
-- Removed the diagnostic `runtime-evidence.spec.ts` harness that generated full DOM/CSS/cascade/performance dumps and broad screenshot archives.
-- Browser tests are reduced to Login usability at desktop/tablet/mobile, reduced-motion behavior and a compact authenticated Home smoke test.
-- CI now selects a UI-focused preflight for non-Scanner changes and the full Scanner regression suite only when Scanner source/contracts change. Full regression remains a milestone/release gate.
-- Removed the duplicate PR-base build and routine diagnostic artifact uploads from the CI workflow.
-- Latest known pre-refactor run: CI #1640 on `2d0bdeb2fccb5984faf837533529df24a680683d` failed only in the newly added contrast browser test because one selector resolved to no Element; 7 other browser tests passed, and preflight/build steps passed. That brittle test has been removed rather than patching presentation to satisfy it.
-- The refactor's final-head CI has not yet been verified. Do not report it as passing until GitHub Actions confirms the exact head.
+## Test and CI
+- Removed `tests/browser/runtime-evidence.spec.ts`, which generated full DOM/CSS/cascade/performance dumps and broad screenshot archives.
+- Browser suite now has five user-journey checks: Login at desktop/tablet/mobile, reduced-motion behavior and authenticated Home at desktop/mobile.
+- CI selects domain regressions from changed paths. Scanner suite remains available for Scanner changes; unrelated UI work does not rerun the full Scanner suite.
+- Removed duplicate PR-base build/comparison and routine diagnostic artifact uploads.
+- **CI #1660 passed** on application/test/workflow head `4e6b11aa3053193c959eefe408bf9d18a7ae67a6`: change-scoped preflight selected 8/47 checks and passed; Playwright passed 5/5 in 4.7s; Pages build, bundle boundaries and diff checks passed.
+- Later commits in this candidate synchronize documentation and remove retired M0 records; no application source, test or workflow behavior changed after the CI #1660 code head. Verify the latest docs-only head's CI before making further source changes.
 
 ## Scanner
 Scanner stabilization and ecosystem cleanup remain closed. Production decoder is ZXing-C++ WASM through the Scanner Engine adapter on Main Thread. Do not reopen SC-01–SC-05 or retired Worker/diagnostics experiments for UI redesign. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
