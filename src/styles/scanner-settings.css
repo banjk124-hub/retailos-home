@@ -42,7 +42,7 @@
 .scanner-beep-preview:disabled{opacity:.42;cursor:not-allowed}
 .scanner-settings-panel button:focus-visible,.scanner-volume-control input:focus-visible{outline:3px solid rgba(189,38,58,.38);outline-offset:3px}
 @media(max-width:520px){.scanner-settings-panel{width:100%;max-height:100%;border-radius:19px;padding:16px}.scanner-preference-card{padding:13px}.scanner-beep-preview-row{align-items:flex-start;flex-direction:column}.scanner-beep-preview{align-self:flex-end}}
-@media(prefers-reduced-motion:reduce){.scanner-settings-backdrop{}.scanner-settings-menu-item,.scanner-settings-switch,.scanner-settings-switch span{transition:none}}
+@media(prefers-reduced-motion:reduce){.scanner-settings-menu-item,.scanner-settings-switch,.scanner-settings-switch span{transition:none}}
 
 /* Configurable barcode symbologies — compact mobile-first native-style switches. */
 .scanner-symbology-card{gap:12px}
