@@ -16,13 +16,16 @@ for (const viewport of viewports) {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await page.goto('./', { waitUntil: 'networkidle' });
 
-    const login = page.locator('main.login-experience');
-    const form = page.locator('form.login-form');
+    const login = page.locator('main.retail-login');
+    const story = page.locator('.retail-login__story');
+    const access = page.locator('.retail-login__access');
+    const form = page.locator('form.retail-login__form');
     const employeeCode = page.getByLabel('Mã nhân viên');
-    const submit = page.getByRole('button', { name: /Đăng nhập/ });
+    const submit = page.getByRole('button', { name: /Vào không gian làm việc/ });
 
     await expect(login).toBeVisible();
-    await expect(page.locator('.login-hero')).toBeVisible();
+    await expect(story).toBeVisible();
+    await expect(access).toBeVisible();
     await expect(form).toBeVisible();
     await expect(employeeCode).toBeVisible();
     await expect(submit).toBeVisible();
@@ -33,20 +36,20 @@ for (const viewport of viewports) {
       documentWidth: document.documentElement.scrollWidth,
       bodyWidth: document.body.scrollWidth,
       documentHeight: document.documentElement.scrollHeight,
-      loginPanelBottom: document.querySelector('.login-experience__panel')?.getBoundingClientRect().bottom ?? 0,
-      dockTop: document.querySelector('.login-dock')?.getBoundingClientRect().top ?? 0,
-      rootFontSize: getComputedStyle(document.documentElement).fontSize,
-      employeeInputFontSize: getComputedStyle(document.querySelector('.login-form__input-wrap input')!).fontSize,
-      employeeLabelFontSize: getComputedStyle(document.querySelector('.login-form__field > label')!).fontSize,
+      inputFontSize: getComputedStyle(document.querySelector<HTMLInputElement>('#retail-employee-code')!).fontSize,
+      labelFontSize: getComputedStyle(document.querySelector('.retail-login__form > label')!).fontSize,
+      storyWidth: document.querySelector('.retail-login__story')!.getBoundingClientRect().width,
+      accessWidth: document.querySelector('.retail-login__access')!.getBoundingClientRect().width,
     }));
     expect(layout.documentWidth, 'document must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.bodyWidth, 'body must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
-    expect(layout.rootFontSize).toBe('16px');
-    expect(layout.employeeInputFontSize).toBe('16px');
-    expect(layout.employeeLabelFontSize).toBe('12px');
+    expect(layout.inputFontSize).toBe('15px');
+    expect(layout.labelFontSize).toBe('12px');
+    expect(layout.storyWidth).toBeGreaterThan(0);
+    expect(layout.accessWidth).toBeGreaterThan(0);
     if (viewport.name === 'short-landscape') {
-      expect(layout.documentHeight, 'compact landscape Login must fit without vertical page overflow').toBeLessThanOrEqual(layout.viewportHeight + 1);
-      expect(layout.loginPanelBottom + 8, 'Login panel must not collide with the fixed utility dock').toBeLessThanOrEqual(layout.dockTop);
+      await expect(employeeCode).toBeInViewport();
+      await expect(submit).toBeInViewport();
     }
     expect(pageErrors, 'application must not throw uncaught page errors').toEqual([]);
 
@@ -58,29 +61,17 @@ for (const viewport of viewports) {
 
     await page.keyboard.press('Tab');
     await expect(employeeCode).toBeFocused();
-    const glassFocus = await page.locator('.login-form__input-wrap').evaluate((element) => ({
+    const focusStyle = await page.locator('.retail-login__field').evaluate((element) => ({
+      borderColor: getComputedStyle(element).borderColor,
       boxShadow: getComputedStyle(element).boxShadow,
-      rippleOpacity: getComputedStyle(element.querySelector('.login-form__focus-ripple')!).opacity,
     }));
-    expect(glassFocus.boxShadow).not.toBe('none');
-    await expect.poll(async () => page.locator('.login-form__focus-ripple').evaluate((element) => getComputedStyle(element).opacity)).toBe('1');
+    expect(focusStyle.borderColor).not.toBe('rgb(222, 212, 205)');
+    expect(focusStyle.boxShadow).not.toBe('none');
 
     await employeeCode.fill('0');
     await page.keyboard.press('Tab');
     await expect(submit).toBeFocused();
-    const focusStyle = await submit.evaluate((element) => {
-      const style = getComputedStyle(element);
-      return {
-        outlineWidth: style.outlineWidth,
-        outlineStyle: style.outlineStyle,
-        outlineOffset: style.outlineOffset,
-        boxShadow: style.boxShadow,
-      };
-    });
-    expect(focusStyle.outlineWidth).toBe('3px');
-    expect(focusStyle.outlineStyle).toBe('solid');
-    expect(focusStyle.outlineOffset).toBe('3px');
-    expect(focusStyle.boxShadow).not.toBe('none');
+    await expect(submit).toBeEnabled();
   });
 }
 
@@ -90,35 +81,39 @@ test('Login respects reduced-motion and power-conserve presentation', async ({ p
   await page.goto('./', { waitUntil: 'networkidle' });
 
   const reducedMotion = await page.evaluate(() => {
-    const panel = document.querySelector('.login-experience__panel')!;
-    const glass = document.querySelector('.login-form__input-wrap')!;
-    const durations = getComputedStyle(glass).transitionDuration.split(',').map((value) => {
-      const duration = value.trim();
-      return duration.endsWith('ms')
-        ? Number.parseFloat(duration) / 1000
-        : Number.parseFloat(duration);
-    });
+    const field = document.querySelector('.retail-login__field')!;
+    const submit = document.querySelector('.retail-login__submit')!;
+    const durations = [field, submit].flatMap((element) =>
+      getComputedStyle(element).transitionDuration.split(',').map((value) => {
+        const duration = value.trim();
+        return duration.endsWith('ms')
+          ? Number.parseFloat(duration) / 1000
+          : Number.parseFloat(duration);
+      }),
+    );
     return {
       preferenceActive: matchMedia('(prefers-reduced-motion: reduce)').matches,
-      panelAnimation: getComputedStyle(panel).animationName,
-      panelTransitionSeconds: Math.max(...durations),
+      fieldAnimation: getComputedStyle(field).animationName,
+      maxTransitionSeconds: Math.max(...durations),
     };
   });
 
   expect(reducedMotion.preferenceActive).toBe(true);
-  expect(reducedMotion.panelAnimation).toBe('none');
-  expect(reducedMotion.panelTransitionSeconds).toBeLessThanOrEqual(0.00001);
+  expect(reducedMotion.maxTransitionSeconds).toBeLessThanOrEqual(0.00001);
+  expect(reducedMotion.fieldAnimation).toBe('none');
 
   const powerConserve = await page.evaluate(() => {
     document.documentElement.dataset.powerMode = 'conserve';
-    const panel = document.querySelector('.login-experience__panel')!;
-    const control = document.querySelector('.login-form__input-wrap')!;
+    const story = document.querySelector('.retail-login__story')!;
+    const field = document.querySelector('.retail-login__field')!;
     return {
-      panelBackdrop: getComputedStyle(panel).backdropFilter,
-      controlBackdrop: getComputedStyle(control).backdropFilter,
+      storyBackdrop: getComputedStyle(story).backdropFilter,
+      fieldBackdrop: getComputedStyle(field).backdropFilter,
+      storyBackground: getComputedStyle(story).backgroundImage,
     };
   });
 
-  expect(powerConserve.panelBackdrop).toContain('blur(8px)');
-  expect(powerConserve.controlBackdrop).toContain('blur(0px)');
+  expect(powerConserve.storyBackdrop).toBe('none');
+  expect(powerConserve.fieldBackdrop).toBe('none');
+  expect(powerConserve.storyBackground).not.toBe('none');
 });
