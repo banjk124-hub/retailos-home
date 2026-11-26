@@ -24,7 +24,7 @@
 | Shared components | `src/shared/components/` | Use component governance before cross-feature promotion. |
 | Motion | `src/shared/motion/` | Preserve reduced-motion, power-conserve and lifecycle semantics. |
 | Brand/icons | `src/shared/brand/`, `src/shared/icons/` | Shared identity and icon registry. |
-| Glass | `src/shared/components/glass/` | Material primitives and GlassSurface ownership. |
+| Semantic surfaces | `src/shared/components/surface/` | `Surface.tsx` and `surface.css` own opaque semantic roles; Glass material APIs are retired. |
 | Hooks/config | `src/shared/hooks/`, `src/shared/config/` | Cross-feature behavior and canonical configuration. |
 | Styles | `src/styles/` and feature-local styles | Trace import order, cascade, breakpoints, safe areas and ownership; do not add permanent override layers without a migration plan. |
 
