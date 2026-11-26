@@ -528,3 +528,61 @@ These are per-file gzip estimates, not measured Brotli or actual transfer sizes.
 2. Corrected declaration trace must be regenerated and inspected before a cascade ownership matrix is accepted.
 3. Next evidence batch: selector/property ownership grouped by emitted CSS resource and source file; verify actual winner samples against computed style; add Brotli estimates; then build controlled typography/palette specimens without changing production assets.
 4. No CSS selector or stylesheet is approved for retirement yet.
+
+
+## 10.7 Corrected cascade trace and Brotli verification — CI run #1619
+
+**Source commit:** `ed735e20285606ded9e5a762731aaed88313f81a`  
+**CI run:** #1619 / `45754955994` — all preflight, production builds, bundle analysis, Playwright runtime capture and artifact upload steps passed.  
+**Runtime artifact:** `retailos-ui-runtime-evidence`, 10,581,372 bytes.  
+**Bundle artifact:** `retailos-bundle-analysis`, 8,216 bytes.
+
+### Runtime health confirmation
+
+The regenerated artifact confirms:
+- Aggregate browser/page errors: **0**.
+- Failed requests: **0**.
+- Duplicate IDs: **0** in every captured JSON state.
+- Home horizontal overflow: **0 px** at all seven tested viewport sizes.
+- Cascade trace: up to 180 visible DOM nodes per state, with declaration candidates grouped by computed property and stylesheet.
+
+This remains a synthetic Chromium test with a seeded local session. It does not establish real-device performance, live backend behavior, or all possible UI states.
+
+### Corrected specificity trace
+
+The over-escaped tokenizer was corrected and regenerated in #1619. Ordinary class selector `.retailos-scene` now records specificity `[0,1,0]`, as expected. The corrected trace contains:
+- Home desktop: 180 sampled nodes, 688 declaration candidates; 447 candidates from `index-eg8HbfT8.css`, 241 from `HomeScreen-Clo8TzLy.css`.
+- Home mobile (390×844): 180 sampled nodes, 746 declaration candidates; 381 from `index-eg8HbfT8.css`, 365 from `HomeScreen-Clo8TzLy.css`.
+
+A literal declaration-value comparison matched the computed property string for 342/688 desktop candidates and 335/746 mobile candidates. **This is not a winner-rate metric**: shorthand expansion, inheritance, CSS variables, normalization and cascade layers mean equal strings or candidate order do not prove declaration ownership. The trace is useful for narrowing source review, not automated cascade resolution.
+
+### Bundle size with Brotli
+
+CI measured per-file compression estimates for 30 emitted files:
+| Metric | Size |
+|---|---:|
+| Total raw | 1,918,252 bytes |
+| Per-file gzip sum | 676,749 bytes |
+| Per-file Brotli sum (quality 11) | 553,602 bytes |
+| Initial entry closure raw | 398,451 bytes |
+| Initial entry closure gzip | 100,782 bytes |
+| Initial entry closure Brotli | 86,535 bytes |
+
+Baseline and current JSON summaries match exactly for raw, gzip and Brotli metrics; bundle delta is zero. Per-file sums do not model shared compression dictionaries or prove actual CDN/browser transfer size.
+
+**Follow-up correction:** the generated Markdown comparison initially omitted Brotli despite the JSON report containing it. The next audit batch adds `entrypointBrotliBytes` to the summary and includes both entrypoint and total Brotli deltas in `compare-bundle-reports.mjs`. This is reporting completeness only; it does not alter the application bundle.
+
+### Visual and geometry observations
+
+The 390×844 Home capture shows the LiquidDock fixed at approximately `y=769` with a 56 px control height. It visually overlays the first module card's lower content while the page continues scrolling beneath it. This is a concrete geometry finding to review against the intended dock contract; it is not yet approved for a production CSS patch.
+
+The desktop Home hero also needs a separate hierarchy review between the notice panel and decorative calendar artwork. The empty Import overlay is large relative to its captured empty-state content. These remain design-review findings, not automatic defects.
+
+### Disposition after #1619
+
+1. Keep production stylesheets and tokens unchanged.
+2. Accept corrected selector/declaration trace as diagnostic evidence only; no automated CSS retirement.
+3. Complete CSS ownership reconciliation using source-file imports and runtime candidates, including inherited/custom-property and cascade-layer limitations.
+4. Fix the comparison report's Brotli omission and rerun CI.
+5. Build isolated, test-only typography and palette specimens. Do not ship a font, image asset or palette change until visual, licensing, loading and low-end-device criteria are met.
+6. Investigate the mobile dock/content overlap as a bounded UI issue, preserving the existing LiquidDock behavior and navigation semantics.
