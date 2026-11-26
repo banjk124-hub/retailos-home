@@ -554,7 +554,7 @@ The over-escaped tokenizer was corrected and regenerated in #1619. Ordinary clas
 - Home desktop: 180 sampled nodes, 688 declaration candidates; 447 candidates from `index-eg8HbfT8.css`, 241 from `HomeScreen-Clo8TzLy.css`.
 - Home mobile (390×844): 180 sampled nodes, 746 declaration candidates; 381 from `index-eg8HbfT8.css`, 365 from `HomeScreen-Clo8TzLy.css`.
 
-A literal declaration-value comparison matched the computed property string for 342/688 desktop candidates and 335/746 mobile candidates. **This is not a winner-rate metric**: shorthand expansion, inheritance, CSS variables, normalization and cascade layers mean equal strings or candidate order do not prove declaration ownership. The trace is useful for narrowing source review, not automated cascade resolution.
+A literal declaration-value comparison matched the computed property string for 342/688 desktop candidates and 335/747 mobile candidates. **This is not a winner-rate metric**: shorthand expansion, inheritance, CSS variables, normalization and cascade layers mean equal strings or candidate order do not prove declaration ownership. The trace is useful for narrowing source review, not automated cascade resolution.
 
 ### Bundle size with Brotli
 
@@ -562,13 +562,13 @@ CI measured per-file compression estimates for 30 emitted files:
 | Metric | Size |
 |---|---:|
 | Total raw | 1,918,252 bytes |
-| Per-file gzip sum | 676,749 bytes |
-| Per-file Brotli sum (quality 11) | 553,602 bytes |
+| Per-file gzip sum | 676,759 bytes |
+| Per-file Brotli sum (quality 11) | 553,587 bytes |
 | Initial entry closure raw | 398,451 bytes |
-| Initial entry closure gzip | 100,782 bytes |
-| Initial entry closure Brotli | 86,535 bytes |
+| Initial entry closure gzip | 100,781 bytes |
+| Initial entry closure Brotli | 86,526 bytes |
 
-Baseline and current JSON summaries match exactly for raw, gzip and Brotli metrics; bundle delta is zero. Per-file sums do not model shared compression dictionaries or prove actual CDN/browser transfer size.
+Baseline and current JSON summaries match exactly for raw and gzip metrics. Initial entrypoint closure metrics are also identical. Total Brotli differs by **-9 bytes** (baseline 553,596; current 553,587), while raw and gzip totals are unchanged. This tiny difference is attributable to emitted file content such as release-manifest metadata and is not evidence of a meaningful bundle regression or optimization. Per-file sums do not model shared compression dictionaries or prove actual CDN/browser transfer size.
 
 **Follow-up correction:** the generated Markdown comparison initially omitted Brotli despite the JSON report containing it. The next audit batch adds `entrypointBrotliBytes` to the summary and includes both entrypoint and total Brotli deltas in `compare-bundle-reports.mjs`. This is reporting completeness only; it does not alter the application bundle.
 
@@ -586,3 +586,32 @@ The desktop Home hero also needs a separate hierarchy review between the notice 
 4. Fix the comparison report's Brotli omission and rerun CI.
 5. Build isolated, test-only typography and palette specimens. Do not ship a font, image asset or palette change until visual, licensing, loading and low-end-device criteria are met.
 6. Investigate the mobile dock/content overlap as a bounded UI issue, preserving the existing LiquidDock behavior and navigation semantics.
+
+
+## 10.8 Mobile dock overlap — measured geometry
+
+The latest #1621 artifact confirms a specific overlap in the initial Home viewport at 390×844:
+
+| Element | Measured rectangle |
+|---|---|
+| First Library group card | x=14, y=578, w=362, h=210 |
+| LiquidDock | x=12, y=758, w=366, h=78 |
+| Vertical intersection | **30 px** |
+
+The dock covers the bottom 30 px of the first module card at the initial scroll position. The screenshot shows the card's lower action/link area visually passing underneath the dock. This is not inferred from CSS source alone; it is supported by the captured DOM rectangles and screenshot.
+
+The Home content container has a computed bottom padding of 108 px in this capture, but that only protects the end of the scrollable content; it does not prevent a fixed dock from intersecting a card at the current initial scroll position. Increasing bottom padding alone is therefore not a complete fix.
+
+The dock is intentionally fixed and owns navigation semantics. Do not change it to static/sticky, hide it opportunistically, or alter its interaction model as a quick workaround. Next step is a bounded Playwright experiment with alternative *content layout spacing/initial viewport composition* and exact before/after rectangles at 390×844, 360×740, and short landscape. Any candidate must preserve all module actions, avoid introducing a large dead gap, and retain safe-area behavior. No production CSS change is included in this audit batch.
+
+## 10.9 Runtime CSS ownership snapshot
+
+For the sampled visible nodes, the declaration trace groups candidates by the two emitted CSS resources actually loaded on Home:
+- `index-eg8HbfT8.css`: shared application styles and global foundations.
+- `HomeScreen-Clo8TzLy.css`: Home feature styles.
+
+At 390×844, 382 sampled declaration candidates originate from the shared resource and 365 from the Home resource. At 1440×900, the split is 447 and 241 respectively. These are candidate counts across the sampled nodes/properties, **not selector counts, stylesheet contribution percentages, or winning declarations**.
+
+The mobile capture contains repeated selectors across both emitted resources, including `.app-shell`, `.app-shell .home-spotlight`, `.app-shell .spotlight-main-content`, `.app-shell .spotlight-notifications`, `.topbar`, `.topbar-actions`, `.search-field` and `.section-heading p`. This validates the cascade hotspot at runtime but does not establish duplication as accidental: media conditions, selector specificity, source order, custom properties and responsive overrides still need source-level reconciliation.
+
+No selector or stylesheet is approved for retirement based on these counts.
