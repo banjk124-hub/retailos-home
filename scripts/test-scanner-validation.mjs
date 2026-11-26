@@ -199,13 +199,17 @@ assert.match(stocktakeUiSource, /scanner-stocktake-surface-enter/,
 assert.match(stocktakeUiSource, /event\.animationName !== 'scanner-stocktake-close'/,
   "Stocktake must unmount only after its own exit animation completes");
 
-const scannerTransitionCss = await readFile(
-  new URL("../src/features/scanner/scanner-transition.css", import.meta.url),
+const homeScannerPresentationCss = await readFile(
+  new URL("../src/features/scanner/barcode-scanner-presentation.css", import.meta.url),
   "utf8",
 );
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view/,
+const stocktakeScannerPresentationCss = await readFile(
+  new URL("../src/features/stocktake/components/stocktake-scanner-presentation.css", import.meta.url),
+  "utf8",
+);
+assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view/,
   "Home preview sizing must be scoped to the activated Home transition");
-assert.match(scannerTransitionCss, /min-width: 0;[\s\S]*?min-height: 0;/,
+assert.match(homeScannerPresentationCss, /min-width: 0;[\s\S]*?min-height: 0;/,
   "Home preview flex geometry must be allowed to shrink without overflow");
 
 const stocktakeCss = await readFile(
@@ -253,35 +257,35 @@ assert.match(stocktakeUiSource, /captureScannerPreviewFrame/,
   "Stocktake must preserve the last camera frame before teardown");
 assert.match(stocktakeUiSource, /stocktake-scanner-exit-frame/,
   "Stocktake must keep its feature-owned exit preview snapshot");
-assert.doesNotMatch(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition\s*\{[^}]*animation:\s*scanner-home-open/,
+assert.doesNotMatch(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transition\s*\{[^}]*animation:\s*scanner-home-open/,
   "Home must not transform/fade an ancestor of the live camera video during startup");
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*transition:\s*none/,
+assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*transition:\s*none/,
   "Home live video must not be opacity-transitioned during first-frame presentation");
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*opacity:\s*1;[^}]*transition:\s*none;/,
+assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view video\s*\{[^}]*opacity:\s*1;[^}]*transition:\s*none;/,
   "Home live video must remain fully opaque with no opacity transition");
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
+assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
   "Home pending preview must use visibility:hidden to avoid iOS opacity compositing");
-assert.match(scannerTransitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video\s*\{\s*visibility:\s*visible;/,
+assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video\s*\{\s*visibility:\s*visible;/,
   "Home preview must become visible only after the first usable frame");
-assert.match(scannerTransitionCss, /\.stocktake-scanner-preview video\s*\{\s*opacity:\s*1;\s*transition:\s*none;/,
+assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-preview video\s*\{\s*opacity:\s*1;\s*transition:\s*none;/,
   "Stocktake live video must remain fully opaque with no opacity transition");
-assert.match(scannerTransitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
+assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video\s*\{\s*visibility:\s*hidden;/,
   "Stocktake pending preview must use visibility:hidden to avoid iOS opacity compositing");
-assert.match(scannerTransitionCss, /\.stocktake-scanner-preview\.has-preview video\s*\{\s*visibility:\s*visible;/,
+assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-preview\.has-preview video\s*\{\s*visibility:\s*visible;/,
   "Stocktake preview must become visible only after the first usable frame");
 assert.match(scannerUiSource, /<video\b/,
   "Home scanner video element must remain mounted while CSS visibility masks the pending preview");
 assert.match(stocktakeUiSource, /<video\b/,
   "Stocktake scanner video element must remain mounted while CSS visibility masks the pending preview");
-assert.ok(scannerTransitionCss.includes("@keyframes scanner-home-close") && scannerTransitionCss.includes("to { opacity: 1; transform: scale(.94); }"),
+assert.ok(homeScannerPresentationCss.includes("@keyframes scanner-home-close") && homeScannerPresentationCss.includes("to { opacity: 1; transform: scale(.94); }"),
   "Home exit must shrink the frozen preview without fading the entire screen to black");
-assert.doesNotMatch(scannerTransitionCss, /\.stocktake-scanner-surface\.scanner-stocktake-surface-enter\s*\{[^}]*animation:\s*scanner-stocktake-surface-in/,
+assert.doesNotMatch(stocktakeScannerPresentationCss, /\.stocktake-scanner-surface\.scanner-stocktake-surface-enter\s*\{[^}]*animation:\s*scanner-stocktake-surface-in/,
   "Stocktake must not transform an ancestor of its live camera video during startup");
-assert.match(scannerTransitionCss, /\.stocktake-scanner-surface\.is-closing \.stocktake-scanner-preview video\s*\{\s*visibility:\s*hidden;/,
+assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-surface\.is-closing \.stocktake-scanner-preview video\s*\{\s*visibility:\s*hidden;/,
   "Stocktake must hide the live stream before animating its frozen exit frame");
-assert.match(scannerTransitionCss, /scanner-home-close 1ms linear both/,
+assert.match(homeScannerPresentationCss, /scanner-home-close 1ms linear both/,
   "reduced-motion Home exit must still dispatch animationend and unmount cleanly");
-assert.match(scannerTransitionCss, /scanner-stocktake-close 1ms linear both/,
+assert.match(stocktakeScannerPresentationCss, /scanner-stocktake-close 1ms linear both/,
   "reduced-motion Stocktake exit must still dispatch animationend and unmount cleanly");
 
 
