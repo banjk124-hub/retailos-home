@@ -117,7 +117,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .app-library-page-card:hover{ transform: translateY(-4px); }
+  .app-library-page-card:hover { transform: translateY(-4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
