@@ -25,11 +25,12 @@
 
 ## M0-A working documents
 - [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) — current source baseline and screen ownership.
-- [UI_UX_M0_A1_ARCHITECTURE_AUDIT.md](./UI_UX_M0_A1_ARCHITECTURE_AUDIT.md) — completed source architecture audit, responsibility map, protected contracts, findings and next gate.
+- [UI_UX_M0_A1_ARCHITECTURE_AUDIT.md](./UI_UX_M0_A1_ARCHITECTURE_AUDIT.md) — source architecture, responsibility map, protected contracts and findings.
 - [UI_UX_M0_A1_SCREEN_BLUEPRINTS.md](./UI_UX_M0_A1_SCREEN_BLUEPRINTS.md) — seven source-grounded screen blueprints: Login, proposed Shell, Home, Library, Stocktake, Import and Settings/Update Center.
+- [UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md](./UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md) — complete tracked CSS inventory, import ownership, cascade/token risks, typography and imagery readiness, KEEP/CONSOLIDATE/REPLACE/RETIRE matrix.
 - [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) — direction and acceptance authority.
 
-These are design/audit artifacts, not owner-approved final designs or permission for broad implementation. M0-A1 is source-level complete; CSS/runtime evidence is the next separate gate.
+M0-A1 and M0-A2 source audits are recorded. M0-A2 rendered/computed-style, browser and device evidence remains an explicit open gate; source documents are not final design acceptance or permission for broad implementation.
 
 ## Domain contracts
 | Domain | Owner |
