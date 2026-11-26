@@ -404,8 +404,3 @@ button { font: inherit; }
     font-size: 11px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .app-shell .library-engine__group {
-    transition: none;
-  }
-}
