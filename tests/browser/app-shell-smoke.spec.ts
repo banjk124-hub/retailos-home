@@ -61,5 +61,5 @@ test('Home module cards distinguish ready workflows from integrating modules', a
   await expect(page.locator('.retailos-home__module-state.is-ready')).toHaveCount(2);
   await expect(page.locator('.retailos-home__module-state:not(.is-ready)')).toHaveCount(7);
   await page.getByRole('button', { name: /Tồn kho/ }).click();
-  await expect(page.getByRole('status')).toContainText('giao diện nghiệp vụ đang được tích hợp');
+  await expect(page.locator('.toast-message')).toContainText('giao diện nghiệp vụ đang được tích hợp');
 });
