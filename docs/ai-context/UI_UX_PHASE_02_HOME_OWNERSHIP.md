@@ -1,6 +1,6 @@
 # UI-02 — Home Ownership Refactor
 
-**Status:** UI-02A–UI-02E implemented and validated. Exact HEAD `9d81bd833d5edbd65ab9285035cb250dcc64a645` passed CI run [#1799](https://github.com/banjk124-hub/retailos-home/actions/runs/45847515660). PR #179 remains Draft and unmerged.
+**Status:** UI-02A–UI-02F implemented and validated. PR #179 was merged into `main` at `4a98d3cd304f095dc6057499b69e5bf19f166948`. Exact PR HEAD `9ed641af08afdc812ef072832ddd7fc9eeb79646` passed CI run [#1805](https://github.com/banjk124-hub/retailos-home/actions/runs/45849162321).
 **Branch:** `refactor/ui-02-home-ownership`
 **Base:** `main` after UI-01B merge `f66f7b861903e22f5950065cc3f8799f93ca0e02`
 **Scope:** reduce HomeScreen orchestration/state ownership without changing product behavior or visual presentation.
@@ -77,7 +77,7 @@
 - Only the latest in-flight request may commit either success or error state; older completions are ignored.
 - Cleanup invalidates outstanding request identities before removing the update-event listener.
 - Extended the UI-02B contract test with latest-request ordering and stale-error regression cases.
-- Validation remains pending until CI completes on the exact updated PR HEAD.
+- Validation: exact updated PR HEAD `9ed641af08afdc812ef072832ddd7fc9eeb79646` passed CI run #1805, including preflight, TypeScript/production build, bundle comparison and Playwright responsive/runtime evidence.
 
 ## Focused contract tests
 
