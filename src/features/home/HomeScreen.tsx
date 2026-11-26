@@ -754,7 +754,7 @@ export default function HomeScreen({
           <div className="spotlight-art hero-calendar-panel">
             <div className="spotlight-orbit orbit-one" />
             <div className="spotlight-orbit orbit-two" />
-            <button ref={calendarButtonRef} type="button" className="spotlight-glass-tile spotlight-tile-main" aria-label="Mở lịch chi tiết" onClick={openCalendar}>
+            <button ref={calendarButtonRef} type="button" className="spotlight-tile spotlight-tile-main" aria-label="Mở lịch chi tiết" onClick={openCalendar}>
               <div className="calendar-tile-heading">
                 <span className="spotlight-tile-icon"><CalendarDays size={18} /></span>
                 <span className="calendar-tile-date"><strong>{calendarNow.getDate()}</strong><small>{calendarNow.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</small></span>
@@ -764,8 +764,8 @@ export default function HomeScreen({
               </div>
               <span className="calendar-open-hint"><span>Mở lịch</span><ArrowUpRight size={13} /></span>
             </button>
-            <div className="spotlight-glass-tile spotlight-tile-float"><span className={`spotlight-dept-icon dept-icon-${department.id}`}><DepartmentIcon size={15} /></span><span>{department.label}</span></div>
-            <span className="spotlight-glass-chip"><Sparkles size={13} /> {department.label}</span>
+            <div className="spotlight-tile spotlight-tile-float"><span className={`spotlight-dept-icon dept-icon-${department.id}`}><DepartmentIcon size={15} /></span><span>{department.label}</span></div>
+            <span className="spotlight-chip"><Sparkles size={13} /> {department.label}</span>
           </div>
         </section>
 
