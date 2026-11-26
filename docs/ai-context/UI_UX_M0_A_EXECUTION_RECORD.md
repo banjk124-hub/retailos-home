@@ -7,8 +7,8 @@
 **Status:** Figma exploration is archived as historical evidence. It is not a required deliverable, prototype host, or acceptance gate. Active M0-A validation occurs in the RetailOS source tree and running application.
 **Historical Figma file:** https://www.figma.com/design/795VGcSqSCeA6qbzObsd8r
 **Source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
-**Governing specification:** [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md)
-**Reference authority:** [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md)
+**Governing specification:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md)
+**Historical structural evidence:** [UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md](./UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md)
 
 ## 1. Historical exploration
 
@@ -65,4 +65,5 @@ A screen is accepted only when the implementation PR evidences:
 - Removes focus-within panel scaling; uses a stable outline so the panel does not shift while the user interacts with the form.
 - Protected auth/session, employee lookup, identity handoff, PWA, data and Scanner contracts are untouched.
 - RetailOS CI run #1454 passed on the exact PR head, including local-equivalent preflight, TypeScript and production build/bundle checks.
-- Browser screenshot review and physical tablet/device QA have not yet been performed. CI success is not visual/device acceptance.
+- Browser screenshot review and physical tablet/device QA were not performed for this historical PR. CI success is not visual/device acceptance.
+- **Disposition:** PR #157 was later closed unmerged. Its proposed CSS is not accepted source behavior and must not be cherry-picked by default; see [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md).

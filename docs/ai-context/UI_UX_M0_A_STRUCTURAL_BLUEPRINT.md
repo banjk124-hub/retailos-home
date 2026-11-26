@@ -5,8 +5,8 @@
 # RetailOS M0-A — Product-wide Structural Design Blueprint
 
 **Status:** First source-grounded structural design specification. Proposed for visual prototype review; not owner-approved final UI or source implementation.
-**Authority:** [UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md](./UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md).
-**Source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`; current AS-IS screen truth from [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md), ownership from [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md), screen contracts from [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md).
+**Authority:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). This blueprint is historical M0-A structural evidence, not a second active specification.
+**Historical source baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77` (not the current main baseline); current AS-IS screen truth from [UI_UX_SCREEN_MAP.md](./UI_UX_SCREEN_MAP.md), ownership from [UI_UX_COMPONENT_AUDIT.md](./UI_UX_COMPONENT_AUDIT.md), screen contracts from [UI_UX_SCREEN_BLUEPRINTS.md](./UI_UX_SCREEN_BLUEPRINTS.md).
 **Scope:** Whole RetailOS — identity, application shell, core experiences, operational workspaces, system surfaces and responsive composition.
 **Track boundary:** This is M0-A (structure only). Motion, animation, timing and state choreography belong to M0-B and must not be inferred from these static layouts.
 

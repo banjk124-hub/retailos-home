@@ -72,3 +72,11 @@ Report: objective, files changed, behavior changed, tests actually run, results,
 - The update safety registry is not a substitute for module ownership: every module with non-DOM transactional, dirty, camera, import/export, save or sync state must register and notify its blocker transitions.
 - Forced updates require an explicit, validated release policy and still wait for a safe business handoff. Do not infer forced status from version number, urgency wording or release notes. Until an authoritative force-policy source exists, treat releases as optional.
 - Preserve a documented one-time migration exception for legacy clients whose old UI protocol cannot provide the new two-step consent/activation flow; never extend that exception to subsequent releases.
+
+
+## Canonical decision and governance registers
+
+- Use docs/ai-context/INDEX.md as the document ownership map; do not create competing standards or duplicate detailed policies.
+- ARCHITECTURE.md owns project architecture ADRs and invariants. DECISIONS.md owns product/cross-domain decisions and rejected options. Subsystem contracts own their internal decisions.
+- Before a major technology/dependency evaluation, consult TECHNOLOGY_RADAR.md. Before promoting shared components or patterns, consult COMPONENT_AND_PATTERN_GOVERNANCE.md. Before removing code, dependencies or documents, follow DEPRECATION_REGISTER.md. Use TERMINOLOGY_GLOSSARY.md for canonical product and engineering terms.
+- These registers guide investigation and documentation; they do not independently authorize dependency changes, protected-contract migrations, merge, deployment or production promotion.
