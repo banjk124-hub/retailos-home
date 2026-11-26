@@ -61,11 +61,11 @@
   background: #5d1821;
 }
 .app-shell .topbar-dock {
-  border-color: var(--glass-border-elevated);
+  border-color: var(--color-border-subtle);
   background:
     radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.48), transparent 48%),
-    var(--glass-surface-elevated);
-  box-shadow: var(--shadow-elevated), var(--glass-highlight);
+    var(--color-surface-raised);
+  box-shadow: var(--shadow-elevated), none;
   
   
 }
@@ -166,15 +166,15 @@
   transform: translateY(5px) scale(.965) rotateY(-1deg);
   transform-origin: center bottom;
   opacity: .82;
-  border-color: var(--glass-border-card);
+  border-color: var(--color-border-subtle);
   background:
     radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--library-tone-bg) 86%, transparent), transparent 52%),
-    var(--glass-surface-card);
+    var(--color-surface-panel);
   box-shadow:
     0 3px 5px rgba(42, 27, 35, .035),
     0 15px 28px rgba(58, 29, 39, .09),
     0 28px 48px rgba(73, 31, 42, .055),
-    var(--glass-highlight);
+    none;
   transition:
     transform 360ms cubic-bezier(.2,.8,.2,1),
     opacity 280ms ease,
