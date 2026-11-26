@@ -84,26 +84,38 @@ export default function SettingsHub({ onClose, onOpenScannerSettings }: Props) {
     <UpdateCenterView entry={updateEntry} onBack={() => setShowUpdateCenter(false)} />
   </div>;
   return <div className="scanner-settings-backdrop" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className="scanner-settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-hub-title">
-      <header className="scanner-settings-header">
-        <span className="scanner-settings-header-icon"><Settings size={21} /></span>
-        <div><span className="scanner-settings-eyebrow">RETAILOS · PREFERENCES</span><h2 id="settings-hub-title">Cài đặt</h2><p>Quản lý cấu hình và công cụ hệ thống</p></div>
+    <section className="scanner-settings-panel settings-experience" role="dialog" aria-modal="true" aria-labelledby="settings-hub-title">
+      <header className="settings-experience__header">
+        <div className="settings-experience__identity">
+          <span className="settings-experience__mark"><Settings size={20} /></span>
+          <div><span className="scanner-settings-eyebrow">RETAILOS · SYSTEM</span><h2 id="settings-hub-title">Cài đặt</h2><p>Không gian cấu hình và kiểm soát thiết bị</p></div>
+        </div>
         <button ref={closeButtonRef} type="button" className="scanner-settings-close" onClick={onClose} aria-label="Đóng cài đặt"><X size={19} /></button>
       </header>
-      <div className="scanner-settings-section-label">CẬP NHẬT VÀ THÔNG BÁO</div>
-      <div className="scanner-settings-menu">
-        <button type="button" className={`scanner-settings-menu-item scanner-settings-menu-item--update ${updateEntry?.inCenter ? 'has-pending-update' : ''}`} onClick={() => setShowUpdateCenter(true)}>
-          <span className="scanner-settings-menu-icon scanner-settings-update-icon"><BellRing size={20} />{updateEntry?.inCenter && <i aria-label="Có bản cập nhật đang chờ" />}</span>
-          <span className="scanner-settings-menu-copy"><strong>Trung tâm cập nhật</strong><small>{updateEntry?.inCenter ? `${updateEntry.title} · ${updateEntry.status === 'staged' ? 'Đã tải, chờ xác nhận' : updateEntry.status === 'deferred' ? 'Đã để sau' : updateEntry.status === 'downloading' ? 'Đang tải' : updateEntry.status === 'error' ? 'Cần xử lý' : 'Đang chờ xử lý'}` : 'Xem phiên bản mới, tiến độ và lịch sử xử lý'}</small></span>
+      <div className="settings-experience__intro">
+        <span className="settings-experience__intro-kicker">SYSTEM PREFERENCES</span>
+        <strong>Kiểm soát trải nghiệm vận hành</strong>
+        <p>Các thiết lập hiện có được nhóm theo chức năng thực tế. Cấu hình được giữ nguyên theo cơ chế lưu trữ của từng hệ thống.</p>
+      </div>
+      <section className="settings-experience__group" aria-labelledby="settings-update-group">
+        <div className="settings-experience__group-heading"><span id="settings-update-group">Cập nhật & thông báo</span><small>PHẦN MỀM</small></div>
+        <button type="button" className={`settings-experience__item scanner-settings-menu-item--update ${updateEntry?.inCenter ? 'has-pending-update' : ''}`} onClick={() => setShowUpdateCenter(true)}>
+          <span className="settings-experience__item-icon settings-experience__item-icon--update"><BellRing size={19} />{updateEntry?.inCenter && <i aria-label="Có bản cập nhật đang chờ" />}</span>
+          <span className="scanner-settings-menu-copy"><strong>Trung tâm cập nhật</strong><small>{updateEntry?.inCenter ? `${updateEntry.title} · ${updateEntry.status === 'staged' ? 'Đã tải, chờ xác nhận' : updateEntry.status === 'deferred' ? 'Đã để sau' : updateEntry.status === 'downloading' ? 'Đang tải' : updateEntry.status === 'error' ? 'Cần xử lý' : 'Đang chờ xử lý'}` : 'Phiên bản, dung lượng tải và trạng thái kích hoạt'}</small></span>
           {updateEntry?.inCenter && <span className="scanner-settings-update-tag">ĐANG CHỜ</span>}
           <ChevronRight size={18} />
         </button>
-      </div>
-      <div className="scanner-settings-section-label">MÁY QUÉT BARCODE</div>
-      <div className="scanner-settings-menu">
-        <button type="button" className="scanner-settings-menu-item" onClick={onOpenScannerSettings}><span className="scanner-settings-menu-icon"><ScanBarcode size={20} /></span><span className="scanner-settings-menu-copy"><strong>Cài đặt máy quét</strong><small>Điều chỉnh âm báo và phản hồi rung khi quét</small></span><ChevronRight size={18} /></button>
-      </div>
-      <p className="scanner-settings-footnote">Các tùy chọn máy quét được lưu trên thiết bị và dùng chung cho Home, Kiểm kê cùng các chức năng Scanner khác.</p>
+      </section>
+      <section className="settings-experience__group" aria-labelledby="settings-device-group">
+        <div className="settings-experience__group-heading"><span id="settings-device-group">Thiết bị & ngoại vi</span><small>THIẾT BỊ</small></div>
+        <button type="button" className="settings-experience__item" onClick={onOpenScannerSettings}>
+          <span className="settings-experience__item-icon"><ScanBarcode size={19} /></span>
+          <span className="scanner-settings-menu-copy"><strong>Cài đặt máy quét</strong><small>Âm báo, phản hồi rung và cấu hình nhận diện barcode</small></span>
+          <ChevronRight size={18} />
+        </button>
+        <p className="settings-experience__note">Tùy chọn máy quét được lưu trên thiết bị và dùng chung cho Home, Kiểm kê cùng các chức năng Scanner.</p>
+      </section>
+      <footer className="settings-experience__footer"><span className="settings-experience__footer-dot" /> <span>RetailOS · Cấu hình hệ thống đang khả dụng</span></footer>
     </section>
   </div>;
 }
