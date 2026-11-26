@@ -1,10 +1,10 @@
-> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+> **Historical-document notice (2026-11-26):** This file is retained for traceability only and is not an active instruction or status source. Use [INDEX.md](./INDEX.md) to locate current owners and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) for this file's disposition. The active UI/UX direction is [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). Verify all implementation facts against current source.
 
 ---
 
 # RetailOS Design System Specification — Batch 00D
 
-**Status:** Governing design-system specification. Phase 01 implementation evidence and deviations are tracked in [UI_UX_PHASE_01_FOUNDATION.md](./UI_UX_PHASE_01_FOUNDATION.md); not every proposed token, material role or component migration is implemented.
+**Status:** HISTORICAL DESIGN-SYSTEM RESEARCH / REVIEW. This file is not a governing specification. Active product direction is UI_UX_M0_GOVERNING_SPEC.md; actual implemented tokens and components are defined by current source. Phase 01 details are historical implementation evidence only.
 **Original audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Current source revalidation:** see [UI_UX_PHASE_00_AUDIT.md](./UI_UX_PHASE_00_AUDIT.md), audited at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7`. Proposed tokens remain unimplemented.
 **Date:** 2026-11-25
