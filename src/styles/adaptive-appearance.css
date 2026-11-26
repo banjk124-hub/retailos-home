@@ -13,13 +13,13 @@
 }
 
 :root[data-power-mode="conserve"] .app-shell :is(.metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 :root[data-power-mode="conserve"] :is(.app-shell, .barcode-result-backdrop, .barcode-scanner, .barcode-result-card, .barcode-scanner-card, .topbar-dock, .mobile-nav, .notification-popover) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 :root[data-power-mode="conserve"] .app-library-page-card {
@@ -109,14 +109,7 @@
   color: var(--color-status-danger, var(--color-error));
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .app-shell :is(
-    .topbar, .topbar-dock, .mobile-nav, .notification-popover, .app-library-modal,
-    .notice-detail-modal, .calendar-modal, .barcode-result-card, .barcode-scanner-card,
-    .app-library-page-card, .metric-card, .module-card, .panel-card,
-    .user-context-chip, .date-chip, .toast-message
-  ) {
-    background-color: rgba(255,255,255,.96);
+@supports not ((backdrop-filter: none;
   }
 }
 
