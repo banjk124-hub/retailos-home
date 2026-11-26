@@ -29,6 +29,7 @@ import '../../styles/home-redesign.css';
 import '../../styles/home-architecture.css';
 import '../../experience/home/operational-home.css';
 import '../../experience/library/experience-module-library.css';
+import '../../experience/library/library-detail.css';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
