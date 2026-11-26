@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { extname, join } from "node:path";
 
 const theme = readFileSync("src/styles/theme.css", "utf8");
 const mobile = readFileSync("src/styles/mobile-tuning.css", "utf8");
@@ -124,4 +125,32 @@ const semanticSurface = readFileSync("src/shared/components/surface/surface.css"
 assert.ok(semanticSurface.includes(".surface--panel"));
 assert.ok(semanticSurface.includes(".surface--floating"));
 assert.ok(!semanticSurface.includes("backdrop-filter"));
+
+function collectSourceFiles(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory()
+      ? collectSourceFiles(path)
+      : [path];
+  });
+}
+
+const sourceFiles = collectSourceFiles("src").filter((path) =>
+  [".css", ".ts", ".tsx"].includes(extname(path))
+);
+const obsoleteMaterialPatterns = [
+  new RegExp("backdrop" + "-filter\\\\s*:"),
+  new RegExp("--" + "(?:brand-)?" + "glass-"),
+  new RegExp("\\\\bGlassSurface\\\\b"),
+  new RegExp("\\\\bGlassMaterial\\\\b")
+];
+for (const path of sourceFiles) {
+  const source = readFileSync(path, "utf8");
+  for (const pattern of obsoleteMaterialPatterns) {
+    assert.ok(!pattern.test(source), `Obsolete glass material contract remains in ${path}: ${pattern}`);
+  }
+}
+assert.ok(semanticSurface.includes(".surface--interactive:focus-within"), "Focus treatment must be limited to interactive surfaces");
+assert.ok(semanticSurface.includes("[data-surface-state=\\"error\\"]"), "Semantic surface must support explicit error state");
+
 console.log("Design foundation contract passed: semantic tokens, semantic surfaces, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, shared motion and reduced-motion hooks.");
