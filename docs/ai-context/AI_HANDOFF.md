@@ -17,6 +17,7 @@
 4. Module Library and Library Detail with actual Stocktake/Import workflow handoffs.
 5. Activity Center with snapshot-backed signals and honest empty state for the not-yet-connected general event log.
 6. Settings Experience with existing Update Center and Scanner Settings contracts.
+7. Stocktake and Stocktake Import responsive greenfield workspaces; business engines, local persistence, revision/conflict, dirty-edit, validation and export contracts preserved.
 
 ## Integration fixes and verification
 - Replaced nested `main` landmark with a single authenticated workspace main landmark.
@@ -27,6 +28,6 @@
 - Physical-device QA and owner visual acceptance remain outstanding.
 
 ## Immediate next action
-Begin the greenfield presentation migration for Stocktake and Stocktake Import. Preserve their business engines, persistence, revisions/conflicts, dirty-edit state, validation and export contracts. Then run device-level acceptance on a coherent integrated slice.
+Complete CI and browser regression for the operational workspace migration. Then run physical-device acceptance on desktop/tablet, average and low-end Android, and iOS Safari/PWA. Verify workbook picker, table scrolling, TXT/ZIP downloads, Stocktake camera handoff, safe areas, focus and PWA update blockers.
 
 No merge, deployment or production transfer is authorized.
