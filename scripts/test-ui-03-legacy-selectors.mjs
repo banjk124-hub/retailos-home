@@ -52,6 +52,15 @@ assert.match(
   /\.app-shell \.module-availability/,
   "A unique architecture-owned selector must remain after consolidation",
 );
+assert.equal(
+  homeRedesign.includes(`@media (prefers-reduced-motion: reduce) {
+  .app-shell .library-engine__group {
+    transition: none;
+  }
+}`),
+  false,
+  "The duplicate Home library reduced-motion declaration must not be reintroduced",
+);
 
 for (const className of retiredClasses) {
   const token = new RegExp(
