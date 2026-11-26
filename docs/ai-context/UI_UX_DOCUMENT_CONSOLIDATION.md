@@ -1,8 +1,10 @@
-# UI/UX Documentation Consolidation Record
+> **Historical record — not current UI/UX authority.** The M0 audit workflow and its active document pack were retired on 2026-11-26 because they diverted work into repeated legacy audits instead of implementation. Current UI/UX direction, greenfield boundaries, build sequence and test policy are owned only by [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md). Do not restore M0 gates or treat the references below as current instructions.
+
+# Historical UI/UX Documentation Consolidation Record
 
 **Batch:** BATCH 02  
 **Status:** Consolidation change record; not a UI implementation or owner acceptance.  
-**Authority after consolidation:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md) + [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md), with [COMPONENT_AND_PATTERN_GOVERNANCE.md](./COMPONENT_AND_PATTERN_GOVERNANCE.md), [TECHNOLOGY_RADAR.md](./TECHNOLOGY_RADAR.md), [ROADMAP.md](./ROADMAP.md) and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) owning their specific concerns.
+**Historical authority at the time of BATCH 02 (superseded 2026-11-26):** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md) + retired M0 specification, with [COMPONENT_AND_PATTERN_GOVERNANCE.md](./COMPONENT_AND_PATTERN_GOVERNANCE.md), [TECHNOLOGY_RADAR.md](./TECHNOLOGY_RADAR.md), [ROADMAP.md](./ROADMAP.md) and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) owning their specific concerns.
 
 ## 1. Why the consolidation was required
 The previous UI/UX document family had multiple overlapping authorities: product architecture, design-system specification, reference interpretation, phased implementation plan, acceptance/migration plan and cross-surface prototype review. Several documents described themselves as historical at the top while continuing to claim governing authority in their body. `PROJECT_MAP.md` also pointed to superseded documents as the target design system, and the M0-A structural blueprint depended on an old reference-role contract.
