@@ -71,6 +71,14 @@
 - **UI-02D:** `useHomeBarcodeLookup` owns lookup request identity, async cache lookup and stale-result protection. `useHomeFeedback` owns toast timer replacement and unmount cleanup. Camera lease acquisition, cancellation and scanner handoff remain in HomeScreen's direct user-interaction path.
 - **UI-02E:** `useHomePushNotifications`, `useHomeUpdateNoticeCount` and `useHomeSpotlightViewport` own their respective permission/subscription, update-store subscription and responsive viewport domains. HomeScreen composes these hooks and feature roots.
 
+## UI-02F — Snapshot request concurrency hardening
+
+- Added a monotonically increasing request identity to the snapshot-notice lifecycle.
+- Only the latest in-flight request may commit either success or error state; older completions are ignored.
+- Cleanup invalidates outstanding request identities before removing the update-event listener.
+- Extended the UI-02B contract test with latest-request ordering and stale-error regression cases.
+- Validation remains pending until CI completes on the exact updated PR HEAD.
+
 ## Focused contract tests
 
 - `scripts/test-ui-02a-home-navigation.mjs`
