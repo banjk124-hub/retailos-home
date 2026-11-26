@@ -26,7 +26,7 @@ async function capture(page: Page, info: TestInfo, label: string) {
       const rect = node.getBoundingClientRect();
       return { index, tag: node.tagName.toLowerCase(), id: node.id || null,
         className: typeof node.className === 'string' ? node.className.slice(0, 240) : '',
-        text: (node.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 100),
+        text: (node.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 100),
         rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
         visible: rect.width > 0 && rect.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden',
         style: Object.fromEntries(props.map((p) => [p, cs.getPropertyValue(p)])) };
