@@ -2,7 +2,7 @@
 .retail-login *{box-sizing:border-box}
 .retail-login__story{position:relative;isolation:isolate;min-height:100svh;padding:clamp(30px,5vw,76px);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;background:radial-gradient(ellipse at 78% 18%,rgba(225,163,123,.3),transparent 34%),linear-gradient(145deg,#32151c 0%,#501a27 46%,#741f30 100%);color:#fff}
 .retail-login__story-top,.retail-login__story-bottom{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.retail-login__story-top .retailos-brand{filter:brightness(0) invert(1);transform-origin:left center}
+
 .retail-login__edition,.retail-login__index{font-size:9px;font-weight:700;letter-spacing:.16em;color:rgba(255,255,255,.55)}
 .retail-login__story-copy{position:relative;z-index:2;max-width:690px;margin:8vh 0}
 .retail-login__overline{display:inline-flex;align-items:center;gap:10px;font-size:10px;font-weight:800;letter-spacing:.18em;color:#a77c73}
@@ -22,7 +22,7 @@
 .retail-login__grid{position:absolute;z-index:0;inset:0;opacity:.13;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(110deg,transparent 20%,#000 100%)}
 .retail-login__access{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,6vw,96px) clamp(28px,7vw,112px) 22px;background:linear-gradient(145deg,#fbf9f6,#f2ece6)}
 .retail-login__access-inner{width:100%;max-width:440px;margin:auto}
-.retail-login__mobile-brand{display:none}
+
 .retail-login__access-heading{margin-bottom:42px}
 .retail-login__access-heading h2{margin:17px 0 9px;font-size:clamp(30px,3vw,42px);line-height:1.1;letter-spacing:-.055em;font-weight:650}
 .retail-login__access-heading p{margin:0;color:var(--rl-muted);font-size:14px;line-height:1.6}
@@ -55,6 +55,6 @@
 .retail-login__footer{display:flex;justify-content:space-between;gap:16px;padding-top:22px;color:#a69a92;font-size:8px;font-weight:700;letter-spacing:.14em}
 .retail-login.is-success .retail-login__submit{background:linear-gradient(110deg,#315f4a,#397c5b)}
 @media(max-width:900px){.retail-login{grid-template-columns:minmax(0,1fr) minmax(360px,.92fr)}.retail-login__story{padding:34px}.retail-login__access{padding:36px}}
-@media(max-width:700px){.retail-login{display:flex;flex-direction:column;min-height:100svh}.retail-login__story{min-height:34svh;padding:24px 24px 28px}.retail-login__story-top .retailos-brand{max-width:132px}.retail-login__edition{font-size:7px}.retail-login__story-copy{margin:36px 0 24px}.retail-login__story h1{font-size:clamp(3.2rem,14vw,5rem);margin:16px 0 12px}.retail-login__story-copy p{max-width:340px;font-size:12px}.retail-login__story-bottom{display:none}.retail-login__orb--one{width:90vw;right:-40%;top:-35%}.retail-login__orb--two{width:60vw;right:-15%;bottom:-55%}.retail-login__access{flex:1;min-height:0;padding:34px 24px max(26px,env(safe-area-inset-bottom))}.retail-login__access-heading{margin-bottom:30px}.retail-login__access-heading h2{font-size:30px}.retail-login__mobile-brand{display:none}.retail-login__footer{padding-top:28px}}
+@media(max-width:700px){.retail-login{display:flex;flex-direction:column;min-height:100svh}.retail-login__story{min-height:34svh;padding:24px 24px 28px}.retail-login__edition{font-size:7px}.retail-login__story-copy{margin:36px 0 24px}.retail-login__story h1{font-size:clamp(3.2rem,14vw,5rem);margin:16px 0 12px}.retail-login__story-copy p{max-width:340px;font-size:12px}.retail-login__story-bottom{display:none}.retail-login__orb--one{width:90vw;right:-40%;top:-35%}.retail-login__orb--two{width:60vw;right:-15%;bottom:-55%}.retail-login__access{flex:1;min-height:0;padding:34px 24px max(26px,env(safe-area-inset-bottom))}.retail-login__access-heading{margin-bottom:30px}.retail-login__access-heading h2{font-size:30px}.retail-login__mobile-brand{display:none}.retail-login__footer{padding-top:28px}}
 @media(max-width:380px){.retail-login__story{min-height:31svh}.retail-login__story h1{font-size:3rem}.retail-login__access{padding-inline:19px}}
 @media(prefers-reduced-motion:reduce){.retail-login__field,.retail-login__submit{transition:none}}
