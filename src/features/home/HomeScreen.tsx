@@ -11,7 +11,8 @@ import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { Surface } from '../../shared/components/surface/Surface';
 import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
-import { readHomeUiState, saveHomeUiState } from './homeStateStore';
+import { readHomeUiState } from './homeStateStore';
+import { useHomeNavigation } from './hooks/useHomeNavigation';
 import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
@@ -101,13 +102,11 @@ export default function HomeScreen({
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
   const [initialUiState] = useState(readHomeUiState);
-  const searchRef = useRef(initialUiState.search);
-  const [activeNav, setActiveNav] = useState(
-    navItems.some((item) => item.id === initialUiState.activeNav && item.id !== 'settings')
-      ? initialUiState.activeNav
-      : 'home',
-  );
-  const activeNavRef = useRef(activeNav);
+  const [activeNav, setActiveNav, handleNav, handleSearchChange] = useHomeNavigation({
+    initialState: initialUiState,
+    prefersReducedMotion,
+    onOpenSettings: () => setShowSettings(true),
+  });
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
@@ -150,7 +149,7 @@ export default function HomeScreen({
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => new Date());
-  const scrollSaveTimer = useRef<number | null>(null);
+ 
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
@@ -462,73 +461,7 @@ export default function HomeScreen({
     }
   };
 
-  useEffect(() => {
-    // Restore the last viewed location after a reload. The authenticated
-    // identity and Home UI state are independent, so future module state can
-    // be added to homeStateStore without changing the app shell.
-    const restore = window.requestAnimationFrame(() => {
-      if (initialUiState.scrollY > 0) window.scrollTo({ top: initialUiState.scrollY, behavior: 'auto' });
-    });
-    return () => window.cancelAnimationFrame(restore);
-  }, [initialUiState]);
 
-  useEffect(() => {
-    activeNavRef.current = activeNav;
-    saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
-  }, [activeNav]);
-
-  useEffect(() => {
-    let frame = 0;
-    const syncActiveSection = () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const activationLine = window.innerHeight * 0.38;
-        const modulesTop = document.getElementById('modules')?.getBoundingClientRect().top ?? Infinity;
-        const activityTop = document.getElementById('activity')?.getBoundingClientRect().top ?? Infinity;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const isAtBottom = maxScroll > 0 && window.scrollY >= maxScroll - 2;
-        const nextActiveNav = isAtBottom || activityTop <= activationLine
-          ? 'activity'
-          : modulesTop <= activationLine
-            ? 'modules'
-            : 'home';
-        setActiveNav((current) => current === nextActiveNav ? current : nextActiveNav);
-        frame = 0;
-      });
-    };
-    const persistCurrentUi = () => saveHomeUiState({
-      activeNav: activeNavRef.current,
-      search: searchRef.current,
-      scrollY: window.scrollY,
-    });
-    const onScroll = () => {
-      syncActiveSection();
-      const currentY = Math.max(0, window.scrollY);
-      if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
-      scrollSaveTimer.current = window.setTimeout(() => {
-        saveHomeUiState({
-          activeNav: activeNavRef.current,
-          search: searchRef.current,
-          scrollY: currentY,
-        });
-      }, 140);
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('pagehide', persistCurrentUi);
-    syncActiveSection();
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('pagehide', persistCurrentUi);
-      if (frame) window.cancelAnimationFrame(frame);
-      if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
-    };
-  }, []);
-
-  const handleSearchChange = useCallback((nextSearch: string) => {
-    searchRef.current = nextSearch;
-    saveHomeUiState({ activeNav: activeNavRef.current, search: nextSearch, scrollY: window.scrollY });
-  }, []);
   const announce = (message: string) => {
     setToast(message);
     window.setTimeout(() => setToast(''), 2600);
@@ -586,13 +519,6 @@ export default function HomeScreen({
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
   }, [isBarcodeScannerOpen]);
-  const handleNav = useCallback((id: string) => {
-    const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
-    if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
-    else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
-  }, [prefersReducedMotion]);
   const dockAction = useMemo(() => {
     const scannerAvailable = isScannerSupportedDevice();
     return {
