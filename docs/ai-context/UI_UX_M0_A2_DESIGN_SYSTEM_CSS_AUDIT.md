@@ -528,3 +528,8 @@ These are per-file gzip estimates, not measured Brotli or actual transfer sizes.
 2. Corrected declaration trace must be regenerated and inspected before a cascade ownership matrix is accepted.
 3. Next evidence batch: selector/property ownership grouped by emitted CSS resource and source file; verify actual winner samples against computed style; add Brotli estimates; then build controlled typography/palette specimens without changing production assets.
 4. No CSS selector or stylesheet is approved for retirement yet.
+
+
+## UI-04C migration note
+
+The historical `scanner-transition.css` inventory above records the pre-migration baseline. UI-04C retired that mixed stylesheet and moved its declarations into `barcode-scanner-presentation.css`, `stocktake-scanner-presentation.css`, and `scanner-shared-controls.css`; no scanner engine or camera lifecycle source was changed.
