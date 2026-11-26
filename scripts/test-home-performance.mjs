@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [service, rules, home, library, engine, registry, homeState, dock, packageJson, packageLock] = await Promise.all([
+const [service, rules, home, library, engine, registry, homeState, dock, packageJson, packageLock, snapshotHook, calendarHook, navigationHook] = await Promise.all([
   read('../src/features/data/moduleDataService.ts'),
   read('../src/features/home/snapshotNoticeRules.ts'),
   read('../src/features/home/HomeScreen.tsx'),
@@ -14,6 +14,9 @@ const [service, rules, home, library, engine, registry, homeState, dock, package
   read('../src/shared/navigation/LiquidDock.tsx'),
   read('../package.json'),
   read('../package-lock.json'),
+  read('../src/features/home/hooks/useHomeSnapshotNotices.ts'),
+  read('../src/features/home/hooks/useHomeCalendarDates.ts'),
+  read('../src/features/home/hooks/useHomeNavigation.ts'),
 ]);
 
 const transactionHelper = service.slice(service.indexOf('async function withTransaction'), service.indexOf('\nasync function withStore'));
@@ -30,12 +33,12 @@ assert.equal((service.match(/database\.transaction\(/g) ?? []).length, 1, 'Index
 assert.match(rules, /HOME_NOTICE_MODULE_IDS:[\s\S]*?'inventory'[\s\S]*?'product-dates'[\s\S]*?'sales'/);
 assert.match(rules, /function countRows\(/);
 assert.doesNotMatch(rules, /readRows\([^)]*\)\.filter/);
-assert.match(home, /getCachedModuleSnapshots\(HOME_NOTICE_MODULE_IDS\)/);
+assert.match(snapshotHook, /getCachedModuleSnapshots\(HOME_NOTICE_MODULE_IDS\)/);
 assert.doesNotMatch(home, /MODULE_DATA_IDS\.map\(getCachedModuleSnapshot\)/);
 assert.doesNotMatch(home, /setInterval\(updateCalendar,\s*60_000\)/);
-assert.match(home, /nextMidnight/);
-assert.match(home, /visibilitychange/);
-assert.equal((home.match(/window\.addEventListener\('scroll'/g) ?? []).length, 1);
+assert.match(calendarHook, /nextMidnight/);
+assert.match(calendarHook, /visibilitychange/);
+assert.equal((navigationHook.match(/window\.addEventListener\('scroll'/g) ?? []).length, 1);
 assert.match(home, /<HomeModuleLibrarySection/);
 assert.doesNotMatch(home, /filteredModules|visibleLibraries|MODULE_REGISTRY/);
 assert.match(home, /const \[initialUiState\] = useState\(readHomeUiState\)/);
