@@ -102,15 +102,15 @@ export default function HomeScreen({
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
   const [initialUiState] = useState(readHomeUiState);
+  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+  const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
+  const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [activeNav, setActiveNav, handleNav, handleSearchChange] = useHomeNavigation({
     initialState: initialUiState,
     prefersReducedMotion,
     onOpenSettings: () => setShowSettings(true),
   });
-  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
-  const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
-  const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   useEffect(() => {
     const openSettings = () => setShowSettings(true);
     window.addEventListener('retailos:open-settings', openSettings);
