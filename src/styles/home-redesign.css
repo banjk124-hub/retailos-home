@@ -91,9 +91,9 @@ button { font: inherit; }
   background: linear-gradient(120deg,rgba(255,255,255,.19),transparent 32%,transparent 70%,rgba(255,255,255,.12));
   mix-blend-mode: screen;
 }
-.spotlight-glass-chip, .spotlight-glass-tile {
-  border: 1px solid rgba(255,255,255,.42);
-  background: linear-gradient(140deg,rgba(255,255,255,.24),rgba(255,255,255,.09));
+.spotlight-chip, .spotlight-tile {
+  border: 1px solid rgba(255,255,255,.88);
+  background: rgba(255,255,255,.96);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.36), 0 10px 28px rgba(70,8,18,.09);
 }
 .spotlight-button {
