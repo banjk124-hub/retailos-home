@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Activity, Bell, Boxes, ChevronRight, CircleHelp, Home, LogOut, Settings, Wifi, WifiOff } from 'lucide-react';
+import { Activity, Bell, Boxes, ChevronRight, Home, LogOut, Settings, Wifi, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { EmployeeSession } from '../../features/auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
