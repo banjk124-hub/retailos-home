@@ -67,3 +67,8 @@ A proposal must cite the original record, explain new evidence and define a boun
 - Keep status current; do not label planned work RETIRED.
 - Retain unique rationale and audit history after code deletion.
 - This register does not replace subsystem-specific runtime contracts.
+
+
+| DEP-016 | M0 UI/UX audit-and-gate workflow and active M0 document pack | RETIRED | Owner direction is to rebuild the Experience Layer greenfield. The M0 process repeatedly prioritized legacy CSS/source audits and documentation gates over working implementation. Its active authority, phase gates and audit pack are removed from the index and current workflow. | Use EXPERIENCE_BUILD_STANDARD.md. Reopen a historical audit only for a specific regression or source-history question; never treat it as an implementation prerequisite. |
+| DEP-017 | Playwright runtime-evidence diagnostic harness | RETIRED | `tests/browser/runtime-evidence.spec.ts` emitted large DOM/style/cascade/performance dumps and screenshots of existing surfaces, duplicating audit activity without validating a complete new workflow. | Keep focused journey assertions and failure traces only. Reintroduce targeted diagnostics only for a measured defect or explicit profiling task. |
+| DEP-018 | Per-PR full scanner regression suite for UI-only changes | DEPRECATED | Scanner stabilization is closed; repeating the full scanner suite on unrelated UI/documentation changes wastes CI time without increasing relevant coverage. | CI selects full preflight when Scanner source/contracts change; otherwise use the UI-focused preflight. Full regression remains required at integration/release gates. |
