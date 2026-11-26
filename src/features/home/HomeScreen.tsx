@@ -114,8 +114,16 @@ export default function HomeScreen({
   const [showSettings, setShowSettings] = useState(false);
   useEffect(() => {
     const openSettings = () => setShowSettings(true);
+    const openNotifications = () => {
+      setIsNotificationsClosing(false);
+      setShowNotifications(true);
+    };
     window.addEventListener('retailos:open-settings', openSettings);
-    return () => window.removeEventListener('retailos:open-settings', openSettings);
+    window.addEventListener('retailos:open-notifications', openNotifications);
+    return () => {
+      window.removeEventListener('retailos:open-settings', openSettings);
+      window.removeEventListener('retailos:open-notifications', openNotifications);
+    };
   }, []);
   const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
   const [showScannerSettings, setShowScannerSettings] = useState(false);
