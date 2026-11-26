@@ -11,17 +11,10 @@ const viewports = [
   { name: '360x740', width: 360, height: 740 },
   { name: 'landscape-short', width: 844, height: 390 },
 ];
-const auditSession = {
-  name: 'RetailOS UI Audit',
-  department: 'FMCG',
-  departmentId: 'fmcg',
-  signedInAt: '2026-01-01T00:00:00.000Z',
-};
+const auditSession = { name: 'RetailOS UI Audit', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
 
 async function seedSession(page: Page) {
-  await page.addInitScript((session) => {
-    localStorage.setItem('retailos.session.v2', JSON.stringify(session));
-  }, auditSession);
+  await page.addInitScript((session) => localStorage.setItem('retailos.session.v2', JSON.stringify(session)), auditSession);
 }
 
 async function capture(page: Page, info: TestInfo, label: string) {
@@ -31,15 +24,12 @@ async function capture(page: Page, info: TestInfo, label: string) {
     const computedStyles = nodes.map((node, index) => {
       const cs = getComputedStyle(node);
       const rect = node.getBoundingClientRect();
-      return {
-        index, tag: node.tagName.toLowerCase(),
-        id: node.id || null,
+      return { index, tag: node.tagName.toLowerCase(), id: node.id || null,
         className: typeof node.className === 'string' ? node.className.slice(0, 240) : '',
         text: (node.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 100),
         rect: { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) },
         visible: rect.width > 0 && rect.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden',
-        style: Object.fromEntries(props.map((p) => [p, cs.getPropertyValue(p)])),
-      };
+        style: Object.fromEntries(props.map((p) => [p, cs.getPropertyValue(p)])) };
     });
     const cssRules: Array<{ selector: string; stylesheet: string; condition: string; matched: number }> = [];
     const walk = (list: CSSRuleList, stylesheet: string, condition: string) => {
@@ -49,7 +39,7 @@ async function capture(page: Page, info: TestInfo, label: string) {
           try { matched = document.querySelectorAll(rule.selectorText).length; } catch { /* invalid selector */ }
           cssRules.push({ selector: rule.selectorText, stylesheet, condition, matched });
         } else if ('cssRules' in rule) {
-          const group = rule as CSSGroupingRule;
+          const group = rule as CSSGroupingRule & { conditionText?: string };
           walk(group.cssRules, stylesheet, [condition, group.conditionText || group.constructor.name].filter(Boolean).join(' > '));
         }
       }
@@ -98,7 +88,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await page.waitForTimeout(500);
   await capture(page, info, 'home-1440x900');
 
-  const viewportResults = [];
+  const viewportResults: Array<{ viewport: string; horizontalOverflow: number; documentHeight: number }> = [];
   for (const v of viewports) {
     await page.setViewportSize({ width: v.width, height: v.height });
     const data = await capture(page, info, 'home-' + v.name);
@@ -130,7 +120,6 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
     }
   }
 
-  // Reload resets the UI state without changing application storage or domain data.
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(350);
   const importNav = page.getByRole('button', { name: /^module$/i }).first();
@@ -148,7 +137,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
 
   await writeFile(info.outputPath('runtime-evidence/health-summary.json'), JSON.stringify({
     capturedAt: new Date().toISOString(), errors, failedRequests, viewportResults,
-    note: 'A feature screenshot is emitted only when its existing user-facing navigation control is present and reachable.',
+    note: 'Feature screenshots are emitted only when existing user-facing navigation controls are reachable.',
   }, null, 2));
   expect(errors, 'browser and console errors').toEqual([]);
   expect(viewportResults.every((v) => v.horizontalOverflow <= 1), 'Home horizontal overflow').toBe(true);
