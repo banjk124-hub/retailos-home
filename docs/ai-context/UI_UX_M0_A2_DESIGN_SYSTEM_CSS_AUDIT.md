@@ -452,3 +452,79 @@ The full release artifact report lists 30 files, 1,918,252 raw bytes and 676,768
 The CI base-vs-current bundle comparison is exactly zero delta for entrypoint raw/gzip and total raw/gzip. This confirms the evidence-tooling change did not alter the application bundle.
 
 **Decision:** emitted CSS size is now measured. It identifies the entry CSS and Home CSS as the two largest CSS payloads, but does not justify deletion or re-partitioning without selector/property ownership and visual regression evidence.
+
+
+## 10. Runtime evidence — CI run #1614
+
+**Exact source commit:** `807705dfb98b7b1143eee230a33e47e18022f274`  
+**CI run:** #1614 / `45753970838` — completed successfully.  
+**Artifacts:** `retailos-ui-runtime-evidence` (10.6 MB ZIP; 50.2 MB uncompressed) and `retailos-bundle-analysis`.  
+**Environment:** synthetic local session, Chromium / Playwright, GitHub Pages production build. This is lab evidence, not physical-device acceptance.
+
+### 10.1 Runtime health and responsive geometry
+
+- Browser/page errors: **0**.
+- Console errors: **0**.
+- Failed requests: **0**.
+- Duplicate IDs: **0** across captured states.
+- Home horizontal overflow: **0 px** at all seven tested viewports: 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and 844×390.
+- Login captured at desktop, tablet, mobile, compact mobile and short landscape.
+- Home captured at all seven viewports; Settings, Library, Stocktake and Import captured as reachable overlays at 390×844.
+- Feature captures remain overlay states over Home. They do not prove standalone route behavior or every internal workflow state.
+
+### 10.2 Actual emitted CSS / CSSOM
+
+The Home runtime page exposed **two emitted stylesheet resources**, not thirteen independent browser stylesheets:
+- `index-eg8HbfT8.css`: 765 CSS rules.
+- `HomeScreen-Clo8TzLy.css`: 432 CSS rules.
+
+The source import graph and production CSS chunk graph are different views of ownership. Root imports are consolidated by Vite into the entry CSS chunk; Home's lazy feature styles are emitted as a separate Home CSS chunk.
+
+Observed CSSOM counts by state:
+| State / viewport | CSS rules | Zero-match selectors |
+|---|---:|---:|
+| Login 1440×900 | 765 | 638 |
+| Home 1440×900 | 1,197 | 897 |
+| Home 1280×800 | 1,197 | 897 |
+| Home 1024×768 | 1,216 | 908 |
+| Home 768×1024 | 1,253 | 933 |
+| Home 390×844 | 1,791 | 1,302 |
+| Home 360×740 | 1,847 | 1,337 |
+| Home 844×390 | 1,288 | 968 |
+| Settings 390×844 | 1,853 | 1,343 |
+| Library 390×844 | 1,791 | 1,256 |
+| Stocktake 390×844 | 1,931 | 1,409 |
+| Import 390×844 | 2,149 | 1,611 |
+
+Zero-match means no current element matched the selector in that captured state. It does not account for every state, interaction, portal, pseudo-element, route, conditional class or future module. It is not a deletion list.
+
+### 10.3 Declaration trace and collector correction
+
+The first declaration-level artifact contains 180 visible DOM nodes per state (bounded sample) and records 688 declaration candidates across the selected properties for Home desktop. Computed values are recorded beside candidate declarations.
+
+**Audit correction:** inspection of the first artifact revealed that the specificity tokenizer was over-escaped in the test collector, producing incorrect specificity tuples for ordinary class selectors. The collector was corrected in commit `83bf99f56695f3e4a15f80a3ce705c667d723f05`; its new CI run must pass and its artifact must be inspected before specificity data is used. The original #1614 trace remains valid for selectors, declarations, source stylesheet, conditions and computed styles, but **its specificity values are invalid and must not be used**.
+
+Even after the correction, specificity remains approximate: selector-list handling, complex `:is()`/`:not()`/`:has()` arguments, cascade layers, pseudo-elements, inherited declarations and `@container` conditions are not a complete browser cascade implementation. Candidate ordering is diagnostic, not a guaranteed winner simulation. The browser's computed style remains authoritative for the final value; declaration ownership requires manual source reconciliation.
+
+### 10.4 Visual review notes (observed, not yet change authorization)
+
+- Desktop Home is horizontally stable, but the hero's alert/notice surface and decorative calendar artwork visually compete in the right half; their relative hierarchy and clipping deserve a focused design review.
+- Mobile Home has no horizontal overflow, but the floating bottom navigation visibly overlays the first module card/action area. This is an interaction/available-viewport issue to verify against intended dock behavior, not a CSS cleanup candidate.
+- Import overlay occupies most of the mobile viewport and leaves substantial blank space in the captured empty state. Confirm whether this is intentional sheet behavior before redesigning.
+- These are visual observations from synthetic session screenshots; no production CSS has been changed.
+
+### 10.5 Bundle comparison
+
+The same CI run reports no bundle delta between base and current:
+- Initial entrypoint closure: 398,451 raw / 100,783 per-file gzip-estimate bytes.
+- All emitted files: 1,918,252 raw / 676,769 per-file gzip-estimate bytes.
+- Delta: 0 bytes for both metrics.
+
+These are per-file gzip estimates, not measured Brotli or actual transfer sizes. Navigation/resource timing in the synthetic local run is not suitable for network-performance conclusions; same-origin cached resources report zero transfer size in several captures. Physical low-end device profiling remains open.
+
+### 10.6 Current disposition
+
+1. Keep all current production CSS and tokens unchanged.
+2. Corrected declaration trace must be regenerated and inspected before a cascade ownership matrix is accepted.
+3. Next evidence batch: selector/property ownership grouped by emitted CSS resource and source file; verify actual winner samples against computed style; add Brotli estimates; then build controlled typography/palette specimens without changing production assets.
+4. No CSS selector or stylesheet is approved for retirement yet.
