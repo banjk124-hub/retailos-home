@@ -24,6 +24,7 @@ import {
   type StocktakeImportHistoryItem,
 } from '../services/stocktakeImportStore';
 import './stocktake-import.css';
+import './stocktake-import-experience.css';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { downloadFile } from '../../../shared/downloadFile';
 import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
@@ -598,7 +599,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
             aria-label="Lịch sử"><History size={19} /></button>
         </header>
 
-        <main className="stocktake-import-content">
+        <div className="stocktake-import-content">
         {error && <p className="stocktake-import-error" role="alert">{error}</p>}
 
 
@@ -830,7 +831,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
         </>}
 
         <footer className="stocktake-import-footer"><span>Dữ liệu xử lý được lưu riêng với module Xuất file</span><span>RetailOS</span></footer>
-        </main>
+        </div>
       </section>
 
       {notice && <div className={'stocktake-import-feedback is-' + noticeTone} role="status" aria-live="polite">
