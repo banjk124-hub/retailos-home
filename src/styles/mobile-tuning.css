@@ -273,59 +273,7 @@ button:not(:disabled):active {
   }
 }
 
-/* Legacy login-shell rules retained only for compatibility; Login Experience owns current Login layout. */
-
-  @media (max-width: 700px) {
-    .login-shell {
-      background: transparent;
-      backdrop-filter: none;
-      backdrop-filter: none;
-    }
-    .login-screen {
-      background:
-        radial-gradient(ellipse at 12% 6%, rgba(255, 225, 229, .9), transparent 43%),
-      radial-gradient(ellipse at 92% 88%, rgba(224, 236, 255, .9), transparent 42%),
-      linear-gradient(145deg, #fffafa, #f6f8fc 68%, #fff7f7);
-  }
-  .login-panel {
-    border-color: rgba(255, 255, 255, .92);
-    background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(255,249,250,.76));
-    box-shadow: 0 20px 48px rgba(91, 52, 59, .1), inset 0 1px 0 rgba(255,255,255,.96);
-    backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .login-panel-wrap {
-    background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.3));
-  }
-  .app-shell {
-    background:
-      radial-gradient(ellipse at 92% 0%, rgba(255, 226, 229, .74), transparent 34%),
-      linear-gradient(150deg, #fffafa, #f6f7fa 60%, #fff8f8);
-  }
-  .topbar,
-  .mobile-nav {
-    border: 1px solid rgba(255, 255, 255, .88);
-    background: linear-gradient(135deg, rgba(255,255,255,.88), rgba(255,248,249,.78));
-    box-shadow: 0 10px 28px rgba(81, 44, 50, .1), inset 0 1px 0 rgba(255,255,255,.96);
-    backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .topbar {
-    transition: transform 320ms var(--motion-standard), opacity 260ms ease, box-shadow 260ms ease;
-  }
-  .mobile-nav {
-    background:
-      linear-gradient(145deg, rgba(255,255,255,.64), rgba(255,247,249,.48));
-    border-color: rgba(255,255,255,.72);
-    box-shadow:
-      0 12px 30px rgba(81,44,50,.09),
-      inset 0 1px 0 rgba(255,255,255,.92),
-      inset 0 -1px 0 rgba(255,255,255,.26);
-    backdrop-filter: none;
-    backdrop-filter: none;
-    transition: transform 320ms var(--motion-standard), opacity 260ms ease, box-shadow 260ms ease;
-  }
-}
+/* Legacy login-shell overrides retired: current Login is owned by login-experience.css. */
 
 @media (max-width: 700px) and (prefers-reduced-motion: reduce) {
   .topbar,
