@@ -111,7 +111,7 @@ button { font: inherit; }
   border: 1px solid rgba(255,255,255,.88);
   border-radius: var(--ro-radius-lg);
   background: linear-gradient(145deg,rgba(255,255,255,.82),rgba(255,250,250,.62));
-  box-shadow: var(--glass-frosted-shadow);
+  box-shadow: var(--elevation-2);
   transition: transform .24s var(--ro-ease), border-color .24s ease, box-shadow .24s ease;
 }
 .module-card:hover, .app-library-card:hover {
@@ -140,7 +140,7 @@ button { font: inherit; }
   border: 1px solid rgba(255,255,255,.9);
   border-radius: var(--ro-radius-lg);
   background: linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,247,248,.66));
-  box-shadow: var(--glass-frosted-shadow);
+  box-shadow: var(--elevation-2);
 }
 .spotlight-notification-list { gap: 8px; }
 .spotlight-notification-list > * {
