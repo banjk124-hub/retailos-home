@@ -2,8 +2,8 @@
 /* Login uses opaque surfaces in every power mode. Keep the conserve-mode contract
    explicit so this policy is independent of legacy .login-shell selectors. */
 :root[data-power-mode="conserve"] .login-experience :is(.login-experience__panel, .login-form__input-wrap) {
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  
+  
 }
 
 :root[data-power-mode="conserve"] .ambient-background,
@@ -21,13 +21,13 @@
 }
 
 :root[data-power-mode="conserve"] .app-shell :is(.metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal) {
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
 }
 
 :root[data-power-mode="conserve"] :is(.app-shell, .barcode-result-backdrop, .barcode-scanner, .barcode-result-card, .barcode-scanner-card, .topbar-dock, .mobile-nav, .notification-popover) {
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
 }
 
 :root[data-power-mode="conserve"] .app-library-page-card {
@@ -117,7 +117,7 @@
   color: var(--color-status-danger, var(--color-error));
 }
 
-@supports not ((backdrop-filter: none;
+@supports not ((
   }
 }
 
