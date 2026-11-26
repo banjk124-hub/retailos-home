@@ -4,7 +4,7 @@ const current = JSON.parse(await readFile('dist/bundle-report.json', 'utf8'));
 const baseline = JSON.parse(await readFile('baseline/dist/bundle-report.json', 'utf8'));
 const delta = (next, previous) => next - previous;
 const percent = (next, previous) => previous > 0 ? ((next - previous) / previous) * 100 : 0;
-const fields = ['entrypointRawBytes', 'entrypointGzipBytes', 'rawBytes', 'gzipBytes'];
+const fields = ['entrypointRawBytes', 'entrypointGzipBytes', 'entrypointBrotliBytes', 'rawBytes', 'gzipBytes', 'brotliBytes'];
 const lines = [
   '# RetailOS bundle comparison',
   '',
