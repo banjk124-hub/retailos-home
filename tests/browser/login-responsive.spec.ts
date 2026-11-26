@@ -46,7 +46,7 @@ for (const viewport of viewports) {
     expect(layout.employeeLabelFontSize).toBe('12px');
     if (viewport.name === 'short-landscape') {
       expect(layout.documentHeight, 'compact landscape Login must fit without vertical page overflow').toBeLessThanOrEqual(layout.viewportHeight + 1);
-      expect(layout.loginPanelBottom + 8, 'Login panel must not collide with the fixed utility dock').toBeLessThanOrEqual(layout.dockTop);
+      expect(layout.loginPanelBottom + 8, 'Login panel must remain separated from the in-flow utility dock').toBeLessThanOrEqual(layout.dockTop);
     }
     expect(pageErrors, 'application must not throw uncaught page errors').toEqual([]);
 
