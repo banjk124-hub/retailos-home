@@ -2,17 +2,29 @@
 
 **Repository:** `banjk124-hub/retailos-home`  
 **Default branch:** `main`  
-**Governing product/design/engineering workflow:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
-**Active UI/UX M0 authority:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md)
+**Product and experience workflow:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)
 
-- RetailOS is a React/Vite PWA for supermarket and retail operations. Development GitHub Pages uses base path `/retailos-home/`.
-- The product target is a modern OS-like operational workspace, not an AppSheet reskin. RetailOS owns its design language, brand and operational meaning.
-- Owner-confirmed UI direction: burgundy/dark-red identity, Vietnamese-first typography, authentic supermarket/retail imagery and feature-specific compositions.
-- The supplied image guides art direction and visual composition; the supplied video guides motion, animation, transitions and interaction feedback. Both are inspiration sources, not templates to copy.
-- Design is component-led and visual-first, with concise text, purposeful iconography and imagery, varied workspace compositions, professional desktop, adaptive tablet and task-focused mobile. Sophisticated effects are allowed when purpose and runtime cost are justified.
-- The design system is open and evolutionary: establish language and shared foundations, redesign existing features, and add future components only when real needs emerge. Do not invent future workflows or build speculative component catalogues.
-- Frameworks, component libraries, icon/image tooling, typography and motion libraries are evaluated before adoption/replacement; no technology is presumed mandatory.
-- Preserve Auth/session, module registry, cache/data truth, Scanner Engine, Stocktake/Import persistence, overlay and PWA release contracts unless a separately approved migration requires change.
-- Scanner runtime stabilization is closed. See `SCANNER_ENGINE.md` and `SCANNER_HISTORY.md`; do not create parallel Scanner workstreams.
-- Development account/Pages testing is separate from shared department production promotion. Merge, deploy and transfer require explicit authorization.
-- Current implementation status is maintained only in [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md). Verify volatile GitHub facts live.
+- RetailOS is a React, TypeScript and Vite PWA for supermarket and retail operations.
+- GitHub Pages project-site base path is `/retailos-home/`.
+- Product intent: an OS-like operational workspace with retail-specific workflows and meaning; not an AppSheet reskin or generic admin dashboard.
+- Development is source-first and cost-conscious. Preserve the current lightweight PWA architecture unless a measured requirement justifies a change.
+- Current source and domain contracts are authoritative for implemented behavior. Documentation status and historical audit claims must be revalidated against the current branch before use.
+- The repository contains established auth/session, module registry, snapshot/cache/offline, scanner, stocktake, import/export, overlay and PWA update/release boundaries. Consult their domain contracts before touching them.
+- Scanner stabilization SC-00–SC-05 is closed. UI presentation work must not reopen scanner engine internals without a reproducible defect, measured bottleneck or new requirement.
+- Development work occurs on isolated branches. Merge, deployment and production-account transfer are separate explicit approval gates.
+
+## Current owner direction — experience and visual design
+
+The owner has withdrawn previous global aesthetic constraints. No global visual style is currently selected. Do not assume minimal, Liquid Glass, burgundy/dark-red, retail photography, a particular typography system, card-based layouts or any other former concept is the default.
+
+For each experience, discover the problem and explore creative directions. Color, type, imagery, composition, density, layout, components, materials, icons and motion are open creative decisions until explicitly approved for that scope. Existing code and design tokens are resources to inspect, not boundaries that limit exploration.
+
+## Decision classification
+
+- **Technical invariants:** stable data, identity, persistence, lifecycle, API, deployment, accessibility and compatibility contracts. Change only through evidence and an approved migration.
+- **Product principles:** clarity, workflow efficiency, trust, learnability, accessibility, responsive behavior, useful feedback and performance. Evaluate in context.
+- **Creative decisions:** visual and interaction language. Discover, explore, prototype and obtain explicit owner approval; never infer a product-wide rule from a single approved screen.
+
+## Current verified repository state
+
+See [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) and [AI_HANDOFF.md](./AI_HANDOFF.md) for branch-specific verified status. This file intentionally avoids duplicating volatile commit, PR, CI or deployment claims.
