@@ -1,4 +1,4 @@
-/* RetailOS Liquid Glass System — presentation layer only.
+/* RetailOS Home presentation layer — semantic surface roles only.
    Intentionally scoped to existing UI classes. Does not alter business behavior. */
 :root {
   --ro-red: #e51f2d;
