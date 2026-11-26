@@ -47,6 +47,9 @@ This document is the source of truth for modal/overlay lifecycle, page scroll lo
 - Shared Settings and Scanner dialog shell: `src/styles/settings-dialog.css`
 - Settings Hub presentation: `src/styles/settings-hub.css`
 - Scanner Preferences presentation: `src/styles/scanner-preferences.css`
+- Home BarcodeScanner presentation: `src/features/scanner/barcode-scanner-presentation.css`
+- Stocktake Scanner presentation: `src/features/stocktake/components/stocktake-scanner-presentation.css`
+- Shared torch control: `src/features/scanner/scanner-shared-controls.css`
 - Home overlay styles: `src/styles/mobile-tuning.css`, `src/styles/home-ux.css`
 - Stocktake styles: `src/features/stocktake/components/stocktake.css`
 - Stocktake Import styles: `src/features/stocktake-import/components/stocktake-import.css`
