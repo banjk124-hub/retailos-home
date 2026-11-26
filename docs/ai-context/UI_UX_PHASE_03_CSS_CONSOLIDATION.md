@@ -1,6 +1,6 @@
 # UI-03 — CSS Consolidation
 
-**Status:** UI-03A source inventory refreshed on `main`; runtime CSS has not yet been modified. No selector is classified as dead without a complete consumer trace.
+**Status:** UI-03A inventory refreshed; UI-03B retired nine legacy class-selector families from CSS. Exact-head CI and browser validation are pending.
 **Branch:** `refactor/ui-03-css-consolidation`
 **Baseline:** `main` at UI-02 merge `4a98d3cd304f095dc6057499b69e5bf19f166948`
 **Scope:** reduce CSS duplication and obsolete rules while preserving rendered output, responsive behavior, accessibility, feature ownership and lazy-loading boundaries.
@@ -94,7 +94,29 @@ Stocktake Import, Stocktake, Scanner, Login, Settings, PWA, Surface, Motion, Bra
 
 At this baseline, the audit has **not yet proven any additional selector to be unused**. The previous confirmed orphan `home-phase2.css` is already absent from the current tree. Selector-level consumer tracing is the next audit task; dynamically composed class names, conditional states, pseudo-elements, portals and test-only contracts must be accounted for before removal.
 
-## 5. Execution slices
+## 5. UI-03B — Legacy selector retirement
+
+The previous source audit and current repository-wide code-search pass found no application-source consumer for these nine legacy class names; search matches were confined to CSS and historical documentation:
+
+- `.sidebar`
+- `.hero-card`
+- `.metrics-grid`
+- `.module-card`
+- `.module-grid`
+- `.login-screen`
+- `.login-showcase`
+- `.activity-row`
+- `.attention-item`
+
+The corresponding selector rules were removed from the active CSS files. Where a selector list also contained active presentation classes, only the retired branch was removed. The Home replacement classes, semantic surface roles, Login Experience classes, navigation, feature-owned styles, reduced-motion rules and power-mode contracts were left in place.
+
+Added `scripts/test-ui-03-legacy-selectors.mjs` and wired it into `scripts/preflight.mjs`. The guard checks that:
+- none of the nine class tokens has a literal source consumer under `src/`;
+- none of the nine class selectors remains in tracked CSS under `src/`.
+
+This is a repository-source guard, not proof about markup injected by an external runtime or browser extension. No such dependency is known in the current application. CI and browser regression evidence remain required before this retirement is considered verified.
+
+## 6. Execution slices
 
 1. **UI-03A — Inventory and ownership baseline**
    - Refresh the exact stylesheet list, byte counts and import ownership.
@@ -116,7 +138,7 @@ At this baseline, the audit has **not yet proven any additional selector to be u
    - Verify desktop, tablet, iOS/Android viewport emulation and lower-end-device fallback behavior; distinguish emulation from physical-device acceptance.
    - Update this phase record and PROJECT_MAP only after source ownership and exact-head CI are verified.
 
-## 6. Acceptance gates
+## 7. Acceptance gates
 
 - No unowned stylesheet or unexplained CSS import.
 - Every removed selector has a documented consumer trace and is classified PROVEN-UNUSED.
@@ -126,6 +148,6 @@ At this baseline, the audit has **not yet proven any additional selector to be u
 - Exact final commit passes the relevant CI checks; report browser/device evidence separately.
 - No merge or deployment without explicit authorization.
 
-## 7. Initial implementation decision
+## 8. Initial implementation decision
 
-UI-03A inventory is recorded. **No runtime CSS was changed in this slice** because current evidence establishes overlapping ownership, not dead declarations or equivalent computed output. The next safe implementation step is UI-03B selector-consumer tracing, followed by a narrow, test-backed removal or consolidation.
+UI-03A inventory is recorded and UI-03B has a bounded selector-retirement implementation. The broader Home/global cascade consolidation remains gated on computed-style and browser baseline evidence; do not treat this initial removal as authorization for a wholesale stylesheet rewrite.
