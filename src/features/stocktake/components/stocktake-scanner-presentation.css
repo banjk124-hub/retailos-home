@@ -1,0 +1,72 @@
+/* Stocktake keeps its feature-owned layout but shares visual viewport sizing and transition timing. */
+.stocktake-scanner-layer.scanner-stocktake-layer-enter {
+  position: fixed;
+  top: var(--scanner-visual-viewport-top, 0px);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  height: var(--scanner-visual-viewport-height, 100dvh);
+  background: transparent;
+}
+@keyframes scanner-stocktake-controls-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.stocktake-scanner-surface.scanner-stocktake-surface-enter .stocktake-scanner-heading,
+.stocktake-scanner-surface.scanner-stocktake-surface-enter .stocktake-scanner-instruction { animation: scanner-stocktake-controls-in 220ms ease-out both; }
+.stocktake-scanner-surface.scanner-stocktake-surface-enter {
+  transform-origin: calc(50% + var(--scanner-origin-x, 50vw) - 50vw) calc(50% + var(--scanner-origin-y, 50vh) - 50vh);
+}
+.stocktake-scanner-preview { background: radial-gradient(ellipse at 50% 42%, #3a2c33 0%, #241c21 64%, #171114 100%); }
+.stocktake-scanner-preview video { opacity: 1; transition: none; }
+.stocktake-scanner-preview:not(.has-preview) video { visibility: hidden; }
+.stocktake-scanner-preview.has-preview video { visibility: visible; }
+.stocktake-scanner-surface.is-closing .stocktake-scanner-preview video { visibility: hidden; }
+.stocktake-scanner-exit-frame {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.stocktake-scanner-message {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 14px;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(20,15,18,.52);
+  color: rgba(255,255,255,.9);
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.stocktake-scanner-message.is-error { border-color: rgba(255,190,198,.28); color: #ffe0e4; }
+@keyframes scanner-stocktake-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scanner-stocktake-surface-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+.stocktake-scanner-surface.scanner-stocktake-surface-enter.is-closing {
+  pointer-events: none;
+  animation: scanner-stocktake-close 260ms cubic-bezier(.2, .78, .22, 1) both;
+}
+@keyframes scanner-stocktake-close { from { opacity: 1; transform: none; } to { opacity: 1; transform: scale(.96); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .stocktake-scanner-layer.scanner-stocktake-layer-enter,
+  .stocktake-scanner-surface.scanner-stocktake-surface-enter,
+  .stocktake-scanner-surface.scanner-stocktake-surface-enter .stocktake-scanner-heading,
+  .stocktake-scanner-surface.scanner-stocktake-surface-enter .stocktake-scanner-instruction {
+    animation: none !important;
+    transform: none !important;
+  }
+  .stocktake-scanner-preview video { transition: none; }
+  .stocktake-scanner-surface.scanner-stocktake-surface-enter.is-closing { animation: scanner-stocktake-close 1ms linear both !important; }
+}
