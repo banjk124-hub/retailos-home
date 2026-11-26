@@ -212,10 +212,6 @@ assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transi
 assert.match(homeScannerPresentationCss, /min-width: 0;[\s\S]*?min-height: 0;/,
   "Home preview flex geometry must be allowed to shrink without overflow");
 
-const stocktakeScannerPresentationCss = await readFile(
-  new URL("../src/features/stocktake/components/stocktake-scanner-presentation.css", import.meta.url),
-  "utf8",
-);
 assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-preview\{[^}]*flex:1 1 auto;[^}]*min-width:0;/,
   "Stocktake preview must participate in stable flex sizing");
 
