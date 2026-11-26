@@ -34,13 +34,13 @@ async function capture(page: Page, info: TestInfo, label: string) {
     const cssRules: Array<{ selector: string; stylesheet: string; condition: string; matched: number; declarations: Array<{ property: string; value: string; important: boolean }>; order: number; specificity: [number, number, number] }> = [];
     let sourceOrder = 0;
     const specificityOf = (selector: string): [number, number, number] => {
-      // Approximation for ordinary selectors. :where() contributes zero; :is/:not/:has
-      // are counted by their argument text. The raw selector is retained for manual review.
-      const normalized = selector.replace(/:where\\([^)]*\\)/g, '');
-      const ids = (normalized.match(/#[\\w-]+/g) || []).length;
-      const classes = (normalized.match(/\\.[\\w-]+|\\[[^\\]]+\\]|:(?!:)[\\w-]+(?:\\([^)]*\\))?/g) || []).length;
-      const elements = (normalized.replace(/::[\\w-]+/g, ' ').match(/(^|[\\s>+~])(?:[a-zA-Z][\\w-]*)/g) || []).length
-        + (normalized.match(/::[\\w-]+/g) || []).length;
+      // Approximation for ordinary selectors. :where() contributes zero. Complex
+      // :is/:not/:has arguments and cascade layers still require manual review.
+      const normalized = selector.replace(/:where\([^)]*\)/g, '');
+      const ids = (normalized.match(/#[\w-]+/g) || []).length;
+      const classes = (normalized.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)[\w-]+(?:\([^)]*\))?/g) || []).length;
+      const elements = (normalized.replace(/::[\w-]+/g, ' ').match(/(^|[\s>+~])(?:[a-zA-Z][\w-]*)/g) || []).length
+        + (normalized.match(/::[\w-]+/g) || []).length;
       return [ids, classes, elements];
     };
     const walk = (list: CSSRuleList, stylesheet: string, condition: string) => {
