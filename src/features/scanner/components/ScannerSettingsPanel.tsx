@@ -1,6 +1,7 @@
 import { ArrowLeft, ScanBarcode, Volume2, Vibrate } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { useDialogFocus } from '../../../shared/hooks/useDialogFocus';
 import { useScannerSettings } from '../hooks/useScannerSettings';
 import {
   isScannerVibrationSupported,
@@ -18,6 +19,8 @@ export default function ScannerSettingsPanel({ onClose }: Props) {
   const settings = useScannerSettings();
   const vibrationSupported = isScannerVibrationSupported();
   const backButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  useDialogFocus(true, dialogRef);
   useBodyScrollLock(true);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function ScannerSettingsPanel({ onClose }: Props) {
   return <div className="scanner-settings-backdrop" onClick={(event) => {
     if (event.target === event.currentTarget) onClose();
   }}>
-    <section className="scanner-settings-panel scanner-settings-panel--detail" role="dialog" aria-modal="true" aria-labelledby="scanner-settings-title">
+    <section ref={dialogRef} tabIndex={-1} className="scanner-settings-panel scanner-settings-panel--detail" role="dialog" aria-modal="true" aria-labelledby="scanner-settings-title">
       <header className="scanner-settings-header">
         <button ref={backButtonRef} type="button" className="scanner-settings-back" onClick={onClose} aria-label="Quay lại cài đặt"><ArrowLeft size={19} /></button>
         <span className="scanner-settings-header-icon"><ScanBarcode size={21} /></span>
