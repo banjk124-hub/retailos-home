@@ -115,3 +115,52 @@ test('Login respects reduced-motion and power-conserve presentation', async ({ p
   expect(powerConserve.fieldBackdrop).toBe('none');
   expect(powerConserve.storyBackground).not.toBe('none');
 });
+
+test('Login normal-size text meets WCAG AA contrast in light and dark surfaces', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./', { waitUntil: 'networkidle' });
+  await page.getByLabel('Mã nhân viên').fill('20286233');
+  await expect(page.locator('.retail-login__employee small')).toBeVisible();
+
+  const results = await page.evaluate(() => {
+    const parse = (value: string) => {
+      const channels = value.match(/[\\d.]+/g)?.map(Number) ?? [];
+      return channels.slice(0, 3);
+    };
+    const luminance = (rgb: number[]) => {
+      const linear = rgb.map((channel) => {
+        const value = channel / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+    };
+    const hex = (value: string) => value.match(/[\\da-f]{2}/gi)!.map((part) => parseInt(part, 16));
+    const ratio = (foreground: string, background: string) => {
+      const bg = hex(background);
+      const values = foreground.match(/[\\d.]+/g)?.map(Number) ?? [];
+      const alpha = values.length > 3 ? values[3] : 1;
+      const fg = values.slice(0, 3).map((channel, index) => channel * alpha + bg[index] * (1 - alpha));
+      const [light, dark] = [luminance(fg), luminance(bg)].sort((a, b) => b - a);
+      return Number(((light + 0.05) / (dark + 0.05)).toFixed(2));
+    };
+    const samples: Array<{ name: string; selector: string; pseudo?: string; background: string }> = [
+      { name: 'access description', selector: '.retail-login__access-heading p', background: '#f2ece6' },
+      { name: 'access overline', selector: '.retail-login__access .retail-login__overline', background: '#f2ece6' },
+      { name: 'employee hint', selector: '.retail-login__hint', background: '#f2ece6' },
+      { name: 'employee department', selector: '.retail-login__employee small', background: '#fffefa' },
+      { name: 'security note', selector: '.retail-login__security', background: '#f2ece6' },
+      { name: 'footer metadata', selector: '.retail-login__footer', background: '#f2ece6' },
+      { name: 'input placeholder', selector: '#retail-employee-code', pseudo: '::placeholder', background: '#fffefa' },
+      { name: 'story edition', selector: '.retail-login__edition', background: '#741f30' },
+      { name: 'story signal', selector: '.retail-login__signal small', background: '#741f30' },
+      { name: 'story description', selector: '.retail-login__story-copy p', background: '#741f30' },
+    ];
+    return samples.map((sample) => {
+      const element = document.querySelector(sample.selector)!;
+      const color = getComputedStyle(element, sample.pseudo).color;
+      return { name: sample.name, contrast: ratio(color, sample.background) };
+    });
+  });
+
+  expect(results.filter((item) => item.contrast < 4.5)).toEqual([]);
+});
