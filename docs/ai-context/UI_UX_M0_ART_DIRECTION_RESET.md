@@ -1,10 +1,10 @@
-> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+> **Historical-document notice (2026-11-26):** This file is retained for traceability only and is not an active instruction or status source. Use [INDEX.md](./INDEX.md) to locate current owners and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) for this file's disposition. The active UI/UX direction is [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). Verify all implementation facts against current source.
 
 ---
 
 # RetailOS M0 Reset — Art Direction & Craft Standard
 
-**Status:** Reset proposal replacing the earlier M0 visual direction as the active design exploration. Requires owner review; not a final accepted design system.
+**Status:** REJECTED AS ACTIVE ART DIRECTION. This amber/sand-led proposal is superseded by the later owner-confirmed burgundy/dark-red direction in UI_UX_M0_GOVERNING_SPEC.md. Retain only as historical evidence of a rejected exploration; do not reuse its palette or direction.
 **Scope:** Entire RetailOS product — shell, core experiences, operational workspaces, system surfaces, shared UI language and responsive behavior.
 **Reference:** User-provided `IMG_1574.jpeg`, reopened and inspected directly for this reset. The previous concept boards are retained only as historical structural explorations; they are not the visual quality benchmark.
 **Protected baseline:** Existing 00B–00H source audits and all business/platform contracts remain in force.
