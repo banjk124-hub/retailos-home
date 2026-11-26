@@ -168,8 +168,8 @@
   border-color: var(--glass-border-elevated);
   background: var(--glass-surface-elevated);
   box-shadow: var(--shadow-elevated), var(--glass-highlight);
-  -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
-  backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated));
+  backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .app-shell .topbar-action-button,
@@ -190,8 +190,8 @@
   border-color: var(--glass-border-modal);
   background: var(--glass-surface-modal);
   box-shadow: var(--shadow-modal), var(--glass-highlight);
-  -webkit-backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
-  backdrop-filter: blur(var(--glass-blur-modal)) saturate(var(--glass-saturation-modal));
+  backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .app-shell .app-library-modal,
