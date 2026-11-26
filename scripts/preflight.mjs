@@ -49,6 +49,11 @@ const checks = [
     args: ["scripts/test-ui-04a-login-presentation.mjs"],
   },
   {
+    name: "UI-04B Settings and Scanner Preferences presentation ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-04b-settings-presentation.mjs"],
+  },
+  {
     name: "UI-03 verified legacy CSS selector retirement contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-03-legacy-selectors.mjs"],
