@@ -1,7 +1,7 @@
 # RetailOS M0 — Governing Experience Direction
 
 **Authority:** Sole active M0 specification; supersedes conflicting M0 proposals.  
-**Status:** M0-0 documentation consolidation is complete on this branch. Owner direction is confirmed; M0 remains open and M1 is not authorized.
+**Status:** M0-0 documentation consolidation is complete. Owner direction is confirmed; M0 remains open and M1 is not authorized.
 
 ## 1. Owner-confirmed direction
 
@@ -90,6 +90,7 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 
 **M0-A — Structural/visual direction**
 - [x] Establish source ownership and baseline audit for root/Auth/Home/Library/Settings/Stocktake/Import; refresh against main after PR #167.
+- [x] Inventory all tracked stylesheets, root/feature import ownership, token namespaces, typography and image/font asset readiness; record KEEP/CONSOLIDATE/REPLACE/RETIRE disposition in M0-A2.
 - [ ] Complete computed-style and rendered-state audit across representative viewports.
 - [x] Produce source-grounded structural/operational blueprints for Login, proposed Shell, Home, Module Library, Stocktake, Import and Settings/Update Center.
 - [ ] Build high-fidelity visual prototypes for each representative surface directly in RetailOS source/runtime.
@@ -117,7 +118,7 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 
 ## 8. Current status and exit criteria
 
-Owner direction is confirmed and BATCH 02 has consolidated the active documentation authority. M0-A source baseline and seven screen blueprints are recorded against main after PR #167; they are structural/operational evidence, not accepted final visuals. Remaining M0-A work is high-fidelity source/runtime prototypes, rendered browser inspection, brand/font/image validation and owner visual acceptance. PR #157 is closed and unmerged; its Login CSS proposal is not accepted source behavior. PR #160–#162 did not ship product-wide redesign or the target App Shell. No M1 authorization exists.
+Owner direction is confirmed and BATCH 02 has consolidated the active documentation authority. M0-A source architecture and design-system/CSS inventories are recorded against current main. The A2 source audit found 24 tracked CSS files, 365,141 source bytes, 13 root stylesheet imports, five ordered Home stylesheets, competing token vocabularies, no bundled font or retail photography. These findings do not establish computed CSS winners, actual transfer size, font/image visual quality or device performance. Remaining M0-A work is runtime/computed-style inspection, source/runtime prototypes, brand/font/image validation and owner visual acceptance. PR #157 is closed and unmerged; its Login CSS proposal is not accepted source behavior. No M1 authorization exists.
 
 M0 exits only after owner-approved direction is demonstrated in individual source-grounded screens; brand anchors are integrated; both reference roles are represented without copying; desktop/tablet/mobile are inspected; real workflows/data are verified; motion/interruption/reduced-motion/low-end behavior is tested; technology choices are evidenced; accessibility/performance/protected contracts pass; CI/browser/device evidence is accurately separated; and the owner explicitly accepts M0 and authorizes M1.
 
