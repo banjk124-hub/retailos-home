@@ -124,6 +124,9 @@ assert.ok(adaptiveStyles.includes("var(--color-status-danger, var(--color-error)
 const semanticSurface = readFileSync("src/shared/components/surface/surface.css", "utf8");
 assert.ok(semanticSurface.includes(".surface--panel"));
 assert.ok(semanticSurface.includes(".surface--floating"));
+assert.ok(semanticSurface.includes("var(--color-brand-primary"), "Brand surface must consume the canonical brand token");
+assert.ok(semanticSurface.includes("var(--color-surface-inverse"), "Inverse surface must consume the canonical inverse token");
+assert.ok(semanticSurface.includes("var(--elevation-brand"), "Brand surface must consume the semantic brand elevation token");
 assert.ok(!semanticSurface.includes("backdrop-filter"));
 
 function collectSourceFiles(directory) {
