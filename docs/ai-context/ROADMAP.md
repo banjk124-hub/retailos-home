@@ -15,6 +15,7 @@ For each substantial experience, discover the workflow and context, explore crea
 Do not inherit the former M0 sequence, aesthetic or approval gates as active instructions. Existing M0 source audits remain historical evidence and must be revalidated before use.
 
 ## Technical workstreams
+- UI-03 CSS consolidation is active on `refactor/ui-03-css-consolidation`; current work is inventory/consumer tracing. Do not remove selectors or rewrite cascade layers without verified consumer and browser evidence.
 - Preserve established auth/session, module registry, snapshot/cache/offline, scanner, stocktake, import/export, overlay and PWA release contracts.
 - Scanner stabilization is closed. Reopen only for a reproducible defect, measured bottleneck or new requirement.
 - Continue source/runtime/browser/device verification according to the affected workflow; distinguish CI, browser verification, device acceptance and owner approval.
