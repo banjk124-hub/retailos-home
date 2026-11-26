@@ -157,19 +157,19 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
     viewportResults.push({ viewport: v.name, horizontalOverflow: data.document.horizontalOverflow, documentHeight: data.document.height });
 
     const desktopNavigation = page.locator('.shell-navigation__desktop');
-    const mobileNavigation = page.locator('.shell-navigation__mobile');
+    const mobileDock = page.locator('.shell-navigation__mobile .liquid-dock');
     if (v.width >= 901) {
       await expect(desktopNavigation, `desktop navigation at ${v.name}`).toBeVisible();
-      await expect(mobileNavigation, `mobile navigation hidden at ${v.name}`).toBeHidden();
+      await expect(mobileDock, `mobile dock hidden at ${v.name}`).toBeHidden();
       const layout = await page.evaluate(() => ({
         rail: document.querySelector('.shell-navigation__desktop')!.getBoundingClientRect().toJSON(),
         main: document.querySelector('.home-main')!.getBoundingClientRect().toJSON(),
       }));
       expect(layout.rail.right, `desktop rail must not overlap Home content at ${v.name}`).toBeLessThanOrEqual(layout.main.left + 1);
     } else {
-      await expect(mobileNavigation, `mobile navigation at ${v.name}`).toBeVisible();
+      await expect(mobileDock, `mobile dock at ${v.name}`).toBeVisible();
       await expect(desktopNavigation, `desktop navigation hidden at ${v.name}`).toBeHidden();
-      const dockBounds = await page.locator('.shell-navigation__mobile .liquid-dock').boundingBox();
+      const dockBounds = await mobileDock.boundingBox();
       expect(dockBounds, `mobile dock bounds at ${v.name}`).not.toBeNull();
       expect(dockBounds!.x, `mobile dock left edge at ${v.name}`).toBeGreaterThanOrEqual(0);
       expect(dockBounds!.x + dockBounds!.width, `mobile dock right edge at ${v.name}`).toBeLessThanOrEqual(v.width + 1);
