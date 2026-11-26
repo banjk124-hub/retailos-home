@@ -15,7 +15,8 @@ import { useHomeSnapshotNotices } from './hooks/useHomeSnapshotNotices';
 import { useHomeCalendarClock, useHomeCalendarDates } from './hooks/useHomeCalendarDates';
 import { useHomeNavigation } from './hooks/useHomeNavigation';
 import { type SnapshotNotice } from './snapshotNoticeRules';
-import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
+import { useHomeBarcodeLookup } from './hooks/useHomeBarcodeLookup';
+import { useHomeFeedback } from './hooks/useHomeFeedback';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
@@ -131,14 +132,7 @@ export default function HomeScreen({
     setShowSettings(true);
   }, []);
   useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
-  const [barcodeLookup, setBarcodeLookup] = useState<{
-    query: string;
-    requestId: number;
-    records: BarcodeProductRecord[] | null;
-    error?: string;
-    failedSources?: string[];
-  } | null>(null);
-  const barcodeLookupRequestIdRef = useRef(0);
+  const { barcodeLookup, setBarcodeLookup, runBarcodeLookup, openManualProductLookup, submitManualProductLookup } = useHomeBarcodeLookup();
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const calendarNow = useHomeCalendarClock();
@@ -175,7 +169,7 @@ export default function HomeScreen({
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const [toast, setToast] = useState('');
+  const { toast, announce, clearToast } = useHomeFeedback();
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
     || isBarcodeScannerOpen || showSettings || showScannerSettings
@@ -392,48 +386,10 @@ export default function HomeScreen({
   };
 
 
-  const announce = (message: string) => {
-    setToast(message);
-    window.setTimeout(() => setToast(''), 2600);
-  };
-  const runBarcodeLookup = useCallback((barcode: string) => {
-    const requestId = ++barcodeLookupRequestIdRef.current;
-    setBarcodeLookup({ query: barcode, requestId, records: null });
-    void lookupCachedBarcode(barcode).then(({ records, failedSources }) => {
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records, failedSources }
-        : current);
-    }).catch((error: unknown) => {
-      console.error('Không thể tra cứu thông tin cho mã barcode đã quét:', error);
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
-        : current);
-    });
-  }, []);
   const handleBarcodeDetected = useCallback((barcode: string) => {
     cameraLeaseRequestRef.current = null;
     runBarcodeLookup(barcode);
   }, [runBarcodeLookup]);
-  const openManualProductLookup = useCallback(() => {
-    const requestId = ++barcodeLookupRequestIdRef.current;
-    setBarcodeLookup({ query: '', requestId, records: [] });
-  }, []);
-  const submitManualProductLookup = useCallback(() => {
-    if (!barcodeLookup?.query.trim()) return;
-    const requestId = ++barcodeLookupRequestIdRef.current;
-    const query = barcodeLookup.query.trim();
-    setBarcodeLookup({ query, requestId, records: null });
-    void searchCachedProducts(query).then(({ records, failedSources }) => {
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records, failedSources }
-        : current);
-    }).catch((error: unknown) => {
-      console.error('Không thể tra cứu sản phẩm từ snapshot:', error);
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
-        : current);
-    });
-  }, [barcodeLookup?.query]);
   const closeBarcodeScanner = useCallback(() => {
     cameraLeaseRequestRef.current?.cancel();
     cameraLeaseRequestRef.current = null;
@@ -781,6 +737,6 @@ export default function HomeScreen({
     })()}
     {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} /></Suspense>}
     {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
-    {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
+    {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
