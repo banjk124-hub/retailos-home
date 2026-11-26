@@ -56,7 +56,10 @@ async function capture(page: Page, info: TestInfo, label: string) {
             declarations, order: sourceOrder++, specificity: specificityOf(rule.selectorText) });
         } else if ('cssRules' in rule) {
           const group = rule as CSSGroupingRule & { conditionText?: string };
-          walk(group.cssRules, stylesheet, [condition, group.conditionText || group.constructor.name].filter(Boolean).join(' > '));
+          const conditionText = group.conditionText || group.constructor.name;
+          if (rule instanceof CSSMediaRule && !matchMedia(rule.conditionText).matches) continue;
+          if (rule instanceof CSSSupportsRule && !CSS.supports(rule.conditionText)) continue;
+          walk(group.cssRules, stylesheet, [condition, conditionText].filter(Boolean).join(' > '));
         }
       }
     };
