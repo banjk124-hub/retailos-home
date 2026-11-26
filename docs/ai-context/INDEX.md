@@ -39,7 +39,21 @@
 
 ## Evidence and history
 
-Prior UI/UX architecture, implementation plans, screen maps, audits, phase records, capability evaluations, CHANGELOG_AI and SESSION_LOG retain evidence. They are not independent active specifications. Interpret them through current canonical sources and source code. Do not bulk-load the archive; read only evidence needed for a concrete question or regression. Preserve unique evidence when consolidating.
+## Legacy documentation — do not load by default
+
+The following files remain in the repository for traceability, but they are not active specifications. Their status and required treatment are recorded in DEPRECATION_REGISTER.md:
+
+| Legacy family | Files | Current treatment |
+|---|---|---|
+| Superseded UI architecture/plan | UI_UX_ARCHITECTURE.md, UI_UX_IMPLEMENTATION_PLAN.md | Historical only; Product Skill, ARCHITECTURE and ROADMAP own current policy/sequencing. |
+| Superseded design exploration | UI_UX_M0_GLOBAL_DIRECTION.md, UI_UX_M0_ART_DIRECTION_RESET.md, UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md | Historical; M0 Governing Spec owns approved direction. M0_ART_DIRECTION_RESET contains rejected amber-led proposal. |
+| Design system and technology research | UI_UX_DESIGN_SYSTEM_SPEC.md, UI_UX_TECHNOLOGY_AUDIT.md | Review/extract unique current evidence; not separate authorities. Technology Radar owns current evaluation. |
+| Screen and component research | UI_UX_SCREEN_MAP.md, UI_UX_COMPONENT_AUDIT.md, UI_UX_SCREEN_BLUEPRINTS.md, UI_UX_ACCEPTANCE_MIGRATION_BLUEPRINT.md | Historical source evidence; revalidate against current source and active M0/domain contracts. |
+| Phase evidence | UI_UX_PHASE_00_AUDIT.md, UI_UX_PHASE_01_FOUNDATION.md, UI_UX_M0_A_EXECUTION_RECORD.md, UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md, UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md | Read only for a specific implementation/acceptance trace; verify baseline SHA and status. |
+| AI capability history | AI_CAPABILITY_SYSTEM.md, AI_CAPABILITY_EVALUATION.md | Prior AI skill architecture; relationship to repository skills and private Product Studio still requires BATCH 03 reconciliation. |
+| Append-only logs | CHANGELOG_AI.md, SESSION_LOG.md | Chronology only; never use as current status. |
+
+**Important:** a historical file may contain useful facts, but its old proposed direction, acceptance state, branch, SHA, dependency or instruction is not current merely because the file remains present. Do not use a historical file as a task entry point. If a fact is needed, verify it against current source and move the still-valid rule to its single canonical owner.
 
 ## Context rules
 - Every task starts with Product Skill and IMPLEMENTATION_STATUS.
