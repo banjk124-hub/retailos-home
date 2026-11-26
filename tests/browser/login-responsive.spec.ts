@@ -119,6 +119,6 @@ test('Login respects reduced-motion and power-conserve presentation', async ({ p
     };
   });
 
-  expect(powerConserve.panelBackdrop).toContain('blur(8px)');
-  expect(powerConserve.controlBackdrop).toContain('blur(0px)');
+  expect(powerConserve.panelBackdrop).toBe('none');
+  expect(powerConserve.controlBackdrop).toBe('none');
 });
