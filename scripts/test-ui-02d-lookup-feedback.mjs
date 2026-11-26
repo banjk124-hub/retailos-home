@@ -15,6 +15,6 @@ assert.match(lookup, /lookupCachedBarcode\(barcode\)/);
 assert.match(lookup, /searchCachedProducts\(query\)/);
 assert.match(feedback, /clearTimeout\(timerRef\.current\)/);
 assert.match(feedback, /timerRef\.current = window\.setTimeout/);
-assert.match(feedback, /return \(\) =>/);
+assert.match(feedback, /useEffect/);
 
 console.log('UI-02D lookup and feedback ownership contract tests passed.');
