@@ -1,10 +1,10 @@
-> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+> **Historical-document notice (2026-11-26):** This file is retained for traceability only and is not an active instruction or status source. Use [INDEX.md](./INDEX.md) to locate current owners and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) for this file's disposition. The active UI/UX direction is [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). Verify all implementation facts against current source.
 
 ---
 
 # RetailOS M0 — Reference Roles & Motion-Safe Experience Contract
 
-**Status:** Governing M0 principle and execution contract, aligned to the owner's explicit clarification on 2026-11-25.
+**Status:** HISTORICAL SOURCE EVIDENCE. Its image/video reference-role and motion-safety principles have been consolidated into UI_UX_M0_GOVERNING_SPEC.md and RETAILOS_PRODUCT_SKILL.md. Those files own current direction; this file is not a second authority.
 **Scope:** Entire RetailOS — application shell, core workspaces, operational workflows, system states and shared interaction language.
 **Sources:** `IMG_1574(1).jpeg` is the structural/visual reference. `ScreenRecording_11-24-2026 20-25-21_1(2).mp4` is the motion, feedback and state reference.
 **Rule:** These sources have separate responsibilities. Do not blend their palettes, layouts, product semantics or inferred features.
