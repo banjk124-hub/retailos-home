@@ -9,16 +9,19 @@ export function useHomeSnapshotNotices() {
   const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
 
   useEffect(() => {
-    let isCurrent = true;
+    let isMounted = true;
+    let latestRequestId = 0;
+
     const loadSnapshotNotices = async () => {
+      const requestId = ++latestRequestId;
       setSnapshotNoticeStatus('loading');
       try {
         const snapshots = await getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS);
-        if (!isCurrent) return;
+        if (!isMounted || requestId !== latestRequestId) return;
         setPriorityNotices(calculateSnapshotNotices(snapshots));
         setSnapshotNoticeStatus(snapshots.length === 0 ? 'empty' : 'ready');
       } catch (error) {
-        if (!isCurrent) return;
+        if (!isMounted || requestId !== latestRequestId) return;
         console.error('Không thể đọc snapshot để tính thông báo:', error);
         setPriorityNotices([]);
         setSnapshotNoticeStatus('unavailable');
@@ -28,7 +31,8 @@ export function useHomeSnapshotNotices() {
     void loadSnapshotNotices();
     window.addEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
     return () => {
-      isCurrent = false;
+      isMounted = false;
+      latestRequestId += 1;
       window.removeEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
     };
   }, []);
