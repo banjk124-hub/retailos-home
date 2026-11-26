@@ -94,7 +94,6 @@ export default function LoginExperience({ onAuthenticated }: Props) {
 
       <section className="retail-login__access">
         <div className="retail-login__access-inner">
-          <div className="retail-login__mobile-brand"><Brand variant="full" surface="light" /></div>
           <div className="retail-login__access-heading">
             <span className="retail-login__overline">EMPLOYEE ACCESS</span>
             <h2>Chào mừng trở lại</h2>
