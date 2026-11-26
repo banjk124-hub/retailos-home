@@ -7,10 +7,13 @@ const session = {
   signedInAt: '2026-01-01T00:00:00.000Z',
 };
 
-async function openHome(page: Page) {
+async function openHome(page: Page, extraStorage: Record<string, string> = {}) {
   await page.addInitScript((value) => {
-    localStorage.setItem('retailos.session.v2', JSON.stringify(value));
-  }, session);
+    localStorage.setItem('retailos.session.v2', JSON.stringify(value.session));
+    for (const [key, storedValue] of Object.entries(value.extraStorage)) {
+      localStorage.setItem(key, storedValue);
+    }
+  }, { session, extraStorage });
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
   await expect(page.locator('.retailos-experience')).toBeVisible();
@@ -118,4 +121,38 @@ test('Settings Experience preserves Update Center and Scanner settings handoffs'
   await expect(page.getByRole('dialog', { name: 'Cài đặt máy quét' })).toBeVisible();
   await page.getByRole('button', { name: 'Quay lại cài đặt' }).click();
   await expect(page.getByRole('dialog', { name: 'Cài đặt' })).toBeVisible();
+});
+
+
+test('Experience shell exposes one main landmark and restores settings trigger focus', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  await expect(page.locator('main')).toHaveCount(1);
+
+  const settingsTrigger = page.getByRole('button', { name: 'Cài đặt hệ thống' });
+  await settingsTrigger.click();
+  await expect(page.getByRole('dialog', { name: 'Cài đặt' })).toBeVisible();
+  await page.getByRole('button', { name: 'Đóng cài đặt' }).click();
+  await expect(settingsTrigger).toBeFocused();
+});
+
+test('Activity Center update signal opens Update Center directly', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const entry = {
+    buildId: 'integration-test-build',
+    version: '0.3.7',
+    currentVersion: '0.3.6',
+    title: 'Bản cập nhật tích hợp',
+    summary: 'Kiểm tra đường dẫn từ Activity Center.',
+    status: 'available',
+    updatedAt: '2026-11-26T00:00:00.000Z',
+    inCenter: true,
+  };
+  await openHome(page, { 'retailos.pwa.update-center.v1': JSON.stringify(entry) });
+
+  const activity = page.locator('#activity');
+  await expect(activity.getByRole('button', { name: /Bản cập nhật tích hợp/ })).toBeVisible();
+  await activity.getByRole('button', { name: /Bản cập nhật tích hợp/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Trung tâm cập nhật' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Cài đặt' })).toHaveCount(0);
 });
