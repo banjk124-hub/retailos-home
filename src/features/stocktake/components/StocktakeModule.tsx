@@ -15,6 +15,7 @@ import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../../platform/scanner/contra
 import { getMotionOrigin, type MotionOrigin } from '../../../shared/motion';
 import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
 import './stocktake.css';
+import './stocktake-experience.css';
 import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
