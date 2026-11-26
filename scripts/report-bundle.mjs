@@ -27,6 +27,7 @@ const entries = [];
 const dynamicEntries = [];
 let entrypointRawBytes = 0;
 let entrypointGzipBytes = 0;
+let entrypointBrotliBytes = 0;
 
 if (manifest) {
   for (const [key, item] of Object.entries(manifest)) {
@@ -118,6 +119,7 @@ if (manifest) {
 
 entrypointRawBytes = entries.reduce((n, item) => n + item.raw, 0);
 entrypointGzipBytes = entries.reduce((n, item) => n + item.gzip, 0);
+  entrypointBrotliBytes = entries.reduce((n, item) => n + item.brotli, 0);
 const allFiles = [...fileStats.values()].sort((a, b) => b.raw - a.raw);
 const summary = {
   fileCount: allFiles.length,
@@ -126,6 +128,7 @@ const summary = {
   brotliBytes: allFiles.reduce((n, item) => n + item.brotli, 0),
   entrypointRawBytes,
   entrypointGzipBytes,
+  entrypointBrotliBytes,
   hasViteManifest: Boolean(manifest)
 };
 const report = [
