@@ -155,8 +155,35 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
     await page.setViewportSize({ width: v.width, height: v.height });
     const data = await capture(page, info, 'home-' + v.name);
     viewportResults.push({ viewport: v.name, horizontalOverflow: data.document.horizontalOverflow, documentHeight: data.document.height });
+
+    const desktopNavigation = page.locator('.shell-navigation__desktop');
+    const mobileDock = page.locator('.shell-navigation__mobile .liquid-dock');
+    if (v.width >= 901) {
+      await expect(desktopNavigation, `desktop navigation at ${v.name}`).toBeVisible();
+      await expect(mobileDock, `mobile dock hidden at ${v.name}`).toBeHidden();
+      const layout = await page.evaluate(() => ({
+        rail: document.querySelector('.shell-navigation__desktop')!.getBoundingClientRect().toJSON(),
+        main: document.querySelector('.home-main')!.getBoundingClientRect().toJSON(),
+      }));
+      expect(layout.rail.right, `desktop rail must not overlap Home content at ${v.name}`).toBeLessThanOrEqual(layout.main.left + 1);
+    } else {
+      await expect(mobileDock, `mobile dock at ${v.name}`).toBeVisible();
+      await expect(desktopNavigation, `desktop navigation hidden at ${v.name}`).toBeHidden();
+      const dockBounds = await mobileDock.boundingBox();
+      expect(dockBounds, `mobile dock bounds at ${v.name}`).not.toBeNull();
+      expect(dockBounds!.x, `mobile dock left edge at ${v.name}`).toBeGreaterThanOrEqual(0);
+      expect(dockBounds!.x + dockBounds!.width, `mobile dock right edge at ${v.name}`).toBeLessThanOrEqual(v.width + 1);
+      expect(dockBounds!.y + dockBounds!.height, `mobile dock bottom edge at ${v.name}`).toBeLessThanOrEqual(v.height + 1);
+    }
   }
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(80);
+  const footerBottom = await page.locator('.app-footer').evaluate((node) => node.getBoundingClientRect().bottom);
+  const dockTop = (await page.locator('.shell-navigation__mobile .liquid-dock').boundingBox())?.y ?? 0;
+  expect(footerBottom, 'mobile dock must not cover the final Home content').toBeLessThanOrEqual(dockTop - 4);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.setViewportSize({ width: 390, height: 844 });
   const settings = page.getByRole('button', { name: /cài đặt/i }).first();
   if (await settings.isVisible().catch(() => false)) {
