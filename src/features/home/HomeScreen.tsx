@@ -1,12 +1,12 @@
 import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
-  Activity, ArrowUpRight, Bell, Check, CalendarDays, ChevronLeft, ChevronRight,
+  Activity, ArrowUpRight, Check, CalendarDays, ChevronLeft, ChevronRight,
   LogOut, PackageSearch, ScanBarcode, Search, ShieldCheck, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
-import { Brand, BrandMark } from '../../shared/brand';
+import { BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { GlassSurface } from '../../shared/components/glass';
 import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
@@ -27,8 +27,6 @@ import '../../styles/home-engine.css';
 import '../../styles/home-redesign.css';
 import '../../styles/home-architecture.css';
 import '../../experience/home/operational-home.css';
-import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
-import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
