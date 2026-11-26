@@ -63,3 +63,17 @@ test('Home module cards distinguish ready workflows from integrating modules', a
   await page.getByRole('button', { name: /Tồn kho/ }).click();
   await expect(page.locator('.toast-message')).toContainText('giao diện nghiệp vụ đang được tích hợp');
 });
+
+
+test('greenfield module library searches and opens real registry groups', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  const library = page.locator('.retailos-library');
+  await expect(library.getByRole('heading', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
+  await expect(library.locator('.retailos-library__card')).toHaveCount(5);
+  await library.getByRole('textbox', { name: 'Tìm trong thư viện nghiệp vụ' }).fill('kiểm kê');
+  await expect(library.locator('.retailos-library__card')).toHaveCount(1);
+  await library.getByRole('button', { name: /Mở thư viện Kiểm kê/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Kiểm kê' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Xuất file/ })).toBeVisible();
+});
