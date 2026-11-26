@@ -1,33 +1,24 @@
 # RetailOS Roadmap — 2026-11-26
 
-All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX sequencing and acceptance are governed only by [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md).
+All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI direction, greenfield boundaries and test policy are owned only by [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md).
 
-## Completed documentation governance
-- BATCH 00: PR #165 merged to main.
-- BATCH 01: canonical governance standards integrated through the BATCH 00/02 dependency chain.
-- BATCH 02: PR #167 merged to main at `c46cfcc788e923d0f4c787ec8e15f2783a8e74af`; nine overlapping UI/UX authority/proposal files retired, valid principles consolidated, historical evidence retained, navigation and ownership repaired.
-- Product Studio parity (BATCH 03) remains deferred until repository standards receive owner review; repository CORE/TASK skills remain active.
+## Active deliverable — Greenfield Experience rebuild
 
-## UI/UX — M0 before M1
-1. **M0-0 — Direction and documentation baseline:** merged via PR #163.
-2. **M0-A — Structural/visual direction:**
-   - A0 source baseline and seven screen blueprints refreshed against current main.
-   - A1 source architecture audit completed; root/auth journey, Home responsibility map, registry/readiness, feature ownership, shared UI systems, overlays, persistence, lazy-loading/dependency boundaries and test gaps are recorded.
-   - A2 source/design-system audit completed on `audit/m0-a2-design-system-css`: all 24 tracked CSS files inventoried (365,141 source bytes), root/feature import ownership mapped, Home/mobile cascade and token collision risks identified, typography and image readiness assessed, and KEEP/CONSOLIDATE/REPLACE/RETIRE matrix recorded.
-   - **A2 runtime gate remains open:** computed-style winners, screenshot comparison, selector/property usage proof, emitted CSS transfer, font specimen, image crop and runtime/device performance need a running browser/build/device. No source cleanup is authorized by the static inventory.
-   - Next: close A2 runtime evidence, then A3 motion source/runtime audit and A4 performance profiling. A5 technology decisions follow measured evidence.
-   - High-fidelity prototypes follow the evidence gates and require owner visual acceptance.
-3. **M0-B — Motion/interaction:** derive observable patterns from the supplied video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior after M0-A direction is accepted.
-4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
-5. **M0-D — Technology, quality and owner acceptance:** evidence-based technology choices, accessibility, browser/device/performance validation and explicit owner acceptance.
+1. **Stabilize the development workflow:** remove diagnostic-only browser harnesses, keep user-journey tests concise, and scope scanner regressions to scanner changes.
+2. **Experience foundation and App Shell:** create an isolated new presentation layer, design primitives/tokens needed by real surfaces, and a responsive authenticated shell. Keep existing auth/session and business orchestration.
+3. **Home and Module Library:** rebuild their presentation using real module registry/readiness data.
+4. **Operational workspaces:** migrate Stocktake and Import presentation without changing their engines, persistence, validation or output contracts.
+5. **Settings and system experience:** Update Center, offline/error/recovery, permissions and system notifications.
+6. **Integration and acceptance:** remove legacy presentation only after its consumers are migrated and new workflows pass browser and physical-device acceptance.
 
-**M1 remains blocked until M0-D completes and the owner explicitly accepts M0.** No broad production migration or new dependency is authorized by documentation alone.
+Each step must deliver working source/runtime behavior. Do not create another M0/M1 audit program, broad legacy CSS inventory, or documentation-only gate before implementation.
 
-## Scanner — closed
-Scanner stabilization and cleanup are complete. Current contract: [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); history: [SCANNER_HISTORY.md](./SCANNER_HISTORY.md). Reopen only for reproducible defect, measured bottleneck, new requirement or explicit acceptance. UI redesign must not reopen engine internals.
-
-## Other domain contracts
-[PWA](./PWA_RUNTIME_RELEASE.md) · [Performance](./PERFORMANCE_BUNDLE_PWA.md) · [Overlay](./UI_OVERLAY_ARCHITECTURE.md) · [Stocktake Import](./STOCKTAKE_FILE_IMPORT.md)
+## Protected domains
+- Scanner stabilization and cleanup are closed. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
+- PWA release behavior: [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md).
+- Performance: [PERFORMANCE_BUNDLE_PWA.md](./PERFORMANCE_BUNDLE_PWA.md).
+- Overlay lifecycle: [UI_OVERLAY_ARCHITECTURE.md](./UI_OVERLAY_ARCHITECTURE.md).
+- Stocktake Import: [STOCKTAKE_FILE_IMPORT.md](./STOCKTAKE_FILE_IMPORT.md).
 
 ## Governance
-Verify live branch/PR/CI/deployment before status updates. No merge without explicit owner approval; no deployment without explicit authorization. CI, visual acceptance, device acceptance, workflow acceptance and production promotion are distinct.
+Verify live branch/PR/CI/deployment before status updates. Use targeted tests for changed behavior, full regression at integration/release gates, and physical-device QA for device-specific acceptance. No merge without explicit owner approval; no deployment without explicit authorization.
