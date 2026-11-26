@@ -653,8 +653,8 @@ button:not(:disabled):active {
   transform: translate(-50%,-50%) rotate(38deg);
   animation: spotlight-orbit 16s linear infinite reverse;
 }
-.app-shell .spotlight-glass-tile,
-.app-shell .spotlight-glass-chip {
+.app-shell .spotlight-tile,
+.app-shell .spotlight-chip {
   position: absolute;
   display: flex;
   align-items: center;
@@ -810,7 +810,7 @@ button:not(:disabled):active {
   height: 6px;
   margin-left: 4px;
 }
-.app-shell .spotlight-glass-chip {
+.app-shell .spotlight-chip {
   top: 10px;
   right: 18px;
   gap: 6px;
@@ -966,7 +966,7 @@ button:not(:disabled):active {
   .app-shell .spotlight-tile-float {
     display: none;
   }
-  .app-shell .spotlight-glass-chip {
+  .app-shell .spotlight-chip {
     display: none;
   }
   .app-shell .spotlight-orbit.orbit-one {
@@ -1060,8 +1060,8 @@ button:not(:disabled):active {
   .app-shell .spotlight-live,
   .app-shell .spotlight-status-dot,
   .app-shell .spotlight-orbit,
-  .app-shell .spotlight-glass-tile,
-  .app-shell .spotlight-glass-chip,
+  .app-shell .spotlight-tile,
+  .app-shell .spotlight-chip,
   .app-shell .welcome-section::after,
   .login-identity-dock {
     animation: none !important;
@@ -1970,7 +1970,7 @@ button:not(:disabled):active {
   .app-shell .calendar-day { gap: 3px; padding: 4px 1px; }
   .app-shell .calendar-open-hint { margin-top: 6px; padding-top: 5px; font-size: 8px; }
   .app-shell .spotlight-tile-float { display: none; }
-  .app-shell .spotlight-glass-chip { display: none; }
+  .app-shell .spotlight-chip { display: none; }
   .app-shell .spotlight-orbit.orbit-one { width: 235px; height: 108px; }
   .app-shell .spotlight-orbit.orbit-two { width: 195px; height: 120px; }
 }
@@ -2485,7 +2485,7 @@ button:not(:disabled):active {
   border: 1px solid rgba(255,255,255,.19);
   opacity: .8;
 }
-.page-glass-highlight {
+.page-floating-highlight {
   position: absolute;
   display: block;
   width: min(50vw, 650px);
@@ -2495,18 +2495,18 @@ button:not(:disabled):active {
   filter: blur(1px);
   opacity: .42;
 }
-.page-glass-highlight-one {
+.page-floating-highlight-one {
   top: -52%;
   left: -20%;
   background: radial-gradient(circle, rgba(255,255,255,.12), transparent 70%);
-  animation: page-glass-highlight-drift 25s ease-in-out infinite alternate;
+  animation: page-floating-highlight-drift 25s ease-in-out infinite alternate;
 }
-.page-glass-highlight-two {
+.page-floating-highlight-two {
   right: -18%;
   bottom: -62%;
   width: min(58vw, 760px);
   background: radial-gradient(circle, rgba(232,88,104,.07), transparent 72%);
-  animation: page-glass-highlight-drift 30s ease-in-out infinite alternate-reverse;
+  animation: page-floating-highlight-drift 30s ease-in-out infinite alternate-reverse;
 }
 @keyframes page-floating-dock-breathe {
   0%, 100% { border-color: rgba(255,255,255,.58); box-shadow: 0 24px 70px rgba(117,34,44,.05), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(255,255,255,.18); }
@@ -2516,19 +2516,19 @@ button:not(:disabled):active {
   0%, 24% { background-position: 100% 0; opacity: .34; }
   68%, 100% { background-position: -100% 0; opacity: .8; }
 }
-@keyframes page-glass-highlight-drift {
+@keyframes page-floating-highlight-drift {
   from { transform: translate3d(-5%, -3%, 0) scale(.94); }
   to { transform: translate3d(8%, 9%, 0) scale(1.08); }
 }
 @media (max-width: 700px) {
   .page-floating-dock { inset: 5px; border-radius: 23px; }
-  .page-glass-highlight-one { top: -25%; left: -55%; width: 92vw; }
-  .page-glass-highlight-two { right: -57%; bottom: -34%; width: 105vw; }
+  .page-floating-highlight-one { top: -25%; left: -55%; width: 92vw; }
+  .page-floating-highlight-two { right: -57%; bottom: -34%; width: 105vw; }
 }
 @media (prefers-reduced-motion: reduce) {
   .page-floating-dock,
   .page-floating-dock::before,
-  .page-glass-highlight { animation: none !important; }
+  .page-floating-highlight { animation: none !important; }
 }
 
 .app-shell .topbar {
