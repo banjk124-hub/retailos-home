@@ -27,6 +27,9 @@
 | Stocktake Import | STOCKTAKE_FILE_IMPORT.md |
 | Performance/bundle | PERFORMANCE_BUNDLE_PWA.md |
 
+## Current UI migration
+- UI-03 CSS consolidation is active. Use [UI_UX_PHASE_03_CSS_CONSOLIDATION.md](./UI_UX_PHASE_03_CSS_CONSOLIDATION.md) for the live CSS inventory, ownership map, selector-removal gates and verification criteria.
+
 ## Experience governance
 There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former `UI_UX_M0_GOVERNING_SPEC.md` is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
 
