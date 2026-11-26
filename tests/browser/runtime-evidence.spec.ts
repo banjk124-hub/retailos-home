@@ -11,7 +11,7 @@ const viewports = [
   { name: '360x740', width: 360, height: 740 },
   { name: 'landscape-short', width: 844, height: 390 },
 ];
-const auditSession = { name: 'RetailOS UI Audit', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
+const auditSession = { name: 'Trương Dương', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
 
 async function seedSession(page: Page) {
   await page.addInitScript((session) => localStorage.setItem('retailos.session.v2', JSON.stringify(session)), auditSession);
