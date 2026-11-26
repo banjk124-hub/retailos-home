@@ -1,0 +1,234 @@
+.retailos-experience {
+  --rx-ink: #292329;
+  --rx-muted: #746b71;
+  --rx-soft: #f7f3f3;
+  --rx-line: #eee5e6;
+  --rx-red: #b51f32;
+  --rx-red-deep: #871626;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100vh;
+  color: var(--rx-ink);
+  background: #fbf9f9;
+}
+.retailos-experience button { font: inherit; }
+.retailos-experience button:focus-visible { outline: 3px solid #b51f3266; outline-offset: 3px; }
+.retailos-experience__rail {
+  position: sticky;
+  top: 0;
+  display: flex;
+  height: 100vh;
+  min-height: 600px;
+  flex-direction: column;
+  padding: 26px 17px 18px;
+  border-right: 1px solid var(--rx-line);
+  background: #fff;
+}
+.retailos-experience__brand { padding: 2px 10px 30px; }
+.retailos-experience__workspace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px 10px;
+  border: 1px solid var(--rx-line);
+  border-radius: 13px;
+  background: #fffafa;
+}
+.retailos-experience__workspace-mark {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+  background: #f9e8ea;
+  color: var(--rx-red);
+  font-size: 16px;
+  font-weight: 800;
+}
+.retailos-experience__workspace span:nth-child(2) { display: grid; min-width: 0; gap: 3px; }
+.retailos-experience__workspace strong { overflow: hidden; font-size: 11px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+.retailos-experience__workspace small { color: var(--rx-muted); font-size: 10px; }
+.retailos-experience__workspace > svg { margin-left: auto; color: #958a90; }
+.retailos-experience__section-label {
+  margin: 31px 10px 10px;
+  color: #8c8187;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .11em;
+}
+.retailos-experience__navigation { display: grid; gap: 5px; }
+.retailos-experience__nav-item {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #62575e;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.retailos-experience__nav-item span { font-size: 12px; font-weight: 600; }
+.retailos-experience__nav-item:hover { background: #faf3f4; color: var(--rx-red); }
+.retailos-experience__nav-item.is-active {
+  background: #faedef;
+  color: var(--rx-red-deep);
+  box-shadow: inset 3px 0 var(--rx-red);
+}
+.retailos-experience__rail-spacer { flex: 1; }
+.retailos-experience__rail-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 10px 16px;
+  color: var(--rx-muted);
+  font-size: 10px;
+}
+.retailos-experience__status-dot { width: 7px; height: 7px; border-radius: 50%; background: #21845e; }
+.retailos-experience__status-dot.is-offline { background: #b77925; }
+.retailos-experience__profile {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 4px 0;
+  border-top: 1px solid var(--rx-line);
+}
+.retailos-experience__avatar {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: #f2e5e7;
+  color: var(--rx-red-deep);
+  font-size: 11px;
+  font-weight: 800;
+}
+.retailos-experience__profile-copy { display: grid; min-width: 0; flex: 1; gap: 3px; }
+.retailos-experience__profile-copy strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.retailos-experience__profile-copy small { color: var(--rx-muted); font-size: 10px; }
+.retailos-experience__profile > button,
+.retailos-experience__icon-button {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--rx-line);
+  border-radius: 11px;
+  background: #fff;
+  color: #655a60;
+  cursor: pointer;
+}
+.retailos-experience__profile > button:hover,
+.retailos-experience__icon-button:hover { border-color: #e5c6cb; background: #fff7f8; color: var(--rx-red); }
+.retailos-experience__main { min-width: 0; min-height: 100vh; }
+.retailos-experience__topbar {
+  position: sticky;
+  z-index: 30;
+  top: 0;
+  display: flex;
+  height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 clamp(22px, 3vw, 48px);
+  border-bottom: 1px solid var(--rx-line);
+  background: rgba(255,255,255,.96);
+}
+.retailos-experience__breadcrumb { display: flex; align-items: center; gap: 9px; color: #8b8086; font-size: 11px; }
+.retailos-experience__breadcrumb strong { color: var(--rx-ink); font-weight: 700; }
+.retailos-experience__topbar-actions { display: flex; align-items: center; gap: 9px; }
+.retailos-experience__connection { display: flex; align-items: center; gap: 7px; margin-right: 7px; color: #47745f; font-size: 10px; font-weight: 650; }
+.retailos-experience__connection.is-offline { color: #96651f; }
+.retailos-experience__offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px clamp(22px, 3vw, 48px);
+  background: #fff6e8;
+  color: #81551d;
+  font-size: 11px;
+}
+.retailos-experience__workspace-content { min-width: 0; }
+.retailos-experience__mobile-brand,
+.retailos-experience__mobile-footer { display: none; }
+.retailos-experience .home-topbar { display: none !important; }
+.retailos-experience .app-shell { min-height: auto; padding-bottom: 0; background: transparent; }
+.retailos-experience .home-main { min-height: auto; }
+.retailos-experience .home-content { width: 100%; max-width: 1600px; margin-inline: auto; }
+.retailos-experience .offline-banner { display: none; }
+@media (max-width: 900px) {
+  .retailos-experience { grid-template-columns: 76px minmax(0, 1fr); }
+  .retailos-experience__rail { align-items: center; padding-inline: 9px; }
+  .retailos-experience__brand { padding: 4px 0 27px; }
+  .retailos-experience__brand .brand-wordmark,
+  .retailos-experience__workspace span:nth-child(2),
+  .retailos-experience__workspace > svg,
+  .retailos-experience__section-label,
+  .retailos-experience__nav-item span,
+  .retailos-experience__rail-status,
+  .retailos-experience__profile-copy,
+  .retailos-experience__profile > button { display: none; }
+  .retailos-experience__workspace { padding: 6px; border: 0; background: transparent; }
+  .retailos-experience__nav-item { width: 48px; justify-content: center; padding: 0; }
+  .retailos-experience__profile { justify-content: center; padding-inline: 0; }
+}
+@media (max-width: 700px) {
+  .retailos-experience { display: block; min-height: 100svh; padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+  .retailos-experience__rail { display: none; }
+  .retailos-experience__topbar {
+    height: calc(58px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 14px 0;
+  }
+  .retailos-experience__mobile-brand { display: flex; align-items: center; }
+  .retailos-experience__breadcrumb { display: none; }
+  .retailos-experience__connection { margin-right: 1px; }
+  .retailos-experience__connection span { display: none; }
+  .retailos-experience__icon-button { width: 35px; height: 35px; }
+  .retailos-experience__icon-button.install { display: none; }
+  .retailos-experience__mobile-footer {
+    position: fixed;
+    z-index: 55;
+    right: 12px;
+    bottom: env(safe-area-inset-bottom);
+    left: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    min-height: 58px;
+    padding: 5px;
+    border: 1px solid #eee3e5;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 5px 22px rgba(48,27,33,.08);
+  }
+  .retailos-experience__mobile-footer button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #71666c;
+    font-size: 9px;
+    font-weight: 650;
+  }
+  .retailos-experience__mobile-footer button.is-active { background: #faedef; color: var(--rx-red-deep); }
+  .retailos-experience .app-shell { padding-bottom: 12px; }
+  .retailos-experience .liquid-dock { bottom: calc(74px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .retailos-experience *,
+  .retailos-experience *::before,
+  .retailos-experience *::after { scroll-behavior: auto !important; transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+:root[data-power-mode="conserve"] .retailos-experience__nav-item { transition: none; }
