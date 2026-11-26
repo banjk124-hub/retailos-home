@@ -1,0 +1,375 @@
+# M0-A2 — Design System & CSS Audit
+
+**Repository:** `banjk124-hub/retailos-home`  
+**Baseline:** `main` at `a5ef3ffe176adfcfb3ccb7cf68941dd197de33d6`  
+**Branch:** `audit/m0-a2-design-system-css`  
+**Scope:** Design-token, stylesheet inventory/import ownership, cascade risk, typography, retail imagery and CSS delivery/performance audit. Documentation only.
+
+## 1. Executive result
+
+M0-A2 confirms that RetailOS already has a substantial presentation foundation, but the current runtime is the accumulation of several visual generations rather than one consistently owned design system.
+
+The most important findings are:
+
+1. **24 tracked CSS files totaling 365,141 bytes (~356.6 KiB) at the audited main baseline.** The byte count is raw source size, not compressed network transfer or parsed CSS cost.
+2. **13 stylesheets are imported at the root entrypoint**, followed by five additional Home stylesheets. The root/Home cascade is therefore broad and order-sensitive before feature-specific lazy stylesheets are considered.
+3. **`mobile-tuning.css` is 87,269 bytes (23.9% of all tracked CSS)** and contains many global/mobile overrides, including broad input rules and repeated reduced-motion handling. Size alone does not prove unused code.
+4. **Home is the clearest cascade ownership hotspot:** five ordered stylesheet generations (`home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css`) style overlapping selectors and the same structural surface.
+5. **Design tokens are not yet a clean single source.** `theme.css` contains canonical semantic roles and compatibility aliases, but older aliases, local root token blocks, direct hex/RGBA values and competing brand aliases remain in global and feature CSS.
+6. **Typography is not finalized or bundled.** Current UI stack is Inter/Segoe UI/Roboto/Helvetica/Arial. Be Vietnam Pro is a well-supported candidate with Vietnamese subset and SIL OFL 1.1, but it has not been visually compared or selected for RetailOS.
+7. **Authentic retail imagery is absent from the tracked runtime asset tree.** The only tracked image/vector-like asset is `public/icon.svg`. No retail photography or bundled font file is shipped at this baseline.
+8. **Performance adaptations already exist** (blur removal, animation suppression, power-conserve and reduced-motion), but the rules are distributed across multiple stylesheets and overlap. This is an ownership/verification problem, not proof that the app is currently slow.
+9. **No computed-style/browser screenshot audit was executed in this environment.** GitHub source inspection and CI metadata do not expose the running app's computed CSS winners, paint cost or real-device behavior. This remains an explicit runtime verification gate; it is not claimed complete.
+
+**Overall disposition:** retain the current foundation while consolidating ownership in bounded steps. Do not replace the whole CSS system, delete the mobile override file, add a framework, or select palette/font/images solely from static source evidence.
+
+## 2. Evidence and method
+
+Inspected:
+- Current recursive Git tree and all 24 tracked CSS paths/sizes at baseline `a5ef3ffe176adfcfb3ccb7cf68941dd197de33d6`.
+- `src/main.tsx` global stylesheet import order.
+- `HomeScreen.tsx`, Login, Stocktake and Stocktake Import direct CSS imports.
+- Global theme, responsive, mobile, interaction, performance, adaptive appearance and native experience styles.
+- Brand, Motion, Glass tokens/materials, LiquidDock, PWA prompt and feature stylesheets.
+- `index.html`, `vite.config.ts`, package manifest and tracked image/font assets.
+- Governing M0 specification and historical Phase 00/01 records as evidence only.
+
+Evidence labels:
+- **Confirmed:** direct source/tree fact.
+- **Assessment:** architectural conclusion from confirmed source.
+- **Not verified:** requires rendered browser, computed styles, actual network/build artifacts or physical devices.
+
+Raw CSS byte totals are source-tree metrics. They do not equal gzip/Brotli transfer size, parsed CSS bytes, CSSOM size or render cost.
+
+## 3. Complete stylesheet inventory
+
+### 3.1 Tracked CSS files
+
+| Owner / file | Bytes | % of CSS | Disposition |
+|---|---:|---:|---|
+| `src/styles/mobile-tuning.css` | 87,269 | 23.9% | CONSOLIDATE after consumer/cascade proof |
+| `src/features/stocktake-import/components/stocktake-import.css` | 51,156 | 14.0% | KEEP feature-owned; decompose only internally if justified |
+| `src/styles/login-experience.css` | 24,511 | 6.7% | KEEP Login-owned; align tokens incrementally |
+| `src/styles/home.css` | 22,209 | 6.1% | CONSOLIDATE with Home generations |
+| `src/styles/home-ux.css` | 21,704 | 5.9% | CONSOLIDATE with Home generations |
+| `src/styles/theme.css` | 16,227 | 4.4% | KEEP as semantic token authority; clean aliases in stages |
+| `src/styles/responsive.css` | 12,331 | 3.4% | CONSOLIDATE responsive ownership |
+| `src/styles/home-engine.css` | 12,113 | 3.3% | CONSOLIDATE with Home generations |
+| `src/shared/navigation/LiquidDock.css` | 11,945 | 3.3% | KEEP while LiquidDock is active |
+| `src/features/stocktake/components/stocktake.css` | 12,037 | 3.3% | KEEP feature-owned |
+| `src/shared/motion/motion.css` | 11,112 | 3.0% | KEEP motion preference/token owner |
+| `src/shared/components/glass/glass.materials.css` | 10,553 | 2.9% | KEEP selective material implementation |
+| `src/shared/pwa/pwa-update-prompt.css` | 10,644 | 2.9% | KEEP PWA presentation-owned |
+| `src/styles/home-redesign.css` | 10,215 | 2.8% | CONSOLIDATE with Home generations |
+| `src/features/scanner/scanner-transition.css` | 8,723 | 2.4% | KEEP scanner presentation-only |
+| `src/styles/native-experience.css` | 8,314 | 2.3% | CONSOLIDATE with shared interaction/motion ownership |
+| `src/styles/scanner-settings.css` | 7,113 | 1.9% | KEEP Settings/Scanner preferences ownership |
+| `src/shared/brand/brand.css` | 6,645 | 1.8% | KEEP Brand identity owner |
+| `src/shared/components/glass/glass.tokens.css` | 6,454 | 1.8% | KEEP material tokens; reconcile with semantic foundation |
+| `src/styles/adaptive-appearance.css` | 5,502 | 1.5% | KEEP behavior; consolidate duplicate performance/reduced-motion rules |
+| `src/styles/home-architecture.css` | 3,236 | 0.9% | CONSOLIDATE with Home generations |
+| `src/styles/performance.css` | 2,391 | 0.7% | CONSOLIDATE overlapping power/blur policy after tests |
+| `src/styles/interactions.css` | 1,600 | 0.4% | KEEP intent; consolidate shared interaction rules |
+| `src/styles/base.css` | 1,137 | 0.3% | CONSOLIDATE legacy globals into canonical foundation |
+
+**Total:** 365,141 bytes across 24 tracked CSS files.
+
+### 3.2 Import ownership and order
+
+**Root entrypoint — `src/main.tsx`, 13 imports in source order:**
+
+1. `src/styles/base.css`
+2. `src/styles/responsive.css`
+3. `src/styles/theme.css`
+4. `src/styles/interactions.css`
+5. `src/styles/mobile-tuning.css`
+6. `src/styles/performance.css`
+7. `src/styles/adaptive-appearance.css`
+8. `src/styles/native-experience.css`
+9. `src/shared/brand/brand.css`
+10. `src/shared/motion/motion.css`
+11. `src/shared/components/glass/glass.tokens.css`
+12. `src/shared/components/glass/glass.materials.css`
+13. `src/shared/navigation/LiquidDock.css`
+
+**Feature imports confirmed:**
+
+| Feature owner | Stylesheet(s) | Loading boundary |
+|---|---|---|
+| HomeScreen | `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css` → `home-architecture.css` | Home lazy-loaded after auth; all five styles imported by HomeScreen |
+| LoginExperience | `login-experience.css` | Login experience |
+| SettingsHub / ScannerSettingsPanel | `scanner-settings.css` | Settings/scanner settings lazy feature boundary |
+| BarcodeScanner / StocktakeScanner | `scanner-transition.css` | Scanner presentation feature |
+| StocktakeModule | `stocktake.css` | Stocktake feature |
+| StocktakeImportModule | `stocktake-import.css` | Import feature |
+| PwaUpdatePrompt | `pwa-update-prompt.css` | Root-mounted PWA prompt |
+
+The 24-file inventory is fully accounted for by root and feature stylesheet ownership at the inspected source baseline. The actual emitted CSS chunk graph and whether Vite extracts/duplicates CSS per chunk must be confirmed from a production build artifact; source import count alone does not establish transfer behavior.
+
+## 4. Cascade and ownership findings
+
+### 4.1 Home is a five-generation cascade
+
+The five Home stylesheets are imported in a deterministic order and contain repeated rules for shared structures such as `.app-shell`, `.content-wrap`, `.home-spotlight`, `.topbar`, `.library-engine` and responsive navigation/layout classes.
+
+Confirmed examples:
+- `home.css` establishes the original shell, sidebar, topbar, content, hero, metrics, module and toast styles.
+- `home-ux.css` overrides notification and spotlight presentation, including explicit animation suppression and later feature rules.
+- `home-engine.css` redefines root-level `--retail-*` values and Home layout/spotlight structure.
+- `home-redesign.css` defines another root-level `--ro-*` palette/radius/easing vocabulary and redefines `.app-shell`, global element styles and responsive behavior.
+- `home-architecture.css` again adjusts Home content width, module-library grids, topbar and availability labels.
+
+**Assessment:** this is the highest-priority stylesheet consolidation target. It is not safe to simply concatenate/delete four files: some later declarations are the only active layout implementation and some are intentional breakpoint/state overrides. First extract a selector/property ownership map and preserve computed output at representative states.
+
+### 4.2 Global/mobile cascade overlap
+
+- `base.css` declares a legacy blue/gray palette and global typography defaults.
+- `theme.css` later establishes RetailOS semantic red/neutral/status tokens and overrides several legacy variables.
+- `responsive.css` contains legacy layout selectors and breakpoint rules including 1500px, 1200px, 940px and 700px.
+- `mobile-tuning.css` contains extensive mobile overrides, input font-size !important rules, repeated interaction timing aliases, and many feature selectors beyond Home.
+- `interactions.css`, `native-experience.css`, `adaptive-appearance.css` and `performance.css` all contribute transition, active-state, animation or reduced-motion behavior.
+
+**Confirmed risk:** the same semantic concern (responsive geometry, interaction response, power-conserve, blur reduction, reduced motion) is expressed in multiple files. This makes the effective result difficult to reason about and increases the risk of a later change silently overriding another.
+
+**Not proven:** exact computed winner per element, media-query combination, pseudo-state, portal, browser engine or power preference. No deletion decision is made from selector text alone.
+
+### 4.3 Legacy and token collision signals
+
+The inspected source contains several competing variable vocabularies:
+- Canonical semantic roles: `--color-brand-*`, `--color-text-*`, `--color-surface-*`, `--color-status-*`.
+- Historical aliases: `--retail-red`, `--retail-ink`, `--text-primary`, `--surface-page`, `--color-success`, `--blue`, `--blue-dark`.
+- Home-local root vocabularies: `--retail-*` in `home-engine.css`, `--ro-*` in `home-redesign.css`.
+- Glass-local RGB/material vocabulary: `--glass-*`.
+- Brand-local aliases: `--retailos-brand-*`.
+- Motion-local tokens: `--motion-*`, plus legacy aliases in mobile styles.
+
+Some are legitimate subsystem tokens; the problem is not the existence of namespaces. The risk is multiple owners expressing the same brand, semantic color, typography or interaction role with divergent literals.
+
+**Decision:** `theme.css` remains the current semantic foundation authority; preserve compatibility aliases until all consumers migrate. Glass and Motion keep specialized tokens for their own physical/material and temporal contracts. Home-local root tokens should be migrated into semantic roles or explicit feature tokens only after a property/callsite map confirms equivalent meaning.
+
+## 5. Brand and semantic color readiness
+
+### 5.1 Current facts
+
+- Current canonical brand primary is `#d92736`, deep is `#a91829`, soft is `#fff0f1`.
+- `home-engine.css` declares another red family (`#d91e30`, `#9f1426`).
+- `home-redesign.css` declares another (`#e51f2d`, `#a90f22`).
+- Brand, Glass and feature styles also contain direct color literals and translucent overlays.
+- Semantic status colors exist: success, warning, danger, info and neutral.
+- Existing Phase 01 contrast checks covered selected solid foreground tokens on pure white. They do not validate every tinted surface, translucent Glass composition, gradient, image, disabled state or feature state.
+
+### 5.2 Disposition
+
+**KEEP:** semantic status distinction and the existing canonical token roles.
+
+**DO NOT YET LOCK:** final burgundy HEX family, surface tonal palette, gradients, light/dark balance or contrast pairs. The owner-confirmed direction is burgundy/dark red, not a specific value.
+
+**Required palette comparison:** compare at least two controlled burgundy families on real Login, Home, Library, Stocktake, Import and Settings surfaces. Include normal/hover/focus/pressed/disabled/success/warning/error, text, chart/data and overlay states. Verify WCAG contrast on actual composited backgrounds, not only pure white.
+
+The final palette must remain recognizably RetailOS, not a generic all-red interface. Brand color is an accent and hierarchy tool, not the background for every panel.
+
+## 6. Typography audit
+
+### 6.1 Current source facts
+
+- `theme.css` currently declares `Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`.
+- `base.css` has a separate Inter/system stack.
+- No `@font-face` declaration or font file is present in the inspected tracked tree.
+- `--font-family-ui` and `--font-family-data` roles already exist; semantic typography sizes/weights/line heights and tabular numeral intent are present.
+- Existing Login and feature CSS still include many direct px sizes, including small metadata; mobile overrides partially raise some small labels.
+
+### 6.2 Candidate evaluation
+
+**Leading candidate for controlled prototype:** Be Vietnam Pro. The upstream Google Fonts metadata identifies the Vietnamese subset and OFL license; the upstream project describes refined Vietnamese diacritic forms. Fontsource documents OFL-1.1 and self-hosting/package guidance. This makes it a practical candidate for a self-hosted PWA, not an automatic selection. Sources:
+- Google Fonts upstream metadata: https://github.com/google/fonts/blob/main/ofl/bevietnampro/METADATA.pb
+- License: https://github.com/google/fonts/blob/main/ofl/bevietnampro/OFL.txt
+- Fontsource family details: https://fontsource.org/fonts/be-vietnam-pro/about
+- Upstream project: https://github.com/bettergui/BeVietnamPro
+
+**Comparison baseline:** current Inter/system stack. A second candidate such as Noto Sans may be included only if the same specimen test shows a meaningful difference.
+
+### 6.3 Required specimen and performance test
+
+Compare current stack vs Be Vietnam Pro at 400/500/600/700 on:
+- Vietnamese stacked diacritics: `ắ ằ ẳ ẵ ặ ấ ầ ẩ ẫ ậ ế ề ể ễ ệ ố ồ ổ ỗ ộ ớ ờ ở ỡ ợ ứ ừ ử ữ ự`.
+- Retail labels and long text: `Kiểm kê hàng hóa`, `Nhập dữ liệu kiểm kê`, `Thay đổi giá bán`, `Không có dữ liệu phù hợp`.
+- Dense table headers, barcode/product identifiers, employee names, department names, dates and currency.
+- Numerals with tabular alignment for quantity, price and stock.
+
+Evaluate glyph correctness, dấu placement at 11–14px, wrapping, line height, weight distinction, perceived density, WOFF2 bytes, cache reuse, font-display behavior, fallback shift and offline first render.
+
+**Recommended implementation shape if accepted later:** self-host WOFF2 in the repository, subset to Latin + Vietnamese as licensed/generated upstream files permit, use only needed weights, declare explicit `font-display: swap`, preload only the critical regular face if measurements justify it, and retain a stable system fallback. Do not use a remote runtime font service.
+
+No font is downloaded, bundled or selected by M0-A2.
+
+## 7. Retail imagery and asset pipeline
+
+### 7.1 Current source facts
+
+- Recursive source tree contains only `public/icon.svg` among common image/vector/font asset extensions.
+- No retail photography, WebP/AVIF image, WOFF/WOFF2/TTF/OTF font or local image library is present in the inspected tracked tree.
+- `index.html` uses `lang="vi"`, viewport-fit cover and the current light theme-color.
+- Vite's `retailos-pwa-artifacts` plugin enumerates generated `assets/*` and non-shell public files into the release asset manifest with size and SHA-256. This is a useful integrity/caching foundation for versioned local imagery.
+
+### 7.2 Target asset policy
+
+Authentic retail imagery should be an authored visual anchor, not a wallpaper layer behind dense controls.
+
+Required policy:
+1. Use owned, commissioned or explicitly licensed imagery; record source, license, permitted use, attribution if required and replacement terms.
+2. Prefer local/versioned delivery through the existing Vite build and PWA asset manifest; no core workflow should depend on a third-party image URL.
+3. Provide responsive variants/crops for desktop, tablet and mobile; use AVIF/WebP with fallback only where browser/build support justifies it.
+4. Use `srcset`/sizes or equivalent responsive asset selection; do not download desktop hero dimensions on small devices.
+5. Set intrinsic dimensions/aspect ratio to prevent layout shift; define object-position per crop.
+6. Lazy-load below-the-fold/editorial images; keep only the first viewport's meaningful hero image eager when justified.
+7. Compress and measure decoded dimensions, transfer bytes and decode cost; large photography can cost more memory than its compressed file size suggests.
+8. Include local placeholder/fallback and ensure offline PWA behavior. Image failure must not block login, stocktake, import, scanner or data operations.
+9. Avoid multiple full-viewport background images, large transparent PNG overlays and continuous parallax as defaults.
+
+**Image role map for prototype planning:**
+- Login: one authentic operational/editorial image can anchor the brand story without compromising form contrast.
+- Home: a restrained retail/operations image or crop can support the primary operational message; do not invent KPIs.
+- Module Library: small contextual crops only if they improve category recognition; icons may remain more efficient.
+- Stocktake/Import: task clarity and data density take precedence; photography is optional and should not consume workspace area.
+- Settings: no decorative image requirement.
+
+No image vendor, stock source or asset is approved by this audit.
+
+## 8. Materials, motion and low-end performance
+
+### 8.1 Existing performance controls
+
+Confirmed source includes:
+- Glass material blur and saturation variables with `data-power-mode="conserve"` overrides.
+- `performance.css` and `adaptive-appearance.css` remove blur from many surfaces on smaller/coarse-pointer contexts and power-conserve mode.
+- `motion.css`, global responsive styles, native experience and feature styles implement reduced-motion behavior.
+- `mobile-tuning.css` changes interaction duration aliases and includes additional animation/transition rules.
+- Native experience and Home styles include decorative gradients, pseudo-elements, orbits and animations.
+- Scanner presentation transitions are separate from camera teardown; scanner engine remains protected.
+
+### 8.2 Risks to measure
+
+- Multiple blur/backdrop surfaces can increase compositing cost, especially over large moving/translucent regions.
+- Large fixed pseudo-element backgrounds and animated transforms may increase paint/compositing work.
+- Several reduced-motion/power-conserve rules can conflict by source order and specificity; a reduced duration is not always equivalent to removing a costly effect.
+- `will-change` and transform promotion must be temporary and evidence-driven, not blanket defaults.
+- Motion policy and input feedback are spread across global and feature CSS. Consolidation must not change immediate feedback or feature lifecycle semantics.
+
+### 8.3 Required performance budget
+
+No numeric budget is approved yet. Establish baseline measurements on a mid-range desktop and representative lower-end Android device before choosing thresholds:
+- CSS transfer size (gzip/Brotli) and parsed CSS;
+- first contentful/meaningful paint and layout shift;
+- image transfer/decode/memory;
+- long tasks and interaction latency;
+- frame stability during representative transitions/scroll;
+- memory under Home + operational feature navigation;
+- reduced-motion and power-conserve correctness.
+
+Use browser performance traces and physical devices. CI build size is useful but does not replace runtime profiling.
+
+## 9. KEEP / CONSOLIDATE / REPLACE / RETIRE matrix
+
+| Area | Decision | Rationale / condition |
+|---|---|---|
+| `theme.css` semantic roles | **KEEP** | Existing canonical token foundation; migrate consumers and aliases incrementally |
+| `base.css` legacy globals | **CONSOLIDATE** | Remove competing global palette/type declarations only after verifying consumer and fallback behavior |
+| `responsive.css` + `mobile-tuning.css` | **CONSOLIDATE** | Responsive ownership fragmented; preserve every meaningful breakpoint/state and mobile form behavior |
+| `mobile-tuning.css` file itself | **KEEP temporarily / CONSOLIDATE in batches** | Large and high-risk; not proven dead; no whole-file deletion |
+| Five Home stylesheets | **CONSOLIDATE** | Highest cascade hotspot; merge by structural owner after computed-style and screenshot parity |
+| Login stylesheet | **KEEP** | Feature-owned and currently comparatively bounded; migrate remaining tokens/type roles after font/palette decision |
+| Stocktake stylesheet | **KEEP** | Feature-owned operational density and camera presentation |
+| Stocktake Import stylesheet | **KEEP** | Large because workflow is dense; preserve editable grid, conflict, validation and output states |
+| Brand CSS | **KEEP** | Single brand-mark/wordmark owner; reconcile literal aliases to semantic tokens |
+| Motion CSS | **KEEP** | Preference/timing owner; later consolidate duplicated policy rules without changing choreography |
+| Glass tokens/materials | **KEEP selectively** | Existing subsystem; retain only materials that provide distinct visual value after surface comparison |
+| LiquidDock CSS | **KEEP until nav presentation is replaced** | Active component; its current role is Home navigation, not future route contract |
+| Performance/adaptive/native styles | **CONSOLIDATE** | Duplicate blur, motion, power and global presentation rules; preserve device fallback behavior |
+| PWA prompt CSS | **KEEP** | Release lifecycle presentation is isolated and protected |
+| Scanner transition CSS | **KEEP** | Scanner presentation-only contract, not engine |
+| Scanner Settings CSS | **KEEP pending Settings redesign** | Shared Settings/scanner preference surface |
+| Font family | **EVALUATE** | Be Vietnam Pro is candidate; no adoption before visual and byte comparison |
+| Brand palette | **EVALUATE** | Burgundy direction accepted; exact values remain open |
+| Retail imagery | **ADOPT ASSET PIPELINE, NOT VENDOR** | Local licensed/versioned responsive images; no remote runtime dependency |
+| New CSS framework/component library | **DEFER** | No evidence of a gap that justifies dependency cost |
+| New font/image CDN runtime dependency | **REJECT for core PWA path** | Offline and predictable first render require local assets |
+
+No CSS file is marked RETIRE at this stage. A safe retirement decision requires proof of no source/runtime consumers and no computed contribution.
+
+## 10. Priority findings and action plan
+
+| ID | Priority | Finding | Required action |
+|---|---|---|---|
+| A2-01 | Critical | Five Home CSS generations style overlapping structures | Build selector/property ownership map and rendered parity baseline before consolidation |
+| A2-02 | Critical | Mobile overrides are 23.9% of tracked CSS and include broad rules | Partition by owner (global responsive, Login, Home, operational features) with tests; do not delete by size |
+| A2-03 | High | Root import order makes global CSS source-order-sensitive | Document import contract; move to fewer explicit owners only after browser parity |
+| A2-04 | High | Token vocabulary duplicates canonical roles and local aliases | Establish token mapping and migrate consumers in small value-preserving batches |
+| A2-05 | High | Three competing Home red families remain | Compare burgundy palettes on all surfaces; use one approved semantic family after owner review |
+| A2-06 | High | Typography not bundled and Vietnamese rendering not visually validated | Compare current stack with Be Vietnam Pro using real content and WOFF2 budget |
+| A2-07 | High | No retail photography assets exist in the runtime tree | Establish license/asset manifest, crops, optimization and offline fallback |
+| A2-08 | High | Blur/reduced-motion/power rules overlap across files | Map policy ownership and profile actual runtime before consolidating |
+| A2-09 | Medium | Several global rules remain in feature/brand/Home CSS | Separate global semantic foundations from feature-specific presentation |
+| A2-10 | Medium | CSS source bytes do not reveal emitted chunk transfer | Inspect production build artifacts and compressed CSS by entry/feature |
+| A2-11 | Medium | Responsive thresholds differ by stylesheet | Preserve task-specific breakpoints but document semantic viewport behavior; do not force one breakpoint for all features |
+| A2-12 | Medium | Contrast checks are partial | Test actual composited text/control states, imagery, gradients, Glass and status colors |
+
+### Recommended execution order
+
+1. **A2.1 — Runtime evidence:** run current main in browser, capture desktop/tablet/mobile screenshots and computed-style snapshots for Login, Home, Library, Stocktake, Import and Settings; record console/network errors.
+2. **A2.2 — Selector ownership:** parse all CSS selectors and declarations; trace TSX class consumers, dynamic classes, portals and media/state variants; create property-level owner matrix.
+3. **A2.3 — Token reconciliation:** map legacy/local tokens to canonical roles; mark semantic mismatch and preserve legitimate Glass/Motion subsystem namespaces.
+4. **A2.4 — Typography specimen:** compare current stack and Be Vietnam Pro, local WOFF2 subsets and real Vietnamese data density.
+5. **A2.5 — Imagery pipeline:** establish asset rights metadata, crop variants, optimization, offline and fallback behavior.
+6. **A2.6 — First safe consolidation slice:** only after visual parity evidence, choose the smallest high-value area (likely Home style generations or duplicate global motion/blur policy) and add Playwright coverage.
+7. Re-run preflight, TypeScript, Pages build, bundle comparison and browser/device checks; record exact before/after evidence.
+
+## 11. Verification gaps and completion boundary
+
+### Completed in this source audit
+- [x] Enumerate all 24 tracked CSS files and raw byte sizes.
+- [x] Confirm root CSS import order.
+- [x] Confirm Home and feature CSS ownership/imports.
+- [x] Identify high-risk cascade and repeated token vocabularies.
+- [x] Inspect current brand/status/token and typography declarations.
+- [x] Inspect font and image asset presence in tracked tree.
+- [x] Inspect Vite release asset-manifest handling.
+- [x] Map existing Glass/Motion/power-conserve/reduced-motion policy owners.
+- [x] Produce KEEP / CONSOLIDATE / REPLACE / RETIRE matrix and priority plan.
+
+### Not completed — requires running application/browser or device
+- [ ] Computed-style winner matrix for all target surfaces and states.
+- [ ] Screenshot review at 1440, 1280, 1024, 768, 390, 360 and short landscape.
+- [ ] Selector/property-level duplicate and unused-rule proof.
+- [ ] Emitted production CSS chunk sizes and compressed transfer bytes.
+- [ ] Font specimen visual comparison and actual WOFF2 payload.
+- [ ] Licensed image selection and responsive crop validation.
+- [ ] Paint/compositing, interaction latency, memory and frame profiling.
+- [ ] Physical iOS/Android low/mid-range acceptance.
+
+**M0-A2 source/design-system audit result:** the source inventory and decision matrix are complete. The full M0-A2 exit gate remains open until runtime/computed-style and visual/performance evidence above is collected. Static GitHub source access cannot honestly certify these runtime items.
+
+## 12. Next phase dependencies
+
+M0-A3 Motion Audit may proceed in parallel at the source/documentation level, but motion token/choreography changes must wait for A2.1 runtime evidence because existing motion, reduced-motion and power-conserve rules overlap.
+
+M0-A4 Runtime/Performance Audit should collect the runtime measurements listed above and close the browser/device gaps. The first CSS consolidation implementation must not begin until A2.1–A2.3 establish a reproducible baseline.
+
+M0-A5 technology decisions remain open. No new framework, font runtime service, image CDN, CSS framework or animation package is justified by this audit.
+
+## 13. Sources and references
+
+Repository evidence:
+- `src/main.tsx`, `src/styles/*.css`, `src/shared/*/*.css`, feature CSS files listed in section 3.
+- `src/features/home/HomeScreen.tsx`, `src/features/auth/screens/LoginExperience.tsx`, Stocktake and Stocktake Import components.
+- `index.html`, `vite.config.ts`, `package.json`.
+- `UI_UX_M0_GOVERNING_SPEC.md` — active authority.
+- `UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md` — current screen/source baseline.
+- `UI_UX_PHASE_00_AUDIT.md` and `UI_UX_PHASE_01_FOUNDATION.md` — historical source evidence only.
+
+External font evidence:
+- https://github.com/google/fonts/blob/main/ofl/bevietnampro/METADATA.pb
+- https://github.com/google/fonts/blob/main/ofl/bevietnampro/OFL.txt
+- https://fontsource.org/fonts/be-vietnam-pro/about
+- https://github.com/bettergui/BeVietnamPro
+
+No runtime source, CSS, asset, dependency, business logic, persistence, scanner engine, PWA lifecycle, deployment or production state is modified by this audit.
