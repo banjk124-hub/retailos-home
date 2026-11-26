@@ -28,7 +28,6 @@ import '../../styles/home.css';
 import '../../styles/home-ux.css';
 import '../../styles/home-engine.css';
 import '../../styles/home-redesign.css';
-import '../../styles/home-architecture.css';
 import { useHomePushNotifications } from './hooks/useHomePushNotifications';
 import { useHomeUpdateNoticeCount } from './hooks/useHomeUpdateNoticeCount';
 import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';

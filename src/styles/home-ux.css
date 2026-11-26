@@ -289,8 +289,7 @@
 .app-shell button,
 .app-shell .topbar-dock,
 .app-shell .spotlight-tile-main,
-.app-shell .app-library-card,
-.app-shell .module-card {
+.app-shell .app-library-card {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
