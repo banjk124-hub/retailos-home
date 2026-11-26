@@ -82,7 +82,7 @@ test('Home LiquidDock overlap — baseline and spacing-only candidates', async (
       fullPage: true,
       animations: 'disabled',
     });
-    await page.goto('about:blank');
+    await page.reload({ waitUntil: 'domcontentloaded' });
   }
 
   const output = JSON.stringify(results, null, 2);
@@ -98,5 +98,9 @@ test('Home LiquidDock overlap — baseline and spacing-only candidates', async (
     const footer = result.footer as { y: number; bottom: number } | null;
     expect(dock, 'LiquidDock should remain mounted').not.toBeNull();
     expect(footer, 'first module group footer should be measurable').not.toBeNull();
+    if (viewport.width === 390 && result.scenario === 'candidate-a-gap-8-margin-0') {
+      expect(footer!.bottom, 'candidate A should keep the first group footer above LiquidDock at 390px')
+        .toBeLessThanOrEqual(dock!.y);
+    }
   }
 });
