@@ -18,7 +18,7 @@
 .surface--brand { border-color: #c91e32; background: #c91e32; color: #fff; box-shadow: 0 4px 12px rgba(201,30,50,.16); }
 .surface--interactive:hover:not(:disabled):not([aria-disabled="true"]) { border-color: var(--color-border-strong, #c9bfc2); box-shadow: var(--elevation-2, 0 8px 24px rgba(45,25,30,.08)); }
 .surface--interactive:active:not(:disabled):not([aria-disabled="true"]) { transform: scale(.985); }
-.surface:focus-within { border-color: var(--focus-color, #a91829); box-shadow: var(--elevation-1, 0 1px 3px rgba(45,25,30,.06)), var(--focus-outline-shadow, 0 0 0 4px rgba(217,39,54,.12)); }
-.surface[data-state="error"], .surface[aria-invalid="true"] { border-color: var(--color-status-danger, #b42332); box-shadow: 0 0 0 2px rgba(180,35,50,.12); }
+.surface--interactive:focus-within { border-color: var(--focus-color, #a91829); box-shadow: var(--elevation-1, 0 1px 3px rgba(45,25,30,.06)), var(--focus-outline-shadow, 0 0 0 4px rgba(217,39,54,.12)); }
+.surface[data-surface-state="error"], .surface[data-state="error"], .surface[aria-invalid="true"] { border-color: var(--color-status-danger, #b42332); box-shadow: 0 0 0 2px rgba(180,35,50,.12); }
 .surface:disabled, .surface[aria-disabled="true"] { cursor: not-allowed; opacity: .58; }
 @media (prefers-reduced-motion: reduce) { .surface { transition: none; } }
