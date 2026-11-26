@@ -126,6 +126,8 @@ assert.ok(semanticSurface.includes(".surface--panel"));
 assert.ok(semanticSurface.includes(".surface--floating"));
 assert.ok(semanticSurface.includes("var(--color-brand-primary"), "Brand surface must consume the canonical brand token");
 assert.ok(semanticSurface.includes("var(--color-surface-inverse"), "Inverse surface must consume the canonical inverse token");
+assert.ok(theme.includes("--color-surface-inverse: #302a30;"), "Theme must define the inverse surface token");
+assert.ok(theme.includes("--color-border-inverse: #494047;"), "Theme must define the inverse border token");
 assert.ok(semanticSurface.includes("var(--elevation-brand"), "Brand surface must consume the semantic brand elevation token");
 assert.ok(!semanticSurface.includes("backdrop-filter"));
 
