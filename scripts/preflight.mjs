@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "UI-02C calendar ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-02c-calendar.mjs"],
+  },
+  {
     name: "UI-02B snapshot notice ownership contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-02b-snapshot-notices.mjs"],
