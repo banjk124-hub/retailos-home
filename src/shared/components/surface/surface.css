@@ -10,6 +10,7 @@
     border-color var(--motion-duration-interaction, 180ms) var(--motion-ease-standard, ease),
     box-shadow var(--motion-duration-interaction, 180ms) var(--motion-ease-standard, ease);
 }
+.surface--panel { background: var(--color-surface-panel, #fff); }
 .surface--control { background: var(--color-surface-input, #fff); }
 .surface--raised { background: var(--color-surface-raised, #fff); box-shadow: var(--elevation-2, 0 8px 24px rgba(45,25,30,.08)); }
 .surface--floating { background: var(--color-surface-raised, #fff); box-shadow: var(--elevation-3, 0 16px 40px rgba(45,25,30,.14)); }
