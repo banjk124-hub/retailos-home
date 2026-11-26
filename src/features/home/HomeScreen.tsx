@@ -202,6 +202,10 @@ export default function HomeScreen({
   const libraryDialogRef = useRef<HTMLElementTagNameMap['section']>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [toast, setToast] = useState('');
+  useDialogFocus(Boolean(barcodeLookup), barcodeResultDialogRef);
+  useDialogFocus(showCalendar, calendarDialogRef);
+  useDialogFocus(Boolean(selectedNotice), noticeDialogRef);
+  useDialogFocus(Boolean(selectedLibrary), libraryDialogRef);
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
     || isBarcodeScannerOpen || showSettings || showScannerSettings
