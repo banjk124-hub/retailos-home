@@ -24,7 +24,11 @@ async function openHome(page: Page) {
     await page.getByRole('button', { name: 'Thư viện nghiệp vụ' }).click();
   }
   await expect(page.locator('#modules')).toBeInViewport();
+  await expect(page.getByRole('heading', { name: 'Truy cập nghiệp vụ' })).toBeVisible();
+  await expect(page.locator('.retailos-home__module')).toHaveCount(9);
   await expect(page.getByRole('button', { name: 'Thông báo' })).toBeVisible();
+  await page.getByRole('button', { name: 'Thông báo' }).click();
+  await expect(page.locator('#retailos-home-signals')).toBeInViewport();
 }
 
 test('authenticated Home opens without runtime errors or horizontal overflow', async ({ page }) => {
@@ -48,4 +52,14 @@ test('authenticated Home opens without runtime errors or horizontal overflow', a
   }
 
   expect(errors).toEqual([]);
+});
+
+
+test('Home module cards distinguish ready workflows from integrating modules', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  await expect(page.locator('.retailos-home__module-state.is-ready')).toHaveCount(2);
+  await expect(page.locator('.retailos-home__module-state:not(.is-ready)')).toHaveCount(7);
+  await page.getByRole('button', { name: /Tồn kho/ }).click();
+  await expect(page.getByRole('status')).toContainText('giao diện nghiệp vụ đang được tích hợp');
 });
