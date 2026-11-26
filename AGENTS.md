@@ -40,6 +40,10 @@ Implement RetailOS as a reliable mobile-first supermarket operations workspace. 
 - Performance: avoid unnecessary polling, full dataset refetches, full-sheet rewrites, and redundant state. Preserve snapshot-first/offline behavior when present.
 - Every interactive control must have a truthful, tested action. No dead buttons or “Demo” behavior masquerading as a working module.
 
+## Greenfield UI implementation rule
+
+For every UI/UX task, follow `docs/ai-context/EXPERIENCE_BUILD_STANDARD.md`. Build the new Experience Layer directly in source; do not use the legacy UI, component tree or CSS cascade as the design foundation. Inspect legacy source only for business behavior, data/session contracts, lifecycle ownership and regression constraints. Do not restart M0/M1 audit phases or broad legacy CSS inventories. Keep tests focused on the changed user journey; run Scanner regression suites only when Scanner source/contracts change or at an integration/release gate.
+
 ## Completion report
 Report: objective, files changed, behavior changed, tests actually run, results, untested paths, risks, rollback instructions, and next step. Separate facts from assumptions.
 
