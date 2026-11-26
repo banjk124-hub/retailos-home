@@ -60,7 +60,7 @@ if (manifest) {
     measured.moduleKeys.forEach((key) => initialStaticKeys.add(key));
     measured.cssFiles.forEach((file) => initialCssFiles.add(file));
     entries.push({
-      file: measured.file, raw: measured.raw, gzip: measured.gzip,
+      file: measured.file, raw: measured.raw, gzip: measured.gzip, brotli: measured.brotli,
       staticModules: measured.staticModules, cssFiles: measured.cssFiles,
     });
   }
