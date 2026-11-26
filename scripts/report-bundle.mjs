@@ -1,5 +1,5 @@
 import { readFile, readdir, writeFile } from 'node:fs/promises';
-import { gzipSync } from 'node:zlib';
+import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 import path from 'node:path';
 
 const root = path.resolve(process.env.REPORT_DIST_DIR || 'dist');
@@ -15,7 +15,7 @@ await walk(root);
 const fileStats = new Map();
 for (const file of files) {
   const bytes = await readFile(path.join(root, file));
-  fileStats.set(file, { file, raw: bytes.byteLength, gzip: gzipSync(bytes, { level: 9 }).byteLength });
+  fileStats.set(file, { file, raw: bytes.byteLength, gzip: gzipSync(bytes, { level: 9 }).byteLength, brotli: brotliCompressSync(bytes, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }).byteLength });
 }
 
 let manifest = null;
@@ -48,7 +48,9 @@ if (manifest) {
       + [...css].reduce((n, file) => n + (fileStats.get(file)?.raw ?? 0), 0);
     const gzip = [...keys].reduce((n, key) => n + (records.get(key)?.gzip ?? 0), 0)
       + [...css].reduce((n, file) => n + (fileStats.get(file)?.gzip ?? 0), 0);
-    return { file: entry.file, raw, gzip, staticModules: keys.size,
+    const brotli = [...keys].reduce((n, key) => n + (records.get(key)?.brotli ?? 0), 0)
+      + [...css].reduce((n, file) => n + (fileStats.get(file)?.brotli ?? 0), 0);
+    return { file: entry.file, raw, gzip, brotli, staticModules: keys.size,
       cssFiles: [...css], moduleKeys: [...keys] };
   }
   const initialStaticKeys = new Set();
@@ -109,7 +111,8 @@ if (manifest) {
   const cssFiles = [...seen].filter((file) => file.endsWith('.css'));
   const raw = [...seen].reduce((n, file) => n + fileStats.get(file).raw, 0);
   const gzip = [...seen].reduce((n, file) => n + fileStats.get(file).gzip, 0);
-  entries.push({ file: 'index.html entry closure (legacy baseline)', raw, gzip, staticModules: jsFiles.length, cssFiles });
+  const brotli = [...seen].reduce((n, file) => n + fileStats.get(file).brotli, 0);
+  entries.push({ file: 'index.html entry closure (legacy baseline)', raw, gzip, brotli, staticModules: jsFiles.length, cssFiles });
 }
 
 entrypointRawBytes = entries.reduce((n, item) => n + item.raw, 0);
@@ -119,6 +122,7 @@ const summary = {
   fileCount: allFiles.length,
   rawBytes: allFiles.reduce((n, item) => n + item.raw, 0),
   gzipBytes: allFiles.reduce((n, item) => n + item.gzip, 0),
+  brotliBytes: allFiles.reduce((n, item) => n + item.brotli, 0),
   entrypointRawBytes,
   entrypointGzipBytes,
   hasViteManifest: Boolean(manifest)
@@ -128,24 +132,25 @@ const report = [
   'Generated: ' + new Date().toISOString(),
   'Manifest-based analysis: ' + summary.hasViteManifest, '',
   '## Initial entrypoint static closure', '',
-  '| Entry | Raw bytes | Gzip bytes | Static modules |',
-  '|---|---:|---:|---:|',
-  ...entries.map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
+  '| Entry | Raw bytes | Gzip bytes | Brotli bytes | Static modules |',
+  '|---|---:|---:|---:|---:|',
+  ...entries.map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.brotli.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
   '', '## Dynamic entry points', '',
-  '| Dynamic boundary | Entry chunk raw | Entry chunk gzip | Incremental raw | Incremental gzip | Full closure raw | Full closure gzip | Static modules |',
-  '|---|---:|---:|---:|---:|---:|---:|---:|',
-  ...dynamicEntries.map((item) => '| ' + item.file + ' | ' + item.chunkRaw.toLocaleString('en-US') + ' | ' + item.chunkGzip.toLocaleString('en-US') + ' | ' + item.incrementalRaw.toLocaleString('en-US') + ' | ' + item.incrementalGzip.toLocaleString('en-US') + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
+  '| Dynamic boundary | Entry chunk raw | Entry chunk gzip | Incremental raw | Incremental gzip | Full closure raw | Full closure gzip | Full closure Brotli | Static modules |',
+  '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
+  ...dynamicEntries.map((item) => '| ' + item.file + ' | ' + item.chunkRaw.toLocaleString('en-US') + ' | ' + item.chunkGzip.toLocaleString('en-US') + ' | ' + item.incrementalRaw.toLocaleString('en-US') + ' | ' + item.incrementalGzip.toLocaleString('en-US') + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.brotli.toLocaleString('en-US') + ' | ' + item.staticModules + ' |'),
   '', '## Largest emitted files', '',
-  '| File | Raw bytes | Gzip bytes |',
-  '|---|---:|---:|',
-  ...allFiles.slice(0, 35).map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' |'),
+  '| File | Raw bytes | Gzip bytes | Brotli bytes |',
+  '|---|---:|---:|---:|',
+  ...allFiles.slice(0, 35).map((item) => '| ' + item.file + ' | ' + item.raw.toLocaleString('en-US') + ' | ' + item.gzip.toLocaleString('en-US') + ' | ' + item.brotli.toLocaleString('en-US') + ' |'),
   '', '## Totals', '',
   '- Files: ' + summary.fileCount,
   '- Total raw bytes: ' + summary.rawBytes.toLocaleString('en-US'),
   '- Total gzip bytes (per-file sum): ' + summary.gzipBytes.toLocaleString('en-US'),
+  '- Total Brotli bytes (per-file sum, quality 11): ' + summary.brotliBytes.toLocaleString('en-US'),
   '- Initial entrypoint raw bytes: ' + summary.entrypointRawBytes.toLocaleString('en-US'),
   '- Initial entrypoint gzip bytes: ' + summary.entrypointGzipBytes.toLocaleString('en-US'),
-  '', '> Gzip is a per-file estimate. Legacy baseline closure is reconstructed from index.html and static relative JS imports. Browser Network/Performance traces remain authoritative for actual transfer and parse timing.', ''
+  '', '> Gzip and Brotli are per-file estimates (Brotli quality 11); compression dictionaries are not shared across files. Legacy baseline closure is reconstructed from index.html and static relative JS imports. Browser Network/Performance traces remain authoritative for actual transfer and parse timing.', ''
 ].join('\n');
 await writeFile(path.join(root, 'bundle-report.md'), report);
 await writeFile(path.join(root, 'bundle-report.json'), JSON.stringify({ summary, entries, dynamicEntries, files: allFiles }, null, 2));
