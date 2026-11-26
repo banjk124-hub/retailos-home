@@ -1,6 +1,6 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04 discovery and source baseline completed; implementation slices not yet started.
+**Status:** UI-04A implementation and exact-head CI completed; UI-04B source ownership split implemented and awaiting exact-head validation.
 **Branch:** refactor/ui-04-feature-presentation
 **Base:** main after UI-03 merge 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54
 **Scope:** migrate feature presentation boundaries for Login, Settings, Scanner, Stocktake and Stocktake Import while preserving domain behavior, lifecycle, lazy-loading and accessibility contracts.
@@ -42,7 +42,8 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 - Login retains its own feature and compact-landscape stylesheets; its reduced-motion rules remain local. CSS declaration content and selectors were relocated without redesigning visual output.
 - Added `scripts/test-ui-04a-login-presentation.mjs` to preflight to guard the ownership boundary and required motion contracts.
 - Existing `tests/browser/login-responsive.spec.ts` remains the responsive, keyboard-focus, reduced-motion and power-conserve browser gate; no auth/session behavior or employee data was changed.
-- Existing browser coverage: tests/browser/login-responsive.spec.ts checks desktop, tablet, mobile, compact mobile and short landscape, keyboard focus, 16px input sizing, reduced motion and power-conserve backdrop behavior. Extend rather than replace these assertions if the Login slice changes.
+- Exact-head CI run #1819 passed on commit `0b54a0356628d69592fbbc2643cf193f33d27604`, including preflight, TypeScript, production build, bundle comparison and Playwright responsive/runtime evidence.
+- Existing browser coverage: tests/browser/login-responsive.spec.ts checks desktop, tablet, mobile, compact mobile and short landscape, keyboard focus, 16px input sizing, reduced motion and power-conserve backdrop behavior. The exact-head CI gate passed.
 - Keep local employee validation, employee/department preview, submitting/error/success states, identity recognition handoff and session behavior unchanged.
 - Preserve keyboard and screen-reader feedback.
 
@@ -74,14 +75,16 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 
 Deliver each slice independently, with source trace, focused tests, browser evidence and documentation reconciliation.
 
-1. **UI-04A — Login presentation boundary**
-   - Source audit completed: Login composition, two stylesheet imports, shared Surface/Motion usage and the App-owned identity-stage selector dependency are traced.
-   - Next: decide whether the identity-stage CSS should remain journey-owned or be relocated with its App-owned view; do not split it unless this improves loading/ownership without changing cascade or first-paint behavior.
-   - Extend the existing Login responsive browser test only for a demonstrated gap; preserve auth, identity, responsive, focus and motion contracts.
-2. **UI-04B — Settings and Update Center**
-   - Trace all consumers of scanner-settings.css.
-   - Decide whether shared ownership is semantically valid or whether system settings and scanner preferences need separate feature-owned stylesheets.
-   - Preserve update lifecycle and scanner preference persistence.
+1. **UI-04A — Login presentation boundary — implemented and validated**
+   - App-owned identity journey selectors, reduced-motion declarations and reveal keyframes now live in `src/styles/auth-journey.css`, imported beside the root-owned `UnifiedIdentityView`.
+   - Login retains `login-experience.css` and `login-compact-landscape.css`; exact-head CI #1819 passed all preflight, build, bundle and Playwright responsive/runtime gates.
+   - Auth/session behavior, identity state machine, timing and employee data were not changed.
+2. **UI-04B — Settings and Update Center — implementation awaiting validation**
+   - Source trace confirmed SettingsHub and ScannerSettingsPanel were the only imports of the combined `scanner-settings.css`; Update Center release/status styling remains owned by `src/shared/pwa/pwa-update-prompt.css`.
+   - Extracted common modal/backdrop/panel/header/focus/footnote rules into `settings-dialog.css`.
+   - Isolated Settings Hub menu and pending-update indicator rules in `settings-hub.css`; isolated scanner preference, feedback and barcode symbology rules in `scanner-preferences.css`.
+   - Both consumers now import the shared dialog foundation followed by their own feature stylesheet; retired the combined `scanner-settings.css`.
+   - Added `scripts/test-ui-04b-settings-presentation.mjs` and registered it in preflight. Update Center events/store and scanner preference store/hook remain in their existing components/services.
 3. **UI-04C — Scanner presentation**
    - Audit the shared transition stylesheet and the distinct Home/Stocktake scanner compositions.
    - Keep engine, camera, worker and decoder untouched.
@@ -126,4 +129,6 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - UI-03 is merged to main as PR #180, merge commit 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54; final docs-head CI run #1817 passed.
 - UI-04 branch is based on that merged main commit.
 - Discovery and source baseline are recorded above.
-- No application source or runtime behavior has been changed in UI-04 yet.
+- UI-04A is implemented and passed exact-head CI #1819.
+- UI-04B stylesheet ownership refactor is pushed to the branch; its exact-head CI and responsive/runtime evidence are pending.
+- No merge or deployment has been performed.
