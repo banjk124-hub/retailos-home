@@ -44,6 +44,11 @@ const checks = [
     args: ["scripts/test-design-foundation-contract.mjs"],
   },
   {
+    name: "UI-03 verified legacy CSS selector retirement contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-03-legacy-selectors.mjs"],
+  },
+  {
     name: "Scanner SC-05 cross-layer integration contract tests",
     command: process.execPath,
     args: ["scripts/test-scanner-sc05-integration.mjs"],
