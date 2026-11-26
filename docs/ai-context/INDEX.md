@@ -1,36 +1,27 @@
 # RetailOS documentation index
 
 ## Start here
-1. `AGENTS.md` — repository operating, safety and release lifecycle.
-2. [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md) — governing product/design/engineering workflow.
-3. [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) — verified current state and open gates.
-4. [AI_HANDOFF.md](./AI_HANDOFF.md) — current continuation point.
-5. [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) — sole active UI/UX authority.
-6. Load only task-specific domain contracts.
+1. `AGENTS.md` — repository operating, safety and release rules.
+2. [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md) — cross-project engineering standard.
+3. [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) — verified current implementation state.
+4. [AI_HANDOFF.md](./AI_HANDOFF.md) — one concise continuation point.
+5. [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md) — sole UI/UX direction and greenfield implementation/test policy.
+6. Load only the domain contract needed for the task.
 
 ## Canonical ownership
 | Concern | Owner |
 |---|---|
-| Product direction, workflow, protected boundaries | RETAILOS_PRODUCT_SKILL.md |
-| Active UI/UX direction and M0 acceptance | UI_UX_M0_GOVERNING_SPEC.md |
-| Repository architecture and architecture ADRs | ARCHITECTURE.md |
+| Product and engineering workflow | RETAILOS_PRODUCT_SKILL.md |
+| UI/UX direction, greenfield boundary, implementation sequence and test policy | EXPERIENCE_BUILD_STANDARD.md |
+| Architecture and ADRs | ARCHITECTURE.md |
 | Product/cross-domain decisions | DECISIONS.md |
-| Shared components and patterns | COMPONENT_AND_PATTERN_GOVERNANCE.md |
+| Shared component/pattern governance | COMPONENT_AND_PATTERN_GOVERNANCE.md |
 | Technology evaluation | TECHNOLOGY_RADAR.md |
-| Terminology/status vocabulary | TERMINOLOGY_GLOSSARY.md |
+| Terminology | TERMINOLOGY_GLOSSARY.md |
 | Deprecation/removal | DEPRECATION_REGISTER.md |
-| Current status / handoff | IMPLEMENTATION_STATUS.md / AI_HANDOFF.md |
-| Stable project context / roadmap / navigation | PROJECT_CONTEXT.md / ROADMAP.md / PROJECT_MAP.md |
+| Current state / continuation | IMPLEMENTATION_STATUS.md / AI_HANDOFF.md |
+| Durable context / roadmap | PROJECT_CONTEXT.md / ROADMAP.md |
 | Cross-feature acceptance | ACCEPTANCE_CHECKLIST.md |
-
-## M0-A working documents
-- [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) — current source baseline and screen ownership.
-- [UI_UX_M0_A1_ARCHITECTURE_AUDIT.md](./UI_UX_M0_A1_ARCHITECTURE_AUDIT.md) — source architecture, responsibility map, protected contracts and findings.
-- [UI_UX_M0_A1_SCREEN_BLUEPRINTS.md](./UI_UX_M0_A1_SCREEN_BLUEPRINTS.md) — seven source-grounded screen blueprints: Login, proposed Shell, Home, Library, Stocktake, Import and Settings/Update Center.
-- [UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md](./UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md) — complete tracked CSS inventory, import ownership, cascade/token risks, typography and imagery readiness, KEEP/CONSOLIDATE/REPLACE/RETIRE matrix.
-- [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) — direction and acceptance authority.
-
-M0-A1 and M0-A2 source audits are recorded. M0-A2 rendered/computed-style, browser and device evidence remains an explicit open gate; source documents are not final design acceptance or permission for broad implementation.
 
 ## Domain contracts
 | Domain | Owner |
@@ -42,24 +33,17 @@ M0-A1 and M0-A2 source audits are recorded. M0-A2 rendered/computed-style, brows
 | Performance/bundle | PERFORMANCE_BUNDLE_PWA.md |
 | Export File | modules/EXPORT_FILE.md |
 
-## Historical/source evidence
-Open only when a task needs the specific audit/history; do not treat these as active UI/UX authorities:
-- UI_UX_SCREEN_MAP.md; UI_UX_SCREEN_BLUEPRINTS.md
-- UI_UX_COMPONENT_AUDIT.md; UI_UX_TECHNOLOGY_AUDIT.md
-- UI_UX_PHASE_00_AUDIT.md; UI_UX_PHASE_01_FOUNDATION.md
-- UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md; UI_UX_M0_A_EXECUTION_RECORD.md
-- UI_INTERACTION_RESPONSIVENESS_AUDIT.md; UI_COMPONENT_SPEC_TEMPLATE.md
-- RETAILOS_GOVERNANCE_INVENTORY_AUDIT.md
-- CHANGELOG_AI.md; SESSION_LOG.md (append-only chronology)
+## History
+Historical audit reports, old UI/UX blueprints and session logs are not active authorities. Do not load them for a new UI task. Reopen historical material only to answer a specific regression or source-history question; verify all findings against current source.
 
-Superseded proposal documents removed in BATCH 02 are recorded in DEPRECATION_REGISTER.md and UI_UX_DOCUMENT_CONSOLIDATION.md. Their original revisions remain in Git history.
+`CHANGELOG_AI.md` and `SESSION_LOG.md` are append-only chronology, never current status.
 
 ## AI capability system
-`AI_CAPABILITY_SYSTEM.md` and `AI_CAPABILITY_EVALUATION.md` describe the repository CORE/TASK/DOMAIN skill architecture and evaluation. Repository skills remain active; the private Product Studio plugin is a companion, not a replacement.
+`AI_CAPABILITY_SYSTEM.md` and `AI_CAPABILITY_EVALUATION.md` describe repository CORE/TASK skills. Load only the shared CORE skill and the task skill needed for the current work.
 
 ## Context rules
-- Start with Product Skill and current status; for UI/UX also load the M0 Governing Spec and current M0-A documents.
-- Verify live branch, commit, PR, CI and deployment before volatile claims or edits.
-- Read owning domain contracts before protected changes.
-- Check decisions, architecture, deprecation and technology records before major changes.
-- Preserve one current status and one current handoff.
+- Start with this index, current status and the one relevant canonical standard.
+- Verify live branch, commit, PR and CI before volatile claims or edits.
+- Do not load the retired M0 audit pack or reconstruct its phase gates.
+- Do not use chat history or memory as proof of repository state.
+- Do not create duplicate authorities, status files or handoff files.
