@@ -10,8 +10,8 @@ import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { Surface } from '../../shared/components/surface/Surface';
-import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
 import { readHomeUiState } from './homeStateStore';
+import { useHomeSnapshotNotices } from './hooks/useHomeSnapshotNotices';
 import { useHomeNavigation } from './hooks/useHomeNavigation';
 import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
@@ -76,7 +76,6 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
   );
 }
 
-type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'unavailable';
 type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
 const navItems = [
@@ -157,8 +156,7 @@ export default function HomeScreen({
   const [showNotifications, setShowNotifications] = useState(false);
   const [isNotificationsClosing, setIsNotificationsClosing] = useState(false);
   const notificationsCloseTimer = useRef<number | null>(null);
-  const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
-  const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
+  const { priorityNotices, snapshotNoticeStatus } = useHomeSnapshotNotices();
   const [pushSetupStatus, setPushSetupStatus] = useState<PushSetupStatus>('idle');
   const [pushSetupError, setPushSetupError] = useState('');
   const [selectedNotice, setSelectedNotice] = useState<SnapshotNotice | null>(null);
@@ -226,30 +224,6 @@ export default function HomeScreen({
   };
   useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
-  useEffect(() => {
-    let isCurrent = true;
-    const loadSnapshotNotices = async () => {
-      setSnapshotNoticeStatus('loading');
-      try {
-        const snapshots = await getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS);
-        if (!isCurrent) return;
-        setPriorityNotices(calculateSnapshotNotices(snapshots));
-        setSnapshotNoticeStatus(snapshots.length === 0 ? 'empty' : 'ready');
-      } catch (error) {
-        if (!isCurrent) return;
-        console.error('Không thể đọc snapshot để tính thông báo:', error);
-        setPriorityNotices([]);
-        setSnapshotNoticeStatus('unavailable');
-      }
-    };
-
-    void loadSnapshotNotices();
-    window.addEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
-    return () => {
-      isCurrent = false;
-      window.removeEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
-    };
-  }, []);
   useEffect(() => {
     const mobileViewport = window.matchMedia('(max-width: 700px)');
     const updateSpotlightForViewport = () => {
