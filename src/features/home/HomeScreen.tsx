@@ -14,7 +14,7 @@ import { readHomeUiState, saveHomeUiState } from './homeStateStore';
 import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
-import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
+import { ExperienceModuleLibrary } from '../../experience/library/ExperienceModuleLibrary';
 import { OperationalHome } from '../../experience/home/OperationalHome';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
@@ -548,7 +548,7 @@ export default function HomeScreen({
           onOpenCalendar={openCalendar}
         />
 
-        <HomeModuleLibrarySection
+        <ExperienceModuleLibrary
           initialSearch={initialUiState.search}
           onSearchChange={handleSearchChange}
           onOpen={openLibrary}
