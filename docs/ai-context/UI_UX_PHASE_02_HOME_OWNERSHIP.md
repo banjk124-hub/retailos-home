@@ -1,6 +1,6 @@
 # UI-02 — Home Ownership Refactor
 
-**Status:** UI-02A–UI-02E source refactors and focused contract tests implemented; exact-HEAD CI validation pending.
+**Status:** UI-02A–UI-02E implemented and validated. Exact HEAD `9d81bd833d5edbd65ab9285035cb250dcc64a645` passed CI run [#1799](https://github.com/banjk124-hub/retailos-home/actions/runs/45847515660). PR #179 remains Draft and unmerged.
 **Branch:** `refactor/ui-02-home-ownership`
 **Base:** `main` after UI-01B merge `f66f7b861903e22f5950065cc3f8799f93ca0e02`
 **Scope:** reduce HomeScreen orchestration/state ownership without changing product behavior or visual presentation.
@@ -60,7 +60,7 @@
 - Hooks have narrow responsibilities and explicit inputs/outputs; no hook becomes a second monolithic HomeScreen.
 - No behavior or UI contract changes beyond verified duplicate-state/lifecycle fixes.
 - Existing relevant preflight tests pass; add focused tests for extracted contracts.
-- TypeScript, production build, bundle comparison and browser runtime evidence pass on the exact PR HEAD.
+- TypeScript, production build, bundle comparison and browser runtime evidence pass on the exact PR HEAD (CI run #1799).
 - Update PROJECT_MAP and phase notes only after source ownership is verified.
 
 ## Implemented ownership boundaries
@@ -79,4 +79,6 @@
 - `scripts/test-ui-02d-lookup-feedback.mjs`
 - `scripts/test-ui-02e-home-composition.mjs`
 
-All five are wired into `scripts/preflight.mjs`. Exact-head CI must still validate TypeScript, production builds, bundle boundaries and browser runtime evidence before this phase can be declared complete.
+All five are wired into `scripts/preflight.mjs`. Exact-head CI passed preflight, TypeScript/production builds, bundle comparison and Playwright browser runtime evidence. Runtime summary: zero page/console errors, zero failed requests and zero horizontal overflow across 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and short landscape. Settings, library, Stocktake and Import evidence routes were also captured.
+
+Bundle comparison against `main` baseline: entrypoint unchanged (379,756 raw / 97,720 gzip bytes); total bundle +1,439 raw bytes (+0.1%) and +474 gzip bytes (+0.1%). HomeScreen dynamic chunk increased by 1,439 raw bytes and 499 gzip bytes. No feature boundary or lazy-loading regression was reported.
