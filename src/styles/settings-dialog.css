@@ -1,0 +1,14 @@
+/* Shared modal shell used by Settings Hub and Scanner Preferences. */
+.scanner-settings-backdrop{position:fixed;z-index:1310;inset:0;display:grid;place-items:center;padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:rgba(30,17,22,.56);}
+.scanner-settings-panel{width:min(100%,620px);max-height:min(850px,calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px));overflow:auto;overscroll-behavior:contain;border:1px solid rgba(255,255,255,.82);border-radius:24px;background:linear-gradient(150deg,rgba(255,255,255,.99),rgba(250,246,247,.98));box-shadow:0 28px 90px rgba(25,8,14,.3);color:#30252a;padding:20px}
+.scanner-settings-panel--detail{width:min(100%,680px)}
+.scanner-settings-header{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #eee4e7}
+.scanner-settings-header-icon{width:44px;height:44px;display:grid;place-items:center;flex:0 0 auto;border-radius:15px;background:#f9e9eb;color:#b52537}
+.scanner-settings-header>div{min-width:0;flex:1}
+.scanner-settings-eyebrow{color:#b02a3b;font-size:9px;font-weight:850;letter-spacing:1.1px}
+.scanner-settings-header h2{margin:3px 0;font-size:clamp(18px,4vw,22px);line-height:1.2}
+.scanner-settings-header p{margin:0;color:#83777c;font-size:11px}
+.scanner-settings-close,.scanner-settings-back{width:40px;height:40px;display:grid;place-items:center;flex:0 0 auto;border:1px solid #eee3e6;border-radius:13px;background:#fff;color:#5c4c52}
+.scanner-settings-footnote{margin:16px 2px 2px;color:#8a7d82;font-size:10px;line-height:1.55}
+.scanner-settings-panel button:focus-visible{outline:3px solid rgba(189,38,58,.38);outline-offset:3px}
+@media(max-width:520px){.scanner-settings-panel{width:100%;max-height:100%;border-radius:19px;padding:16px}}
