@@ -77,6 +77,7 @@ if (manifest) {
         file: measured.file,
         raw: measured.raw,
         gzip: measured.gzip,
+        brotli: measured.brotli,
         staticModules: measured.staticModules,
         cssFiles: measured.cssFiles,
         incrementalRaw: incrementalKeys.reduce((n, key) => n + (records.get(key)?.raw ?? 0), 0)
