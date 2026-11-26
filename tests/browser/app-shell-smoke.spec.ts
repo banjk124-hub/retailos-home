@@ -211,10 +211,10 @@ test('modal dialogs contain keyboard focus and keep the active dialog on top', a
   const updateCenter = page.getByRole('dialog', { name: 'Trung tâm cập nhật' });
   await expect(updateCenter).toBeVisible();
   const updateBack = updateCenter.getByRole('button', { name: 'Quay lại cài đặt' });
+  const updateClose = updateCenter.getByRole('button', { name: 'Đóng trung tâm cập nhật' });
   await updateBack.focus();
   await page.keyboard.press('Shift+Tab');
-  await expect(updateCenter).toContainText('Trung tâm cập nhật');
-  await expect(updateBack).not.toBeFocused();
+  await expect(updateClose).toBeFocused();
 
   await page.keyboard.press('Escape');
   await expect(settings).toBeVisible();
