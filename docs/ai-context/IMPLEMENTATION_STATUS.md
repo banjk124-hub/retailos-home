@@ -3,7 +3,7 @@
 **Repository:** banjk124-hub/retailos-home  
 **Product standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
 **Active UI/UX authority:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md)  
-**Last verified main:** `c46cfcc788e923d0f4c787ec8e15f2783a8e74af` (PR #167 merge).
+**Last verified main baseline for this audit:** `c46cfcc788e923d0f4c787ec8e15f2783a8e74af`.
 
 ## Owner-confirmed direction
 - Burgundy/dark-red identity; exact final palette remains open.
@@ -14,15 +14,17 @@
 
 ## M0 status
 - M0-0 documentation consolidation: merged via PR #163.
-- BATCH 02 technical-document consolidation: merged via PR #167 at `c46cfcc788e923d0f4c787ec8e15f2783a8e74af`; CI #1600 passed, including preflight, bundle baseline, Playwright responsive smoke and artifacts.
-- M0-A source audit and A1.1 blueprints existed on PR #164 branch but were based on old main. Refreshed versions are now on `feat/m0-a-operational-screen-blueprints`, baseline `c46cfcc788e923d0f4c787ec8e15f2783a8e74af`.
-- Seven screen blueprints now cover Login, proposed Shell, Home, Module Library, Stocktake, Stocktake Import and Settings/Update Center. They are not accepted final designs.
-- Next: high-fidelity prototypes in source/runtime, inspect running browser at representative desktop/tablet/mobile viewports, compare brand/font/image treatments and obtain owner visual acceptance.
+- BATCH 02 technical-document consolidation: merged via PR #167 at `c46cfcc788e923d0f4c787ec8e15f2783a8e74af`; CI #1600 passed, including preflight, bundle baseline, responsive Playwright smoke and artifacts.
+- M0-A0 source baseline and seven screen blueprints are recorded in the M0-A working documents.
+- **M0-A1 source architecture audit completed** on branch `audit/m0-a1-source-architecture`; see `UI_UX_M0_A1_ARCHITECTURE_AUDIT.md`. This is source-level architecture evidence, not runtime/computed-style or visual acceptance.
+- Findings include HomeScreen responsibility concentration, no implemented route-based shell, layered CSS ownership risk, distributed overlay focus responsibilities, feature-owned Stocktake/Import workflows, existing shared UI subsystems and Login-focused browser coverage.
+- Next: M0-A2 Design System & CSS Audit; then A3 Motion, A4 Runtime/Performance and A5 Technology Decision. High-fidelity prototypes follow these evidence gates.
 - M0-B motion, M0-C integration and M0-D quality/owner acceptance remain open. No M1 authorization.
 
 ## Current UI work
-- PR #164 remains Draft and based on pre-PR-167 main; do not treat it as current merge candidate.
-- Current documentation continuation branch: `feat/m0-a-operational-screen-blueprints`; PR and exact-head CI are pending.
+- M0-A1 branch: `audit/m0-a1-source-architecture`.
+- PR #168 / operational blueprint work is a separate documentation branch; do not merge either branch without owner approval.
+- Older PR #164 is based on a pre-PR-167 main baseline; do not treat it as a current merge candidate.
 - PR #157 is closed/unmerged; its CSS proposal is not accepted source behavior.
 
 ## Scanner
