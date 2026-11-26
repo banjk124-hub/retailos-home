@@ -11,7 +11,7 @@ const viewports = [
   { name: '360x740', width: 360, height: 740 },
   { name: 'landscape-short', width: 844, height: 390 },
 ];
-const auditSession = { name: 'RetailOS UI Audit', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
+const auditSession = { name: 'RetailOS UI Audit', department: 'Hàng tiêu dùng nhanh', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
 
 async function seedSession(page: Page) {
   await page.addInitScript((session) => localStorage.setItem('retailos.session.v2', JSON.stringify(session)), auditSession);
@@ -140,7 +140,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('./', { waitUntil: 'networkidle' });
-  await expect(page.locator('main.login-experience')).toBeVisible();
+  await expect(page.locator('main.retail-login')).toBeVisible();
   await capture(page, info, 'login-1440x900');
 
   await page.goto('about:blank');
