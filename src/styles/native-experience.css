@@ -169,6 +169,7 @@
   background: var(--glass-surface-elevated);
   box-shadow: var(--shadow-elevated), var(--glass-highlight);
   backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .app-shell .topbar-action-button,
@@ -189,6 +190,7 @@
   border-color: var(--glass-border-modal);
   background: var(--glass-surface-modal);
   box-shadow: var(--shadow-modal), var(--glass-highlight);
+  backdrop-filter: none;
   backdrop-filter: none;
 }
 
