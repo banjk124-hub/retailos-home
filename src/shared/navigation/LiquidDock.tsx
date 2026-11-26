@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
-import { GlassSurface } from '../components/glass';
+import { Surface } from '../components/surface/Surface';
 import { MotionIcon } from '../icons';
 import { useMotionState } from '../motion';
 import { LiquidDockIndicator } from './LiquidDockIndicator';
@@ -68,9 +68,9 @@ export const LiquidDock = memo(function LiquidDock({
   };
 
   return (
-    <GlassSurface
+    <Surface
       as="nav"
-      material="floating"
+      variant="floating"
       className={`liquid-dock${className ? ` ${className}` : ''}`}
       aria-label={label}
       aria-hidden={isKeyboardOpen || hidden || undefined}
@@ -136,6 +136,6 @@ export const LiquidDock = memo(function LiquidDock({
           );
         })}
       </span>
-    </GlassSurface>
+    </Surface>
   );
 });
