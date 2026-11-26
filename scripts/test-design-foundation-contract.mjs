@@ -151,6 +151,6 @@ for (const path of sourceFiles) {
   }
 }
 assert.ok(semanticSurface.includes(".surface--interactive:focus-within"), "Focus treatment must be limited to interactive surfaces");
-assert.ok(semanticSurface.includes("[data-surface-state=\\"error\\"]"), "Semantic surface must support explicit error state");
+assert.ok(semanticSurface.includes('[data-surface-state="error"]'), "Semantic surface must support explicit error state");
 
 console.log("Design foundation contract passed: semantic tokens, semantic surfaces, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, shared motion and reduced-motion hooks.");
