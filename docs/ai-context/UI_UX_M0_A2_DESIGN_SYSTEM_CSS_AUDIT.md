@@ -574,7 +574,7 @@ Baseline and current JSON summaries match exactly for raw and gzip metrics. Init
 
 ### Visual and geometry observations
 
-The 390×844 Home capture shows the LiquidDock fixed at approximately `y=769` with a 56 px control height. It visually overlays the first module card's lower content while the page continues scrolling beneath it. This is a concrete geometry finding to review against the intended dock contract; it is not yet approved for a production CSS patch.
+The 390×844 Home capture shows the LiquidDock navigation surface at `y=758` with a 78 px total height; its primary buttons are 56 px high and begin at `y=769`. It visually overlays the first module card's lower content while the page continues scrolling beneath it. This is a concrete geometry finding to review against the intended dock contract; it is not yet approved for a production CSS patch.
 
 The desktop Home hero also needs a separate hierarchy review between the notice panel and decorative calendar artwork. The empty Import overlay is large relative to its captured empty-state content. These remain design-review findings, not automatic defects.
 
