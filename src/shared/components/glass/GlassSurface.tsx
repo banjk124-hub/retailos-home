@@ -2,6 +2,11 @@ import { createElement } from 'react';
 import type { ComponentPropsWithoutRef, ElementType } from 'react';
 import type { GlassMaterial, GlassTone } from './GlassMaterial';
 
+/**
+ * Backward-compatible adapter for legacy callsites.
+ * New UI code should use semantic surface classes/components directly.
+ * The adapter intentionally renders opaque materials only.
+ */
 type Props<T extends ElementType> = {
   as?: T;
   material: GlassMaterial;
@@ -22,7 +27,7 @@ export function GlassSurface<T extends ElementType = 'div'>({
 
   return createElement(Component, {
     ...props,
-    className: `glass-surface glass-surface--${material}${className ? ` ${className}` : ''}`,
+    className: `surface glass-surface glass-surface--${material}${className ? ` ${className}` : ''}`,
     'data-glass-tone': tone,
     'data-glass-interactive': interactive ? 'true' : undefined,
   });
