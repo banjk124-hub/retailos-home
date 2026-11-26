@@ -1,6 +1,6 @@
 # UI-01B — Shell & Navigation
 
-**Status:** implementation complete on the feature branch; PR #178 remains Draft pending final review.  
+**Status:** merged into `main` via PR #178 on 2026-11-26.  
 **Scope owner:** Home Shell / shared navigation.  
 **Last implementation evidence:** commit `c676f4013241b1c60794bd96aedc3a2b30edb606`; CI run [#1775](https://github.com/banjk124-hub/retailos-home/actions/runs/45842213044).
 
@@ -46,4 +46,4 @@ No intentional changes to authentication/session, employee identity, module regi
 
 ## Release gate
 
-PR #178 remains Draft. This implementation is not merged or deployed. Merge/release requires explicit approval after visual review on representative desktop, tablet and mobile devices.
+PR #178 is merged. Merge status is not deployment status; production release remains governed by the PWA release workflow and explicit release approval.

@@ -7,7 +7,7 @@
 |---|---|---|---|
 | App composition | `src/App.tsx`, `src/main.tsx` | providers, boot sequence, route/screen composition | Trace app lifecycle and current route tree. |
 | Authentication | `src/features/auth/` | components, screens, services, types | Auth/session and employee identity are protected. |
-| Home and module catalog | `src/features/home/` | HomeScreen, moduleRegistry, homeStateStore, snapshotNoticeRules | Preserve stable module IDs, registry semantics and truthful readiness. |
+| Home and module catalog | `src/features/home/` | HomeScreen, moduleRegistry, homeStateStore, snapshotNoticeRules, `hooks/useHome*` | HomeScreen composes focused navigation, snapshot, calendar, lookup, feedback, push, update-count and viewport hooks; preserve stable module IDs, registry semantics and truthful readiness. See [UI_UX_PHASE_02_HOME_OWNERSHIP.md](./UI_UX_PHASE_02_HOME_OWNERSHIP.md). |
 | Data access | `src/features/data/` | moduleDataService, exportFormats | Trace payloads, caching and consumers. |
 | Scanner feature UI | `src/features/scanner/` | components, hooks, services | Read [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); presentation must not own engine lifecycle. |
 | Shared scanner platform | `src/platform/scanner/` | contracts, camera/session, decoder and processing | [SCANNER_ENGINE.md](./SCANNER_ENGINE.md); targeted scanner tests. |

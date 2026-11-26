@@ -10,10 +10,13 @@ import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { Surface } from '../../shared/components/surface/Surface';
-import { getCachedModuleSnapshots, MODULE_SNAPSHOTS_UPDATED_EVENT } from '../data/moduleDataService';
-import { readHomeUiState, saveHomeUiState } from './homeStateStore';
-import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
-import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
+import { readHomeUiState } from './homeStateStore';
+import { useHomeSnapshotNotices } from './hooks/useHomeSnapshotNotices';
+import { useHomeCalendarClock, useHomeCalendarDates } from './hooks/useHomeCalendarDates';
+import { useHomeNavigation } from './hooks/useHomeNavigation';
+import { type SnapshotNotice } from './snapshotNoticeRules';
+import { useHomeBarcodeLookup } from './hooks/useHomeBarcodeLookup';
+import { useHomeFeedback } from './hooks/useHomeFeedback';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
@@ -26,13 +29,15 @@ import '../../styles/home-ux.css';
 import '../../styles/home-engine.css';
 import '../../styles/home-redesign.css';
 import '../../styles/home-architecture.css';
-import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
-import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
+import { useHomePushNotifications } from './hooks/useHomePushNotifications';
+import { useHomeUpdateNoticeCount } from './hooks/useHomeUpdateNoticeCount';
+import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';
+import { isPushConfigured } from '../notifications/pushNotifications';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
-import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
+import { clearUpdateCenterEntry, readUpdateCenterEntry } from '../../shared/pwa/updateCenterStore';
 declare const __RETAILOS_BUILD_ID__: string;
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
@@ -75,8 +80,6 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
   );
 }
 
-type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'unavailable';
-type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
 const navItems = [
   { id: 'home', label: 'Trang chủ' },
@@ -101,23 +104,22 @@ export default function HomeScreen({
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
   const [initialUiState] = useState(readHomeUiState);
-  const searchRef = useRef(initialUiState.search);
-  const [activeNav, setActiveNav] = useState(
-    navItems.some((item) => item.id === initialUiState.activeNav && item.id !== 'settings')
-      ? initialUiState.activeNav
-      : 'home',
-  );
-  const activeNavRef = useRef(activeNav);
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const openSettingsFromNavigation = useCallback(() => setShowSettings(true), []);
+  const [activeNav, setActiveNav, handleNav, handleSearchChange] = useHomeNavigation({
+    initialState: initialUiState,
+    prefersReducedMotion,
+    onOpenSettings: openSettingsFromNavigation,
+  });
   useEffect(() => {
     const openSettings = () => setShowSettings(true);
     window.addEventListener('retailos:open-settings', openSettings);
     return () => window.removeEventListener('retailos:open-settings', openSettings);
   }, []);
-  const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
+  const updateNoticeCount = useHomeUpdateNoticeCount();
   const [showScannerSettings, setShowScannerSettings] = useState(false);
   const closeSettings = useCallback(() => {
     setShowSettings(false);
@@ -132,17 +134,9 @@ export default function HomeScreen({
     setShowSettings(true);
   }, []);
   useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
-  const [barcodeLookup, setBarcodeLookup] = useState<{
-    query: string;
-    requestId: number;
-    records: BarcodeProductRecord[] | null;
-    error?: string;
-    failedSources?: string[];
-  } | null>(null);
-  const barcodeLookupRequestIdRef = useRef(0);
-  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
-  const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
-  const [calendarNow, setCalendarNow] = useState(() => new Date());
+  const { barcodeLookup, setBarcodeLookup, runBarcodeLookup, openManualProductLookup, submitManualProductLookup } = useHomeBarcodeLookup();
+  const { isMobileViewport, areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded } = useHomeSpotlightViewport();
+  const calendarNow = useHomeCalendarClock();
   const [showCalendar, setShowCalendar] = useState(false);
   const [isCalendarClosing, setIsCalendarClosing] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -150,7 +144,7 @@ export default function HomeScreen({
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => new Date());
-  const scrollSaveTimer = useRef<number | null>(null);
+ 
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
@@ -158,10 +152,8 @@ export default function HomeScreen({
   const [showNotifications, setShowNotifications] = useState(false);
   const [isNotificationsClosing, setIsNotificationsClosing] = useState(false);
   const notificationsCloseTimer = useRef<number | null>(null);
-  const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
-  const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
-  const [pushSetupStatus, setPushSetupStatus] = useState<PushSetupStatus>('idle');
-  const [pushSetupError, setPushSetupError] = useState('');
+  const { priorityNotices, snapshotNoticeStatus } = useHomeSnapshotNotices();
+  const { pushSetupStatus, pushSetupError, enablePushNotifications } = useHomePushNotifications();
   const [selectedNotice, setSelectedNotice] = useState<SnapshotNotice | null>(null);
   const [isNoticeClosing, setIsNoticeClosing] = useState(false);
   const noticeCloseTimer = useRef<number | null>(null);
@@ -177,7 +169,7 @@ export default function HomeScreen({
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const [toast, setToast] = useState('');
+  const { toast, announce, clearToast } = useHomeFeedback();
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
     || isBarcodeScannerOpen || showSettings || showScannerSettings
@@ -190,122 +182,9 @@ export default function HomeScreen({
       : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
-  const enablePushNotifications = async () => {
-    if (pushSetupStatus === 'loading' || pushSetupStatus === 'ready') return;
-    setPushSetupStatus('loading');
-    setPushSetupError('');
-    try {
-      const permission: DeviceAccessStatus = await requestDeviceAccess('notifications');
-      if (permission !== 'granted') {
-        const permissionMessages: Record<DeviceAccessStatus, string> = {
-          checking: 'Đang kiểm tra quyền thông báo. Thử lại sau giây lát.',
-          prompt: 'Chưa cấp quyền thông báo trên trình duyệt.',
-          granted: '',
-          denied: 'Quyền thông báo đã bị chặn. Hãy đổi quyền của trang trong cài đặt trình duyệt.',
-          unsupported: 'Trình duyệt này không hỗ trợ thông báo đẩy.',
-          'needs-install': 'Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.',
-          error: 'Không thể yêu cầu quyền thông báo lúc này.',
-        };
-        setPushSetupError(permissionMessages[permission]);
-        setPushSetupStatus(permission === 'checking' ? 'error' : permission);
-        return;
-      }
-      const result = await subscribeForPushNotifications();
-      if (result === 'ready') {
-        setPushSetupStatus('ready');
-      } else {
-        setPushSetupError('Thông báo đẩy chưa được cấu hình.');
-        setPushSetupStatus('error');
-      }
-    } catch (error) {
-      console.error('Không thể thiết lập thông báo đẩy theo yêu cầu của người dùng:', error);
-      setPushSetupError(error instanceof Error
-        ? error.message
-        : 'Không thể thiết lập thông báo đẩy lúc này.');
-      setPushSetupStatus('error');
-    }
-  };
-  useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
-  useEffect(() => {
-    let isCurrent = true;
-    const loadSnapshotNotices = async () => {
-      setSnapshotNoticeStatus('loading');
-      try {
-        const snapshots = await getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS);
-        if (!isCurrent) return;
-        setPriorityNotices(calculateSnapshotNotices(snapshots));
-        setSnapshotNoticeStatus(snapshots.length === 0 ? 'empty' : 'ready');
-      } catch (error) {
-        if (!isCurrent) return;
-        console.error('Không thể đọc snapshot để tính thông báo:', error);
-        setPriorityNotices([]);
-        setSnapshotNoticeStatus('unavailable');
-      }
-    };
 
-    void loadSnapshotNotices();
-    window.addEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
-    return () => {
-      isCurrent = false;
-      window.removeEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
-    };
-  }, []);
-  useEffect(() => {
-    const mobileViewport = window.matchMedia('(max-width: 700px)');
-    const updateSpotlightForViewport = () => {
-      setIsMobileViewport(mobileViewport.matches);
-      setAreSpotlightNotificationsExpanded(!mobileViewport.matches);
-    };
-    mobileViewport.addEventListener('change', updateSpotlightForViewport);
-    return () => mobileViewport.removeEventListener('change', updateSpotlightForViewport);
-  }, []);
-
-  const calendarWeek = useMemo(() => {
-    const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
-    const mondayOffset = (today.getDay() + 6) % 7;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - mondayOffset);
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return {
-        date,
-        weekday: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()],
-        day: date.getDate(),
-        isToday: date.toDateString() === today.toDateString(),
-      };
-    });
-  }, [calendarNow]);
-  const calendarMonthDays = useMemo(() => {
-    const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
-    const mondayOffset = (firstDay.getDay() + 6) % 7;
-    const start = new Date(firstDay);
-    start.setDate(firstDay.getDate() - mondayOffset);
-    return Array.from({ length: 42 }, (_, index) => {
-      const date = new Date(start);
-      date.setDate(start.getDate() + index);
-      return date;
-    });
-  }, [calendarMonth]);
-
-  useEffect(() => {
-    const syncCalendarDate = () => {
-      const now = new Date();
-      setCalendarNow((current) => current.toDateString() === now.toDateString() ? current : now);
-    };
-    const now = new Date();
-    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
-    const timer = window.setTimeout(syncCalendarDate, Math.max(1, nextMidnight.getTime() - now.getTime()));
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') syncCalendarDate();
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [calendarNow]);
+  const { calendarWeek, calendarMonthDays } = useHomeCalendarDates(calendarNow, calendarMonth);
 
   const closeCalendar = () => {
     if (calendarCloseTimer.current !== null) return;
@@ -439,7 +318,6 @@ export default function HomeScreen({
 
   const openCalendar = () => {
     const today = new Date();
-    setCalendarNow((current) => current.toDateString() === today.toDateString() ? current : today);
     setSelectedCalendarDate(today);
     setCalendarMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     setIsCalendarClosing(false);
@@ -462,115 +340,11 @@ export default function HomeScreen({
     }
   };
 
-  useEffect(() => {
-    // Restore the last viewed location after a reload. The authenticated
-    // identity and Home UI state are independent, so future module state can
-    // be added to homeStateStore without changing the app shell.
-    const restore = window.requestAnimationFrame(() => {
-      if (initialUiState.scrollY > 0) window.scrollTo({ top: initialUiState.scrollY, behavior: 'auto' });
-    });
-    return () => window.cancelAnimationFrame(restore);
-  }, [initialUiState]);
 
-  useEffect(() => {
-    activeNavRef.current = activeNav;
-    saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
-  }, [activeNav]);
-
-  useEffect(() => {
-    let frame = 0;
-    const syncActiveSection = () => {
-      if (frame) window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const activationLine = window.innerHeight * 0.38;
-        const modulesTop = document.getElementById('modules')?.getBoundingClientRect().top ?? Infinity;
-        const activityTop = document.getElementById('activity')?.getBoundingClientRect().top ?? Infinity;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const isAtBottom = maxScroll > 0 && window.scrollY >= maxScroll - 2;
-        const nextActiveNav = isAtBottom || activityTop <= activationLine
-          ? 'activity'
-          : modulesTop <= activationLine
-            ? 'modules'
-            : 'home';
-        setActiveNav((current) => current === nextActiveNav ? current : nextActiveNav);
-        frame = 0;
-      });
-    };
-    const persistCurrentUi = () => saveHomeUiState({
-      activeNav: activeNavRef.current,
-      search: searchRef.current,
-      scrollY: window.scrollY,
-    });
-    const onScroll = () => {
-      syncActiveSection();
-      const currentY = Math.max(0, window.scrollY);
-      if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
-      scrollSaveTimer.current = window.setTimeout(() => {
-        saveHomeUiState({
-          activeNav: activeNavRef.current,
-          search: searchRef.current,
-          scrollY: currentY,
-        });
-      }, 140);
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('pagehide', persistCurrentUi);
-    syncActiveSection();
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('pagehide', persistCurrentUi);
-      if (frame) window.cancelAnimationFrame(frame);
-      if (scrollSaveTimer.current !== null) window.clearTimeout(scrollSaveTimer.current);
-    };
-  }, []);
-
-  const handleSearchChange = useCallback((nextSearch: string) => {
-    searchRef.current = nextSearch;
-    saveHomeUiState({ activeNav: activeNavRef.current, search: nextSearch, scrollY: window.scrollY });
-  }, []);
-  const announce = (message: string) => {
-    setToast(message);
-    window.setTimeout(() => setToast(''), 2600);
-  };
-  const runBarcodeLookup = useCallback((barcode: string) => {
-    const requestId = ++barcodeLookupRequestIdRef.current;
-    setBarcodeLookup({ query: barcode, requestId, records: null });
-    void lookupCachedBarcode(barcode).then(({ records, failedSources }) => {
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records, failedSources }
-        : current);
-    }).catch((error: unknown) => {
-      console.error('Không thể tra cứu thông tin cho mã barcode đã quét:', error);
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
-        : current);
-    });
-  }, []);
   const handleBarcodeDetected = useCallback((barcode: string) => {
     cameraLeaseRequestRef.current = null;
     runBarcodeLookup(barcode);
   }, [runBarcodeLookup]);
-  const openManualProductLookup = useCallback(() => {
-    const requestId = ++barcodeLookupRequestIdRef.current;
-    setBarcodeLookup({ query: '', requestId, records: [] });
-  }, []);
-  const submitManualProductLookup = useCallback(() => {
-    if (!barcodeLookup?.query.trim()) return;
-    const requestId = ++barcodeLookupRequestIdRef.current;
-    const query = barcodeLookup.query.trim();
-    setBarcodeLookup({ query, requestId, records: null });
-    void searchCachedProducts(query).then(({ records, failedSources }) => {
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records, failedSources }
-        : current);
-    }).catch((error: unknown) => {
-      console.error('Không thể tra cứu sản phẩm từ snapshot:', error);
-      setBarcodeLookup((current) => current?.requestId === requestId
-        ? { ...current, records: [], error: 'Không thể đọc dữ liệu sản phẩm đã lưu trên thiết bị.' }
-        : current);
-    });
-  }, [barcodeLookup?.query]);
   const closeBarcodeScanner = useCallback(() => {
     cameraLeaseRequestRef.current?.cancel();
     cameraLeaseRequestRef.current = null;
@@ -586,13 +360,6 @@ export default function HomeScreen({
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
   }, [isBarcodeScannerOpen]);
-  const handleNav = useCallback((id: string) => {
-    const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
-    if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    else if (id === 'activity') document.getElementById('activity')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
-    else if (id === 'settings') { setActiveNav('settings'); setShowSettings(true); }
-    else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
-  }, [prefersReducedMotion]);
   const dockAction = useMemo(() => {
     const scannerAvailable = isScannerSupportedDevice();
     return {
@@ -925,6 +692,6 @@ export default function HomeScreen({
     })()}
     {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} /></Suspense>}
     {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
-    {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={() => setToast('')} aria-label="Đóng thông báo"><X size={15} /></button></div>}
+    {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }
