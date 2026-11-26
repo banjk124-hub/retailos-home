@@ -96,3 +96,26 @@ test('Activity Center reports live signals without fabricating an event history'
   await expect(activity.getByText('Chưa có nhật ký hoạt động tổng quát')).toBeVisible();
   await expect(activity.getByText(/chưa kết nối nguồn event log tập trung/i)).toBeVisible();
 });
+
+
+test('Settings Experience preserves Update Center and Scanner settings handoffs', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  await page.getByRole('button', { name: 'Cài đặt' }).click();
+
+  const settings = page.getByRole('dialog', { name: 'Cài đặt' });
+  await expect(settings).toBeVisible();
+  await expect(settings.getByText('Kiểm soát trải nghiệm vận hành')).toBeVisible();
+  await expect(settings.getByRole('button', { name: /Trung tâm cập nhật/ })).toBeVisible();
+
+  await settings.getByRole('button', { name: /Trung tâm cập nhật/ }).click();
+  const updateCenter = page.getByRole('dialog', { name: 'Trung tâm cập nhật' });
+  await expect(updateCenter).toBeVisible();
+  await updateCenter.getByRole('button', { name: 'Quay lại cài đặt' }).click();
+  await expect(settings).toBeVisible();
+
+  await settings.getByRole('button', { name: /Cài đặt máy quét/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Cài đặt máy quét' })).toBeVisible();
+  await page.getByRole('button', { name: 'Quay lại cài đặt' }).click();
+  await expect(page.getByRole('dialog', { name: 'Cài đặt' })).toBeVisible();
+});
