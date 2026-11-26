@@ -14,9 +14,11 @@
 
 :root[data-power-mode="conserve"] .app-shell :is(.metric-card, .module-card, .panel-card, .user-context-chip, .date-chip, .toast-message, .spotlight-glass-tile, .spotlight-glass-chip, .spotlight-notification, .notification-popover, .calendar-modal, .app-library-modal, .notice-detail-modal) {
   backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 :root[data-power-mode="conserve"] :is(.app-shell, .barcode-result-backdrop, .barcode-scanner, .barcode-result-card, .barcode-scanner-card, .topbar-dock, .mobile-nav, .notification-popover) {
+  backdrop-filter: none;
   backdrop-filter: none;
 }
 
