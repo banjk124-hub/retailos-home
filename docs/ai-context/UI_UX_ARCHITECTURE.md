@@ -1,10 +1,10 @@
-> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+> **Historical-document notice (2026-11-26):** This file is retained for traceability only and is not an active instruction or status source. Use [INDEX.md](./INDEX.md) to locate current owners and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) for this file's disposition. The active UI/UX direction is [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). Verify all implementation facts against current source.
 
 ---
 
 # RetailOS UI/UX Architecture and Design System Contract
 
-**Status:** Proposed target architecture. This document becomes canonical only after review/acceptance.
+**Status:** SUPERSEDED / HISTORICAL. Not an active architecture or design authority. Product policy is owned by RETAILOS_PRODUCT_SKILL.md; architecture ADRs by ARCHITECTURE.md; active visual direction by UI_UX_M0_GOVERNING_SPEC.md.
 **Audit baseline:** `main` at `2003ea24966755d0ad4e0298b34422b053267e77`
 **Date:** 2026-11-25
 **Purpose:** Define the product-wide visual, interaction, component, layout, motion, accessibility, performance and extension rules that every current and future RetailOS screen must follow.
