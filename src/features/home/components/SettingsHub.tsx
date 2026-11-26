@@ -2,7 +2,8 @@ import { BellRing, ChevronLeft, ChevronRight, ScanBarcode, Settings, X, Download
 import { useEffect, useRef, useState } from 'react';
 import { readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT, type UpdateCenterEntry } from '../../../shared/pwa/updateCenterStore';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
-import '../../../styles/scanner-settings.css';
+import '../../../styles/settings-dialog.css';
+import '../../../styles/settings-hub.css';
 
 type Props = {
   onClose: () => void;
