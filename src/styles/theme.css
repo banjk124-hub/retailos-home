@@ -181,7 +181,7 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 
 .eyebrow { color: var(--color-brand-primary); }
 
-/* Home surfaces use opaque, semantic materials; no translucent glass treatment. */
+/* Home: restrained red/white system, glass removed in favor of opaque semantic surfaces */
 .app-shell { background: radial-gradient(ellipse at 75% -15%,rgba(255,222,226,.55),transparent 34%),#fffafa; }
 .sidebar { background: rgba(255,255,255,.88); border-right-color: #f1e7e8; }
 .workspace-avatar,.footer-mark { background: linear-gradient(145deg,#e94150,#b81d2c); }
