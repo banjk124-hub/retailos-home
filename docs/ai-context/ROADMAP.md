@@ -12,9 +12,10 @@ All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI di
 5. Activity Center with honest event-log availability.
 6. Settings Experience integrated with existing Update Center and Scanner Settings behavior.
 7. Cross-surface integration corrections and browser regression coverage.
+8. Greenfield Stocktake and Stocktake Import workspace presentation with protected Business Core contracts.
 
 ### Remaining implementation and acceptance
-1. **Operational workspaces:** migrate Stocktake and Import presentation without changing their engines, persistence, validation, revisions/conflicts, dirty-edit or output contracts.
+1. **Operational workspace verification:** CI and browser regression for Stocktake and Import entry, responsive layout, semantic landmarks and unchanged business contracts.
 2. **Integrated acceptance:** verify Home → Library → operational workflow → return navigation, Settings/Update Center, Activity signals, overlays, focus, scroll locking and PWA update safety.
 3. **Physical-device QA:** desktop, tablet, average/low-end Android and iOS Safari/PWA; verify touch scroll, safe areas, browser chrome, performance and camera behavior.
 4. **Owner acceptance and release gates:** visual acceptance, explicit merge approval, then separately authorized deployment and production transfer.
