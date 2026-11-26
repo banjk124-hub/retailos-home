@@ -232,3 +232,8 @@
   .retailos-experience *::after { scroll-behavior: auto !important; transition-duration: 1ms !important; animation-duration: 1ms !important; }
 }
 :root[data-power-mode="conserve"] .retailos-experience__nav-item { transition: none; }
+
+/* Primary navigation now belongs to the new shell; retain the quick lookup action. */
+.retailos-experience .liquid-dock__item,
+.retailos-experience .liquid-dock__indicator { display: none !important; }
+.retailos-experience .liquid-dock__track { grid-template-columns: minmax(0, 1fr); }
