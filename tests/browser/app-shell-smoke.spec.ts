@@ -74,6 +74,14 @@ test('greenfield module library searches and opens real registry groups', async 
   await library.getByRole('textbox', { name: 'Tìm trong thư viện nghiệp vụ' }).fill('kiểm kê');
   await expect(library.locator('.retailos-library__card')).toHaveCount(1);
   await library.getByRole('button', { name: /Mở thư viện Kiểm kê/ }).click();
-  await expect(page.getByRole('dialog', { name: 'Kiểm kê' })).toBeVisible();
-  await expect(page.getByRole('dialog', { name: 'Kiểm kê' }).getByRole('button', { name: /Xuất file/ })).toBeVisible();
+  const detail = page.getByRole('dialog', { name: 'Kiểm kê' });
+  await expect(detail).toBeVisible();
+  await expect(detail.locator('.retailos-library-detail__overview')).toContainText('2');
+  await expect(detail.getByRole('button', { name: 'Kiểm kê. Đã triển khai' })).toBeVisible();
+  await expect(detail.getByRole('button', { name: 'Xuất file. Đã triển khai' })).toBeVisible();
+  await expect(detail.locator('.retailos-library-detail__footer')).toContainText('snapshot');
+
+  await detail.getByRole('button', { name: 'Đóng thư viện' }).click();
+  await expect(detail).toBeHidden();
+  await expect(library.getByRole('button', { name: /Mở thư viện Kiểm kê/ })).toBeFocused();
 });
