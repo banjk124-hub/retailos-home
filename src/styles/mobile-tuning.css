@@ -273,14 +273,7 @@ button:not(:disabled):active {
   }
 }
 
-  .login-shell {
-    backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .showcase-glass-card {
-    backdrop-filter: none;
-    backdrop-filter: none;
-  }
+/* Legacy login-shell rules retained only for compatibility; Login Experience owns current Login layout. */
 
   @media (max-width: 700px) {
     .login-shell {
