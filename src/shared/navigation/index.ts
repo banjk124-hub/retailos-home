@@ -4,3 +4,5 @@ export type {
   LiquidDockItemDefinition,
   LiquidDockProps,
 } from './LiquidDock.types';
+
+export { ShellNavigation } from './ShellNavigation';
