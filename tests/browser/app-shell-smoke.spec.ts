@@ -85,3 +85,14 @@ test('greenfield module library searches and opens real registry groups', async 
   await expect(detail).toBeHidden();
   await expect(library.getByRole('button', { name: /Mở thư viện Kiểm kê/ })).toBeFocused();
 });
+
+
+test('Activity Center reports live signals without fabricating an event history', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  const activity = page.locator('#activity');
+  await expect(activity.getByRole('heading', { name: 'Trung tâm hoạt động' })).toBeVisible();
+  await expect(activity.getByText('LỊCH SỬ HOẠT ĐỘNG')).toBeVisible();
+  await expect(activity.getByText('Chưa có nhật ký hoạt động tổng quát')).toBeVisible();
+  await expect(activity.getByText(/chưa kết nối nguồn event log tập trung/i)).toBeVisible();
+});
