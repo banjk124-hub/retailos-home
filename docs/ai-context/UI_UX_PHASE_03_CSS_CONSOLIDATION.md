@@ -25,7 +25,7 @@ Non-goals:
 
 ## 2. Refreshed source inventory
 
-Baseline at UI-02 merge: **25 CSS files, 346,206 source bytes**. Current UI-03 branch after the first migration slices: **24 CSS files, 338,312 source bytes** (7,894 bytes / 2.28% lower). This is raw tracked source size, not gzip/Brotli transfer, CSSOM size or render cost. The reduction includes retired selectors; Home stylesheet consolidation itself preserves declarations and order.
+Baseline at UI-02 merge: **25 CSS files, 346,206 source bytes**. Current UI-03 branch after the first migration slices: **24 CSS files, 338,204 source bytes** (8,002 bytes / 2.31% lower). This is raw tracked source size, not gzip/Brotli transfer, CSSOM size or render cost. The reduction includes retired selectors; Home stylesheet consolidation itself preserves declarations and order.
 
 | Owner / stylesheet | Bytes | Initial disposition |
 |---|---:|---|
@@ -78,7 +78,7 @@ The source import graph is confirmed at this baseline. Vite's emitted CSS chunk 
 
 ### 4.1 Home cascade
 
-Four ordered Home stylesheets now total **65,097 bytes**. The former `home-architecture.css` was concatenated to the end of `home-redesign.css`, immediately before removing its import and source file. This preserves the original order `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css` → former architecture rules. No selector/declaration was rewritten as part of this file consolidation. Repeated selector names remain intentional cascade layers unless separately proven redundant.
+Four ordered Home stylesheets now total **64,989 bytes**. The former `home-architecture.css` was concatenated to the end of `home-redesign.css`, immediately before removing its import and source file. This preserves the original order `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css` → former architecture rules. No selector/declaration was rewritten as part of this file consolidation. Repeated selector names remain intentional cascade layers unless separately proven redundant.
 
 ### 4.2 Global override layers
 
@@ -126,7 +126,7 @@ Implementation:
 - Removed the `home-architecture.css` import from `HomeScreen.tsx` and deleted the standalone file.
 - Added preflight assertions for the retired import/file and for representative architecture-owned rules retained in the consolidated stylesheet.
 
-This is an ownership/file consolidation, not a declaration deduplication. The overlapping rules are retained because later declarations intentionally override earlier layout values at breakpoints. The Home chain is now four stylesheets and the overall source inventory is 24 files.
+This is an ownership/file consolidation, not a wholesale declaration deduplication. The overlapping rules are retained because later declarations intentionally override earlier layout values at breakpoints. One exact duplicate reduced-motion rule for `.library-engine__group` was removed because the same selector/property/value is already present in `home-engine.css`; the preflight guard prevents its return. The Home chain is now four stylesheets and the overall source inventory is 24 files.
 
 ## 7. Validation evidence — pre-consolidation checkpoint
 
