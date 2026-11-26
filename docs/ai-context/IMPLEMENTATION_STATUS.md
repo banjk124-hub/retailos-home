@@ -19,7 +19,16 @@
 - **Library Detail:** group overview, real module readiness and source context; Stocktake and Stocktake Import launch their existing workflows.
 - **Activity Center:** live snapshot-derived notices and persisted PWA update state. General event history remains explicitly unavailable until a real event-log source is connected.
 - **Settings Experience:** new settings hierarchy for the actual Update Center and Scanner Settings controls. Existing update action/state contracts and scanner preference storage/handoff remain the owners.
+- **Stocktake workspace:** greenfield responsive presentation for session/zone entry, scanning, review, history and exports. Existing Stocktake session, revision, IndexedDB, scanner handoff and export logic remain unchanged.
+- **Stocktake Import workspace:** greenfield responsive workbook/import workspace, zone navigation, review table, TXT preview and history presentation. Parser, local fingerprinting, staged conflict confirmation, dirty-edit guards, IndexedDB history and TXT/ZIP output remain unchanged.
+- **Workspace integration:** Import content wrapper no longer creates a second semantic `main` landmark; both operational modules retain their existing dialog and close contracts.
 - **Integration corrections:** one semantic `main` landmark in the authenticated experience; Activity update signals route directly to Update Center; Settings returns focus to its invoking control after close.
+
+## Operational workspace implementation
+- Added isolated presentation stylesheets: `stocktake-experience.css` and `stocktake-import-experience.css`; existing feature styles remain loaded for behavior-compatible components, with the new Experience layer owning the responsive visual treatment.
+- Desktop workspaces use expanded task surfaces; mobile uses viewport-filling layouts with safe-area padding, bounded scrolling and touch-sized controls. Reduced-motion preferences are respected.
+- No changes to Stocktake/Import service, parser, session, persistence, scanner, revision/conflict, validation or output code.
+- Browser regression added for Library → Stocktake and Library → Xuất file entry, responsive desktop surface sizing and single `main` landmark.
 
 ## Integration verification
 - CI #1693 passed on `8117d1904ba291a927e864213e5d4b40c34daf47` (Settings Experience implementation).
@@ -29,7 +38,7 @@
 - Browser emulation is not physical-device acceptance. Desktop, tablet, Android Chrome/PWA and iOS Safari/PWA acceptance remain outstanding.
 
 ## Remaining work
-1. Migrate Stocktake and Stocktake Import presentation to the greenfield Experience Layer without changing their engines, persistence, validation, revisions/conflicts, dirty-edit or export contracts.
+1. Complete automated CI validation and cross-workspace regression for the Stocktake and Stocktake Import presentation migration; fix any integration regressions found.
 2. Perform coherent vertical-slice physical QA on representative desktop, tablet, average/low-end Android and iOS devices; validate touch scroll, safe areas, focus, camera and PWA update behavior.
 3. Complete owner visual acceptance before merge/release decisions.
 
