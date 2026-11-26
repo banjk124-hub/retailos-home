@@ -666,7 +666,7 @@
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
-    align-content: center;
+    align-content: start;
     padding: 8px clamp(18px, 3vw, 48px) 76px;
   }
   .login-experience__layout {
@@ -676,7 +676,7 @@
     gap: 0;
     width: 100%;
     min-height: 0;
-    margin: auto;
+    margin: 0 auto;
   }
   .login-hero {
     display: flex;
