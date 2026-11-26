@@ -114,8 +114,15 @@ export default function HomeScreen({
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsInitialView, setSettingsInitialView] = useState<'home' | 'update-center'>('home');
+  const settingsTriggerRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
-    const openSettings = () => setShowSettings(true);
+    const openSettings = () => {
+      const active = document.activeElement;
+      settingsTriggerRef.current = active instanceof HTMLElement ? active : null;
+      setSettingsInitialView('home');
+      setShowSettings(true);
+    };
     const openNotifications = () => document.getElementById('activity')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     window.addEventListener('retailos:open-settings', openSettings);
     window.addEventListener('retailos:open-notifications', openNotifications);
@@ -127,10 +134,22 @@ export default function HomeScreen({
   const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
   const [updateCenterEntry, setUpdateCenterEntry] = useState<UpdateCenterEntry | null>(readUpdateCenterEntry);
   const [showScannerSettings, setShowScannerSettings] = useState(false);
+  const openUpdateCenter = useCallback((trigger?: HTMLElement | null) => {
+    settingsTriggerRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    setSettingsInitialView('update-center');
+    setShowSettings(true);
+  }, []);
   const closeSettings = useCallback(() => {
     setShowSettings(false);
+    setSettingsInitialView('home');
     setActiveNav('home');
   }, []);
+  useEffect(() => {
+    if (!showSettings && !showScannerSettings && settingsTriggerRef.current?.isConnected) {
+      settingsTriggerRef.current.focus();
+      settingsTriggerRef.current = null;
+    }
+  }, [showSettings, showScannerSettings]);
   const openScannerSettings = useCallback(() => {
     setShowSettings(false);
     setShowScannerSettings(true);
@@ -531,7 +550,7 @@ export default function HomeScreen({
   }, [openBarcodeScanner, openManualProductLookup]);
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
-    <main className="home-main">
+    <div className="home-main">
       <div className="content-wrap home-content">
         <OperationalHome
           employee={employee}
@@ -565,11 +584,11 @@ export default function HomeScreen({
           noticeStatus={snapshotNoticeStatus}
           updateEntry={updateCenterEntry}
           onOpenNotice={openNotice}
-          onOpenSettings={() => setShowSettings(true)}
+          onOpenUpdateCenter={() => openUpdateCenter(document.activeElement instanceof HTMLElement ? document.activeElement : null)}
         />
         <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><BrandMark /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
       </div>
-    </main>
+    </div>
 
     </div>
     <LiquidDock
@@ -578,7 +597,7 @@ export default function HomeScreen({
       onSelect={handleNav}
       action={dockAction}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} initialView={settingsInitialView} /></Suspense>}
     {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
