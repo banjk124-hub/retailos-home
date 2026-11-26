@@ -12,10 +12,11 @@ All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX
 1. **M0-0 — Direction and documentation baseline:** merged via PR #163.
 2. **M0-A — Structural/visual direction:**
    - A0 source baseline and seven screen blueprints refreshed against current main.
-   - A1 source architecture audit completed on `audit/m0-a1-source-architecture`: root/auth journey, Home responsibility map, registry/readiness, feature ownership, shared UI systems, overlays, persistence, lazy-loading/dependency boundaries and test gaps.
-   - Next: A2 Design System & CSS Audit — selector ownership, token duplication, cascade/computed winners, Vietnamese typography candidates, imagery licensing/offline policy. No bulk CSS deletion.
-   - Then A3 motion audit, A4 runtime/performance audit and A5 technology decision.
-   - Only after these evidence gates: high-fidelity source/runtime prototypes and owner visual acceptance.
+   - A1 source architecture audit completed; root/auth journey, Home responsibility map, registry/readiness, feature ownership, shared UI systems, overlays, persistence, lazy-loading/dependency boundaries and test gaps are recorded.
+   - A2 source/design-system audit completed on `audit/m0-a2-design-system-css`: all 24 tracked CSS files inventoried (365,141 source bytes), root/feature import ownership mapped, Home/mobile cascade and token collision risks identified, typography and image readiness assessed, and KEEP/CONSOLIDATE/REPLACE/RETIRE matrix recorded.
+   - **A2 runtime gate remains open:** computed-style winners, screenshot comparison, selector/property usage proof, emitted CSS transfer, font specimen, image crop and runtime/device performance need a running browser/build/device. No source cleanup is authorized by the static inventory.
+   - Next: close A2 runtime evidence, then A3 motion source/runtime audit and A4 performance profiling. A5 technology decisions follow measured evidence.
+   - High-fidelity prototypes follow the evidence gates and require owner visual acceptance.
 3. **M0-B — Motion/interaction:** derive observable patterns from the supplied video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior after M0-A direction is accepted.
 4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
 5. **M0-D — Technology, quality and owner acceptance:** evidence-based technology choices, accessibility, browser/device/performance validation and explicit owner acceptance.
