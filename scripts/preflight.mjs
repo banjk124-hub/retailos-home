@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "Responsive shell navigation and shared destination contract tests",
+    command: process.execPath,
+    args: ["scripts/test-shell-navigation-contract.mjs"],
+  },
+  {
     name: "RetailOS Design Foundation semantic token and motion contract tests",
     command: process.execPath,
     args: ["scripts/test-design-foundation-contract.mjs"],
