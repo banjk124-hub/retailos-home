@@ -89,9 +89,11 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 - [x] Establish one active M0 specification and one current status.
 
 **M0-A — Structural/visual direction**
-- [ ] Audit source ownership and actual screens.
-- [ ] Produce individual high-fidelity surfaces for Login, Shell, Home, Module Library, Stocktake, Import and Settings/Update Center.
-- [ ] Demonstrate desktop/tablet/mobile, brand anchors and selective light/dark treatments.
+- [x] Establish source ownership and baseline audit for root/Auth/Home/Library/Settings/Stocktake/Import; refresh against main after PR #167.
+- [ ] Complete computed-style and rendered-state audit across representative viewports.
+- [x] Produce source-grounded structural/operational blueprints for Login, proposed Shell, Home, Module Library, Stocktake, Import and Settings/Update Center.
+- [ ] Build high-fidelity visual prototypes for each representative surface directly in RetailOS source/runtime.
+- [ ] Demonstrate desktop/tablet/mobile, brand anchors and selective light/dark treatments on running prototypes.
 - [ ] Map controls, metrics and states to real owners; obtain owner acceptance.
 
 **M0-B — Motion/interaction**
@@ -115,7 +117,7 @@ Scanner stabilization is closed and owner-confirmed operationally. Redesign scan
 
 ## 8. Current status and exit criteria
 
-Owner direction is confirmed, but M0 remains open. Existing M0 records contain useful audits but conflict on amber accents, reference scope and restrictive motion language; treat them as historical evidence until reconciled. Concept boards/Figma frames are not implementation or acceptance evidence. PR #157 is an open Draft Login CSS slice, not product-wide M0 completion; reconcile against merged PR #162 and do not merge by default. PR #160–#162 did not ship product-wide redesign or the target App Shell. No M1 authorization exists.
+Owner direction is confirmed and BATCH 02 has consolidated the active documentation authority. M0-A source baseline and seven screen blueprints are recorded against main after PR #167; they are structural/operational evidence, not accepted final visuals. Remaining M0-A work is high-fidelity source/runtime prototypes, rendered browser inspection, brand/font/image validation and owner visual acceptance. PR #157 is closed and unmerged; its Login CSS proposal is not accepted source behavior. PR #160–#162 did not ship product-wide redesign or the target App Shell. No M1 authorization exists.
 
 M0 exits only after owner-approved direction is demonstrated in individual source-grounded screens; brand anchors are integrated; both reference roles are represented without copying; desktop/tablet/mobile are inspected; real workflows/data are verified; motion/interruption/reduced-motion/low-end behavior is tested; technology choices are evidenced; accessibility/performance/protected contracts pass; CI/browser/device evidence is accurately separated; and the owner explicitly accepts M0 and authorizes M1.
 
