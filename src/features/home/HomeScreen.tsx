@@ -29,13 +29,15 @@ import '../../styles/home-ux.css';
 import '../../styles/home-engine.css';
 import '../../styles/home-redesign.css';
 import '../../styles/home-architecture.css';
-import { requestDeviceAccess, type DeviceAccessStatus } from '../auth/services/deviceAccess';
-import { isPushConfigured, subscribeForPushNotifications } from '../notifications/pushNotifications';
+import { useHomePushNotifications } from './hooks/useHomePushNotifications';
+import { useHomeUpdateNoticeCount } from './hooks/useHomeUpdateNoticeCount';
+import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';
+import { isPushConfigured } from '../notifications/pushNotifications';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
-import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
+import { clearUpdateCenterEntry, readUpdateCenterEntry } from '../../shared/pwa/updateCenterStore';
 declare const __RETAILOS_BUILD_ID__: string;
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
@@ -78,7 +80,6 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
   );
 }
 
-type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
 const navItems = [
   { id: 'home', label: 'Trang chủ' },
@@ -117,7 +118,7 @@ export default function HomeScreen({
     window.addEventListener('retailos:open-settings', openSettings);
     return () => window.removeEventListener('retailos:open-settings', openSettings);
   }, []);
-  const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
+  const updateNoticeCount = useHomeUpdateNoticeCount();
   const [showScannerSettings, setShowScannerSettings] = useState(false);
   const closeSettings = useCallback(() => {
     setShowSettings(false);
@@ -133,8 +134,7 @@ export default function HomeScreen({
   }, []);
   useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
   const { barcodeLookup, setBarcodeLookup, runBarcodeLookup, openManualProductLookup, submitManualProductLookup } = useHomeBarcodeLookup();
-  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
-  const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
+  const { isMobileViewport, areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded } = useHomeSpotlightViewport();
   const calendarNow = useHomeCalendarClock();
   const [showCalendar, setShowCalendar] = useState(false);
   const [isCalendarClosing, setIsCalendarClosing] = useState(false);
@@ -152,8 +152,7 @@ export default function HomeScreen({
   const [isNotificationsClosing, setIsNotificationsClosing] = useState(false);
   const notificationsCloseTimer = useRef<number | null>(null);
   const { priorityNotices, snapshotNoticeStatus } = useHomeSnapshotNotices();
-  const [pushSetupStatus, setPushSetupStatus] = useState<PushSetupStatus>('idle');
-  const [pushSetupError, setPushSetupError] = useState('');
+  const { pushSetupStatus, pushSetupError, enablePushNotifications } = useHomePushNotifications();
   const [selectedNotice, setSelectedNotice] = useState<SnapshotNotice | null>(null);
   const [isNoticeClosing, setIsNoticeClosing] = useState(false);
   const noticeCloseTimer = useRef<number | null>(null);
@@ -182,52 +181,7 @@ export default function HomeScreen({
       : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
-  const enablePushNotifications = async () => {
-    if (pushSetupStatus === 'loading' || pushSetupStatus === 'ready') return;
-    setPushSetupStatus('loading');
-    setPushSetupError('');
-    try {
-      const permission: DeviceAccessStatus = await requestDeviceAccess('notifications');
-      if (permission !== 'granted') {
-        const permissionMessages: Record<DeviceAccessStatus, string> = {
-          checking: 'Đang kiểm tra quyền thông báo. Thử lại sau giây lát.',
-          prompt: 'Chưa cấp quyền thông báo trên trình duyệt.',
-          granted: '',
-          denied: 'Quyền thông báo đã bị chặn. Hãy đổi quyền của trang trong cài đặt trình duyệt.',
-          unsupported: 'Trình duyệt này không hỗ trợ thông báo đẩy.',
-          'needs-install': 'Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.',
-          error: 'Không thể yêu cầu quyền thông báo lúc này.',
-        };
-        setPushSetupError(permissionMessages[permission]);
-        setPushSetupStatus(permission === 'checking' ? 'error' : permission);
-        return;
-      }
-      const result = await subscribeForPushNotifications();
-      if (result === 'ready') {
-        setPushSetupStatus('ready');
-      } else {
-        setPushSetupError('Thông báo đẩy chưa được cấu hình.');
-        setPushSetupStatus('error');
-      }
-    } catch (error) {
-      console.error('Không thể thiết lập thông báo đẩy theo yêu cầu của người dùng:', error);
-      setPushSetupError(error instanceof Error
-        ? error.message
-        : 'Không thể thiết lập thông báo đẩy lúc này.');
-      setPushSetupStatus('error');
-    }
-  };
-  useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
-  useEffect(() => {
-    const mobileViewport = window.matchMedia('(max-width: 700px)');
-    const updateSpotlightForViewport = () => {
-      setIsMobileViewport(mobileViewport.matches);
-      setAreSpotlightNotificationsExpanded(!mobileViewport.matches);
-    };
-    mobileViewport.addEventListener('change', updateSpotlightForViewport);
-    return () => mobileViewport.removeEventListener('change', updateSpotlightForViewport);
-  }, []);
 
   const { calendarWeek, calendarMonthDays } = useHomeCalendarDates(calendarNow, calendarMonth);
 
