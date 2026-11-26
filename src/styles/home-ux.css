@@ -317,7 +317,7 @@
   transform: rotate(-6deg) scale(.96);
 }
 
-.page-glass-dock:has(~ .retailos-interface .app-shell button:active) {
+.page-floating-dock:has(~ .retailos-interface .app-shell button:active) {
   border-color: rgba(220, 79, 91, .58);
 }
 
@@ -338,7 +338,7 @@
   background: rgba(40, 18, 23, .52);
   
   
-  animation: brand-glass-backdrop-in var(--brand-motion-enter) both;
+  animation: barcode-backdrop-enter var(--brand-motion-enter) both;
 }
 .barcode-result-card {
   width: min(100%, 620px);
@@ -347,13 +347,13 @@
   flex-direction: column;
   overflow: hidden;
   padding: clamp(17px, 3vw, 25px);
-  border: 1px solid var(--brand-glass-border);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 24px;
-  background: var(--brand-glass-surface-strong);
-  box-shadow: var(--brand-glass-shadow);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-modal);
   
   
-  animation: brand-glass-panel-in var(--brand-motion-enter) both;
+  animation: barcode-card-enter var(--brand-motion-enter) both;
 }
 .barcode-flow-steps {
   display: flex;
@@ -536,8 +536,8 @@
 .barcode-result-card {
   max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
 }
-@keyframes brand-glass-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes brand-glass-panel-in { from { opacity: 0; transform: translateY(22px) scale(.965); filter: blur(7px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes barcode-backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes barcode-card-enter { from { opacity: 0; transform: translateY(22px) scale(.965);  } to { opacity: 1; transform: translateY(0) scale(1);  } }
 @keyframes brand-step-pulse { 50% { box-shadow: 0 0 0 5px rgba(184,36,53,.1), 0 4px 13px rgba(176,31,47,.22); } }
 @keyframes barcode-record-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes barcode-lookup-spin { to { transform: rotate(360deg); } }
