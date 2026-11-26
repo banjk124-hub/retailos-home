@@ -51,7 +51,7 @@ export const ModuleLibraryEngine = memo(function ModuleLibraryEngine({ groups, o
                 <span>Mở thư viện</span>
                 <ArrowUpRight size={16} aria-hidden={true} />
               </span>
-            </GlassSurface>
+            </Surface>
           </MotionCard>
         );
       })}
