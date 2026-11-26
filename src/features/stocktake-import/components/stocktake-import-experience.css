@@ -1,0 +1,48 @@
+/* Greenfield Stocktake Import workspace — presentation only; parser/session/store contracts stay untouched. */
+.stocktake-import-backdrop{z-index:120;padding:clamp(10px,1.8vw,24px);background:radial-gradient(ellipse at 12% 0%,rgba(151,30,53,.22),transparent 42%),rgba(19,15,18,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.stocktake-import-panel{width:min(100%,1480px);height:min(94dvh,1040px);max-height:94dvh;border:1px solid rgba(255,255,255,.78);border-radius:26px;background:linear-gradient(145deg,#fff 0%,#fbf8f9 80%,#f5edef 100%);box-shadow:0 32px 100px rgba(15,5,9,.38);color:#241d21;overflow:hidden}
+.stocktake-import-header{position:relative;z-index:4;min-height:76px;padding:14px clamp(16px,2.2vw,30px);background:rgba(255,255,255,.94);border-bottom:1px solid #eee4e8;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.stocktake-import-header h2{font-size:clamp(23px,2.8vw,32px);letter-spacing:-1px;font-weight:760;color:#2b2025}
+.stocktake-import-eyebrow{letter-spacing:1.4px;color:#98717c}
+.stocktake-import-icon-button{width:42px;height:42px;border-radius:12px;border-color:#eee4e8;background:#fff;color:#6d4652}
+.stocktake-import-content{height:calc(100% - 76px);padding:clamp(14px,2vw,26px);overflow:auto;overscroll-behavior:contain}
+.stocktake-import-intro{border:1px solid #efdde2;border-radius:18px;background:linear-gradient(115deg,#fff 0%,#fbecf0 100%);padding:16px 18px}
+.stocktake-import-symbol{border-radius:14px;background:#f7e5e9;color:#9d1f36}
+.stocktake-import-primary{min-height:48px;border-radius:12px;background:linear-gradient(110deg,#8f1830,#bb2b43);box-shadow:0 8px 20px rgba(143,24,48,.16)}
+.stocktake-import-secondary{min-height:44px;border-radius:12px;background:#f7eff1;color:#713d4b;border-color:#efdee3}
+.stocktake-import-hint{color:#81727a;line-height:1.6}
+.stocktake-import-summary{gap:10px;margin:18px 0}
+.stocktake-import-summary>div{min-width:0;padding:14px 16px;border:1px solid #eee4e8;border-radius:15px;background:#fff;box-shadow:0 6px 18px rgba(58,25,36,.035)}
+.stocktake-import-summary>div strong{font-size:clamp(21px,2.4vw,29px);color:#30232a;font-variant-numeric:tabular-nums}
+.stocktake-import-summary>div small{color:#967e87}
+.stocktake-import-workspace{gap:16px;align-items:stretch}
+.stocktake-import-zone-nav{border:1px solid #eee4e8;border-radius:18px;background:#fff;padding:12px}
+.stocktake-import-zone-nav-heading{padding:6px 5px 12px;color:#98717c;letter-spacing:1.2px}
+.stocktake-import-zone-nav>button{border-radius:12px;border-color:transparent;padding:12px 10px}
+.stocktake-import-zone-nav>button.is-active{border-color:#efd2da;background:#fbf0f3;box-shadow:inset 3px 0 #a5233c}
+.stocktake-import-zone-nav>button strong{font-size:15px;color:#33252b}
+.stocktake-import-zone-nav>button small{color:#8f8087}
+.stocktake-import-zone-nav>button em{font-weight:750}
+.stocktake-import-zone-workspace{min-width:0;border:1px solid #eee4e8;border-radius:18px;background:#fff;padding:clamp(14px,1.8vw,22px)}
+.stocktake-import-zone-heading{gap:16px;padding-bottom:16px;border-bottom:1px solid #f0e8eb}
+.stocktake-import-zone-heading h3{font-size:clamp(25px,3vw,34px);letter-spacing:-.8px;color:#941d35}
+.stocktake-import-zone-heading p{color:#897780}
+.stocktake-import-table-wrap{border:1px solid #eee4e8;border-radius:14px;background:#fff}
+.stocktake-import-edit-table{font-size:12px}
+.stocktake-import-edit-table th{position:sticky;top:0;background:#f8f1f3;color:#74515d;font-weight:750}
+.stocktake-import-edit-table td{border-color:#f0e8eb}
+.stocktake-import-edit-table input{border-radius:8px;border-color:#e8dce1}
+.stocktake-import-output-preview,.stocktake-import-preview-screen{border-radius:14px}
+.stocktake-import-output-textarea{border-radius:12px;background:#241d21;color:#fff}
+.stocktake-import-export-footer{border-top:1px solid #eee4e8}
+.stocktake-import-history-list{border:1px solid #eee4e8;border-radius:16px;background:#fff;padding:4px 14px}
+.stocktake-import-notice,.stocktake-import-feedback{border-radius:12px}
+.stocktake-import-review-backdrop{z-index:8}
+.stocktake-import-review-dialog{border:1px solid #f0e2e6;border-radius:20px;box-shadow:0 28px 90px rgba(20,8,13,.25)}
+.stocktake-import-state{border-radius:999px}
+.stocktake-import-panel button:focus-visible,.stocktake-import-panel input:focus-visible,.stocktake-import-panel textarea:focus-visible{outline:3px solid rgba(174,42,66,.24);outline-offset:2px}
+@media(min-width:900px){.stocktake-import-workspace{grid-template-columns:minmax(220px,280px) minmax(0,1fr)}.stocktake-import-zone-nav{position:sticky;top:0;align-self:start;max-height:calc(94dvh - 220px);overflow:auto}.stocktake-import-zone-workspace{min-height:520px}}
+@media(max-width:899px){.stocktake-import-workspace{grid-template-columns:1fr}.stocktake-import-zone-nav{display:flex;flex-direction:column;max-height:260px;overflow:auto}.stocktake-import-zone-nav>button{flex:0 0 auto}}
+@media(max-width:640px){.stocktake-import-backdrop{padding:0;place-items:stretch}.stocktake-import-panel{width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0}.stocktake-import-header{min-height:68px;padding:10px 14px}.stocktake-import-content{height:calc(100% - 68px);padding:14px 12px calc(18px + env(safe-area-inset-bottom))}.stocktake-import-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stocktake-import-summary>div{padding:11px}.stocktake-import-zone-nav{max-height:220px}.stocktake-import-zone-workspace{padding:13px}.stocktake-import-zone-heading{align-items:flex-start;flex-direction:column}.stocktake-import-zone-actions{width:100%;flex-wrap:wrap}.stocktake-import-table-wrap{max-width:100%;overflow:auto}.stocktake-import-preview-screen{min-height:60vh}}
+@media(prefers-reduced-motion:reduce){.stocktake-import-panel *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+@media(pointer:coarse){.stocktake-import-panel button{min-height:44px}}
