@@ -123,10 +123,6 @@ test('Login normal-size text meets WCAG AA contrast in light and dark surfaces',
   await expect(page.locator('.retail-login__employee small')).toBeVisible();
 
   const results = await page.evaluate(() => {
-    const parse = (value: string) => {
-      const channels = value.match(/[\\d.]+/g)?.map(Number) ?? [];
-      return channels.slice(0, 3);
-    };
     const luminance = (rgb: number[]) => {
       const linear = rgb.map((channel) => {
         const value = channel / 255;
