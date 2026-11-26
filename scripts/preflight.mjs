@@ -261,16 +261,29 @@ if (requestedScope === "auto") {
       console.error("Unable to classify changed paths; falling back to the full preflight.");
       scope = "full";
     } else {
-      const scannerTouched = changed.stdout.split(/\r?\n/).some((path) =>
+      const changedPaths = changed.stdout.split(/\r?\n/).filter(Boolean);
+      const scannerTouched = changedPaths.some((path) =>
         /^(src\/(features\/scanner|shared\/(scanner|camera))|scripts\/test-scanner)/.test(path),
       );
       scope = scannerTouched ? "full" : "ui";
+      globalThis.__retailosChangedPaths = changedPaths;
     }
   }
 }
 
+const changedPaths = globalThis.__retailosChangedPaths ?? [];
+const touches = (pattern) => changedPaths.some((path) => pattern.test(path));
+
 const selectedChecks = scope === "ui"
-  ? checks.filter((check) => !check.name.startsWith("Scanner") && check.name !== "Production build (TypeScript + Vite)")
+  ? checks.filter((check) => {
+      const name = check.name;
+      if (name.startsWith("Scanner") || name === "Production build (TypeScript + Vite)") return false;
+      if (name.startsWith("Home ")) return touches(/^(src\\/features\\/home|src\\/shared\\/home|scripts\\/test-home)/);
+      if (name.toLowerCase().includes("overlay")) return touches(/^(src\\/shared\\/(ui\\/)?overlay|scripts\\/test-(overlay|body-scroll-lock))/);
+      if (name.startsWith("Stocktake")) return touches(/^(src\\/features\\/(stocktake|stocktake-import)|scripts\\/test-stocktake)/);
+      if (name.startsWith("PWA ")) return touches(/^(src\\/shared\\/pwa|src\\/sw|scripts\\/test-pwa)/);
+      return true;
+    })
   : checks;
 
 console.log(`Preflight scope: ${scope} (${selectedChecks.length}/${checks.length} checks)`);
