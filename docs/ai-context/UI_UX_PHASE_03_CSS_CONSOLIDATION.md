@@ -1,6 +1,6 @@
 # UI-03 — CSS Consolidation
 
-**Status:** UI-03A inventory refreshed; UI-03B retired nine legacy class-selector families; UI-03D consolidated the Home architecture stylesheet without changing its cascade position. Final exact-head CI and browser evidence are pending.
+**Status:** Complete. UI-03 merged to main in PR #180; final documentation HEAD passed CI run #1817.
 **Branch:** `refactor/ui-03-css-consolidation`
 **Baseline:** `main` at UI-02 merge `4a98d3cd304f095dc6057499b69e5bf19f166948`
 **Scope:** reduce CSS duplication and obsolete rules while preserving rendered output, responsive behavior, accessibility, feature ownership and lazy-loading boundaries.
@@ -178,3 +178,12 @@ This evidence predates the Home stylesheet consolidation commit. It is supportin
 ## 10. Initial implementation decision
 
 UI-03A, the bounded UI-03B selector retirement and the first UI-03D Home stylesheet ownership consolidation are implemented. Exact-head CI must validate the consolidated branch before closure. Do not expand into a wholesale Home/global cascade rewrite; the next safe work is evidence-led duplicate/unused-rule classification and any remaining narrowly justified cleanup.
+
+
+## 8. Final closure — merged UI-03
+
+- PR #180 merged to main at merge commit `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54`.
+- Final documentation HEAD `c85cad4cebbb37e2909f47658a7eff91331b4484` passed CI run [#1817](https://github.com/banjk124-hub/retailos-home/actions/runs/45853511261).
+- Code/test HEAD `932ab5f7560b30efeb7a7b19fd40e189d6b06623` passed CI run [#1816](https://github.com/banjk124-hub/retailos-home/actions/runs/45853178428), including preflight, TypeScript/production build, bundle comparison and Playwright runtime evidence.
+- Browser runtime evidence: zero browser errors, zero failed requests and zero horizontal overflow across seven tested desktop/tablet/mobile/short-landscape viewports.
+- Browser viewport emulation does not constitute physical iOS/Android or lower-end-device acceptance.

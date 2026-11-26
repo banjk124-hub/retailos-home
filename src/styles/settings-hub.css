@@ -1,0 +1,16 @@
+/* Settings Hub menu and update-entry presentation. */
+.scanner-settings-section-label{margin:20px 2px 9px;color:#a09499;font-size:9px;font-weight:850;letter-spacing:1.1px}
+.scanner-settings-menu{display:grid;gap:9px}
+.scanner-settings-menu-item{display:flex;align-items:center;gap:12px;width:100%;min-height:76px;padding:13px;border:1px solid #eee5e7;border-radius:17px;background:rgba(255,255,255,.92);color:#44343b;text-align:left;cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.scanner-settings-menu-item:active{transform:scale(.99)}
+.scanner-settings-menu-item>svg{flex:0 0 auto;color:#a3989d}
+.scanner-settings-menu-icon{width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;border-radius:14px;background:#f9e9eb;color:#b52537}
+.scanner-settings-menu-icon.is-diagnostic{background:#edf3fb;color:#5275b9}
+.scanner-settings-menu-copy{display:grid;gap:4px;min-width:0;flex:1}
+.scanner-settings-menu-copy strong{font-size:13px;font-weight:760}
+.scanner-settings-menu-copy small{color:#83777c;font-size:11px;line-height:1.4}
+@media(prefers-reduced-motion:reduce){.scanner-settings-menu-item{transition:none}}
+.scanner-settings-menu-item--update.has-pending-update { border-color:rgba(181,37,55,.24); background:linear-gradient(110deg,#fff 0%,#fff8f8 100%); }
+.scanner-settings-update-icon { position:relative; }
+.scanner-settings-update-icon i { position:absolute; top:5px; right:5px; width:8px; height:8px; border:2px solid #f9e9eb; border-radius:50%; background:#b52537; }
+.scanner-settings-update-tag { flex:0 0 auto; padding:5px 7px; border-radius:99px; background:#fae9eb; color:#ad2638; font-size:8px; font-weight:900; letter-spacing:.5px; }

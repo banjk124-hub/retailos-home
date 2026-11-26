@@ -1,0 +1,104 @@
+/* App auth-journey identity recognition presentation. Owned by UnifiedIdentityView in App.tsx. */
+.auth-journey-recognition {
+  --identity-origin-x: 50vw;
+  --identity-origin-y: 50vh;
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, rgba(255,255,255,.16), rgba(17,12,14,.72) 52%, rgba(11,10,13,.92));
+  color: #fff;
+  clip-path: circle(0 at var(--identity-origin-x) var(--identity-origin-y));
+  animation: identity-surface-expand var(--motion-duration-identity-expansion) var(--motion-ease-identity) both;
+}
+.auth-journey-recognition__backdrop {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(213,39,54,.18), rgba(255,255,255,.02) 36%, rgba(0,0,0,.14));
+  
+}
+.auth-journey-recognition__panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(92vw, 520px);
+  gap: 22px;
+  padding: clamp(22px,4vw,34px);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 28px;
+  background: rgba(24,17,20,.35);
+  box-shadow: 0 24px 60px rgba(13,9,12,.34), inset 0 1px 0 rgba(255,255,255,.18);
+  opacity: 0;
+  transform: translateY(12px) scale(.985);
+  animation: identity-panel-reveal var(--motion-duration-emphasized) var(--motion-ease-enter) both;
+}
+.auth-journey-recognition__brand { display: inline-flex; justify-self: center; }
+.auth-journey-recognition__identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  background: rgba(255,255,255,.06);
+}
+.auth-journey-recognition__avatar {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(234,50,67,.92), rgba(255,156,167,.80));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+.auth-journey-recognition__meta {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+.auth-journey-recognition__meta span {
+  color: rgba(255,255,255,.64);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .15em;
+}
+.auth-journey-recognition__meta strong {
+  color: #fff;
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 760;
+  letter-spacing: -.04em;
+}
+.auth-journey-recognition__meta small {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  color: rgba(255,255,255,.8);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.auth-journey-recognition__status {
+  color: rgba(255,255,255,.7);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-journey-recognition,
+  .auth-journey-recognition__panel { animation: none !important; }
+  .auth-journey-recognition { clip-path: none; }
+  .auth-journey-recognition__panel { opacity: 1; transform: none; }
+}
+@keyframes identity-surface-expand {
+  to { clip-path: circle(var(--identity-reveal-radius) at var(--identity-origin-x) var(--identity-origin-y)); }
+}
+@keyframes identity-panel-reveal {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

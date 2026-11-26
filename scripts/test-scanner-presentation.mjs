@@ -48,14 +48,32 @@ assert.match(stocktakeSource, /stocktake-scanner-preview \$\{scanner\.isPreviewR
 assert.match(stocktakeSource, /<video key=\{scanner\.videoSurfaceKey\} ref=\{scanner\.videoRef\}/,
   'Stocktake must retain its feature-owned video element');
 
-const transitionCss = await read('../src/features/scanner/scanner-transition.css');
-assert.match(transitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video \{ visibility: hidden; \}/,
+const homePresentationCss = await read('../src/features/scanner/barcode-scanner-presentation.css');
+const stocktakePresentationCss = await read('../src/features/stocktake/components/stocktake-scanner-presentation.css');
+const sharedControlsCss = await read('../src/features/scanner/scanner-shared-controls.css');
+assert.match(homePresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view:not\(\.has-preview\) video \{ visibility: hidden; \}/,
   'Home must continue hiding the native video until its module receives preview readiness');
-assert.match(transitionCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video \{ visibility: visible; \}/,
+assert.match(homePresentationCss, /\.barcode-scanner\.scanner-home-transition \.barcode-scanner-view\.has-preview video \{ visibility: visible; \}/,
   'Home must reveal the native video through its own presentation CSS');
-assert.match(transitionCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video \{ visibility: hidden; \}/,
+assert.match(stocktakePresentationCss, /\.stocktake-scanner-preview:not\(\.has-preview\) video \{ visibility: hidden; \}/,
   'Stocktake must continue hiding the native video until its module receives preview readiness');
-assert.match(transitionCss, /\.stocktake-scanner-preview\.has-preview video \{ visibility: visible; \}/,
+assert.match(stocktakePresentationCss, /\.stocktake-scanner-preview\.has-preview video \{ visibility: visible; \}/,
   'Stocktake must reveal the native video through its own presentation CSS');
+
+
+assert.match(homeSource, /barcode-scanner-presentation\.css/);
+assert.match(homeSource, /scanner-shared-controls\.css/);
+assert.doesNotMatch(homeSource, /scanner-transition\.css|stocktake-scanner-presentation\.css/);
+assert.match(stocktakeSource, /stocktake-scanner-presentation\.css/);
+assert.match(stocktakeSource, /scanner-shared-controls\.css/);
+assert.doesNotMatch(stocktakeSource, /scanner-transition\.css|barcode-scanner-presentation\.css/);
+assert.doesNotMatch(homePresentationCss, /stocktake-scanner-/,
+  'Home presentation stylesheet must not own Stocktake selectors');
+assert.doesNotMatch(stocktakePresentationCss, /barcode-scanner\./,
+  'Stocktake presentation stylesheet must not own Home scanner selectors');
+assert.match(sharedControlsCss, /\.scanner-torch-toggle/,
+  'both scanner experiences share only the torch-control presentation');
+assert.doesNotMatch(sharedControlsCss, /\.barcode-scanner|\.stocktake-scanner/,
+  'shared controls must not absorb either feature surface');
 
 console.log('Scanner presentation ownership tests passed.');

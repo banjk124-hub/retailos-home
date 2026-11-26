@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useSta
 
 declare const __RETAILOS_BUILD_ID__: string;
 import LoginExperience from './features/auth/screens/LoginExperience';
+import './styles/auth-journey.css';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';

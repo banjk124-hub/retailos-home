@@ -44,6 +44,16 @@ const checks = [
     args: ["scripts/test-design-foundation-contract.mjs"],
   },
   {
+    name: "UI-04A Login and auth-journey presentation ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-04a-login-presentation.mjs"],
+  },
+  {
+    name: "UI-04B Settings and Scanner Preferences presentation ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-04b-settings-presentation.mjs"],
+  },
+  {
     name: "UI-03 verified legacy CSS selector retirement contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-03-legacy-selectors.mjs"],
@@ -67,6 +77,11 @@ const checks = [
     name: "Home performance and snapshot-notice regression tests",
     command: process.execPath,
     args: ["scripts/test-home-performance.mjs"],
+  },
+  {
+    name: "UI-04D Stocktake presentation ownership and workflow boundary tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-04d-stocktake-presentation.mjs"],
   },
   {
     name: "Cross-platform overlay viewport and content-scroll layout tests",

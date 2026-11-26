@@ -10,7 +10,8 @@ import {
   updateScannerSymbologyEnabled,
 } from '../services/scannerSettingsStore';
 import { previewScannerBeep } from '../services/scannerFeedback';
-import '../../../styles/scanner-settings.css';
+import '../../../styles/settings-dialog.css';
+import '../../../styles/scanner-preferences.css';
 
 type Props = { onClose: () => void };
 

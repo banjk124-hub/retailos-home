@@ -80,7 +80,8 @@ The source import graph was checked at the audited baseline. Import ownership an
 | `LoginExperience.tsx` | `login-experience.css` | Login-owned presentation. |
 | `HomeScreen.tsx` | `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css` → `home-architecture.css` | Five active Home generations are imported in this order. |
 | `SettingsHub.tsx`, `ScannerSettingsPanel.tsx` | `scanner-settings.css` | Shared settings presentation; not Scanner Engine. |
-| `BarcodeScanner.tsx`, `StocktakeScanner.tsx` | `scanner-transition.css` | Shared scanner presentation transition stylesheet; engine remains protected. |
+| `BarcodeScanner.tsx` | `barcode-scanner-presentation.css` + `scanner-shared-controls.css` | Home-owned presentation; common torch control only. |
+| `StocktakeScanner.tsx` | `stocktake-scanner-presentation.css` + `scanner-shared-controls.css` | Stocktake-owned presentation; common torch control only. |
 | `StocktakeModule.tsx` | `stocktake.css` | Feature-owned. |
 | `StocktakeImportModule.tsx` | `stocktake-import.css` | Feature-owned. |
 | `PwaUpdatePrompt.tsx` | `pwa-update-prompt.css` | PWA release presentation; lifecycle contract protected. |

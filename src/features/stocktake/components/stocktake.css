@@ -1,4 +1,5 @@
-.stocktake-backdrop{position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:clamp(8px,2vw,24px);background:rgba(24,17,21,.48);width:min(100%,720px);max-height:min(92dvh,900px);overflow:auto;padding:clamp(16px,3vw,26px);border:1px solid rgba(255,255,255,.8);border-radius:26px;background:linear-gradient(155deg,#fff 0%,#fbf8f9 100%);box-shadow:0 28px 90px rgba(29,13,19,.24);color:#29232a}
+.stocktake-backdrop{position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:clamp(8px,2vw,24px);background:rgba(24,17,21,.48)}
+.stocktake-panel{width:min(100%,720px);max-height:min(92dvh,900px);overflow:auto;padding:clamp(16px,3vw,26px);border:1px solid rgba(255,255,255,.8);border-radius:26px;background:linear-gradient(155deg,#fff 0%,#fbf8f9 100%);box-shadow:0 28px 90px rgba(29,13,19,.24);color:#29232a;box-sizing:border-box}
 .stocktake-header{display:flex;align-items:center;gap:13px;padding-bottom:18px;border-bottom:1px solid #eee7ea}
 .stocktake-header>div{flex:1;min-width:0}.stocktake-header h2{margin:3px 0 0;font-size:clamp(21px,4vw,27px);letter-spacing:-.7px}.stocktake-eyebrow,.stocktake-section-title,.stocktake-export-preview>small{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#a08f97}
 .stocktake-icon-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid #eee5e9;border-radius:13px;background:#fff;color:#51434a;cursor:pointer}
@@ -39,52 +40,13 @@
 .stocktake-history-list{display:grid;gap:0;padding-top:12px}.stocktake-history-list article{display:flex;align-items:flex-start;gap:11px;padding:13px 0;border-bottom:1px solid #f0e9ec}.stocktake-history-list article>div{flex:1;min-width:0}.stocktake-history-list strong{font-size:12px;overflow-wrap:anywhere}.stocktake-history-list p{margin:4px 0;font-size:11px;line-height:1.5;color:#786a70}.stocktake-history-list small{font-size:10px;color:#a09399}.stocktake-history-icon{width:32px;height:32px;display:grid;place-items:center;flex-shrink:0;border-radius:10px;background:#f8ecef;color:#ae3347}
 .stocktake-error{margin:13px 0;padding:11px 13px;border:1px solid #f1cbd1;border-radius:12px;background:#fff2f3;color:#a51f34;font-size:12px;line-height:1.5}
 .stocktake-footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px;padding-top:13px;border-top:1px solid #eee7ea;color:#a09399;font-size:10px}
-.stocktake-confirm-backdrop{position:fixed;z-index:140;inset:0;display:grid;place-items:center;padding:18px;background:rgba(30,20,24,.48);padding:22px;border:1px solid #fff;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.22)}
+.stocktake-confirm-backdrop{position:fixed;z-index:140;inset:0;display:grid;place-items:center;padding:18px;background:rgba(30,20,24,.48)}
+.stocktake-confirm{width:min(100%,460px);padding:22px;border:1px solid #fff;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.22);box-sizing:border-box}
 .stocktake-confirm h3{margin:0 0 9px;font-size:19px}.stocktake-confirm p{font-size:13px;line-height:1.6;color:#766870}.stocktake-confirm>div{display:flex;gap:9px;margin-top:17px}.stocktake-confirm>div>*{flex:1}.stocktake-danger-button{background:#b51f34;color:#fff}
-.stocktake-scanner-layer{position:fixed;z-index:135;inset:0;display:grid;place-items:center;padding:10px;background:rgba(17,13,15,.76)}
-@media(max-width:600px){.stocktake-backdrop{display:block;padding:0;background:#f8f4f5;height:100dvh;max-height:none;box-sizing:border-box;padding:calc(14px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none}.stocktake-shortcuts{grid-template-columns:1fr 1fr}.stocktake-header{position:sticky;top:0;z-index:2;background:#fff;padding:4px 0 13px}.stocktake-scanner-layer{padding:0}}
+@media(max-width:600px){.stocktake-backdrop{display:block;padding:0;background:#f8f4f5;height:100dvh;max-height:none;box-sizing:border-box;padding:calc(14px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none} .stocktake-panel{width:100%;height:100%;max-height:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}.stocktake-shortcuts{grid-template-columns:1fr 1fr}.stocktake-header{position:sticky;top:0;z-index:2;background:#fff;padding:4px 0 13px}}
 @media(prefers-reduced-motion:reduce){.stocktake-backdrop *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .stocktake-history-zones article{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid #f0e9ec}.stocktake-history-zones article>div{flex:1;min-width:0}.stocktake-history-zones strong{font-size:12px}.stocktake-history-zones p{margin:4px 0;font-size:11px;color:#786a70}.stocktake-history-zones small{font-size:10px;color:#a09399}.stocktake-history-log-heading{margin-top:22px;padding-top:16px;border-top:1px solid #eee7ea}
-
-
-.stocktake-scanner-surface{position:relative;display:flex;flex-direction:column;gap:14px;width:min(100%,560px);max-height:94dvh;overflow:auto;padding:18px;border:1px solid rgba(255,255,255,.8);border-radius:24px;background:#fff;box-shadow:0 24px 80px rgba(0,0,0,.28);color:#251c20}
-.stocktake-scanner-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.stocktake-scanner-heading h2{margin:5px 0;font-size:20px}.stocktake-scanner-heading p{margin:0;color:#82747a;font-size:12px}
-.stocktake-scanner-preview{position:relative;display:grid;place-items:center;flex:1 1 auto;min-width:0;min-height:260px;aspect-ratio:4/5;overflow:hidden;border-radius:18px;background:#151114;isolation:isolate}
-.stocktake-scanner-preview video{display:block;width:100%;height:100%;position:absolute;inset:0;object-fit:cover;background:#151114}
-.stocktake-scanner-message{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;color:#fff;font-size:12px}
-.stocktake-scanner-preview.has-preview .stocktake-scanner-message{display:none}
-.stocktake-scanner-reticle{position:absolute;inset:28% 10%;border:2px solid rgba(255,255,255,.9);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.12);pointer-events:none}
-.stocktake-scanner-reticle i{position:absolute;left:0;right:0;top:50%;height:2px;background:#f04455;box-shadow:0 0 12px #f04455;animation:stocktake-scan-line 2s ease-in-out infinite alternate}
-.stocktake-scanner-instruction{margin:0;color:#766970;font-size:12px;line-height:1.55}
-.stocktake-scanner-surface>.stocktake-secondary{width:100%}
-.stocktake-scanner-layer .stocktake-scanner-surface{width:min(100%,560px)}
-@keyframes stocktake-scan-line{from{transform:translateY(-55px)}to{transform:translateY(55px)}}
-@media(max-width:600px){.stocktake-scanner-layer{padding:0}.stocktake-scanner-surface{width:100%;height:100dvh;max-height:100dvh;box-sizing:border-box;padding:calc(16px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0}.stocktake-scanner-preview{flex:1;min-height:220px;max-height:62dvh;aspect-ratio:auto}}
-@media(prefers-reduced-motion:reduce){.stocktake-scanner-reticle i{animation:none}}
-
-
-/* Visual viewport geometry: iOS Safari's visible viewport can differ from the layout viewport. */
-.stocktake-scanner-layer {
-  top: var(--scanner-visual-viewport-top, 0px);
-  right: 0;
-  bottom: auto;
-  left: 0;
-  height: var(--scanner-visual-viewport-height, 100dvh);
-}
-@media (max-width: 600px) {
-  .stocktake-scanner-surface {
-    height: var(--scanner-visual-viewport-height, 100dvh);
-    max-height: var(--scanner-visual-viewport-height, 100dvh);
-    min-height: 0;
-  }
-  .stocktake-scanner-preview {
-    min-height: 0;
-    max-height: none;
-    flex: 1 1 0;
-  }
-}
 
 
 .stocktake-busy-panel{display:grid;justify-items:center;gap:12px}

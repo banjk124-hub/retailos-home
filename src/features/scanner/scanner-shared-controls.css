@@ -1,0 +1,25 @@
+/* Feature-owned flash controls; the platform engine exposes capability/state only. */
+.scanner-torch-toggle {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 15px;
+  background: rgba(18,14,17,.5);
+  
+  
+  color: #fff;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.scanner-torch-toggle[aria-pressed="true"] {
+  border-color: rgba(255,255,255,.9);
+  background: rgba(255,255,255,.94);
+  color: #241b20;
+}
+.scanner-torch-toggle:disabled {
+  cursor: default;
+  opacity: .65;
+}

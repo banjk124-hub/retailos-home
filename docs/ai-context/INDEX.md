@@ -1,11 +1,11 @@
 # RetailOS documentation index
 
 ## Start here
-1. `AGENTS.md` — agent operating contract, safety and evidence rules.
-2. `RETAILOS_PRODUCT_SKILL.md` — product principles, experience discovery, creative exploration and delivery workflow.
-3. `PROJECT_CONTEXT.md` — durable product/repository facts and current owner direction.
-4. `IMPLEMENTATION_STATUS.md` — verified implementation state and open gates.
-5. `AI_HANDOFF.md` — current continuation point.
+1. AGENTS.md — agent operating contract, safety and evidence rules.
+2. RETAILOS_PRODUCT_SKILL.md — product principles, experience discovery, creative exploration and delivery workflow.
+3. PROJECT_CONTEXT.md — durable product/repository facts and current owner direction.
+4. IMPLEMENTATION_STATUS.md — verified implementation state and open gates.
+5. AI_HANDOFF.md — current continuation point.
 6. Load only task-specific domain contracts and relevant decision history.
 
 ## Canonical ownership
@@ -28,16 +28,17 @@
 | Performance/bundle | PERFORMANCE_BUNDLE_PWA.md |
 
 ## Current UI migration
-- UI-03 CSS consolidation is active. Use [UI_UX_PHASE_03_CSS_CONSOLIDATION.md](./UI_UX_PHASE_03_CSS_CONSOLIDATION.md) for the live CSS inventory, ownership map, selector-removal gates and verification criteria.
+- **UI-03 CSS consolidation — complete:** [UI_UX_PHASE_03_CSS_CONSOLIDATION.md](./UI_UX_PHASE_03_CSS_CONSOLIDATION.md) records the merged implementation and exact-head validation evidence.
+- **UI-04 feature presentation migration — active:** [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md) records scope, source baseline, protected contracts and implementation sequence.
 
 ## Experience governance
-There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former `UI_UX_M0_GOVERNING_SPEC.md` is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
+There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former UI_UX_M0_GOVERNING_SPEC.md is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
 
 For a new experience:
 - Discover the user, task, environment, constraints and desired outcome.
 - Explore materially different creative directions before choosing.
 - Prototype the proposed experience in the actual source/runtime when implementation feasibility or interaction matters.
-- Validate technical constraints and obtain explicit owner approval before implementation.
+- Validate technical constraints and obtain explicit owner approval before substantial creative implementation.
 - Verify the result in browser/device contexts appropriate to the feature.
 
 Existing source audits and blueprints remain evidence about the current implementation, not a prescribed target design. Do not treat an audit's suggested layout, token, component or phase as an owner-approved creative decision.
