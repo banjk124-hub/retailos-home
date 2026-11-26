@@ -51,6 +51,14 @@ This document is the source of truth for modal/overlay lifecycle, page scroll lo
 
 ## Accessibility and known boundaries
 
+- Standard feature-owned modal dialogs use `useDialogFocus(active, dialogRef)` from `src/shared/hooks/useDialogFocus.ts` for keyboard focus containment.
+- The hook keeps a document-local ordered stack of active dialog elements. Only the topmost dialog traps Tab/Shift+Tab and redirects programmatic focus that escapes its boundary.
+- Dialog owners continue to own open/close state, Escape behavior, backdrop policy and focus restoration. The shared hook does not add a second scroll-lock manager and does not own business state.
+- Dialog containers need `tabIndex={-1}` so an empty dialog can receive focus safely. Existing initial-focus and return-focus refs remain feature-owned.
+- Do not apply the modal focus hook to non-modal popovers or specialized full-screen camera surfaces without a separate interaction contract.
+- Automated browser coverage must verify first/last focus wrapping, nested dialog precedence, Escape/back behavior and trigger focus restoration.
+- Physical-device acceptance remains required for iOS Safari/Home Screen PWA and Android keyboard/accessibility behavior.
+
 - Dialogs retain semantic `role="dialog"`, `aria-modal="true"` and a valid accessible label.
 - Close actions must be keyboard reachable; Escape closes the active dialog where implemented.
 - Focus moves to a close/action control on open in the Home, Settings, Scanner Settings and QA flows.
