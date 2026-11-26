@@ -44,6 +44,11 @@ const checks = [
     args: ["scripts/test-design-foundation-contract.mjs"],
   },
   {
+    name: "UI-04A Login and auth-journey presentation ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-04a-login-presentation.mjs"],
+  },
+  {
     name: "UI-03 verified legacy CSS selector retirement contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-03-legacy-selectors.mjs"],
