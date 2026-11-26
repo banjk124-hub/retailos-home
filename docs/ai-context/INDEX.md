@@ -1,65 +1,50 @@
 # RetailOS documentation index
 
 ## Start here
-1. `AGENTS.md` — repository operating, safety and release lifecycle.
-2. [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md) — governing product/design/engineering workflow.
-3. [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) — verified current state and open gates.
-4. [AI_HANDOFF.md](./AI_HANDOFF.md) — current continuation point.
-5. [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) — sole active UI/UX authority.
-6. Load only task-specific domain contracts.
+1. `AGENTS.md` — agent operating contract, safety and evidence rules.
+2. `RETAILOS_PRODUCT_SKILL.md` — product principles, experience discovery, creative exploration and delivery workflow.
+3. `PROJECT_CONTEXT.md` — durable product/repository facts and current owner direction.
+4. `IMPLEMENTATION_STATUS.md` — verified implementation state and open gates.
+5. `AI_HANDOFF.md` — current continuation point.
+6. Load only task-specific domain contracts and relevant decision history.
 
 ## Canonical ownership
 | Concern | Owner |
 |---|---|
-| Product direction, workflow, protected boundaries | RETAILOS_PRODUCT_SKILL.md |
-| Active UI/UX direction and M0 acceptance | UI_UX_M0_GOVERNING_SPEC.md |
-| Repository architecture and architecture ADRs | ARCHITECTURE.md |
-| Product/cross-domain decisions | DECISIONS.md |
-| Shared components and patterns | COMPONENT_AND_PATTERN_GOVERNANCE.md |
+| Product principles and experience/creative workflow | RETAILOS_PRODUCT_SKILL.md |
+| Architecture ADRs and technical invariants | ARCHITECTURE.md |
+| Product/cross-domain decisions and superseded direction | DECISIONS.md |
+| Shared components, patterns and feature ownership | COMPONENT_AND_PATTERN_GOVERNANCE.md |
 | Technology evaluation | TECHNOLOGY_RADAR.md |
 | Terminology/status vocabulary | TERMINOLOGY_GLOSSARY.md |
-| Deprecation/removal | DEPRECATION_REGISTER.md |
-| Current status / handoff | IMPLEMENTATION_STATUS.md / AI_HANDOFF.md |
-| Stable project context / roadmap / navigation | PROJECT_CONTEXT.md / ROADMAP.md / PROJECT_MAP.md |
+| Deprecation/removal lifecycle | DEPRECATION_REGISTER.md |
+| Current verified state / continuation | IMPLEMENTATION_STATUS.md / AI_HANDOFF.md |
+| Durable facts / future work / navigation | PROJECT_CONTEXT.md / ROADMAP.md / PROJECT_MAP.md |
 | Cross-feature acceptance | ACCEPTANCE_CHECKLIST.md |
-
-## M0-A working documents
-- [UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md](./UI_UX_M0_A_SOURCE_BASELINE_AUDIT.md) — current source baseline and screen ownership.
-- [UI_UX_M0_A1_ARCHITECTURE_AUDIT.md](./UI_UX_M0_A1_ARCHITECTURE_AUDIT.md) — source architecture, responsibility map, protected contracts and findings.
-- [UI_UX_M0_A1_SCREEN_BLUEPRINTS.md](./UI_UX_M0_A1_SCREEN_BLUEPRINTS.md) — seven source-grounded screen blueprints: Login, proposed Shell, Home, Library, Stocktake, Import and Settings/Update Center.
-- [UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md](./UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md) — complete tracked CSS inventory, import ownership, cascade/token risks, typography and imagery readiness, KEEP/CONSOLIDATE/REPLACE/RETIRE matrix.
-- [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md) — direction and acceptance authority.
-
-M0-A1 and M0-A2 source audits are recorded. M0-A2 rendered/computed-style, browser and device evidence remains an explicit open gate; source documents are not final design acceptance or permission for broad implementation.
-
-## Domain contracts
-| Domain | Owner |
-|---|---|
-| Scanner | SCANNER_ENGINE.md; SCANNER_HISTORY.md |
-| PWA/release | PWA_RUNTIME_RELEASE.md |
+| PWA release lifecycle | PWA_RUNTIME_RELEASE.md |
+| Scanner contracts/history | SCANNER_ENGINE.md / SCANNER_HISTORY.md |
 | Overlay lifecycle | UI_OVERLAY_ARCHITECTURE.md |
 | Stocktake Import | STOCKTAKE_FILE_IMPORT.md |
 | Performance/bundle | PERFORMANCE_BUNDLE_PWA.md |
-| Export File | modules/EXPORT_FILE.md |
+
+## Experience governance
+There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former `UI_UX_M0_GOVERNING_SPEC.md` is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
+
+For a new experience:
+- Discover the user, task, environment, constraints and desired outcome.
+- Explore materially different creative directions before choosing.
+- Prototype the proposed experience in the actual source/runtime when implementation feasibility or interaction matters.
+- Validate technical constraints and obtain explicit owner approval before implementation.
+- Verify the result in browser/device contexts appropriate to the feature.
+
+Existing source audits and blueprints remain evidence about the current implementation, not a prescribed target design. Do not treat an audit's suggested layout, token, component or phase as an owner-approved creative decision.
 
 ## Historical/source evidence
-Open only when a task needs the specific audit/history; do not treat these as active UI/UX authorities:
-- UI_UX_SCREEN_MAP.md; UI_UX_SCREEN_BLUEPRINTS.md
-- UI_UX_COMPONENT_AUDIT.md; UI_UX_TECHNOLOGY_AUDIT.md
-- UI_UX_PHASE_00_AUDIT.md; UI_UX_PHASE_01_FOUNDATION.md
-- UI_UX_M0_A_STRUCTURAL_BLUEPRINT.md; UI_UX_M0_A_EXECUTION_RECORD.md
-- UI_INTERACTION_RESPONSIVENESS_AUDIT.md; UI_COMPONENT_SPEC_TEMPLATE.md
-- RETAILOS_GOVERNANCE_INVENTORY_AUDIT.md
-- CHANGELOG_AI.md; SESSION_LOG.md (append-only chronology)
-
-Superseded proposal documents removed in BATCH 02 are recorded in DEPRECATION_REGISTER.md and UI_UX_DOCUMENT_CONSOLIDATION.md. Their original revisions remain in Git history.
-
-## AI capability system
-`AI_CAPABILITY_SYSTEM.md` and `AI_CAPABILITY_EVALUATION.md` describe the repository CORE/TASK/DOMAIN skill architecture and evaluation. Repository skills remain active; the private Product Studio plugin is a companion, not a replacement.
+Historical audits, retired proposals, phase records and session logs preserve evidence only. Open them when a task needs the specific trace; do not treat them as current instructions. See DEPRECATION_REGISTER.md for retired documents and UI_UX_DOCUMENT_CONSOLIDATION.md for earlier consolidation history.
 
 ## Context rules
-- Start with Product Skill and current status; for UI/UX also load the M0 Governing Spec and current M0-A documents.
 - Verify live branch, commit, PR, CI and deployment before volatile claims or edits.
 - Read owning domain contracts before protected changes.
-- Check decisions, architecture, deprecation and technology records before major changes.
-- Preserve one current status and one current handoff.
+- Check DECISIONS, ARCHITECTURE, DEPRECATION and TECHNOLOGY_RADAR before material changes.
+- Load only the context needed for the current task; do not bulk-load the archive.
+- Keep one current status and one current handoff.

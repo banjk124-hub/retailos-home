@@ -51,6 +51,7 @@ No bulk deletion of CSS, components, dependencies, history or data without this 
 | DEP-013 | UI_UX_M0_REFERENCE_ROLES_MOTION_CONTRACT.md | RETIRED — CONSOLIDATED | Image=art direction/composition; video=motion/interaction; RetailOS=brand/business/data/architecture; state correctness, interruption and low-end constraints moved to M0 Spec/Product Skill. | M0 Governing Spec is sole authority. |
 | DEP-014 | UI_UX_M0_CROSS_SURFACE_PROTOTYPE_REVIEW.md | RETIRED — HISTORICAL CONCEPT | The prototype was not accepted as target art direction; useful screen coverage and workflow cautions are already represented in M0 scope and source blueprints. | Do not use as visual quality benchmark. |
 | DEP-015 | UI_UX_M0_REFERENCE_REASSESSMENT.md | RETIRED — CONSOLIDATED | Reference interpretation and non-copy rules are represented in M0 Governing Spec. | Do not load as a second reference authority. |
+| DEP-016 | UI_UX_M0_GOVERNING_SPEC.md as active visual authority | SUPERSEDED — 2026-11-26 | Owner withdrew the former global visual direction and requested experience-governance reset. File retained with explicit historical notice; no replacement aesthetic selected. | Use RETAILOS_PRODUCT_SKILL.md and DECISIONS.md. Revalidate historical M0 audits before using them as implementation evidence. |
 
 ## 5. Reconsideration policy
 A REJECTED or RETIRED item may be reopened only when:
