@@ -1569,7 +1569,7 @@ button:not(:disabled):active {
 .login-screen .input-wrap:focus-within > svg { transform: scale(1.1); color: #c52635; }
 .login-screen .reveal-button:hover svg { transform: scale(1.12); }
 .login-screen .login-submit:hover .submit-arrow svg { transform: translateX(2px); }
-.login-screen .showcase-glass-card .float-icon svg { animation: icon-breathe 3.4s ease-in-out infinite; }
+.login-screen .showcase-card .float-icon svg { animation: icon-breathe 3.4s ease-in-out infinite; }
 @keyframes icon-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
@@ -2447,7 +2447,7 @@ button:not(:disabled):active {
   .ambient-orb { animation: none !important; }
 }
 
-.page-glass-dock {
+.page-floating-dock {
   position: fixed;
   z-index: -1;
   inset: 10px;
@@ -2465,22 +2465,22 @@ button:not(:disabled):active {
   
   
   pointer-events: none;
-  animation: page-glass-dock-breathe 8s ease-in-out infinite;
+  animation: page-floating-dock-breathe 8s ease-in-out infinite;
 }
-.page-glass-dock::before,
-.page-glass-dock::after {
+.page-floating-dock::before,
+.page-floating-dock::after {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   content: "";
   pointer-events: none;
 }
-.page-glass-dock::before {
+.page-floating-dock::before {
   background: linear-gradient(112deg, transparent 12%, rgba(255,255,255,.2) 37%, rgba(255,255,255,.035) 54%, transparent 78%);
   background-size: 230% 100%;
-  animation: page-glass-dock-sheen 14s ease-in-out infinite;
+  animation: page-floating-dock-sheen 14s ease-in-out infinite;
 }
-.page-glass-dock::after {
+.page-floating-dock::after {
   inset: 1px;
   border: 1px solid rgba(255,255,255,.19);
   opacity: .8;
@@ -2508,11 +2508,11 @@ button:not(:disabled):active {
   background: radial-gradient(circle, rgba(232,88,104,.07), transparent 72%);
   animation: page-glass-highlight-drift 30s ease-in-out infinite alternate-reverse;
 }
-@keyframes page-glass-dock-breathe {
+@keyframes page-floating-dock-breathe {
   0%, 100% { border-color: rgba(255,255,255,.58); box-shadow: 0 24px 70px rgba(117,34,44,.05), inset 0 1px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(255,255,255,.18); }
   50% { border-color: rgba(255,255,255,.82); box-shadow: 0 28px 78px rgba(117,34,44,.075), inset 0 1px 0 rgba(255,255,255,.7), inset 0 -1px 0 rgba(255,255,255,.28); }
 }
-@keyframes page-glass-dock-sheen {
+@keyframes page-floating-dock-sheen {
   0%, 24% { background-position: 100% 0; opacity: .34; }
   68%, 100% { background-position: -100% 0; opacity: .8; }
 }
@@ -2521,13 +2521,13 @@ button:not(:disabled):active {
   to { transform: translate3d(8%, 9%, 0) scale(1.08); }
 }
 @media (max-width: 700px) {
-  .page-glass-dock { inset: 5px; border-radius: 23px; }
+  .page-floating-dock { inset: 5px; border-radius: 23px; }
   .page-glass-highlight-one { top: -25%; left: -55%; width: 92vw; }
   .page-glass-highlight-two { right: -57%; bottom: -34%; width: 105vw; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .page-glass-dock,
-  .page-glass-dock::before,
+  .page-floating-dock,
+  .page-floating-dock::before,
   .page-glass-highlight { animation: none !important; }
 }
 
