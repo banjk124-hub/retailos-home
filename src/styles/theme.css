@@ -178,7 +178,7 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 
 .eyebrow { color: var(--color-brand-primary); }
 
-/* Home: restrained red/white system, glass removed in favor of opaque semantic surfaces */
+/* Home: restrained red/white system with opaque semantic surfaces */
 .app-shell { background: radial-gradient(ellipse at 75% -15%,rgba(255,222,226,.55),transparent 34%),#fffafa; }
 .sidebar { background: rgba(255,255,255,.88); border-right-color: #f1e7e8; }
 .workspace-avatar,.footer-mark { background: linear-gradient(145deg,#e94150,#b81d2c); }
@@ -241,10 +241,10 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .login-dept-softline .dept-preview-icon,.login-icon-softline { background:#f7ecf9!important; color:#8a4b8f!important; }
 .login-dept-homeline .dept-preview-icon,.login-icon-homeline { background:#fff3df!important; color:#a76b25!important; }
 .login-dept-warehouse .dept-preview-icon,.login-icon-warehouse { background:#eaf3ff!important; color:#2f639d!important; }
-.login-dept-fresh .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#36a87a,#b9eed4); }
-.login-dept-softline .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#a86db1,#e7c5eb); }
-.login-dept-homeline .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#c78a39,#f1d5a4); }
-.login-dept-warehouse .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#4c86c0,#c5e0ff); }
+.login-dept-fresh .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#36a87a,#b9eed4); }
+.login-dept-softline .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#a86db1,#e7c5eb); }
+.login-dept-homeline .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#c78a39,#f1d5a4); }
+.login-dept-warehouse .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#4c86c0,#c5e0ff); }
 .login-motion-pulse .orbit-two { animation: dept-pulse 2.6s ease-in-out infinite; }
 .login-motion-bloom .orbit-one { animation: dept-bloom 3.2s ease-in-out infinite; }
 .login-motion-drift .orbit-two { animation: dept-drift 3.8s ease-in-out infinite; }
