@@ -12,6 +12,7 @@ import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { Surface } from '../../shared/components/surface/Surface';
 import { readHomeUiState } from './homeStateStore';
 import { useHomeSnapshotNotices } from './hooks/useHomeSnapshotNotices';
+import { useHomeCalendarClock, useHomeCalendarDates } from './hooks/useHomeCalendarDates';
 import { useHomeNavigation } from './hooks/useHomeNavigation';
 import { type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
@@ -140,7 +141,7 @@ export default function HomeScreen({
   const barcodeLookupRequestIdRef = useRef(0);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
   const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
-  const [calendarNow, setCalendarNow] = useState(() => new Date());
+  const calendarNow = useHomeCalendarClock();
   const [showCalendar, setShowCalendar] = useState(false);
   const [isCalendarClosing, setIsCalendarClosing] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -234,51 +235,7 @@ export default function HomeScreen({
     return () => mobileViewport.removeEventListener('change', updateSpotlightForViewport);
   }, []);
 
-  const calendarWeek = useMemo(() => {
-    const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
-    const mondayOffset = (today.getDay() + 6) % 7;
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - mondayOffset);
-    return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return {
-        date,
-        weekday: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()],
-        day: date.getDate(),
-        isToday: date.toDateString() === today.toDateString(),
-      };
-    });
-  }, [calendarNow]);
-  const calendarMonthDays = useMemo(() => {
-    const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
-    const mondayOffset = (firstDay.getDay() + 6) % 7;
-    const start = new Date(firstDay);
-    start.setDate(firstDay.getDate() - mondayOffset);
-    return Array.from({ length: 42 }, (_, index) => {
-      const date = new Date(start);
-      date.setDate(start.getDate() + index);
-      return date;
-    });
-  }, [calendarMonth]);
-
-  useEffect(() => {
-    const syncCalendarDate = () => {
-      const now = new Date();
-      setCalendarNow((current) => current.toDateString() === now.toDateString() ? current : now);
-    };
-    const now = new Date();
-    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
-    const timer = window.setTimeout(syncCalendarDate, Math.max(1, nextMidnight.getTime() - now.getTime()));
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') syncCalendarDate();
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [calendarNow]);
+  const { calendarWeek, calendarMonthDays } = useHomeCalendarDates(calendarNow, calendarMonth);
 
   const closeCalendar = () => {
     if (calendarCloseTimer.current !== null) return;
@@ -412,7 +369,6 @@ export default function HomeScreen({
 
   const openCalendar = () => {
     const today = new Date();
-    setCalendarNow((current) => current.toDateString() === today.toDateString() ? current : today);
     setSelectedCalendarDate(today);
     setCalendarMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     setIsCalendarClosing(false);
