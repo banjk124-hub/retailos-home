@@ -58,6 +58,7 @@ button { font: inherit; }
 }
 .sidebar, .topbar, .topbar-dock, .mobile-nav, .panel-card, .metric-card, .module-card, .app-library-card, .calendar-modal, .notice-detail-modal, .barcode-result-card, .toast-message {
   backdrop-filter: none;
+  backdrop-filter: none;
 }
 .sidebar {
   background: linear-gradient(165deg,rgba(255,255,255,.82),rgba(255,248,249,.72));
@@ -98,6 +99,7 @@ button { font: inherit; }
   border: 1px solid rgba(255,255,255,.42);
   background: linear-gradient(140deg,rgba(255,255,255,.24),rgba(255,255,255,.09));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.36), 0 10px 28px rgba(70,8,18,.09);
+  backdrop-filter: none;
   backdrop-filter: none;
 }
 .spotlight-button {
