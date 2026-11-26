@@ -76,7 +76,7 @@ const panel = await read('../src/features/scanner/components/ScannerSettingsPane
 assert.ok(panel.includes('role="switch"'), 'symbology options use accessible switches');
 assert.ok(panel.includes('updateScannerSymbologyEnabled'), 'switches update the persisted preference store');
 assert.ok(panel.includes('Ít nhất một định dạng phải được bật'), 'the minimum-one-format rule is explained');
-const css = await read('../src/styles/scanner-settings.css');
+const css = await read('../src/styles/scanner-preferences.css');
 assert.ok(css.includes('.scanner-symbology-switch.is-on{background:#16a34a}'), 'enabled switches are green');
 
 const validationSource = await read('../src/platform/scanner/barcodeValidation.ts');
