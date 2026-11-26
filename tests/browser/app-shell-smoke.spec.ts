@@ -75,5 +75,5 @@ test('greenfield module library searches and opens real registry groups', async 
   await expect(library.locator('.retailos-library__card')).toHaveCount(1);
   await library.getByRole('button', { name: /Mở thư viện Kiểm kê/ }).click();
   await expect(page.getByRole('dialog', { name: 'Kiểm kê' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Xuất file/ })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Kiểm kê' }).getByRole('button', { name: /Xuất file/ })).toBeVisible();
 });
