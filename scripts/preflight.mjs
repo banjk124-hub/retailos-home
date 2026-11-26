@@ -261,8 +261,8 @@ if (requestedScope === "auto") {
       console.error("Unable to classify changed paths; falling back to the full preflight.");
       scope = "full";
     } else {
-      const scannerTouched = changed.stdout.split(/\\r?\\n/).some((path) =>
-        /^(src\\/(features\\/scanner|shared\\/(scanner|camera))|scripts\\/test-scanner)/.test(path),
+      const scannerTouched = changed.stdout.split(/\r?\n/).some((path) =>
+        /^(src\/(features\/scanner|shared\/(scanner|camera))|scripts\/test-scanner)/.test(path),
       );
       scope = scannerTouched ? "full" : "ui";
     }
