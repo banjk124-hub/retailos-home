@@ -165,18 +165,18 @@
 }
 
 .app-shell .topbar {
-  border-color: var(--glass-border-elevated);
-  background: var(--glass-surface-elevated);
-  box-shadow: var(--shadow-elevated), var(--glass-highlight);
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-elevated), none;
   
   
 }
 
 .app-shell .topbar-action-button,
 .app-shell .icon-button {
-  border-color: var(--glass-border-card);
-  background: var(--glass-surface-card);
-  box-shadow: var(--shadow-card), var(--glass-highlight);
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-panel);
+  box-shadow: var(--shadow-card), none;
 }
 
 .app-shell .home-search-field > .ro-icon-motion {
@@ -187,9 +187,9 @@
 .app-shell .calendar-modal,
 .app-shell .notice-detail-modal,
 .app-shell .barcode-result-card {
-  border-color: var(--glass-border-modal);
-  background: var(--glass-surface-modal);
-  box-shadow: var(--shadow-modal), var(--glass-highlight);
+  border-color: var(--color-border-subtle);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-modal), none;
   
   
 }
