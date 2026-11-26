@@ -13,6 +13,12 @@ async function openHome(page: Page) {
   }, session);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
+  await expect(page.locator('.retailos-experience')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Điều hướng RetailOS' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
+  await page.getByRole('button', { name: 'Thư viện nghiệp vụ' }).click();
+  await expect(page.locator('#modules')).toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Thông báo' })).toBeVisible();
 }
 
 test('authenticated Home opens without runtime errors or horizontal overflow', async ({ page }) => {
