@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../../scanner/services/barcodeLookup';
 
 export type HomeBarcodeLookupState = {
@@ -11,7 +11,7 @@ export type HomeBarcodeLookupState = {
 
 export function useHomeBarcodeLookup() {
   const [barcodeLookup, setBarcodeLookup] = useState<HomeBarcodeLookupState | null>(null);
-  const requestIdRef = useState({ current: 0 })[0];
+  const requestIdRef = useRef(0);
 
   const runBarcodeLookup = useCallback((barcode: string) => {
     const requestId = ++requestIdRef.current;
