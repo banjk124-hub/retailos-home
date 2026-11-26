@@ -373,3 +373,60 @@ External font evidence:
 - https://github.com/bettergui/BeVietnamPro
 
 No runtime source, CSS, asset, dependency, business logic, persistence, scanner engine, PWA lifecycle, deployment or production state is modified by this audit.
+
+
+## 11. Runtime evidence — first CI capture (2026-11-26)
+
+**Collector:** `tests/browser/runtime-evidence.spec.ts`  
+**Source:** CI run [#1608](https://github.com/banjk124-hub/retailos-home/actions/runs/45751754448), exact head `7b5ac10f2e781a473896a5085cd1891436653dd0`; merged to main by `46eb2876c2a18f39e69a13dec86dc001dcadb8ff`.  
+**Artifact:** `retailos-ui-runtime-evidence` (PNG + JSON, 9.24 MB archive; generated 2026-11-26 03:55 UTC).  
+**CI result:** success. Preflight, PR-base build, bundle comparison, Chromium installation, responsive/runtime tests and artifact uploads all passed.
+
+### 11.1 Confirmed runtime results
+
+- Login captured at 1440×900.
+- Authenticated Home captured at 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and 844×390.
+- Settings, Library, Stocktake and Import interaction surfaces each produced a screenshot and JSON capture at 390×844.
+- Browser page errors: 0.
+- Console errors: 0.
+- Failed requests: 0.
+- Home horizontal overflow: 0 CSS pixels at all seven tested viewports.
+- Duplicate DOM IDs: none in the captured Login/Home/feature states.
+- Captured computed font stack remains Inter/system fallback; this is not a font-family visual comparison.
+- The Home capture reports 1,970 CSSOM rules with 1,409 zero-match selectors at desktop; feature captures report different totals as lazy stylesheets load (e.g. Import: 2,344 rules / 1,728 zero-match selectors).
+
+### 11.2 Interpretation limits — do not overclaim
+
+The current feature navigation opens operational surfaces as overlays/drawers over Home. The screenshots and DOM captures therefore prove the observed overlay state at the captured viewport; they do **not** prove a standalone full-page route or every internal interaction state for each feature.
+
+The current collector records DOM geometry, a selected computed-style property set, CSSOM selector text, stylesheet origin, media/group condition and document-wide selector match count. It does **not** yet provide:
+- a per-element, per-property declaration/cascade winner trace (including specificity, source order, `!important`, pseudo-state and inherited values);
+- exhaustive state coverage (open/closed/hover/focus/pressed/disabled, nested dialogs, scroll positions and data-loaded states);
+- CSS transfer size per emitted chunk with gzip/Brotli comparison;
+- navigation/resource timing, LCP/CLS/INP, long-task, paint/compositing or memory profiles;
+- a Be Vietnam Pro vs Inter specimen rendered and measured in the same production build;
+- physical-device measurements on representative low-end Android hardware.
+
+A zero-match CSS selector is only a candidate for investigation. It may be active under another viewport, pseudo-state, DOM route, feature load, browser condition or dynamic class. **No rule may be retired from this count alone.**
+
+### 11.3 Visual inspection observations
+
+The first artifact was visually inspected as screenshots, not inferred from JSON alone:
+- Home renders at all tested viewport dimensions without horizontal document overflow.
+- At 390×844, Stocktake opens as a bottom-sheet style overlay while the Home content remains behind it; this confirms the overlay ownership noted above.
+- Library and Settings likewise retain the Home surface behind their overlay presentation.
+- Import opens a compact operational overlay/panel; this capture is not sufficient to assess its complete desktop/tablet layout or all import workflow states.
+- The screenshot set is suitable as a first baseline, but it is not yet an acceptance review of all responsive feature states.
+
+### 11.4 Required next instrumentation and review
+
+Before the first CSS consolidation batch, extend the collector to:
+1. record explicit UI state identity (active dialog/drawer, owning feature, trigger, open/closed state) and assert that each intended feature surface was actually reached;
+2. record matched declarations for representative visible elements and key properties, preserving selector, stylesheet, media condition, specificity, source order and importance alongside the browser-computed result;
+3. capture loaded CSS resource sizes and production asset/chunk metadata, then calculate raw, gzip and Brotli sizes reproducibly;
+4. collect browser Performance API navigation/resource/paint/layout-shift/long-task entries where supported, clearly labelling unsupported metrics;
+5. add repeatable typography specimens and palette comparison pages/states without changing production tokens;
+6. expand viewport/state coverage and add independent feature-shell coverage only where the product's existing navigation architecture supports it; do not invent routes or alter module ownership to satisfy the test;
+7. review screenshots and evidence before marking any selector KEEP / CONSOLIDATE / RETIRE.
+
+**M0-A2 status:** source inventory and first browser baseline are complete. Runtime capture is now available and has passed CI. The phase remains **IN PROGRESS**: declaration-level cascade tracing, compressed CSS delivery, typography/palette comparison and meaningful runtime/device performance evidence are outstanding. No production CSS consolidation, font selection, palette lock or asset rollout is authorized by this evidence.
