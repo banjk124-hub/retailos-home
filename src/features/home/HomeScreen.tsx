@@ -1,9 +1,8 @@
 import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
-  Activity, ArrowRight, ArrowUpRight, Bell, Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight,
-  ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode, Search,
-  ShieldCheck, Sparkles, Truck, Warehouse, X,
+  Activity, ArrowUpRight, Bell, Check, CalendarDays, ChevronLeft, ChevronRight,
+  LogOut, PackageSearch, ScanBarcode, Search, ShieldCheck, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
 import type { DepartmentConfig } from '../../shared/config/departments';
@@ -17,9 +16,8 @@ import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } 
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import { OperationalHome } from '../../experience/home/OperationalHome';
-import { MODULE_REGISTRY } from './moduleRegistry';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
-import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
+import { getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
 import { LiquidDock } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
@@ -79,7 +77,6 @@ function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () =
 }
 
 type SnapshotNoticeStatus = 'loading' | 'ready' | 'empty' | 'unavailable';
-type PushSetupStatus = 'idle' | 'loading' | 'ready' | 'prompt' | 'denied' | 'unsupported' | 'needs-install' | 'error';
 
 const navItems = [
   { id: 'home', label: 'Trang chủ' },
@@ -101,7 +98,6 @@ export default function HomeScreen({
     const pendingUpdate = readUpdateCenterEntry();
     if (pendingUpdate?.buildId === __RETAILOS_BUILD_ID__) clearUpdateCenterEntry(pendingUpdate.buildId);
   }, [onBootReady]);
-  const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
   const [initialUiState] = useState(readHomeUiState);
   const searchRef = useRef(initialUiState.search);
@@ -117,10 +113,7 @@ export default function HomeScreen({
   const [showSettings, setShowSettings] = useState(false);
   useEffect(() => {
     const openSettings = () => setShowSettings(true);
-    const openNotifications = () => {
-      setIsNotificationsClosing(false);
-      setShowNotifications(true);
-    };
+    const openNotifications = () => document.getElementById('retailos-home-signals')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     window.addEventListener('retailos:open-settings', openSettings);
     window.addEventListener('retailos:open-notifications', openNotifications);
     return () => {
@@ -151,8 +144,6 @@ export default function HomeScreen({
     failedSources?: string[];
   } | null>(null);
   const barcodeLookupRequestIdRef = useRef(0);
-  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 700px)').matches);
-  const [areSpotlightNotificationsExpanded, setAreSpotlightNotificationsExpanded] = useState(() => !window.matchMedia('(max-width: 700px)').matches);
   const [calendarNow, setCalendarNow] = useState(() => new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const [isCalendarClosing, setIsCalendarClosing] = useState(false);
@@ -165,14 +156,8 @@ export default function HomeScreen({
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
-  const notificationsButtonRef = useRef<HTMLButtonElement>(null);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [isNotificationsClosing, setIsNotificationsClosing] = useState(false);
-  const notificationsCloseTimer = useRef<number | null>(null);
   const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
   const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
-  const [pushSetupStatus, setPushSetupStatus] = useState<PushSetupStatus>('idle');
-  const [pushSetupError, setPushSetupError] = useState('');
   const [selectedNotice, setSelectedNotice] = useState<SnapshotNotice | null>(null);
   const [isNoticeClosing, setIsNoticeClosing] = useState(false);
   const noticeCloseTimer = useRef<number | null>(null);
@@ -201,41 +186,6 @@ export default function HomeScreen({
       : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
-  const enablePushNotifications = async () => {
-    if (pushSetupStatus === 'loading' || pushSetupStatus === 'ready') return;
-    setPushSetupStatus('loading');
-    setPushSetupError('');
-    try {
-      const permission: DeviceAccessStatus = await requestDeviceAccess('notifications');
-      if (permission !== 'granted') {
-        const permissionMessages: Record<DeviceAccessStatus, string> = {
-          checking: 'Đang kiểm tra quyền thông báo. Thử lại sau giây lát.',
-          prompt: 'Chưa cấp quyền thông báo trên trình duyệt.',
-          granted: '',
-          denied: 'Quyền thông báo đã bị chặn. Hãy đổi quyền của trang trong cài đặt trình duyệt.',
-          unsupported: 'Trình duyệt này không hỗ trợ thông báo đẩy.',
-          'needs-install': 'Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.',
-          error: 'Không thể yêu cầu quyền thông báo lúc này.',
-        };
-        setPushSetupError(permissionMessages[permission]);
-        setPushSetupStatus(permission === 'checking' ? 'error' : permission);
-        return;
-      }
-      const result = await subscribeForPushNotifications();
-      if (result === 'ready') {
-        setPushSetupStatus('ready');
-      } else {
-        setPushSetupError('Thông báo đẩy chưa được cấu hình.');
-        setPushSetupStatus('error');
-      }
-    } catch (error) {
-      console.error('Không thể thiết lập thông báo đẩy theo yêu cầu của người dùng:', error);
-      setPushSetupError(error instanceof Error
-        ? error.message
-        : 'Không thể thiết lập thông báo đẩy lúc này.');
-      setPushSetupStatus('error');
-    }
-  };
   useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
   useEffect(() => {
@@ -262,16 +212,6 @@ export default function HomeScreen({
       window.removeEventListener(MODULE_SNAPSHOTS_UPDATED_EVENT, loadSnapshotNotices);
     };
   }, []);
-  useEffect(() => {
-    const mobileViewport = window.matchMedia('(max-width: 700px)');
-    const updateSpotlightForViewport = () => {
-      setIsMobileViewport(mobileViewport.matches);
-      setAreSpotlightNotificationsExpanded(!mobileViewport.matches);
-    };
-    mobileViewport.addEventListener('change', updateSpotlightForViewport);
-    return () => mobileViewport.removeEventListener('change', updateSpotlightForViewport);
-  }, []);
-
   const calendarWeek = useMemo(() => {
     const today = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate());
     const mondayOffset = (today.getDay() + 6) % 7;
@@ -327,21 +267,8 @@ export default function HomeScreen({
     }, 300);
   };
 
-  const closeNotifications = () => {
-    if (notificationsCloseTimer.current !== null) return;
-    setIsNotificationsClosing(true);
-    notificationsCloseTimer.current = window.setTimeout(() => {
-      notificationsCloseTimer.current = null;
-      setShowNotifications(false);
-      setIsNotificationsClosing(false);
-    }, 220);
-  };
   const openNotice = (notice: SnapshotNotice, trigger: HTMLButtonElement) => {
     noticeTriggerRef.current = trigger;
-    if (notificationsCloseTimer.current !== null) window.clearTimeout(notificationsCloseTimer.current);
-    notificationsCloseTimer.current = null;
-    setShowNotifications(false);
-    setIsNotificationsClosing(false);
     setSelectedNotice(notice);
     setIsNoticeClosing(false);
   };
@@ -377,22 +304,6 @@ export default function HomeScreen({
     setLibraryOrigin(undefined);
     setIsLibraryClosing(false);
   };
-  const toggleNotifications = () => {
-    if (notificationsCloseTimer.current !== null) {
-      window.clearTimeout(notificationsCloseTimer.current);
-      notificationsCloseTimer.current = null;
-      setIsNotificationsClosing(false);
-      setShowNotifications(true);
-      return;
-    }
-    if (showNotifications) {
-      closeNotifications();
-      return;
-    }
-    setIsNotificationsClosing(false);
-    setShowNotifications(true);
-  };
-
   useEffect(() => {
     if (!showCalendar) return;
     calendarCloseRef.current?.focus();
@@ -416,7 +327,6 @@ export default function HomeScreen({
     return () => {
       window.removeEventListener('keydown', closeOnEscape);
       if (noticeTriggerRef.current?.isConnected) noticeTriggerRef.current.focus();
-      else notificationsButtonRef.current?.focus();
     };
   }, [selectedNotice]);
 
