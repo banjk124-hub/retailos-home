@@ -44,7 +44,7 @@ export default function LoginExperience({ onAuthenticated }: Props) {
     setStatus('submitting');
     setError('');
     const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    const button = submitter instanceof HTMLElement ? submitter : event.currentTarget.querySelector('button[type="submit"]');
+    const button = submitter instanceof HTMLElement ? submitter : event.currentTarget.querySelector<HTMLButtonElement>('button[type="submit"]');
     setPendingOrigin(button ? getMotionOrigin(button) : null);
     const submittedCode = employeeCode.trim();
     window.setTimeout(() => {
