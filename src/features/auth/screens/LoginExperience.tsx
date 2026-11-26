@@ -10,6 +10,7 @@ import { LoginHero } from '../components/LoginHero';
 import { getMotionOrigin, MotionPage, useMotionState } from '../../../shared/motion';
 import type { MotionOrigin } from '../../../shared/motion';
 import '../../../styles/login-experience.css';
+import '../../../styles/login-compact-landscape.css';
 
 type Props = {
   onAuthenticated: (session: EmployeeSession, origin?: MotionOrigin) => void;
