@@ -210,8 +210,8 @@
   padding: 17px 22px 14px;
   border-bottom: 1px solid rgba(130,105,110,.12);
   background: rgba(255,255,255,.88);
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
 }
 .stocktake-import-header h2 {
   color: var(--color-text-primary, var(--text-primary, #302a30));
@@ -543,7 +543,7 @@
     padding: calc(12px + env(safe-area-inset-top)) 12px 11px;
   }
   .stocktake-import-header h2 { font-size: 20px; }
-  .stocktake-import-header { backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.97); }
+  .stocktake-import-header {   background: rgba(255,255,255,.97); }
   .stocktake-import-summary { grid-template-columns: minmax(0,1fr) 68px 82px; }
   .stocktake-import-summary > div { min-height: 61px; padding: 8px; }
   .stocktake-import-summary strong { font-size: 13px; }
@@ -757,8 +757,8 @@
   flex: 0 0 auto;
   margin: -18px -20px 14px;
   padding: 14px 20px 12px;
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
   background: rgba(255,255,255,.97);
 }
 .stocktake-import-content {
