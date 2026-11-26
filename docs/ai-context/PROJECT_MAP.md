@@ -26,7 +26,7 @@
 | Brand/icons | `src/shared/brand/`, `src/shared/icons/` | Shared identity and icon registry. |
 | Semantic surfaces | `src/shared/components/surface/` | `Surface.tsx` and `surface.css` own opaque semantic roles; Glass material APIs are retired. |
 | Hooks/config | `src/shared/hooks/`, `src/shared/config/` | Cross-feature behavior and canonical configuration. |
-| Styles | `src/styles/` and feature-local styles | Trace import order, cascade, breakpoints, safe areas and ownership; do not add permanent override layers without a migration plan. |
+| Styles | `src/styles/` and feature-local styles | Trace import order, cascade, breakpoints, safe areas and ownership; do not add permanent override layers without a migration plan. See [UI_UX_PHASE_03_CSS_CONSOLIDATION.md](./UI_UX_PHASE_03_CSS_CONSOLIDATION.md) for the active CSS migration and evidence gates. |
 
 ## UI/UX documentation ownership
 - Product-wide workflow and protected boundaries: [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md).
