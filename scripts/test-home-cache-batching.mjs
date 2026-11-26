@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const dataService = readFileSync('src/features/data/moduleDataService.ts', 'utf8');
 const home = readFileSync('src/features/home/HomeScreen.tsx', 'utf8');
+const homeSnapshotHook = readFileSync('src/features/home/hooks/useHomeSnapshotNotices.ts', 'utf8');
 const barcodeLookup = readFileSync('src/features/scanner/services/barcodeLookup.ts', 'utf8');
 const downloadFile = readFileSync('src/shared/downloadFile.ts', 'utf8');
 const stocktakeExport = readFileSync('src/features/stocktake/services/stocktakeExport.ts', 'utf8');
@@ -13,7 +14,7 @@ const exportFormats = readFileSync('src/features/data/exportFormats.ts', 'utf8')
 assert.ok(dataService.includes('export async function getCachedModuleSnapshots('), 'The shared batch reader must be exported.');
 assert.ok(dataService.includes('async function withTransaction<T>('), 'The batch reader must reuse the shared transaction lifecycle.');
 assert.ok(dataService.includes('uniqueModuleIds.map((moduleId) =>'), 'The batch reader must fetch only the requested keys, not every stored snapshot.');
-assert.ok(home.includes('getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS)'), 'Home startup must read only its three notice sources through the batch reader.');
+assert.ok(home.includes('useHomeSnapshotNotices()') && homeSnapshotHook.includes('getCachedModuleSnapshots(HOME_NOTICE_MODULE_IDS)'), 'Home startup must read only its three notice sources through the batch reader.');
 assert.ok(!home.includes('Promise.allSettled(MODULE_DATA_IDS.map(getCachedModuleSnapshot))'), 'Home must not read unrelated module snapshots.');
 assert.ok(barcodeLookup.includes('getCachedModuleSnapshots(lookupSources.map(({ moduleId }) => moduleId))'), 'Barcode lookup must share the batch reader.');
 assert.ok(!barcodeLookup.includes('Promise.allSettled(lookupSources.map(({ moduleId }) => getCachedModuleSnapshot(moduleId)))'), 'Barcode lookup must not open one IndexedDB connection per source.');

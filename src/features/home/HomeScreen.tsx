@@ -108,10 +108,11 @@ export default function HomeScreen({
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const openSettingsFromNavigation = useCallback(() => setShowSettings(true), []);
   const [activeNav, setActiveNav, handleNav, handleSearchChange] = useHomeNavigation({
     initialState: initialUiState,
     prefersReducedMotion,
-    onOpenSettings: () => setShowSettings(true),
+    onOpenSettings: openSettingsFromNavigation,
   });
   useEffect(() => {
     const openSettings = () => setShowSettings(true);
