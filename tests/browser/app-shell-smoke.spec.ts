@@ -174,6 +174,7 @@ test('greenfield operational workspaces open with responsive presentation and on
   expect(stocktakeWidth).toBeGreaterThan(720);
   await stocktake.getByRole('button', { name: 'Đóng kiểm kê' }).click();
 
+  await page.getByRole('button', { name: 'Thư viện nghiệp vụ' }).click();
   await library.getByRole('button', { name: /Mở thư viện Kiểm kê/ }).click();
   const importDetail = page.getByRole('dialog', { name: 'Kiểm kê' });
   await importDetail.getByRole('button', { name: 'Xuất file. Đã triển khai' }).click();
