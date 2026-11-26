@@ -346,10 +346,6 @@ export default function HomeScreen({
       window.clearTimeout(calendarCloseTimer.current);
       calendarCloseTimer.current = null;
     }
-    if (notificationsCloseTimer.current !== null) {
-      window.clearTimeout(notificationsCloseTimer.current);
-      notificationsCloseTimer.current = null;
-    }
     if (noticeCloseTimer.current !== null) {
       window.clearTimeout(noticeCloseTimer.current);
       noticeCloseTimer.current = null;
@@ -530,76 +526,6 @@ export default function HomeScreen({
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
-      <header className="topbar home-topbar" id="home-legacy-anchor">
-        <div className="topbar-dock">
-          <div className="home-topbar-identity">
-            <Brand variant="compact" surface="light" />
-            <span className="home-topbar-divider" aria-hidden="true" />
-            <div className="topbar-identity-copy">
-              <strong>{employee.name}</strong>
-              <span><MotionIcon icon={DepartmentIcon} variant="department" size={13} />{department.label}</span>
-            </div>
-          </div>
-          <div className="topbar-actions">
-            <span className={`topbar-status ${isOffline ? 'offline' : ''}`} role="img" aria-label={isOffline ? 'Ngoại tuyến' : 'Trực tuyến'} title={isOffline ? 'Ngoại tuyến' : 'Trực tuyến'}><i /></span>
-            {canInstall && <button className="topbar-action-button install-icon-button" type="button" aria-label="Cài đặt ứng dụng" title="Cài đặt ứng dụng" onClick={onInstall}><ArrowUpRight size={17} /></button>}
-            <button
-              ref={notificationsButtonRef}
-              type="button"
-              className={`topbar-action-button notification-button ${priorityNotices.length ? 'has-notices' : 'no-notices'} notice-state-${snapshotNoticeStatus} ${showNotifications && !isNotificationsClosing ? 'selected' : ''}`}
-              aria-label={priorityNotices.length
-                ? `Thông báo, ${priorityNotices.length} cảnh báo`
-                : snapshotNoticeStatus === 'ready'
-                  ? 'Thông báo, không phát hiện cảnh báo'
-                  : snapshotNoticeStatus === 'empty'
-                    ? 'Thông báo, chưa có dữ liệu snapshot'
-                    : snapshotNoticeStatus === 'loading'
-                      ? 'Thông báo, đang kiểm tra dữ liệu'
-                      : 'Thông báo, chưa thể xác định trạng thái cảnh báo'}
-              aria-expanded={showNotifications && !isNotificationsClosing}
-              onClick={toggleNotifications}
-            >
-              <MotionIcon icon={Bell} variant="bell" state={showNotifications ? 'active' : 'idle'} />
-              {priorityNotices.length > 0 && <i aria-hidden="true" />}
-            </button>
-            <button className="topbar-action-button topbar-logout" type="button" aria-label="Đăng xuất" title="Đăng xuất" onClick={onLogout}><LogOut size={17} /></button>
-          </div>
-          {showNotifications && <div className={`notification-popover topbar-notification-popover ${isNotificationsClosing ? 'notification-closing' : ''}`}>
-            <div className="popover-heading"><strong>Cảnh báo từ dữ liệu</strong><button className="icon-button small" onClick={closeNotifications} aria-label="Đóng"><X size={16} /></button></div>
-            {priorityNotices.length === 0
-              ? <p className={`notification-empty notification-empty--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</p>
-              : <>
-                {snapshotNoticeStatus !== 'ready' && snapshotNoticeStatus !== 'empty' && <p className={`notification-status-notice notification-status-notice--${snapshotNoticeStatus}`} role="status">{snapshotNoticeStatusMessage}</p>}
-                {priorityNotices.map((notice) => <button key={notice.id} type="button" className="notification-item notification-item-button" onClick={(event) => openNotice(notice, event.currentTarget)}><span className={`notification-symbol ${notice.tone}`}><MotionIcon icon={getModuleIcon(notice.moduleId)} variant="module" size={18} /></span><span className="notification-item-copy"><strong>{notice.title}</strong><span>{notice.summary}</span></span><ArrowUpRight size={15} className="notification-open-icon" /></button>)}
-              </>}
-            {isPushConfigured() && <div className="push-notification-setup">
-              {pushSetupStatus === 'ready'
-                ? <p className="push-notification-setup__status is-ready" role="status"><Check size={15} />Đã đăng ký thông báo đẩy trên thiết bị.</p>
-                : <>
-                  {pushSetupStatus === 'loading' && <p className="push-notification-setup__status" role="status">Đang thiết lập thông báo đẩy…</p>}
-                  {pushSetupStatus === 'denied' && <p className="push-notification-setup__status is-error" role="status">Quyền thông báo đã bị chặn. Hãy đổi quyền của trang trong cài đặt trình duyệt.</p>}
-                  {pushSetupStatus === 'unsupported' && <p className="push-notification-setup__status is-error" role="status">Trình duyệt này không hỗ trợ thông báo đẩy.</p>}
-                  {pushSetupStatus === 'needs-install' && <p className="push-notification-setup__status" role="status">Trên iPhone/iPad, hãy thêm RetailOS vào Màn hình chính để bật thông báo.</p>}
-                  {pushSetupStatus === 'error' && <p className="push-notification-setup__status is-error" role="alert">{pushSetupError}</p>}
-                  {(pushSetupStatus === 'idle' || pushSetupStatus === 'prompt' || pushSetupStatus === 'error') && <GlassSurface
-                    as="button"
-                    material="control"
-                    interactive
-                    className="push-notification-setup__action ro-button"
-                    type="button"
-                    onClick={() => { void enablePushNotifications(); }}
-                  >
-                    <Bell size={15} />
-                    {pushSetupStatus === 'prompt' ? 'Thử cấp quyền lại' : pushSetupStatus === 'error' ? 'Thử kết nối lại' : 'Bật thông báo đẩy'}
-                  </GlassSurface>}
-                </>}
-            </div>}
-          </div>}
-        </div>
-      </header>
-
-      {isOffline && <div className="offline-banner"><Activity size={16} aria-hidden="true" /> Ngoại tuyến</div>}
-
       <div className="content-wrap home-content">
         <OperationalHome
           employee={employee}
