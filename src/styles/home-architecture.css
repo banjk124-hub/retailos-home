@@ -1,4 +1,4 @@
-/* Module workspace layout uses shared glass tokens and remains responsive. */
+/* Module workspace layout uses semantic surface roles and remains responsive. */
 .app-shell .content-wrap.home-content {
   width: min(100%, 1480px);
   margin-inline: auto;
