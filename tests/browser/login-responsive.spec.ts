@@ -49,8 +49,9 @@ test('Login respects reduced-motion preference', async ({ page }) => {
   await expect(field).toBeVisible();
   await expect(submit).toBeVisible();
 
-  const durations = await page.evaluate(() =>
-    ['.retail-login__field', '.retail-login__submit'].flatMap((selector) => {
+  const result = await page.evaluate(() => ({
+    reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    durations: ['.retail-login__field', '.retail-login__submit'].flatMap((selector) => {
       const element = document.querySelector(selector);
       if (!(element instanceof HTMLElement)) return [];
       return getComputedStyle(element).transitionDuration.split(',').map((value) => {
@@ -58,8 +59,8 @@ test('Login respects reduced-motion preference', async ({ page }) => {
         return duration.endsWith('ms') ? Number.parseFloat(duration) : Number.parseFloat(duration) * 1000;
       });
     }),
-  );
+  }));
 
-  expect(matchMedia).toBeDefined();
-  expect(Math.max(...durations)).toBeLessThanOrEqual(0.01);
+  expect(result.reducedMotion).toBe(true);
+  expect(Math.max(...result.durations)).toBeLessThanOrEqual(0.01);
 });
