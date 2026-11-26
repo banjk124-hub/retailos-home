@@ -139,10 +139,10 @@ const sourceFiles = collectSourceFiles("src").filter((path) =>
   [".css", ".ts", ".tsx"].includes(extname(path))
 );
 const obsoleteMaterialPatterns = [
-  new RegExp("backdrop" + "-filter\\\\s*:"),
+  new RegExp("backdrop" + "-filter\\s*:"),
   new RegExp("--" + "(?:brand-)?" + "glass-"),
-  new RegExp("\\\\bGlassSurface\\\\b"),
-  new RegExp("\\\\bGlassMaterial\\\\b")
+  new RegExp("\\bGlassSurface\\b"),
+  new RegExp("\\bGlassMaterial\\b")
 ];
 for (const path of sourceFiles) {
   const source = readFileSync(path, "utf8");
