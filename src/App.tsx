@@ -35,9 +35,9 @@ function AmbientBackground() {
 }
 
 function PageGlassDock() {
-  return <div className="page-glass-dock" aria-hidden="true">
-    <span className="page-glass-highlight page-glass-highlight-one" />
-    <span className="page-glass-highlight page-glass-highlight-two" />
+  return <div className="page-floating-dock" aria-hidden="true">
+    <span className="page-floating-highlight page-floating-highlight-one" />
+    <span className="page-floating-highlight page-floating-highlight-two" />
   </div>;
 }
 
