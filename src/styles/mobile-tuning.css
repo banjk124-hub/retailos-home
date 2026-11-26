@@ -20,7 +20,6 @@ button:not(:disabled),
 .mobile-nav-icon,
 .icon-button,
 .text-button,
-.module-card,
 .module-arrow,
 .top-profile {
   transition-duration: var(--motion-duration);
@@ -43,10 +42,6 @@ button:not(:disabled):active {
 @media (max-width: 700px) {
   html { scroll-padding-top: calc(72px + env(safe-area-inset-top)); }
   body { font-size: 16px; }
-
-  /* iOS Safari zooms focused form controls when their font is below 16px. */
-  .login-screen input,
-  .login-screen select,
   .search-field input,
   input,
   select,
@@ -54,9 +49,6 @@ button:not(:disabled):active {
     font-size: 16px !important;
     line-height: 1.35;
   }
-
-  .login-screen { overflow-x: clip; }
-  .login-showcase { padding-left: 22px; padding-right: 22px; }
   .showcase-copy { margin-top: 27px; }
   .showcase-copy .eyebrow,
   .login-heading .eyebrow { font-size: 11px; letter-spacing: .9px; }
@@ -95,14 +87,10 @@ button:not(:disabled):active {
   .date-icon { width: 34px; height: 34px; }
   .date-chip span { font-size: 10px; letter-spacing: .35px; }
   .date-chip strong { font-size: 13px; }
-
-  .hero-card { min-height: 250px; padding: 25px 21px; }
   .hero-kicker { font-size: 10px; letter-spacing: .65px; }
   .hero-content h2 { font-size: clamp(27px, 7.6vw, 33px); line-height: 1.15; margin: 17px 0 11px; }
   .hero-content p { font-size: 14px; line-height: 1.6; max-width: 270px; }
   .hero-button { min-height: 46px; gap: 10px; padding: 11px 14px; font-size: 13px; border-radius: 12px; }
-
-  .metrics-grid { gap: 9px; margin-top: 12px; }
   .metric-card { padding: 13px 11px 12px; border-radius: 15px; }
   .metric-label { font-size: 10px; letter-spacing: .2px; line-height: 1.35; }
   .metric-icon { width: 30px; height: 30px; }
@@ -118,14 +106,11 @@ button:not(:disabled):active {
   .filter-pills { gap: 7px; }
   .filter-pill { min-height: 40px; padding: 8px 13px; font-size: 12px; border-radius: 11px; }
   .search-field { height: 46px; gap: 9px; padding: 0 12px; border-radius: 12px; }
-  .module-grid { gap: 10px; }
-  .module-card { min-height: 166px; padding: 13px 12px 11px; border-radius: 17px; }
   .module-icon { width: 39px; height: 39px; border-radius: 12px; }
   .module-arrow { width: 29px; height: 29px; }
   .module-title-row { margin-top: 12px; gap: 6px; }
   .module-title-row h3 { font-size: 13px; line-height: 1.35; letter-spacing: -.1px; }
   .sample-tag { font-size: 10px; padding: 4px 6px; }
-  .module-card p { min-height: 36px; margin: 6px 0 10px; font-size: 12px; line-height: 1.5; }
   .module-card-bottom { padding-top: 9px; font-size: 11px; }
   .module-card-bottom svg { width: 14px; height: 14px; }
 
@@ -133,14 +118,12 @@ button:not(:disabled):active {
   .panel-card { padding: 17px 15px 0; border-radius: 18px; }
   .panel-heading h2 { font-size: 17px; line-height: 1.3; }
   .section-kicker { margin-bottom: 6px; font-size: 10px; letter-spacing: .65px; }
-  .activity-row { gap: 11px; padding: 13px 0; }
   .activity-icon { width: 36px; height: 36px; border-radius: 11px; }
   .activity-copy strong { font-size: 12px; line-height: 1.4; }
   .activity-copy span { font-size: 11px; line-height: 1.4; }
   .activity-status { font-size: 10px; padding: 5px 7px; }
   .panel-footer-button { min-height: 46px; padding: 13px; font-size: 12px; }
   .attention-count { min-width: 29px; height: 29px; font-size: 12px; }
-  .attention-item { padding: 14px 0 12px; }
   .attention-copy strong { font-size: 13px; line-height: 1.4; }
   .attention-copy p { font-size: 12px; line-height: 1.5; margin: 5px 0 8px; }
   .attention-copy button { min-height: 36px; font-size: 12px; }
@@ -171,12 +154,9 @@ button:not(:disabled):active {
 
 @media (max-width: 380px) {
   .content-wrap { padding-left: 13px; padding-right: 13px; }
-  .metrics-grid { gap: 6px; }
   .metric-card { padding: 11px 8px; }
   .metric-label { font-size: 9px; }
-  .module-card { padding: 11px 9px 10px; }
   .module-title-row h3 { font-size: 12px; }
-  .module-card p { font-size: 11px; }
   .mobile-nav button { font-size: 10px; }
 }
 
@@ -191,11 +171,6 @@ button:not(:disabled):active {
 
 /* Match or exceed the specificity of the earlier compact-prototype rules. */
 @media (max-width: 700px) {
-  .login-screen .field-label { font-size: 13px; }
-  .login-screen .login-security-note { font-size: 12px; }
-  .login-screen .login-disclaimer { font-size: 10px; }
-  .login-screen .showcase-copy .eyebrow,
-  .login-screen .login-heading .eyebrow { font-size: 11px; }
   .app-shell .welcome-copy .eyebrow { font-size: 11px; }
   .app-shell .metric-label,
   .app-shell .metric-unit,
@@ -283,9 +258,6 @@ button:not(:disabled):active {
 }
 
 @media (max-width: 700px) {
-  .login-showcase {
-    display: none;
-  }
   .login-panel-wrap {
     min-height: 100svh;
     padding-top: max(22px, env(safe-area-inset-top));
@@ -366,16 +338,9 @@ button:not(:disabled):active {
   .section-heading h2 {
     font-size: 22px;
   }
-  .module-card {
-    min-height: 170px;
-  }
   .module-title-row h3 {
     font-size: 14px;
     line-height: 1.35;
-  }
-  .module-card p {
-    font-size: 12px;
-    line-height: 1.5;
   }
   .filter-pills {
     scroll-snap-type: x proximity;
@@ -415,7 +380,6 @@ button:not(:disabled):active {
   .mobile-nav button:active .mobile-nav-icon {
     transform: scale(.92);
   }
-  .module-card,
   .filter-pill,
   .mobile-nav button,
   .icon-button,
@@ -425,9 +389,6 @@ button:not(:disabled):active {
 }
 
 @media (max-width: 380px) {
-  .module-card {
-    min-height: 164px;
-  }
   .module-title-row h3 {
     font-size: 13px;
   }
@@ -440,7 +401,6 @@ button:not(:disabled):active {
 @media (prefers-reduced-motion: reduce) {
   .input-wrap,
   .login-submit,
-  .module-card,
   .filter-pill,
   .mobile-nav button,
   .icon-button,
@@ -462,9 +422,6 @@ button:not(:disabled):active {
 }
 .app-shell .module-toolbar {
   margin-top: 16px;
-}
-.app-shell .module-card {
-  min-height: 158px;
 }
 .app-shell .module-card-bottom {
   border-top: 1px solid rgba(230, 233, 239, .72);
@@ -521,10 +478,6 @@ button:not(:disabled):active {
   }
   .app-shell .module-toolbar {
     margin: 14px 0 13px;
-  }
-  .app-shell .module-card {
-    min-height: 156px;
-    padding: 13px 12px 11px;
   }
   .app-shell .module-card-bottom {
     padding-top: 9px;
@@ -845,14 +798,6 @@ button:not(:disabled):active {
   animation: welcome-mark-drift 5s ease-in-out infinite;
 }
 .login-identity-dock { display: contents; }
-.module-card {
-  transform: translateZ(0);
-  transition: transform 220ms var(--motion-standard), box-shadow 220ms ease, border-color 220ms ease;
-}
-.module-card:active {
-  transform: scale(.975);
-  box-shadow: 0 5px 14px rgba(92,34,40,.1);
-}
 .app-shell .filter-pills {
   position: relative;
   scroll-snap-type: x proximity;
@@ -1006,9 +951,6 @@ button:not(:disabled):active {
   }
   .app-shell .section-block {
     scroll-margin-top: calc(80px + env(safe-area-inset-top));
-  }
-  .app-shell .module-card {
-    min-height: 160px;
   }
   .login-identity-dock {
     display: flex;
@@ -1558,18 +1500,10 @@ button:not(:disabled):active {
 .app-shell .icon-only-action:hover svg { transform: rotate(90deg); }
 .app-shell .module-icon svg,
 .app-shell .mobile-nav-icon svg,
-.app-shell .calendar-modal-icon svg,
-.login-screen .input-wrap > svg,
-.login-screen .submit-arrow svg,
-.login-screen .reveal-button svg {
+.app-shell .calendar-modal-icon svg{
   transition: transform 240ms var(--motion-standard), color 200ms ease;
 }
-.app-shell .module-card:hover .module-icon svg { transform: translateY(-2px) rotate(-5deg); }
 .app-shell .mobile-nav button:hover .mobile-nav-icon svg { transform: translateY(-2px) scale(1.08); }
-.login-screen .input-wrap:focus-within > svg { transform: scale(1.1); color: #c52635; }
-.login-screen .reveal-button:hover svg { transform: scale(1.12); }
-.login-screen .login-submit:hover .submit-arrow svg { transform: translateX(2px); }
-.login-screen .showcase-card .float-icon svg { animation: icon-breathe 3.4s ease-in-out infinite; }
 @keyframes icon-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
@@ -1597,10 +1531,7 @@ button:not(:disabled):active {
   .app-shell .icon-only-action svg,
   .app-shell .module-icon svg,
   .app-shell .mobile-nav-icon svg,
-  .app-shell .calendar-modal-icon svg,
-  .login-screen .input-wrap > svg,
-  .login-screen .submit-arrow svg,
-  .login-screen .reveal-button svg {
+  .app-shell .calendar-modal-icon svg{
     transition-duration: .01ms;
     animation: none;
   }
@@ -2382,15 +2313,10 @@ button:not(:disabled):active {
   opacity: .5;
   animation: ambient-drift-three 22s ease-in-out infinite alternate;
 }
-.login-screen,
 .app-shell {
   background: transparent !important;
 }
 .login-atmosphere { display: none; }
-.app-shell .sidebar {
-  background: rgba(255,252,252,.76);
-  box-shadow: 8px 0 34px rgba(105,34,42,.045), inset -1px 0 0 rgba(255,255,255,.88);
-}
 .app-shell .topbar {
   border-bottom-color: rgba(255,255,255,.78);
   background: rgba(255,251,251,.76);
@@ -2411,21 +2337,6 @@ button:not(:disabled):active {
 .app-shell .side-nav-item:hover {
   box-shadow: 0 8px 19px rgba(105,34,42,.1), inset 0 1px 0 #fff;
 }
-.login-screen .login-panel,
-.login-screen .login-identity-dock {
-  border-color: rgba(255,255,255,.92);
-  box-shadow: 0 22px 58px rgba(98,34,43,.12), inset 0 1px 0 rgba(255,255,255,.98);
-}
-.login-screen .input-wrap {
-  border-color: rgba(255,255,255,.96);
-  background: rgba(255,255,255,.74);
-  box-shadow: 0 5px 15px rgba(98,34,43,.055), inset 0 1px 0 rgba(255,255,255,.98);
-}
-.login-screen .login-submit {
-  background: linear-gradient(115deg, #e43b4b, #bc1e30);
-  box-shadow: 0 12px 25px rgba(190,30,48,.26), inset 0 1px 0 rgba(255,255,255,.32);
-}
-.login-screen .login-submit:hover { box-shadow: 0 16px 30px rgba(190,30,48,.32), inset 0 1px 0 rgba(255,255,255,.4); }
 @keyframes ambient-drift-one {
   from { transform: translate3d(-2%, -1%, 0) scale(.94) rotate(-8deg); }
   to { transform: translate3d(8%, 10%, 0) scale(1.08) rotate(9deg); }
