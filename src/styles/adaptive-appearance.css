@@ -1,3 +1,11 @@
+
+/* Login uses opaque surfaces in every power mode. Keep the conserve-mode contract
+   explicit so this policy is independent of legacy .login-shell selectors. */
+:root[data-power-mode="conserve"] .login-experience :is(.login-experience__panel, .login-form__input-wrap) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 :root[data-power-mode="conserve"] .ambient-background,
 :root[data-power-mode="conserve"] .page-glass-dock,
 :root[data-power-mode="conserve"] .spotlight-brand-scene,
