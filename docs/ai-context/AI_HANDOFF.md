@@ -24,3 +24,13 @@
 Auth/session, module IDs/readiness, snapshot/cache/offline truth, Scanner Engine/session/camera, Stocktake persistence/revisions/export, Import parser precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA consent/staging/integrity/activation/boot-health/rollback, Vite Pages base and lazy-loading.
 
 No merge without explicit owner approval. No deployment without explicit authorization.
+
+
+## Continuation update — PR #174
+
+- Active candidate: `feat/retailos-greenfield-experience`, PR #174 (Draft), latest verified implementation head `0a5c90ca1bf95292b959a9c75ffbf32d87adee30`.
+- CI #1636 passed on that exact head: 7/7 Playwright tests, preflight, TypeScript, production/Pages builds, bundle baseline comparison and runtime evidence artifact.
+- Browser artifact review: zero page errors, zero failed requests, zero duplicate IDs, and zero horizontal overflow across seven Home viewports. Login was visually inspected at desktop/mobile; the other feature captures remain existing overlay states over Home.
+- A flaky focus assertion was corrected to wait for the focused border CSS transition. Final run completed 7/7 without retries.
+- Login is an M0 prototype, not final visual acceptance: authentic retail photography is still absent. Home mobile dock overlap remains visible. Physical-device and owner visual acceptance are pending.
+- M0 remains IN PROGRESS; M1 is not authorized. Continue M0-A2 runtime evidence and the remaining screen prototypes. Do not merge or deploy.

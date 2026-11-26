@@ -34,3 +34,14 @@ Runtime stabilization and ecosystem cleanup are closed. Production decoder is ZX
 
 ## Verification rules
 CI proves only checks executed on its exact commit. Browser emulation is not physical-device acceptance. Development Pages is not department production promotion. Merge, deploy and production transfer are separate approval gates.
+
+
+## Candidate M0 prototype — PR #174 (not merged)
+
+- Branch: `feat/retailos-greenfield-experience`; implementation head verified before this status update: `0a5c90ca1bf95292b959a9c75ffbf32d87adee30`.
+- Scope: Login/employee-access presentation prototype and responsive browser regression coverage. Existing local authentication, employee identity, session lifecycle and App journey remain in place.
+- CI #1636 passed on `0a5c90ca1bf95292b959a9c75ffbf32d87adee30`: preflight, TypeScript/production/Pages builds, base-bundle comparison and Playwright browser evidence. Browser suite: 7/7 passed with no retries on the final run.
+- Runtime artifact: 0 page errors, 0 failed requests, 0 duplicate DOM IDs across captured states, and 0 horizontal overflow at Home viewports 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and short landscape. Login screenshots cover desktop, tablet, mobile, compact mobile and short landscape; Settings, Library, Stocktake and Import are captured in their existing mobile overlay states.
+- Bundle comparison against the PR base: initial entry closure reduced by 17,342 raw bytes (-4.4%) and 3,356 gzip-estimate bytes (-3.3%); total emitted artifact reduced by 16,238 raw bytes (-0.8%) and 3,159 gzip-estimate bytes (-0.5%). Current total Brotli estimate: 551,274 bytes. These are per-file compression estimates, not measured edge transfer.
+- Limitations: Login prototype still lacks the authentic retail photography required by the M0 direction. Other workspaces remain their current implementations/overlay presentation; the mobile navigation overlap visible in Home remains an open design issue. Browser emulation is not physical-device acceptance. No owner visual acceptance, M0 completion, M1 authorization, merge or deployment is implied.
+- Next: complete the remaining M0-A2 evidence/review, then prototype the remaining representative screens in bounded slices. Preserve all protected operational and PWA contracts.

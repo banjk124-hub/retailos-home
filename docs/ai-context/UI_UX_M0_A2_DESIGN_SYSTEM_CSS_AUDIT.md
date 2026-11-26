@@ -528,3 +528,33 @@ These are per-file gzip estimates, not measured Brotli or actual transfer sizes.
 2. Corrected declaration trace must be regenerated and inspected before a cascade ownership matrix is accepted.
 3. Next evidence batch: selector/property ownership grouped by emitted CSS resource and source file; verify actual winner samples against computed style; add Brotli estimates; then build controlled typography/palette specimens without changing production assets.
 4. No CSS selector or stylesheet is approved for retirement yet.
+
+
+## 11.7 Follow-up runtime evidence — CI #1636
+
+**Candidate branch:** `feat/retailos-greenfield-experience`  
+**Exact source head:** `0a5c90ca1bf95292b959a9c75ffbf32d87adee30`  
+**CI run:** [#1636](https://github.com/banjk124-hub/retailos-home/actions/runs/45762059077) — completed successfully.  
+**Environment:** Chromium / Playwright against the production Pages build. This is browser-lab evidence, not physical-device acceptance.
+
+### Captured states and health
+
+- Login visual captures: 1440×900, 900×1024, 390×844, 360×740 and 844×390.
+- Home captures: 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and 844×390.
+- Existing Settings, Module Library, Stocktake and Stocktake Import navigation surfaces were captured at 390×844; these are overlays over Home, not independent routes.
+- Browser/page errors: **0**; failed requests: **0**; duplicate DOM IDs: **0** in all captured JSON states.
+- Home horizontal overflow: **0 px** at all seven tested viewports.
+- Login responsive, focus, reduced-motion and power-conserve tests: **7/7 passed**, with no retries on the final run.
+
+### Cascade and bundle evidence
+
+- The runtime artifact contains declaration candidates and computed values for 20 selected properties on up to 180 visible nodes per state (77 nodes for Login desktop). The collector's specificity is approximate; it does not fully model cascade layers, complex selector-list pseudo-classes, inherited values or pseudo-elements. Browser-computed styles remain authoritative. This is diagnostic evidence, not a complete automated cascade winner proof.
+- Bundle comparison against PR base: entry closure 398,451 → 381,109 raw bytes (-17,342; -4.4%) and 100,782 → 97,426 gzip-estimate bytes (-3,356; -3.3%). Full artifact 1,918,252 → 1,902,014 raw bytes (-16,238; -0.8%) and 676,773 → 673,614 gzip-estimate bytes (-3,159; -0.5%).
+- Current full artifact Brotli estimate: **551,274 bytes** (quality 11, per-file sum). These are reproducible local compression estimates; actual HTTP transfer depends on hosting negotiation, cache state and edge compression.
+
+### Visual findings and disposition
+
+- Login composition is coherent and responsive in the captured states, but it still uses abstract CSS geometry rather than the authentic retail photography required by the governing M0 direction. Do not mark the Login prototype as visually complete.
+- Home mobile still shows the floating navigation dock covering part of the first module card/action area. This is an open visual/interaction issue already identified in the first M0-A2 review.
+- Settings, Library, Stocktake and Import evidence only proves the current mobile overlay states; it does not prove full standalone workspace layouts or all internal workflow states.
+- Keep production CSS/tokens unchanged. Continue the M0-A2 declaration/source reconciliation and visual review; no selector retirement, font selection, palette lock, broad CSS consolidation, M0 completion or M1 authorization follows from this run.
