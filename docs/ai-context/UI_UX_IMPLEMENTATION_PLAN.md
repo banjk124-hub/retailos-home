@@ -1,10 +1,10 @@
-> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+> **Historical-document notice (2026-11-26):** This file is retained for traceability only and is not an active instruction or status source. Use [INDEX.md](./INDEX.md) to locate current owners and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) for this file's disposition. The active UI/UX direction is [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). Verify all implementation facts against current source.
 
 ---
 
 # UI/UX Rebuild Implementation Plan
 
-**Status:** M0 is executed directly in the RetailOS repository. Figma studies are historical/optional only and are not a delivery dependency or acceptance gate. Active evidence is the source implementation, running application, automated checks and responsive review recorded in implementation PRs.
+**Status:** HISTORICAL IMPLEMENTATION PLAN. Not the active roadmap or phase authority. Current sequencing is owned by ROADMAP.md; active M0 direction and gates are owned by UI_UX_M0_GOVERNING_SPEC.md. Read only for unique historical execution evidence.
 **Verified documentation baseline:** `main` at `588d8f937525acb29ebb7b0de97a9b1dcf61c0c7` (PR #159 merge commit).
 **Implementation branches:** create each bounded `feat/uiux-*` branch from the then-current `main`; do not reuse stale branches or PR #157 as a baseline.
 **Scope:** Full RetailOS visual and interaction redesign, from application shell to smallest reusable control, while preserving current business and platform contracts.
