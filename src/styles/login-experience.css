@@ -667,7 +667,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     align-content: start;
-    padding: 8px clamp(18px, 3vw, 48px) 76px;
+    padding: 8px clamp(18px, 3vw, 48px) 8px;
   }
   .login-experience__layout {
     display: grid;
@@ -712,5 +712,5 @@
   .login-form__input-wrap input { min-height: 36px; }
   .login-form__feedback-slot { min-height: 6px; }
   .login-form__submit { min-height: 38px; }
-  .login-dock { bottom: 8px; }
+  .login-dock { position: relative; right: auto; bottom: auto; left: auto; margin: 8px auto 0; }
 }
