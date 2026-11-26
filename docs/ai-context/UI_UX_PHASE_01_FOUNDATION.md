@@ -211,3 +211,29 @@ Continue the remaining Phase 01 batches on this branch only after reviewing the 
 - Phase 01 acceptance record and synchronized INDEX / IMPLEMENTATION_STATUS / ROADMAP / handoff documents.
 
 Foundation source CI evidence: [run #1519](https://github.com/banjk124-hub/retailos-home/actions/runs/45567211808). The first browser run [#1529](https://github.com/banjk124-hub/retailos-home/actions/runs/45569610388) exposed an assertion that sampled the CSS opacity transition mid-flight; the test now waits for its settled value. Screenshot-driven compact-landscape corrections progressed through #1539 and #1542 before #1545 passed the viewport-fit and dock-clearance gates. Subsequent exact-head CI #1560, #1564, #1569 and #1574 passed the expanded motion, semantic color and Login typography contracts. Phase 01 remains open until all mandatory gates above are either completed with evidence or explicitly recorded as owner-approved limitations.
+
+
+## 8. UI-01A material normalization — current branch addendum (2026-11-26)
+
+This addendum supersedes the historical Glass-material descriptions above for the UI-01A implementation branch. Earlier sections document the pre-migration Phase 01 foundation and must be read as historical evidence, not current source state.
+
+### Implemented state
+- `src/shared/components/glass/` and its `GlassSurface` / `GlassMaterial` API have been removed from source.
+- Migrated presentation consumers use the shared `Surface` primitive with six semantic variants: `panel`, `control`, `raised`, `floating`, `inverse`, and `brand`.
+- Surface styling uses opaque backgrounds, semantic border/elevation tokens, explicit interactive states and reduced-motion handling.
+- Canonical theme defines inverse surface/border and brand elevation roles.
+- Source contract rejects remaining Glass API/type names, Glass token variables and CSS backdrop-filter declarations. It also checks all six Surface variant selectors, default element/prop forwarding, focus/hover/active/error/disabled and reduced-motion contracts.
+- Project map ownership now points to `src/shared/components/surface/`.
+
+### CSS retirement boundary
+The migration retires the Glass material system, not every historical class name containing the word `glass`. Decorative names such as `page-glass-dock` or `spotlight-glass-tile` are not automatically material dependencies. They may only be renamed or removed after tracing their DOM owner, CSS consumers, responsive/state selectors and computed visual effect. No selector is deleted based on naming alone.
+
+### Remaining acceptance gates
+1. [x] Exact-head CI #1768 passed on `13ecdb182a7a5fb68b4c397b1c922b77055c0d34` (TypeScript/build, local-equivalent preflight, bundle comparison and Chromium responsive/runtime suite).
+2. [x] Surface contract assertions expanded in the design-foundation preflight script.
+3. [x] Project map updated to the current Surface owner.
+4. [ ] Re-run exact-head CI after the contract/documentation commits.
+5. [ ] Review remaining decorative legacy selectors with DOM/computed-style evidence; migrate or remove only proven stale rules.
+6. [ ] Complete cross-screen visual and physical-device acceptance. CI viewport tests are not equivalent to iOS/Android device profiling.
+
+UI-01A can be closed only when the new exact-head CI is green and selector review has no unresolved material-system dependency. Non-material legacy selector cleanup is not a reason to expand UI-01A indefinitely; verified Home Dock overlap is explicitly handed to UI-01B Shell/Navigation layout ownership.

@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { extname, join } from "node:path";
 
 const theme = readFileSync("src/styles/theme.css", "utf8");
 const mobile = readFileSync("src/styles/mobile-tuning.css", "utf8");
 const homeRedesign = readFileSync("src/styles/home-redesign.css", "utf8");
 const motion = readFileSync("src/shared/motion/motion.css", "utf8");
-const glassTokens = readFileSync("src/shared/components/glass/glass.tokens.css", "utf8");
 const loginStyles = readFileSync("src/styles/login-experience.css", "utf8");
 const nativeStyles = readFileSync("src/styles/native-experience.css", "utf8");
 const adaptiveStyles = readFileSync("src/styles/adaptive-appearance.css", "utf8");
@@ -73,22 +73,9 @@ assert.ok(mobile.includes("--motion-standard: var(--motion-ease-standard)"));
 assert.ok(mobile.includes("--motion-duration: var(--motion-duration-interaction)"));
 assert.ok(motion.includes("@media (prefers-reduced-motion: reduce)"));
 assert.ok(motion.includes(':root[data-power-mode="conserve"]'));
-assert.ok(glassTokens.includes(':root[data-power-mode="conserve"]'));
 assert.ok(theme.includes("--color-warning: var(--color-status-warning)"));
 assert.ok(theme.includes("--color-error: var(--color-status-danger)"));
 assert.ok(theme.includes("--surface-card: var(--color-surface-panel)"));
-const glassForegroundContracts = [
-  "--glass-soft-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-frosted-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-elevated-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-floating-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-control-foreground: var(--color-text-primary, var(--text-primary, #302a30));"
-];
-
-for (const contract of glassForegroundContracts) {
-  assert.ok(glassTokens.includes(contract), `Glass material must consume canonical text token: ${contract}`);
-}
-
 assert.ok(theme.includes("color: var(--color-text-primary, var(--text-primary));"));
 assert.ok(theme.includes("font-family: var(--font-family-ui, var(--font-family-sans));"));
 assert.ok(theme.includes("font-size: var(--font-size-body, var(--font-size-md));"));
@@ -134,4 +121,63 @@ assert.ok(adaptiveStyles.includes("var(--color-status-danger, var(--color-error)
 
 
 
-console.log("Design foundation contract passed: semantic tokens, canonical body, Brand, status, Glass, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
+const semanticSurface = readFileSync("src/shared/components/surface/surface.css", "utf8");
+assert.ok(semanticSurface.includes(".surface--panel"));
+assert.ok(semanticSurface.includes(".surface--floating"));
+assert.ok(semanticSurface.includes("var(--color-brand-primary"), "Brand surface must consume the canonical brand token");
+assert.ok(semanticSurface.includes("var(--color-surface-inverse"), "Inverse surface must consume the canonical inverse token");
+assert.ok(theme.includes("--color-surface-inverse: #302a30;"), "Theme must define the inverse surface token");
+assert.ok(theme.includes("--color-border-inverse: #494047;"), "Theme must define the inverse border token");
+assert.ok(semanticSurface.includes("var(--elevation-brand"), "Brand surface must consume the semantic brand elevation token");
+assert.ok(!semanticSurface.includes("backdrop-filter"));
+
+function collectSourceFiles(directory) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    return entry.isDirectory()
+      ? collectSourceFiles(path)
+      : [path];
+  });
+}
+
+const sourceFiles = collectSourceFiles("src").filter((path) =>
+  [".css", ".ts", ".tsx"].includes(extname(path))
+);
+const obsoleteMaterialPatterns = [
+  new RegExp("backdrop" + "-filter\\s*:"),
+  new RegExp("--" + "(?:brand-)?" + "glass-"),
+  new RegExp("\\bGlassSurface\\b"),
+  new RegExp("\\bGlassMaterial\\b")
+];
+for (const path of sourceFiles) {
+  const source = readFileSync(path, "utf8");
+  for (const pattern of obsoleteMaterialPatterns) {
+    assert.ok(!pattern.test(source), `Obsolete glass material contract remains in ${path}: ${pattern}`);
+  }
+}
+assert.ok(semanticSurface.includes(".surface--interactive:focus-within"), "Focus treatment must be limited to interactive surfaces");
+assert.ok(semanticSurface.includes('[data-surface-state="error"]'), "Semantic surface must support explicit error state");
+
+
+const semanticSurfaceComponent = readFileSync("src/shared/components/surface/Surface.tsx", "utf8");
+const surfaceVariants = ["panel", "control", "raised", "floating", "inverse", "brand"];
+assert.match(semanticSurfaceComponent, /export type SurfaceVariant = 'panel' \| 'control' \| 'raised' \| 'floating' \| 'inverse' \| 'brand'/);
+assert.match(semanticSurfaceComponent, /variant = 'panel'/, "Surface must have a stable panel default");
+assert.match(semanticSurfaceComponent, /const Component = as \?\? 'div'/, "Surface must preserve native element semantics by default");
+assert.match(semanticSurfaceComponent, /\.\.\.props/, "Surface must forward native element props and handlers");
+for (const variant of surfaceVariants) {
+  assert.ok(semanticSurface.includes(`.surface--${variant}`), `Missing semantic Surface variant selector: ${variant}`);
+}
+assert.ok(semanticSurface.includes(".surface--interactive:hover"), "Interactive surfaces must expose hover feedback");
+assert.ok(semanticSurface.includes(".surface--interactive:active"), "Interactive surfaces must expose active feedback");
+assert.ok(semanticSurface.includes(".surface--interactive:focus-within"), "Interactive surfaces must expose keyboard focus feedback");
+assert.ok(semanticSurface.includes(".surface[data-surface-state=\"error\"]"), "Surface must expose the explicit data-surface-state error contract");
+assert.ok(semanticSurface.includes(".surface:disabled"), "Native disabled controls must receive disabled treatment");
+assert.ok(semanticSurface.includes(".surface[aria-disabled=\"true\"]"), "ARIA-disabled controls must receive disabled treatment");
+assert.ok(semanticSurface.includes("@media (prefers-reduced-motion: reduce)"), "Surface transitions must respect reduced motion");
+assert.ok(!/backdrop-filter\s*:/i.test(semanticSurface), "Surface must not depend on backdrop filtering");
+assert.ok(!/var\(--(?:brand-)?glass-/i.test(semanticSurface), "Surface must not depend on retired Glass tokens");
+assert.ok(!/\.glass-[\\w-]+/i.test(semanticSurface), "Surface must not depend on retired Glass class names");
+assert.ok(!sourceFiles.some((path) => path.includes("/components/glass/")), "Retired Glass component directory must not remain in source");
+
+console.log("Design foundation contract passed: semantic tokens, semantic surfaces, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, shared motion and reduced-motion hooks.");

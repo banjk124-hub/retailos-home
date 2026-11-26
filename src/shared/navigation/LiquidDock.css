@@ -267,17 +267,6 @@
   transform: none !important;
 }
 
-:root[data-power-mode="conserve"] .liquid-dock {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .liquid-dock {
-    background-color: rgba(255, 255, 255, .95);
-  }
-}
-
 .liquid-dock__item { position: relative; }
 .liquid-dock__notice-badge { position: absolute; top: 1px; right: max(8px, calc(50% - 24px)); display: grid; place-items: center; min-width: 16px; height: 16px; padding: 0 4px; border: 2px solid rgba(255,255,255,.96); border-radius: 99px; background: #b32636; color: #fff; font-size: 9px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; box-shadow: 0 2px 6px rgba(30,35,45,.18); }
 

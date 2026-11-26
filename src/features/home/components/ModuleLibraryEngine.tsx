@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import type { ModuleLibraryGroup } from '../moduleRegistry';
-import { GlassSurface } from '../../../shared/components/glass';
+import { Surface } from '../../../shared/components/surface/Surface';
 import { MotionCard } from '../../../shared/motion';
 import { getLibraryIcon, getModuleIcon, MotionIcon } from '../../../shared/icons';
 
@@ -17,9 +17,9 @@ export const ModuleLibraryEngine = memo(function ModuleLibraryEngine({ groups, o
         const GroupIcon = getLibraryIcon(group.id);
         return (
           <MotionCard key={group.id}>
-            <GlassSurface
+            <Surface
               as="button"
-              material="soft"
+              variant="panel"
               interactive
               type="button"
               className={`library-engine__group library-engine__tone-${group.tone}`}
@@ -51,7 +51,7 @@ export const ModuleLibraryEngine = memo(function ModuleLibraryEngine({ groups, o
                 <span>Mở thư viện</span>
                 <ArrowUpRight size={16} aria-hidden={true} />
               </span>
-            </GlassSurface>
+            </Surface>
           </MotionCard>
         );
       })}

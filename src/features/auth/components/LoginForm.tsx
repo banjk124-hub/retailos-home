@@ -10,7 +10,7 @@ import type { FormEvent } from 'react';
 import type { LocalEmployeeRecord } from '../services/employeeDirectory';
 import type { DepartmentConfig } from '../../../shared/config/departments';
 import { MotionButton, MotionPresence } from '../../../shared/motion';
-import { GlassSurface } from '../../../shared/components/glass';
+import { Surface } from '../../../shared/components/surface/Surface';
 import { getDepartmentIcon, MotionIcon } from '../../../shared/icons';
 
 export type LoginStatus = 'idle' | 'submitting' | 'success' | 'error';
@@ -37,9 +37,9 @@ export function LoginForm({
   const isPending = status === 'submitting' || status === 'success';
   const EmployeeDepartmentIcon = getDepartmentIcon(matchedDepartment?.id);
   return (
-    <GlassSurface
+    <Surface
       as="section"
-      material="frosted"
+      variant="panel"
       className={`login-experience__panel${matchedEmployee && matchedDepartment ? ' has-employee' : ''}${status === 'submitting' ? ' is-loading' : ''}`}
       aria-labelledby="login-title"
     >
@@ -61,7 +61,7 @@ export function LoginForm({
               preset="presence"
               className="login-panel__employee-presence"
             >
-              <GlassSurface material="soft" className="login-panel__employee">
+              <Surface variant="panel" className="login-panel__employee">
                 <span className="login-panel__employee-icon">
                   <MotionIcon icon={EmployeeDepartmentIcon} variant="department" state="success" size={19} />
                 </span>
@@ -72,7 +72,7 @@ export function LoginForm({
                 <span className="login-panel__employee-check">
                   <MotionIcon icon={Check} variant="secure" state="success" size={15} />
                 </span>
-              </GlassSurface>
+              </Surface>
             </MotionPresence>
           ) : (
             <p>Nhập mã nhân viên được cấp để tiếp tục.</p>
@@ -83,7 +83,7 @@ export function LoginForm({
       <form className="login-form" onSubmit={onSubmit} noValidate>
         <div className="login-form__field">
           <label htmlFor="login-employee-code"><span>Mã nhân viên</span></label>
-          <GlassSurface material="control" className="login-form__input-wrap" interactive data-glass-state={status === 'error' ? 'error' : undefined}>
+          <Surface variant="control" className="login-form__input-wrap" interactive data-surface-state={status === 'error' ? 'error' : undefined} aria-invalid={status === 'error' || undefined}>
             <span className="login-form__focus-ripple" aria-hidden="true" />
             <MotionIcon icon={UserRound} variant="secure" state={status === 'error' ? 'error' : undefined} size={18} />
             <input
@@ -100,7 +100,7 @@ export function LoginForm({
               aria-describedby={status === 'error' ? 'login-error' : undefined}
               required
             />
-          </GlassSurface>
+          </Surface>
         </div>
 
         <div className="login-form__feedback-slot" aria-live="polite">
@@ -123,8 +123,7 @@ export function LoginForm({
         </div>
 
         <MotionButton
-          material="control"
-          tone="brand"
+          variant="brand"
           motionState={status === 'submitting'
             ? 'loading'
             : status === 'error' || status === 'success'
@@ -148,6 +147,6 @@ export function LoginForm({
           {status === 'submitting' && <span className="login-form__energy motion-energy-sweep" aria-hidden="true" />}
         </MotionButton>
       </form>
-    </GlassSurface>
+    </Surface>
   );
 }

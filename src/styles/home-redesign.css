@@ -1,4 +1,4 @@
-/* RetailOS Liquid Glass System — presentation layer only.
+/* RetailOS Home presentation layer — semantic surface roles only.
    Intentionally scoped to existing UI classes. Does not alter business behavior. */
 :root {
   --ro-red: #e51f2d;
@@ -56,10 +56,6 @@ button { font: inherit; }
   opacity: .3;
   background: radial-gradient(ellipse at 85% 12%,rgba(255,255,255,.95),transparent 28%);
 }
-.sidebar, .topbar, .topbar-dock, .mobile-nav, .panel-card, .metric-card, .module-card, .app-library-card, .calendar-modal, .notice-detail-modal, .barcode-result-card, .toast-message {
-  -webkit-backdrop-filter: blur(var(--glass-elevated-blur)) saturate(var(--glass-elevated-saturation));
-  backdrop-filter: blur(var(--glass-elevated-blur)) saturate(var(--glass-elevated-saturation));
-}
 .sidebar {
   background: linear-gradient(165deg,rgba(255,255,255,.82),rgba(255,248,249,.72));
   border-right: 1px solid rgba(255,255,255,.85);
@@ -95,12 +91,10 @@ button { font: inherit; }
   background: linear-gradient(120deg,rgba(255,255,255,.19),transparent 32%,transparent 70%,rgba(255,255,255,.12));
   mix-blend-mode: screen;
 }
-.spotlight-glass-chip, .spotlight-glass-tile {
-  border: 1px solid rgba(255,255,255,.42);
-  background: linear-gradient(140deg,rgba(255,255,255,.24),rgba(255,255,255,.09));
+.spotlight-chip, .spotlight-tile {
+  border: 1px solid rgba(255,255,255,.88);
+  background: rgba(255,255,255,.96);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.36), 0 10px 28px rgba(70,8,18,.09);
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
-  backdrop-filter: blur(16px) saturate(1.25);
 }
 .spotlight-button {
   transition: transform .24s var(--ro-ease), box-shadow .24s ease;
@@ -111,7 +105,7 @@ button { font: inherit; }
   border: 1px solid rgba(255,255,255,.88);
   border-radius: var(--ro-radius-lg);
   background: linear-gradient(145deg,rgba(255,255,255,.82),rgba(255,250,250,.62));
-  box-shadow: var(--glass-frosted-shadow);
+  box-shadow: var(--elevation-2);
   transition: transform .24s var(--ro-ease), border-color .24s ease, box-shadow .24s ease;
 }
 .module-card:hover, .app-library-card:hover {
@@ -140,7 +134,7 @@ button { font: inherit; }
   border: 1px solid rgba(255,255,255,.9);
   border-radius: var(--ro-radius-lg);
   background: linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,247,248,.66));
-  box-shadow: var(--glass-frosted-shadow);
+  box-shadow: var(--elevation-2);
 }
 .spotlight-notification-list { gap: 8px; }
 .spotlight-notification-list > * {

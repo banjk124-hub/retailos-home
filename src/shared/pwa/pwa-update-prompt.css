@@ -15,7 +15,7 @@
   background: rgba(255,255,255,.97);
   box-shadow: 0 16px 48px rgba(28,35,48,.24);
   color: #242a35;
-  backdrop-filter: blur(20px);
+  
 }
 .pwa-update-prompt__header { display: grid; gap: 6px; }
 .pwa-update-prompt__eyebrow { color: #a92534; font-size: 10px; font-weight: 800; letter-spacing: .12em; }

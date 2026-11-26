@@ -47,26 +47,23 @@
   --retail-ink: var(--brand-color-ink);
   --retail-muted: var(--brand-color-muted);
   --retail-white: var(--brand-color-white);
-  --retail-glass: rgba(255,255,255,.72);
-  --retail-glass-line: rgba(255,255,255,.84);
   --retail-red-shadow: 0 14px 35px rgba(191,31,49,.14);
   --brand-focus-ring: var(--focus-outline-color);
   --focus-ring-width: var(--focus-outline-width);
   --focus-ring-offset: var(--focus-outline-offset);
   --focus-ring-shadow: var(--focus-outline-shadow);
   --surface-page: #fffafa;
-  --surface-card: rgba(255,255,255,.82);
-  --surface-raised: rgba(255,255,255,.92);
-  --surface-muted: rgba(246,239,240,.86);
-  --surface-input: rgba(255,255,255,.9);
-  --surface-control: rgba(255,255,255,.72);
-  --surface-control-hover: rgba(255,255,255,.9);
+  --surface-card: #fff;
+  --surface-raised: #fff;
+  --surface-muted: #f6eff0;
+  --surface-input: #fff;
+  --surface-control: #fff;
+  --surface-control-hover: #fff;
   --border-soft: rgba(105,77,83,.18);
   --shadow-ambient: 0 24px 64px rgba(59,24,31,.12);
   --ink: var(--retail-ink);
   --blue: var(--retail-red);
   --blue-dark: var(--retail-red-deep);
-  --glass: var(--retail-glass);
 
   /* RetailOS Design Foundation — canonical semantic roles. */
   --color-brand-primary: var(--brand-color-primary);
@@ -77,10 +74,13 @@
   --color-text-muted: #6f6870;
   --color-text-inverse: #fff;
   --color-surface-canvas: #fffafa;
-  --color-surface-panel: rgba(255,255,255,.82);
-  --color-surface-raised: rgba(255,255,255,.92);
-  --color-surface-subtle: rgba(246,239,240,.86);
-  --color-surface-input: rgba(255,255,255,.9);
+  --color-surface-panel: #fff;
+  --color-surface-raised: #fff;
+  --color-surface-subtle: #f6eff0;
+  --color-surface-inverse: #302a30;
+  --color-border-inverse: #494047;
+  --elevation-brand: 0 4px 12px rgba(201,30,50,.16);
+  --color-surface-input: #fff;
   --color-border-subtle: rgba(105,77,83,.18);
   --color-border-strong: rgba(105,77,83,.34);
   --color-status-success: #187456;
@@ -181,7 +181,7 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 
 .eyebrow { color: var(--color-brand-primary); }
 
-/* Home: restrained red/white system, glass used only for floating surfaces */
+/* Home: restrained red/white system with opaque semantic surfaces */
 .app-shell { background: radial-gradient(ellipse at 75% -15%,rgba(255,222,226,.55),transparent 34%),#fffafa; }
 .sidebar { background: rgba(255,255,255,.88); border-right-color: #f1e7e8; }
 .workspace-avatar,.footer-mark { background: linear-gradient(145deg,#e94150,#b81d2c); }
@@ -190,18 +190,18 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .nav-dot,.status-pulse,.hero-live-dot { background: var(--color-brand-primary); }
 .system-status { background: var(--color-brand-subtle); color: #b32130; border-color: #f7d9dc; }
 .icon-button.selected,.mobile-nav button.active .mobile-nav-icon { background: var(--color-brand-subtle); color: var(--color-brand-primary); }
-.topbar { background: var(--glass-surface-elevated); border-bottom-color: var(--glass-border-elevated); backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); }
+.topbar { background: #fff; border-bottom: 1px solid var(--color-border-subtle);   }
 .top-profile:hover { background: var(--color-brand-subtle); }
 .top-avatar,.profile-avatar { background: linear-gradient(145deg,#e94150,#b81d2c); }
 .welcome-copy .eyebrow,.section-kicker { color: #bd3441; }
-.user-context-chip,.date-chip { border-color: var(--glass-border-card); background: var(--glass-surface-card); box-shadow: var(--shadow-card), var(--glass-highlight); backdrop-filter: blur(var(--glass-blur-card)) saturate(var(--glass-saturation-card)); -webkit-backdrop-filter: blur(var(--glass-blur-card)) saturate(var(--glass-saturation-card)); }
+.user-context-chip,.date-chip { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-1);   }
 .context-avatar,.date-icon { background: var(--color-brand-subtle); color: var(--color-brand-primary); }
 .hero-card { background: linear-gradient(118deg,#a91728 0%,var(--color-brand-primary) 52%,#ed5b66 100%); box-shadow: 0 20px 45px rgba(178,28,44,.19), inset 0 1px 0 rgba(255,255,255,.22); }
 .hero-orb.orb-one { background: rgba(255,255,255,.08); }
 .hero-orb.orb-two { background: rgba(255,220,224,.1); }
 .hero-button { color: #a91c2a; background: rgba(255,255,255,.96); box-shadow: 0 7px 18px rgba(80,0,10,.13); }
 .hero-button:hover { background: #fff3f4; }
-.metric-card,.module-card,.panel-card { border-color: var(--glass-border-card); background: var(--glass-surface-card); box-shadow: var(--shadow-card), var(--glass-highlight); backdrop-filter: blur(var(--glass-blur-card)) saturate(var(--glass-saturation-card)); -webkit-backdrop-filter: blur(var(--glass-blur-card)) saturate(var(--glass-saturation-card)); }
+.metric-card,.module-card,.panel-card { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-1);   }
 .metric-icon.blue,.module-blue .module-icon,.activity-icon.blue { color: #c52635; background: var(--color-brand-subtle); }
 .metric-icon.violet,.module-violet .module-icon,.activity-icon.violet { color: #b44c59; background: var(--color-brand-subtle); }
 .metric-icon.amber,.module-amber .module-icon,.activity-icon.amber { color: #b87837; background: #fff5e9; }
@@ -212,8 +212,8 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .search-field:focus-within { border-color: #ed9aa2; box-shadow: 0 0 0 3px #d9273610; }
 .text-button,.module-card-bottom svg,.attention-copy button,.panel-footer-button { color: #c52635; }
 .version-pill,.attention-count { color: #b41f2d; background: var(--color-brand-subtle); border-color: #f4d6d9; }
-.mobile-nav { background: linear-gradient(130deg,rgba(255,255,255,.91),rgba(255,248,249,.88)); border-color: rgba(255,255,255,.95); box-shadow: 0 8px 28px rgba(92,34,40,.12), inset 0 1px 0 #fff; }
-.toast-message { border-color: var(--glass-border-elevated); background: var(--glass-surface-elevated); box-shadow: var(--shadow-elevated), var(--glass-highlight); backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); -webkit-backdrop-filter: blur(var(--glass-blur-elevated)) saturate(var(--glass-saturation-elevated)); }
+.mobile-nav { background: #fff; border-color: var(--color-border-subtle); box-shadow: var(--elevation-2); }
+.toast-message { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-2);   }
 .toast-check { color: #fff; background: var(--color-brand-primary); }
 
 /* Department states: each department has its own icon tint and motion signature. */
@@ -244,10 +244,10 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .login-dept-softline .dept-preview-icon,.login-icon-softline { background:#f7ecf9!important; color:#8a4b8f!important; }
 .login-dept-homeline .dept-preview-icon,.login-icon-homeline { background:#fff3df!important; color:#a76b25!important; }
 .login-dept-warehouse .dept-preview-icon,.login-icon-warehouse { background:#eaf3ff!important; color:#2f639d!important; }
-.login-dept-fresh .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#36a87a,#b9eed4); }
-.login-dept-softline .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#a86db1,#e7c5eb); }
-.login-dept-homeline .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#c78a39,#f1d5a4); }
-.login-dept-warehouse .glass-chart span:nth-child(6) { background:linear-gradient(180deg,#4c86c0,#c5e0ff); }
+.login-dept-fresh .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#36a87a,#b9eed4); }
+.login-dept-softline .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#a86db1,#e7c5eb); }
+.login-dept-homeline .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#c78a39,#f1d5a4); }
+.login-dept-warehouse .dept-chart span:nth-child(6) { background:linear-gradient(180deg,#4c86c0,#c5e0ff); }
 .login-motion-pulse .orbit-two { animation: dept-pulse 2.6s ease-in-out infinite; }
 .login-motion-bloom .orbit-one { animation: dept-bloom 3.2s ease-in-out infinite; }
 .login-motion-drift .orbit-two { animation: dept-drift 3.8s ease-in-out infinite; }

@@ -109,8 +109,8 @@
   color: #292127;
   border: 1px solid rgba(255,255,255,.72);
   box-shadow: 0 14px 36px rgba(23,7,12,.12),inset 0 1px 0 #fff;
-  -webkit-backdrop-filter: blur(18px) saturate(1.25);
-  backdrop-filter: blur(18px) saturate(1.25);
+  
+  
 }
 .app-shell .spotlight-art {
   position: absolute;
@@ -123,7 +123,7 @@
 }
 .app-shell .spotlight-art .spotlight-tile-main { pointer-events: auto; }
 .app-shell .spotlight-art .spotlight-tile-float,
-.app-shell .spotlight-art .spotlight-glass-chip { display: none; }
+.app-shell .spotlight-art .spotlight-chip { display: none; }
 .app-shell .section-block.app-library-section {
   width: 100%;
   min-width: 0;
