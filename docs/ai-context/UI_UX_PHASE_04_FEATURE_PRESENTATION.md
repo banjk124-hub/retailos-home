@@ -1,6 +1,6 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A implementation and exact-head CI completed; UI-04B source ownership split implemented and awaiting exact-head validation.
+**Status:** UI-04A and UI-04B implemented and validated; UI-04C scanner presentation ownership split implemented and awaiting exact-head validation.
 **Branch:** refactor/ui-04-feature-presentation
 **Base:** main after UI-03 merge 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54
 **Scope:** migrate feature presentation boundaries for Login, Settings, Scanner, Stocktake and Stocktake Import while preserving domain behavior, lifecycle, lazy-loading and accessibility contracts.
@@ -26,7 +26,7 @@ Baseline is the merged UI-03 main commit above. The repository contains **24 CSS
 |---|---|---|---|
 | Login | LoginExperience, LoginHero, LoginForm, LoginDock | login-experience.css (24,956 B), login-compact-landscape.css (2,830 B) | Auth/session and identity-transition coupling; preserve responsive and compact-landscape behavior |
 | Settings | SettingsHub, nested Update Center, ScannerSettingsPanel | settings-dialog.css (shared), settings-hub.css, scanner-preferences.css | Shared dialog shell is explicit; menu and scanner preference styles are feature-owned |
-| Scanner | BarcodeScanner, scanner hooks/services | scanner-transition.css (8,467 B), shared with StocktakeScanner | Camera/session/decoder/ROI lifecycle is protected; presentation-only scope |
+| Scanner | BarcodeScanner, scanner hooks/services | barcode-scanner-presentation.css + scanner-shared-controls.css | Home presentation is feature-owned; only torch control styling is shared with Stocktake |
 | Stocktake | StocktakeModule, StocktakeScanner | stocktake.css (11,822 B) plus shared scanner transition CSS | Local persistence, revisions, history, export and camera handoff |
 | Stocktake Import | StocktakeImportModule | stocktake-import.css (50,965 B) | Large feature-owned surface; parser precision, conflict review, dirty edits, persistence and export are protected |
 
@@ -55,9 +55,11 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 
 ### 3.3 Scanner
 - Home Scanner is BarcodeScanner.tsx; Stocktake uses a separate StocktakeScanner.tsx.
-- Both consume scanner-transition.css; both use the established useScannerEngine hook.
-- Shared transition styling does not imply the two scanner surfaces should be collapsed into one component.
-- Do not change camera acquisition gesture, camera lease/session, worker/decoder, ROI geometry, health/focus recovery, scanner settings or scanner feedback as part of presentation migration.
+- Baseline `scanner-transition.css` mixed Home Scanner, Stocktake Scanner and the common torch control in one stylesheet. The source trace confirmed exactly two runtime imports.
+- UI-04C extracts Home rules into `barcode-scanner-presentation.css`, Stocktake rules into `stocktake-scanner-presentation.css`, and only `.scanner-torch-toggle` into `scanner-shared-controls.css`.
+- `BarcodeScanner` and `StocktakeScanner` remain separate feature compositions and each imports its own presentation stylesheet plus the minimal shared control stylesheet.
+- Both continue to use the established `useScannerEngine` hook and feature-owned preview-region binding.
+- No camera acquisition gesture, camera lease/session, worker/decoder, ROI geometry, health/focus recovery, scanner settings or scanner feedback logic was changed.
 - Scanner stabilization remains closed; reopen engine internals only for a reproducible defect, measured bottleneck or new requirement.
 
 ### 3.4 Stocktake
@@ -85,8 +87,9 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - Isolated Settings Hub menu and pending-update indicator rules in `settings-hub.css`; isolated scanner preference, feedback and barcode symbology rules in `scanner-preferences.css`.
    - Both consumers now import the shared dialog foundation followed by their own feature stylesheet; retired the combined `scanner-settings.css`.
    - Added `scripts/test-ui-04b-settings-presentation.mjs` and registered it in preflight. Update Center events/store and scanner preference store/hook remain in their existing components/services.
-3. **UI-04C — Scanner presentation**
-   - Audit the shared transition stylesheet and the distinct Home/Stocktake scanner compositions.
+3. **UI-04C — Scanner presentation — implementation awaiting validation**
+   - Split the mixed transition stylesheet into Home, Stocktake and minimal shared torch-control presentation files.
+   - Update `test-scanner-presentation.mjs` to guard selector ownership, preview reveal, reduced-motion and shared-control boundaries.
    - Keep engine, camera, worker and decoder untouched.
 4. **UI-04D — Stocktake presentation**
    - Audit view/state-to-presentation mapping and CSS ownership.
@@ -129,6 +132,7 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - UI-03 is merged to main as PR #180, merge commit 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54; final docs-head CI run #1817 passed.
 - UI-04 branch is based on that merged main commit.
 - Discovery and source baseline are recorded above.
-- UI-04A is implemented and passed exact-head CI #1819.
-- UI-04B stylesheet ownership refactor is pushed to the branch; its exact-head CI and responsive/runtime evidence are pending.
+- UI-04A passed exact-head CI #1819 on `0b54a0356628d69592fbbc2643cf193f33d27604`.
+- UI-04B passed exact-head CI run #1821 on `14bcc16a7ac8a0c20d659fd8256ede6e1e97cb8e`.
+- UI-04C presentation stylesheet split is pushed to the branch; exact-head CI and responsive/runtime evidence are pending.
 - No merge or deployment has been performed.
