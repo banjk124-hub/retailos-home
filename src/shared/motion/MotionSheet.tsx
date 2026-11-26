@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
+import type { ComponentPropsWithRef, CSSProperties } from 'react';
 import { MOTION_PRESETS } from './motion.presets';
 
 export type MotionOrigin = {
@@ -11,7 +11,7 @@ type MotionStyle = CSSProperties & {
   '--motion-origin-y': string;
 };
 
-type Props = ComponentPropsWithoutRef<'section'> & {
+type Props = ComponentPropsWithRef<'section'> & {
   origin?: MotionOrigin;
   exiting?: boolean;
 };
