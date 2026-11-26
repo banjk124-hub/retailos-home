@@ -36,6 +36,7 @@ import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
+import { useDialogFocus } from '../../shared/hooks/useDialogFocus';
 import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT, type UpdateCenterEntry } from '../../shared/pwa/updateCenterStore';
 declare const __RETAILOS_BUILD_ID__: string;
 
@@ -178,6 +179,7 @@ export default function HomeScreen({
   const scrollSaveTimer = useRef<number | null>(null);
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
   const calendarCloseRef = useRef<HTMLButtonElement>(null);
+  const calendarDialogRef = useRef<HTMLElement>(null);
   const calendarCloseTimer = useRef<number | null>(null);
   const [priorityNotices, setPriorityNotices] = useState<SnapshotNotice[]>([]);
   const [snapshotNoticeStatus, setSnapshotNoticeStatus] = useState<SnapshotNoticeStatus>('loading');
@@ -185,6 +187,7 @@ export default function HomeScreen({
   const [isNoticeClosing, setIsNoticeClosing] = useState(false);
   const noticeCloseTimer = useRef<number | null>(null);
   const noticeCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const noticeDialogRef = useRef<HTMLElement>(null);
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
   const [selectedLibraryModules, setSelectedLibraryModules] = useState<RetailModule[]>([]);
@@ -195,6 +198,7 @@ export default function HomeScreen({
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const libraryDialogRef = useRef<HTMLElement>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [toast, setToast] = useState('');
   useBodyScrollLock(
@@ -637,7 +641,7 @@ export default function HomeScreen({
       </section>
     </div>}
     {showCalendar && <div className={`calendar-modal-backdrop ${isCalendarClosing ? 'calendar-closing' : ''}`} onAnimationEnd={finishCalendarClose} onClick={(event) => { if (event.target === event.currentTarget) closeCalendar(); }}>
-      <section className="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendar-modal-title">
+      <section ref={calendarDialogRef} tabIndex={-1} className="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="calendar-modal-title">
         <header className="calendar-modal-header">
           <div className="calendar-modal-title">
             <span className="calendar-modal-icon"><CalendarDays size={20} /></span>
@@ -705,7 +709,7 @@ export default function HomeScreen({
     {selectedNotice && (() => {
       const NoticeIcon = getModuleIcon(selectedNotice.moduleId);
       return <div className={`notice-detail-backdrop ${isNoticeClosing ? 'notice-detail-closing' : ''}`} onClick={(event) => { if (event.target === event.currentTarget) closeNotice(); }}>
-        <section className="notice-detail-modal" role="dialog" aria-modal="true" aria-labelledby="notice-detail-title">
+        <section ref={noticeDialogRef} tabIndex={-1} className="notice-detail-modal" role="dialog" aria-modal="true" aria-labelledby="notice-detail-title">
           <header className="notice-detail-header">
             <span className={`notice-detail-icon ${selectedNotice.tone}`}><MotionIcon icon={NoticeIcon} variant="module" size={21} /></span>
             <div><span className="notice-detail-kicker">{selectedNotice.category} · SNAPSHOT {new Date(selectedNotice.snapshotDate).toLocaleDateString('vi-VN')}</span><h2 id="notice-detail-title">{selectedNotice.title}</h2></div>
