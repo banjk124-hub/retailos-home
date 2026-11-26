@@ -18,7 +18,7 @@
 - No application Business Core contracts were intentionally changed.
 
 ## Immediate next action
-1. Verify the latest PR head and its single final CI run.
+1. Verify the final-head CI run after this handoff update.
 2. Fix only actual failures in the compact test suite or preflight.
 3. After CI is green, begin the new authenticated App Shell as the next visible source/runtime vertical slice. Do not return to M0 audits or legacy CSS cleanup.
 
