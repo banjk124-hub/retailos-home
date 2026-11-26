@@ -61,12 +61,10 @@ for (const viewport of viewports) {
 
     await page.keyboard.press('Tab');
     await expect(employeeCode).toBeFocused();
-    const focusStyle = await page.locator('.retail-login__field').evaluate((element) => ({
-      borderColor: getComputedStyle(element).borderColor,
-      boxShadow: getComputedStyle(element).boxShadow,
-    }));
-    expect(focusStyle.borderColor).not.toBe('rgb(222, 212, 205)');
-    expect(focusStyle.boxShadow).not.toBe('none');
+    const field = page.locator('.retail-login__field');
+    // Wait for the CSS transition to reach its focused value before inspecting the style.
+    await expect(field).toHaveCSS('border-color', 'rgb(155, 74, 83)');
+    await expect(field).not.toHaveCSS('box-shadow', 'none');
 
     await employeeCode.fill('0');
     await page.keyboard.press('Tab');
