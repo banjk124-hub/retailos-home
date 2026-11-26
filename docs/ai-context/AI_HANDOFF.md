@@ -1,36 +1,25 @@
 # Current handoff — RetailOS
 
-**Governing standard:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
-**Active UI/UX authority:** [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md)
+**UI/UX authority:** [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md)  
+**Engineering authority:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)
 
-## Verified baseline
-- Repository: banjk124-hub/retailos-home; default branch main.
-- Main baseline for M0-A2: `a5ef3ffe176adfcfb3ccb7cf68941dd197de33d6`.
-- PR #167 CI #1600 passed: preflight, bundle comparison, responsive Playwright browser smoke and evidence artifacts.
-- Owner-confirmed direction: burgundy/dark-red identity, Vietnamese-first typography, authentic retail imagery; image = art direction/composition; video = motion/interaction; adapt rather than copy.
-- Scanner stabilization is closed. Do not reopen engine internals for UI redesign.
+## Verified repository context
+- Repository: `banjk124-hub/retailos-home`; default branch: `main`.
+- PR #174: `feat/retailos-greenfield-experience`, Draft, unmerged.
+- Product direction is a greenfield rebuild of the Experience Layer. Legacy UI is not the design foundation.
+- Business Core remains protected: Auth/session, module registry/readiness, data/persistence/offline, Scanner Engine, Stocktake/Import workflows, overlay lifecycle and PWA release safety.
+- Scanner stabilization is closed; do not reopen its internals for UI work.
 
-## Current phase — M0-A
-- A0 source baseline and seven screen blueprints are recorded.
-- A1 source architecture audit is complete and recorded in `UI_UX_M0_A1_ARCHITECTURE_AUDIT.md`.
-- A2 source/design-system audit is complete and recorded in `UI_UX_M0_A2_DESIGN_SYSTEM_CSS_AUDIT.md` on `audit/m0-a2-design-system-css`.
-- A2 inventory: 24 CSS files / 365,141 source bytes; 13 root CSS imports; five ordered Home stylesheets; mobile-tuning.css is 87,269 bytes; no bundled retail photography or font file.
-- Main risks: Home cascade generations, broad mobile overrides, duplicated token vocabularies, scattered blur/reduced-motion/power policies, unselected Vietnamese font and missing licensed retail image assets.
-- A2 runtime exit remains open: computed-style/screenshot parity, selector/property proof, emitted CSS transfer, font specimen, image crop, runtime profiling and physical-device acceptance.
-- No CSS retirement or broad redesign is approved by static source audit.
-- Next: collect A2 runtime evidence before A3 motion and A4 performance decisions. No new dependency until a measured requirement exists.
+## Work completed in this batch
+- Replaced the M0 audit-and-gate direction with one greenfield Experience Build Standard.
+- Updated repository entry points, Product Skill, roadmap, project context, status/handoff and deprecation records to prevent future sessions from loading or recreating the retired M0 audit workflow.
+- Removed the diagnostic browser evidence harness and replaced it with concise Login, authenticated Home and reduced-motion journey checks.
+- Scoped CI so Scanner regression tests run for Scanner changes; removed the duplicate PR-base build and routine diagnostic artifact uploads.
+- No application Business Core contracts were intentionally changed.
 
-## Protected boundaries
-Auth/session, module IDs/readiness, snapshot/cache/offline truth, Scanner Engine/session/camera, Stocktake persistence/revisions/export, Import parser precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA consent/staging/integrity/activation/boot-health/rollback, Vite Pages base and lazy-loading.
+## Immediate next action
+1. Verify the latest PR head and its single final CI run.
+2. Fix only actual failures in the compact test suite or preflight.
+3. After CI is green, begin the new authenticated App Shell as the next visible source/runtime vertical slice. Do not return to M0 audits or legacy CSS cleanup.
 
-No merge without explicit owner approval. No deployment without explicit authorization.
-
-
-## Continuation update — PR #174
-
-- Active candidate: `feat/retailos-greenfield-experience`, PR #174 (Draft), latest verified implementation head `0a5c90ca1bf95292b959a9c75ffbf32d87adee30`.
-- CI #1636 passed on that exact head: 7/7 Playwright tests, preflight, TypeScript, production/Pages builds, bundle baseline comparison and runtime evidence artifact.
-- Browser artifact review: zero page errors, zero failed requests, zero duplicate IDs, and zero horizontal overflow across seven Home viewports. Login was visually inspected at desktop/mobile; the other feature captures remain existing overlay states over Home.
-- A flaky focus assertion was corrected to wait for the focused border CSS transition. Final run completed 7/7 without retries.
-- Login is an M0 prototype, not final visual acceptance: authentic retail photography is still absent. Home mobile dock overlap remains visible. Physical-device and owner visual acceptance are pending.
-- M0 remains IN PROGRESS; M1 is not authorized. Continue M0-A2 runtime evidence and the remaining screen prototypes. Do not merge or deploy.
+No merge, deployment or production transfer is authorized.
