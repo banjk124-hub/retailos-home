@@ -38,8 +38,10 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 - Root experience is src/features/auth/screens/LoginExperience.tsx.
 - It imports two Login-specific stylesheets.
 - Form, hero and dock are composed as feature components; the form uses existing shared Surface and Motion primitives.
+- Ownership seam found: login-experience.css also defines .auth-journey-recognition selectors rendered by UnifiedIdentityView in App.tsx. The LoginExperience import currently makes those rules available; this is a cross-owner presentation dependency, not proof that the identity stage should be moved or split. Trace the root auth journey and CSS loading before changing it.
+- Existing browser coverage: tests/browser/login-responsive.spec.ts checks desktop, tablet, mobile, compact mobile and short landscape, keyboard focus, 16px input sizing, reduced motion and power-conserve backdrop behavior. Extend rather than replace these assertions if the Login slice changes.
 - Keep local employee validation, employee/department preview, submitting/error/success states, identity recognition handoff and session behavior unchanged.
-- Verify mobile, tablet, desktop, compact mobile and short-landscape layouts; preserve keyboard and screen-reader feedback.
+- Preserve keyboard and screen-reader feedback.
 
 ### 3.2 Settings
 - SettingsHub.tsx owns the Settings entry surface and nested Update Center.
@@ -70,8 +72,9 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 Deliver each slice independently, with source trace, focused tests, browser evidence and documentation reconciliation.
 
 1. **UI-04A — Login presentation boundary**
-   - Audit component/style ownership and shared primitive usage.
-   - Make only source-backed ownership fixes; preserve auth, identity, responsive, focus and motion contracts.
+   - Source audit completed: Login composition, two stylesheet imports, shared Surface/Motion usage and the App-owned identity-stage selector dependency are traced.
+   - Next: decide whether the identity-stage CSS should remain journey-owned or be relocated with its App-owned view; do not split it unless this improves loading/ownership without changing cascade or first-paint behavior.
+   - Extend the existing Login responsive browser test only for a demonstrated gap; preserve auth, identity, responsive, focus and motion contracts.
 2. **UI-04B — Settings and Update Center**
    - Trace all consumers of scanner-settings.css.
    - Decide whether shared ownership is semantically valid or whether system settings and scanner preferences need separate feature-owned stylesheets.
