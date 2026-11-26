@@ -5,7 +5,6 @@ const theme = readFileSync("src/styles/theme.css", "utf8");
 const mobile = readFileSync("src/styles/mobile-tuning.css", "utf8");
 const homeRedesign = readFileSync("src/styles/home-redesign.css", "utf8");
 const motion = readFileSync("src/shared/motion/motion.css", "utf8");
-const glassTokens = readFileSync("src/shared/components/glass/glass.tokens.css", "utf8");
 const loginStyles = readFileSync("src/styles/login-experience.css", "utf8");
 const nativeStyles = readFileSync("src/styles/native-experience.css", "utf8");
 const adaptiveStyles = readFileSync("src/styles/adaptive-appearance.css", "utf8");
@@ -73,22 +72,9 @@ assert.ok(mobile.includes("--motion-standard: var(--motion-ease-standard)"));
 assert.ok(mobile.includes("--motion-duration: var(--motion-duration-interaction)"));
 assert.ok(motion.includes("@media (prefers-reduced-motion: reduce)"));
 assert.ok(motion.includes(':root[data-power-mode="conserve"]'));
-assert.ok(glassTokens.includes(':root[data-power-mode="conserve"]'));
 assert.ok(theme.includes("--color-warning: var(--color-status-warning)"));
 assert.ok(theme.includes("--color-error: var(--color-status-danger)"));
 assert.ok(theme.includes("--surface-card: var(--color-surface-panel)"));
-const glassForegroundContracts = [
-  "--glass-soft-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-frosted-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-elevated-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-floating-foreground: var(--color-text-primary, var(--text-primary, #302a30));",
-  "--glass-control-foreground: var(--color-text-primary, var(--text-primary, #302a30));"
-];
-
-for (const contract of glassForegroundContracts) {
-  assert.ok(glassTokens.includes(contract), `Glass material must consume canonical text token: ${contract}`);
-}
-
 assert.ok(theme.includes("color: var(--color-text-primary, var(--text-primary));"));
 assert.ok(theme.includes("font-family: var(--font-family-ui, var(--font-family-sans));"));
 assert.ok(theme.includes("font-size: var(--font-size-body, var(--font-size-md));"));
@@ -134,4 +120,8 @@ assert.ok(adaptiveStyles.includes("var(--color-status-danger, var(--color-error)
 
 
 
-console.log("Design foundation contract passed: semantic tokens, canonical body, Brand, status, Glass, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, compatibility aliases, shared motion, reduced-motion and power-conserve hooks.");
+const semanticSurface = readFileSync("src/shared/components/surface/surface.css", "utf8");
+assert.ok(semanticSurface.includes(".surface--panel"));
+assert.ok(semanticSurface.includes(".surface--floating"));
+assert.ok(!semanticSurface.includes("backdrop-filter"));
+console.log("Design foundation contract passed: semantic tokens, semantic surfaces, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, shared motion and reduced-motion hooks.");
