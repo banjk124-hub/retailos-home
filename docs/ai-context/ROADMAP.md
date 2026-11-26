@@ -10,7 +10,12 @@ All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI/UX
 
 ## UI/UX — M0 before M1
 1. **M0-0 — Direction and documentation baseline:** merged via PR #163.
-2. **M0-A — Structural/visual direction:** source baseline refreshed against current main; source-grounded blueprints cover Login, proposed Shell, Home, Library, Stocktake, Import and Settings/Update Center. The next deliverable is high-fidelity visual prototypes directly in RetailOS source/runtime, then browser inspection and owner visual acceptance.
+2. **M0-A — Structural/visual direction:**
+   - A0 source baseline and seven screen blueprints refreshed against current main.
+   - A1 source architecture audit completed on `audit/m0-a1-source-architecture`: root/auth journey, Home responsibility map, registry/readiness, feature ownership, shared UI systems, overlays, persistence, lazy-loading/dependency boundaries and test gaps.
+   - Next: A2 Design System & CSS Audit — selector ownership, token duplication, cascade/computed winners, Vietnamese typography candidates, imagery licensing/offline policy. No bulk CSS deletion.
+   - Then A3 motion audit, A4 runtime/performance audit and A5 technology decision.
+   - Only after these evidence gates: high-fidelity source/runtime prototypes and owner visual acceptance.
 3. **M0-B — Motion/interaction:** derive observable patterns from the supplied video; prototype transitions, feedback, progressive readiness, interruption and reduced-motion behavior after M0-A direction is accepted.
 4. **M0-C — Cross-surface integration:** apply accepted visual/temporal language to real workflows without identical layouts or business-contract changes.
 5. **M0-D — Technology, quality and owner acceptance:** evidence-based technology choices, accessibility, browser/device/performance validation and explicit owner acceptance.
