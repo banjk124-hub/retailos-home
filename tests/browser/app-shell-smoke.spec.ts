@@ -14,9 +14,15 @@ async function openHome(page: Page) {
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
   await expect(page.locator('.retailos-experience')).toBeVisible();
-  await expect(page.getByRole('navigation', { name: 'Điều hướng RetailOS' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
-  await page.getByRole('button', { name: 'Thư viện nghiệp vụ' }).click();
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 700) {
+    await expect(page.locator('.retailos-experience__mobile-footer')).toBeVisible();
+    await page.getByRole('button', { name: 'Chức năng' }).click();
+  } else {
+    await expect(page.locator('.retailos-experience__rail')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
+    await page.getByRole('button', { name: 'Thư viện nghiệp vụ' }).click();
+  }
   await expect(page.locator('#modules')).toBeInViewport();
   await expect(page.getByRole('button', { name: 'Thông báo' })).toBeVisible();
 }
