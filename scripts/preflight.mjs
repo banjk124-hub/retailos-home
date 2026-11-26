@@ -245,6 +245,36 @@ const checks = [
   },
 ];
 
+const requestedScope = process.argv.find((argument) => argument.startsWith("--scope="))?.split("=")[1] ?? "full";
+let scope = requestedScope;
+
+if (requestedScope === "auto") {
+  const baseRef = process.env.GITHUB_BASE_REF;
+  if (!baseRef) {
+    scope = "full";
+  } else {
+    const changed = spawnSync("git", ["diff", "--name-only", `origin/${baseRef}...HEAD`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "inherit"],
+    });
+    if (changed.status !== 0) {
+      console.error("Unable to classify changed paths; falling back to the full preflight.");
+      scope = "full";
+    } else {
+      const scannerTouched = changed.stdout.split(/\\r?\\n/).some((path) =>
+        /^(src\\/(features\\/scanner|shared\\/(scanner|camera))|scripts\\/test-scanner)/.test(path),
+      );
+      scope = scannerTouched ? "full" : "ui";
+    }
+  }
+}
+
+const selectedChecks = scope === "ui"
+  ? checks.filter((check) => !check.name.startsWith("Scanner") && check.name !== "Production build (TypeScript + Vite)")
+  : checks;
+
+console.log(`Preflight scope: ${scope} (${selectedChecks.length}/${checks.length} checks)`);
+
 function run(check) {
   console.log(`\n[RUN] ${check.name}`);
 
@@ -273,7 +303,7 @@ console.log("========================================");
 console.log(`Node: ${process.version}`);
 console.log(`Platform: ${process.platform} / ${process.arch}`);
 
-for (const check of checks) {
+for (const check of selectedChecks) {
   if (!run(check)) {
     console.error("\nPREFLIGHT FAILED — fix the reported issue before pushing.");
     process.exit(1);
