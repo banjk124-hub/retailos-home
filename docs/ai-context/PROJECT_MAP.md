@@ -20,7 +20,7 @@
 |---|---|---|
 | PWA/update runtime | `src/shared/pwa/`, `src/sw/` | Read [PWA_RUNTIME_RELEASE.md](./PWA_RUNTIME_RELEASE.md) before lifecycle changes. |
 | Shared services | `src/shared/services/` | Trace ownership, callers, permissions and side effects. |
-| Navigation | `src/shared/navigation/` | Preserve module identity and navigation consumers. |
+| Navigation | `src/shared/navigation/` | `ShellNavigation` shares Home destination state across desktop rail and touch `LiquidDock`; see [UI_UX_PHASE_01B_SHELL_NAVIGATION.md](./UI_UX_PHASE_01B_SHELL_NAVIGATION.md). |
 | Shared components | `src/shared/components/` | Use component governance before cross-feature promotion. |
 | Motion | `src/shared/motion/` | Preserve reduced-motion, power-conserve and lifecycle semantics. |
 | Brand/icons | `src/shared/brand/`, `src/shared/icons/` | Shared identity and icon registry. |
