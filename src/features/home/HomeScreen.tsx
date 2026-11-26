@@ -13,7 +13,7 @@ import { Surface } from '../../shared/components/surface/Surface';
 import { readHomeUiState } from './homeStateStore';
 import { useHomeSnapshotNotices } from './hooks/useHomeSnapshotNotices';
 import { useHomeNavigation } from './hooks/useHomeNavigation';
-import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice } from './snapshotNoticeRules';
+import { type SnapshotNotice } from './snapshotNoticeRules';
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
