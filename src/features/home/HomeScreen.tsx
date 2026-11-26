@@ -198,7 +198,7 @@ export default function HomeScreen({
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
-  const libraryDialogRef = useRef<HTMLElement>(null);
+  const libraryDialogRef = useRef<HTMLElementTagNameMap['section']>(null);
   const libraryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [toast, setToast] = useState('');
   useBodyScrollLock(
