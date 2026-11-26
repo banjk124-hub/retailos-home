@@ -430,3 +430,25 @@ Before the first CSS consolidation batch, extend the collector to:
 7. review screenshots and evidence before marking any selector KEEP / CONSOLIDATE / RETIRE.
 
 **M0-A2 status:** source inventory and first browser baseline are complete. Runtime capture is now available and has passed CI. The phase remains **IN PROGRESS**: declaration-level cascade tracing, compressed CSS delivery, typography/palette comparison and meaningful runtime/device performance evidence are outstanding. No production CSS consolidation, font selection, palette lock or asset rollout is authorized by this evidence.
+
+
+### 11.5 Production CSS delivery evidence
+
+The same CI run produced a production Vite manifest and bundle report for both PR base and current build. The comparison is byte-identical (no application source changed in the collector PR).
+
+| Emitted CSS asset | Raw bytes | Gzip estimate |
+|---|---:|---:|
+| Initial entry CSS `index-eg8HbfT8.css` | 184,450 | 33,833 |
+| Home CSS `HomeScreen-Clo8TzLy.css` | 61,698 | 12,967 |
+| Stocktake Import CSS `StocktakeImportModule-DT0zH9yJ.css` | 45,027 | 7,684 |
+| Stocktake CSS `StocktakeModule-BgupU28_.css` | 11,874 | 2,941 |
+| Scanner settings CSS `scanner-settings-B2Oi1WUG.css` | 6,803 | 1,840 |
+| Scanner preview binding CSS `useScannerPreviewRegionBinding-BQ3FTI0D.css` | 7,287 | 1,644 |
+
+The emitted CSS files total **317,139 raw bytes (~309.7 KiB)** and **60,909 bytes (~59.5 KiB) gzip estimate** when summing per-file gzip outputs. The entry CSS is the largest single CSS asset. This is build-artifact evidence, not a measurement of actual transfer in a particular browser session; per-file gzip estimates do not include HTTP content negotiation, caching, Brotli, request headers or compression behavior at the hosting edge.
+
+The full release artifact report lists 30 files, 1,918,252 raw bytes and 676,768 bytes gzip estimate (per-file sum). Initial JS entry closure is 398,451 raw / 100,783 gzip estimate. Scanner WASM remains a separately emitted 946,860-byte raw / 411,054-byte gzip-estimate asset; this is existing scanner delivery, not part of the CSS consolidation scope.
+
+The CI base-vs-current bundle comparison is exactly zero delta for entrypoint raw/gzip and total raw/gzip. This confirms the evidence-tooling change did not alter the application bundle.
+
+**Decision:** emitted CSS size is now measured. It identifies the entry CSS and Home CSS as the two largest CSS payloads, but does not justify deletion or re-partitioning without selector/property ownership and visual regression evidence.
