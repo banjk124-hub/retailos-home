@@ -1,7 +1,7 @@
 import { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type * as React from 'react';
 import {
-  Activity, ArrowUpRight, Check, CalendarDays, ChevronLeft, ChevronRight,
+  ArrowUpRight, Check, CalendarDays, ChevronLeft, ChevronRight,
   LogOut, PackageSearch, ScanBarcode, Search, ShieldCheck, X,
 } from 'lucide-react';
 import type { EmployeeSession } from '../auth/types';
@@ -17,6 +17,7 @@ import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilitie
 import { ExperienceModuleLibrary } from '../../experience/library/ExperienceModuleLibrary';
 import { LibraryDetail } from '../../experience/library/LibraryDetail';
 import { OperationalHome } from '../../experience/home/OperationalHome';
+import { ActivityCenter } from '../../experience/activity/ActivityCenter';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getHomeNavigationIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
 import { LiquidDock } from '../../shared/navigation';
@@ -30,11 +31,12 @@ import '../../styles/home-architecture.css';
 import '../../experience/home/operational-home.css';
 import '../../experience/library/experience-module-library.css';
 import '../../experience/library/library-detail.css';
+import '../../experience/activity/activity-center.css';
 import { unlockScannerAudio } from '../scanner/services/scannerAudio';
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';
-import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT } from '../../shared/pwa/updateCenterStore';
+import { clearUpdateCenterEntry, getPendingUpdateNoticeCount, readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT, type UpdateCenterEntry } from '../../shared/pwa/updateCenterStore';
 declare const __RETAILOS_BUILD_ID__: string;
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
@@ -114,7 +116,7 @@ export default function HomeScreen({
   const [showSettings, setShowSettings] = useState(false);
   useEffect(() => {
     const openSettings = () => setShowSettings(true);
-    const openNotifications = () => document.getElementById('retailos-home-signals')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    const openNotifications = () => document.getElementById('activity')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     window.addEventListener('retailos:open-settings', openSettings);
     window.addEventListener('retailos:open-notifications', openNotifications);
     return () => {
@@ -123,6 +125,7 @@ export default function HomeScreen({
     };
   }, []);
   const [updateNoticeCount, setUpdateNoticeCount] = useState(getPendingUpdateNoticeCount);
+  const [updateCenterEntry, setUpdateCenterEntry] = useState<UpdateCenterEntry | null>(readUpdateCenterEntry);
   const [showScannerSettings, setShowScannerSettings] = useState(false);
   const closeSettings = useCallback(() => {
     setShowSettings(false);
@@ -187,7 +190,7 @@ export default function HomeScreen({
       : snapshotNoticeStatus === 'unavailable'
           ? 'Không thể đọc snapshot trên thiết bị; chưa thể xác nhận trạng thái cảnh báo.'
           : 'Không phát hiện cảnh báo trong snapshot đang lưu.';
-  useEffect(() => { const sync = () => setUpdateNoticeCount(getPendingUpdateNoticeCount()); sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
+  useEffect(() => { const sync = () => { setUpdateNoticeCount(getPendingUpdateNoticeCount()); setUpdateCenterEntry(readUpdateCenterEntry()); }; sync(); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -557,7 +560,13 @@ export default function HomeScreen({
           onOpen={openLibrary}
         />
 
-        <section className="lower-grid" id="activity"><div className="panel-card activity-panel"><div className="panel-heading"><h2 className="icon-section-title" aria-label="Hoạt động"><Activity size={22} aria-hidden="true" /></h2></div><div className="activity-empty"><span className="activity-empty-icon"><Activity size={18} /></span><div><strong>Chưa có hoạt động</strong></div></div></div></section>
+        <ActivityCenter
+          notices={priorityNotices}
+          noticeStatus={snapshotNoticeStatus}
+          updateEntry={updateCenterEntry}
+          onOpenNotice={openNotice}
+          onOpenSettings={() => setShowSettings(true)}
+        />
         <footer className="app-footer" aria-label="RetailOS"><span className="footer-mark"><BrandMark /></span><b>RetailOS</b><span className="version-pill">0.3</span></footer>
       </div>
     </main>
