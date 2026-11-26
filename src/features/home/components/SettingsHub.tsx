@@ -7,6 +7,7 @@ import '../../../styles/scanner-settings.css';
 type Props = {
   onClose: () => void;
   onOpenScannerSettings: () => void;
+  initialView?: 'home' | 'update-center';
 };
 
 function requestUpdateAction(action: 'download' | 'activate') {
@@ -68,9 +69,9 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
   </section>;
 }
 
-export default function SettingsHub({ onClose, onOpenScannerSettings }: Props) {
+export default function SettingsHub({ onClose, onOpenScannerSettings, initialView = 'home' }: Props) {
   const [updateEntry, setUpdateEntry] = useState(readUpdateCenterEntry);
-  const [showUpdateCenter, setShowUpdateCenter] = useState(false);
+  const [showUpdateCenter, setShowUpdateCenter] = useState(initialView === 'update-center');
   useEffect(() => { const sync = () => setUpdateEntry(readUpdateCenterEntry()); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useBodyScrollLock(true);
