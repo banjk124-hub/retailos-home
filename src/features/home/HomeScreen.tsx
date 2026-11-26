@@ -619,7 +619,7 @@ export default function HomeScreen({
   return <>
     <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
-      <header className="topbar home-topbar" id="home">
+      <header className="topbar home-topbar" id="home-legacy-anchor">
         <div className="topbar-dock">
           <div className="home-topbar-identity">
             <Brand variant="compact" surface="light" />
@@ -690,7 +690,7 @@ export default function HomeScreen({
       {isOffline && <div className="offline-banner"><Activity size={16} aria-hidden="true" /> Ngoại tuyến</div>}
 
       <div className="content-wrap home-content">
-        <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} aria-label="Không gian RetailOS">
+        <section className={`home-spotlight ${areSpotlightNotificationsExpanded || !isMobileViewport ? 'spotlight-notifications-expanded' : ''}`} id="home" aria-label="Không gian RetailOS">
           <div className="spotlight-brand-scene" aria-hidden="true">
             <BrandMark />
           </div>
