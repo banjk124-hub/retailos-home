@@ -1,6 +1,6 @@
 # UI-03 — CSS Consolidation
 
-**Status:** UI-03A inventory refreshed; UI-03B retired nine legacy class-selector families from CSS. Exact-head CI and browser validation are pending.
+**Status:** UI-03A inventory refreshed; UI-03B retired nine legacy class-selector families; UI-03D consolidated the Home architecture stylesheet without changing its cascade position. Final exact-head CI and browser evidence are pending.
 **Branch:** `refactor/ui-03-css-consolidation`
 **Baseline:** `main` at UI-02 merge `4a98d3cd304f095dc6057499b69e5bf19f166948`
 **Scope:** reduce CSS duplication and obsolete rules while preserving rendered output, responsive behavior, accessibility, feature ownership and lazy-loading boundaries.
@@ -25,7 +25,7 @@ Non-goals:
 
 ## 2. Refreshed source inventory
 
-Recursive Git tree at baseline: **25 CSS files, 346,206 source bytes**. This is raw tracked source size, not gzip/Brotli transfer, CSSOM size or render cost.
+Baseline at UI-02 merge: **25 CSS files, 346,206 source bytes**. Current UI-03 branch after the first migration slices: **24 CSS files, 338,312 source bytes** (7,894 bytes / 2.28% lower). This is raw tracked source size, not gzip/Brotli transfer, CSSOM size or render cost. The reduction includes retired selectors; Home stylesheet consolidation itself preserves declarations and order.
 
 | Owner / stylesheet | Bytes | Initial disposition |
 |---|---:|---|
@@ -48,7 +48,7 @@ Recursive Git tree at baseline: **25 CSS files, 346,206 source bytes**. This is 
 | `src/shared/brand/brand.css` | 6,645 | Keep Brand identity-owned |
 | `src/styles/adaptive-appearance.css` | 4,402 | Preserve power/reduced-motion behavior; inspect overlap |
 | `src/shared/navigation/ShellNavigation.css` | 3,591 | Keep ShellNavigation-owned |
-| `src/styles/home-architecture.css` | 3,239 | Home cascade; ownership consolidation candidate |
+| `src/styles/home-architecture.css` | 3,239 | Baseline-only file; its rules are now appended to `home-redesign.css` at the same cascade position and the separate import/file is retired |
 | `src/styles/login-compact-landscape.css` | 2,830 | Keep Login-owned; imported by LoginExperience |
 | `src/shared/components/surface/surface.css` | 2,340 | Keep semantic Surface primitive-owned |
 | `src/styles/interactions.css` | 1,600 | Trace common interaction ownership |
@@ -57,12 +57,12 @@ Recursive Git tree at baseline: **25 CSS files, 346,206 source bytes**. This is 
 
 ## 3. Current import ownership
 
-The 25 tracked stylesheets are accounted for by the following source import boundaries:
+The 24 current tracked stylesheets are accounted for by the following source import boundaries:
 
 | Import owner | Stylesheets |
 |---|---|
 | `src/main.tsx` | `base.css`, `responsive.css`, `theme.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css`, `brand.css`, `motion.css`, `LiquidDock.css` |
-| `HomeScreen.tsx` | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css`, `home-architecture.css` |
+| `HomeScreen.tsx` | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css` (includes the former architecture layer appended after the Home presentation rules) |
 | `LoginExperience.tsx` | `login-experience.css`, `login-compact-landscape.css` |
 | `Surface.tsx` | `surface.css` |
 | `ShellNavigation.tsx` | `ShellNavigation.css` |
@@ -78,7 +78,7 @@ The source import graph is confirmed at this baseline. Vite's emitted CSS chunk 
 
 ### 4.1 Home cascade
 
-Five ordered Home stylesheets total **67,620 bytes**. They style overlapping Home structure and responsive states. This is the clearest consolidation target, but repeated selector names alone do not prove declarations are redundant: later files may contain the active implementation or intentional breakpoint/state overrides.
+Four ordered Home stylesheets now total **65,097 bytes**. The former `home-architecture.css` was concatenated to the end of `home-redesign.css`, immediately before removing its import and source file. This preserves the original order `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css` → former architecture rules. No selector/declaration was rewritten as part of this file consolidation. Repeated selector names remain intentional cascade layers unless separately proven redundant.
 
 ### 4.2 Global override layers
 
@@ -92,7 +92,7 @@ Stocktake Import, Stocktake, Scanner, Login, Settings, PWA, Surface, Motion, Bra
 
 ### 4.4 Dead-selector evidence status
 
-At this baseline, the audit has **not yet proven any additional selector to be unused**. The previous confirmed orphan `home-phase2.css` is already absent from the current tree. Selector-level consumer tracing is the next audit task; dynamically composed class names, conditional states, pseudo-elements, portals and test-only contracts must be accounted for before removal.
+The nine selector families listed in UI-03B are the only additional removals accepted in this slice. No broader dead-selector cleanup is authorized yet. `home-phase2.css` was already absent before this migration. Continue tracing dynamically composed class names, conditional states, pseudo-elements, portals, test-only contracts and CSS-to-CSS references before retiring further selectors.
 
 ## 5. UI-03B — Legacy selector retirement
 
@@ -116,7 +116,34 @@ Added `scripts/test-ui-03-legacy-selectors.mjs` and wired it into `scripts/prefl
 
 This is a repository-source guard, not proof about markup injected by an external runtime or browser extension. No such dependency is known in the current application. CI and browser regression evidence remain required before this retirement is considered verified.
 
-## 6. Execution slices
+## 6. UI-03D — Home stylesheet ownership consolidation
+
+The five-file Home import chain had an explicit architecture layer after the Home presentation layer. The architecture file contained both unique rules and intentional overrides of `.content-wrap.home-content`, `.library-engine`, `.library-engine__group`, `.library-engine__footer`, `.topbar.home-topbar` and `.spotlight-main-content`.
+
+Implementation:
+- Appended the complete former `home-architecture.css` contents to the end of `home-redesign.css`.
+- Kept the appended block after all original Home presentation rules, preserving its former cascade position.
+- Removed the `home-architecture.css` import from `HomeScreen.tsx` and deleted the standalone file.
+- Added preflight assertions for the retired import/file and for representative architecture-owned rules retained in the consolidated stylesheet.
+
+This is an ownership/file consolidation, not a declaration deduplication. The overlapping rules are retained because later declarations intentionally override earlier layout values at breakpoints. The Home chain is now four stylesheets and the overall source inventory is 24 files.
+
+## 7. Validation evidence — pre-consolidation checkpoint
+
+CI run [#1809](https://github.com/banjk124-hub/retailos-home/actions/runs/45851661174) passed on the prior UI-03 checkpoint HEAD `2b8f281c6825605df6d4872bcf3bf71c01fbfbac`. Its artifacts recorded:
+- preflight, TypeScript/production build, bundle comparison and Playwright responsive/runtime evidence all passed;
+- runtime evidence reported no browser errors and no failed requests;
+- horizontal overflow was zero at 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and short-landscape viewports;
+- Login responsive checks captured desktop, tablet, mobile, compact mobile and short-landscape states;
+- feature runtime captures included Home, Login, Library, Settings, Stocktake and Import.
+
+Bundle comparison at that checkpoint against PR base:
+- entrypoint raw: -4,558 bytes (-1.2%); entrypoint gzip: -845 bytes (-0.9%);
+- total raw: -7,126 bytes (-0.4%); total gzip: -1,290 bytes (-0.2%).
+
+This evidence predates the Home stylesheet consolidation commit. It is supporting baseline evidence only, not validation of the current branch HEAD. Physical iOS/Android and low-end device acceptance are not established by Playwright viewport emulation.
+
+## 8. Execution slices
 
 1. **UI-03A — Inventory and ownership baseline**
    - Refresh the exact stylesheet list, byte counts and import ownership.
@@ -138,7 +165,7 @@ This is a repository-source guard, not proof about markup injected by an externa
    - Verify desktop, tablet, iOS/Android viewport emulation and lower-end-device fallback behavior; distinguish emulation from physical-device acceptance.
    - Update this phase record and PROJECT_MAP only after source ownership and exact-head CI are verified.
 
-## 7. Acceptance gates
+## 9. Acceptance gates
 
 - No unowned stylesheet or unexplained CSS import.
 - Every removed selector has a documented consumer trace and is classified PROVEN-UNUSED.
@@ -148,6 +175,6 @@ This is a repository-source guard, not proof about markup injected by an externa
 - Exact final commit passes the relevant CI checks; report browser/device evidence separately.
 - No merge or deployment without explicit authorization.
 
-## 8. Initial implementation decision
+## 10. Initial implementation decision
 
-UI-03A inventory is recorded and UI-03B has a bounded selector-retirement implementation. The broader Home/global cascade consolidation remains gated on computed-style and browser baseline evidence; do not treat this initial removal as authorization for a wholesale stylesheet rewrite.
+UI-03A, the bounded UI-03B selector retirement and the first UI-03D Home stylesheet ownership consolidation are implemented. Exact-head CI must validate the consolidated branch before closure. Do not expand into a wholesale Home/global cascade rewrite; the next safe work is evidence-led duplicate/unused-rule classification and any remaining narrowly justified cleanup.
