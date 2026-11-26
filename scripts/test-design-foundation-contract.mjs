@@ -158,4 +158,26 @@ for (const path of sourceFiles) {
 assert.ok(semanticSurface.includes(".surface--interactive:focus-within"), "Focus treatment must be limited to interactive surfaces");
 assert.ok(semanticSurface.includes('[data-surface-state="error"]'), "Semantic surface must support explicit error state");
 
+
+const semanticSurfaceComponent = readFileSync("src/shared/components/surface/Surface.tsx", "utf8");
+const surfaceVariants = ["panel", "control", "raised", "floating", "inverse", "brand"];
+assert.match(semanticSurfaceComponent, /export type SurfaceVariant = 'panel' \| 'control' \| 'raised' \| 'floating' \| 'inverse' \| 'brand'/);
+assert.match(semanticSurfaceComponent, /variant = 'panel'/, "Surface must have a stable panel default");
+assert.match(semanticSurfaceComponent, /const Component = as \?\? 'div'/, "Surface must preserve native element semantics by default");
+assert.match(semanticSurfaceComponent, /\.\.\.props/, "Surface must forward native element props and handlers");
+for (const variant of surfaceVariants) {
+  assert.ok(semanticSurface.includes(`.surface--${variant}`), `Missing semantic Surface variant selector: ${variant}`);
+}
+assert.ok(semanticSurface.includes(".surface--interactive:hover"), "Interactive surfaces must expose hover feedback");
+assert.ok(semanticSurface.includes(".surface--interactive:active"), "Interactive surfaces must expose active feedback");
+assert.ok(semanticSurface.includes(".surface--interactive:focus-within"), "Interactive surfaces must expose keyboard focus feedback");
+assert.ok(semanticSurface.includes(".surface[data-surface-state=\"error\"]"), "Surface must expose the explicit data-surface-state error contract");
+assert.ok(semanticSurface.includes(".surface:disabled"), "Native disabled controls must receive disabled treatment");
+assert.ok(semanticSurface.includes(".surface[aria-disabled=\"true\"]"), "ARIA-disabled controls must receive disabled treatment");
+assert.ok(semanticSurface.includes("@media (prefers-reduced-motion: reduce)"), "Surface transitions must respect reduced motion");
+assert.ok(!/backdrop-filter\s*:/i.test(semanticSurface), "Surface must not depend on backdrop filtering");
+assert.ok(!/var\(--(?:brand-)?glass-/i.test(semanticSurface), "Surface must not depend on retired Glass tokens");
+assert.ok(!/\.glass-[\\w-]+/i.test(semanticSurface), "Surface must not depend on retired Glass class names");
+assert.ok(!sourceFiles.some((path) => path.includes("/components/glass/")), "Retired Glass component directory must not remain in source");
+
 console.log("Design foundation contract passed: semantic tokens, semantic surfaces, Login, native-experience, adaptive-appearance and Stocktake Import token consumers, WCAG AA foreground checks on white, shared motion and reduced-motion hooks.");
