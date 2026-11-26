@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "UI-02A Home navigation ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-02a-home-navigation.mjs"],
+  },
+  {
     name: "Responsive shell navigation and shared destination contract tests",
     command: process.execPath,
     args: ["scripts/test-shell-navigation-contract.mjs"],
