@@ -22,17 +22,17 @@ export function LoginDock() {
         </span>
       </div>
       <details className="login-dock__help">
-        <GlassSurface as="summary" variant="control" interactive className="login-dock__help-trigger" aria-label="Mở hướng dẫn đăng nhập">
+        <Surface as="summary" variant="control" interactive className="login-dock__help-trigger" aria-label="Mở hướng dẫn đăng nhập">
           <MotionIcon icon={CircleHelp} variant="navigation" size={18} />
           <span>Trợ giúp</span>
-        </GlassSurface>
-        <GlassSurface as="div" variant="inverse" className="login-dock__help-content motion-presence" data-motion-preset="presence">
+        </Surface>
+        <Surface as="div" variant="inverse" className="login-dock__help-content motion-presence" data-motion-preset="presence">
           <h3><Icon icon={BookOpenText} size="sm" /> Hướng dẫn nhanh</h3>
           <p>Nhập mã nhân viên do quản trị viên cấp. Nếu tài khoản chưa được kích hoạt, hãy liên hệ người quản lý.</p>
           <p><Icon icon={Camera} size="sm" /> Quyền camera chỉ được yêu cầu khi bạn mở chức năng quét barcode.</p>
           <p>RetailOS không yêu cầu quyền camera hoặc thông báo trong lúc đăng nhập.</p>
-        </GlassSurface>
+        </Surface>
       </details>
-    </GlassSurface>
+    </Surface>
   );
 }
