@@ -47,8 +47,6 @@
   --retail-ink: var(--brand-color-ink);
   --retail-muted: var(--brand-color-muted);
   --retail-white: var(--brand-color-white);
-  --retail-glass: rgba(255,255,255,.72);
-  --retail-glass-line: rgba(255,255,255,.84);
   --retail-red-shadow: 0 14px 35px rgba(191,31,49,.14);
   --brand-focus-ring: var(--focus-outline-color);
   --focus-ring-width: var(--focus-outline-width);
@@ -66,7 +64,6 @@
   --ink: var(--retail-ink);
   --blue: var(--retail-red);
   --blue-dark: var(--retail-red-deep);
-  --glass: var(--retail-glass);
 
   /* RetailOS Design Foundation — canonical semantic roles. */
   --color-brand-primary: var(--brand-color-primary);
