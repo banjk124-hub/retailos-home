@@ -11,8 +11,6 @@ import './styles/adaptive-appearance.css';
 import './styles/native-experience.css';
 import './shared/brand/brand.css';
 import './shared/motion/motion.css';
-import './shared/components/glass/glass.tokens.css';
-import './shared/components/glass/glass.materials.css';
 import './shared/navigation/LiquidDock.css';
 import { MotionBoundary, MotionProvider } from './shared/motion';
 import { AppErrorBoundary } from './shared/components/AppErrorBoundary';
