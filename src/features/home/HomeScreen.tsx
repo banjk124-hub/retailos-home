@@ -15,9 +15,10 @@ import { calculateSnapshotNotices, HOME_NOTICE_MODULE_IDS, type SnapshotNotice }
 import { lookupCachedBarcode, searchCachedProducts, type BarcodeProductRecord } from '../scanner/services/barcodeLookup';
 import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
 import { ExperienceModuleLibrary } from '../../experience/library/ExperienceModuleLibrary';
+import { LibraryDetail } from '../../experience/library/LibraryDetail';
 import { OperationalHome } from '../../experience/home/OperationalHome';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
-import { getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
+import { getHomeNavigationIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
 import { LiquidDock } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
@@ -642,49 +643,36 @@ export default function HomeScreen({
         </div>
       </section>
     </div>}
-    {selectedLibrary && (() => {
-      const LibraryIcon = getLibraryIcon(selectedLibrary.id);
-      return <div className="app-library-backdrop motion-backdrop" data-motion-preset="sheet-backdrop" data-motion-state={isLibraryClosing ? 'exit' : 'enter'} onClick={(event) => { if (event.target === event.currentTarget) closeLibrary(); }}>
-        <MotionSheet
-          origin={libraryOrigin}
-          exiting={isLibraryClosing}
-          className={`app-library-modal library-${selectedLibrary.tone}`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="app-library-title"
-          onAnimationEnd={finishLibraryClose}
-        >
-          <header className="app-library-modal-header">
-            <div className="app-library-modal-identity">
-              <span className="app-library-icon"><MotionIcon icon={LibraryIcon} variant="module" size={22} /></span>
-              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{selectedLibraryModules.length} chức năng</p></div>
-            </div>
-            <button ref={libraryCloseButtonRef} type="button" className="icon-button" aria-label="Đóng thư viện" onClick={closeLibrary}><X size={18} /></button>
-          </header>
-          <div className="app-library-modules">
-            {selectedLibraryModules.map((module) => {
-              const ModuleIcon = getModuleIcon(module.id);
-              return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => {
-                if (module.id === 'stocktake') {
-                  setSelectedLibrary(null);
-                  setIsStocktakeOpen(true);
-                  return;
-                }
-                if (module.id === 'stocktake-import') {
-                  setSelectedLibrary(null);
-                  setIsStocktakeImportOpen(true);
-                  return;
-                }
-                announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`);
-              }}>
-                <span className="module-icon"><MotionIcon icon={ModuleIcon} variant="module" size={20} /></span><span className="app-library-module-copy"><strong>{module.title}</strong><small>{module.description}</small><span className="module-availability">{module.availability === 'ready' ? 'Đã triển khai' : 'Đang tích hợp'}</span></span><ArrowUpRight size={16} className="app-library-module-arrow" />
-              </button>;
-            })}
-          </div>
-          <p className="app-library-note"><ShieldCheck size={14} /> Trạng thái giao diện và trạng thái snapshot được quản lý riêng</p>
-        </MotionSheet>
-      </div>;
-    })()}
+    {selectedLibrary && <div className="app-library-backdrop motion-backdrop" data-motion-preset="sheet-backdrop" data-motion-state={isLibraryClosing ? 'exit' : 'enter'} onClick={(event) => { if (event.target === event.currentTarget) closeLibrary(); }}>
+      <MotionSheet
+        origin={libraryOrigin}
+        exiting={isLibraryClosing}
+        className={`app-library-modal library-${selectedLibrary.tone}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="app-library-title"
+        onAnimationEnd={finishLibraryClose}
+      >
+        <LibraryDetail
+          library={selectedLibrary}
+          modules={selectedLibraryModules}
+          closeButtonRef={libraryCloseButtonRef}
+          onClose={closeLibrary}
+          onLaunch={(module) => {
+            setSelectedLibrary(null);
+            if (module.id === 'stocktake') {
+              setIsStocktakeOpen(true);
+              return;
+            }
+            if (module.id === 'stocktake-import') {
+              setIsStocktakeImportOpen(true);
+              return;
+            }
+            announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`);
+          }}
+        />
+      </MotionSheet>
+    </div>}
     {selectedNotice && (() => {
       const NoticeIcon = getModuleIcon(selectedNotice.moduleId);
       return <div className={`notice-detail-backdrop ${isNoticeClosing ? 'notice-detail-closing' : ''}`} onClick={(event) => { if (event.target === event.currentTarget) closeNotice(); }}>
