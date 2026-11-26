@@ -1,10 +1,10 @@
-> **Documentation authority notice (2026-11-25):** This file is retained as historical source evidence, design exploration or implementation record. It is not an independent governing standard or current status source. For all current and future RetailOS work, follow [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md), then consult this file only when its specific evidence is relevant. If this file conflicts with the Product Skill, current source or an explicitly accepted owner decision, do not follow the stale instruction; reconcile the evidence into the governing standard first.
+> **Historical-document notice (2026-11-26):** This file is retained for traceability only and is not an active instruction or status source. Use [INDEX.md](./INDEX.md) to locate current owners and [DEPRECATION_REGISTER.md](./DEPRECATION_REGISTER.md) for this file's disposition. The active UI/UX direction is [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md). Verify all implementation facts against current source.
 
 ---
 
 # RetailOS Global Experience Direction — M0
 
-**Status:** M0 concept direction and visual decision prototype. Proposed for owner review; not an accepted implementation specification yet.
+**Status:** SUPERSEDED / HISTORICAL. The final owner-confirmed direction and active acceptance gates are in UI_UX_M0_GOVERNING_SPEC.md. This proposal is not a current instruction source.
 **Scope:** Product-wide RetailOS experience — application shell, core workspaces, operational workflows, system surfaces, shared design language and responsive behavior.
 **Reference inputs:** `IMG_1574.jpeg` (visual composition reference) and `ScreenRecording_11-24-2026 20-25-21_1(1).mp4` (interaction/state reference), reviewed 2026-11-25.
 **Depends on:** UI/UX architecture 00B–00H and the current source baseline documented by those audits.
