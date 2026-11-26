@@ -110,7 +110,6 @@
   border: 1px solid rgba(255,255,255,.72);
   box-shadow: 0 14px 36px rgba(23,7,12,.12),inset 0 1px 0 #fff;
   backdrop-filter: none;
-  backdrop-filter: none;
 }
 .app-shell .spotlight-art {
   position: absolute;
