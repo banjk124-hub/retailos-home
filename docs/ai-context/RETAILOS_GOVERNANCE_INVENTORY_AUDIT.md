@@ -143,7 +143,7 @@ Classification labels:
 | C-01 | High | Main `IMPLEMENTATION_STATUS.md` and `AI_HANDOFF.md` state main SHA `3cd2d5bf...`; live main is `4e654ffb519d8b124f3edbbbda4f65fe550052ef`. They describe PR #163 as open although it is merged. | Update status/handoff from live GitHub facts in a bounded documentation PR. |
 | C-02 | High | Main status/handoff and M0 spec describe PR #157 as open Draft; live PR #157 is closed, unmerged. | Record closed/unmerged and retain its code as unaccepted historical work. |
 | C-03 | High | PR #164 body says Figma View-only blocks direct Figma authoring and proposes resolving access or selecting another editable prototype surface. The owner has rejected Figma as a dependency and requires direct source-code prototyping. | Remove Figma as a blocker and make source-code prototypes the explicit workflow. Do not block on Figma seat/access. |
-| C-04 | Medium | `DECISIONS.md` is a sparse ADR register while major decisions and rejected approaches are spread across Product Skill, M0 spec, architecture and historical records. | Build one decision register with status, rationale, evidence, owner, date, supersession and reconsideration criteria. |
+| C-04 | Medium | `ARCHITECTURE.md` contains the project architecture ADR history, while `DECISIONS.md` contains only one proposed record and does not define product/cross-domain rejected decisions. | Separate architecture ADR ownership from product/cross-domain decisions; establish decision status, evidence, owner, supersession and reconsideration criteria without duplicating architecture ADRs. |
 | C-05 | Medium | Several UI/UX files have overlapping titles and scopes; INDEX says they are evidence/history but files may still contain imperative or conflicting language. | Audit unique decisions and rewrite historical headers/cross-links so they cannot be mistaken for active instructions. Preserve unique evidence. |
 | C-06 | Medium | The Product Skill says compare options and record KEEP/ADOPT/REPLACE/BUILD/DEFER, but there is no dedicated live technology radar/register visible in the inventory. | Create a technology evaluation register only after BATCH 00 approval of the canonical document architecture. |
 | C-07 | Medium | Glossary and deprecation/removal governance are not identified as canonical documents. | Add a canonical terminology glossary and evidence-based deprecation/removal register in the next standards batch. |
@@ -209,3 +209,18 @@ Gaps against G-01…G-06:
 6. Only after the repository standards are stable, update Product Studio and validate cross-chat cases.
 
 BATCH 00 is an audit record, not a declaration that the repository or plugin is already fully consolidated. No source application code, dependencies, plugin release, merge or deployment was changed by this batch.
+
+
+## BATCH 01 clarification — decision register ownership
+
+The first inventory draft called DECISIONS.md a sparse ADR register. More precisely, ARCHITECTURE.md already contains the project-wide architecture ADR history (including numerous numbered ADRs); DECISIONS.md itself contains only ADR-001 and should not duplicate the architecture register.
+
+BATCH 01 therefore defines separate ownership:
+- ARCHITECTURE.md remains the authoritative project architecture ADR register.
+- DECISIONS.md becomes the product and cross-domain decision register, including owner-confirmed direction, rejected options and reconsideration triggers.
+- Scanner-specific decisions remain in SCANNER_ENGINE.md and SCANNER_HISTORY.md.
+- Other subsystem contracts remain with their domain owners.
+
+This clarifies document ownership; it does not imply architecture decisions were absent.
+
+BATCH 01 adds COMPONENT_AND_PATTERN_GOVERNANCE.md, TECHNOLOGY_RADAR.md, TERMINOLOGY_GLOSSARY.md and DEPRECATION_REGISTER.md; updates Product Skill, INDEX, DECISIONS, ROADMAP, status and handoff; and corrects the Figma-dependent workflow language in PR #164. These are governance/documentation changes only.
