@@ -17,22 +17,22 @@ const retiredClasses = [
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".html"]);
 const sourceFiles = [];
 
-function collectSourceFiles(directory) {
+function collectFiles(directory, extensions, output) {
   for (const entry of readdirSync(directory)) {
     const path = join(directory, entry);
     if (statSync(path).isDirectory()) {
-      collectSourceFiles(path);
-      continue;
+      collectFiles(path, extensions, output);
+    } else if (extensions.has(extname(path))) {
+      output.push(path);
     }
-    if (sourceExtensions.has(extname(path))) sourceFiles.push(path);
   }
 }
 
-collectSourceFiles("src");
+collectFiles("src", sourceExtensions, sourceFiles);
 
 for (const className of retiredClasses) {
   const token = new RegExp(
-    `(^|[^A-Za-z0-9_-])${className.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}(?=$|[^A-Za-z0-9_-])`,
+    `(^|[^A-Za-z0-9_-])${className}(?=$|[^A-Za-z0-9_-])`,
   );
   const sourceConsumers = sourceFiles.filter((path) => token.test(readFileSync(path, "utf8")));
   assert.deepEqual(
@@ -43,20 +43,10 @@ for (const className of retiredClasses) {
 }
 
 const cssFiles = [];
-function collectCssFiles(directory) {
-  for (const entry of readdirSync(directory)) {
-    const path = join(directory, entry);
-    if (statSync(path).isDirectory()) {
-      collectCssFiles(path);
-      continue;
-    }
-    if (extname(path) === ".css") cssFiles.push(path);
-  }
-}
-collectCssFiles("src");
+collectFiles("src", new Set([".css"]), cssFiles);
 
 for (const path of cssFiles) {
-  const css = readFileSync(path, "utf8").replace(/\\/\\*[\\s\\S]*?\\*\\//g, "");
+  const css = readFileSync(path, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
   for (const className of retiredClasses) {
     const selectorToken = new RegExp(`\\\\.${className}(?![A-Za-z0-9_-])`);
     assert.equal(
