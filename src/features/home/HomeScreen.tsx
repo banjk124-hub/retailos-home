@@ -672,7 +672,7 @@ export default function HomeScreen({
                   >
                     <Bell size={15} />
                     {pushSetupStatus === 'prompt' ? 'Thử cấp quyền lại' : pushSetupStatus === 'error' ? 'Thử kết nối lại' : 'Bật thông báo đẩy'}
-                  </GlassSurface>}
+                  </Surface>}
                 </>}
             </div>}
           </div>}
