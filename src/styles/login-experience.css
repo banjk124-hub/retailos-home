@@ -302,7 +302,7 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(213,39,54,.18), rgba(255,255,255,.02) 36%, rgba(0,0,0,.14));
-  backdrop-filter: none;
+  
 }
 .auth-journey-recognition__panel {
   position: relative;
