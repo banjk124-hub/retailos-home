@@ -130,10 +130,10 @@ test('Login normal-size text meets WCAG AA contrast in light and dark surfaces',
       });
       return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
     };
-    const hex = (value: string) => value.match(/[\\da-f]{2}/gi)!.map((part) => parseInt(part, 16));
+    const hex = (value: string) => value.match(/[\da-f]{2}/gi)!.map((part) => parseInt(part, 16));
     const ratio = (foreground: string, background: string) => {
       const bg = hex(background);
-      const values = foreground.match(/[\\d.]+/g)?.map(Number) ?? [];
+      const values = foreground.match(/[\d.]+/g)?.map(Number) ?? [];
       const alpha = values.length > 3 ? values[3] : 1;
       const fg = values.slice(0, 3).map((channel, index) => channel * alpha + bg[index] * (1 - alpha));
       const [light, dark] = [luminance(fg), luminance(bg)].sort((a, b) => b - a);
