@@ -278,10 +278,10 @@ const selectedChecks = scope === "ui"
   ? checks.filter((check) => {
       const name = check.name;
       if (name.startsWith("Scanner") || name === "Production build (TypeScript + Vite)") return false;
-      if (name.startsWith("Home ")) return touches(/^(src\\/features\\/home|src\\/shared\\/home|scripts\\/test-home)/);
-      if (name.toLowerCase().includes("overlay")) return touches(/^(src\\/shared\\/(ui\\/)?overlay|scripts\\/test-(overlay|body-scroll-lock))/);
-      if (name.startsWith("Stocktake")) return touches(/^(src\\/features\\/(stocktake|stocktake-import)|scripts\\/test-stocktake)/);
-      if (name.startsWith("PWA ")) return touches(/^(src\\/shared\\/pwa|src\\/sw|scripts\\/test-pwa)/);
+      if (name.startsWith("Home ")) return touches(/^(src\/features\/home|src\/shared\/home|scripts\/test-home)/);
+      if (name.toLowerCase().includes("overlay")) return touches(/^(src\/shared\/(ui\/)?overlay|scripts\/test-(overlay|body-scroll-lock))/);
+      if (name.startsWith("Stocktake")) return touches(/^(src\/features\/(stocktake|stocktake-import)|scripts\/test-stocktake)/);
+      if (name.startsWith("PWA ")) return touches(/^(src\/shared\/pwa|src\/sw|scripts\/test-pwa)/);
       return true;
     })
   : checks;
