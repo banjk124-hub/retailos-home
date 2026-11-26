@@ -2,6 +2,7 @@ import { BellRing, ChevronLeft, ChevronRight, ScanBarcode, Settings, X, Download
 import { useEffect, useRef, useState } from 'react';
 import { readUpdateCenterEntry, UPDATE_CENTER_CHANGED_EVENT, type UpdateCenterEntry } from '../../../shared/pwa/updateCenterStore';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { useDialogFocus } from '../../../shared/hooks/useDialogFocus';
 import '../../../styles/scanner-settings.css';
 
 type Props = {
@@ -18,6 +19,8 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
   const [refreshKey, setRefreshKey] = useState(0);
   const [activationBlockReason, setActivationBlockReason] = useState('');
   const backButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  useDialogFocus(true, dialogRef);
   useEffect(() => { backButtonRef.current?.focus(); }, []);
   useEffect(() => {
     const refresh = () => setRefreshKey((value) => value + 1);
@@ -40,7 +43,7 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
         : current?.status === 'deferred' ? 'Đã để sau' : 'Đang chờ xử lý';
   const progress = current?.progress;
   const progressPercent = progress?.totalBytes ? Math.min(100, Math.round(progress.bytesDownloaded / progress.totalBytes * 100)) : 0;
-  return <section className="scanner-settings-panel scanner-settings-panel--detail update-center-view" role="dialog" aria-modal="true" aria-labelledby="update-center-title">
+  return <section ref={dialogRef} tabIndex={-1} className="scanner-settings-panel scanner-settings-panel--detail update-center-view" role="dialog" aria-modal="true" aria-labelledby="update-center-title">
     <header className="scanner-settings-header">
       <button ref={backButtonRef} type="button" className="scanner-settings-back" onClick={onBack} aria-label="Quay lại cài đặt"><ChevronLeft size={19} /></button>
       <div><span className="scanner-settings-eyebrow">RETAILOS · SYSTEM UPDATE</span><h2 id="update-center-title">Trung tâm cập nhật</h2><p>Theo dõi và chủ động kiểm soát phiên bản ứng dụng</p></div>
@@ -74,6 +77,8 @@ export default function SettingsHub({ onClose, onOpenScannerSettings, initialVie
   const [showUpdateCenter, setShowUpdateCenter] = useState(initialView === 'update-center');
   useEffect(() => { const sync = () => setUpdateEntry(readUpdateCenterEntry()); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  useDialogFocus(!showUpdateCenter, dialogRef);
   useBodyScrollLock(true);
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -85,7 +90,7 @@ export default function SettingsHub({ onClose, onOpenScannerSettings, initialVie
     <UpdateCenterView entry={updateEntry} onBack={() => setShowUpdateCenter(false)} />
   </div>;
   return <div className="scanner-settings-backdrop" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className="scanner-settings-panel settings-experience" role="dialog" aria-modal="true" aria-labelledby="settings-hub-title">
+    <section ref={dialogRef} tabIndex={-1} className="scanner-settings-panel settings-experience" role="dialog" aria-modal="true" aria-labelledby="settings-hub-title">
       <header className="settings-experience__header">
         <div className="settings-experience__identity">
           <span className="settings-experience__mark"><Settings size={20} /></span>
