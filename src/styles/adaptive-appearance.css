@@ -25,12 +25,12 @@
   touch-action: pan-x pan-y;
 }
 
-.app-shell :is(button, a, .app-library-page-card, .module-card) {
+.app-shell :is(button, a, .app-library-page-card) {
   -webkit-tap-highlight-color: transparent;
   transition-timing-function: var(--brand-motion-ease);
 }
 
-.app-shell :is(button, .app-library-page-card, .module-card):active {
+.app-shell :is(button, .app-library-page-card):active {
   transform: scale(.975);
   transition-duration: var(--brand-motion-interaction);
 }
@@ -41,8 +41,6 @@
   .app-shell :is(button, a, input, select, .filter-pill) { min-height: 44px; }
   .app-shell .topbar-actions { gap: 6px; }
   .app-shell .topbar-action-button { width: 42px; height: 42px; }
-  .app-shell .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .app-shell .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .app-shell .app-library-track { scroll-snap-type: x mandatory; cursor: auto; }
   .app-shell .app-library-page-card { flex-basis: min(88vw, 390px); scroll-snap-stop: always; }
   .barcode-flow-steps { padding: 8px; }
@@ -119,8 +117,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .app-library-page-card:hover,
-  .module-card:hover { transform: translateY(-4px); }
+  .app-library-page-card:hover{ transform: translateY(-4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
