@@ -30,7 +30,7 @@
 
 ## UI/UX documentation ownership
 - Product-wide workflow and protected boundaries: [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md).
-- Sole active UI/UX direction and M0 acceptance: [UI_UX_M0_GOVERNING_SPEC.md](./UI_UX_M0_GOVERNING_SPEC.md).
+- Sole UI/UX direction and greenfield implementation/test policy: [EXPERIENCE_BUILD_STANDARD.md](./EXPERIENCE_BUILD_STANDARD.md).
 - Shared component/pattern reuse: [COMPONENT_AND_PATTERN_GOVERNANCE.md](./COMPONENT_AND_PATTERN_GOVERNANCE.md).
 - Technology evaluation: [TECHNOLOGY_RADAR.md](./TECHNOLOGY_RADAR.md).
 - Phase sequencing: [ROADMAP.md](./ROADMAP.md).
