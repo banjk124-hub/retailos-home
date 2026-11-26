@@ -31,16 +31,35 @@ async function capture(page: Page, info: TestInfo, label: string) {
         visible: rect.width > 0 && rect.height > 0 && cs.display !== 'none' && cs.visibility !== 'hidden',
         style: Object.fromEntries(props.map((p) => [p, cs.getPropertyValue(p)])) };
     });
-    const cssRules: Array<{ selector: string; stylesheet: string; condition: string; matched: number }> = [];
+    const cssRules: Array<{ selector: string; stylesheet: string; condition: string; matched: number; declarations: Array<{ property: string; value: string; important: boolean }>; order: number; specificity: [number, number, number] }> = [];
+    let sourceOrder = 0;
+    const specificityOf = (selector: string): [number, number, number] => {
+      // Approximation for ordinary selectors. :where() contributes zero. Complex
+      // :is/:not/:has arguments and cascade layers still require manual review.
+      const normalized = selector.replace(/:where\([^)]*\)/g, '');
+      const ids = (normalized.match(/#[\w-]+/g) || []).length;
+      const classes = (normalized.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)[\w-]+(?:\([^)]*\))?/g) || []).length;
+      const elements = (normalized.replace(/::[\w-]+/g, ' ').match(/(^|[\s>+~])(?:[a-zA-Z][\w-]*)/g) || []).length
+        + (normalized.match(/::[\w-]+/g) || []).length;
+      return [ids, classes, elements];
+    };
     const walk = (list: CSSRuleList, stylesheet: string, condition: string) => {
       for (const rule of [...list]) {
         if (rule instanceof CSSStyleRule) {
           let matched = 0;
           try { matched = document.querySelectorAll(rule.selectorText).length; } catch { /* invalid selector */ }
-          cssRules.push({ selector: rule.selectorText, stylesheet, condition, matched });
+          const declarations = [...rule.style].map((property) => ({
+            property, value: rule.style.getPropertyValue(property).trim(),
+            important: rule.style.getPropertyPriority(property) === 'important',
+          }));
+          cssRules.push({ selector: rule.selectorText, stylesheet, condition, matched,
+            declarations, order: sourceOrder++, specificity: specificityOf(rule.selectorText) });
         } else if ('cssRules' in rule) {
           const group = rule as CSSGroupingRule & { conditionText?: string };
-          walk(group.cssRules, stylesheet, [condition, group.conditionText || group.constructor.name].filter(Boolean).join(' > '));
+          const conditionText = group.conditionText || group.constructor.name;
+          if (rule instanceof CSSMediaRule && !matchMedia(rule.conditionText).matches) continue;
+          if (rule instanceof CSSSupportsRule && !CSS.supports(rule.conditionText)) continue;
+          walk(group.cssRules, stylesheet, [condition, conditionText].filter(Boolean).join(' > '));
         }
       }
     };
@@ -48,8 +67,51 @@ async function capture(page: Page, info: TestInfo, label: string) {
       const owner = sheet.ownerNode as HTMLElement | null;
       const name = sheet.href || owner?.getAttribute('href') || owner?.getAttribute('data-vite-dev-id') || 'inline';
       try { walk(sheet.cssRules, name, ''); }
-      catch { cssRules.push({ selector: '[stylesheet-unreadable]', stylesheet: name, condition: '', matched: -1 }); }
+      catch { cssRules.push({ selector: '[stylesheet-unreadable]', stylesheet: name, condition: '', matched: -1, declarations: [], order: sourceOrder++, specificity: [0,0,0] }); }
     }
+    const cascadeProperties = ['display','position','width','height','padding','margin','gap','font-family','font-size','font-weight','line-height','color','background-color','border-color','border-radius','box-shadow','backdrop-filter','transform','overflow','z-index'];
+    const cascadeTrace = computedStyles.filter((node) => node.visible).slice(0, 180).map((node) => {
+      const element = nodes[node.index] as HTMLElement;
+      const candidates: Record<string, Array<{ selector: string; stylesheet: string; condition: string; value: string; important: boolean; specificity: [number,number,number]; order: number }>> = {};
+      for (const property of cascadeProperties) candidates[property] = [];
+      for (const rule of cssRules) {
+        if (rule.matched <= 0 || rule.selector.startsWith('[')) continue;
+        let matches = false;
+        try { matches = element.matches(rule.selector); } catch { /* selector unsupported by matches */ }
+        if (!matches) continue;
+        for (const declaration of rule.declarations) {
+          if (candidates[declaration.property]) candidates[declaration.property].push({
+            selector: rule.selector, stylesheet: rule.stylesheet, condition: rule.condition,
+            value: declaration.value, important: declaration.important, specificity: rule.specificity, order: rule.order,
+          });
+        }
+      }
+      for (const property of cascadeProperties) {
+        const inlineValue = element.style.getPropertyValue(property).trim();
+        if (inlineValue) candidates[property].push({ selector: '[style]', stylesheet: 'inline', condition: '',
+          value: inlineValue, important: element.style.getPropertyPriority(property) === 'important',
+          specificity: [1,0,0], order: Number.MAX_SAFE_INTEGER });
+        candidates[property].sort((a,b) => Number(a.important)-Number(b.important)
+          || a.specificity[0]-b.specificity[0] || a.specificity[1]-b.specificity[1]
+          || a.specificity[2]-b.specificity[2] || a.order-b.order);
+      }
+      return { nodeIndex: node.index, tag: node.tag, id: node.id, className: node.className,
+        text: node.text, computed: Object.fromEntries(cascadeProperties.map((p) => [p, node.style[p]])),
+        candidates };
+    });
+    const performanceEntries = performance.getEntriesByType('navigation').map((entry) => {
+      const e = entry as PerformanceNavigationTiming;
+      return { type: e.type, duration: e.duration, domContentLoaded: e.domContentLoadedEventEnd,
+        loadEventEnd: e.loadEventEnd, transferSize: e.transferSize, encodedBodySize: e.encodedBodySize,
+        decodedBodySize: e.decodedBodySize };
+    });
+    const resourceEntries = performance.getEntriesByType('resource').map((entry) => {
+      const e = entry as PerformanceResourceTiming;
+      return { name: e.name, initiatorType: e.initiatorType, duration: e.duration,
+        transferSize: e.transferSize, encodedBodySize: e.encodedBodySize, decodedBodySize: e.decodedBodySize };
+    });
+    const paintEntries = performance.getEntriesByType('paint').map((e) => ({ name: e.name, startTime: e.startTime }));
+    const longTaskEntries = performance.getEntriesByType('longtask').map((e) => ({ startTime: e.startTime, duration: e.duration }));
     const width = document.documentElement.clientWidth;
     return {
       capturedAt: new Date().toISOString(), url: location.href, title: document.title,
@@ -58,7 +120,7 @@ async function capture(page: Page, info: TestInfo, label: string) {
       fonts: { root: getComputedStyle(document.documentElement).fontFamily, body: getComputedStyle(document.body).fontFamily },
       counts: { elements: nodes.length, stylesheets: document.styleSheets.length, cssRules: cssRules.length, unmatchedRules: cssRules.filter((r) => r.matched === 0).length },
       duplicateIds: [...document.querySelectorAll('[id]')].map((e) => e.id).filter((id, i, all) => all.indexOf(id) !== i),
-      cssRules, computedStyles,
+      cssRules, computedStyles, cascadeTrace, performance: { navigation: performanceEntries, resources: resourceEntries, paint: paintEntries, longTasks: longTaskEntries },
     };
   });
   const dir = info.outputPath('runtime-evidence');

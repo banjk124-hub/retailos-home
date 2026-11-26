@@ -373,3 +373,158 @@ External font evidence:
 - https://github.com/bettergui/BeVietnamPro
 
 No runtime source, CSS, asset, dependency, business logic, persistence, scanner engine, PWA lifecycle, deployment or production state is modified by this audit.
+
+
+## 11. Runtime evidence — first CI capture (2026-11-26)
+
+**Collector:** `tests/browser/runtime-evidence.spec.ts`  
+**Source:** CI run [#1608](https://github.com/banjk124-hub/retailos-home/actions/runs/45751754448), exact head `7b5ac10f2e781a473896a5085cd1891436653dd0`; merged to main by `46eb2876c2a18f39e69a13dec86dc001dcadb8ff`.  
+**Artifact:** `retailos-ui-runtime-evidence` (PNG + JSON, 9.24 MB archive; generated 2026-11-26 03:55 UTC).  
+**CI result:** success. Preflight, PR-base build, bundle comparison, Chromium installation, responsive/runtime tests and artifact uploads all passed.
+
+### 11.1 Confirmed runtime results
+
+- Login captured at 1440×900.
+- Authenticated Home captured at 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and 844×390.
+- Settings, Library, Stocktake and Import interaction surfaces each produced a screenshot and JSON capture at 390×844.
+- Browser page errors: 0.
+- Console errors: 0.
+- Failed requests: 0.
+- Home horizontal overflow: 0 CSS pixels at all seven tested viewports.
+- Duplicate DOM IDs: none in the captured Login/Home/feature states.
+- Captured computed font stack remains Inter/system fallback; this is not a font-family visual comparison.
+- The Home capture reports 1,970 CSSOM rules with 1,409 zero-match selectors at desktop; feature captures report different totals as lazy stylesheets load (e.g. Import: 2,344 rules / 1,728 zero-match selectors).
+
+### 11.2 Interpretation limits — do not overclaim
+
+The current feature navigation opens operational surfaces as overlays/drawers over Home. The screenshots and DOM captures therefore prove the observed overlay state at the captured viewport; they do **not** prove a standalone full-page route or every internal interaction state for each feature.
+
+The current collector records DOM geometry, a selected computed-style property set, CSSOM selector text, stylesheet origin, media/group condition and document-wide selector match count. It does **not** yet provide:
+- a per-element, per-property declaration/cascade winner trace (including specificity, source order, `!important`, pseudo-state and inherited values);
+- exhaustive state coverage (open/closed/hover/focus/pressed/disabled, nested dialogs, scroll positions and data-loaded states);
+- CSS transfer size per emitted chunk with gzip/Brotli comparison;
+- navigation/resource timing, LCP/CLS/INP, long-task, paint/compositing or memory profiles;
+- a Be Vietnam Pro vs Inter specimen rendered and measured in the same production build;
+- physical-device measurements on representative low-end Android hardware.
+
+A zero-match CSS selector is only a candidate for investigation. It may be active under another viewport, pseudo-state, DOM route, feature load, browser condition or dynamic class. **No rule may be retired from this count alone.**
+
+### 11.3 Visual inspection observations
+
+The first artifact was visually inspected as screenshots, not inferred from JSON alone:
+- Home renders at all tested viewport dimensions without horizontal document overflow.
+- At 390×844, Stocktake opens as a bottom-sheet style overlay while the Home content remains behind it; this confirms the overlay ownership noted above.
+- Library and Settings likewise retain the Home surface behind their overlay presentation.
+- Import opens a compact operational overlay/panel; this capture is not sufficient to assess its complete desktop/tablet layout or all import workflow states.
+- The screenshot set is suitable as a first baseline, but it is not yet an acceptance review of all responsive feature states.
+
+### 11.4 Required next instrumentation and review
+
+Before the first CSS consolidation batch, extend the collector to:
+1. record explicit UI state identity (active dialog/drawer, owning feature, trigger, open/closed state) and assert that each intended feature surface was actually reached;
+2. record matched declarations for representative visible elements and key properties, preserving selector, stylesheet, media condition, specificity, source order and importance alongside the browser-computed result;
+3. capture loaded CSS resource sizes and production asset/chunk metadata, then calculate raw, gzip and Brotli sizes reproducibly;
+4. collect browser Performance API navigation/resource/paint/layout-shift/long-task entries where supported, clearly labelling unsupported metrics;
+5. add repeatable typography specimens and palette comparison pages/states without changing production tokens;
+6. expand viewport/state coverage and add independent feature-shell coverage only where the product's existing navigation architecture supports it; do not invent routes or alter module ownership to satisfy the test;
+7. review screenshots and evidence before marking any selector KEEP / CONSOLIDATE / RETIRE.
+
+**M0-A2 status:** source inventory and first browser baseline are complete. Runtime capture is now available and has passed CI. The phase remains **IN PROGRESS**: declaration-level cascade tracing, compressed CSS delivery, typography/palette comparison and meaningful runtime/device performance evidence are outstanding. No production CSS consolidation, font selection, palette lock or asset rollout is authorized by this evidence.
+
+
+### 11.5 Production CSS delivery evidence
+
+The same CI run produced a production Vite manifest and bundle report for both PR base and current build. The comparison is byte-identical (no application source changed in the collector PR).
+
+| Emitted CSS asset | Raw bytes | Gzip estimate |
+|---|---:|---:|
+| Initial entry CSS `index-eg8HbfT8.css` | 184,450 | 33,833 |
+| Home CSS `HomeScreen-Clo8TzLy.css` | 61,698 | 12,967 |
+| Stocktake Import CSS `StocktakeImportModule-DT0zH9yJ.css` | 45,027 | 7,684 |
+| Stocktake CSS `StocktakeModule-BgupU28_.css` | 11,874 | 2,941 |
+| Scanner settings CSS `scanner-settings-B2Oi1WUG.css` | 6,803 | 1,840 |
+| Scanner preview binding CSS `useScannerPreviewRegionBinding-BQ3FTI0D.css` | 7,287 | 1,644 |
+
+The emitted CSS files total **317,139 raw bytes (~309.7 KiB)** and **60,909 bytes (~59.5 KiB) gzip estimate** when summing per-file gzip outputs. The entry CSS is the largest single CSS asset. This is build-artifact evidence, not a measurement of actual transfer in a particular browser session; per-file gzip estimates do not include HTTP content negotiation, caching, Brotli, request headers or compression behavior at the hosting edge.
+
+The full release artifact report lists 30 files, 1,918,252 raw bytes and 676,768 bytes gzip estimate (per-file sum). Initial JS entry closure is 398,451 raw / 100,783 gzip estimate. Scanner WASM remains a separately emitted 946,860-byte raw / 411,054-byte gzip-estimate asset; this is existing scanner delivery, not part of the CSS consolidation scope.
+
+The CI base-vs-current bundle comparison is exactly zero delta for entrypoint raw/gzip and total raw/gzip. This confirms the evidence-tooling change did not alter the application bundle.
+
+**Decision:** emitted CSS size is now measured. It identifies the entry CSS and Home CSS as the two largest CSS payloads, but does not justify deletion or re-partitioning without selector/property ownership and visual regression evidence.
+
+
+## 10. Runtime evidence — CI run #1614
+
+**Exact source commit:** `807705dfb98b7b1143eee230a33e47e18022f274`  
+**CI run:** #1614 / `45753970838` — completed successfully.  
+**Artifacts:** `retailos-ui-runtime-evidence` (10.6 MB ZIP; 50.2 MB uncompressed) and `retailos-bundle-analysis`.  
+**Environment:** synthetic local session, Chromium / Playwright, GitHub Pages production build. This is lab evidence, not physical-device acceptance.
+
+### 10.1 Runtime health and responsive geometry
+
+- Browser/page errors: **0**.
+- Console errors: **0**.
+- Failed requests: **0**.
+- Duplicate IDs: **0** across captured states.
+- Home horizontal overflow: **0 px** at all seven tested viewports: 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and 844×390.
+- Login captured at desktop, tablet, mobile, compact mobile and short landscape.
+- Home captured at all seven viewports; Settings, Library, Stocktake and Import captured as reachable overlays at 390×844.
+- Feature captures remain overlay states over Home. They do not prove standalone route behavior or every internal workflow state.
+
+### 10.2 Actual emitted CSS / CSSOM
+
+The Home runtime page exposed **two emitted stylesheet resources**, not thirteen independent browser stylesheets:
+- `index-eg8HbfT8.css`: 765 CSS rules.
+- `HomeScreen-Clo8TzLy.css`: 432 CSS rules.
+
+The source import graph and production CSS chunk graph are different views of ownership. Root imports are consolidated by Vite into the entry CSS chunk; Home's lazy feature styles are emitted as a separate Home CSS chunk.
+
+Observed CSSOM counts by state:
+| State / viewport | CSS rules | Zero-match selectors |
+|---|---:|---:|
+| Login 1440×900 | 765 | 638 |
+| Home 1440×900 | 1,197 | 897 |
+| Home 1280×800 | 1,197 | 897 |
+| Home 1024×768 | 1,216 | 908 |
+| Home 768×1024 | 1,253 | 933 |
+| Home 390×844 | 1,791 | 1,302 |
+| Home 360×740 | 1,847 | 1,337 |
+| Home 844×390 | 1,288 | 968 |
+| Settings 390×844 | 1,853 | 1,343 |
+| Library 390×844 | 1,791 | 1,256 |
+| Stocktake 390×844 | 1,931 | 1,409 |
+| Import 390×844 | 2,149 | 1,611 |
+
+Zero-match means no current element matched the selector in that captured state. It does not account for every state, interaction, portal, pseudo-element, route, conditional class or future module. It is not a deletion list.
+
+### 10.3 Declaration trace and collector correction
+
+The first declaration-level artifact contains 180 visible DOM nodes per state (bounded sample) and records 688 declaration candidates across the selected properties for Home desktop. Computed values are recorded beside candidate declarations.
+
+**Audit correction:** inspection of the first artifact revealed that the specificity tokenizer was over-escaped in the test collector, producing incorrect specificity tuples for ordinary class selectors. The collector was corrected in commit `83bf99f56695f3e4a15f80a3ce705c667d723f05`; its new CI run must pass and its artifact must be inspected before specificity data is used. The original #1614 trace remains valid for selectors, declarations, source stylesheet, conditions and computed styles, but **its specificity values are invalid and must not be used**.
+
+Even after the correction, specificity remains approximate: selector-list handling, complex `:is()`/`:not()`/`:has()` arguments, cascade layers, pseudo-elements, inherited declarations and `@container` conditions are not a complete browser cascade implementation. Candidate ordering is diagnostic, not a guaranteed winner simulation. The browser's computed style remains authoritative for the final value; declaration ownership requires manual source reconciliation.
+
+### 10.4 Visual review notes (observed, not yet change authorization)
+
+- Desktop Home is horizontally stable, but the hero's alert/notice surface and decorative calendar artwork visually compete in the right half; their relative hierarchy and clipping deserve a focused design review.
+- Mobile Home has no horizontal overflow, but the floating bottom navigation visibly overlays the first module card/action area. This is an interaction/available-viewport issue to verify against intended dock behavior, not a CSS cleanup candidate.
+- Import overlay occupies most of the mobile viewport and leaves substantial blank space in the captured empty state. Confirm whether this is intentional sheet behavior before redesigning.
+- These are visual observations from synthetic session screenshots; no production CSS has been changed.
+
+### 10.5 Bundle comparison
+
+The same CI run reports no bundle delta between base and current:
+- Initial entrypoint closure: 398,451 raw / 100,783 per-file gzip-estimate bytes.
+- All emitted files: 1,918,252 raw / 676,769 per-file gzip-estimate bytes.
+- Delta: 0 bytes for both metrics.
+
+These are per-file gzip estimates, not measured Brotli or actual transfer sizes. Navigation/resource timing in the synthetic local run is not suitable for network-performance conclusions; same-origin cached resources report zero transfer size in several captures. Physical low-end device profiling remains open.
+
+### 10.6 Current disposition
+
+1. Keep all current production CSS and tokens unchanged.
+2. Corrected declaration trace must be regenerated and inspected before a cascade ownership matrix is accepted.
+3. Next evidence batch: selector/property ownership grouped by emitted CSS resource and source file; verify actual winner samples against computed style; add Brotli estimates; then build controlled typography/palette specimens without changing production assets.
+4. No CSS selector or stylesheet is approved for retirement yet.
