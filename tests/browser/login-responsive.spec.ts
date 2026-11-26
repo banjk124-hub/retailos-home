@@ -43,7 +43,7 @@ for (const viewport of viewports) {
     }));
     expect(layout.documentWidth, 'document must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.bodyWidth, 'body must not overflow horizontally').toBeLessThanOrEqual(layout.viewportWidth + 1);
-    expect(layout.inputFontSize).toBe('15px');
+    // Mobile form controls stay at 16px to prevent iOS Safari focus-zoom; desktop/tablet retain 15px.\n    expect(layout.inputFontSize).toBe(viewport.width <= 700 ? '16px' : '15px');
     expect(layout.labelFontSize).toBe('12px');
     expect(layout.storyWidth).toBeGreaterThan(0);
     expect(layout.accessWidth).toBeGreaterThan(0);
