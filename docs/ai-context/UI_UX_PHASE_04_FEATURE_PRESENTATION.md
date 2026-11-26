@@ -25,7 +25,7 @@ Baseline is the merged UI-03 main commit above. The repository contains **24 CSS
 | Experience | Main presentation owners | Current CSS ownership | Initial risk |
 |---|---|---|---|
 | Login | LoginExperience, LoginHero, LoginForm, LoginDock | login-experience.css (24,956 B), login-compact-landscape.css (2,830 B) | Auth/session and identity-transition coupling; preserve responsive and compact-landscape behavior |
-| Settings | SettingsHub, nested Update Center, ScannerSettingsPanel | scanner-settings.css (6,975 B), imported by SettingsHub and ScannerSettingsPanel | Shared settings stylesheet name/ownership currently spans system update and scanner preferences |
+| Settings | SettingsHub, nested Update Center, ScannerSettingsPanel | settings-dialog.css (shared), settings-hub.css, scanner-preferences.css | Shared dialog shell is explicit; menu and scanner preference styles are feature-owned |
 | Scanner | BarcodeScanner, scanner hooks/services | scanner-transition.css (8,467 B), shared with StocktakeScanner | Camera/session/decoder/ROI lifecycle is protected; presentation-only scope |
 | Stocktake | StocktakeModule, StocktakeScanner | stocktake.css (11,822 B) plus shared scanner transition CSS | Local persistence, revisions, history, export and camera handoff |
 | Stocktake Import | StocktakeImportModule | stocktake-import.css (50,965 B) | Large feature-owned surface; parser precision, conflict review, dirty edits, persistence and export are protected |
