@@ -66,8 +66,8 @@
     radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.48), transparent 48%),
     var(--glass-surface-elevated);
   box-shadow: var(--shadow-elevated), var(--glass-highlight);
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
 }
 .app-shell .home-spotlight::before {
   position: absolute;
@@ -336,8 +336,8 @@
   place-items: center;
   padding: max(3vh, env(safe-area-inset-top)) max(3vw, env(safe-area-inset-right)) max(3vh, env(safe-area-inset-bottom)) max(3vw, env(safe-area-inset-left));
   background: rgba(40, 18, 23, .52);
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
   animation: brand-glass-backdrop-in var(--brand-motion-enter) both;
 }
 .barcode-result-card {
@@ -351,8 +351,8 @@
   border-radius: 24px;
   background: var(--brand-glass-surface-strong);
   box-shadow: var(--brand-glass-shadow);
-  backdrop-filter: none;
-  backdrop-filter: none;
+  
+  
   animation: brand-glass-panel-in var(--brand-motion-enter) both;
 }
 .barcode-flow-steps {
