@@ -50,7 +50,7 @@ export function OperationalHome({ employee, department, notices, noticeStatusMes
           })}
         </div>
       </section>
-      <section className="retailos-home__section retailos-home__signals" aria-labelledby="retailos-home-signals-title">
+      <section className="retailos-home__section retailos-home__signals" id="retailos-home-signals" aria-labelledby="retailos-home-signals-title">
         <div className="retailos-home__section-heading">
           <div><span className="retailos-home__eyebrow">DATA SIGNALS</span><h2 id="retailos-home-signals-title">Cảnh báo vận hành</h2><p>Phân tích từ snapshot đã lưu trên thiết bị</p></div>
           <span className={`retailos-home__signal-count ${notices.length ? 'has-alerts' : ''}`}><CircleAlert size={14} /> {notices.length} cảnh báo</span>
