@@ -1,6 +1,6 @@
 /* Shared Settings Hub and Scanner preferences — mobile-first. */
-.scanner-settings-backdrop{position:fixed;z-index:1310;inset:0;display:grid;place-items:center;padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:rgba(30,17,22,.56);
-  backdrop-filter: none;max-height:min(850px,calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px));overflow:auto;overscroll-behavior:contain;border:1px solid rgba(255,255,255,.82);border-radius:24px;background:linear-gradient(150deg,rgba(255,255,255,.99),rgba(250,246,247,.98));box-shadow:0 28px 90px rgba(25,8,14,.3);color:#30252a;padding:20px}
+.scanner-settings-backdrop{position:fixed;z-index:1310;inset:0;display:grid;place-items:center;padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:rgba(30,17,22,.56);backdrop-filter: none;backdrop-filter: none}
+.scanner-settings-panel{width:min(100%,620px);max-height:min(850px,calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px));overflow:auto;overscroll-behavior:contain;border:1px solid rgba(255,255,255,.82);border-radius:24px;background:linear-gradient(150deg,rgba(255,255,255,.99),rgba(250,246,247,.98));box-shadow:0 28px 90px rgba(25,8,14,.3);color:#30252a;padding:20px}
 .scanner-settings-panel--detail{width:min(100%,680px)}
 .scanner-settings-header{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid #eee4e7}
 .scanner-settings-header-icon{width:44px;height:44px;display:grid;place-items:center;flex:0 0 auto;border-radius:15px;background:#f9e9eb;color:#b52537}
@@ -42,8 +42,11 @@
 .scanner-beep-preview:disabled{opacity:.42;cursor:not-allowed}
 .scanner-settings-panel button:focus-visible,.scanner-volume-control input:focus-visible{outline:3px solid rgba(189,38,58,.38);outline-offset:3px}
 @media(max-width:520px){.scanner-settings-panel{width:100%;max-height:100%;border-radius:19px;padding:16px}.scanner-preference-card{padding:13px}.scanner-beep-preview-row{align-items:flex-start;flex-direction:column}.scanner-beep-preview{align-self:flex-end}}
-@media(prefers-reduced-motion:reduce){.scanner-settings-backdrop{
-  backdrop-filter: none;gap:0;border:1px solid #eee5e7;border-radius:14px;background:#fff;overflow:hidden}
+@media(prefers-reduced-motion:reduce){.scanner-settings-backdrop{backdrop-filter: none;backdrop-filter: none}.scanner-settings-menu-item,.scanner-settings-switch,.scanner-settings-switch span{transition:none}}
+
+/* Configurable barcode symbologies — compact mobile-first native-style switches. */
+.scanner-symbology-card{gap:12px}
+.scanner-symbology-group{display:grid;gap:0;border:1px solid #eee5e7;border-radius:14px;background:#fff;overflow:hidden}
 .scanner-symbology-group h4{margin:0;padding:11px 12px;background:#faf7f8;color:#9a8d93;font-size:9px;font-weight:850;letter-spacing:1px}
 .scanner-symbology-row{display:flex;align-items:center;gap:12px;min-height:55px;padding:8px 12px;border-top:1px solid #f0e9eb}
 .scanner-symbology-copy{display:grid;gap:3px;min-width:0;flex:1}
