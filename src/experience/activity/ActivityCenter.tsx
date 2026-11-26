@@ -7,7 +7,7 @@ type Props = {
   noticeStatus: 'loading' | 'ready' | 'empty' | 'unavailable';
   updateEntry: UpdateCenterEntry | null;
   onOpenNotice: (notice: SnapshotNotice, trigger: HTMLButtonElement) => void;
-  onOpenSettings: () => void;
+  onOpenUpdateCenter: () => void;
 };
 
 function updateStatusLabel(entry: UpdateCenterEntry) {
@@ -18,7 +18,7 @@ function updateStatusLabel(entry: UpdateCenterEntry) {
   return 'Đang chờ xử lý';
 }
 
-export function ActivityCenter({ notices, noticeStatus, updateEntry, onOpenNotice, onOpenSettings }: Props) {
+export function ActivityCenter({ notices, noticeStatus, updateEntry, onOpenNotice, onOpenUpdateCenter }: Props) {
   const pendingUpdate = updateEntry?.inCenter ? updateEntry : null;
   const signalCount = notices.length + (pendingUpdate ? 1 : 0);
 
@@ -51,10 +51,10 @@ export function ActivityCenter({ notices, noticeStatus, updateEntry, onOpenNotic
           </button>
         ))}
         {pendingUpdate && (
-          <button type="button" className="retailos-activity__signal tone-blue" onClick={onOpenSettings}>
+          <button type="button" className="retailos-activity__signal tone-blue" onClick={onOpenUpdateCenter}>
             <span className="retailos-activity__signal-icon"><Download size={18} /></span>
             <span className="retailos-activity__signal-copy"><small>SYSTEM UPDATE · BUILD {pendingUpdate.buildId}</small><strong>{pendingUpdate.title}</strong><span>{pendingUpdate.summary}</span><em>{updateStatusLabel(pendingUpdate)}</em></span>
-            <span className="retailos-activity__signal-action">Mở cài đặt <Activity size={15} /></span>
+            <span className="retailos-activity__signal-action">Mở Update Center <Activity size={15} /></span>
           </button>
         )}
       </div>
