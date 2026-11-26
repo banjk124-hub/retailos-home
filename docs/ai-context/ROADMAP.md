@@ -4,14 +4,20 @@ All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). UI di
 
 ## Active deliverable — Greenfield Experience rebuild
 
-1. **Stabilize the development workflow:** remove diagnostic-only browser harnesses, keep user-journey tests concise, and scope scanner regressions to scanner changes.
-2. **Experience foundation and App Shell:** create an isolated new presentation layer, design primitives/tokens needed by real surfaces, and a responsive authenticated shell. Keep existing auth/session and business orchestration.
-3. **Home and Module Library:** rebuild their presentation using real module registry/readiness data.
-4. **Operational workspaces:** migrate Stocktake and Import presentation without changing their engines, persistence, validation or output contracts.
-5. **Settings and system experience:** Update Center, offline/error/recovery, permissions and system notifications.
-6. **Integration and acceptance:** remove legacy presentation only after its consumers are migrated and new workflows pass browser and physical-device acceptance.
+### Completed implementation slices
+1. Experience foundation and authenticated App Shell.
+2. Login presentation and employee identity handoff.
+3. Operational Home and Module Library using real registry/readiness and snapshot data.
+4. Library Detail with real workflow handoffs.
+5. Activity Center with honest event-log availability.
+6. Settings Experience integrated with existing Update Center and Scanner Settings behavior.
+7. Cross-surface integration corrections and browser regression coverage.
 
-Each step must deliver working source/runtime behavior. Do not create another M0/M1 audit program, broad legacy CSS inventory, or documentation-only gate before implementation.
+### Remaining implementation and acceptance
+1. **Operational workspaces:** migrate Stocktake and Import presentation without changing their engines, persistence, validation, revisions/conflicts, dirty-edit or output contracts.
+2. **Integrated acceptance:** verify Home → Library → operational workflow → return navigation, Settings/Update Center, Activity signals, overlays, focus, scroll locking and PWA update safety.
+3. **Physical-device QA:** desktop, tablet, average/low-end Android and iOS Safari/PWA; verify touch scroll, safe areas, browser chrome, performance and camera behavior.
+4. **Owner acceptance and release gates:** visual acceptance, explicit merge approval, then separately authorized deployment and production transfer.
 
 ## Protected domains
 - Scanner stabilization and cleanup are closed. See [SCANNER_ENGINE.md](./SCANNER_ENGINE.md) and [SCANNER_HISTORY.md](./SCANNER_HISTORY.md).
@@ -21,4 +27,4 @@ Each step must deliver working source/runtime behavior. Do not create another M0
 - Stocktake Import: [STOCKTAKE_FILE_IMPORT.md](./STOCKTAKE_FILE_IMPORT.md).
 
 ## Governance
-Verify live branch/PR/CI/deployment before status updates. Use targeted tests for changed behavior, full regression at integration/release gates, and physical-device QA for device-specific acceptance. No merge without explicit owner approval; no deployment without explicit authorization.
+Use targeted tests during feature work and full regression at integration/release gates. Browser emulation is not physical-device acceptance. No merge without explicit owner approval; no deployment without explicit authorization.
