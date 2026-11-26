@@ -61,9 +61,9 @@ assert.match(stocktakePresentationCss, /\.stocktake-scanner-preview\.has-preview
   'Stocktake must reveal the native video through its own presentation CSS');
 
 
-assert.match(home, /barcode-scanner-presentation\.css/);
-assert.match(home, /scanner-shared-controls\.css/);
-assert.doesNotMatch(home, /scanner-transition\.css|stocktake-scanner-presentation\.css/);
+assert.match(homeSource, /barcode-scanner-presentation\.css/);
+assert.match(homeSource, /scanner-shared-controls\.css/);
+assert.doesNotMatch(homeSource, /scanner-transition\.css|stocktake-scanner-presentation\.css/);
 assert.match(stocktakeSource, /stocktake-scanner-presentation\.css/);
 assert.match(stocktakeSource, /scanner-shared-controls\.css/);
 assert.doesNotMatch(stocktakeSource, /scanner-transition\.css|barcode-scanner-presentation\.css/);
