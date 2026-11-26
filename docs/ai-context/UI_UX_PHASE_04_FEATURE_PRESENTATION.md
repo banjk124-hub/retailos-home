@@ -38,7 +38,10 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 - Root experience is src/features/auth/screens/LoginExperience.tsx.
 - It imports two Login-specific stylesheets.
 - Form, hero and dock are composed as feature components; the form uses existing shared Surface and Motion primitives.
-- Ownership seam found: login-experience.css also defines .auth-journey-recognition selectors rendered by UnifiedIdentityView in App.tsx. The LoginExperience import currently makes those rules available; this is a cross-owner presentation dependency, not proof that the identity stage should be moved or split. Trace the root auth journey and CSS loading before changing it.
+- Completed: moved `.auth-journey-recognition*` styles, reduced-motion overrides and identity reveal keyframes from `login-experience.css` into `src/styles/auth-journey.css`, imported by `App.tsx` beside the root-owned identity journey. This aligns CSS ownership with the actual render owner without extracting or changing the identity state machine.
+- Login retains its own feature and compact-landscape stylesheets; its reduced-motion rules remain local. CSS declaration content and selectors were relocated without redesigning visual output.
+- Added `scripts/test-ui-04a-login-presentation.mjs` to preflight to guard the ownership boundary and required motion contracts.
+- Existing `tests/browser/login-responsive.spec.ts` remains the responsive, keyboard-focus, reduced-motion and power-conserve browser gate; no auth/session behavior or employee data was changed.
 - Existing browser coverage: tests/browser/login-responsive.spec.ts checks desktop, tablet, mobile, compact mobile and short landscape, keyboard focus, 16px input sizing, reduced motion and power-conserve backdrop behavior. Extend rather than replace these assertions if the Login slice changes.
 - Keep local employee validation, employee/department preview, submitting/error/success states, identity recognition handoff and session behavior unchanged.
 - Preserve keyboard and screen-reader feedback.
