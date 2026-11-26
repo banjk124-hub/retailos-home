@@ -83,7 +83,7 @@ export function LoginForm({
       <form className="login-form" onSubmit={onSubmit} noValidate>
         <div className="login-form__field">
           <label htmlFor="login-employee-code"><span>Mã nhân viên</span></label>
-          <Surface variant="control" className="login-form__input-wrap" interactive data-surface-state={status === 'error' ? 'error' : undefined}>
+          <Surface variant="control" className="login-form__input-wrap" interactive data-surface-state={status === 'error' ? 'error' : undefined} aria-invalid={status === 'error' || undefined}>
             <span className="login-form__focus-ripple" aria-hidden="true" />
             <MotionIcon icon={UserRound} variant="secure" state={status === 'error' ? 'error' : undefined} size={18} />
             <input
