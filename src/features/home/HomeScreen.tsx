@@ -18,7 +18,7 @@ import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilitie
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
-import { LiquidDock } from '../../shared/navigation';
+import { ShellNavigation } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
 import '../../styles/home.css';
@@ -609,7 +609,7 @@ export default function HomeScreen({
     };
   }, [openBarcodeScanner, openManualProductLookup]);
   return <>
-    <div className={`app-shell home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
+    <div className={`app-shell has-shell-navigation home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
       <header className="topbar home-topbar" id="home">
         <div className="topbar-dock">
@@ -781,7 +781,7 @@ export default function HomeScreen({
     </main>
 
     </div>
-    <LiquidDock
+    <ShellNavigation
       items={HOME_DOCK_ITEMS.map((item) => item.id === 'settings' ? { ...item, noticeCount: updateNoticeCount } : item)}
       activeId={activeNav}
       onSelect={handleNav}
