@@ -81,7 +81,7 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - App-owned identity journey selectors, reduced-motion declarations and reveal keyframes now live in `src/styles/auth-journey.css`, imported beside the root-owned `UnifiedIdentityView`.
    - Login retains `login-experience.css` and `login-compact-landscape.css`; exact-head CI #1819 passed all preflight, build, bundle and Playwright responsive/runtime gates.
    - Auth/session behavior, identity state machine, timing and employee data were not changed.
-2. **UI-04B — Settings and Update Center — implementation awaiting validation**
+2. **UI-04B — Settings and Update Center — implemented and validated**
    - Source trace confirmed SettingsHub and ScannerSettingsPanel were the only imports of the combined `scanner-settings.css`; Update Center release/status styling remains owned by `src/shared/pwa/pwa-update-prompt.css`.
    - Extracted common modal/backdrop/panel/header/focus/footnote rules into `settings-dialog.css`.
    - Isolated Settings Hub menu and pending-update indicator rules in `settings-hub.css`; isolated scanner preference, feedback and barcode symbology rules in `scanner-preferences.css`.
