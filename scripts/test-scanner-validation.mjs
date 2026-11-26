@@ -212,7 +212,7 @@ assert.match(homeScannerPresentationCss, /\.barcode-scanner\.scanner-home-transi
 assert.match(homeScannerPresentationCss, /min-width: 0;[\s\S]*?min-height: 0;/,
   "Home preview flex geometry must be allowed to shrink without overflow");
 
-assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-preview\{[^}]*flex:1 1 auto;[^}]*min-width:0;/,
+assert.match(stocktakeScannerPresentationCss, /\.stocktake-scanner-preview\s*\{[^}]*flex:\s*1 1 auto;[^}]*min-width:\s*0;/,
   "Stocktake preview must participate in stable flex sizing");
 
 console.log("Scanner barcode validation, luminance, camera stability, UI wiring, and lifecycle regression tests passed.");
