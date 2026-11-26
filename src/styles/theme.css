@@ -183,7 +183,6 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 
 /* Home: restrained red/white system with opaque semantic surfaces */
 .app-shell { background: radial-gradient(ellipse at 75% -15%,rgba(255,222,226,.55),transparent 34%),#fffafa; }
-.sidebar { background: rgba(255,255,255,.88); border-right-color: #f1e7e8; }
 .workspace-avatar,.footer-mark { background: linear-gradient(145deg,#e94150,#b81d2c); }
 .side-nav-item.active { color: var(--color-brand-strong); background: var(--color-brand-subtle); box-shadow: inset 3px 0 var(--color-brand-primary); }
 .side-nav-item.active svg,.mobile-nav button.active { color: var(--color-brand-primary); }
@@ -196,12 +195,11 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .welcome-copy .eyebrow,.section-kicker { color: #bd3441; }
 .user-context-chip,.date-chip { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-1);   }
 .context-avatar,.date-icon { background: var(--color-brand-subtle); color: var(--color-brand-primary); }
-.hero-card { background: linear-gradient(118deg,#a91728 0%,var(--color-brand-primary) 52%,#ed5b66 100%); box-shadow: 0 20px 45px rgba(178,28,44,.19), inset 0 1px 0 rgba(255,255,255,.22); }
 .hero-orb.orb-one { background: rgba(255,255,255,.08); }
 .hero-orb.orb-two { background: rgba(255,220,224,.1); }
 .hero-button { color: #a91c2a; background: rgba(255,255,255,.96); box-shadow: 0 7px 18px rgba(80,0,10,.13); }
 .hero-button:hover { background: #fff3f4; }
-.metric-card,.module-card,.panel-card { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-1);   }
+.metric-card,.panel-card { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-1);   }
 .metric-icon.blue,.module-blue .module-icon,.activity-icon.blue { color: #c52635; background: var(--color-brand-subtle); }
 .metric-icon.violet,.module-violet .module-icon,.activity-icon.violet { color: #b44c59; background: var(--color-brand-subtle); }
 .metric-icon.amber,.module-amber .module-icon,.activity-icon.amber { color: #b87837; background: #fff5e9; }
@@ -267,5 +265,5 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .checking-spinner { width:13px; height:13px; border:2px solid #f0c6ca; border-top-color:var(--color-brand-primary); border-radius:50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 .transition-caption { position:absolute; top:calc(50% + 44px); color:#a91c2a; font-size:10px; font-weight:800; letter-spacing:2px; animation:panel-in .35s .08s both; }
-@media(max-width:700px) { .login-progress { min-height:34px; font-size:9px; } .hero-card { background:linear-gradient(118deg,#a91728 0%,var(--color-brand-primary) 52%,#ed5b66 100%); } }
+@media(max-width:700px) { .login-progress { min-height:34px; font-size:9px; } }
 @media(prefers-reduced-motion:reduce) { .dept-wave,.dept-fmcg .hero-orb,.dept-fresh .hero-orb,.dept-softline .hero-orb,.dept-homeline .hero-orb,.dept-warehouse .hero-orb { animation:none!important; } }
