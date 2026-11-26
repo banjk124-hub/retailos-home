@@ -1,28 +1,26 @@
 import type { ComponentPropsWithoutRef } from 'react';
-import { GlassSurface } from '../components/glass/GlassSurface';
-import type { GlassMaterial, GlassTone } from '../components/glass/GlassMaterial';
+import { Surface } from '../components/surface/Surface';
+
 import type { MotionPhase, MotionState } from './motion.tokens';
 
 type Props = ComponentPropsWithoutRef<'button'> & {
-  material: GlassMaterial;
-  tone?: GlassTone;
+  variant: 'control' | 'brand';
+  
   motionState?: MotionState;
   motionPhase?: MotionPhase;
 };
 
 export function MotionButton({
-  material,
-  tone = 'neutral',
+  variant,
   motionState = 'idle',
   motionPhase = 'press',
   className = '',
   ...props
 }: Props) {
   return (
-    <GlassSurface
+    <Surface
       as="button"
-      material={material}
-      tone={tone}
+      variant={variant}
       interactive
       className={`motion-button${className ? ` ${className}` : ''}`}
       data-motion-state={motionState}
