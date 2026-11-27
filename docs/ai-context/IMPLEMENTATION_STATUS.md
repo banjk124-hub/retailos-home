@@ -37,4 +37,5 @@ The previous global visual direction has been withdrawn. No replacement visual l
 - Owner-confirmed policy is recorded in DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030.
 - README, PROJECT_CONTEXT, Product Skill, INDEX and ROADMAP now point to the same contract.
 - Desktop/Mobile shell separation, per-platform feature availability matrix and installed-PWA fullscreen/display-mode behavior are target requirements, **not yet verified as implemented**.
-- This change is documentation-only. No source, CSS, runtime dependency, test, deployment or production state changed.
+- Documentation branch: docs/platform-presentation-governance; Draft PR #186; latest known head: b9623271c59aa8c7736fecfa704aa970d13715b9.
+- This change is documentation-only. No source, CSS, runtime dependency, test, deployment or production state changed. Markdown consistency was reviewed through the PR diff; automated documentation lint/build was not run.
