@@ -11,7 +11,7 @@ AUDIT-03 confirms that RetailOS has a functioning design foundation and an exist
 
 Confirmed baseline:
 - **29 tracked CSS files / 338,808 source bytes.** This is raw repository source, not gzip/Brotli transfer, parsed CSSOM size or render cost.
-- **11 stylesheets are imported from `main.tsx`**, contributing approximately **144,?** raw source bytes. They are global before feature rendering.
+- **11 stylesheets are imported from `main.tsx`**, contributing **150,653 bytes (147.1 KiB)** of raw source. They are global before feature rendering.
 - Home loads four ordered stylesheets through its lazy feature entry: `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css` — **64,989 bytes**.
 - `mobile-tuning.css` is **80,308 bytes** (about 23.7% of all tracked CSS), globally imported and contains 2,720 lines, 40 media blocks, 28 keyframe declarations and 25 `!important` declarations.
 - `theme.css` has 151 custom-property declaration occurrences across 137 unique names. Fourteen compatibility names are declared twice, first as legacy literals and later as aliases to semantic tokens.
@@ -69,7 +69,7 @@ Evidence labels:
 | Stocktake Import | stocktake-import | Feature-owned |
 | Settings Hub / Scanner Preferences | settings-hub, settings-dialog, scanner-preferences | Shared dialog shell; distinct content presentation |
 
-The root eager import group totals roughly 144.7 KB of raw CSS source. This is not a statement about actual emitted chunk size: Vite may deduplicate or emit CSS differently. Verify with the production manifest and network waterfall before making delivery changes.
+The root eager import group totals **150,653 bytes (147.1 KiB)** of raw CSS source. This is not a statement about actual emitted chunk size: Vite may deduplicate or emit CSS differently. Verify with the production manifest and network waterfall before making delivery changes.
 
 ### 3.3 Ownership disposition
 
