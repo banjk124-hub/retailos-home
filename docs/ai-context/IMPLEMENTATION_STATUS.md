@@ -42,7 +42,7 @@ This file records verified repository state, not an authorization to merge, depl
 - PR #187 PA-02 is merged to `main` at `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`; its owner-confirmed matrix and typed registry metadata are now part of the main baseline.
 - SH-01B/C/D implementation is in progress on `refactor/sh-01b-authenticated-shell`, based directly on that main commit. It extracts authenticated shell composition, adds a signal-based platform context, introduces Desktop/Mobile Home presentation roots, retains a Tablet compatibility fallback, and gates camera scanner/settings entry to Mobile.
 - PR #192 was merged into `audit/platform-experience-architecture`, not directly into main. The current SH-01 branch ports its navigation renderer ownership from the merged audit work and continues on main.
-- Exact-head CI and browser evidence for the current SH-01 branch are pending. Physical-device PWA acceptance and computed-style/runtime CSS validation remain separate gates.
+- PR #193 remains Draft/open and is not merged or deployed. Exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f`: preflight, TypeScript, production/Pages builds, bundle comparison and 10 Playwright tests passed. Physical-device PWA acceptance remains in PW-01; full global/feature CSS ownership migration remains CSS-01.
 
 ### AUDIT-03 — CSS & Design Foundation
 
