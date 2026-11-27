@@ -1,6 +1,6 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A/B/C/D implemented, validated and merged; UI-04E Stocktake Import is implemented in open/Draft PR #190 and awaiting final CI/browser verification; UI-04F cross-feature closure remains pending.
+**Status:** UI-04A/B/C/D implemented, validated and merged; UI-04E Stocktake Import is implemented and validated in open/Draft PR #190; exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`. UI-04F cross-feature closure remains pending.
 **Initial implementation PR:** #181 — merged to main at e58bce634b9ff67e95250d36c8653593680463e9.
 **UI-04D completion PR:** #189 — merged to main at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 **Original UI-04 branch:** merged; do not continue on refactor/ui-04-feature-presentation.
@@ -108,7 +108,7 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - New `StocktakeImportPresentation.tsx` owns import/history workspace markup, conflict/new-session/clear confirmation UI, zone navigation, editable table and TXT preview; it receives a typed model and action callbacks.
    - The `stocktake-import.css` import now belongs to the presentation owner. CSS declarations were retained unchanged; no stylesheet splitting or visual redesign was included.
    - Parser, session service, IndexedDB store, schema, decimal precision, source provenance, conflict/merge semantics and TXT/ZIP output remain unchanged.
-   - Added focused ownership contract coverage and a browser workflow for import, dirty edit/save, conflict merge, TXT download and history restore. Exact-final-head CI and browser result must be recorded before marking UI-04E validated.
+   - Added focused ownership contract coverage and a browser workflow for import, duplicate-row retention, edit/save, conflict merge, TXT download, history restore and mobile/desktop viewport geometry. Exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`: full preflight, TypeScript, production/Pages builds, bundle comparison and responsive/runtime Playwright evidence (9 browser tests passed). Physical iOS/Android acceptance remains separate and is not claimed.
 6. **UI-04F — Cross-feature regression and closure**
    - Verify all five surfaces, responsive behavior, accessibility, runtime errors, failed requests, overflow and bundle/lazy-loading boundaries.
    - Update phase, roadmap, implementation status and handoff from exact-head evidence.
@@ -148,6 +148,6 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - UI-04C passed exact-head CI #1826 on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
 - Merged PR #181 head `1ae4e870cc27e6209cd2128774167229f144ee90` passed exact-head CI #1845, including preflight, TypeScript/production builds, bundle comparison and Playwright responsive/runtime evidence.
 - UI-04D presentation ownership is merged in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on its source head, including the dedicated Stocktake browser workflow.
-- UI-04E implementation is in open/Draft PR #190, based on the merged UI-04D main baseline. Source, focused ownership tests and a dedicated browser workflow have been added; exact final-head validation is pending.
+- UI-04E implementation is in open/Draft PR #190, based on the merged UI-04D main baseline. Source, focused ownership tests and a dedicated browser workflow are validated by exact-head CI #1900 on `ef5b93900a95080fdab7966bb986558ce5cd2438`; 9 browser tests passed. Physical device acceptance is not claimed.
 - UI-04F cross-feature regression and closure remains pending.
 - PR #190 is not merged; no deployment or production transfer is performed.
