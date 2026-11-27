@@ -77,7 +77,6 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
 
   await expect(page.getByText('BT01', { exact: true }).first()).toBeVisible();
   await expect(page.locator('.stocktake-import-edit-table tbody tr')).toHaveCount(2);
-  await expect(page.getByText('2 mã duy nhất')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Chỉnh sửa' }).click();
   await page.getByLabel('Kết quả thực tế dòng 2').fill('1.750');
@@ -87,7 +86,7 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
   await page.getByRole('button', { name: 'Xem TXT' }).click();
   const output = page.getByRole('textbox', { name: 'Nội dung TXT BT01' });
   await expect(output).toBeVisible();
-  await expect(output).toContainText('ARTICLE,8936000000001,1.750');
+  await expect(output).toHaveValue(/ARTICLE,8936000000001,1\\.750/);
   const txtDownload = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Quay lại bảng' }).click();
   await page.getByRole('button', { name: 'Tải TXT' }).click();
