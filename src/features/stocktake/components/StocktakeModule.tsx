@@ -439,7 +439,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     barcode,
     quantity,
     editingEntry,
-    scannerSupported: isScannerSupportedDevice(),
+    scannerSupported: screen === 'scan' && isScannerSupportedDevice(),
     busy,
     pendingZone,
     showClearConfirm,
@@ -460,11 +460,11 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       setScannerMotionOrigin(getMotionOrigin(button));
       void unlockScannerAudio();
       setScannerOpen(true);
-      if (session) void logStocktakeAction({
+      if (session && currentZone) void logStocktakeAction({
         sessionId: session.id,
-        zoneId: currentZone?.id,
+        zoneId: currentZone.id,
         action: 'SCANNER_OPENED',
-        details: `Mở máy quét tại vùng ${currentZone?.zoneCode ?? ''}.`,
+        details: `Mở máy quét tại vùng ${currentZone.zoneCode}.`,
       });
     },
     onBarcodeChange: setBarcode,
@@ -520,5 +520,4 @@ export default function StocktakeModule({ employee, onClose }: Props) {
       )}
     </>
   );
-}
 }
