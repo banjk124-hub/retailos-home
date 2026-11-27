@@ -29,7 +29,7 @@ RetailOS shares identity, journeys and business semantics. A generic feature req
 
 ## Platform audit continuation
 
-Continue SH-01 on branch `refactor/sh-01b-authenticated-shell`, based on main `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`. SH-01B extracted authenticated composition while App remains auth/session and PWA lifecycle owner. SH-01C added platform context, separate Desktop/Mobile Home roots, Tablet compatibility fallback, explicit navigation renderers and Mobile-only scanner/settings gates. SH-01D adds integration contracts and exact-head CI/browser validation. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`. Do not use viewport breakpoints as feature policy. Physical PWA acceptance and CSS computed-style validation remain separate gates.
+SH-01B/C/D are implemented on `refactor/sh-01b-authenticated-shell`, based on main `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`. PR #193 is Draft/open, not merged or deployed. Exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f` including preflight, TypeScript, production/Pages builds, bundle comparison and 10 Playwright tests. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`. Do not use viewport breakpoints as feature policy. Physical PWA acceptance remains PW-01 and global/feature CSS migration remains CSS-01.
 
 ## Technical boundaries
 
