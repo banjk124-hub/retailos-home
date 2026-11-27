@@ -47,6 +47,16 @@ Record ID/date, owner and scope; problem/context; options; decision and non-deci
 **Status:** Owner-confirmed  
 **Decision:** Remove incorrect or unnecessary items only after tracing consumers, behavior, replacement, risks, regression evidence and rollback. Preserve unique historical rationale.
 
+
+### PD-007 — Shared RetailOS identity, platform-specific capabilities and presentation
+**Status:** Owner-confirmed  
+**Date:** 2026-11-27  
+**Decision:** RetailOS maintains one coherent brand identity and consistent meaning for shared business concepts, but Desktop, Tablet and Mobile are distinct product contexts. A workflow available on one platform is not automatically required on another; capabilities may be platform-specific or shared according to task fit, operating environment, input/output capabilities, permissions, security and operational value. Shared domain/data/state and business rules should remain shared when they represent the same underlying business operation, while shells, navigation, information architecture, layout, density, component composition and platform-specific workflows may differ. Responsive behavior adapts within each platform presentation; it does not enforce feature parity or one universal layout. Installed PWA mode should prefer standalone where supported; fullscreen/immersive behavior is conditional and must respect OS/browser constraints and provide a fallback.
+
+**Non-decisions:** This does not select a visual style, palette, typography, imagery or motion language; does not require duplicated applications or duplicated business logic; does not declare current source to have separate Desktop/Mobile shells; and does not require every feature to be available everywhere.
+
+**Implementation requirements:** Define a platform capability matrix for relevant workflows; distinguish unsupported platform capability from implementation/data/permission/runtime states; use capability detection rather than User-Agent-only classification; preserve stable business/data contracts; validate installed PWA behavior on target OS/browser combinations. Architecture and migration details belong in ARCHITECTURE.md and feature contracts.
+
 ## 4. Superseded and rejected options
 
 | ID | Option | Status | Rationale / reconsideration |

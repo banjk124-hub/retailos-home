@@ -84,6 +84,21 @@ Reuse is based on equivalent responsibility, semantics, state behavior, accessib
 
 See COMPONENT_AND_PATTERN_GOVERNANCE.md for the shared-component lifecycle.
 
+## 5A. Cross-platform product and presentation contract
+
+Treat Desktop, Tablet and Mobile as related but distinct operating contexts. RetailOS must retain a coherent brand identity and consistent meaning for shared business concepts, while each platform may expose a different set of workflows and use a different presentation.
+
+- **Feature parity is not a requirement.** A capability may be Desktop-only, Mobile-only or shared. Include it where the task, operating environment, input/output capabilities, permissions, security and workflow economics justify it—not to satisfy visual symmetry.
+- **Separate capability from presentation.** Decide whether a workflow is available on a platform independently from how that workflow is presented. A missing platform capability is not a responsive-layout defect.
+- **Share semantics, not necessarily screens.** Reuse domain rules, data contracts, identity and state transitions when they represent the same business operation. Keep platform-specific workflows and presentation composition independent where their purpose or interaction differs.
+- **Allow independent shells.** Desktop and Mobile may have different navigation, shell structure, information architecture, density and component arrangement. Tablet requires explicit evaluation rather than automatic inheritance from either side.
+- **Responsive adapts each presentation.** Viewport and orientation changes tune the selected presentation; breakpoints must not be used as a substitute for a platform capability policy.
+- **Use capability signals, not device stereotypes.** Prefer feature detection and actual input/display capabilities. Do not rely solely on User-Agent; a touchscreen laptop or large tablet may combine capabilities.
+- **PWA installation is an application context.** Prefer standalone for installed mode where supported. Treat fullscreen as conditional/immersive behavior, never as a universal guarantee that system UI disappears. Handle safe areas, dynamic viewport, system bars, virtual keyboard, permission prompts, orientation and background/foreground lifecycle per OS/browser.
+- **Keep availability truthful.** Distinguish unsupported-on-platform, not-yet-implemented, permission-required, data-unavailable and runtime-error states. Do not expose a fake ready entry point.
+
+For material platform decisions, record the capability matrix and rationale in the relevant feature/architecture record. Validate on real target environments; browser emulation alone is not device acceptance. This contract does not approve a specific visual style or mandate two entirely duplicated applications.
+
 ## 6. Motion and interaction
 Motion is a product communication tool, not automatically decoration and not automatically required. Use it when it acknowledges action, orients, reveals, explains state, directs attention or preserves continuity. Feedback must remain immediate. Animation must not own business state, trigger duplicate writes/requests, block workflows or delay camera/scanner lifecycle. Preserve reduced-motion and power-conserve behavior; interrupted transitions converge to source truth. Measure runtime cost and provide a suitable fallback.
 
