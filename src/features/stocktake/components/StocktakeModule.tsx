@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus, RefreshCw, ScanBarcode, Trash2, X } from 'lucide-react';
 import StocktakeScanner from './StocktakeScanner';
 
-import type { EmployeeSession } from '../../auth/types';
+import type { EmployeeSession } from '../../../shared/domain/employee';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import type { StocktakeEntry, StocktakeExport, StocktakeSession, StocktakeZone } from '../types/stocktake.types';
 import { createStocktakeId, logStocktakeAction, stocktakeStore } from '../services/stocktakeLocalStore';

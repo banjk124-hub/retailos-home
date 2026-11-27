@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { getDepartment } from '../../../shared/config/departments';
-import type { EmployeeSession } from '../types';
+import type { EmployeeSession } from '../../../shared/domain/employee';
 import { authenticateLocally } from '../services/localAuth';
 import { findLocalEmployeeByCode } from '../services/employeeDirectory';
 import { LoginDock } from '../components/LoginDock';

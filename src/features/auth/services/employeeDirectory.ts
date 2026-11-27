@@ -1,4 +1,4 @@
-import type { DepartmentId } from '../types';
+import type { DepartmentId } from '../../../shared/domain/department';
 
 /**
  * Add or update employee accounts here. Set active to false to disable an account.

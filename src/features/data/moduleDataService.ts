@@ -11,7 +11,9 @@ export const MODULE_DATA_IDS = [
   'stocktake',
 ] as const;
 
-export type ModuleDataId = typeof MODULE_DATA_IDS[number];
+import type { CachedModuleSnapshot, SnapshotModuleId } from '../../shared/contracts/moduleSnapshot';
+export type ModuleDataId = typeof MODULE_DATA_IDS[number] & SnapshotModuleId;
+export type { CachedModuleSnapshot } from '../../shared/contracts/moduleSnapshot';
 export const MODULE_SNAPSHOTS_UPDATED_EVENT = 'retailos:module-snapshots-updated';
 
 export type ModuleManifestEntry = {
@@ -25,13 +27,7 @@ export type ModuleManifest = {
   modules: Partial<Record<ModuleDataId, ModuleManifestEntry>>;
 };
 
-export type CachedModuleSnapshot = {
-  moduleId: ModuleDataId;
-  version: string;
-  snapshotDate: string;
-  cachedAt: string;
-  data: unknown;
-};
+
 
 export type ModuleSyncResult = {
   authorizedModules: ModuleDataId[];
