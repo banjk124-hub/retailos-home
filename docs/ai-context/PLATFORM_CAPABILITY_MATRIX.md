@@ -46,7 +46,7 @@
 | Scanner Preferences | Not offered | Available | Review required | Camera-specific settings; not offered outside the Mobile product policy |
 | Settings / Update Center | Available | Available | Review required | Shared update-safety contract; scanner-specific settings remain Mobile-only |
 | Push notifications | Runtime-dependent | Runtime-dependent | Runtime-dependent | Depends on API, permission, installation and OS/browser behavior |
-| PWA installation | Runtime-dependent | Runtime-dependent | Runtime-dependent | Browser/OS installability and user interaction; install path differs by platform |
+| PWA installation | Runtime-dependent | Runtime-dependent | Review required | Browser/OS installability and user interaction; install path differs by platform; Tablet product acceptance remains open |
 
 ### 2.3 Scanner presentation ownership
 
