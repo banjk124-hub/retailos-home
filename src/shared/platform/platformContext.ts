@@ -16,11 +16,14 @@ export type RetailPlatformSignals = Readonly<{
  * Breakpoints are deliberately not used to infer product platform.
  */
 export function resolveRetailPlatform(signals: RetailPlatformSignals): RetailPlatform {
+  const shortScreenEdge = Math.min(signals.screenWidth, signals.screenHeight);
+  const hasTabletSizedTouchSurface = signals.touchPoints > 0 && shortScreenEdge >= 600;
+  if (hasTabletSizedTouchSurface) return 'tablet';
+
   if (signals.primaryFinePointer && signals.primaryHover) return 'desktop';
 
   const hasTouchInput = signals.primaryCoarsePointer || signals.touchPoints > 0;
   if (hasTouchInput) {
-    const shortScreenEdge = Math.min(signals.screenWidth, signals.screenHeight);
     return shortScreenEdge >= 600 ? 'tablet' : 'mobile';
   }
 
