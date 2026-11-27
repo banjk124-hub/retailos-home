@@ -1,6 +1,6 @@
 # SH-01 — Shell & Presentation Ownership
 
-**Status:** SH-01B, SH-01C and SH-01D implementation slices are present on `refactor/sh-01b-authenticated-shell`; exact-head CI and browser regression evidence are pending.
+**Status:** SH-01B, SH-01C and SH-01D are implemented on `refactor/sh-01b-authenticated-shell`; exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f` with 10 Playwright tests passing. Physical-device validation remains in PW-01.
 **Baseline:** `main` at `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45` (2026-11-27).
 **Product policy:** PA-02 / PD-008 / ADR-030 and `PLATFORM_CAPABILITY_MATRIX.md`.
 
@@ -60,7 +60,7 @@ Required automated checks, registered in `npm run preflight`:
 
 Existing preflight continues to cover UI-02 navigation/notice/calendar/lookup ownership, UI-04 feature presentation, scanner lifecycle and runtime contracts, Stocktake/import, overlay scroll lock, PWA lifecycle, bundle boundaries and production/Pages builds.
 
-Exact-head CI, Playwright screenshots/runtime evidence and physical device validation must be recorded separately. A successful static contract test does not certify actual visual equivalence, iOS/Android behavior or low-end performance.
+Exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f`: preflight, TypeScript, production/Pages builds, bundle comparison and 10 Playwright browser tests passed. Runtime evidence artifact was uploaded by the workflow. Physical iOS/Android/low-end device validation remains separate in PW-01. A browser pass does not certify physical-device behavior or performance.
 
 ## 6. Ownership contract after SH-01
 
