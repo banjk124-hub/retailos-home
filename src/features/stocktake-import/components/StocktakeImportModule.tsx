@@ -145,7 +145,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
-  const noticeTone = /không|chưa|lỗi|cần xác nhận|cần bổ sung|bị bỏ qua|không được/i.test(notice)
+  const noticeTone: 'warning' | 'info' | 'success' = /không|chưa|lỗi|cần xác nhận|cần bổ sung|bị bỏ qua|không được/i.test(notice)
     ? 'warning'
     : /đang|khôi phục|phiên mới/i.test(notice) ? 'info' : 'success';
   const invalidZones = useMemo(
@@ -576,7 +576,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     };
     return { zone, index, uniqueProductCount: countUniqueProductCodes(zone.rows), actionState, actionLabel: actionLabel[actionState] };
   });
-  const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const presentationVisibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
     .map((row, visibleIndex) => ({
       row,
       issues: getRowIssues(row),
@@ -625,7 +625,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const presentationModel = {
     view, result, history, historyBusy, historyPersisted, historyExportingId, busy, busyAction, error, notice,
     noticeTone, showClearConfirm, showNewSessionConfirm, pendingImport, selectedZone, activeZone, dirtyZones,
-    editingZone, page, pageCount, visibleRows, totalRows, totalUniqueProducts, activeZoneUniqueProducts,
+    editingZone, page, pageCount, visibleRows: presentationVisibleRows, totalRows, totalUniqueProducts, activeZoneUniqueProducts,
     activeZoneHasProductNames, invalidCount, outputReady, canExportAll, zoneItems, previewOpen,
     fileInputRef: inputRef, outputTextareaRef,
   };
