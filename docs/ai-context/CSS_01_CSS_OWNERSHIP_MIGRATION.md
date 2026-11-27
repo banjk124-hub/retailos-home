@@ -213,3 +213,45 @@ No selector has been marked **PROVEN-UNUSED** in this pass. This is intentional:
 5. Only after these checks classify a candidate as PROVEN-UNUSED or select a bounded CSS-01C migration cluster.
 
 **CSS-01B outcome:** Root/Home cascade and primary consumer families are mapped; high-risk legacy candidates and behavior contracts are identified. Full repository-wide dead-selector proof and computed-style evidence remain open. No runtime CSS changes are authorized by this audit slice.
+
+
+## 10. CSS-01B — Repository-wide consumer verification and CI evidence
+
+### 10.1 Repository-wide search result
+
+GitHub code search was run against the current repository default branch (same CSS/source baseline as this docs-only PR). The search covered the high-risk legacy Login and navigation selector families and representative Home/shared selectors. Results:
+
+| Selector family | Repository-wide code-search result | Classification |
+|---|---|---|
+| `.login-shell`, `.showcase-copy`, `.login-heading` | Found only in `src/styles/mobile-tuning.css`; no TSX, JS/TS, tests or other consumer source returned | **PROVEN-UNUSED in tracked source**; legacy Login rules |
+| `.field-label`, `.reveal-button`, `.login-security-note`, `.login-progress` | Found only in legacy `mobile-tuning.css` (some older design documentation mentions legacy concepts) | **PROVEN-UNUSED in runtime source**; keep historical documentation untouched |
+| `.input-wrap` | Current consumer is `.login-form__input-wrap` in `LoginForm.tsx` and current Login styles; legacy `.input-wrap` appears only in `mobile-tuning.css` | **PROVEN-UNUSED legacy selector**; do not confuse with current BEM class |
+| `.mobile-nav`, `.mobile-nav-icon` | Found in global stylesheet rules only; no current TSX/JS/test consumer returned | **PROVEN-UNUSED in tracked source** for the legacy navigation markup |
+| `.desktop-shell-navigation__*`, `.mobile-shell-navigation`, `.shell-navigation__*` | Current platform navigation component class families exist in source | **USED**; preserve platform-specific ownership |
+| `.spotlight-art` | Used in current `HomeScreen.tsx` and multiple ordered Home stylesheets | **USED**; cross-file declarations are not dead duplicates |
+| `.metric-card`, `.side-nav-item` | Current Home presentation and supporting stylesheet/test contract references | **USED / TEST-CONTRACT-REFERENCED**; preserve |
+
+“PROVEN-UNUSED” here is bounded to the tracked application source and test corpus returned by repository-wide code search at the audited baseline. It does not mean a selector is safe to delete without reviewing its declaration block, media context, animation references and visual effect. The next migration must remove only the isolated declaration cluster with before/after evidence.
+
+### 10.2 Existing CI/browser evidence
+
+The PR head `a9c11d67ada2c792f77705d8a2525a37cbe5c05d` completed RetailOS CI run **#1974** successfully:
+
+- Local-equivalent preflight — passed
+- PR-base production build and bundle comparison — passed
+- Playwright Chromium install — passed
+- Responsive and runtime evidence tests against Pages build — passed
+- Evidence artifacts uploaded:
+  - `retailos-bundle-analysis` (artifact ID `15195289480`)
+  - `retailos-ui-runtime-evidence` (artifact ID `15195134951`)
+
+This confirms the current baseline build and existing responsive/runtime test suite execute successfully. It does **not** establish a before/after CSS migration comparison because this PR has not changed runtime CSS. The uploaded bundle analysis is a baseline artifact, not a claim that all individual emitted CSS chunks have been manually inspected.
+
+### 10.3 CSS-01B exit assessment
+
+- Repository-wide source search has confirmed a bounded set of obsolete legacy Login and navigation selector families.
+- Current Home and platform navigation consumer families have positive source references.
+- Current PR CI has passed preflight, production/Pages build, bundle comparison and Playwright responsive/runtime evidence.
+- No runtime CSS changes have been made.
+
+**CSS-01B static audit is complete for the audited selector clusters.** The CSS chunk-by-chunk lazy/eager ownership inspection and computed-style comparison are retained as mandatory gates for CSS-01C before/after migration validation, not used to delay the static ownership audit. CSS-01C must start with a small, isolated, proven-unused legacy selector cluster; preserve import order and confirm the build/browser baseline remains unchanged.
