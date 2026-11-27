@@ -282,6 +282,11 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await stocktake.click();
   await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
   await capture(page, info, 'stocktake-390x844');
+  await page.locator('#stocktake-zone').fill('AT01');
+  await page.getByRole('button', { name: 'Bắt đầu vùng' }).click();
+  await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mở máy quét' }), 'Mobile Stocktake retains its camera scanner capability').toBeVisible();
+  await page.getByRole('button', { name: 'Quay lại' }).click();
   await page.getByRole('button', { name: 'Đóng kiểm kê' }).click();
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(350);
