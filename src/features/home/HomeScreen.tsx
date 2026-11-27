@@ -369,7 +369,7 @@ export default function HomeScreen({
       label: 'Tra cứu nhanh',
       icon: Search,
       onSelect: () => openManualProductLookup(),
-      // Desktop opens manual lookup directly. Mobile exposes both sticker actions.
+      // Manual lookup is shared. Only Mobile adds the camera-scanner action.
       ...(scannerAvailable ? {
         choices: [
           { id: 'manual-search', label: 'Tìm kiếm', icon: Search, onSelect: () => openManualProductLookup() },
