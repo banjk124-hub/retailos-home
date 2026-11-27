@@ -1,7 +1,7 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** e88ae240959a8deea85aee2fd2992d40563ad365  
+**Verified main HEAD:** 38192b2ce1c426edd6285594a57a2c2970bc14ee  
 **Product/experience workflow:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
 **Decision register:** [DECISIONS.md](./DECISIONS.md)  
 **Verified state:** [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
@@ -22,14 +22,11 @@ RetailOS shares brand identity and business semantics, not mandatory feature par
 
 ## UI-04 continuation
 
-- UI-04A/B/C are merged and validated in PR #181.
-- UI-04D Stocktake presentation ownership is implemented and validated in PR #189:
-  - StocktakeModule.tsx owns workflow state, persistence and scanner/camera lifecycle orchestration.
-  - StocktakePresentation.tsx owns the five workspace views, loading state, confirmation UI and stocktake.css import.
-  - The scanner overlay remains nested in the original workspace stacking context through a presentation slot.
-  - Focused preflight and dedicated Playwright coverage pass, including duplicate barcode rows, export/download and history.
-- UI-04E is now implemented in open/Draft PR #190 on branch `refactor/ui-04e-stocktake-import-presentation`, based on main `e88ae240959a8deea85aee2fd2992d40563ad365`. The coordinator retains parser, fingerprint/conflict decisions, dirty-edit state, IndexedDB, export and PWA blockers; `StocktakeImportPresentation.tsx` owns import/history/conflict/edit/preview markup and imports the unchanged feature CSS. Focused ownership tests and a Playwright workflow are included. Exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`, including preflight/build/bundle gates and 9 responsive/runtime browser tests; physical iOS/Android acceptance remains unclaimed. Review PR #190; do not merge or deploy without explicit owner authorization.
-- UI-04F cross-feature regression and closure remains pending.
+- UI-04A Login, UI-04B Settings/Update Center and UI-04C Scanner presentation are merged and validated in PR #181.
+- UI-04D Stocktake presentation ownership is merged and validated in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed.
+- UI-04E Stocktake Import presentation is merged and validated in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`. Main CI and Build and deploy PWA workflows succeeded on the merge commit.
+- UI-04F cross-feature closure is active on branch `audit/ui-04f-cross-feature-closure`, based on exact main HEAD `38192b2ce1c426edd6285594a57a2c2970bc14ee`. It adds cross-feature ownership assertions and requires runtime evidence for Settings, Update Center, Scanner Preferences, Stocktake and Stocktake Import.
+- Do not merge or deploy UI-04F until exact-head CI and owner review; no physical iOS/Android acceptance is implied by browser viewport tests.
 
 ## Platform audit continuation
 

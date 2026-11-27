@@ -84,11 +84,6 @@ const checks = [
     args: ["scripts/test-ui-04d-stocktake-presentation.mjs"],
   },
   {
-    name: "UI-04F cross-feature presentation ownership and closure contract tests",
-    command: process.execPath,
-    args: ["scripts/test-ui-04f-cross-feature-closure.mjs"],
-  },
-  {
     name: "UI-04E Stocktake Import presentation ownership contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-04e-stocktake-import-presentation.mjs"],

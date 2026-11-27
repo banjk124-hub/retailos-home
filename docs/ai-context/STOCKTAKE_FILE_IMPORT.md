@@ -2,8 +2,8 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Current main baseline:** `e88ae240959a8deea85aee2fd2992d40563ad365`.
-**Current implementation:** UI-04E presentation refactor is validated in open/Draft PR #190 on source head `ef5b93900a95080fdab7966bb986558ce5cd2438`; exact-head CI #1900 passed, including 9 responsive/runtime browser tests. Not merged or deployed. Physical iOS/Android acceptance remains pending.
+**Current main baseline:** `38192b2ce1c426edd6285594a57a2c2970bc14ee`.
+**Current implementation:** UI-04E presentation refactor merged in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`. Final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`; main CI and Build and deploy PWA workflows succeeded. Physical iOS/Android acceptance remains pending.
 **Historical implementation:** PR #70–#73 and workspace v2 PR #74 were merged; PR #74 merge commit is `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`. Prior CI/device checkpoints below are historical evidence, not current branch state.
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 

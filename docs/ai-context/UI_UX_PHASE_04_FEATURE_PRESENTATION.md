@@ -1,8 +1,9 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A/B/C/D implemented, validated and merged; UI-04E Stocktake Import is implemented and validated in open/Draft PR #190; exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`. UI-04F cross-feature closure remains pending.
+**Status:** UI-04A/B/C/D/E implemented, validated and merged. UI-04F cross-feature closure is active on branch `audit/ui-04f-cross-feature-closure`, based on main `38192b2ce1c426edd6285594a57a2c2970bc14ee`.
 **Initial implementation PR:** #181 — merged to main at e58bce634b9ff67e95250d36c8653593680463e9.
 **UI-04D completion PR:** #189 — merged to main at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
+**UI-04E completion PR:** #190 — merged to main at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`.
 **Original UI-04 branch:** merged; do not continue on refactor/ui-04-feature-presentation.
 **Scope:** migrate feature presentation boundaries for Login, Settings, Scanner, Stocktake and Stocktake Import while preserving domain behavior, lifecycle, lazy-loading and accessibility contracts.
 
@@ -69,7 +70,7 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 - StocktakeScanner.tsx remains a separate camera surface with its own stocktake-scanner-presentation.css and the minimal shared torch-control stylesheet.
 - Merged UI-04D work separates `.stocktake-backdrop` from `.stocktake-panel` and `.stocktake-confirm-backdrop` from `.stocktake-confirm`; scanner-specific layout rules are no longer owned by the main Stocktake workspace stylesheet.
 - `scripts/test-ui-04d-stocktake-presentation.mjs` is registered in preflight and guards the implemented ownership/workflow boundary.
-- This is a bounded first slice, not proof that the full Stocktake view/state-to-presentation mapping is complete. Continue that audit before closing UI-04D.
+- UI-04F source review confirms all five Stocktake workspace views render through `StocktakePresentation`; workflow state and action mapping remain in `StocktakeModule`. The dedicated ownership contract and browser workflow exercise this boundary.
 - Preserve session/zone/revision semantics, local persistence, action logs, edit/review/export flow, update blockers and scanner exit gate.
 
 ### 3.5 Stocktake Import
@@ -103,15 +104,33 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - Added focused ownership tests and a Playwright flow covering zone creation, duplicate barcode rows, review, export/download, history and mobile/desktop panel geometry.
    - Exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`; PR #189 merged at `e88ae240959a8deea85aee2fd2992d40563ad365`.
    - Preserve all operational and persistence contracts.
-5. **UI-04E — Stocktake Import presentation — implemented in open/Draft PR #190; validation pending**
+5. **UI-04E — Stocktake Import presentation — implemented, validated and merged in PR #190**
    - `StocktakeImportModule.tsx` remains the workflow coordinator for parser invocation, fingerprint/duplicate detection, conflict decisions, dirty edits, IndexedDB persistence, export operations and PWA update blockers.
    - New `StocktakeImportPresentation.tsx` owns import/history workspace markup, conflict/new-session/clear confirmation UI, zone navigation, editable table and TXT preview; it receives a typed model and action callbacks.
    - The `stocktake-import.css` import now belongs to the presentation owner. CSS declarations were retained unchanged; no stylesheet splitting or visual redesign was included.
    - Parser, session service, IndexedDB store, schema, decimal precision, source provenance, conflict/merge semantics and TXT/ZIP output remain unchanged.
-   - Added focused ownership contract coverage and a browser workflow for import, duplicate-row retention, edit/save, conflict merge, TXT download, history restore and mobile/desktop viewport geometry. Exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`: full preflight, TypeScript, production/Pages builds, bundle comparison and responsive/runtime Playwright evidence (9 browser tests passed). Physical iOS/Android acceptance remains separate and is not claimed.
-6. **UI-04F — Cross-feature regression and closure**
-   - Verify all five surfaces, responsive behavior, accessibility, runtime errors, failed requests, overflow and bundle/lazy-loading boundaries.
-   - Update phase, roadmap, implementation status and handoff from exact-head evidence.
+   - Added focused ownership contract coverage and a browser workflow for import, duplicate-row retention, edit/save, conflict merge, TXT download, history restore and mobile/desktop viewport geometry. Final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`: full preflight, TypeScript, production/Pages builds, bundle comparison and responsive/runtime Playwright evidence (9 browser tests passed). PR #190 merged at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; main RetailOS CI and Build and deploy PWA workflows both succeeded on that merge commit. Physical iOS/Android acceptance remains separate and is not claimed.
+6. **UI-04F — Cross-feature regression and closure — in progress**
+   - Added a cross-feature ownership contract to preflight.
+   - Runtime evidence now requires Settings, Update Center, Scanner Preferences, Stocktake and Stocktake Import to be reachable and rendered; missing controls cannot be silently skipped.
+   - Exact-head CI and final documentation reconciliation remain pending.
+
+## UI-04F — Cross-feature regression and closure
+
+**Branch:** `audit/ui-04f-cross-feature-closure`  
+**Base:** main `38192b2ce1c426edd6285594a57a2c2970bc14ee`
+
+### Audit findings and actions
+- All five feature surfaces retain explicit presentation stylesheet owners: Login, Settings/Update Center, Home Scanner, Stocktake Scanner/Stocktake workspace and Stocktake Import.
+- Home remains lazy-loaded from App; Scanner, Stocktake, Stocktake Import, Settings Hub and Scanner Preferences remain lazy feature entries. Existing bundle-boundary contracts remain active.
+- Stocktake and Stocktake Import coordinators retain workflow state/operations; their presentation components own workspace markup and feature CSS. Scanner overlay remains slotted inside Stocktake presentation.
+- Existing `runtime-evidence.spec.ts` previously guarded Settings, Stocktake and Stocktake Import navigation with conditional visibility checks. Those branches could silently omit evidence if an entry disappeared. UI-04F replaces them with mandatory assertions and adds Update Center and Scanner Preferences navigation/render checks.
+- New `test-ui-04f-cross-feature-closure.mjs` verifies presentation ownership, lazy boundaries, retired mixed stylesheet absence, focused test registration and mandatory runtime reachability evidence.
+
+### Validation
+- Pending exact-head RetailOS CI, preflight, TypeScript, production/Pages builds, bundle comparison and Playwright runtime evidence.
+- Browser viewport emulation does not establish physical iOS/Android or low-end device acceptance.
+- No business logic, persistence/schema, scanner engine/camera lifecycle, PWA update lifecycle, visual redesign or deployment configuration changes are intended.
 
 ## 5. Protected contracts and non-goals
 
@@ -148,6 +167,6 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - UI-04C passed exact-head CI #1826 on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
 - Merged PR #181 head `1ae4e870cc27e6209cd2128774167229f144ee90` passed exact-head CI #1845, including preflight, TypeScript/production builds, bundle comparison and Playwright responsive/runtime evidence.
 - UI-04D presentation ownership is merged in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on its source head, including the dedicated Stocktake browser workflow.
-- UI-04E implementation is in open/Draft PR #190, based on the merged UI-04D main baseline. Source, focused ownership tests and a dedicated browser workflow are validated by exact-head CI #1900 on `ef5b93900a95080fdab7966bb986558ce5cd2438`; 9 browser tests passed. Physical device acceptance is not claimed.
-- UI-04F cross-feature regression and closure remains pending.
-- PR #190 is not merged; no deployment or production transfer is performed.
+- UI-04E is merged in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`. Main RetailOS CI and Build and deploy PWA workflows succeeded on the merge commit.
+- UI-04F cross-feature closure is being completed on `audit/ui-04f-cross-feature-closure`; exact-head validation remains pending.
+- Physical iOS/Android and lower-end device acceptance remain separate; Chromium viewport emulation is not device certification.

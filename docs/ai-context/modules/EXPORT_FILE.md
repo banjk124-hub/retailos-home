@@ -5,8 +5,8 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Verified main baseline:** `e88ae240959a8deea85aee2fd2992d40563ad365`  
-**Current work:** UI-04E presentation ownership refactor in open/Draft [PR #190](https://github.com/banjk124-hub/retailos-home/pull/190), branch `refactor/ui-04e-stocktake-import-presentation`. Not merged or deployed; exact-head CI #1900 passed on source head `ef5b93900a95080fdab7966bb986558ce5cd2438`, including 9 responsive/runtime browser tests. Physical iOS/Android acceptance remains pending.  
+**Verified main baseline:** `38192b2ce1c426edd6285594a57a2c2970bc14ee`  
+**Current status:** UI-04E presentation ownership refactor merged in [PR #190](https://github.com/banjk124-hub/retailos-home/pull/190). Final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`; main CI and Build and deploy PWA workflows succeeded on merge commit `38192b2ce1c426edd6285594a57a2c2970bc14ee`. Physical iOS/Android acceptance remains pending.  
 **Historical workspace v2:** PR #74 merged at `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`. Earlier PR #70–#73 implementation and CI milestones remain recorded below as history.  
 **Canonical functional contract:** `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`
 
