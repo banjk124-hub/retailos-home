@@ -1,8 +1,8 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A/B/C/D implemented and validated; UI-04E Stocktake Import and UI-04F cross-feature closure remain pending.
+**Status:** UI-04A/B/C/D implemented, validated and merged; UI-04E Stocktake Import is implemented in open/Draft PR #190 and awaiting final CI/browser verification; UI-04F cross-feature closure remains pending.
 **Initial implementation PR:** #181 — merged to main at e58bce634b9ff67e95250d36c8653593680463e9.
-**UI-04D completion PR:** #189 — open / Draft, based on main 96209fd226b6efef4b8bb9a00859115baa78bcdf; exact-head CI #1873 passed on 0e2b730ecd64cca42cd618f66caf1b4fea1a37da.
+**UI-04D completion PR:** #189 — merged to main at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 **Original UI-04 branch:** merged; do not continue on refactor/ui-04-feature-presentation.
 **Scope:** migrate feature presentation boundaries for Login, Settings, Scanner, Stocktake and Stocktake Import while preserving domain behavior, lifecycle, lazy-loading and accessibility contracts.
 
@@ -97,15 +97,18 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - Update `test-scanner-presentation.mjs` to guard selector ownership, preview reveal, reduced-motion and shared-control boundaries.
    - Keep engine, camera, worker and decoder untouched.
    - Exact-head CI run #1826 passed on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
-4. **UI-04D — Stocktake presentation — implemented and validated; PR #189 open / Draft**
+4. **UI-04D — Stocktake presentation — implemented, validated and merged in PR #189**
    - Extracted the five workspace views, loading state and confirmation UI into StocktakePresentation.tsx; retained state, persistence and workflow operations in StocktakeModule.tsx.
    - Moved the workspace stylesheet import to its presentation owner and preserved scanner overlay stacking/lifecycle boundaries.
    - Added focused ownership tests and a Playwright flow covering zone creation, duplicate barcode rows, review, export/download, history and mobile/desktop panel geometry.
-   - Exact-head CI #1873 passed on 0e2b730ecd64cca42cd618f66caf1b4fea1a37da.
-   - No merge or deployment has occurred. Preserve all operational and persistence contracts.
-5. **UI-04E — Stocktake Import presentation — pending**
-   - Audit the large feature stylesheet by surface and state, not by arbitrary file-size targets.
-   - Preserve import review, dirty state, conflicts, preview, history and export.
+   - Exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`; PR #189 merged at `e88ae240959a8deea85aee2fd2992d40563ad365`.
+   - Preserve all operational and persistence contracts.
+5. **UI-04E — Stocktake Import presentation — implemented in open/Draft PR #190; validation pending**
+   - `StocktakeImportModule.tsx` remains the workflow coordinator for parser invocation, fingerprint/duplicate detection, conflict decisions, dirty edits, IndexedDB persistence, export operations and PWA update blockers.
+   - New `StocktakeImportPresentation.tsx` owns import/history workspace markup, conflict/new-session/clear confirmation UI, zone navigation, editable table and TXT preview; it receives a typed model and action callbacks.
+   - The `stocktake-import.css` import now belongs to the presentation owner. CSS declarations were retained unchanged; no stylesheet splitting or visual redesign was included.
+   - Parser, session service, IndexedDB store, schema, decimal precision, source provenance, conflict/merge semantics and TXT/ZIP output remain unchanged.
+   - Added focused ownership contract coverage and a browser workflow for import, dirty edit/save, conflict merge, TXT download and history restore. Exact-final-head CI and browser result must be recorded before marking UI-04E validated.
 6. **UI-04F — Cross-feature regression and closure**
    - Verify all five surfaces, responsive behavior, accessibility, runtime errors, failed requests, overflow and bundle/lazy-loading boundaries.
    - Update phase, roadmap, implementation status and handoff from exact-head evidence.
@@ -144,6 +147,7 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - UI-04B passed exact-head CI #1821 on `14bcc16a7ac8a0c20d659fd8256ede6e1e97cb8e`.
 - UI-04C passed exact-head CI #1826 on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
 - Merged PR #181 head `1ae4e870cc27e6209cd2128774167229f144ee90` passed exact-head CI #1845, including preflight, TypeScript/production builds, bundle comparison and Playwright responsive/runtime evidence.
-- UI-04D presentation ownership is complete on PR #189 head 0e2b730ecd64cca42cd618f66caf1b4fea1a37da; exact-head CI #1873 passed, including the dedicated Stocktake browser workflow. PR #189 remains open / Draft pending review and merge.
-- UI-04E and UI-04F are not yet implemented/closed.
-- No further merge or deployment is performed by this documentation update.
+- UI-04D presentation ownership is merged in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on its source head, including the dedicated Stocktake browser workflow.
+- UI-04E implementation is in open/Draft PR #190, based on the merged UI-04D main baseline. Source, focused ownership tests and a dedicated browser workflow have been added; exact final-head validation is pending.
+- UI-04F cross-feature regression and closure remains pending.
+- PR #190 is not merged; no deployment or production transfer is performed.
