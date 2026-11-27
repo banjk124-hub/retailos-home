@@ -31,3 +31,10 @@ The previous global visual direction has been withdrawn. No replacement visual l
 - Check Markdown links and consistency between INDEX, Product Skill, DECISIONS, PROJECT_CONTEXT, ROADMAP, status and handoff.
 - Verify the final branch diff contains no application source changes.
 - Report exact commit and changed paths. Merge/deploy remain separate owner decisions.
+
+
+## Cross-platform presentation direction — documentation updated 2026-11-27
+- Owner-confirmed policy is recorded in DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030.
+- README, PROJECT_CONTEXT, Product Skill, INDEX and ROADMAP now point to the same contract.
+- Desktop/Mobile shell separation, per-platform feature availability matrix and installed-PWA fullscreen/display-mode behavior are target requirements, **not yet verified as implemented**.
+- This change is documentation-only. No source, CSS, runtime dependency, test, deployment or production state changed.
