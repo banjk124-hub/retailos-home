@@ -13,7 +13,7 @@ The owner-confirmed direction is consistent with the product's current domain bo
 Confirmed today:
 - One shared LoginExperience and one HomeScreen serve all form factors.
 - One ShellNavigation component renders desktop-rail and mobile-dock presentations; CSS chooses which is visible.
-- Home's workflow registry contains nine workflows and has no platform capability field/filter. The same registry feeds the same module library on all form factors.
+- Home's workflow registry contains nine workflows and now carries explicit Desktop/Mobile platform policy metadata. All nine are shared; Tablet remains review-required. The current library has no platform filter because no current workflow is Desktop-only or Mobile-only.
 - Barcode camera access is explicitly restricted to Android/iOS-classified devices; manual lookup remains available as the fallback. Stocktake similarly exposes camera scanning only on those devices and retains manual barcode entry.
 - The PWA manifest requests `display: standalone`; installed mode is not equivalent to guaranteed fullscreen.
 - Responsive policy is distributed across global responsive/mobile CSS and feature-owned styles. Several distinct viewport thresholds currently control different behavior.
@@ -34,26 +34,26 @@ The source registry in `src/features/home/moduleRegistry.ts` declares nine workf
 
 | Workflow / capability | Source evidence | Current platform behavior established by source | Audit classification |
 |---|---|---|---|
-| Tồn kho | `moduleRegistry.ts` | Shared module-library entry; `platformAvailability` shared Desktop/Mobile | Shared Desktop + Mobile |
-| Giá & vốn | `moduleRegistry.ts` | Shared module-library entry; no platform policy | Shared entry; capability not classified |
-| Danh mục hàng hóa | `moduleRegistry.ts` | Shared module-library entry; no platform policy | Shared entry; capability not classified |
-| Nhập / xuất hàng | `moduleRegistry.ts` | Shared module-library entry; no platform policy | Shared entry; capability not classified |
-| Điều chuyển hàng | `moduleRegistry.ts` | Shared module-library entry; no platform policy | Shared entry; capability not classified |
-| Doanh số | `moduleRegistry.ts` | Shared module-library entry; no platform policy | Shared entry; capability not classified |
-| Date sản phẩm | `moduleRegistry.ts` | Shared module-library entry; no platform policy | Shared entry; capability not classified |
-| Kiểm kê | `StocktakeModule.tsx` | Shared workflow; camera scanner is a separate Mobile-only capability; manual lookup remains shared | Shared Desktop + Mobile; camera scanner Mobile-only |
-| Xuất file kiểm kê | `StocktakeImportModule.tsx` | Shared module-library entry; local workbook processing/history | Shared Desktop + Mobile |
-| Tra cứu thủ công | `HomeScreen.tsx` / dock action | Action is available; scanner-specific camera choice is added only for supported mobile-class devices | Shared capability |
-| Quét barcode bằng camera | `scannerCapabilities.ts` / `HomeScreen.tsx` | Product policy: Mobile-only; current runtime detector uses Android/iOS User-Agent plus iPad touch fallback | Mobile-only policy; Tablet review required; runtime detector is not Tablet approval |
-| Cài đặt / Update Center | `SettingsHub.tsx` / `PwaUpdatePrompt.tsx` | Shared settings route and update lifecycle | Shared Desktop + Mobile; presentation varies |
-| Push notifications | Home push integration | Runtime reports unsupported/denied/needs-install/ready states; iPhone/iPad prompt says add to Home Screen | Runtime capability is browser/OS/permission dependent |
+| Tồn kho | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Giá & vốn | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Danh mục hàng hóa | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Nhập / xuất hàng | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Điều chuyển hàng | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Doanh số | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Date sản phẩm | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Kiểm kê | `StocktakeModule.tsx` | Shared workflow; camera is a separate Mobile-only capability; manual input remains shared | Shared Desktop + Mobile; camera Mobile-only |
+| Xuất file kiểm kê | `StocktakeImportModule.tsx` | Local workbook processing/history, typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Tra cứu thủ công | `HomeScreen.tsx` | Shared manual lookup action | Shared Desktop + Mobile |
+| Quét barcode bằng camera | `scannerCapabilities.ts` | Mobile-only product policy; current runtime detector still uses UA/iPad touch fallback | Mobile-only; Tablet review-required |
+| Cài đặt / Update Center | `SettingsHub.tsx` / `PwaUpdatePrompt.tsx` | Shared settings and update-safety journey | Shared Desktop + Mobile |
+| Push notifications | Home push integration | Runtime/API/permission/install state, not platform-exclusive | Runtime-dependent across platforms |
 
 **Important distinction:** the six registry entries marked `integrating` are engineering availability states, not proof of a complete operational workflow. `ready` is also not a platform availability declaration. Do not use either field to infer platform support.
 
 ### 2.2 Capability policy gaps
 
-- The registry has no `supportedPlatforms`, platform-specific readiness, or reason/state explaining why a workflow is unavailable on a platform.
-- Platform support is encoded ad hoc for camera scanning only. This is not yet a reusable capability policy.
+- The registry now has typed `platformAvailability` metadata. A runtime platform resolver/filter is not implemented yet; it is not needed for the current all-shared module set and must precede any platform-only module.
+- Camera scanner product policy is now represented as Mobile-only separately from runtime device/API/permission detection. Tablet remains review-required; the existing iPad touch heuristic is not a Tablet product decision.
 - The scanner check uses User-Agent plus iPad touch detection. It correctly accounts for one iPadOS quirk, but it does not distinguish API capability, permission state, camera availability and product policy as separate dimensions.
 - The same feature library is rendered across viewport sizes; the source does not currently hide or replace complete workflows by platform.
 - The Activity section is a static empty state in the inspected Home source, not a functional platform-specific activity workflow.
@@ -137,8 +137,8 @@ The navigation switch is viewport-width based. The scanner capability is user-ag
 | FPA-01 | One shared App/Login/Home composition, not independent shells | Medium | Target permits separation, but current implementation uses one composition |
 | FPA-02 | Same navigation destinations on Desktop and Mobile | Low / product decision pending | No platform capability filtering |
 | FPA-03 | Multiple unrelated breakpoints control layout and some interaction behavior | Medium | Tablet experience is emergent; widths do not define operating capability |
-| FPA-04 | Module registry lacks platform capability metadata | High | Cannot truthfully declare platform availability from canonical source |
-| FPA-05 | Scanner is the only clearly explicit mobile-class capability gate | Medium | User-Agent/touch heuristic conflates product policy and device/API capability |
+| FPA-04 | Platform availability was previously absent from registry; typed policy metadata is now added | Resolved in this PR | Product policy is separate from readiness, data, permissions and runtime states |
+| FPA-05 | Scanner runtime detector uses User-Agent/touch heuristic | Medium / follow-up | Product policy is now Mobile-only; runtime device/API/permission detection and Tablet validation remain separate |
 | FPA-06 | Standalone PWA mode is configured; fullscreen is not the manifest target | Low | Do not assume immersive behavior; physical acceptance pending |
 | FPA-07 | Global mobile CSS crosses feature ownership | High | Risk of accidental cross-platform regressions; not safe to delete wholesale |
 | FPA-08 | Physical platform acceptance is absent from this audit | High validation gap | Browser/source inspection cannot establish OS behavior |
@@ -172,16 +172,16 @@ The matrix below records the owner's confirmed Desktop/Mobile policy. Tablet rem
 
 | Workflow | Desktop | Tablet | Mobile | Rationale / operational context |
 |---|---|---|---|---|
-| Tồn kho | Available | Review required | Available | Shared workflow and result |
-| Giá & vốn | Available | Review required | Available | Shared workflow and result |
-| Danh mục hàng hóa | Available | Review required | Available | Shared workflow and result |
-| Nhập / xuất hàng | Available | Review required | Available | Shared workflow and result |
-| Điều chuyển hàng | Available | Review required | Available | Shared workflow and result |
-| Doanh số | Available | Review required | Available | Shared workflow and result |
-| Date sản phẩm | Available | Review required | Available | Shared workflow and result |
-| Kiểm kê | Available; manual lookup | Review required | Available; manual + camera capability | Same Stocktake business operation; camera is Mobile-only |
-| Xuất file kiểm kê | TBD | TBD | TBD | Local workbook input/output; test file workflow per OS |
-| Tra cứu thủ công | Available | Review required | Available | Shared lookup capability |
+| Tồn kho | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Giá & vốn | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Danh mục hàng hóa | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Nhập / xuất hàng | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Điều chuyển hàng | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Doanh số | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Date sản phẩm | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Kiểm kê | `StocktakeModule.tsx` | Shared workflow; camera is a separate Mobile-only capability; manual input remains shared | Shared Desktop + Mobile; camera Mobile-only |
+| Xuất file kiểm kê | `StocktakeImportModule.tsx` | Local workbook processing/history, typed policy Desktop/Mobile available | Shared Desktop + Mobile |
+| Tra cứu thủ công | `HomeScreen.tsx` | Shared manual lookup action | Shared Desktop + Mobile |
 | Quét camera barcode | Not offered | Review required | Available | Mobile-only product policy; Tablet/iPad policy not inferred from existing detector |
 
 ## 9. Protected invariants and explicit non-goals
