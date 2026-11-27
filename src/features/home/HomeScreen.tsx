@@ -377,7 +377,7 @@ export default function HomeScreen({
         ],
       } : {}),
     };
-  }, [openBarcodeScanner, openManualProductLookup]);
+  }, [openBarcodeScanner, openManualProductLookup, platform]);
   return <HomePresentationRoot platform={platform}>
     <div className={`app-shell has-shell-navigation home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
