@@ -54,6 +54,8 @@ Required automated checks, registered in `npm run preflight`:
 - `test-sh-01-authenticated-shell.mjs`: App retains session/auth and PWA lifecycle ownership; authenticated shell only composes presentation.
 - `test-sh-01-platform-presentation.mjs`: resolver signals, Desktop/Mobile/Tablet roots, scanner Mobile-only gate and Tablet-safe settings entry.
 - `test-shell-navigation-contract.mjs`: one shared destination contract with explicit Desktop/Mobile renderers and Tablet compatibility renderer.
+- `test-sh-01-integration.mjs`: one Home state owner and no duplicated Desktop/Mobile workflow state.
+- `tests/browser/runtime-evidence.spec.ts`: browser checks now emulate Desktop, Mobile and Tablet input contexts separately; resizing a Desktop viewport must not switch it to Mobile presentation. Mobile scanner affordance/settings and Tablet scanner exclusion are asserted.
 
 Existing preflight continues to cover UI-02 navigation/notice/calendar/lookup ownership, UI-04 feature presentation, scanner lifecycle and runtime contracts, Stocktake/import, overlay scroll lock, PWA lifecycle, bundle boundaries and production/Pages builds.
 
