@@ -1,3 +1,8 @@
+import { PLATFORM_CAPABILITY_POLICY } from '../../../shared/platform/platformCapabilities';
+
+/** Product policy for camera access; runtime support and permission are checked separately. */
+export const CAMERA_SCANNER_PLATFORM_AVAILABILITY = PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner;
+
 /**
  * Scanner is intentionally limited to mobile platforms.
  * iPadOS may report a desktop-style Macintosh user agent, so detect touch iPads.

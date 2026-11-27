@@ -1,14 +1,14 @@
 # Current verified implementation status — 2026-11-27
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** 38192b2ce1c426edd6285594a57a2c2970bc14ee
+**Verified main HEAD:** 6925cf968ea2b9c37377856abaf4c4a2ca6785a0
 
 This file records verified repository state, not an authorization to merge, deploy or transfer production.
 
 ## Owner direction and governance
 
 - The former global visual direction has been withdrawn. No replacement visual language is selected. Creative decisions remain experience-specific and require explicit owner approval before substantial implementation.
-- Cross-platform policy is canonical in DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030: shared brand/business semantics do not imply feature parity. Desktop, Tablet and Mobile may have different capabilities, workflows, shells and presentation. Tablet requires deliberate evaluation.
+- Cross-platform policy is canonical in DECISIONS.md PD-007/PD-008 and ARCHITECTURE.md ADR-030. The owner-confirmed matrix is in `PLATFORM_CAPABILITY_MATRIX.md`: all nine current Home workflows shared Desktop/Mobile; camera scanner and camera-only copy/CSS Mobile-only; manual lookup shared; Tablet review-required. A generic feature request defaults to shared Desktop/Mobile.
 - Merge and deployment are separate approval gates. No merge or deployment is authorized by this documentation update.
 
 ## Verified merged work
@@ -21,6 +21,7 @@ This file records verified repository state, not an authorization to merge, depl
 | AUDIT-03 CSS & Design Foundation static audit | PR #185 merged | Merge commit bddb84259f7bc68656a42d467ec83fdddfe17b1f; audit only, no source implementation |
 | Cross-platform governance contract | PR #186 merged | Merge commit `01c814e546688595d2796c70bd72df228047e5e8` |
 | UI-04E Stocktake Import presentation | PR #190 merged | Merge commit `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final exact PR-head CI #1902 passed |
+| UI-04F cross-feature closure | PR #191 merged | Merge commit `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; exact-head CI #1908 passed |
 
 ## Active work and open gates
 
@@ -37,11 +38,11 @@ This file records verified repository state, not an authorization to merge, depl
 
 ### Platform Experience & Architecture Audit
 
-- PR #187 audit: platform experience and architecture baseline remains open / Draft.
-- Baseline: main 01c814e546688595d2796c70bd72df228047e5e8; head: 8d96a4af6a42e6d7ac4da0167d240f774082c4f5.
-- CI run #1860 passed on the PR head.
-- Static source inspection is complete, but owner review of the Desktop/Tablet/Mobile workflow capability matrix is pending. Physical-device PWA acceptance and computed-style/runtime CSS validation are also pending.
-- Do not implement platform filtering, separate shells or workflow divergence from audit recommendations alone.
+- PR #187 remains open / Draft; it is being refreshed from main `6925cf968ea2b9c37377856abaf4c4a2ca6785a0` after UI-04F merge.
+- PA-02 owner matrix is now confirmed: nine Home workflows shared Desktop/Mobile; camera scanner and dedicated copy/CSS Mobile-only; manual lookup shared; Tablet review-required.
+- This PR adds typed platform-availability metadata to the module registry and a focused preflight contract. It does not yet implement a platform resolver, filtering, separate shells or presentation migration.
+- The old CI #1860 applies only to the earlier audit-only head. Refreshed source/test head `1067a21d402ada5b0baa21c53241a57284e07932` passed exact-head RetailOS CI #1914: full preflight (including the new matrix contract), TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests. Physical-device PWA acceptance and computed-style/runtime CSS validation remain pending.
+- Physical-device PWA acceptance and computed-style/runtime CSS validation remain pending.
 
 ### AUDIT-03 — CSS & Design Foundation
 
@@ -54,7 +55,7 @@ Preserve auth/session, module registry and destination identity, snapshot/cache/
 
 ## Evidence classification
 
-- **Repository/source and PR metadata inspected:** main HEAD `38192b2ce1c426edd6285594a57a2c2970bc14ee`; PR #181, #185, #186, #187, #189 and #190 metadata.
+- **Repository/source and PR metadata inspected:** main HEAD `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; PR #181, #185, #186, #187, #189, #190 and #191 metadata.
 - **UI-04D:** merged PR #189; exact-head CI #1877 passed on source head `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 - **UI-04E:** merged PR #190; exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`; main CI and Pages deploy workflows succeeded on merge commit.
 - **Browser/device acceptance:** UI-04F Chromium evidence covers 14 captured surfaces and 7 Home viewports; no physical iOS/Android or low-end device acceptance is claimed.

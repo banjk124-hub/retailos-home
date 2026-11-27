@@ -57,6 +57,17 @@ Record ID/date, owner and scope; problem/context; options; decision and non-deci
 
 **Implementation requirements:** Define a platform capability matrix for relevant workflows; distinguish unsupported platform capability from implementation/data/permission/runtime states; use capability detection rather than User-Agent-only classification; preserve stable business/data contracts; validate installed PWA behavior on target OS/browser combinations. Architecture and migration details belong in ARCHITECTURE.md and feature contracts.
 
+### PD-008 — Shared-by-default feature scope and isolated platform presentation
+**Status:** Owner-confirmed  
+**Date:** 2026-11-27  
+**Decision:** Unless a feature request explicitly names a platform, a newly requested workflow/capability is shared by Desktop and Mobile. A request explicitly scoped to Desktop or Mobile creates a platform-only capability. Current Home business workflows (inventory, price, products, orders, delivery, sales, product dates, Stocktake and Stocktake Import) are shared across Desktop and Mobile. Camera barcode scanning and its camera-only entry point, descriptions/instructions, text and presentation CSS are Mobile-only; manual barcode lookup remains shared. Shared UI/UX journeys, identity, terminology, status semantics, domain/data/state, validation and business rules remain common where the purpose and operation are the same. Desktop and Mobile own their presentation composition, layout, spacing, component arrangement and platform-specific navigation; equivalent shared workflows must produce the same business result. A platform-specific presentation change must not alter the other platform. A shared contract change must be implemented consistently and regression-verified on both Desktop and Mobile.
+
+**Tablet non-decision:** Tablet remains `review-required`; do not automatically inherit Desktop or Mobile support. Existing iPad camera behavior is implementation evidence, not approval of the Tablet product policy.
+
+**Implementation requirements:** Every workflow declares platform availability separately from engineering readiness, data state, permissions and runtime capability. Platform scope is product policy; API/permission availability is runtime capability. Responsive breakpoints adapt a selected platform presentation and must not decide product availability. CSS must be owned by shared foundation, platform presentation or feature presentation; do not accumulate cross-platform override patches.
+
+**Canonical matrix:** `PLATFORM_CAPABILITY_MATRIX.md`. Detailed architecture remains in ARCHITECTURE.md ADR-030.
+
 ## 4. Superseded and rejected options
 
 | ID | Option | Status | Rationale / reconsideration |

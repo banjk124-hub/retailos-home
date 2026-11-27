@@ -34,6 +34,11 @@ const checks = [
     args: ["scripts/test-ui-02a-home-navigation.mjs"],
   },
   {
+    name: "Owner-confirmed platform capability matrix and registry contract tests",
+    command: process.execPath,
+    args: ["scripts/test-platform-capability-matrix.mjs"],
+  },
+  {
     name: "Responsive shell navigation and shared destination contract tests",
     command: process.execPath,
     args: ["scripts/test-shell-navigation-contract.mjs"],

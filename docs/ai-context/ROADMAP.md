@@ -12,11 +12,14 @@ For each substantial experience, discover the workflow and context, explore crea
 
 Do not inherit former M0 sequence, aesthetic or approval gates as active instructions. Existing M0 source audits remain historical evidence and must be revalidated before use.
 
-## Cross-platform presentation governance — owner-confirmed; source audit in review
+## Cross-platform presentation governance — owner-confirmed; PA-02 capability matrix established
 - RetailOS shares brand identity and business semantics but does not require Desktop/Mobile feature parity. Workflows may be platform-specific; shared domain/data/business rules remain shared where the underlying operation is the same.
 - Desktop and Mobile may use independent shells/navigation/presentation. Tablet needs explicit evaluation. Responsive adapts each presentation; it is not the platform policy.
 - Installed PWA should prefer standalone where supported; fullscreen is conditional and workflow-specific.
-- Canonical decisions: DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030.
+- Canonical decisions: DECISIONS.md PD-007/PD-008 and ARCHITECTURE.md ADR-030. The approved matrix is `PLATFORM_CAPABILITY_MATRIX.md`.
+- Default scope for a feature request without a platform qualifier is shared Desktop + Mobile. Explicit Desktop-only/Mobile-only scope must be recorded in the matrix.
+- Current nine Home workflows are shared Desktop + Mobile. Camera barcode scanning and its dedicated copy/presentation are Mobile-only; manual barcode lookup remains shared. Tablet is review-required.
+- Shared journey/domain/data semantics stay common; Desktop/Mobile presentation owns independent composition, layout, spacing, components and navigation. Shared changes require both-platform regression evidence; platform-only changes must remain isolated.
 - PR #187 is an open Draft static source audit based on main `01c814e546688595d2796c70bd72df228047e5e8`; its CI run #1860 passed on head `8d96a4af6a42e6d7ac4da0167d240f774082c4f5`. The source audit is complete, but owner review of the Desktop/Tablet/Mobile capability matrix remains pending. No platform filtering or shell divergence is authorized by the audit alone.
 
 ## Technical workstreams

@@ -7,15 +7,18 @@ PWA nội bộ được xây dựng bằng React, TypeScript và Vite. Repositor
 RetailOS dùng chung một bộ nhận diện thương hiệu và một ngôn ngữ nghiệp vụ cốt lõi, nhưng **không bắt buộc dùng chung feature set, shell, navigation, layout hay component composition trên mọi nền tảng**.
 
 - **Shared identity:** tên gọi, nhận diện thương hiệu, thuật ngữ nghiệp vụ, ý nghĩa dữ liệu và các quy tắc nghiệp vụ thực sự dùng chung phải nhất quán.
-- **Platform-specific capability:** một workflow có thể chỉ được cung cấp trên Desktop, chỉ trên Mobile, hoặc trên cả hai. Không suy luận rằng có trên Desktop thì bắt buộc phải có trên Mobile và ngược lại. Quyết định dựa trên tác vụ, thiết bị đầu vào/đầu ra, môi trường vận hành, quyền hệ điều hành, bảo mật và giá trị thực tế.
-- **Shared business rules, selective workflows:** dùng chung domain/data/state và quy tắc nghiệp vụ khi cùng một nghiệp vụ; cho phép feature, thao tác, mức độ đầy đủ và cách tổ chức workflow khác nhau theo nền tảng. Không nhân đôi logic chỉ để tạo hai presentation.
-- **Independent presentation:** Desktop và Mobile được phép có shell, navigation, information architecture, mật độ thông tin và component arrangement riêng. Tablet được đánh giá như một context riêng hoặc dạng chuyển tiếp theo bằng chứng, không mặc định là Desktop thu nhỏ hay Mobile phóng lớn.
+- **Default shared scope:** khi yêu cầu chỉ nêu một chức năng mà không giới hạn nền tảng, mặc định chức năng có trên cả Desktop và Mobile. Chỉ tạo Desktop-only/Mobile-only khi yêu cầu hoặc quyết định nghiệp vụ nêu rõ phạm vi. Mọi workflow phải khai báo platform scope trong matrix; không suy luận scope từ breakpoint/CSS.
+- **Shared business core, independent presentation:** cùng nghiệp vụ phải dùng chung domain/data/state, validation và kết quả. Desktop/Mobile được bố trí shell, navigation, information architecture, layout, spacing và component composition riêng. Không nhân đôi logic chỉ để có hai presentation.
+- **Scanner exception:** camera barcode scanner, entry point, mô tả/hướng dẫn và CSS riêng của trải nghiệm camera chỉ dành cho Mobile. Tra cứu barcode thủ công vẫn là năng lực dùng chung. Không để scanner-only copy hoặc style xuất hiện trên Desktop.
+- **Shared journey/design:** identity, thuật ngữ, ý nghĩa trạng thái, business journey và design principles dùng chung khi cùng mục tiêu; mỗi platform được phép chuyển chúng thành cách trình bày phù hợp.
+- **Change isolation:** thay đổi presentation/capability riêng Desktop không được làm thay đổi Mobile và ngược lại. Thay đổi shared contract phải cập nhật và kiểm chứng cả hai platform.
+- **Tablet:** tiếp tục là context `review-required`; không tự động kế thừa Desktop hoặc Mobile.
 - **Responsive is not platform parity:** responsive xử lý biến thiên viewport/orientation/available space bên trong presentation phù hợp; nó không phải cơ chế ép tất cả nền tảng dùng cùng một layout.
 - **PWA app experience:** installed PWA ưu tiên chế độ standalone khi nền tảng hỗ trợ. Fullscreen là chế độ/flow có điều kiện, không phải giả định rằng mọi OS đều cho phép ẩn system UI. Tôn trọng status/navigation bars, safe areas, dynamic viewport, keyboard, permission prompts và lifecycle của từng nền tảng. Chỉ dùng immersive fullscreen cho workflow cần thiết và có fallback rõ ràng.
 - **Capability detection:** chọn presentation/capability bằng feature detection và các tín hiệu phù hợp (viewport, pointer/hover, touch, display mode, API/permission availability); không dựa duy nhất vào User-Agent hoặc breakpoint để suy ra loại thiết bị.
 - **Truthful availability:** UI phải phân biệt feature không được cung cấp trên nền tảng, feature chưa triển khai, thiếu quyền, thiếu dữ liệu và lỗi vận hành. Không hiển thị entry point giả hoặc đánh dấu ready chỉ vì có tile.
 
-Đây là product/architecture direction được owner xác nhận; nó không khẳng định source hiện tại đã được tổ chức thành hai shell độc lập hoặc có feature availability matrix hoàn chỉnh. Việc triển khai phải đi theo audit, migration plan và regression evidence. Xem thêm DECISIONS.md (PD-007), ARCHITECTURE.md (ADR-030), RETAILOS_PRODUCT_SKILL.md và PWA_RUNTIME_RELEASE.md.
+Đây là product/architecture contract đã được owner xác nhận và được cụ thể hóa tại `docs/ai-context/PLATFORM_CAPABILITY_MATRIX.md`. Source hiện tại vẫn cần migration theo từng phase; matrix metadata không tự động chứng minh hai shell độc lập đã được triển khai. Xem DECISIONS.md (PD-007/PD-008), ARCHITECTURE.md (ADR-030), PLATFORM_EXPERIENCE_ARCHITECTURE_AUDIT.md và PLATFORM_CAPABILITY_MATRIX.md.
 
 ## Yêu cầu
 

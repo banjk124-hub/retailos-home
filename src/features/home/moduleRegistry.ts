@@ -1,3 +1,5 @@
+import { SHARED_DESKTOP_MOBILE, type PlatformAvailability } from '../../shared/platform/platformCapabilities';
+
 export const MODULE_LIBRARY_IDS = [
   'goods-control',
   'goods-processing',
@@ -23,6 +25,8 @@ export type RetailModule = {
   group: string;
   /** Data snapshot support is separate from whether a complete workflow UI exists. */
   dataSource: 'snapshot' | 'local';
+  /** Product-level platform policy; independent from readiness/data/permissions/runtime. */
+  platformAvailability: PlatformAvailability;
   /** Current UI availability; independent from engineering progress. */
   availability: 'integrating' | 'ready';
   /** Informational lifecycle marker for parallel work and safe handoff; never gates runtime. */
@@ -40,15 +44,15 @@ export type ModuleLibraryDefinition = {
 export type ModuleLibraryGroup = ModuleLibraryDefinition & { modules: RetailModule[] };
 
 export const MODULE_REGISTRY: RetailModule[] = [
-  { id: 'inventory', title: 'Tồn kho', description: 'Tồn thực tế và định mức', tone: 'blue', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'price', title: 'Giá & vốn', description: 'Giá bán và giá vốn', tone: 'violet', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'products', title: 'Danh mục hàng hóa', description: 'Tra cứu tên và barcode', tone: 'cyan', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'orders', title: 'Nhập / xuất hàng', description: 'Luồng xử lý hàng hóa', tone: 'amber', group: 'Xử lý hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'delivery', title: 'Điều chuyển hàng', description: 'Tuyến và giao nhận', tone: 'rose', group: 'Xử lý hàng hóa', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', tone: 'green', group: 'Doanh số', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'product-dates', title: 'Date sản phẩm', description: 'Hạn sử dụng và lô hàng', tone: 'amber', group: 'Date sản phẩm', dataSource: 'snapshot', availability: 'integrating' },
-  { id: 'stocktake', title: 'Kiểm kê', description: 'Quét, rà soát và xuất file theo vùng', tone: 'green', group: 'Kiểm kê', dataSource: 'snapshot', availability: 'ready' },
-  { id: 'stocktake-import', title: 'Xuất file', description: 'Chuẩn hóa dữ liệu và xuất TXT theo vùng', tone: 'blue', group: 'Kiểm kê', dataSource: 'local', availability: 'ready', workStatus: 'in-progress' },
+  { id: 'inventory', title: 'Tồn kho', description: 'Tồn thực tế và định mức', tone: 'blue', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'price', title: 'Giá & vốn', description: 'Giá bán và giá vốn', tone: 'violet', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'products', title: 'Danh mục hàng hóa', description: 'Tra cứu tên và barcode', tone: 'cyan', group: 'Kiểm soát hàng hóa', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'orders', title: 'Nhập / xuất hàng', description: 'Luồng xử lý hàng hóa', tone: 'amber', group: 'Xử lý hàng hóa', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'delivery', title: 'Điều chuyển hàng', description: 'Tuyến và giao nhận', tone: 'rose', group: 'Xử lý hàng hóa', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'sales', title: 'Doanh số', description: 'Kết quả và mục tiêu bán hàng', tone: 'green', group: 'Doanh số', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'product-dates', title: 'Date sản phẩm', description: 'Hạn sử dụng và lô hàng', tone: 'amber', group: 'Date sản phẩm', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'integrating' },
+  { id: 'stocktake', title: 'Kiểm kê', description: 'Quét, rà soát và xuất file theo vùng', tone: 'green', group: 'Kiểm kê', dataSource: 'snapshot', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'ready' },
+  { id: 'stocktake-import', title: 'Xuất file', description: 'Chuẩn hóa dữ liệu và xuất TXT theo vùng', tone: 'blue', group: 'Kiểm kê', dataSource: 'local', platformAvailability: SHARED_DESKTOP_MOBILE, availability: 'ready', workStatus: 'in-progress' },
 ];
 
 export const MODULE_LIBRARIES: ModuleLibraryDefinition[] = [

@@ -7,7 +7,7 @@ Scanner-specific ADRs were moved to the Scanner archive to keep this register fo
 
 ## ADR-030 — Shared business core with platform-specific capability and presentation (2026-11-27)
 
-**Status:** Owner-confirmed target architecture; implementation/audit pending.
+**Status:** Owner-confirmed; PA-02 capability matrix approved and encoded in the platform capability contract; shell/presentation migration remains pending.
 
 ### Context
 RetailOS is an installed PWA used in different operating contexts. Treating Desktop and Mobile as one layout with accumulating responsive overrides can conflate three separate questions: whether a workflow belongs on a platform, how that workflow should be presented, and how that presentation adapts to available space. Brand and business consistency do not require identical feature availability or identical screens.
@@ -22,8 +22,18 @@ RetailOS is an installed PWA used in different operating contexts. Treating Desk
 7. **Installed PWA behavior:** prefer standalone for installed app mode where supported. Fullscreen/immersive behavior is conditional, workflow-specific and must respect system UI, safe areas, dynamic viewport, virtual keyboard, permissions and OS/browser lifecycle. Provide a usable fallback.
 8. **Truthful states:** distinguish unsupported on platform, not implemented, permission required, data unavailable and runtime failure.
 
+### Owner-confirmed implementation contract — PD-008 clarification (2026-11-27)
+
+- A feature request without a platform qualifier defaults to Desktop + Mobile. A platform-only scope must be explicit and recorded in the matrix/feature metadata.
+- The current nine Home business workflows are shared Desktop + Mobile. Camera barcode scanning and camera-only copy/presentation CSS are Mobile-only; manual barcode lookup remains shared.
+- Shared product journeys/design principles, terminology, identity, status semantics and business/domain/data contracts remain common. Desktop and Mobile independently own layout, spacing, information architecture, component composition and navigation rendering where appropriate.
+- A shared workflow must preserve the same business rules, validation and result on both platforms. A Desktop-only or Mobile-only presentation change must not leak into the other presentation. Shared-layer changes require regression evidence on both.
+- Tablet remains review-required; no implicit inheritance from Desktop/Mobile.
+- Do not use accumulating global CSS overrides to simulate two platform experiences. CSS ownership is shared foundation → platform presentation → feature presentation.
+- Platform scope is not implementation readiness, data availability, permission state or runtime API support; these dimensions must remain separate.
+
 ### Consequences
-- A platform capability matrix becomes a prerequisite for substantial feature/presentation migration.
+- The owner-approved platform capability matrix is canonical in `PLATFORM_CAPABILITY_MATRIX.md`; it is a prerequisite for substantial feature/presentation migration.
 - Shell/navigation ownership may diverge without forking domain/data contracts.
 - Global CSS overrides must not become the policy layer for platform feature availability or separate presentation ownership.
 - Existing source must be audited before claiming separate shells, fullscreen behavior or parity policy is implemented.
