@@ -32,7 +32,7 @@ This file records verified repository state. It does not authorize deployment or
 ### Platform experience
 - **SH-01:** implementation and automated integration closure are merged. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`.
 - **PW-01:** physical iOS/iPadOS and Android installed-PWA validation is deferred by owner because no reproducible device defect has been observed. It is not passed or complete; reopen on a reproducible device/browser defect, material platform-sensitive change or explicit release acceptance requirement.
-- **CSS-01:** in progress on `audit/css-01-ownership-migration`. CSS-01A inventory/import-owner map complete. CSS-01B primary root/Home cascade and current Login/Home/navigation consumer families documented; full-repository legacy-selector proof, emitted CSS chunk inspection and computed-style evidence remain open. No CSS runtime rules changed. Do not infer safe deletion from file size, age or absence from a bounded TSX sample; see `CSS_01_CSS_OWNERSHIP_MIGRATION.md`.
+- **CSS-01:** in progress on `audit/css-01-ownership-migration`. CSS-01A inventory/import-owner map complete. CSS-01B static audit complete for root/Home cascade and repository-wide legacy Login/navigation selector clusters. CI #1974 passed preflight, production/Pages build, bundle comparison and Playwright responsive/runtime evidence. Emitted CSS chunk ownership and before/after computed-style checks remain mandatory CSS-01C gates. No CSS runtime rules changed. Do not infer safe deletion from file size, age or absence from a bounded TSX sample; see `CSS_01_CSS_OWNERSHIP_MIGRATION.md`.
 - **AUDIT-03A:** production CSS delivery/bundle baseline is proposed; implementation has not started.
 
 ### UI-04
