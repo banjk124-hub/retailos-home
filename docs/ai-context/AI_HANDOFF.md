@@ -18,3 +18,10 @@ Preserve auth/session, module IDs/readiness, snapshot/cache/offline truth, Scann
 
 ## Continuation
 Review the branch diff and verify there are no remaining active instructions that reinstate the withdrawn visual direction. Then run documentation consistency checks and update the handoff with exact commit and results. Do not merge or deploy without explicit owner authorization.
+
+
+## Current owner-confirmed platform direction — 2026-11-27
+RetailOS shares brand identity and business semantics, not mandatory feature parity or one universal interface. Desktop/Mobile may have different workflow availability, shells, navigation and presentation; Tablet must be evaluated deliberately. Share domain/data/business rules where the operation is the same. Responsive adapts within each presentation. Installed PWA prefers standalone where supported; fullscreen is conditional and OS-aware. Canonical record: DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030. README and Product Skill summarize the same policy.
+
+## Next work
+Continue AUDIT-03 governance in a bounded sequence: establish CSS delivery baseline, then audit platform capability/feature ownership, shell/navigation ownership, and PWA display-mode/viewport/safe-area behavior before proposing source migration. Do not assume two shells already exist; do not delete mobile-tuning.css based on size; do not start visual redesign or select aesthetic tokens. PR #185 remains a separate open draft audit and must be reviewed independently.
