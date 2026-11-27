@@ -46,14 +46,15 @@
 | Scanner Preferences | Not offered | Available | Review required | Camera-specific settings; not offered outside the Mobile product policy |
 | Settings / Update Center | Available | Available | Review required | Shared update-safety contract; scanner-specific settings remain Mobile-only |
 | Push notifications | Runtime-dependent | Runtime-dependent | Runtime-dependent | Depends on API, permission, installation and OS/browser behavior |
-| PWA installation | Runtime-dependent | Runtime-dependent | Review required | Browser/OS installability and user interaction; install path differs by platform; Tablet product acceptance remains open |
+| PWA installation | Runtime-dependent | Runtime-dependent | Runtime-dependent | Browser/OS installability and user interaction; install path differs by platform; this OS/browser capability does not approve a Tablet presentation |
 
 ### 2.3 Scanner presentation ownership
 
 - Desktop: no camera scanner entry point, camera permission flow, scanner-specific description/help text or scanner presentation CSS.
 - Mobile: Home quick scan and Stocktake camera scan are available when product policy and runtime device/API/permission conditions are satisfied.
 - Every camera entry point must consult `CAMERA_SCANNER_PLATFORM_AVAILABILITY` before opening or mounting a camera surface; the runtime device detector is an additional check, never a replacement for product policy.
-- Manual lookup is a separate shared capability; do not hide it with the camera scanner.
+- Manual lookup is a separate shared Desktop/Mobile capability; do not hide it with the camera scanner. Its current presence in the Tablet compatibility surface is legacy behavior only, not Tablet approval.
+- Settings / Update Center and other retained controls may remain reachable through the temporary Tablet compatibility surface; this is compatibility behavior, not an approved Tablet capability or design.
 - The runtime scanner detector uses Android/iOS User-Agent plus iPad touch heuristics. This is only a device-support signal, not product policy. `platformContext.ts` separately resolves the presentation context; Tablet remains review-required even when the scanner detector recognizes iPadOS.
 - The Activity section is currently an empty-state placeholder, not a functional workflow; it is excluded from capability availability claims until a real activity feed is defined and approved.
 
