@@ -13,6 +13,11 @@ For each substantial experience, discover the workflow and context, explore crea
 Do not inherit former M0 sequence, aesthetic or approval gates as active instructions. Existing M0 source audits remain historical evidence and must be revalidated before use.
 
 ## Cross-platform presentation governance — owner-confirmed; PA-02 capability matrix established
+
+### SH-01 — Shell & Presentation Ownership (in progress)
+- Initial navigation ownership seam is implemented on the SH-01 branch: separate Desktop rail and Mobile dock renderers consume one shared destination contract.
+- The shared App and Home composition roots are not yet split. This is an incremental boundary, not a claim of fully independent shells.
+- See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md` for audit findings, invariants, validation and remaining work.
 - RetailOS shares brand identity and business semantics but does not require Desktop/Mobile feature parity. Workflows may be platform-specific; shared domain/data/business rules remain shared where the underlying operation is the same.
 - Desktop and Mobile may use independent shells/navigation/presentation. Tablet needs explicit evaluation. Responsive adapts each presentation; it is not the platform policy.
 - Installed PWA should prefer standalone where supported; fullscreen is conditional and workflow-specific.
