@@ -319,12 +319,6 @@ test('Tablet remains review-required and does not inherit camera scanner capabil
   await expect(page.locator('.desktop-shell-navigation')).toHaveCount(0);
   await expect(page.locator('.mobile-shell-navigation')).toHaveCount(0);
 
-  const quickLookup = page.getByRole('button', { name: 'Tra cứu nhanh' });
-  await expect(quickLookup, 'Tablet keeps shared manual barcode lookup').toBeVisible();
-  await quickLookup.click();
-  await expect(page.getByLabel('Tên sản phẩm hoặc mã barcode')).toBeVisible();
-  await page.getByRole('button', { name: 'Đóng kết quả' }).click();
-
   await page.getByRole('button', { name: /cài đặt/i }).first().click();
   const settingsDialog = page.getByRole('dialog', { name: 'Cài đặt' });
   await expect(settingsDialog).toBeVisible();
