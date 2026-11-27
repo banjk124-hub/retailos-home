@@ -315,7 +315,7 @@ test('Tablet remains review-required and does not inherit camera scanner capabil
   await page.setViewportSize({ width: 768, height: 1024 });
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-retailos-platform="tablet"]')).toHaveCount(1);
-  await expect(page.locator('.shell-navigation--tablet-compat')).toBeVisible();
+  await expect(page.locator('.shell-navigation--tablet-compat .shell-navigation__mobile .liquid-dock')).toBeVisible();
   await expect(page.locator('.desktop-shell-navigation')).toHaveCount(0);
   await expect(page.locator('.mobile-shell-navigation')).toHaveCount(0);
 
