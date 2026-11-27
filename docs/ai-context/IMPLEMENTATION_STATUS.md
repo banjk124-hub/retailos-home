@@ -30,7 +30,7 @@ This file records verified repository state, not an authorization to merge, depl
 - PR #189 exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`, including the dedicated Stocktake browser workflow.
 - UI-04E Stocktake Import presentation is implemented in open/Draft PR #190, based on current main `e88ae240959a8deea85aee2fd2992d40563ad365`.
 - PR #190 separates presentation markup/CSS ownership from the workflow coordinator. Parser, decimal precision, source fingerprints, conflict/merge decisions, dirty-edit handling, IndexedDB persistence/history, TXT/ZIP output and PWA update blockers remain coordinator/service-owned.
-- PR #190 adds focused ownership assertions and a dedicated browser flow for workbook import, edit/save, conflict merge, TXT download and history restore. Exact final-head CI and browser evidence are pending.
+- PR #190 adds focused ownership assertions and a dedicated browser flow for local XLSX import, duplicate-row retention, edit/save, conflict merge, TXT download, history restore and responsive geometry. Exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`: preflight, TypeScript, production/Pages builds, bundle comparison and 9 responsive/runtime browser tests. Physical device acceptance is not claimed.
 - UI-04F cross-feature regression/closure remains pending. PR #190 has not been merged or deployed; do not merge or deploy automatically.
 - Canonical detail: UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 
@@ -55,6 +55,6 @@ Preserve auth/session, module registry and destination identity, snapshot/cache/
 
 - **Repository/source and PR metadata inspected:** main HEAD `e88ae240959a8deea85aee2fd2992d40563ad365`; PR #181, #185, #186, #187, #189 and #190 metadata.
 - **UI-04D:** merged PR #189; exact-head CI #1877 passed on source head `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
-- **UI-04E:** source and test changes are in open/Draft PR #190; final-head CI/browser validation pending.
+- **UI-04E:** source and test changes are in open/Draft PR #190; exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438` (9 browser tests passed).
 - **Browser/device acceptance:** no physical iOS/Android device acceptance is claimed by this status update.
 - **Merge/deployment:** PR #190 remains open/Draft; no merge or deployment performed.
