@@ -3,10 +3,6 @@ import {
   History, Info, LoaderCircle, Pencil, Save, Trash2, Upload, X,
 } from 'lucide-react';
 import type { RefObject } from 'react';
-import {
-  countUniqueProductCodes,
-  type ZoneConflict,
-} from '../services/stocktakeImportSession';
 import type {
   ImportedStocktakeRow,
   StocktakeImportResult,
@@ -22,7 +18,7 @@ export type PendingImportReview = {
   incoming: StocktakeImportResult[];
   duplicateFiles: string[];
   sameNameDifferentContent: string[];
-  zoneConflicts: ZoneConflict[];
+  zoneConflicts: Array<{ zoneCode: string; existingRows: number; incomingRows: number; duplicateWithinBatch: boolean }>;
 };
 
 export type StocktakeImportPresentationModel = {
@@ -58,6 +54,7 @@ export type StocktakeImportPresentationModel = {
     zone: StocktakeImportResult['zones'][number];
     index: number;
     rowErrors: number;
+    uniqueProductCount: number;
     actionState: string;
     actionLabel: string;
   }>;
@@ -213,12 +210,12 @@ export default function StocktakeImportPresentation({
               <div className="stocktake-import-workspace">
                 <aside className="stocktake-import-zone-nav" aria-label="Danh sách vùng">
                   <div className="stocktake-import-zone-nav-heading"><span>CÁC VÙNG</span>{result.zones.length > 1 && <button type="button" className="stocktake-import-zip-compact" disabled={!canExportAll} onClick={actions.onExportAll} title="Xuất tất cả vùng thành ZIP" aria-label="Xuất tất cả vùng thành ZIP">{busyAction === 'zip' ? <LoaderCircle className="stocktake-import-spin" size={13} /> : <Download size={13} />}<span>ZIP</span></button>}</div>
-                  {zoneItems.map(({ zone, actionState, actionLabel, index }) => (
+                  {zoneItems.map(({ zone, actionState, actionLabel, uniqueProductCount, index }) => (
                     <button key={zone.zoneCode} type="button" disabled={busy}
                       className={selectedZone === index ? 'is-active' : ''}
                       aria-current={selectedZone === index ? 'true' : undefined}
                       onClick={() => actions.onSelectZone(index)}>
-                      <span><strong>{zone.zoneCode}</strong><small>{zone.rows.length} dòng · {countUniqueProductCodes(zone.rows)} mã</small></span>
+                      <span><strong>{zone.zoneCode}</strong><small>{zone.rows.length} dòng · {uniqueProductCount} mã</small></span>
                       <em className={'is-' + actionState}>{actionLabel}</em>
                     </button>
                   ))}
