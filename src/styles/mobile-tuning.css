@@ -722,7 +722,6 @@ button:not(:disabled):active {
   transform: translateY(-50%) rotate(8deg);
   animation: welcome-mark-drift 5s ease-in-out infinite;
 }
-.login-identity-dock { display: contents; }
 .app-shell .filter-pills {
   position: relative;
   scroll-snap-type: x proximity;
@@ -877,38 +876,6 @@ button:not(:disabled):active {
   .app-shell .section-block {
     scroll-margin-top: calc(80px + env(safe-area-inset-top));
   }
-  .login-identity-dock {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 17px 18px 16px;
-    margin-bottom: 19px;
-    border: 1px solid rgba(255,255,255,.9);
-    border-radius: 19px;
-    background:
-      radial-gradient(ellipse at 95% 0%, rgba(255,225,229,.72), transparent 43%),
-      linear-gradient(145deg, rgba(255,255,255,.82), rgba(255,247,248,.64));
-    box-shadow: 0 13px 30px rgba(136,30,43,.1), inset 0 1px 0 rgba(255,255,255,.98);
-    
-    
-    animation: login-identity-arrive .68s .12s both, login-identity-float 6s 1s ease-in-out infinite;
-  }
-  .login-identity-dock .mobile-brand {
-    margin: 0;
-  }
-  .login-identity-dock .login-heading {
-    margin: 0;
-    padding-top: 12px;
-    border-top: 1px solid rgba(201,33,49,.1);
-  }
-  .login-identity-dock .login-heading .eyebrow {
-    color: #b52b39;
-  }
-  .login-identity-dock .login-heading h2 {
-    margin: 5px 0 0;
-    font-size: 26px;
-    line-height: 1.12;
-  }
 }
 @media (max-width: 380px) {
   .app-shell .spotlight-art {
@@ -919,18 +886,8 @@ button:not(:disabled):active {
     max-width: 230px;
     font-size: 28px;
   }
-  .login-identity-dock {
-    padding: 15px 15px 14px;
-  }
 }
-@media (prefers-reduced-motion: reduce) {
-  .app-shell .spotlight-live,
-  .app-shell .spotlight-status-dot,
-  .app-shell .spotlight-orbit,
-  .app-shell .spotlight-tile,
-  .app-shell .spotlight-chip,
-  .app-shell .welcome-section::after,
-  .login-identity-dock {
+@media (prefers-reduced-motion: reduce) {.app-shell .spotlight-live,.app-shell .spotlight-status-dot,.app-shell .spotlight-orbit,.app-shell .spotlight-tile,.app-shell .spotlight-chip,.app-shell .welcome-section::after{
     animation: none !important;
   }
 }
