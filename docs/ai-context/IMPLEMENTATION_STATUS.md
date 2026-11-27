@@ -1,41 +1,59 @@
-# Current verified implementation status — 2026-11-26
+# Current verified implementation status — 2026-11-27
 
-**Repository:** banjk124-hub/retailos-home  
-**Default branch baseline checked:** `main` at `16bcc7510db260dbfa335d44b6c5a578ef5650f9`  
-**Documentation reset branch:** `docs/experience-governance-reset`
+**Repository:** `banjk124-hub/retailos-home`  
+**Verified main HEAD:** `01c814e546688595d2796c70bd72df228047e5e8`
 
-## Owner direction — experience governance
-The previous global visual direction has been withdrawn. No replacement visual language is selected. Creative decisions are open per experience and require explicit owner approval before substantial implementation. See RETAILOS_PRODUCT_SKILL.md and DECISIONS.md.
+This file records verified repository state, not an authorization to merge, deploy or transfer production.
 
-## Reset scope
-- Documentation and AI instructions only.
-- Application source, runtime dependencies, business logic, deployment configuration and production state are out of scope.
-- Work is isolated from main. No merge or deployment is authorized by this documentation task.
+## Owner direction and governance
 
-## Verified starting facts
-- Main HEAD was read from GitHub immediately before branch creation.
-- Branch was created from the exact main SHA above.
-- README and governance documents were inspected. README contains detailed integration and runtime claims; those claims are not being broadly rewritten without source-level verification.
-- Existing M0 audit documents are historical evidence and must be revalidated against current source before implementation.
-- Scanner stabilization is recorded as closed; UI presentation work must preserve scanner engine boundaries.
+- The former global visual direction has been withdrawn. No replacement visual language is selected. Creative decisions remain experience-specific and require explicit owner approval before substantial implementation.
+- Cross-platform policy is canonical in DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030: shared brand/business semantics do not imply feature parity. Desktop, Tablet and Mobile may have different capabilities, workflows, shells and presentation. Tablet requires deliberate evaluation.
+- Merge and deployment are separate approval gates. No merge or deployment is authorized by this documentation update.
+
+## Verified merged work
+
+| Work | Repository state | Evidence |
+|---|---|---|
+| UI-03 CSS consolidation | PR #180 merged | Merge commit `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54`; final docs CI #1817 passed |
+| UI-04 feature presentation | PR #181 merged | Merge commit `e58bce634b9ff67e95250d36c8653593680463e9`; exact branch-head CI #1845 passed on `1ae4e870cc27e6209cd2128774167229f144ee90` |
+| AUDIT-02 ownership implementation | PR #184 merged | Verified PR metadata |
+| AUDIT-03 CSS & Design Foundation static audit | PR #185 merged | Merge commit `bddb84259f7bc68656a42d467ec83fdddfe17b1f`; audit only, no source implementation |
+| Cross-platform governance contract | PR #186 merged | Merge commit / main HEAD `01c814e546688595d2796c70bd72df228047e5e8` |
+
+## Active work and open gates
+
+### UI-04 — Feature Presentation Migration
+
+- UI-04A Login, UI-04B Settings/Update Center and UI-04C Scanner presentation are implemented and validated.
+- UI-04D Stocktake has a partial implementation merged: overlay/panel ownership was separated, Stocktake scanner presentation was moved to its feature stylesheet, and focused ownership tests were registered in preflight. Exact branch-head CI #1845 passed.
+- UI-04D is **not fully closed**: complete the remaining Stocktake view/state-to-presentation ownership audit and regression evidence.
+- UI-04E Stocktake Import presentation remains pending.
+- UI-04F cross-feature regression/closure remains pending.
+- Continue from current main using a new isolated branch; do not continue on the merged `refactor/ui-04-feature-presentation` branch.
+- Canonical detail: UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
+
+### Platform Experience & Architecture Audit
+
+- PR #187 `audit: platform experience and architecture baseline` remains **open / Draft**.
+- Baseline: main `01c814e546688595d2796c70bd72df228047e5e8`; head: `8d96a4af6a42e6d7ac4da0167d240f774082c4f5`.
+- CI run #1860 passed on the PR head.
+- Static source inspection is complete, but owner review of the Desktop/Tablet/Mobile workflow capability matrix is pending. Physical-device PWA acceptance and computed-style/runtime CSS validation are also pending.
+- Do not implement platform filtering, separate shells or workflow divergence from audit recommendations alone.
+
+### AUDIT-03 — CSS & Design Foundation
+
+- PR #185 is merged; its deliverable is a static audit, not an implementation.
+- AUDIT-03A production CSS delivery baseline is the next proposed step. Do not delete or consolidate CSS based only on raw file size.
+
+## Technical boundaries
+
+Preserve auth/session, module registry and destination identity, snapshot/cache/offline truth, scanner engine/camera lifecycle, Stocktake persistence/revisions/history/export, Stocktake Import parsing/precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA update staging/consent/integrity/activation/boot-health/rollback, Vite Pages base path and lazy-loading. Scanner stabilization SC-00–SC-05 remains closed; reopen only for a reproducible defect, measured bottleneck or new requirement.
 
 ## Evidence classification
-- **Repository/source inspected:** documentation files and current main reference.
-- **Branch created:** yes.
-- **Documentation changes:** in progress on isolated branch.
-- **Application build/CI/browser/device QA:** not run as part of this documentation-only change.
-- **Owner approval of a future visual concept:** not yet applicable; no new concept has been selected.
 
-## Remaining validation
-- Check all active docs/AI instructions for old aesthetic mandates or references to the former M0 spec as sole authority.
-- Check Markdown links and consistency between INDEX, Product Skill, DECISIONS, PROJECT_CONTEXT, ROADMAP, status and handoff.
-- Verify the final branch diff contains no application source changes.
-- Report exact commit and changed paths. Merge/deploy remain separate owner decisions.
-
-
-## Cross-platform presentation direction — documentation updated 2026-11-27
-- Owner-confirmed policy is recorded in DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030.
-- README, PROJECT_CONTEXT, Product Skill, INDEX and ROADMAP now point to the same contract.
-- Desktop/Mobile shell separation, per-platform feature availability matrix and installed-PWA fullscreen/display-mode behavior are target requirements, **not yet verified as implemented**.
-- Documentation branch: docs/platform-presentation-governance; Draft PR #186; latest known head: b9623271c59aa8c7736fecfa704aa970d13715b9.
-- This change is documentation-only. No source, CSS, runtime dependency, test, deployment or production state changed. Markdown consistency was reviewed through the PR diff; automated documentation lint/build was not run.
+- **Repository/source and PR metadata inspected:** current main documentation, PR #181, #185, #186, #187 and recent main commits.
+- **Application source changes in this documentation task:** none.
+- **Build/CI for this documentation branch:** not run yet.
+- **Browser/device acceptance:** not claimed.
+- **Merge/deployment:** not performed or authorized.
