@@ -1,7 +1,7 @@
 # CSS-01 — CSS Ownership Migration
 
-**Status:** CSS-01A source inventory and import-owner map complete on the audit branch. CSS-01B consumer/cascade evidence is in progress. No CSS declarations have been moved, rewritten or deleted in this slice.
-**Baseline:** `main` at `a64a49fe516b03cc7c8641a6e23c54a3391a6887` (2026-11-27).
+**Status:** CSS-01A source inventory/import-owner map and CSS-01B static consumer/cascade audit complete at the recorded source baseline. CSS-01C bounded runtime migration and before/after evidence remain open. No CSS declarations have been moved, rewritten or deleted in this slice.
+**Baseline:** `main` at `adc2ec310c46f3f050b2af81b02ba622e8dc18b3` (2026-11-27).
 **PW-01:** Deferred by owner. No reproducible device defect has been observed in current acceptance; physical-device validation is not claimed complete and is not a prerequisite for the static CSS ownership audit.
 **Scope:** Evidence-led ownership mapping and bounded CSS migration after SH-01. This is not a visual redesign.
 

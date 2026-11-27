@@ -3,7 +3,7 @@
 **Status:** Owner-confirmed product policy, 2026-11-27  
 **Canonical decisions:** DECISIONS.md PD-007 / PD-008; ARCHITECTURE.md ADR-030  
 **Scope:** Desktop and Mobile product capability; Tablet is tracked separately as review-required.  
-**Last reconciled against main:** `ef4fc07e6ca6957f8e5b1a524859dd74e41207e1` (2026-11-27).
+**Last reconciled against main:** `adc2ec310c46f3f050b2af81b02ba622e8dc18b3` (2026-11-27).
 
 ## 1. Operating rules
 
@@ -96,7 +96,7 @@ Allowed product-policy states:
 - `review-required`: no platform decision has been approved; do not infer.
 - `runtime-dependent`: the product capability is shared, but browser/OS/API/permission conditions determine actual runtime support.
 
-The matrix is policy metadata. It must not be used as a substitute for runtime permission/API checks, implementation readiness, data availability or operation state. Authentication and Home workspace are shared capabilities; scanner preferences have their own Mobile-only policy entry; PWA installation is runtime-dependent on Desktop/Mobile while Tablet remains review-required. The current Home library does not need to filter existing workflows because all nine are shared Desktop/Mobile. SH-01 now provides a signal-based platform context resolver for presentation composition; this resolver does not infer capability from viewport breakpoints and does not change module registry scope. Any future platform-only module still requires explicit policy metadata and a tested capability filter.
+The matrix is policy metadata. It must not be used as a substitute for runtime permission/API checks, implementation readiness, data availability or operation state. Authentication and Home workspace are shared capabilities; scanner preferences have their own Mobile-only policy entry; PWA installation is technically runtime-dependent on Desktop, Mobile and Tablet at the browser/OS API layer. This does not approve a Tablet installation experience: Tablet product presentation and support remain review-required until separately validated and approved. The current Home library does not need to filter existing workflows because all nine are shared Desktop/Mobile. SH-01 now provides a signal-based platform context resolver for presentation composition; this resolver does not infer capability from viewport breakpoints and does not change module registry scope. Any future platform-only module still requires explicit policy metadata and a tested capability filter.
 
 ## 5. Change and verification policy
 
@@ -119,7 +119,7 @@ Browser viewport emulation is useful for responsive checks but does not certify 
 
 1. **PA-02 — Capability matrix:** owner-confirmed and represented in typed Home registry metadata and cross-feature policy constants; all nine workflows and cross-feature capabilities are inventoried.
 2. **SH-01 — Shell and presentation ownership:** merged to `main` in PR #193 at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` with 10 Playwright tests. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01.
-3. **Capability enforcement closure — in review on PR #195:** Home and Stocktake camera entry points apply the same Mobile-only product policy plus runtime support check; automated evidence covers Tablet exclusion, Mobile Stocktake availability and shared manual entry. Merge remains pending final exact-head CI and owner review.
+3. **Capability enforcement closure — complete:** PR #195 merged to `main` at `a64a49fe516b03cc7c8641a6e23c54a3391a6887`. Exact PR-head CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c`, including preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence. Home and Stocktake camera entry points apply Mobile-only product policy plus runtime support; Tablet camera entry points remain excluded; manual lookup remains shared. This closes the audited Stocktake policy gap; it does not close PW-01 physical-device acceptance.
 4. **CSS-01 — Styling ownership migration:** trace global/mobile-tuning consumers, move styles incrementally to shared foundation/platform/feature owners, preserve cascade and avoid stacked overrides.
 5. **PW-01 — PWA runtime validation:** verify standalone/display-mode, safe areas, dynamic viewport, keyboard, orientation, permission and fallback on target OS/browser combinations.
 6. **MIG-01 — Bounded feature migration:** choose one workflow, preserve shared business result and validate platform isolation before expanding.

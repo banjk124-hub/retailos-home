@@ -7,7 +7,7 @@ Scanner-specific ADRs were moved to the Scanner archive to keep this register fo
 
 ## ADR-030 — Shared business core with platform-specific capability and presentation (2026-11-27)
 
-**Status:** Owner-confirmed; PA-02 capability matrix and SH-01B/C/D are merged to `main`. SH-01 merged via PR #193 at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` with 10 Playwright tests. Physical-device acceptance remains PW-01. A follow-up audit identified and is closing a Stocktake camera entry-point policy gap; see the current Platform Capability Matrix.
+**Status:** Owner-confirmed; PA-02 capability matrix, SH-01B/C/D and the follow-up camera-capability enforcement are merged to `main`. SH-01 merged via PR #193 at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` with 10 Playwright tests. The Stocktake camera entry-point policy gap was closed by PR #195 at `a64a49fe516b03cc7c8641a6e23c54a3391a6887`; exact PR-head CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c`, including preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence. Physical-device acceptance remains PW-01.
 
 ### Context
 RetailOS is an installed PWA used in different operating contexts. Treating Desktop and Mobile as one layout with accumulating responsive overrides can conflate three separate questions: whether a workflow belongs on a platform, how that workflow should be presented, and how that presentation adapts to available space. Brand and business consistency do not require identical feature availability or identical screens.
@@ -30,7 +30,7 @@ RetailOS is an installed PWA used in different operating contexts. Treating Desk
 - A shared workflow must preserve the same business rules, validation and result on both platforms. A Desktop-only or Mobile-only presentation change must not leak into the other presentation. Shared-layer changes require regression evidence on both.
 - Tablet remains review-required; no implicit inheritance from Desktop/Mobile.
 - Do not use accumulating global CSS overrides to simulate two platform experiences. CSS ownership is shared foundation → platform presentation → feature presentation.
-- Platform scope is not implementation readiness, data availability, permission state or runtime API support; these dimensions must remain separate.
+- Platform scope is not implementation readiness, data availability, permission state or runtime API support; these dimensions must remain separate. A runtime-dependent API classification (for example PWA installation) describes technical browser/OS support only and does not constitute Tablet product/presentation approval; Tablet remains review-required.
 
 ### Consequences
 - The owner-approved platform capability matrix is canonical in `PLATFORM_CAPABILITY_MATRIX.md`; it is a prerequisite for substantial feature/presentation migration.

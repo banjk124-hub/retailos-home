@@ -1,9 +1,9 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`  
-**Latest merged work:** PR #193 — SH-01 authenticated shell and platform presentation  
-**Exact PR-head validation:** CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests)
+**Verified main HEAD:** `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`  
+**Latest merged work:** PR #196 — PCM-01–06 Platform Capability Matrix documentation reconciliation; PR #195 remains the latest runtime capability enforcement change  
+**Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
 
@@ -17,10 +17,12 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 ## Verified repository state
 
-- PA-02 capability matrix: merged in PR #187.
+- PA-02 capability matrix: merged in PR #187; PCM-01–06 documentation reconciliation merged in PR #196 at `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`.
 - UI-04A–F feature presentation migration and cross-feature closure: merged; see [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md).
 - SH-01B/C/D: merged in PR #193. Authenticated shell composition is separated from App auth/session ownership; Desktop/Mobile presentation roots are explicit; Tablet remains a compatibility fallback; Home business state is shared.
+- PR #195: closes the post-SH-01 Stocktake camera entry-point policy gap. Home and Stocktake camera surfaces enforce Mobile-only product policy plus runtime support; scanner preferences have independent Mobile-only policy; manual lookup remains shared.
 - SH-01 exact-head CI #1948 passed: preflight, TypeScript, production/Pages build, bundle comparison and 10 Playwright tests.
+- PR #195 exact-head CI #1968 passed: preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence.
 - No physical-device acceptance is claimed. PW-01 remains open.
 - CSS-01 remains separate; SH-01 did not perform a broad CSS ownership migration.
 - Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
