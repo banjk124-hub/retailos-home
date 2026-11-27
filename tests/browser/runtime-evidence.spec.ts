@@ -207,6 +207,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
     expect(layout.rail.right, `Desktop rail must not overlap Home content at ${v.name}`).toBeLessThanOrEqual(layout.main.left + 1);
   }
 
+  await page.setViewportSize({ width: 1440, height: 900 });
   await expect(page.getByRole('button', { name: 'Quét mã' })).toHaveCount(0);
   await page.getByRole('button', { name: /cài đặt/i }).first().click();
   const desktopSettings = page.getByRole('dialog', { name: 'Cài đặt' });
