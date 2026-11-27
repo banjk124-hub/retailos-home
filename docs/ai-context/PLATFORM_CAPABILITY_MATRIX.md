@@ -2,7 +2,8 @@
 
 **Status:** Owner-confirmed product policy, 2026-11-27  
 **Canonical decisions:** DECISIONS.md PD-007 / PD-008; ARCHITECTURE.md ADR-030  
-**Scope:** Desktop and Mobile product capability; Tablet is tracked separately as review-required.
+**Scope:** Desktop and Mobile product capability; Tablet is tracked separately as review-required.  
+**Last reconciled against main:** `ef4fc07e6ca6957f8e5b1a524859dd74e41207e1` (2026-11-27).
 
 ## 1. Operating rules
 
@@ -38,17 +39,23 @@
 
 | Capability | Desktop | Mobile | Tablet | Notes |
 |---|---|---|---|---|
+| Đăng nhập / nhận diện nhân viên | Available | Available | Review required | Shared identity/session semantics; presentation may differ |
+| Home workspace / navigation | Available | Available | Review required | Same destination identity and workflow state; Desktop/Mobile renderers are independently owned; Tablet remains compatibility-only |
 | Manual barcode lookup / entry | Available | Available | Review required | Shared lookup operation and result |
-| Camera barcode scanning | Not offered | Available | Review required | Scanner-only entry, text and CSS are Mobile-only |
-| Settings / Update Center | Available | Available | Review required | Shared update-safety contract |
+| Camera barcode scanning (Home + Stocktake) | Not offered | Available | Review required | Every camera entry point, camera-only text and CSS are Mobile-only |
+| Scanner Preferences | Not offered | Available | Review required | Camera-specific settings; not offered outside the Mobile product policy |
+| Settings / Update Center | Available | Available | Review required | Shared update-safety contract; scanner-specific settings remain Mobile-only |
 | Push notifications | Runtime-dependent | Runtime-dependent | Runtime-dependent | Depends on API, permission, installation and OS/browser behavior |
+| PWA installation | Runtime-dependent | Runtime-dependent | Runtime-dependent | Browser/OS installability and user interaction; install path differs by platform |
 
 ### 2.3 Scanner presentation ownership
 
 - Desktop: no camera scanner entry point, camera permission flow, scanner-specific description/help text or scanner presentation CSS.
-- Mobile: camera scanner entry point and camera workflow are available when runtime API/device permission conditions are satisfied.
+- Mobile: Home quick scan and Stocktake camera scan are available when product policy and runtime device/API/permission conditions are satisfied.
+- Every camera entry point must consult `CAMERA_SCANNER_PLATFORM_AVAILABILITY` before opening or mounting a camera surface; the runtime device detector is an additional check, never a replacement for product policy.
 - Manual lookup is a separate shared capability; do not hide it with the camera scanner.
-- Current source uses Android/iOS User-Agent plus iPad touch heuristics. This is an implementation detector, not the final Tablet product policy. Tablet/iPad support must be reconciled in a later device-validation gate before claiming Tablet parity.
+- The runtime scanner detector uses Android/iOS User-Agent plus iPad touch heuristics. This is only a device-support signal, not product policy. `platformContext.ts` separately resolves the presentation context; Tablet remains review-required even when the scanner detector recognizes iPadOS.
+- The Activity section is currently an empty-state placeholder, not a functional workflow; it is excluded from capability availability claims until a real activity feed is defined and approved.
 
 ## 3. Architecture and ownership contract
 
@@ -109,10 +116,11 @@ Browser viewport emulation is useful for responsive checks but does not certify 
 
 ## 7. Next workstream gates
 
-1. **PA-02 — Capability matrix:** owner-confirmed and represented in typed Home registry metadata; current nine workflows and scanner/manual lookup policy recorded.
-2. **SH-01 — Shell and presentation ownership:** implementation complete on Draft PR #193; exact-head CI #1945 passed with 10 Playwright tests. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01.
-3. **CSS-01 — Styling ownership migration:** trace global/mobile-tuning consumers, move styles incrementally to shared foundation/platform/feature owners, preserve cascade and avoid stacked overrides.
-4. **PW-01 — PWA runtime validation:** verify standalone/display-mode, safe areas, dynamic viewport, keyboard, orientation, permission and fallback on target OS/browser combinations.
-5. **MIG-01 — Bounded feature migration:** choose one workflow, preserve shared business result and validate platform isolation before expanding.
+1. **PA-02 — Capability matrix:** owner-confirmed and represented in typed Home registry metadata and cross-feature policy constants; all nine workflows and cross-feature capabilities are inventoried.
+2. **SH-01 — Shell and presentation ownership:** merged to `main` in PR #193 at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` with 10 Playwright tests. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01.
+3. **Capability enforcement closure:** ensure every camera scanner entry point (Home and Stocktake) applies the same Mobile-only product policy plus runtime support check; verify Tablet exclusion and shared manual entry. This is a bounded follow-up, not a scanner-engine change.
+4. **CSS-01 — Styling ownership migration:** trace global/mobile-tuning consumers, move styles incrementally to shared foundation/platform/feature owners, preserve cascade and avoid stacked overrides.
+5. **PW-01 — PWA runtime validation:** verify standalone/display-mode, safe areas, dynamic viewport, keyboard, orientation, permission and fallback on target OS/browser combinations.
+6. **MIG-01 — Bounded feature migration:** choose one workflow, preserve shared business result and validate platform isolation before expanding.
 
 No broad visual redesign, scanner engine rewrite, schema change, PWA update lifecycle change or production deployment is authorized by this matrix.
