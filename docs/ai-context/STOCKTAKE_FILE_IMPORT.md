@@ -2,12 +2,9 @@
 
 **Display name:** Xuất file.
 **Stable module ID:** `stocktake-import` (do not rename without a data migration plan).
-**Status:** PR #70–#73 are merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`. Desktop/iOS/Android physical QA remains pending.
-**PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`.
-**Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`.
-**Business/session implementation:** PR #71 merged at `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`.
-**Current workspace v2 branch:** `feat/stocktake-import-workspace-v2`.
-**Current workspace v2 PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; CI pending; manual desktop/iOS/Android QA pending).
+**Current main baseline:** `e88ae240959a8deea85aee2fd2992d40563ad365`.
+**Current implementation:** UI-04E presentation refactor is in open/Draft PR #190; based on the current main baseline above. Not merged or deployed. Exact final-head CI/browser validation is pending.
+**Historical implementation:** PR #70–#73 and workspace v2 PR #74 were merged; PR #74 merge commit is `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`. Prior CI/device checkpoints below are historical evidence, not current branch state.
 **Dedicated module record:** `docs/ai-context/modules/EXPORT_FILE.md`.
 
 ## 1. Goal
@@ -21,6 +18,10 @@ The feature must work without a network connection after the PWA has loaded. Fol
 - `RetailModuleId` identifies business workflows; `ModuleDataId` identifies server snapshot datasets. These are deliberately separate.
 - `stocktake-import` is a local-only workflow and must never be added to `MODULE_DATA_IDS`, the Apps Script manifest, or snapshot synchronization.
 - The existing `StocktakeModule` remains an independent workflow.
+- The workflow coordinator is `StocktakeImportModule.tsx`: it owns parser invocation, source fingerprint/duplicate detection, conflict and merge decisions, session state, dirty-edit state, IndexedDB operations, TXT/ZIP export, and PWA update blockers.
+- `StocktakeImportPresentation.tsx` owns import/history workspace markup, conflict/new-session/clear confirmation UI, zone navigation, edit table and TXT preview. It receives a typed presentation model and action callbacks; it does not call parser, session merge, IndexedDB, clipboard, download or PWA update services.
+- `stocktake-import.css` remains one feature-owned stylesheet and is imported by the presentation owner. UI-04E moves stylesheet import ownership only; it does not rewrite/split the stylesheet or select a new visual direction.
+- UI-04E must not change parser precision, code-source precedence, SHA-256 fingerprinting, conflict review/merge/skip behavior, dirty-edit gating, persistence/history, TXT/ZIP contents or filenames.
 - Import history uses a separate IndexedDB database: `retailos-stocktake-import`.
 - Do not clear or migrate `retailos-stocktake` when clearing import history.
 - Scanner Engine, camera lease/lifecycle, scanner contracts, stocktake entry schema, and current manual/scanner workflows are protected.
