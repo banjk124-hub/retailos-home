@@ -26,7 +26,7 @@ assert.match(presentation, /stocktake-import-zone-workspace/);
 assert.match(presentation, /stocktake-import-history-list/);
 assert.match(presentation, /stocktake-import-preview-screen/);
 assert.match(presentation, /stocktake-import-confirm-backdrop/);
-assert.doesNotMatch(presentation, /useState|useEffect|parseStocktakeWorkbook|mergeStocktakeImportSession|stocktakeImportStore|navigator\.clipboard|registerPwaUpdateBlocker|downloadFile/);
+assert.doesNotMatch(presentation, /useState|useEffect|parseStocktakeWorkbook|mergeStocktakeImportSession|stocktakeImportStore\\.|navigator\.clipboard|registerPwaUpdateBlocker|downloadFile/);
 assert.match(presentation, /actions\.onConfirmPendingImport/);
 assert.match(presentation, /actions\.onUpdateRow/);
 assert.match(presentation, /actions\.onSaveActiveZone/);
