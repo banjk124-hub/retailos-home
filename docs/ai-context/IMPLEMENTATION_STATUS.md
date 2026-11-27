@@ -1,62 +1,49 @@
 # Current verified implementation status — 2026-11-27
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45
+**Verified main HEAD:** `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`  
+**Latest merge:** PR #193, merge commit `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`
 
-This file records verified repository state, not an authorization to merge, deploy or transfer production.
+This file records verified repository state. It does not authorize deployment or production-account transfer.
 
 ## Owner direction and governance
 
-- The former global visual direction has been withdrawn. No replacement visual language is selected. Creative decisions remain experience-specific and require explicit owner approval before substantial implementation.
-- Cross-platform policy is canonical in DECISIONS.md PD-007/PD-008 and ARCHITECTURE.md ADR-030. The owner-confirmed matrix is in `PLATFORM_CAPABILITY_MATRIX.md`: all nine current Home workflows shared Desktop/Mobile; camera scanner and camera-only copy/CSS Mobile-only; manual lookup shared; Tablet review-required. A generic feature request defaults to shared Desktop/Mobile.
-- Merge and deployment are separate approval gates. No merge or deployment is authorized by this documentation update.
+- No global visual language is selected. Creative decisions remain experience-specific and require owner approval before substantial implementation.
+- Cross-platform policy is canonical in DECISIONS.md PD-007/PD-008 and ARCHITECTURE.md ADR-030. The owner-confirmed matrix is in `PLATFORM_CAPABILITY_MATRIX.md`: nine Home workflows shared Desktop/Mobile; camera scanner and camera-only presentation Mobile-only; manual lookup shared; Tablet review-required.
+- Merge, deployment and production transfer are separate approval gates.
 
 ## Verified merged work
 
-| Work | Repository state | Evidence |
+| Work | State | Evidence |
 |---|---|---|
-| UI-03 CSS consolidation | PR #180 merged | Merge commit 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54; final docs CI #1817 passed |
-| UI-04 initial presentation slices | PR #181 merged | Merge commit e58bce634b9ff67e95250d36c8653593680463e9; exact branch-head CI #1845 passed |
+| UI-03 CSS consolidation | PR #180 merged | Merge commit `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54`; final docs CI #1817 passed |
+| UI-04 initial presentation slices | PR #181 merged | Merge commit `e58bce634b9ff67e95250d36c8653593680463e9` |
 | AUDIT-02 ownership implementation | PR #184 merged | Verified PR metadata |
-| AUDIT-03 CSS & Design Foundation static audit | PR #185 merged | Merge commit bddb84259f7bc68656a42d467ec83fdddfe17b1f; audit only, no source implementation |
-| Cross-platform governance contract | PR #186 merged | Merge commit `01c814e546688595d2796c70bd72df228047e5e8` |
-| PA-02 Platform Experience capability matrix | PR #187 merged | Merge commit `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45` |
-| UI-04E Stocktake Import presentation | PR #190 merged | Merge commit `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final exact PR-head CI #1902 passed |
-| UI-04F cross-feature closure | PR #191 merged | Merge commit `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; exact-head CI #1908 passed |
+| AUDIT-03 CSS & Design Foundation audit | PR #185 merged | Static audit only; no source implementation |
+| Cross-platform governance | PR #186 merged | Merge commit `01c814e546688595d2796c70bd72df228047e5e8` |
+| PA-02 capability matrix | PR #187 merged | Merge commit `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45` |
+| UI-04D Stocktake presentation | PR #189 merged | Merge commit `e88ae240959a8deea85aee2fd2992d40563ad365`; CI #1877 passed |
+| UI-04E Stocktake Import presentation | PR #190 merged | Merge commit `38192b2ce1c426edd6285594a57a2c2970bc14ee`; CI #1902 passed |
+| UI-04F cross-feature closure | PR #191 merged | Merge commit `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; exact-head CI #1909 passed |
+| SH-01B/C/D authenticated shell and platform roots | PR #193 merged | Merge commit `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a`; 10 Playwright tests passed |
 
-## Active work and open gates
+## Open work and acceptance gates
 
-### UI-04 — Feature Presentation Migration
+### Platform experience
+- **SH-01:** implementation and automated integration closure are merged. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`.
+- **PW-01:** physical iOS/iPadOS and Android installed-PWA validation remains pending. Browser emulation is not device acceptance.
+- **CSS-01:** measured CSS ownership migration remains pending. Do not infer safe deletion from file size or age.
+- **AUDIT-03A:** production CSS delivery/bundle baseline is proposed; implementation has not started.
 
-- UI-04A Login, UI-04B Settings/Update Center and UI-04C Scanner presentation are implemented and validated in merged PR #181.
-- UI-04D Stocktake presentation ownership is implemented, validated and merged in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`.
-- PR #189 exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`, including the dedicated Stocktake browser workflow.
-- UI-04E Stocktake Import presentation is implemented, validated and merged in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`.
-- Final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`, including full preflight, TypeScript, production/Pages builds, bundle comparison and 9 responsive/runtime browser tests.
-- Main RetailOS CI run [#45954497490](https://github.com/banjk124-hub/retailos-home/actions/runs/45954497490) and Build and deploy PWA run [#45954497547](https://github.com/banjk124-hub/retailos-home/actions/runs/45954497547) both succeeded on the merge commit.
-- UI-04F cross-feature closure is implemented and validated in Draft PR #191. Exact-head CI run [#1907](https://github.com/banjk124-hub/retailos-home/actions/runs/45965306663) passed on `80aba62c8ee481014c4f47ce75be2422f0df32de`: preflight, TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests. Runtime artifact confirms 14 captured surfaces with zero browser/console errors, failed requests, horizontal overflow or duplicate DOM IDs. PR #191 remains unmerged pending owner review.
-- Canonical detail: UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
+### UI-04
+UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRESENTATION.md`. Physical-device acceptance remains a separate gate where specified.
 
-### Platform Experience & Architecture Audit
+## Protected technical boundaries
 
-- PR #187 PA-02 is merged to `main` at `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`; its owner-confirmed matrix and typed registry metadata are now part of the main baseline.
-- SH-01B/C/D implementation is in progress on `refactor/sh-01b-authenticated-shell`, based directly on that main commit. It extracts authenticated shell composition, adds a signal-based platform context, introduces Desktop/Mobile Home presentation roots, retains a Tablet compatibility fallback, and gates camera scanner/settings entry to Mobile.
-- PR #192 was merged into `audit/platform-experience-architecture`, not directly into main. The current SH-01 branch ports its navigation renderer ownership from the merged audit work and continues on main.
-- PR #193 remains Draft/open and is not merged or deployed. Exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f`: preflight, TypeScript, production/Pages builds, bundle comparison and 10 Playwright tests passed. Physical-device PWA acceptance remains in PW-01; full global/feature CSS ownership migration remains CSS-01.
-
-### AUDIT-03 — CSS & Design Foundation
-
-- PR #185 is merged; its deliverable is a static audit, not an implementation.
-- AUDIT-03A production CSS delivery baseline is the next proposed step. Do not delete or consolidate CSS based only on raw file size.
-
-## Technical boundaries
-
-Preserve auth/session, module registry and destination identity, snapshot/cache/offline truth, scanner engine/camera lifecycle, Stocktake persistence/revisions/history/export, Stocktake Import parsing/precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA update staging/consent/integrity/activation/boot-health/rollback, Vite Pages base path and lazy-loading. Scanner stabilization SC-00–SC-05 remains closed; reopen only for a reproducible defect, measured bottleneck or new requirement.
+Preserve auth/session and employee identity, stable module/workflow IDs, snapshot/cache/offline truth, scanner engine/camera lifecycle, Stocktake persistence/revisions/history/export, Stocktake Import parsing/precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA update consent/staging/integrity/activation/boot-health/rollback, Vite Pages base path and lazy-loading. Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
 
 ## Evidence classification
 
-- **Repository/source and PR metadata inspected:** main HEAD `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; PR #181, #185, #186, #187, #189, #190 and #191 metadata.
-- **UI-04D:** merged PR #189; exact-head CI #1877 passed on source head `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
-- **UI-04E:** merged PR #190; exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`; main CI and Pages deploy workflows succeeded on merge commit.
-- **Browser/device acceptance:** UI-04F Chromium evidence covers 14 captured surfaces and 7 Home viewports; no physical iOS/Android or low-end device acceptance is claimed.
-- **Merge/deployment:** PR #190 is merged. The GitHub Pages build/deploy workflow completed successfully on the merge commit; no separate production-account transfer was performed.
+- PR #193 merge state and merge commit verified from GitHub PR metadata.
+- Exact PR-head CI #1948 succeeded on `3381cdf9c79521f29641ab41ef95b60033d9169a`: preflight, TypeScript, production/Pages build, bundle comparison and 10 Playwright tests.
+- This status update does not claim that a post-merge Pages deployment or physical-device QA was verified.

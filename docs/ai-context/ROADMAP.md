@@ -1,31 +1,32 @@
 # RetailOS Roadmap — 2026-11-27
 
-All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). This roadmap records future work, not a visual-style authority.
+This roadmap records future work, not a visual-style authority. Product and experience work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md).
 
 ## Governance
-- There is no active global visual language. Follow the experience discovery, creative exploration, prototype, feasibility and owner-approval workflow in RETAILOS_PRODUCT_SKILL.md.
-- Verify live branch/PR/CI/deployment before status updates.
-- No merge without explicit owner approval; no deployment without explicit authorization. Production transfer is a separate decision.
+- No active global visual language is selected. Explore and validate experience-specific directions; obtain owner approval before substantial creative implementation.
+- Verify live branch, commit, PR, CI and deployment before volatile status updates.
+- Merge, deployment and production transfer are separate approval gates.
 
 ## Experience development lifecycle
-For each substantial experience, discover the workflow and context, explore creative alternatives, prototype the most promising direction, validate feasibility, obtain explicit owner approval, implement and QA. Scale the process to the task; small fixes do not need a design ceremony.
+Discover the workflow, user context, environment and constraints; explore materially different directions; prototype where feasibility or interaction matters; validate technical constraints; obtain approval; implement and QA. Scale the process to the task. Do not inherit former M0 aesthetics or approval gates as active instructions.
 
-Do not inherit former M0 sequence, aesthetic or approval gates as active instructions. Existing M0 source audits remain historical evidence and must be revalidated before use.
-
-## Cross-platform presentation governance — owner-confirmed; PA-02 capability matrix established
-- RetailOS shares brand identity and business semantics but does not require Desktop/Mobile feature parity. Workflows may be platform-specific; shared domain/data/business rules remain shared where the underlying operation is the same.
-- Desktop and Mobile may use independent shells/navigation/presentation. Tablet needs explicit evaluation. Responsive adapts each presentation; it is not the platform policy.
-- Installed PWA should prefer standalone where supported; fullscreen is conditional and workflow-specific.
-- Canonical decisions: DECISIONS.md PD-007/PD-008 and ARCHITECTURE.md ADR-030. The approved matrix is `PLATFORM_CAPABILITY_MATRIX.md`.
-- Default scope for a feature request without a platform qualifier is shared Desktop + Mobile. Explicit Desktop-only/Mobile-only scope must be recorded in the matrix.
-- Current nine Home workflows are shared Desktop + Mobile. Camera barcode scanning and its dedicated copy/presentation are Mobile-only; manual barcode lookup remains shared. Tablet is review-required.
-- Shared journey/domain/data semantics stay common; Desktop/Mobile presentation owns independent composition, layout, spacing, components and navigation. Shared changes require both-platform regression evidence; platform-only changes must remain isolated.
-- PA-02 capability matrix is owner-confirmed and merged in PR #187 at `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`. SH-01B/C/D implementation is complete on Draft PR #193; exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f` with 10 Playwright tests. CSS-01 and PW-01 remain separate follow-up phases. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`.
+## Cross-platform presentation governance
+- Desktop and Mobile may own independent shells, navigation and presentation composition while sharing business logic, data contracts and operation results.
+- A feature request without a platform qualifier defaults to shared Desktop + Mobile. Explicit platform-only scope must be recorded in the capability matrix.
+- Nine current Home workflows are shared Desktop/Mobile. Camera barcode scanning and camera-only copy/presentation are Mobile-only; manual barcode lookup remains shared. Tablet is review-required.
+- Responsive adapts the selected presentation; viewport breakpoints do not decide product capability.
+- Canonical policy: DECISIONS.md PD-007/PD-008, ARCHITECTURE.md ADR-030 and PLATFORM_CAPABILITY_MATRIX.md.
 
 ## Technical workstreams
-- **UI-03 CSS consolidation — complete:** merged to main in PR #180 at `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54`. Nine verified legacy selector families retired; Home architecture stylesheet consolidated with original cascade order preserved; exact duplicate reduced-motion rule removed. Final documentation HEAD `c85cad4cebbb37e2909f47658a7eff91331b4484` passed CI run #1817. See UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
-- **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 merged at `bddb84259f7bc68656a42d467ec83fdddfe17b1f`. Implementation has not started; next proposed gate is AUDIT-03A production CSS delivery baseline. No visual language is selected.
-- **UI-04 feature presentation migration — active:** initial slices PR #181 merged at e58bce634b9ff67e95250d36c8653593680463e9. UI-04A/B/C/D/E are implemented, validated and merged. UI-04D PR #189 merged at `e88ae240959a8deea85aee2fd2992d40563ad365`; UI-04E PR #190 merged at `38192b2ce1c426edd6285594a57a2c2970bc14ee`. Final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`; main RetailOS CI and Build and deploy PWA workflows succeeded on the merge commit. UI-04F cross-feature closure is implemented and validated in Draft PR #191; exact-head CI #1907 passed on `80aba62c8ee481014c4f47ce75be2422f0df32de` (9 browser tests; 14 captured surfaces with zero runtime errors, failed requests, overflow or duplicate IDs). PR #191 remains unmerged pending owner review. See UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
-- Preserve established auth/session, module registry, snapshot/cache/offline, scanner, stocktake, import/export, overlay and PWA release contracts.
-- Scanner stabilization is closed. Reopen only for a reproducible defect, measured bottleneck or new requirement.
-- Continue source/runtime/browser/device verification according to the affected workflow; distinguish CI, browser verification, device acceptance and owner approval.
+- **SH-01 shell/platform presentation — complete:** PR #193 merged to main at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`. Exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a`, including 10 Playwright tests. See SH-01_SHELL_PRESENTATION_OWNERSHIP.md.
+- **PW-01 physical PWA acceptance — pending:** validate installed mode, system UI, safe areas, dynamic viewport, keyboard, orientation, permissions and lifecycle on target physical iOS/iPadOS and Android devices, including lower-end devices.
+- **CSS-01 CSS ownership migration — pending:** map shared foundation, platform presentation and feature-owned layers; trace imports, cascade, consumers and computed styles before moving rules. No broad deletion is authorized by an audit.
+- **AUDIT-03A production CSS baseline — proposed:** measure production CSS delivery and bundle composition before deciding whether optimization is warranted.
+- **UI-04 feature presentation migration — complete:** UI-04A–F are merged. See UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
+- **UI-03 CSS consolidation — complete:** merged in PR #180; see UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
+
+## Technical invariants
+Preserve auth/session, module registry and stable IDs, snapshot/cache/offline contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision/conflict handling, overlay lifecycle, PWA update-safety and GitHub Pages deployment boundaries. Scanner stabilization is closed; reopen only for a reproducible defect, measured bottleneck or new requirement.
+
+## Verification discipline
+Distinguish source inspection, automated CI, browser emulation, physical-device acceptance, owner approval, merge and deployment. Evidence for one gate does not imply completion of another.
