@@ -17,9 +17,6 @@ export type RetailPlatformSignals = Readonly<{
  */
 export function resolveRetailPlatform(signals: RetailPlatformSignals): RetailPlatform {
   const shortScreenEdge = Math.min(signals.screenWidth, signals.screenHeight);
-  const hasTabletSizedTouchSurface = signals.touchPoints > 0 && shortScreenEdge >= 600;
-  if (hasTabletSizedTouchSurface) return 'tablet';
-
   if (signals.primaryFinePointer && signals.primaryHover) return 'desktop';
 
   const hasTouchInput = signals.primaryCoarsePointer || signals.touchPoints > 0;
