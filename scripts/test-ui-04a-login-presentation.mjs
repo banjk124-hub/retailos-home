@@ -3,8 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const read = (path) => readFile(resolve(process.cwd(), path), 'utf8');
-const [app, login, identity, loginExperience] = await Promise.all([
+const [app, shell, login, identity, loginExperience] = await Promise.all([
   read('src/App.tsx'),
+  read('src/platform/shell/AuthenticatedAppShell.tsx'),
   read('src/styles/login-experience.css'),
   read('src/styles/auth-journey.css'),
   read('src/features/auth/screens/LoginExperience.tsx'),
