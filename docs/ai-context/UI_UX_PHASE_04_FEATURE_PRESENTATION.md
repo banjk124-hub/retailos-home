@@ -1,6 +1,6 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A/B/C/D/E implemented, validated and merged. UI-04F cross-feature closure is merged in PR #191; exact-head CI #1908 passed on `4d696f37bc9aa3214af16e3b9889b0965239a90b`.
+**Status:** UI-04A/B/C/D/E implemented, validated and merged. UI-04F cross-feature closure is merged in PR #191; exact-head CI #1909 passed on `4d696f37bc9aa3214af16e3b9889b0965239a90b`.
 **Initial implementation PR:** #181 — merged to main at e58bce634b9ff67e95250d36c8653593680463e9.
 **UI-04D completion PR:** #189 — merged to main at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 **UI-04E completion PR:** #190 — merged to main at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`.
@@ -113,7 +113,7 @@ Deliver each slice independently, with source trace, focused tests, browser evid
 6. **UI-04F — Cross-feature regression and closure — merged in PR #191**
    - Added a cross-feature ownership contract to preflight.
    - Runtime evidence now requires Settings, Update Center, Scanner Preferences, Stocktake and Stocktake Import to be reachable and rendered; missing controls cannot be silently skipped.
-   - Exact-head CI run [#1907](https://github.com/banjk124-hub/retailos-home/actions/runs/45965306663) passed on `80aba62c8ee481014c4f47ce75be2422f0df32de`: preflight, TypeScript, production/Pages builds, bundle comparison and all 9 Playwright browser tests.
+   - Final exact-head CI run [#1909](https://github.com/banjk124-hub/retailos-home/actions/runs/45965786294) passed on `4d696f37bc9aa3214af16e3b9889b0965239a90b`: preflight, TypeScript, production/Pages builds, bundle comparison and all 9 Playwright browser tests.
    - Runtime evidence artifact confirms 14 captured surfaces with zero browser/console errors, zero failed requests, zero horizontal overflow and zero duplicate DOM IDs across captured views. Home viewport checks cover 1440×900, 1280×800, 1024×768, 768×1024, 390×844, 360×740 and short landscape.
    - PR #191 is merged. Physical iOS/Android and lower-end device acceptance remain separate.
 
@@ -170,5 +170,5 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - Merged PR #181 head `1ae4e870cc27e6209cd2128774167229f144ee90` passed exact-head CI #1845, including preflight, TypeScript/production builds, bundle comparison and Playwright responsive/runtime evidence.
 - UI-04D presentation ownership is merged in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on its source head, including the dedicated Stocktake browser workflow.
 - UI-04E is merged in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`. Main RetailOS CI and Build and deploy PWA workflows succeeded on the merge commit.
-- UI-04F cross-feature closure is merged in PR #191. Exact-head CI #1908 passed on `4d696f37bc9aa3214af16e3b9889b0965239a90b`; 9 browser tests passed and the runtime artifact confirms zero errors, failed requests, overflow or duplicate IDs across 14 captured surfaces.
+- UI-04F cross-feature closure is merged in PR #191. Exact-head CI [#1909](https://github.com/banjk124-hub/retailos-home/actions/runs/45965786294) passed on `4d696f37bc9aa3214af16e3b9889b0965239a90b`; 9 browser tests passed and the runtime artifact confirms zero errors, failed requests, overflow or duplicate IDs across 14 captured surfaces.
 - Physical iOS/Android and lower-end device acceptance remain separate; Chromium viewport emulation is not device certification.
