@@ -31,8 +31,8 @@ This file records verified repository state. It does not authorize deployment or
 
 ### Platform experience
 - **SH-01:** implementation and automated integration closure are merged. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`.
-- **PW-01:** physical iOS/iPadOS and Android installed-PWA validation remains pending. Browser emulation is not device acceptance.
-- **CSS-01:** measured CSS ownership migration remains pending. Do not infer safe deletion from file size or age.
+- **PW-01:** physical iOS/iPadOS and Android installed-PWA validation is deferred by owner because no reproducible device defect has been observed. It is not passed or complete; reopen on a reproducible device/browser defect, material platform-sensitive change or explicit release acceptance requirement.
+- **CSS-01:** in progress on `audit/css-01-ownership-migration`. CSS-01A refreshed 34 tracked stylesheets (342,568 source bytes) and mapped source import owners. CSS-01B selector/consumer/cascade trace remains in progress. Do not infer safe deletion from file size or age; see `CSS_01_CSS_OWNERSHIP_MIGRATION.md`.
 - **AUDIT-03A:** production CSS delivery/bundle baseline is proposed; implementation has not started.
 
 ### UI-04
