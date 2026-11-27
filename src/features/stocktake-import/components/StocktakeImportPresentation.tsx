@@ -54,7 +54,7 @@ export type StocktakeImportPresentationModel = {
     zone: StocktakeImportResult['zones'][number];
     index: number;
     uniqueProductCount: number;
-    actionState: string;
+    actionState: StocktakeImportZoneActionState | 'invalid';
     actionLabel: string;
   }>;
   previewOpen: boolean;
