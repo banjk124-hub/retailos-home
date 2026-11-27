@@ -239,7 +239,7 @@ GitHub code search was run against the current repository default branch (same C
 - PR #199 merged: retired remaining legacy Login responsive rules and the obsolete `.login-identity-dock` selector cluster (merge `2c2a5b60e87c05b06153fb534a0a4bbdc5c77e5`).
 - Exact PR #199 head `e1e84f55829d374d676233ebefeff97dc72c3863`, RetailOS CI run #1985 — passed: preflight, PR-base production build and bundle comparison, Playwright Chromium installation, responsive/runtime evidence suite and artifact uploads.
 - The merge changed only `responsive.css` and `mobile-tuning.css`; no imports, TSX, feature CSS boundaries or business behavior changed.
-- Post-merge source review found two now-orphaned `login-identity-*` keyframe definitions left in `mobile-tuning.css`; their cleanup is tracked separately. No current Login DOM consumer references these keyframes.
+- Post-merge source review found two orphaned `login-identity-*` keyframe definitions left after PR #199; this PR removes them. No current Login DOM consumer references these keyframes.
 
 ### 10.3 Existing CI/browser evidence
 
