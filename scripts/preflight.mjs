@@ -84,6 +84,11 @@ const checks = [
     args: ["scripts/test-ui-04d-stocktake-presentation.mjs"],
   },
   {
+    name: "UI-04E Stocktake Import presentation ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-ui-04e-stocktake-import-presentation.mjs"],
+  },
+  {
     name: "Cross-platform overlay viewport and content-scroll layout tests",
     command: process.execPath,
     args: ["scripts/test-overlay-layout-contract.mjs"],
