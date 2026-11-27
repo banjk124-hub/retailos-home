@@ -147,13 +147,13 @@ The navigation switch is viewport-width based. The scanner capability is user-ag
 
 1. **Shared product/domain core:** identity, workflow IDs, business rules, data contracts, persistence and operation state.
 2. **Platform capability policy:** explicit per-workflow availability and capability reasons, independent from engineering progress/data readiness/permission/connectivity.
-3. **Platform presentation roots:** Desktop and Mobile shell/presentation roots only where workflow and interaction evidence justify different ownership; Tablet has an explicit policy.
+3. **Platform presentation roots:** Desktop and Mobile have independently owned shell/presentation roots for their different operating patterns; shared app identity, workflow IDs, business state and domain use cases remain common. Tablet has an explicit review gate.
 4. **Feature presentation:** feature-owned workflow UI may have platform-specific variants while sharing domain operations and validation.
 5. **Responsive adaptation:** viewport/orientation changes adapt the chosen presentation; they do not decide whether a workflow exists.
 6. **PWA platform adapter:** expose installed/display-mode, relevant API support, permissions and lifecycle signals without embedding OS assumptions into domain logic.
 7. **Shared visual identity:** brand and business semantics remain coherent; visual composition and information density can vary by platform.
 
-Avoid a `DesktopApp` and `MobileApp` fork that duplicates business logic. Avoid a universal component abstraction that forces unlike workflows into the same layout.
+Avoid a `DesktopApp` and `MobileApp` fork that duplicates business logic. Keep the application/session boundary shared, but make Desktop/Mobile presentation composition independently changeable. Avoid a universal component abstraction that forces unlike workflows into the same layout.
 
 ## 8. Migration plan and gates
 
@@ -164,25 +164,25 @@ Avoid a `DesktopApp` and `MobileApp` fork that duplicates business logic. Avoid 
 | SH-01 | Shell/navigation ownership design | Shared identity/state contract and separate presentation boundaries defined from evidence | Pending |
 | PW-01 | PWA display/runtime validation | Installed mode, system UI, safe area, viewport, keyboard, orientation and fallback tested on target OS/browser | Source audit complete; device validation pending |
 | CSS-01 | CSS ownership map | Shared foundation/platform/feature layers mapped; cascade and import order evidenced | Static map started; computed-style/runtime baseline pending |
-| MIG-01 | Bounded migration proposal | Before/after architecture, files, rollback and regression plan approved | Blocked by PA-02, SH-01, PW-01 and CSS-01 |
+| MIG-01 | Bounded migration proposal | Before/after architecture, files, rollback and regression plan approved | Blocked by SH-01, PW-01 and CSS-01 |
 
-### Suggested platform matrix template
-
-The matrix below records the owner's confirmed Desktop/Mobile policy. Tablet remains review-required rather than being inferred from either platform.
+### Owner-confirmed platform matrix
 
 | Workflow | Desktop | Tablet | Mobile | Rationale / operational context |
 |---|---|---|---|---|
-| Tồn kho | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Giá & vốn | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Danh mục hàng hóa | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Nhập / xuất hàng | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Điều chuyển hàng | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Doanh số | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Date sản phẩm | `moduleRegistry.ts` | Shared entry; typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Kiểm kê | `StocktakeModule.tsx` | Shared workflow; camera is a separate Mobile-only capability; manual input remains shared | Shared Desktop + Mobile; camera Mobile-only |
-| Xuất file kiểm kê | `StocktakeImportModule.tsx` | Local workbook processing/history, typed policy Desktop/Mobile available | Shared Desktop + Mobile |
-| Tra cứu thủ công | `HomeScreen.tsx` | Shared manual lookup action | Shared Desktop + Mobile |
-| Quét camera barcode | Not offered | Review required | Available | Mobile-only product policy; Tablet/iPad policy not inferred from existing detector |
+| Tồn kho | Available | Review required | Available | Shared workflow and business result |
+| Giá & vốn | Available | Review required | Available | Shared workflow and business result |
+| Danh mục hàng hóa | Available | Review required | Available | Shared workflow and business result |
+| Nhập / xuất hàng | Available | Review required | Available | Shared workflow and business result |
+| Điều chuyển hàng | Available | Review required | Available | Shared workflow and business result |
+| Doanh số | Available | Review required | Available | Shared workflow and business result |
+| Date sản phẩm | Available | Review required | Available | Shared workflow and business result |
+| Kiểm kê | Available | Review required | Available | Shared workflow; camera scanning is a separate Mobile-only capability |
+| Xuất file kiểm kê | Available | Review required | Available | Shared workflow and business result |
+| Tra cứu thủ công | Available | Review required | Available | Shared lookup operation and result |
+| Quét camera barcode | Not offered | Review required | Available | Mobile-only; Tablet/iPad policy is not inferred from the current detector |
+| Cài đặt / Update Center | Available | Review required | Available | Shared update-safety journey |
+| Push notifications | Runtime-dependent | Runtime-dependent | Runtime-dependent | Browser API, permission, installation and OS/browser conditions |
 
 ## 9. Protected invariants and explicit non-goals
 
