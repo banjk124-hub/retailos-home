@@ -1,4 +1,4 @@
-# RetailOS Roadmap — 2026-11-26
+# RetailOS Roadmap — 2026-11-27
 
 All work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md). This roadmap records future work, not a visual-style authority.
 
@@ -12,15 +12,17 @@ For each substantial experience, discover the workflow and context, explore crea
 
 Do not inherit former M0 sequence, aesthetic or approval gates as active instructions. Existing M0 source audits remain historical evidence and must be revalidated before use.
 
-## Cross-platform presentation governance — owner-confirmed, audit pending
+## Cross-platform presentation governance — owner-confirmed; source audit in review
 - RetailOS shares brand identity and business semantics but does not require Desktop/Mobile feature parity. Workflows may be platform-specific; shared domain/data/business rules remain shared where the underlying operation is the same.
 - Desktop and Mobile may use independent shells/navigation/presentation. Tablet needs explicit evaluation. Responsive adapts each presentation; it is not the platform policy.
 - Installed PWA should prefer standalone where supported; fullscreen is conditional and workflow-specific.
-- Canonical decisions: DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030. Do not start broad CSS migration before capability, shell and PWA display-mode audits.
+- Canonical decisions: DECISIONS.md PD-007 and ARCHITECTURE.md ADR-030.
+- PR #187 is an open Draft static source audit based on main `01c814e546688595d2796c70bd72df228047e5e8`; its CI run #1860 passed on head `8d96a4af6a42e6d7ac4da0167d240f774082c4f5`. The source audit is complete, but owner review of the Desktop/Tablet/Mobile capability matrix remains pending. No platform filtering or shell divergence is authorized by the audit alone.
 
 ## Technical workstreams
-- **UI-03 CSS consolidation — complete:** merged to main in PR #180 at 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54. Nine verified legacy selector families retired; Home architecture stylesheet consolidated with original cascade order preserved; exact duplicate reduced-motion rule removed. Final documentation HEAD c85cad4cebbb37e2909f47658a7eff91331b4484 passed CI run #1817. See UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
-- **UI-04 feature presentation migration — active:** branch refactor/ui-04-feature-presentation. Scope: Login, Settings/Update Center, Scanner presentation, Stocktake and Stocktake Import. Discovery/source baseline and protected contracts are recorded in UI_UX_PHASE_04_FEATURE_PRESENTATION.md. No application source changes yet.
+- **UI-03 CSS consolidation — complete:** merged to main in PR #180 at `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54`. Nine verified legacy selector families retired; Home architecture stylesheet consolidated with original cascade order preserved; exact duplicate reduced-motion rule removed. Final documentation HEAD `c85cad4cebbb37e2909f47658a7eff91331b4484` passed CI run #1817. See UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
+- **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 merged at `bddb84259f7bc68656a42d467ec83fdddfe17b1f`. Implementation has not started; next proposed gate is AUDIT-03A production CSS delivery baseline. No visual language is selected.
+- **UI-04 feature presentation migration — active; initial implementation merged:** PR #181 merged to main at `e58bce634b9ff67e95250d36c8653593680463e9` (2026-11-26). UI-04A/B/C are implemented and validated; UI-04D has a bounded partial implementation and passing focused/full CI evidence; remaining Stocktake ownership work and UI-04E Stocktake Import are still open. Continue from current main, not the merged feature branch. See UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 - Preserve established auth/session, module registry, snapshot/cache/offline, scanner, stocktake, import/export, overlay and PWA release contracts.
 - Scanner stabilization is closed. Reopen only for a reproducible defect, measured bottleneck or new requirement.
 - Continue source/runtime/browser/device verification according to the affected workflow; distinguish CI, browser verification, device acceptance and owner approval.

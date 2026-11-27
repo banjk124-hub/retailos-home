@@ -1,8 +1,8 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A, UI-04B and UI-04C implemented and validated; UI-04D Stocktake presentation boundary in progress.
-**Branch:** refactor/ui-04-feature-presentation
-**Base:** main after UI-03 merge 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54
+**Status:** UI-04A/B/C implemented and validated; UI-04D partially implemented and validated at the merged PR head, with remaining Stocktake ownership work open; UI-04E and UI-04F pending.
+**Implementation PR:** #181 — merged to main at `e58bce634b9ff67e95250d36c8653593680463e9`.
+**Original branch base:** main after UI-03 merge `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54` (historical; do not continue on the merged branch).
 **Scope:** migrate feature presentation boundaries for Login, Settings, Scanner, Stocktake and Stocktake Import while preserving domain behavior, lifecycle, lazy-loading and accessibility contracts.
 
 ## 1. Objective and decision boundary
@@ -27,7 +27,7 @@ Baseline is the merged UI-03 main commit above. The repository contains **24 CSS
 | Login | LoginExperience, LoginHero, LoginForm, LoginDock | login-experience.css (24,956 B), login-compact-landscape.css (2,830 B) | Auth/session and identity-transition coupling; preserve responsive and compact-landscape behavior |
 | Settings | SettingsHub, nested Update Center, ScannerSettingsPanel | settings-dialog.css (shared), settings-hub.css, scanner-preferences.css | Shared dialog shell is explicit; menu and scanner preference styles are feature-owned |
 | Scanner | BarcodeScanner, scanner hooks/services | barcode-scanner-presentation.css + scanner-shared-controls.css | Home presentation is feature-owned; only torch control styling is shared with Stocktake |
-| Stocktake | StocktakeModule, StocktakeScanner | stocktake.css (11,822 B) plus shared scanner transition CSS | Local persistence, revisions, history, export and camera handoff |
+| Stocktake | StocktakeModule, StocktakeScanner | stocktake.css plus feature-owned stocktake-scanner-presentation.css and minimal scanner-shared-controls.css | Local persistence, revisions, history, export and camera handoff |
 | Stocktake Import | StocktakeImportModule | stocktake-import.css (50,965 B) | Large feature-owned surface; parser precision, conflict review, dirty edits, persistence and export are protected |
 
 The complete CSS inventory remains owned by UI-03's phase record. These figures are source-file bytes, not emitted transfer size or runtime cost.
@@ -49,8 +49,9 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 
 ### 3.2 Settings
 - SettingsHub.tsx owns the Settings entry surface and nested Update Center.
-- It imports scanner-settings.css, which is also imported by ScannerSettingsPanel.tsx.
-- The stylesheet currently covers both Settings/Update Center and Scanner preference presentation. This is a real ownership seam to trace, not sufficient evidence to split the file blindly.
+- UI-04B retired the combined `scanner-settings.css` after tracing its two consumers.
+- `settings-dialog.css` owns the shared modal/backdrop/panel foundation; `settings-hub.css` owns Settings Hub and pending-update entry presentation; `scanner-preferences.css` owns scanner preference controls and feedback.
+- Update Center release/status styling remains owned by `src/shared/pwa/pwa-update-prompt.css`.
 - Preserve PWA update staging/consent/activation blockers, deferred state, focus restoration, body-scroll lock and persisted scanner preferences.
 
 ### 3.3 Scanner
@@ -65,7 +66,9 @@ The complete CSS inventory remains owned by UI-03's phase record. These figures 
 ### 3.4 Stocktake
 - StocktakeModule.tsx owns the operational workflow and imports feature-local stocktake.css.
 - StocktakeScanner.tsx remains a separate camera surface with its own stocktake-scanner-presentation.css and the minimal shared torch-control stylesheet.
-- UI-04D separates scanner-specific layout rules from the main Stocktake workspace stylesheet; overlay and panel selectors are explicit rather than conflated.
+- Merged UI-04D work separates `.stocktake-backdrop` from `.stocktake-panel` and `.stocktake-confirm-backdrop` from `.stocktake-confirm`; scanner-specific layout rules are no longer owned by the main Stocktake workspace stylesheet.
+- `scripts/test-ui-04d-stocktake-presentation.mjs` is registered in preflight and guards the implemented ownership/workflow boundary.
+- This is a bounded first slice, not proof that the full Stocktake view/state-to-presentation mapping is complete. Continue that audit before closing UI-04D.
 - Preserve session/zone/revision semantics, local persistence, action logs, edit/review/export flow, update blockers and scanner exit gate.
 
 ### 3.5 Stocktake Import
@@ -93,10 +96,12 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - Update `test-scanner-presentation.mjs` to guard selector ownership, preview reveal, reduced-motion and shared-control boundaries.
    - Keep engine, camera, worker and decoder untouched.
    - Exact-head CI run #1826 passed on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
-4. **UI-04D — Stocktake presentation — in progress**
-   - Audit view/state-to-presentation mapping and CSS ownership.
+4. **UI-04D — Stocktake presentation — partially implemented; continue**
+   - Merged implementation separates Stocktake overlay/panel and confirmation backdrop/panel selectors, moves scanner presentation to feature-owned CSS, and registers focused preflight contract tests.
+   - Exact merged branch-head CI run #1845 passed on `1ae4e870cc27e6209cd2128774167229f144ee90`.
+   - Remaining: complete the view/state-to-presentation ownership map, inspect all Stocktake surfaces and add/adjust regression evidence before marking UI-04D complete.
    - Preserve all operational and persistence contracts.
-5. **UI-04E — Stocktake Import presentation**
+5. **UI-04E — Stocktake Import presentation — pending**
    - Audit the large feature stylesheet by surface and state, not by arbitrary file-size targets.
    - Preserve import review, dirty state, conflicts, preview, history and export.
 6. **UI-04F — Cross-feature regression and closure**
@@ -132,10 +137,11 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 ## 7. Current status
 
 - UI-03 is merged to main as PR #180, merge commit 7b679da9bbd3b3a21b50711a8b56be8ca14e2e54; final docs-head CI run #1817 passed.
-- UI-04 branch is based on that merged main commit.
-- Discovery and source baseline are recorded above.
+- Original UI-04 branch was based on the UI-03 merge and is now merged; PR #181 landed 48 commits / 31 files on main.
 - UI-04A passed exact-head CI #1819 on `0b54a0356628d69592fbbc2643cf193f33d27604`.
-- UI-04B passed exact-head CI run #1821 on `14bcc16a7ac8a0c20d659fd8256ede6e1e97cb8e`.
-- UI-04C passed exact-head CI run #1826 on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
-- UI-04D has begun with explicit Stocktake overlay/panel ownership and scanner stylesheet separation; focused contract tests and full CI are pending.
-- No merge or deployment has been performed.
+- UI-04B passed exact-head CI #1821 on `14bcc16a7ac8a0c20d659fd8256ede6e1e97cb8e`.
+- UI-04C passed exact-head CI #1826 on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
+- Merged PR #181 head `1ae4e870cc27e6209cd2128774167229f144ee90` passed exact-head CI #1845, including preflight, TypeScript/production builds, bundle comparison and Playwright responsive/runtime evidence.
+- UI-04D focused tests and the full exact-head CI have passed for the implemented slice; broader Stocktake presentation ownership work remains open.
+- UI-04E and UI-04F are not yet implemented/closed.
+- No further merge or deployment is performed by this documentation update.
