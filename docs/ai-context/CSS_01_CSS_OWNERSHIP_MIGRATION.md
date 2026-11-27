@@ -1,6 +1,6 @@
 # CSS-01 — CSS Ownership Migration
 
-**Status:** CSS-01A source inventory/import-owner map and CSS-01B static consumer/cascade audit complete at the recorded source baseline. CSS-01C bounded runtime migration and before/after evidence remain open. No CSS declarations have been moved, rewritten or deleted in this slice.
+**Status:** CSS-01A source inventory/import-owner map and CSS-01B static consumer/cascade audit are complete. CSS-01C has completed two bounded legacy Login retirement slices (PR #198 and PR #199); CSS-01D automated/browser regression passed on the exact PR #199 head. CSS-01E documentation/status closure remains open. No broad CSS ownership rewrite or import-boundary change was made.
 **Baseline:** `main` at `adc2ec310c46f3f050b2af81b02ba622e8dc18b3` (2026-11-27).
 **PW-01:** Deferred by owner. No reproducible device defect has been observed in current acceptance; physical-device validation is not claimed complete and is not a prerequisite for the static CSS ownership audit.
 **Scope:** Evidence-led ownership mapping and bounded CSS migration after SH-01. This is not a visual redesign.
@@ -176,14 +176,14 @@ Selector-block counts are source parser counts, not unique CSSOM rules. Nested a
 | Mobile navigation | `mobile-shell-navigation` | Mobile navigation component boundary |
 | Tablet compatibility navigation | `shell-navigation__*`, `shell-navigation--tablet-compat` | Temporary Tablet compatibility only |
 
-The current Login component class vocabulary differs substantially from the older generic Login selectors still present in `responsive.css` and `mobile-tuning.css` (for example `.login-shell`, `.showcase-copy`, `.login-heading`, `.input-wrap`). These are **legacy candidates**, not yet PROVEN-UNUSED: the static pass did not exhaust every non-TSX source, generated class, test fixture, external selector contract or runtime state.
+The current Login component uses the `.login-experience` and BEM class families. The legacy Login selector clusters formerly present in `responsive.css` and `mobile-tuning.css` were retired in PR #198 and PR #199 after tracked-source consumer searches. Current Login feature styles remain in `login-experience.css` and `login-compact-landscape.css`; no Login TSX, auth behavior or import boundary was changed.
 
-The current navigation components expose platform-specific class families, while the global legacy sheets still contain `.mobile-nav` and `.mobile-nav-icon` rules. Treat these as **DYNAMIC/UNKNOWN / legacy candidates** until all imports, render paths, tests and runtime DOM states are checked. Do not migrate them into Mobile navigation solely from their names.
+The current navigation components expose platform-specific class families (`.desktop-shell-navigation`, `.mobile-shell-navigation`, Tablet compatibility classes) and render the shared `.liquid-dock`. Legacy `.mobile-nav` and `.mobile-nav-icon` rules remain in global and Home stylesheets, with no current TSX/JS/test consumer found by repository-wide code search. They are **PROVEN-UNUSED as legacy markup selectors in tracked source**, but their remaining declaration groups are not yet approved for removal: inspect grouped selectors and media/cascade effects before a separate bounded migration.
 
 ### 9.3 Cascade and breakpoint dependencies
 
 - The 11 eager imports in `main.tsx` remain in their existing order. The broad global sheets load before the Home feature's four ordered sheets; shared Brand/Motion/LiquidDock are loaded later in the root entry chain.
-- `responsive.css` contains several desktop/tablet/mobile transitions, including max-width 1200px, 940px and 700px, plus compact-width behavior. It hides/collapses sidebar labels and changes the Home shell, Login layout and metric/grid composition. It is not a Mobile-only sheet.
+- `responsive.css` contains desktop/tablet/mobile transitions, including max-width 1200px, 940px and 700px, plus compact-width behavior. It now retains Home shell, sidebar and metric/grid composition; the obsolete Login-specific rules were retired by PR #199. It is not a Mobile-only sheet.
 - `mobile-tuning.css` contains repeated max-width 700px and compact-width blocks, repeated reduced-motion handling, base interaction declarations and later Home/spotlight/calendar/library rules. Later blocks intentionally override earlier values in the same file; flattening or reordering changes the cascade.
 - The Home chain is ordered `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css`. The chain contains intentional cross-file selector reuse (for example `.app-shell`, `.topbar`, `.content-wrap`, `.spotlight-art`, `.panel-card`, `.mobile-nav`, `.search-field`). Selector reuse alone is not duplication.
 - `prefers-reduced-motion` is handled in more than one layer, including global/adaptive and Home presentation CSS. Preserve the combined behavior; do not remove a local rule based only on finding a global reduced-motion rule.
@@ -223,9 +223,9 @@ GitHub code search was run against the current repository default branch (same C
 
 | Selector family | Repository-wide code-search result | Classification |
 |---|---|---|
-| `.login-shell`, `.showcase-copy`, `.login-heading` | Found only in `src/styles/mobile-tuning.css`; no TSX, JS/TS, tests or other consumer source returned | **PROVEN-UNUSED in tracked source**; legacy Login rules |
-| `.field-label`, `.reveal-button`, `.login-security-note`, `.login-progress` | Found only in legacy `mobile-tuning.css` (some older design documentation mentions legacy concepts) | **PROVEN-UNUSED in runtime source**; keep historical documentation untouched |
-| `.input-wrap` | Current consumer is `.login-form__input-wrap` in `LoginForm.tsx` and current Login styles; legacy `.input-wrap` appears only in `mobile-tuning.css` | **PROVEN-UNUSED legacy selector**; do not confuse with current BEM class |
+| `.login-shell`, `.showcase-copy`, `.login-heading` | Retired from `responsive.css` and `mobile-tuning.css` by PR #198/#199; current Login TSX uses `.login-experience` / BEM classes | **RETIRED**; keep current feature-owned Login styles |
+| `.field-label`, `.reveal-button`, `.login-security-note`, `.login-progress` | Legacy declarations removed in PR #198/#199; historical documentation may still mention old vocabulary | **RETIRED**; keep historical documentation untouched |
+| `.input-wrap` | Legacy `.input-wrap` declarations removed in PR #199; current consumer is `.login-form__input-wrap` in `LoginForm.tsx` and current Login styles | **RETIRED**; do not confuse with current BEM class |
 | `.mobile-nav`, `.mobile-nav-icon` | Found in global stylesheet rules only; no current TSX/JS/test consumer returned | **PROVEN-UNUSED in tracked source** for the legacy navigation markup |
 | `.desktop-shell-navigation__*`, `.mobile-shell-navigation`, `.shell-navigation__*` | Current platform navigation component class families exist in source | **USED**; preserve platform-specific ownership |
 | `.spotlight-art` | Used in current `HomeScreen.tsx` and multiple ordered Home stylesheets | **USED**; cross-file declarations are not dead duplicates |
@@ -233,7 +233,15 @@ GitHub code search was run against the current repository default branch (same C
 
 “PROVEN-UNUSED” here is bounded to the tracked application source and test corpus returned by repository-wide code search at the audited baseline. It does not mean a selector is safe to delete without reviewing its declaration block, media context, animation references and visual effect. The next migration must remove only the isolated declaration cluster with before/after evidence.
 
-### 10.2 Existing CI/browser evidence
+### 10.2 CSS-01C migration and regression evidence
+
+- PR #198 merged: retired the first bounded set of legacy Login overrides from `mobile-tuning.css` (merge `ec10d1ceaa05ff95a232d3ad276866b63e612282`).
+- PR #199 merged: retired remaining legacy Login responsive rules and the obsolete `.login-identity-dock` selector cluster (merge `2c2a5b60e87c05b06153fb534a0a4bbdc5c77e5`).
+- Exact PR #199 head `e1e84f55829d374d676233ebefeff97dc72c3863`, RetailOS CI run #1985 — passed: preflight, PR-base production build and bundle comparison, Playwright Chromium installation, responsive/runtime evidence suite and artifact uploads.
+- The merge changed only `responsive.css` and `mobile-tuning.css`; no imports, TSX, feature CSS boundaries or business behavior changed.
+- Post-merge source review found two orphaned `login-identity-*` keyframe definitions left after PR #199; this PR removes them. No current Login DOM consumer references these keyframes.
+
+### 10.3 Existing CI/browser evidence
 
 The PR head `a9c11d67ada2c792f77705d8a2525a37cbe5c05d` completed RetailOS CI run **#1974** successfully:
 
@@ -247,11 +255,11 @@ The PR head `a9c11d67ada2c792f77705d8a2525a37cbe5c05d` completed RetailOS CI run
 
 This confirms the current baseline build and existing responsive/runtime test suite execute successfully. It does **not** establish a before/after CSS migration comparison because this PR has not changed runtime CSS. The uploaded bundle analysis is a baseline artifact, not a claim that all individual emitted CSS chunks have been manually inspected.
 
-### 10.3 CSS-01B exit assessment
+### 10.4 CSS-01B / CSS-01C exit assessment
 
 - Repository-wide source search has confirmed a bounded set of obsolete legacy Login and navigation selector families.
 - Current Home and platform navigation consumer families have positive source references.
 - Current PR CI has passed preflight, production/Pages build, bundle comparison and Playwright responsive/runtime evidence.
-- No runtime CSS changes have been made.
+- CSS-01C has made bounded runtime CSS deletions; import order and feature loading boundaries remain unchanged.
 
-**CSS-01B static audit is complete for the audited selector clusters.** The CSS chunk-by-chunk lazy/eager ownership inspection and computed-style comparison are retained as mandatory gates for CSS-01C before/after migration validation, not used to delay the static ownership audit. CSS-01C must start with a small, isolated, proven-unused legacy selector cluster; preserve import order and confirm the build/browser baseline remains unchanged.
+**CSS-01B static audit is complete for the audited selector clusters. CSS-01C has completed two bounded Login migrations. CSS-01D regression gate passed on PR #199's exact head.** The remaining `.mobile-nav` legacy declaration cluster is not automatically safe to delete because several rules are grouped with other selectors and spread across global/Home stylesheets. Any further removal must isolate those declarations without changing current `.liquid-dock` behavior, preserve cascade/import order, and pass exact-head bundle/browser regression. CSS-01E must update the current ownership/status record.
