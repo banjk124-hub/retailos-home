@@ -27,8 +27,8 @@ assert.match(mobileStyles, /env\(safe-area-inset-bottom\)/);
 assert.match(mobileStyles, /transform: translateX\(-50%\)/);
 assert.match(tabletStyles, /@media \(max-width: 900px\)/);
 assert.match(home, /<ShellNavigation[\s\S]*platform=\{platform\}/);
-assert.match(home, /platform === 'mobile' && isScannerSupportedDevice\(\)/);
-assert.match(home, /showScannerSettings=\{platform === 'mobile'\}/);
+assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && isScannerSupportedDevice\(\)/);
+assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available'\}/);
 assert.doesNotMatch(home, /<LiquidDock/);
 assert.match(dock, /data-keyboard-open/);
 
