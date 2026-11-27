@@ -1,0 +1,139 @@
+# CSS-01 — CSS Ownership Migration
+
+**Status:** CSS-01A source inventory and import-owner map complete on the audit branch. CSS-01B consumer/cascade evidence is in progress. No CSS declarations have been moved, rewritten or deleted in this slice.
+**Baseline:** `main` at `a64a49fe516b03cc7c8641a6e23c54a3391a6887` (2026-11-27).
+**PW-01:** Deferred by owner. No reproducible device defect has been observed in current acceptance; physical-device validation is not claimed complete and is not a prerequisite for the static CSS ownership audit.
+**Scope:** Evidence-led ownership mapping and bounded CSS migration after SH-01. This is not a visual redesign.
+
+## 1. Objective and invariants
+
+Establish a verifiable ownership model across:
+1. Shared foundation — reset, semantic tokens, generic interaction/accessibility primitives, brand/motion primitives with genuinely shared consumers.
+2. Platform presentation — Desktop, Mobile and Tablet compatibility composition and navigation styling. Platform capability policy remains in TypeScript, never CSS.
+3. Feature presentation — Login, Home, Settings, Scanner, Stocktake, Stocktake Import, PWA Update Center and other workflow-local styles.
+
+Preserve:
+- CSS source/import order and selector specificity unless a before/after computed-style comparison proves the change equivalent.
+- Existing responsive behavior, safe-area handling, touch targets, focus-visible, reduced-motion and power-conserve contracts.
+- Lazy-loaded feature CSS boundaries and emitted CSS chunk behavior.
+- SH-01 ownership: Home remains one shared stateful controller; platform roots own presentation composition. Do not duplicate business state.
+- Feature-owned styles remain local unless multiple real consumers demonstrate a stable shared semantic contract.
+- Scanner engine/lifecycle, Stocktake/Import business logic, auth/session, PWA release lifecycle and domain/data behavior are outside scope.
+
+## 2. CSS-01A — Source inventory at baseline
+
+Repository inspection found **34 tracked CSS files totaling 342,568 source bytes**. These are raw source sizes, not compressed transfer size, CSSOM size or render cost.
+
+| Ownership layer | Stylesheet | Bytes | Current disposition |
+|---|---|---:|---|
+| Shared foundation / global | `src/styles/base.css` | 1,107 | Keep global reset/base |
+| Shared foundation / global | `src/styles/theme.css` | 14,676 | Semantic token and legacy theme authority; audit aliases/consumers |
+| Shared foundation / global | `src/styles/interactions.css` | 1,586 | Cross-cutting interaction rules; audit scope and duplication |
+| Global responsive | `src/styles/responsive.css` | 10,467 | Global legacy responsive composition; high cascade risk |
+| Global responsive | `src/styles/mobile-tuning.css` | 80,308 | High-risk mixed global override layer; do not wholesale move/delete |
+| Shared performance | `src/styles/performance.css` | 1,000 | Preserve low-end/performance behavior |
+| Shared adaptive behavior | `src/styles/adaptive-appearance.css` | 4,191 | Preserve power mode, input and reduced-motion behavior |
+| Shared interaction/presentation | `src/styles/native-experience.css` | 7,885 | Mixed global app selectors and interaction primitives; audit consumer scope |
+| Auth journey | `src/styles/auth-journey.css` | 3,134 | App/auth journey-owned |
+| Login | `src/styles/login-experience.css` | 21,998 | Login-owned |
+| Login | `src/styles/login-compact-landscape.css` | 2,830 | Login-owned responsive variant |
+| Home | `src/styles/home.css` | 19,251 | Home-owned; ordered cascade |
+| Home | `src/styles/home-ux.css` | 21,136 | Home-owned; ordered cascade |
+| Home | `src/styles/home-engine.css` | 12,013 | Home-owned; ordered cascade |
+| Home | `src/styles/home-redesign.css` | 12,589 | Home-owned; ordered cascade |
+| Platform presentation | `src/platform/home/presentations/DesktopHomePresentation.css` | 56 | Desktop root; currently composition marker only |
+| Platform presentation | `src/platform/home/presentations/MobileHomePresentation.css` | 55 | Mobile root; currently composition marker only |
+| Platform compatibility | `src/platform/home/presentations/TabletHomeCompatibilityPresentation.css` | 55 | Tablet compatibility root; not a Tablet product approval |
+| Navigation / Desktop | `src/shared/navigation/DesktopShellNavigation.css` | 2,784 | Desktop navigation-owned |
+| Navigation / Mobile | `src/shared/navigation/MobileShellNavigation.css` | 746 | Mobile navigation-owned |
+| Navigation / Tablet | `src/shared/navigation/TabletShellNavigation.css` | 3,655 | Temporary Tablet compatibility navigation |
+| Navigation / dock | `src/shared/navigation/LiquidDock.css` | 11,676 | Shared navigation/dock presentation; imported at app entry |
+| Brand | `src/shared/brand/brand.css` | 6,645 | Brand-owned shared primitive |
+| Motion | `src/shared/motion/motion.css` | 11,112 | Motion preference/tokens/presets; preserve contracts |
+| Surface | `src/shared/components/surface/surface.css` | 2,340 | Surface primitive-owned |
+| PWA | `src/shared/pwa/pwa-update-prompt.css` | 10,616 | PWA Update Center-owned; release lifecycle protected |
+| Settings shared shell | `src/styles/settings-dialog.css` | 1,863 | Shared dialog shell used by Settings Hub and Scanner Preferences |
+| Settings Hub | `src/styles/settings-hub.css` | 1,708 | Settings Hub-owned |
+| Scanner Preferences | `src/styles/scanner-preferences.css` | 3,671 | Scanner Preferences-owned; separate from camera runtime policy |
+| Home Scanner | `src/features/scanner/barcode-scanner-presentation.css` | 4,815 | Home camera surface-owned |
+| Scanner shared control | `src/features/scanner/scanner-shared-controls.css` | 575 | Minimal shared torch-control styling; two real consumers |
+| Stocktake Scanner | `src/features/stocktake/components/stocktake-scanner-presentation.css` | 5,955 | Stocktake camera surface-owned |
+| Stocktake | `src/features/stocktake/components/stocktake.css` | 9,105 | Stocktake workflow-owned |
+| Stocktake Import | `src/features/stocktake-import/components/stocktake-import.css` | 50,965 | Import workflow-owned; keep local |
+
+## 3. Import-owner map
+
+| Import boundary | CSS imports | Loading/ownership notes |
+|---|---|---|
+| `src/main.tsx` | `base.css`, `responsive.css`, `theme.css`, `interactions.css`, `mobile-tuning.css`, `performance.css`, `adaptive-appearance.css`, `native-experience.css`, `brand.css`, `motion.css`, `LiquidDock.css` | 11 eager app-wide imports; order is part of current cascade |
+| `src/App.tsx` | `auth-journey.css` | Authenticated app journey |
+| `LoginExperience.tsx` | `login-experience.css`, `login-compact-landscape.css` | Login feature |
+| `HomeScreen.tsx` | `home.css`, `home-ux.css`, `home-engine.css`, `home-redesign.css` | Four ordered Home sheets; Home is lazy-loaded at authenticated shell |
+| Desktop/Mobile/Tablet Home roots | one corresponding presentation CSS each | Separate presentation ownership seam; current rules are minimal markers |
+| Desktop/Mobile/Tablet navigation components | one corresponding navigation CSS each | Platform navigation roots; Tablet remains compatibility only |
+| `Surface.tsx` | `surface.css` | Shared primitive |
+| `PwaUpdatePrompt.tsx` | `pwa-update-prompt.css` | PWA update presentation |
+| `SettingsHub.tsx` | `settings-dialog.css`, `settings-hub.css` | Shared dialog foundation then Settings-owned rules |
+| `ScannerSettingsPanel.tsx` | `settings-dialog.css`, `scanner-preferences.css` | Shared dialog foundation then preference-owned rules |
+| `BarcodeScanner.tsx` | `barcode-scanner-presentation.css`, `scanner-shared-controls.css` | Lazy Home scanner presentation |
+| `StocktakeScanner.tsx` | `stocktake-scanner-presentation.css`, `scanner-shared-controls.css` | Stocktake-owned scanner presentation |
+| `StocktakePresentation.tsx` | `stocktake.css` | Stocktake workspace |
+| `StocktakeImportPresentation.tsx` | `stocktake-import.css` | Import workflow |
+
+The import graph above is source-confirmed on this branch. Vite-emitted CSS chunk composition and actual network transfer must be measured from the production build before any lazy/eager import boundary is changed.
+
+## 4. Confirmed ownership risks
+
+### 4.1 Global override concentration
+
+`mobile-tuning.css` is 80,308 bytes and contains broad rules touching Login, Home, navigation and multiple shared selectors. Its name does not make it Mobile presentation-owned. It is a mixed global legacy override file; classify rule-by-rule by consumer and responsibility.
+
+`responsive.css` also changes Login and Home composition at several width thresholds (including 1200, 940 and 700px). Those are responsive layout decisions, not capability policy.
+
+`native-experience.css`, `adaptive-appearance.css`, `interactions.css` and `performance.css` overlap in the broader areas of interaction, motion, power-conserve and responsive behavior. Similar selector names alone do not prove duplicate declarations or equivalent behavior.
+
+### 4.2 Platform presentation seam
+
+SH-01 established independent Desktop/Mobile/Tablet root components and navigation components. The three Home root stylesheets currently contain only the root marker selector; they do not yet own substantial Home feature layout. CSS-01 must not claim that feature-level CSS has already migrated merely because the root components exist.
+
+### 4.3 Existing feature ownership to preserve
+
+UI-04 already established dedicated ownership for Settings Hub, Scanner Preferences, Home Scanner, Stocktake Scanner, Stocktake and Stocktake Import. The minimal shared scanner control stylesheet has two real consumers. These are existing contracts, not targets for centralization.
+
+### 4.4 Prior CSS consolidation is not authorization for a rewrite
+
+UI-03 already retired nine proven-unused legacy selector families and consolidated the former Home architecture stylesheet into the end of `home-redesign.css`. Its earlier inventory is stale relative to this baseline. This CSS-01 inventory supersedes the old file count and records current ownership without repeating the UI-03 cleanup.
+
+## 5. CSS-01 execution sequence
+
+| Slice | Scope | Exit criteria |
+|---|---|---|
+| CSS-01A | Refresh stylesheet inventory and import-owner map | All tracked CSS files have a current owner, size and source import boundary |
+| CSS-01B | Selector/consumer and cascade trace | Global override clusters are classified USED, DYNAMIC/UNKNOWN, TEST/CONTRACT-REFERENCED or PROVEN-UNUSED; imports/order/media/specificity are recorded |
+| CSS-01C | Bounded ownership migration | Move only a small, independently verifiable cluster; preserve cascade order and feature loading boundaries |
+| CSS-01D | Automated/browser regression | Exact-head preflight, TypeScript, production/Pages build, bundle comparison and responsive/runtime evidence pass |
+| CSS-01E | Documentation/status closure | Ownership map and current project status reflect verified source and CI; no unsupported physical-device claim |
+
+## 6. CSS-01B audit targets and order
+
+1. Trace the root cascade from `main.tsx`: `base` → `responsive` → `theme` → `interactions` → `mobile-tuning` → `performance` → `adaptive-appearance` → `native-experience` → Brand → Motion → LiquidDock.
+2. Trace the Home chain separately: `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css`; compare with the Home presentation roots and ShellNavigation imports.
+3. Audit broad global selectors in `mobile-tuning.css` and `responsive.css` against current TSX consumers, including conditionally rendered, dynamically composed, portal and pseudo-state classes.
+4. Trace cross-cutting interaction/performance selectors across `interactions.css`, `native-experience.css`, `adaptive-appearance.css`, `performance.css` and `motion.css`.
+5. Do not begin with Stocktake Import or Scanner feature CSS: those have clear feature ownership and high workflow regression cost.
+
+## 7. Protected boundaries / explicit non-goals
+
+- No visual redesign, palette, typography or design-system selection.
+- No blanket move/delete of `mobile-tuning.css` or `responsive.css`.
+- No changes to scanner engine, decoder, camera lease/lifecycle, Stocktake persistence/history/export, Import parsing/precision/conflict rules, auth/session, PWA update lifecycle or business data contracts.
+- No new CSS framework, preprocessor, runtime styling library or dependency.
+- No globalize feature-owned CSS for line-count or file-count reduction.
+- No merge or deploy without explicit owner approval.
+
+## 8. Evidence limits
+
+- Source inventory and import-owner mapping are static source evidence.
+- CSS source byte counts are not emitted bundle sizes or network transfer metrics.
+- Browser viewport emulation is not physical iOS/Android acceptance.
+- PW-01 remains deferred, not passed. Reopen physical validation if a reproducible device/browser defect, a material platform-sensitive CSS change or an explicit release acceptance requirement appears.
