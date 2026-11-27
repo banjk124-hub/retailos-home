@@ -1,8 +1,9 @@
 # UI-04 — Feature Presentation Migration
 
-**Status:** UI-04A/B/C implemented and validated; UI-04D partially implemented and validated at the merged PR head, with remaining Stocktake ownership work open; UI-04E and UI-04F pending.
-**Implementation PR:** #181 — merged to main at `e58bce634b9ff67e95250d36c8653593680463e9`.
-**Original branch base:** main after UI-03 merge `7b679da9bbd3b3a21b50711a8b56be8ca14e2e54` (historical; do not continue on the merged branch).
+**Status:** UI-04A/B/C/D implemented and validated; UI-04E Stocktake Import and UI-04F cross-feature closure remain pending.
+**Initial implementation PR:** #181 — merged to main at e58bce634b9ff67e95250d36c8653593680463e9.
+**UI-04D completion PR:** #189 — open / Draft, based on main 96209fd226b6efef4b8bb9a00859115baa78bcdf; exact-head CI #1873 passed on 0e2b730ecd64cca42cd618f66caf1b4fea1a37da.
+**Original UI-04 branch:** merged; do not continue on refactor/ui-04-feature-presentation.
 **Scope:** migrate feature presentation boundaries for Login, Settings, Scanner, Stocktake and Stocktake Import while preserving domain behavior, lifecycle, lazy-loading and accessibility contracts.
 
 ## 1. Objective and decision boundary
@@ -96,11 +97,12 @@ Deliver each slice independently, with source trace, focused tests, browser evid
    - Update `test-scanner-presentation.mjs` to guard selector ownership, preview reveal, reduced-motion and shared-control boundaries.
    - Keep engine, camera, worker and decoder untouched.
    - Exact-head CI run #1826 passed on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
-4. **UI-04D — Stocktake presentation — partially implemented; continue**
-   - Merged implementation separates Stocktake overlay/panel and confirmation backdrop/panel selectors, moves scanner presentation to feature-owned CSS, and registers focused preflight contract tests.
-   - Exact merged branch-head CI run #1845 passed on `1ae4e870cc27e6209cd2128774167229f144ee90`.
-   - Remaining: complete the view/state-to-presentation ownership map, inspect all Stocktake surfaces and add/adjust regression evidence before marking UI-04D complete.
-   - Preserve all operational and persistence contracts.
+4. **UI-04D — Stocktake presentation — implemented and validated; PR #189 open / Draft**
+   - Extracted the five workspace views, loading state and confirmation UI into StocktakePresentation.tsx; retained state, persistence and workflow operations in StocktakeModule.tsx.
+   - Moved the workspace stylesheet import to its presentation owner and preserved scanner overlay stacking/lifecycle boundaries.
+   - Added focused ownership tests and a Playwright flow covering zone creation, duplicate barcode rows, review, export/download, history and mobile/desktop panel geometry.
+   - Exact-head CI #1873 passed on 0e2b730ecd64cca42cd618f66caf1b4fea1a37da.
+   - No merge or deployment has occurred. Preserve all operational and persistence contracts.
 5. **UI-04E — Stocktake Import presentation — pending**
    - Audit the large feature stylesheet by surface and state, not by arbitrary file-size targets.
    - Preserve import review, dirty state, conflicts, preview, history and export.
@@ -142,6 +144,6 @@ UI-04 is complete only when all five surfaces pass their relevant gates on the e
 - UI-04B passed exact-head CI #1821 on `14bcc16a7ac8a0c20d659fd8256ede6e1e97cb8e`.
 - UI-04C passed exact-head CI #1826 on `8c10dfc98f8fea31b10316d91d00388dbf94ec3c`.
 - Merged PR #181 head `1ae4e870cc27e6209cd2128774167229f144ee90` passed exact-head CI #1845, including preflight, TypeScript/production builds, bundle comparison and Playwright responsive/runtime evidence.
-- UI-04D focused tests and the full exact-head CI have passed for the implemented slice; broader Stocktake presentation ownership work remains open.
+- UI-04D presentation ownership is complete on PR #189 head 0e2b730ecd64cca42cd618f66caf1b4fea1a37da; exact-head CI #1873 passed, including the dedicated Stocktake browser workflow. PR #189 remains open / Draft pending review and merge.
 - UI-04E and UI-04F are not yet implemented/closed.
 - No further merge or deployment is performed by this documentation update.

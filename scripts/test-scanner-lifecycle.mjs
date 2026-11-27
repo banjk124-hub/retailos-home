@@ -284,14 +284,18 @@ const stocktakeModuleSource = await readFile(
   new URL('../src/features/stocktake/components/StocktakeModule.tsx', import.meta.url),
   'utf8',
 );
+const stocktakePresentationSource = await readFile(
+  new URL('../src/features/stocktake/components/StocktakePresentation.tsx', import.meta.url),
+  'utf8',
+);
 assert.ok(stocktakeModuleSource.includes('setBarcode(value.trim())') && stocktakeModuleSource.includes("setQuantity('1')") && stocktakeModuleSource.includes('setManualEntry(false)'),
   'barcode-to-form fill and quantity defaults remain unchanged');
 assert.ok(stocktakeModuleSource.includes('const saveEntry = async () =>') && stocktakeModuleSource.includes('stocktakeStore.putEntry(entry)'),
   'Stocktake persistence remains behind the explicit save action');
 assert.ok(stocktakeModuleSource.includes("source: manualEntry ? 'manual' : 'scan'") && stocktakeModuleSource.includes('sequence: zoneEntries.reduce'),
   'manual entry and duplicate-row sequence behavior remain intact');
-assert.ok(stocktakeModuleSource.includes('Barcode trùng nhau được giữ nguyên thành các dòng riêng'),
-  'review continues to preserve duplicate barcode rows');
+assert.ok(stocktakePresentationSource.includes('Barcode trùng nhau được giữ nguyên thành các dòng riêng'),
+  'Stocktake presentation continues to communicate that duplicate barcode rows remain separate');
 
 const stocktakeTransitionCss = await readFile(
   new URL('../src/features/stocktake/components/stocktake-scanner-presentation.css', import.meta.url),

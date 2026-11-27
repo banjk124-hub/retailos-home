@@ -1,7 +1,7 @@
 # Current handoff — RetailOS
 
-**Repository:** `banjk124-hub/retailos-home`  
-**Verified main HEAD:** `01c814e546688595d2796c70bd72df228047e5e8`  
+**Repository:** banjk124-hub/retailos-home  
+**Verified main HEAD:** 96209fd226b6efef4b8bb9a00859115baa78bcdf  
 **Product/experience workflow:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
 **Decision register:** [DECISIONS.md](./DECISIONS.md)  
 **Verified state:** [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
@@ -14,19 +14,22 @@ RetailOS shares brand identity and business semantics, not mandatory feature par
 
 ## Latest verified repository state
 
-- PR #181 UI-04 initial feature presentation migration is **merged** at `e58bce634b9ff67e95250d36c8653593680463e9`. Its old feature branch is not the continuation base.
-- PR #185 AUDIT-03 CSS & Design Foundation static audit is **merged** at `bddb84259f7bc68656a42d467ec83fdddfe17b1f`. AUDIT-03A production CSS delivery baseline is the next proposed step; no CSS cleanup implementation is authorized by the audit.
-- PR #186 cross-platform governance is **merged**; current main HEAD is `01c814e546688595d2796c70bd72df228047e5e8`.
-- PR #187 Platform Experience & Architecture Audit is **open / Draft**. Its static source audit and CI run #1860 are complete/passing, but owner review of the platform capability matrix remains pending. Keep this audit separate from UI-04 implementation.
-- This documentation reconciliation is being prepared on `docs/official-status-sync-2026-11-27`, based on current main.
+- PR #181 UI-04 initial feature presentation migration is merged at e58bce634b9ff67e95250d36c8653593680463e9.
+- PR #185 AUDIT-03 CSS & Design Foundation static audit is merged at bddb84259f7bc68656a42d467ec83fdddfe17b1f. AUDIT-03A production CSS delivery baseline is the next proposed step; no CSS cleanup implementation is authorized by the audit.
+- PR #186 cross-platform governance is merged; current main HEAD is 96209fd226b6efef4b8bb9a00859115baa78bcdf.
+- PR #187 Platform Experience & Architecture Audit remains open / Draft. Its static source audit and CI #1860 are complete/passing, but owner review of the platform capability matrix remains pending. Keep this audit separate from UI-04 implementation.
+- PR #189 completes the UI-04D Stocktake presentation boundary; it remains open / Draft, based on current main. Exact-head CI #1873 passed on 0e2b730ecd64cca42cd618f66caf1b4fea1a37da.
 
 ## UI-04 continuation
 
-1. Read [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md).
-2. Create a new isolated branch from the latest main; do not reuse `refactor/ui-04-feature-presentation`.
-3. Finish UI-04D Stocktake presentation ownership. The merged work already separates overlay/panel selectors and Stocktake scanner presentation, with focused tests registered in preflight and exact-head CI #1845 passing. The broader view/state-to-presentation boundary still needs review and validation.
-4. Audit UI-04E Stocktake Import by surface, state and component ownership—not file size. Preserve parser precision, conflict review, dirty edits, persistence/history and export.
-5. Complete UI-04F cross-feature regression and update canonical documents from exact-head evidence.
+- UI-04A/B/C are merged and validated in PR #181.
+- UI-04D Stocktake presentation ownership is implemented and validated in PR #189:
+  - StocktakeModule.tsx owns workflow state, persistence and scanner/camera lifecycle orchestration.
+  - StocktakePresentation.tsx owns the five workspace views, loading state, confirmation UI and stocktake.css import.
+  - The scanner overlay remains nested in the original workspace stacking context through a presentation slot.
+  - Focused preflight and dedicated Playwright coverage pass, including duplicate barcode rows, export/download and history.
+- After owner review/merge of PR #189, create the next isolated branch from the then-current main and continue UI-04E Stocktake Import. Audit by surfaces and state, not by stylesheet size. Preserve parser precision, conflict review, dirty edits, persistence/history and export.
+- UI-04F cross-feature regression and closure remains pending.
 
 ## Platform audit continuation
 
@@ -38,4 +41,4 @@ Preserve auth/session, module IDs/readiness, snapshot/cache/offline truth, Scann
 
 ## Governance
 
-This documentation update does not authorize merge, deployment or production transfer. Verify live branch, commit, PR and CI before making volatile status claims or starting the next implementation slice.
+This update does not authorize merge, deployment or production transfer. Verify live branch, commit, PR and CI before making volatile status claims or starting the next implementation slice.
