@@ -19,8 +19,8 @@ Discover the workflow, user context, environment and constraints; explore materi
 
 ## Technical workstreams
 - **SH-01 shell/platform presentation — complete:** PR #193 merged to main at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`. Exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a`, including 10 Playwright tests. See SH-01_SHELL_PRESENTATION_OWNERSHIP.md.
-- **PW-01 physical PWA acceptance — pending:** validate installed mode, system UI, safe areas, dynamic viewport, keyboard, orientation, permissions and lifecycle on target physical iOS/iPadOS and Android devices, including lower-end devices.
-- **CSS-01 CSS ownership migration — pending:** map shared foundation, platform presentation and feature-owned layers; trace imports, cascade, consumers and computed styles before moving rules. No broad deletion is authorized by an audit.
+- **PW-01 physical PWA acceptance — deferred by owner:** no reproducible device defect has been observed in current acceptance. Physical iOS/iPadOS and Android installed-PWA validation is not claimed complete; reopen if a reproducible device/browser defect, material platform-sensitive change or explicit release acceptance requirement appears.
+- **CSS-01 CSS ownership migration — in progress:** CSS-01A refreshed the current 34-file/342,568-byte source inventory and import-owner map on `audit/css-01-ownership-migration`. CSS-01B consumer/cascade tracing is next. PW-01 is deferred and is not a prerequisite for this static ownership work. No broad deletion is authorized by an audit.
 - **AUDIT-03A production CSS baseline — proposed:** measure production CSS delivery and bundle composition before deciding whether optimization is warranted.
 - **UI-04 feature presentation migration — complete:** UI-04A–F are merged. See UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 - **UI-03 CSS consolidation — complete:** merged in PR #180; see UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
