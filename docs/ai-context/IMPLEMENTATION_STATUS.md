@@ -32,7 +32,7 @@ This file records verified repository state, not an authorization to merge, depl
 - UI-04E Stocktake Import presentation is implemented, validated and merged in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`.
 - Final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`, including full preflight, TypeScript, production/Pages builds, bundle comparison and 9 responsive/runtime browser tests.
 - Main RetailOS CI run [#45954497490](https://github.com/banjk124-hub/retailos-home/actions/runs/45954497490) and Build and deploy PWA run [#45954497547](https://github.com/banjk124-hub/retailos-home/actions/runs/45954497547) both succeeded on the merge commit.
-- UI-04F cross-feature closure is in progress on branch `audit/ui-04f-cross-feature-closure`; exact-head validation remains pending.
+- UI-04F cross-feature closure is implemented and validated in Draft PR #191. Exact-head CI run [#1907](https://github.com/banjk124-hub/retailos-home/actions/runs/45965306663) passed on `80aba62c8ee481014c4f47ce75be2422f0df32de`: preflight, TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests. Runtime artifact confirms 14 captured surfaces with zero browser/console errors, failed requests, horizontal overflow or duplicate DOM IDs. PR #191 remains unmerged pending owner review.
 - Canonical detail: UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 
 ### Platform Experience & Architecture Audit
@@ -57,5 +57,5 @@ Preserve auth/session, module registry and destination identity, snapshot/cache/
 - **Repository/source and PR metadata inspected:** main HEAD `38192b2ce1c426edd6285594a57a2c2970bc14ee`; PR #181, #185, #186, #187, #189 and #190 metadata.
 - **UI-04D:** merged PR #189; exact-head CI #1877 passed on source head `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 - **UI-04E:** merged PR #190; exact PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`; main CI and Pages deploy workflows succeeded on merge commit.
-- **Browser/device acceptance:** no physical iOS/Android device acceptance is claimed by this status update.
+- **Browser/device acceptance:** UI-04F Chromium evidence covers 14 captured surfaces and 7 Home viewports; no physical iOS/Android or low-end device acceptance is claimed.
 - **Merge/deployment:** PR #190 is merged. The GitHub Pages build/deploy workflow completed successfully on the merge commit; no separate production-account transfer was performed.

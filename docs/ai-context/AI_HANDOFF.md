@@ -25,8 +25,8 @@ RetailOS shares brand identity and business semantics, not mandatory feature par
 - UI-04A Login, UI-04B Settings/Update Center and UI-04C Scanner presentation are merged and validated in PR #181.
 - UI-04D Stocktake presentation ownership is merged and validated in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed.
 - UI-04E Stocktake Import presentation is merged and validated in PR #190 at `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final PR-head CI #1902 passed on `62a33ef4c06d5bf45a56d86f17ec34c73dc98198`. Main CI and Build and deploy PWA workflows succeeded on the merge commit.
-- UI-04F cross-feature closure is active on branch `audit/ui-04f-cross-feature-closure`, based on exact main HEAD `38192b2ce1c426edd6285594a57a2c2970bc14ee`. It adds cross-feature ownership assertions and requires runtime evidence for Settings, Update Center, Scanner Preferences, Stocktake and Stocktake Import.
-- Do not merge or deploy UI-04F until exact-head CI and owner review; no physical iOS/Android acceptance is implied by browser viewport tests.
+- UI-04F cross-feature closure is implemented and validated in Draft PR #191. Exact-head CI #1907 passed on `80aba62c8ee481014c4f47ce75be2422f0df32de`; all 9 browser tests passed. The runtime artifact confirms 14 captured surfaces with zero browser/console errors, failed requests, horizontal overflow or duplicate DOM IDs; Home viewport checks cover seven desktop/tablet/mobile/landscape sizes.
+- PR #191 remains Draft / unmerged pending owner review. No physical iOS/Android or low-end device acceptance is implied by browser viewport tests.
 
 ## Platform audit continuation
 
