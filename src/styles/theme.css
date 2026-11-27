@@ -185,10 +185,10 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .app-shell { background: radial-gradient(ellipse at 75% -15%,rgba(255,222,226,.55),transparent 34%),#fffafa; }
 .workspace-avatar,.footer-mark { background: linear-gradient(145deg,#e94150,#b81d2c); }
 .side-nav-item.active { color: var(--color-brand-strong); background: var(--color-brand-subtle); box-shadow: inset 3px 0 var(--color-brand-primary); }
-.side-nav-item.active svg,.mobile-nav button.active { color: var(--color-brand-primary); }
+.side-nav-item.active svg { color: var(--color-brand-primary); }
 .nav-dot,.status-pulse,.hero-live-dot { background: var(--color-brand-primary); }
 .system-status { background: var(--color-brand-subtle); color: #b32130; border-color: #f7d9dc; }
-.icon-button.selected,.mobile-nav button.active .mobile-nav-icon { background: var(--color-brand-subtle); color: var(--color-brand-primary); }
+.icon-button.selected { background: var(--color-brand-subtle); color: var(--color-brand-primary); }
 .topbar { background: #fff; border-bottom: 1px solid var(--color-border-subtle);   }
 .top-profile:hover { background: var(--color-brand-subtle); }
 .top-avatar,.profile-avatar { background: linear-gradient(145deg,#e94150,#b81d2c); }
@@ -210,7 +210,6 @@ button:focus-visible,input:focus-visible,select:focus-visible {
 .search-field:focus-within { border-color: #ed9aa2; box-shadow: 0 0 0 3px #d9273610; }
 .text-button,.module-card-bottom svg,.attention-copy button,.panel-footer-button { color: #c52635; }
 .version-pill,.attention-count { color: #b41f2d; background: var(--color-brand-subtle); border-color: #f4d6d9; }
-.mobile-nav { background: #fff; border-color: var(--color-border-subtle); box-shadow: var(--elevation-2); }
 .toast-message { border-color: var(--color-border-subtle); background: #fff; box-shadow: var(--elevation-2);   }
 .toast-check { color: #fff; background: var(--color-brand-primary); }
 
