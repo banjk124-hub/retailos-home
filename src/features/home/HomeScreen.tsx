@@ -129,9 +129,10 @@ export default function HomeScreen({
     setActiveNav('home');
   }, []);
   const openScannerSettings = useCallback(() => {
+    if (platform !== 'mobile') return;
     setShowSettings(false);
     setShowScannerSettings(true);
-  }, []);
+  }, [platform]);
   const closeScannerSettings = useCallback(() => {
     setShowScannerSettings(false);
     setShowSettings(true);
@@ -355,14 +356,22 @@ export default function HomeScreen({
     setIsBarcodeScannerOpen(false);
   }, []);
   const openBarcodeScanner = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    if (isBarcodeScannerOpen) return;
+    if (platform !== 'mobile' || !isScannerSupportedDevice() || isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
     // scanner will claim this lease as soon as its video element is available.
     cameraLeaseRequestRef.current = requestCameraLease(DEFAULT_SCANNER_CAMERA_REQUEST);
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
-  }, [isBarcodeScannerOpen]);
+  }, [isBarcodeScannerOpen, platform]);
+  useEffect(() => {
+    if (platform === 'mobile') return;
+    cameraLeaseRequestRef.current?.cancel();
+    cameraLeaseRequestRef.current = null;
+    setIsBarcodeScannerOpen(false);
+    setScannerMotionOrigin(null);
+    setShowScannerSettings(false);
+  }, [platform]);
   const dockAction = useMemo(() => {
     const scannerAvailable = platform === 'mobile' && isScannerSupportedDevice();
     return {
@@ -559,8 +568,8 @@ export default function HomeScreen({
       platform={platform}
     />
     {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} showScannerSettings={platform === 'mobile'} /></Suspense>}
-    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
-    {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
+    {platform === 'mobile' && showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {platform === 'mobile' && isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
