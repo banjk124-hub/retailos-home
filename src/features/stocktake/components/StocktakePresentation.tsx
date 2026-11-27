@@ -228,7 +228,7 @@ export default function StocktakePresentation({
               <button type="button" onClick={() => actions.onEditEntry(entry)} aria-label="Sửa dòng"><RefreshCw size={14} /></button>
             </div>
           ))}
-          <button className="stocktake-secondary" type="button" onClick={actions.onEnterManualEntry}>Nhập barcode thủ công</button>
+          <button className="stocktake-secondary" type="button" onClick={() => actions.onEnterManualEntry()}>Nhập barcode thủ công</button>
         </>}
 
         {screen === 'review' && currentZone && <>
