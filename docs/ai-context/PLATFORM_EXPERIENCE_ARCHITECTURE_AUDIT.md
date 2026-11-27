@@ -161,7 +161,7 @@ Avoid a `DesktopApp` and `MobileApp` fork that duplicates business logic. Keep t
 |---|---|---|---|
 | PA-01 | Capability inventory and source audit | Current workflow and capability evidence mapped; gaps recorded | Complete — static source audit |
 | PA-02 | Owner review of Desktop/Tablet/Mobile capability matrix | Each relevant workflow marked Desktop / Tablet / Mobile / shared / not offered, with rationale | Complete — owner-confirmed; see PLATFORM_CAPABILITY_MATRIX.md |
-| SH-01 | Shell/navigation ownership design | Shared identity/state contract and separate presentation boundaries defined from evidence | Pending |
+| SH-01 | Shell/navigation ownership design | Shared identity/state contract and separate presentation boundaries defined from evidence | In progress — initial navigation renderers separated; App/Home roots remain shared; see SH-01_SHELL_PRESENTATION_OWNERSHIP.md |
 | PW-01 | PWA display/runtime validation | Installed mode, system UI, safe area, viewport, keyboard, orientation and fallback tested on target OS/browser | Source audit complete; device validation pending |
 | CSS-01 | CSS ownership map | Shared foundation/platform/feature layers mapped; cascade and import order evidenced | Static map started; computed-style/runtime baseline pending |
 | MIG-01 | Bounded migration proposal | Before/after architecture, files, rollback and regression plan approved | Blocked by SH-01, PW-01 and CSS-01 |
