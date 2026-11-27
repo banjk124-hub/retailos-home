@@ -24,9 +24,20 @@ export const RUNTIME_DEPENDENT_ALL_PLATFORMS = {
   mobile: 'runtime-dependent',
 } as const satisfies PlatformAvailability;
 
+/** PWA install paths are runtime-dependent on Desktop/Mobile; Tablet product acceptance remains open. */
+export const RUNTIME_DEPENDENT_DESKTOP_MOBILE_WITH_TABLET_REVIEW = {
+  desktop: 'runtime-dependent',
+  tablet: 'review-required',
+  mobile: 'runtime-dependent',
+} as const satisfies PlatformAvailability;
+
 export const PLATFORM_CAPABILITY_POLICY = {
+  authenticationAndEmployeeIdentity: SHARED_DESKTOP_MOBILE,
+  homeWorkspace: SHARED_DESKTOP_MOBILE,
   manualBarcodeLookup: SHARED_DESKTOP_MOBILE,
   cameraBarcodeScanner: MOBILE_ONLY_WITH_TABLET_REVIEW,
+  scannerPreferences: MOBILE_ONLY_WITH_TABLET_REVIEW,
   settingsAndUpdateCenter: SHARED_DESKTOP_MOBILE,
   pushNotifications: RUNTIME_DEPENDENT_ALL_PLATFORMS,
+  pwaInstallation: RUNTIME_DEPENDENT_DESKTOP_MOBILE_WITH_TABLET_REVIEW,
 } as const;
