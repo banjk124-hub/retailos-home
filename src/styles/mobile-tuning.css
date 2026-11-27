@@ -33,9 +33,6 @@ button:not(:disabled):active {
 /* More deliberate entrance: one sequence, not a collection of abrupt pops. */
 .home-enter { animation-duration: 1s; }
 .home-enter-active .content-wrap > * { animation-duration: .88s; }
-.login-shell { animation-duration: .95s; }
-.login-panel { animation-duration: .82s; }
-.login-leaving .login-shell { animation-duration: .58s; }
 .transition-wash { animation-duration: .5s; }
 .transition-mark { animation-duration: .82s; }
 
@@ -49,25 +46,6 @@ button:not(:disabled):active {
     font-size: 16px !important;
     line-height: 1.35;
   }
-  .showcase-copy { margin-top: 27px; }
-  .showcase-copy .eyebrow,
-  .login-heading .eyebrow { font-size: 11px; letter-spacing: .9px; }
-  .showcase-copy p { font-size: 14px; line-height: 1.65; }
-  .login-panel-wrap { padding: 22px 16px calc(28px + env(safe-area-inset-bottom)); }
-  .login-panel { padding: 23px 19px 20px; border-radius: 23px; }
-  .mobile-brand { margin-bottom: 20px; }
-  .login-heading { margin-bottom: 22px; }
-  .login-heading h2 { font-size: 30px; line-height: 1.15; }
-  .login-heading p { font-size: 14px; line-height: 1.55; }
-  .field-label { font-size: 13px; margin-bottom: 8px; }
-  .field-label:not(:first-child) { margin-top: 17px; }
-  .input-wrap { height: 54px; gap: 11px; padding: 0 14px; border-radius: 14px; }
-  .input-wrap > svg { width: 19px; height: 19px; }
-  .reveal-button { width: 40px; height: 40px; }
-  .login-error { font-size: 13px; line-height: 1.5; padding: 12px; }
-  .login-progress { min-height: 42px; margin-top: 16px; padding: 10px 12px; font-size: 12px; line-height: 1.45; }
-  .login-security-note { margin-top: 15px; padding: 12px; font-size: 12px; line-height: 1.55; }
-  .login-disclaimer { margin-top: 17px; font-size: 10px; line-height: 1.5; letter-spacing: .65px; }
 
   .app-shell { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
   .topbar { min-height: calc(62px + env(safe-area-inset-top)); height: auto; padding: env(safe-area-inset-top) 16px 8px; }
@@ -161,8 +139,7 @@ button:not(:disabled):active {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-enter, .home-enter-active .content-wrap > *, .login-shell, .login-panel,
-  .login-leaving .login-shell, .transition-wash, .transition-mark,
+  .home-enter, .home-enter-active .content-wrap > *, .transition-wash, .transition-mark,
   .mobile-nav, button:not(:disabled):active {
     animation: none !important;
     transition-duration: .01ms !important;
@@ -258,56 +235,6 @@ button:not(:disabled):active {
 }
 
 @media (max-width: 700px) {
-  .login-panel-wrap {
-    min-height: 100svh;
-    padding-top: max(22px, env(safe-area-inset-top));
-    padding-bottom: max(24px, env(safe-area-inset-bottom));
-  }
-  .login-panel-wrap {
-    padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
-  }
-  .login-panel {
-    padding: 22px 19px 18px;
-    border-radius: 22px;
-  }
-  .mobile-brand {
-    margin-bottom: 18px;
-  }
-  .login-heading h2 {
-    font-size: 29px;
-    letter-spacing: -.8px;
-  }
-  .login-heading p,
-  .login-security-note {
-    font-size: 14px;
-    line-height: 1.55;
-  }
-  .field-label {
-    font-size: 14px;
-  }
-  .input-wrap {
-    min-height: 54px;
-    border-radius: 14px;
-    transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-  }
-  .input-wrap:focus-within {
-    border-color: #e99aa2;
-    background: rgba(255,255,255,.96);
-    box-shadow: 0 0 0 4px rgba(217,39,54,.09);
-  }
-  .reveal-button,
-  .login-submit {
-    min-height: 48px;
-  }
-  .login-submit {
-    margin-top: 22px;
-    font-size: 14px;
-    border-radius: 14px;
-    transition: transform 160ms var(--motion-standard), box-shadow 180ms ease, filter 180ms ease;
-  }
-  .login-submit:active:not(:disabled) {
-    transform: scale(.985);
-  }
   .app-shell {
     padding-bottom: calc(102px + env(safe-area-inset-bottom));
   }
@@ -399,8 +326,6 @@ button:not(:disabled):active {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .input-wrap,
-  .login-submit,
   .filter-pill,
   .mobile-nav button,
   .icon-button,
