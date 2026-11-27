@@ -86,7 +86,7 @@ RetailOS shared product identity + business journey
 
 ## 4. Required implementation metadata
 
-The Home workflow registry now declares a typed `platformAvailability` map independently from `availability` and `workStatus`.
+The Home workflow registry now declares a typed `platformAvailability` map independently from `availability` and `workStatus`. Cross-feature policies are declared in `PLATFORM_CAPABILITY_POLICY`, including authentication/identity, Home workspace, manual lookup, camera scanning, scanner preferences, Settings/Update Center, push notifications and PWA installation.
 
 Allowed product-policy states:
 
@@ -95,7 +95,7 @@ Allowed product-policy states:
 - `review-required`: no platform decision has been approved; do not infer.
 - `runtime-dependent`: the product capability is shared, but browser/OS/API/permission conditions determine actual runtime support.
 
-The matrix is policy metadata. It must not be used as a substitute for runtime permission/API checks, implementation readiness, data availability or operation state. The current Home library does not need to filter existing workflows because all nine are shared Desktop/Mobile. SH-01 now provides a signal-based platform context resolver for presentation composition; this resolver does not infer capability from viewport breakpoints and does not change module registry scope. Any future platform-only module still requires explicit policy metadata and a tested capability filter.
+The matrix is policy metadata. It must not be used as a substitute for runtime permission/API checks, implementation readiness, data availability or operation state. Authentication and Home workspace are shared capabilities; scanner preferences have their own Mobile-only policy entry; PWA installation is runtime-dependent on Desktop/Mobile while Tablet remains review-required. The current Home library does not need to filter existing workflows because all nine are shared Desktop/Mobile. SH-01 now provides a signal-based platform context resolver for presentation composition; this resolver does not infer capability from viewport breakpoints and does not change module registry scope. Any future platform-only module still requires explicit policy metadata and a tested capability filter.
 
 ## 5. Change and verification policy
 
