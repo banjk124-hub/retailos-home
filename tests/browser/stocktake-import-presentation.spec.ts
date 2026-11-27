@@ -101,7 +101,7 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
   await page.getByRole('button', { name: 'Lịch sử' }).click();
   await expect(page.getByText('Lịch sử xử lý trên thiết bị')).toBeVisible();
   await expect(page.locator('.stocktake-import-history-list article')).toHaveCount(1);
-  await page.getByRole('button', { name: 'Mở' }).click();
+  await page.getByRole('button', { name: 'Mở', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Xuất file' })).toBeVisible();
   await expect(page.locator('.stocktake-import-edit-table tbody tr')).toHaveCount(3);
 
