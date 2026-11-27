@@ -86,7 +86,7 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
   await page.getByRole('button', { name: 'Xem TXT' }).click();
   const output = page.getByRole('textbox', { name: 'Nội dung TXT BT01' });
   await expect(output).toBeVisible();
-  await expect(output).toHaveValue(/ARTICLE,8936000000001,1\\.750/);
+  await expect(output).toHaveValue(/ARTICLE,8936000000001,1\.750/);
   const txtDownload = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Quay lại bảng' }).click();
   await page.getByRole('button', { name: 'Tải TXT' }).click();
