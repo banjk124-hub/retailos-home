@@ -34,9 +34,9 @@ assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\]
 assert.match(home, /if \(PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] !== 'available' \|\| !isScannerSupportedDevice\(\) \|\| isBarcodeScannerOpen\) return/);
 assert.match(home, /if \(PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available'\) return;[\s\S]*?setIsBarcodeScannerOpen\(false\)/);
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && isBarcodeScannerOpen/);
-assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && showScannerSettings/);
-assert.match(home, /if \\(PLATFORM_CAPABILITY_POLICY\\.scannerPreferences\\[platform\\] !== 'available'\\) return/);
+assert.match(home, /PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available' && showScannerSettings/);
+assert.match(home, /if \(PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] !== 'available'\) return/);
 assert.match(settings, /showScannerSettings &&/);
-assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] === 'available'\}/);
+assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'\}/);
 
 console.log('SH-01C explicit platform presentation and Tablet safety contract tests passed.');
