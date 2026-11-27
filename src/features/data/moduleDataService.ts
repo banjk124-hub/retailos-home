@@ -1,5 +1,7 @@
 import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../shared/pwa/updateSafety';
 
+import type { CachedModuleSnapshot, SnapshotModuleId } from '../../shared/contracts/moduleSnapshot';
+
 export const MODULE_DATA_IDS = [
   'inventory',
   'price',
@@ -9,10 +11,9 @@ export const MODULE_DATA_IDS = [
   'delivery',
   'product-dates',
   'stocktake',
-] as const;
+] as const satisfies readonly SnapshotModuleId[];
 
-import type { CachedModuleSnapshot, SnapshotModuleId } from '../../shared/contracts/moduleSnapshot';
-export type ModuleDataId = typeof MODULE_DATA_IDS[number] & SnapshotModuleId;
+export type ModuleDataId = typeof MODULE_DATA_IDS[number];
 export type { CachedModuleSnapshot } from '../../shared/contracts/moduleSnapshot';
 export const MODULE_SNAPSHOTS_UPDATED_EVENT = 'retailos:module-snapshots-updated';
 
@@ -26,8 +27,6 @@ export type ModuleManifest = {
   authorizedModules: ModuleDataId[];
   modules: Partial<Record<ModuleDataId, ModuleManifestEntry>>;
 };
-
-
 
 export type ModuleSyncResult = {
   authorizedModules: ModuleDataId[];
