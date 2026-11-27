@@ -199,6 +199,16 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
     expect(layout.rail.right, `Desktop rail must not overlap Home content at ${v.name}`).toBeLessThanOrEqual(layout.main.left + 1);
   }
 
+  await expect(page.getByRole('button', { name: 'Quét mã' })).toHaveCount(0);
+  await page.getByRole('button', { name: /cài đặt/i }).first().click();
+  const desktopSettings = page.getByRole('dialog', { name: 'Cài đặt' });
+  await expect(desktopSettings).toBeVisible();
+  await expect(page.getByRole('button', { name: /Trung tâm cập nhật/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Cài đặt máy quét/ })).toHaveCount(0);
+  await capture(page, info, 'settings-desktop-1440x900');
+  await page.keyboard.press('Escape');
+  await expect(desktopSettings).toBeHidden();
+
   await page.goto('about:blank');
   await emulatePlatform(page, 'mobile', 390, 844);
   await seedSession(page);
@@ -209,6 +219,15 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await expect(page.locator('.desktop-shell-navigation')).toHaveCount(0);
   await page.waitForTimeout(350);
   await capture(page, info, 'home-mobile-390x844');
+
+  const mobileQuickLookup = page.getByRole('button', { name: 'Tra cứu nhanh' });
+  await expect(mobileQuickLookup).toBeVisible();
+  await mobileQuickLookup.click();
+  await expect(page.getByRole('button', { name: 'Quét mã' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Tìm kiếm' })).toBeVisible();
+  await page.getByRole('button', { name: 'Tìm kiếm' }).click();
+  await expect(page.getByLabel('Tên sản phẩm hoặc mã barcode')).toBeVisible();
+  await page.getByRole('button', { name: 'Đóng kết quả' }).click();
 
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(80);
