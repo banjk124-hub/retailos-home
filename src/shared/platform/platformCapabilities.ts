@@ -25,8 +25,12 @@ export const RUNTIME_DEPENDENT_ALL_PLATFORMS = {
 } as const satisfies PlatformAvailability;
 
 export const PLATFORM_CAPABILITY_POLICY = {
+  authenticationAndEmployeeIdentity: SHARED_DESKTOP_MOBILE,
+  homeWorkspace: SHARED_DESKTOP_MOBILE,
   manualBarcodeLookup: SHARED_DESKTOP_MOBILE,
   cameraBarcodeScanner: MOBILE_ONLY_WITH_TABLET_REVIEW,
+  scannerPreferences: MOBILE_ONLY_WITH_TABLET_REVIEW,
   settingsAndUpdateCenter: SHARED_DESKTOP_MOBILE,
   pushNotifications: RUNTIME_DEPENDENT_ALL_PLATFORMS,
+  pwaInstallation: RUNTIME_DEPENDENT_ALL_PLATFORMS,
 } as const;

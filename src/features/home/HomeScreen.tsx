@@ -129,7 +129,7 @@ export default function HomeScreen({
     setActiveNav('home');
   }, []);
   const openScannerSettings = useCallback(() => {
-    if (PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] !== 'available') return;
+    if (PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] !== 'available') return;
     setShowSettings(false);
     setShowScannerSettings(true);
   }, [platform]);
@@ -567,8 +567,8 @@ export default function HomeScreen({
       action={dockAction}
       platform={platform}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} showScannerSettings={PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available'} /></Suspense>}
-    {PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available' && showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} showScannerSettings={PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] === 'available'} /></Suspense>}
+    {PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] === 'available' && showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available' && isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
@@ -703,7 +703,7 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} /></Suspense>}
+    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} platform={platform} /></Suspense>}
     {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </HomePresentationRoot>;

@@ -33,7 +33,7 @@ assert.match(tabletStyles, /\.home-presentation-root--tablet \.app-shell\.has-sh
 assert.match(tabletStyles, /@media \(max-width: 900px\)/);
 assert.match(home, /<ShellNavigation[\s\S]*platform=\{platform\}/);
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && isScannerSupportedDevice\(\)/);
-assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available'\}/);
+assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'\}/);
 assert.doesNotMatch(home, /<LiquidDock/);
 assert.match(dock, /data-keyboard-open/);
 

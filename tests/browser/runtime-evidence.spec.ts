@@ -11,7 +11,7 @@ const viewports = [
   { name: '360x740', width: 360, height: 740 },
   { name: 'landscape-short', width: 844, height: 390 },
 ];
-const auditSession = { name: 'RetailOS UI Audit', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
+const auditSession = { name: 'Trương Dương', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
 
 async function emulatePlatform(page: Page, platform: 'desktop' | 'mobile' | 'tablet', screenWidth: number, screenHeight: number) {
   await page.addInitScript(({ platform, screenWidth, screenHeight }) => {
@@ -282,6 +282,11 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await stocktake.click();
   await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
   await capture(page, info, 'stocktake-390x844');
+  await page.locator('#stocktake-zone').fill('AT01');
+  await page.getByRole('button', { name: 'Bắt đầu vùng' }).click();
+  await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mở máy quét' }), 'Mobile Stocktake retains its camera scanner capability').toBeVisible();
+  await page.getByRole('button', { name: 'Quay lại' }).click();
   await page.getByRole('button', { name: 'Đóng kiểm kê' }).click();
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(350);
@@ -322,5 +327,20 @@ test('Tablet remains review-required and does not inherit camera scanner capabil
   await expect(page.getByRole('button', { name: /Trung tâm cập nhật/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Cài đặt máy quét/ })).toHaveCount(0);
   await capture(page, info, 'tablet-settings-768x1024');
+  await page.keyboard.press('Escape');
+  await expect(settingsDialog).toBeHidden();
+
+  const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
+  await moduleNav.click();
+  const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
+  await library.click();
+  const stocktake = page.getByRole('button', { name: /^kiểm kê/i }).first();
+  await stocktake.click();
+  await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
+  await page.locator('#stocktake-zone').fill('AT01');
+  await page.getByRole('button', { name: 'Bắt đầu vùng' }).click();
+  await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mở máy quét' }), 'Tablet Stocktake must not expose camera scanning').toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Nhập barcode thủ công' }), 'Manual Stocktake entry remains available').toBeVisible();
 });
 
