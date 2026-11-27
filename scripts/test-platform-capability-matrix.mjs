@@ -13,7 +13,11 @@ const [platform, registry, scanner, library, stocktake, home] = await Promise.al
 
 assert.match(platform, /desktop: 'available',[\s\S]*tablet: 'review-required',[\s\S]*mobile: 'available'/);
 assert.match(platform, /desktop: 'not-offered',[\s\S]*tablet: 'review-required',[\s\S]*mobile: 'available'/);
+assert.match(platform, /authenticationAndEmployeeIdentity: SHARED_DESKTOP_MOBILE/);
+assert.match(platform, /homeWorkspace: SHARED_DESKTOP_MOBILE/);
 assert.match(platform, /cameraBarcodeScanner: MOBILE_ONLY_WITH_TABLET_REVIEW/);
+assert.match(platform, /scannerPreferences: MOBILE_ONLY_WITH_TABLET_REVIEW/);
+assert.match(platform, /pwaInstallation: RUNTIME_DEPENDENT_DESKTOP_MOBILE_WITH_TABLET_REVIEW/);
 assert.match(platform, /manualBarcodeLookup: SHARED_DESKTOP_MOBILE/);
 assert.match(platform, /settingsAndUpdateCenter: SHARED_DESKTOP_MOBILE/);
 assert.match(platform, /pushNotifications: RUNTIME_DEPENDENT_ALL_PLATFORMS/);
@@ -34,6 +38,8 @@ assert.match(stocktake, /scannerOverlay = scannerOpen && screen === 'scan' && sc
   'Stocktake must not mount a camera surface outside the allowed capability');
 assert.match(stocktake, /CAMERA_SCANNER_PLATFORM_AVAILABILITY\[platform\] !== 'available'[\s\S]*?cameraLeaseRequestRef\.current\?\.cancel\(\)[\s\S]*?setScannerOpen\(false\)/,
   'Leaving an allowed platform must cancel and close an active Stocktake camera session');
+assert.match(home, /PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'/,
+  'Scanner Preferences must have its own Mobile-only policy gate');
 assert.match(home, /MemoizedStocktakeModule employee=\{employee\} onClose=\{closeStocktake\} platform=\{platform\}/,
   'Home must pass the resolved platform into the Stocktake capability boundary');
 assert.doesNotMatch(library, /isScannerSupportedDevice|matchMedia|innerWidth|userAgent/,
