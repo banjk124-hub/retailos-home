@@ -322,5 +322,20 @@ test('Tablet remains review-required and does not inherit camera scanner capabil
   await expect(page.getByRole('button', { name: /Trung tâm cập nhật/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Cài đặt máy quét/ })).toHaveCount(0);
   await capture(page, info, 'tablet-settings-768x1024');
+  await page.keyboard.press('Escape');
+  await expect(settingsDialog).toBeHidden();
+
+  const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
+  await moduleNav.click();
+  const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
+  await library.click();
+  const stocktake = page.getByRole('button', { name: /^kiểm kê/i }).first();
+  await stocktake.click();
+  await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
+  await page.locator('#stocktake-zone').fill('AT01');
+  await page.getByRole('button', { name: 'Bắt đầu vùng' }).click();
+  await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mở máy quét' }), 'Tablet Stocktake must not expose camera scanning').toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Nhập barcode thủ công' }), 'Manual Stocktake entry remains available').toBeVisible();
 });
 
