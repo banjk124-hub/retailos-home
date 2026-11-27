@@ -578,7 +578,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       downloaded: 'Đã tải TXT', zipped: 'Đã xuất ZIP', dirty: 'Chưa lưu',
       invalid: rowErrors ? rowErrors + ' lỗi' : 'File lỗi',
     };
-    return { zone, index, rowErrors, uniqueProductCount: countUniqueProductCodes(zone.rows), actionState, actionLabel: actionLabel[actionState] };
+    return { zone, index, uniqueProductCount: countUniqueProductCodes(zone.rows), actionState, actionLabel: actionLabel[actionState] };
   });
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
     .map((row, visibleIndex) => ({
