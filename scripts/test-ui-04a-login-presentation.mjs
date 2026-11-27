@@ -3,17 +3,22 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const read = (path) => readFile(resolve(process.cwd(), path), 'utf8');
-const [app, login, identity, loginExperience] = await Promise.all([
+const [app, shell, login, identity, loginExperience] = await Promise.all([
   read('src/App.tsx'),
+  read('src/platform/shell/AuthenticatedAppShell.tsx'),
   read('src/styles/login-experience.css'),
   read('src/styles/auth-journey.css'),
   read('src/features/auth/screens/LoginExperience.tsx'),
 ]);
 
 assert.match(app, /import ['"]\.\/styles\/auth-journey\.css['"];/,
-  'App must load the identity presentation owned by UnifiedIdentityView');
-assert.match(app, /function UnifiedIdentityView[\s\S]*?auth-journey-recognition/,
-  'App must retain the identity recognition composition');
+  'App must load the authenticated identity journey stylesheet');
+assert.match(app, /AuthenticatedAppShell/,
+  'App must delegate authenticated rendering to the shell boundary');
+assert.doesNotMatch(app, /function UnifiedIdentityView|auth-journey-recognition/,
+  'App must not own authenticated identity presentation markup');
+assert.match(shell, /function IdentityJourneyView[\s\S]*?auth-journey-recognition/,
+  'AuthenticatedAppShell must own the identity recognition composition');
 assert.doesNotMatch(login, /auth-journey-recognition|identity-surface-expand|identity-panel-reveal/,
   'Login feature CSS must not own App-level identity recognition presentation');
 assert.match(loginExperience, /\.\.\/\.\.\/styles\/login-experience\.css/,

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const app = read("../src/App.tsx");
+const authenticatedShell = read("../src/platform/shell/AuthenticatedAppShell.tsx");
 const home = read("../src/features/home/HomeScreen.tsx");
 const login = read("../src/features/auth/screens/LoginExperience.tsx");
 const settings = read("../src/features/home/components/SettingsHub.tsx");
@@ -15,7 +16,8 @@ const importPresentation = read("../src/features/stocktake-import/components/Sto
 const preflight = read("../scripts/preflight.mjs");
 const runtime = read("../tests/browser/runtime-evidence.spec.ts");
 const bundle = read("../scripts/test-bundle-boundaries.mjs");
-assert.ok(app.includes("lazy(() => import('./features/home/HomeScreen'))"));
+assert.ok(app.includes("AuthenticatedAppShell"));
+assert.ok(authenticatedShell.includes("lazy(() => import('../../features/home/HomeScreen'))"));
 assert.ok(app.includes("auth-journey.css"));
 assert.ok(login.includes("login-experience.css") && login.includes("login-compact-landscape.css"));
 for (const name of ["BarcodeScanner", "StocktakeModule", "StocktakeImportModule", "SettingsHub", "ScannerSettingsPanel"]) assert.ok(home.includes("const " + name + " = lazy("));

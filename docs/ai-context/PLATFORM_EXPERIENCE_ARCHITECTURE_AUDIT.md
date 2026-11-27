@@ -161,7 +161,7 @@ Avoid a `DesktopApp` and `MobileApp` fork that duplicates business logic. Keep t
 |---|---|---|---|
 | PA-01 | Capability inventory and source audit | Current workflow and capability evidence mapped; gaps recorded | Complete — static source audit |
 | PA-02 | Owner review of Desktop/Tablet/Mobile capability matrix | Each relevant workflow marked Desktop / Tablet / Mobile / shared / not offered, with rationale | Complete — owner-confirmed; see PLATFORM_CAPABILITY_MATRIX.md |
-| SH-01 | Shell/navigation ownership design | Shared identity/state contract and separate presentation boundaries defined from evidence | Pending |
+| SH-01 | Shell/navigation ownership design | Shared identity/state contract and separate presentation boundaries defined from evidence | Complete — SH-01B/C/D implemented; exact-head CI #1945 passed with 10 Playwright tests; physical device validation remains PW-01 |
 | PW-01 | PWA display/runtime validation | Installed mode, system UI, safe area, viewport, keyboard, orientation and fallback tested on target OS/browser | Source audit complete; device validation pending |
 | CSS-01 | CSS ownership map | Shared foundation/platform/feature layers mapped; cascade and import order evidenced | Static map started; computed-style/runtime baseline pending |
 | MIG-01 | Bounded migration proposal | Before/after architecture, files, rollback and regression plan approved | Blocked by SH-01, PW-01 and CSS-01 |
@@ -208,6 +208,6 @@ This audit does not select visual style, palette, typography, imagery, motion la
 
 ## 11. Final disposition
 
-**Platform Experience & Architecture Audit: source-inspection complete; PA-02 matrix owner-confirmed and typed registry metadata added in the current PR.**
+**Platform Experience & Architecture Audit: PA-02 owner-confirmed matrix and typed registry metadata merged to main. SH-01B/C/D implementation is complete on Draft PR #193; exact-head CI #1945 passed with 10 Playwright tests. Physical device validation remains PW-01.**
 
-Next executable work is SH-01 shell/presentation ownership design, followed by CSS-01 ownership migration and PW-01 physical PWA validation. Source metadata does not yet implement a platform resolver or filter. No broad migration should begin until the relevant boundaries and regression evidence are defined.
+SH-01 now has a shared authenticated shell boundary, signal-based platform context, explicit Desktop/Mobile Home presentation roots and navigation renderers, plus a Tablet compatibility fallback. Camera scanner/settings entry points are gated by the Mobile-only capability policy. CSS-01 ownership migration and PW-01 physical PWA validation remain separate gates.

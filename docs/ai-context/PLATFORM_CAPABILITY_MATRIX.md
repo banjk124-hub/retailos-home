@@ -88,7 +88,7 @@ Allowed product-policy states:
 - `review-required`: no platform decision has been approved; do not infer.
 - `runtime-dependent`: the product capability is shared, but browser/OS/API/permission conditions determine actual runtime support.
 
-The matrix is policy metadata. It must not be used as a substitute for runtime permission/API checks, implementation readiness, data availability or operation state. The current Home library does not need to filter existing workflows because all nine are shared Desktop/Mobile. Before introducing a platform-only module, implement and test the platform context resolver/filter as part of that feature's presentation slice; do not use viewport breakpoints as a substitute.
+The matrix is policy metadata. It must not be used as a substitute for runtime permission/API checks, implementation readiness, data availability or operation state. The current Home library does not need to filter existing workflows because all nine are shared Desktop/Mobile. SH-01 now provides a signal-based platform context resolver for presentation composition; this resolver does not infer capability from viewport breakpoints and does not change module registry scope. Any future platform-only module still requires explicit policy metadata and a tested capability filter.
 
 ## 5. Change and verification policy
 
@@ -110,7 +110,7 @@ Browser viewport emulation is useful for responsive checks but does not certify 
 ## 7. Next workstream gates
 
 1. **PA-02 — Capability matrix:** owner-confirmed and represented in typed Home registry metadata; current nine workflows and scanner/manual lookup policy recorded.
-2. **SH-01 — Shell and presentation ownership:** map shared app/session/navigation identity to independent Desktop/Mobile presentation roots without duplicating domain state.
+2. **SH-01 — Shell and presentation ownership:** implementation complete on Draft PR #193; exact-head CI #1945 passed with 10 Playwright tests. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01.
 3. **CSS-01 — Styling ownership migration:** trace global/mobile-tuning consumers, move styles incrementally to shared foundation/platform/feature owners, preserve cascade and avoid stacked overrides.
 4. **PW-01 — PWA runtime validation:** verify standalone/display-mode, safe areas, dynamic viewport, keyboard, orientation, permission and fallback on target OS/browser combinations.
 5. **MIG-01 — Bounded feature migration:** choose one workflow, preserve shared business result and validate platform isolation before expanding.

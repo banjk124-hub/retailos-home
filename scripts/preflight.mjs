@@ -39,9 +39,24 @@ const checks = [
     args: ["scripts/test-platform-capability-matrix.mjs"],
   },
   {
-    name: "Responsive shell navigation and shared destination contract tests",
+    name: "SH-01B authenticated shell ownership contract tests",
+    command: process.execPath,
+    args: ["scripts/test-sh-01-authenticated-shell.mjs"],
+  },
+  {
+    name: "SH-01C explicit platform presentation and Tablet safety contract tests",
+    command: process.execPath,
+    args: ["scripts/test-sh-01-platform-presentation.mjs"],
+  },
+  {
+    name: "SH-01 platform-owned navigation composition contract tests",
     command: process.execPath,
     args: ["scripts/test-shell-navigation-contract.mjs"],
+  },
+  {
+    name: "SH-01D shared-state and platform-isolation integration contract tests",
+    command: process.execPath,
+    args: ["scripts/test-sh-01-integration.mjs"],
   },
   {
     name: "RetailOS Design Foundation semantic token and motion contract tests",

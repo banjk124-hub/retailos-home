@@ -1,7 +1,7 @@
 # Current verified implementation status — 2026-11-27
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** 6925cf968ea2b9c37377856abaf4c4a2ca6785a0
+**Verified main HEAD:** ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45
 
 This file records verified repository state, not an authorization to merge, deploy or transfer production.
 
@@ -20,6 +20,7 @@ This file records verified repository state, not an authorization to merge, depl
 | AUDIT-02 ownership implementation | PR #184 merged | Verified PR metadata |
 | AUDIT-03 CSS & Design Foundation static audit | PR #185 merged | Merge commit bddb84259f7bc68656a42d467ec83fdddfe17b1f; audit only, no source implementation |
 | Cross-platform governance contract | PR #186 merged | Merge commit `01c814e546688595d2796c70bd72df228047e5e8` |
+| PA-02 Platform Experience capability matrix | PR #187 merged | Merge commit `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45` |
 | UI-04E Stocktake Import presentation | PR #190 merged | Merge commit `38192b2ce1c426edd6285594a57a2c2970bc14ee`; final exact PR-head CI #1902 passed |
 | UI-04F cross-feature closure | PR #191 merged | Merge commit `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; exact-head CI #1908 passed |
 
@@ -38,11 +39,10 @@ This file records verified repository state, not an authorization to merge, depl
 
 ### Platform Experience & Architecture Audit
 
-- PR #187 remains open / Draft; it is being refreshed from main `6925cf968ea2b9c37377856abaf4c4a2ca6785a0` after UI-04F merge.
-- PA-02 owner matrix is now confirmed: nine Home workflows shared Desktop/Mobile; camera scanner and dedicated copy/CSS Mobile-only; manual lookup shared; Tablet review-required.
-- This PR adds typed platform-availability metadata to the module registry and a focused preflight contract. It does not yet implement a platform resolver, filtering, separate shells or presentation migration.
-- The old CI #1860 applies only to the earlier audit-only head. Refreshed source/test head `1067a21d402ada5b0baa21c53241a57284e07932` passed exact-head RetailOS CI #1914: full preflight (including the new matrix contract), TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests. Physical-device PWA acceptance and computed-style/runtime CSS validation remain pending.
-- Physical-device PWA acceptance and computed-style/runtime CSS validation remain pending.
+- PR #187 PA-02 is merged to `main` at `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`; its owner-confirmed matrix and typed registry metadata are now part of the main baseline.
+- SH-01B/C/D implementation is in progress on `refactor/sh-01b-authenticated-shell`, based directly on that main commit. It extracts authenticated shell composition, adds a signal-based platform context, introduces Desktop/Mobile Home presentation roots, retains a Tablet compatibility fallback, and gates camera scanner/settings entry to Mobile.
+- PR #192 was merged into `audit/platform-experience-architecture`, not directly into main. The current SH-01 branch ports its navigation renderer ownership from the merged audit work and continues on main.
+- PR #193 remains Draft/open and is not merged or deployed. Exact-head CI #1945 passed on `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f`: preflight, TypeScript, production/Pages builds, bundle comparison and 10 Playwright tests passed. Physical-device PWA acceptance remains in PW-01; full global/feature CSS ownership migration remains CSS-01.
 
 ### AUDIT-03 — CSS & Design Foundation
 

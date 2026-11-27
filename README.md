@@ -18,7 +18,7 @@ RetailOS dùng chung một bộ nhận diện thương hiệu và một ngôn ng
 - **Capability detection:** chọn presentation/capability bằng feature detection và các tín hiệu phù hợp (viewport, pointer/hover, touch, display mode, API/permission availability); không dựa duy nhất vào User-Agent hoặc breakpoint để suy ra loại thiết bị.
 - **Truthful availability:** UI phải phân biệt feature không được cung cấp trên nền tảng, feature chưa triển khai, thiếu quyền, thiếu dữ liệu và lỗi vận hành. Không hiển thị entry point giả hoặc đánh dấu ready chỉ vì có tile.
 
-Đây là product/architecture contract đã được owner xác nhận và được cụ thể hóa tại `docs/ai-context/PLATFORM_CAPABILITY_MATRIX.md`. Source hiện tại vẫn cần migration theo từng phase; matrix metadata không tự động chứng minh hai shell độc lập đã được triển khai. Xem DECISIONS.md (PD-007/PD-008), ARCHITECTURE.md (ADR-030), PLATFORM_EXPERIENCE_ARCHITECTURE_AUDIT.md và PLATFORM_CAPABILITY_MATRIX.md.
+Đây là product/architecture contract đã được owner xác nhận tại `docs/ai-context/PLATFORM_CAPABILITY_MATRIX.md`. SH-01B/C/D đã tách authenticated shell khỏi auth/session owner, có platform context resolver, composition roots Desktop/Mobile riêng và Home workflow state dùng chung. Tablet giữ compatibility fallback; camera scanner chỉ được cung cấp theo policy Mobile. Exact-head CI #1945 đã pass trên head `3ceb12d6f91a7cab8fd3ceccb5c7947c6028013f`, gồm 10 Playwright tests. Physical-device validation vẫn thuộc PW-01. Xem `docs/ai-context/SH-01_SHELL_PRESENTATION_OWNERSHIP.md`, DECISIONS.md (PD-007/PD-008), ARCHITECTURE.md (ADR-030) và PLATFORM_EXPERIENCE_ARCHITECTURE_AUDIT.md.
 
 ## Yêu cầu
 

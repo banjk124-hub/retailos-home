@@ -8,6 +8,7 @@ import '../../../styles/settings-hub.css';
 type Props = {
   onClose: () => void;
   onOpenScannerSettings: () => void;
+  showScannerSettings: boolean;
 };
 
 function requestUpdateAction(action: 'download' | 'activate') {
@@ -69,7 +70,7 @@ function UpdateCenterView({ entry, onBack }: { entry: UpdateCenterEntry | null; 
   </section>;
 }
 
-export default function SettingsHub({ onClose, onOpenScannerSettings }: Props) {
+export default function SettingsHub({ onClose, onOpenScannerSettings, showScannerSettings }: Props) {
   const [updateEntry, setUpdateEntry] = useState(readUpdateCenterEntry);
   const [showUpdateCenter, setShowUpdateCenter] = useState(false);
   useEffect(() => { const sync = () => setUpdateEntry(readUpdateCenterEntry()); window.addEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.addEventListener('storage', sync); return () => { window.removeEventListener(UPDATE_CENTER_CHANGED_EVENT, sync); window.removeEventListener('storage', sync); }; }, []);
@@ -100,11 +101,13 @@ export default function SettingsHub({ onClose, onOpenScannerSettings }: Props) {
           <ChevronRight size={18} />
         </button>
       </div>
+      {showScannerSettings && <>
       <div className="scanner-settings-section-label">MÁY QUÉT BARCODE</div>
       <div className="scanner-settings-menu">
         <button type="button" className="scanner-settings-menu-item" onClick={onOpenScannerSettings}><span className="scanner-settings-menu-icon"><ScanBarcode size={20} /></span><span className="scanner-settings-menu-copy"><strong>Cài đặt máy quét</strong><small>Điều chỉnh âm báo và phản hồi rung khi quét</small></span><ChevronRight size={18} /></button>
       </div>
       <p className="scanner-settings-footnote">Các tùy chọn máy quét được lưu trên thiết bị và dùng chung cho Home, Kiểm kê cùng các chức năng Scanner khác.</p>
+      </>}
     </section>
   </div>;
 }

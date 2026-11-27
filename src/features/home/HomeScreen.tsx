@@ -33,6 +33,8 @@ import { useHomePushNotifications } from './hooks/useHomePushNotifications';
 import { useHomeUpdateNoticeCount } from './hooks/useHomeUpdateNoticeCount';
 import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';
 import { isPushConfigured } from '../notifications/integration';
+import { PLATFORM_CAPABILITY_POLICY, type RetailPlatform } from '../../shared/platform/platformCapabilities';
+import { HomePresentationRoot } from '../../platform/home/HomePresentationRoot';
 
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
@@ -63,6 +65,7 @@ type Props = {
   canInstall: boolean;
   onInstall: () => Promise<void> | void;
   onBootReady: () => void;
+  platform: RetailPlatform;
 };
 function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () => void }) {
   const headingId = `module-loading-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -94,7 +97,7 @@ const HOME_DOCK_ITEMS = navItems.map((item) => ({
 }));
 
 export default function HomeScreen({
-  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall, onBootReady,
+  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall, onBootReady, platform,
 }: Props) {
   useEffect(() => {
     onBootReady();
@@ -126,9 +129,10 @@ export default function HomeScreen({
     setActiveNav('home');
   }, []);
   const openScannerSettings = useCallback(() => {
+    if (PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] !== 'available') return;
     setShowSettings(false);
     setShowScannerSettings(true);
-  }, []);
+  }, [platform]);
   const closeScannerSettings = useCallback(() => {
     setShowScannerSettings(false);
     setShowSettings(true);
@@ -352,21 +356,29 @@ export default function HomeScreen({
     setIsBarcodeScannerOpen(false);
   }, []);
   const openBarcodeScanner = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    if (isBarcodeScannerOpen) return;
+    if (PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] !== 'available' || !isScannerSupportedDevice() || isBarcodeScannerOpen) return;
     // Begin getUserMedia in the actual dock-button interaction; the mounted
     // scanner will claim this lease as soon as its video element is available.
     cameraLeaseRequestRef.current = requestCameraLease(DEFAULT_SCANNER_CAMERA_REQUEST);
     setScannerMotionOrigin(getMotionOrigin(event.currentTarget));
     void unlockScannerAudio();
     setIsBarcodeScannerOpen(true);
-  }, [isBarcodeScannerOpen]);
+  }, [isBarcodeScannerOpen, platform]);
+  useEffect(() => {
+    if (PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available') return;
+    cameraLeaseRequestRef.current?.cancel();
+    cameraLeaseRequestRef.current = null;
+    setIsBarcodeScannerOpen(false);
+    setScannerMotionOrigin(null);
+    setShowScannerSettings(false);
+  }, [platform]);
   const dockAction = useMemo(() => {
-    const scannerAvailable = isScannerSupportedDevice();
+    const scannerAvailable = PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available' && isScannerSupportedDevice();
     return {
       label: 'Tra cứu nhanh',
       icon: Search,
       onSelect: () => openManualProductLookup(),
-      // Desktop opens manual lookup directly. Mobile exposes both sticker actions.
+      // Manual lookup is shared. Only Mobile adds the camera-scanner action.
       ...(scannerAvailable ? {
         choices: [
           { id: 'manual-search', label: 'Tìm kiếm', icon: Search, onSelect: () => openManualProductLookup() },
@@ -374,8 +386,8 @@ export default function HomeScreen({
         ],
       } : {}),
     };
-  }, [openBarcodeScanner, openManualProductLookup]);
-  return <>
+  }, [openBarcodeScanner, openManualProductLookup, platform]);
+  return <HomePresentationRoot platform={platform}>
     <div className={`app-shell has-shell-navigation home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
       <header className="topbar home-topbar" id="home">
@@ -553,10 +565,11 @@ export default function HomeScreen({
       activeId={activeNav}
       onSelect={handleNav}
       action={dockAction}
+      platform={platform}
     />
-    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} /></Suspense>}
-    {showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
-    {isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
+    {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} showScannerSettings={PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available'} /></Suspense>}
+    {PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available' && showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
+    {PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available' && isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
       <MemoizedBarcodeScanner onDetected={handleBarcodeDetected} onClose={closeBarcodeScanner} mode="single" cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
     </AppErrorBoundary></Suspense>}
     {barcodeLookup && <div className="barcode-result-backdrop" onClick={(event) => {
@@ -693,5 +706,5 @@ export default function HomeScreen({
     {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} /></Suspense>}
     {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
-  </>;
+  </HomePresentationRoot>;
 }
