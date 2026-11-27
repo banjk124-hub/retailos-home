@@ -17,7 +17,7 @@ assert.match(platform, /authenticationAndEmployeeIdentity: SHARED_DESKTOP_MOBILE
 assert.match(platform, /homeWorkspace: SHARED_DESKTOP_MOBILE/);
 assert.match(platform, /cameraBarcodeScanner: MOBILE_ONLY_WITH_TABLET_REVIEW/);
 assert.match(platform, /scannerPreferences: MOBILE_ONLY_WITH_TABLET_REVIEW/);
-assert.match(platform, /pwaInstallation: RUNTIME_DEPENDENT_DESKTOP_MOBILE_WITH_TABLET_REVIEW/);
+assert.match(platform, /pwaInstallation: RUNTIME_DEPENDENT_ALL_PLATFORMS/);
 assert.match(platform, /manualBarcodeLookup: SHARED_DESKTOP_MOBILE/);
 assert.match(platform, /settingsAndUpdateCenter: SHARED_DESKTOP_MOBILE/);
 assert.match(platform, /pushNotifications: RUNTIME_DEPENDENT_ALL_PLATFORMS/);
