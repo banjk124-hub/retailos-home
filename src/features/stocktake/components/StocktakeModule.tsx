@@ -508,16 +508,13 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     return <StocktakePresentation model={presentationModel} actions={presentationActions} />;
   }
 
-  return (
-    <>
-      <StocktakePresentation model={presentationModel} actions={presentationActions} />
-      {scannerOpen && screen === 'scan' && (
-        <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ ...scannerViewportStyle, '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string; '--scanner-visual-viewport-height': string; '--scanner-visual-viewport-top': string }}>
-          <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={closeScanner}>Đóng</button></div>}>
-            <StocktakeScanner onDetected={acceptBarcode} onClose={closeScanner} cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
-          </AppErrorBoundary>
-        </div>
-      )}
-    </>
-  );
+  const scannerOverlay = scannerOpen && screen === 'scan' ? (
+    <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ ...scannerViewportStyle, '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string; '--scanner-visual-viewport-height': string; '--scanner-visual-viewport-top': string }}>
+      <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={closeScanner}>Đóng</button></div>}>
+        <StocktakeScanner onDetected={acceptBarcode} onClose={closeScanner} cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+      </AppErrorBoundary>
+    </div>
+  ) : null;
+
+  return <StocktakePresentation model={presentationModel} actions={presentationActions} scannerOverlay={scannerOverlay} />;
 }
