@@ -9,8 +9,9 @@ export const MODULE_ICON_REGISTRY: Record<RetailModuleId, RetailIcon> = {
 export const LIBRARY_ICON_REGISTRY: Record<ModuleLibraryId, RetailIcon> = {
   'goods-control': Warehouse, 'goods-processing': Truck, sales: Activity, 'product-dates': CalendarDays, stocktake: Check,
 };
-export const HOME_NAV_ICON_REGISTRY = { home: House, modules: Boxes, activity: ChartNoAxesCombined, settings: Settings, }
-  satisfies Record<'home' | 'modules' | 'activity' | 'settings', RetailIcon>;
+export const HOME_NAV_ICON_REGISTRY: Record<'home' | 'modules' | 'activity' | 'settings', RetailIcon> = {
+  home: House, modules: Boxes, activity: ChartNoAxesCombined, settings: Settings,
+};
 const moduleLookup: Partial<Record<string, RetailIcon>> = { ...MODULE_ICON_REGISTRY };
 const libraryLookup: Partial<Record<string, RetailIcon>> = { ...LIBRARY_ICON_REGISTRY };
 const navLookup: Partial<Record<string, RetailIcon>> = { ...HOME_NAV_ICON_REGISTRY };
