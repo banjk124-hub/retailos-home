@@ -73,6 +73,7 @@ export type StocktakeImportPresentationActions = {
   onFilesSelected: (files: File[]) => void;
   onCancelPendingImport: () => void;
   onConfirmPendingImport: (mergeConflicts: boolean) => void;
+  onRequestNewSession: () => void;
   onCancelNewSession: () => void;
   onResetActiveSession: () => void;
   onSelectZone: (index: number) => void;
@@ -80,6 +81,7 @@ export type StocktakeImportPresentationActions = {
   onClosePreview: () => void;
   onCopyOutput: () => void;
   onExportZone: (zoneIndex: number) => void;
+  onExportAll: () => void;
   onBeginEdit: () => void;
   onCancelEdit: () => void;
   onSaveActiveZone: () => void;
@@ -189,7 +191,7 @@ export default function StocktakeImportPresentation({
                 {busyAction === 'import' ? 'Đang xử lý workbook…' : result ? 'Thêm file vào phiên' : 'Chọn file Excel'}
               </button>
               {result && <button className="stocktake-import-secondary stocktake-import-new-session" type="button" disabled={busy || hasDirtyZones}
-                onClick={() => actions.onCancelNewSession === undefined ? undefined : undefined}>Tạo phiên mới</button>}
+                onClick={actions.onRequestNewSession}>Tạo phiên mới</button>}
             </div>
             <p className="stocktake-import-hint">Hỗ trợ chọn nhiều workbook .xlsx cùng lúc. Có thể thêm file vào phiên đang xử lý; dữ liệu chỉ được cộng dồn sau khi kiểm tra và xác nhận trùng file hoặc trùng vùng.</p>
 
@@ -209,12 +211,12 @@ export default function StocktakeImportPresentation({
 
               <div className="stocktake-import-workspace">
                 <aside className="stocktake-import-zone-nav" aria-label="Danh sách vùng">
-                  <div className="stocktake-import-zone-nav-heading"><span>CÁC VÙNG</span>{result.zones.length > 1 && <button type="button" className="stocktake-import-zip-compact" disabled={!canExportAll} onClick={() => undefined} title="Xuất tất cả vùng thành ZIP" aria-label="Xuất tất cả vùng thành ZIP">{busyAction === 'zip' ? <LoaderCircle className="stocktake-import-spin" size={13} /> : <Download size={13} />}<span>ZIP</span></button>}</div>
-                  {zoneItems.map(({ zone, rowErrors, actionState, actionLabel }) => (
+                  <div className="stocktake-import-zone-nav-heading"><span>CÁC VÙNG</span>{result.zones.length > 1 && <button type="button" className="stocktake-import-zip-compact" disabled={!canExportAll} onClick={actions.onExportAll} title="Xuất tất cả vùng thành ZIP" aria-label="Xuất tất cả vùng thành ZIP">{busyAction === 'zip' ? <LoaderCircle className="stocktake-import-spin" size={13} /> : <Download size={13} />}<span>ZIP</span></button>}</div>
+                  {zoneItems.map(({ zone, rowErrors, actionState, actionLabel, index }) => (
                     <button key={zone.zoneCode} type="button" disabled={busy}
-                      className={selectedZone === result.zones.indexOf(zone) ? 'is-active' : ''}
-                      aria-current={selectedZone === result.zones.indexOf(zone) ? 'true' : undefined}
-                      onClick={() => actions.onSelectZone(result.zones.indexOf(zone))}>
+                      className={selectedZone === index ? 'is-active' : ''}
+                      aria-current={selectedZone === index ? 'true' : undefined}
+                      onClick={() => actions.onSelectZone(index)}>
                       <span><strong>{zone.zoneCode}</strong><small>{zone.rows.length} dòng · {countUniqueProductCodes(zone.rows)} mã</small></span>
                       <em className={'is-' + actionState}>{actionLabel}</em>
                     </button>
