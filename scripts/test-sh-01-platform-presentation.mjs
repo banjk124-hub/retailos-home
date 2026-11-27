@@ -35,6 +35,7 @@ assert.match(home, /if \(PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platf
 assert.match(home, /if \(PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available'\) return;[\s\S]*?setIsBarcodeScannerOpen\(false\)/);
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && isBarcodeScannerOpen/);
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && showScannerSettings/);
+assert.match(home, /if \\(PLATFORM_CAPABILITY_POLICY\\.scannerPreferences\\[platform\\] !== 'available'\\) return/);
 assert.match(settings, /showScannerSettings &&/);
 assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] === 'available'\}/);
 
