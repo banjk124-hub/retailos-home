@@ -210,4 +210,4 @@ This audit does not select visual style, palette, typography, imagery, motion la
 
 **Platform Experience & Architecture Audit: source-inspection complete; PA-02 matrix owner-confirmed and typed registry metadata added in the current PR.**
 
-Next executable work is SH-01 shell/presentation ownership design, followed by CSS-01 ownership migration and PW-01 physical PWA validation. Source metadata does not yet implement a platform resolver or filter. No broad migration should begin until the relevant boundaries and regression evidence are defined.
+SH-01 has begun with an isolated Desktop/Mobile navigation rendering boundary and shared destination contract. The authenticated App and Home composition roots remain shared; this slice does not claim complete independent shells or implement a platform capability resolver/filter. Next work is the authenticated shell boundary and incremental Home presentation composition, followed by CSS-01 ownership migration and PW-01 physical PWA validation. No broad migration should begin until the relevant boundaries and regression evidence are defined.
