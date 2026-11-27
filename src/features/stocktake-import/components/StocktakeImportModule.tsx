@@ -13,7 +13,6 @@ import {
   detectStocktakeImportConflicts,
   mergeStocktakeImportSession,
   type ImportReviewMeta,
-  type ZoneConflict,
 } from '../services/stocktakeImportSession';
 import {
   stocktakeImportStore,
@@ -588,7 +587,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
       rowIndex: page * PAGE_SIZE + visibleIndex,
     })) ?? [];
 
-  const onClose = () => {
+  const handleClose = () => {
     if (hasDirtyZones) {
       setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi đóng module.');
       return;
@@ -636,7 +635,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   };
 
   const presentationActions = {
-    onClose,
+    onClose: handleClose,
     onBackFromHistory: () => setView('import'),
     onOpenHistory,
     onSelectFile,
