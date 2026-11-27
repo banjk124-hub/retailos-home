@@ -35,7 +35,7 @@ Protected:
 
 Implemented:
 - Added `useRetailPlatform()` and `resolveRetailPlatform()` in `src/shared/platform/platformContext.ts`.
-- Classification uses active pointer/hover capabilities plus touch capability and the physical screen short edge. It does not use viewport breakpoints or User-Agent as the platform policy.
+- Classification uses active pointer/hover capabilities, touch capability, physical screen short edge and a constrained OS hint for iPadOS/Android tablet contexts. The OS hint is never sufficient alone: it is combined with touch points and a tablet-sized physical screen. It does not use viewport breakpoints or User-Agent alone as platform policy.
 - Fine pointer + hover resolves to Desktop. Coarse touch resolves to Mobile on a short screen edge below 600 CSS pixels, and Tablet on a short edge at/above 600 CSS pixels. Ambiguous/unknown input contexts conservatively resolve to Tablet.
 - Added independent `DesktopHomePresentation`, `MobileHomePresentation` and `TabletHomeCompatibilityPresentation` roots. Desktop and Mobile have separate ownership components and stylesheet entry points; they currently use `display: contents` to preserve the existing DOM layout while establishing a safe composition seam for CSS-01 and bounded feature migration.
 - `AuthenticatedAppShell` resolves the active platform once and passes it to Home. `HomeScreen` remains the single shared stateful Home controller; it does not fork business state.
