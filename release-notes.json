@@ -1,7 +1,7 @@
 {
   "version": "0.3.6",
-  "title": "Cải thiện độ tin cậy cập nhật RetailOS",
-  "summary": "Tối ưu quy trình tải bản cập nhật, xác minh tài nguyên và hiển thị tiến trình theo dữ liệu thực tế.",
+  "title": "Cải thiện độ tin cậy cập nhật và capability đa nền tảng",
+  "summary": "Tiếp tục củng cố quy trình cập nhật an toàn và đồng bộ quyền truy cập camera scanner theo Desktop, Mobile và Tablet.",
   "sections": [
     {
       "heading": "Nâng cấp hệ thống cập nhật",
@@ -10,6 +10,13 @@
         "Giảm áp lực bộ nhớ khi kiểm tra và tái sử dụng tài nguyên từ phiên bản hiện tại.",
         "Tiếp tục phân biệt dung lượng tải qua mạng, dung lượng tái sử dụng và tổng tài nguyên của bản mới.",
         "Giữ nguyên phiên bản đang chạy và dữ liệu nghiệp vụ khi quá trình tải hoặc xác minh bản mới thất bại."
+      ]
+    },
+    {
+      "heading": "Capability đa nền tảng",
+      "items": [
+        "Camera scanner trong Home và Kiểm kê dùng chung một policy Mobile-only; Tablet không kế thừa camera chỉ vì thiết bị có camera.",
+        "Tra cứu và nhập barcode thủ công vẫn được giữ; Scanner Preferences tuân theo policy Mobile-only."
       ]
     }
   ],
