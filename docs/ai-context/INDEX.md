@@ -30,7 +30,7 @@
 
 ## Current technical workstreams
 - **UI-03 CSS consolidation — complete:** [UI_UX_PHASE_03_CSS_CONSOLIDATION.md](./UI_UX_PHASE_03_CSS_CONSOLIDATION.md) records the merged implementation and exact-head validation evidence.
-- **UI-04 feature presentation migration — active:** PR #181 is merged; UI-04A/B/C/D are complete and merged (UI-04D in PR #189); UI-04E Stocktake Import is implemented in open/Draft PR #190 pending final CI/browser validation; UI-04F remains open. [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md) is the canonical phase record.
+- **UI-04 feature presentation migration — active:** PR #181 is merged; UI-04A/B/C/D are complete and merged (UI-04D in PR #189); UI-04E Stocktake Import is implemented and validated in open/Draft PR #190 (exact-head CI #1900; 9 browser tests passed); UI-04F remains open. [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md) is the canonical phase record.
 - **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 is merged; AUDIT-03A production CSS delivery baseline is the next proposed step. No source cleanup is implied.
 
 ## Experience governance
