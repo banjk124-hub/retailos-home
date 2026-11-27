@@ -13,12 +13,13 @@ import { useScannerViewportStyle } from '../../scanner/hooks/useScannerViewportS
 import { requestCameraLease, type CameraLeaseRequest } from '../../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../../platform/scanner/contracts';
 import { getMotionOrigin, type MotionOrigin } from '../../../shared/motion';
-import { isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
+import { CAMERA_SCANNER_PLATFORM_AVAILABILITY, isScannerSupportedDevice } from '../../scanner/services/scannerCapabilities';
+import type { RetailPlatform } from '../../../shared/platform/platformCapabilities';
 import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
 
-type Props = { employee: EmployeeSession; onClose: () => void };
+type Props = { employee: EmployeeSession; onClose: () => void; platform: RetailPlatform };
 const STOCKTAKE_LIST_PAGE_SIZE = 100;
 
 function yieldToNextPaint(): Promise<void> {
@@ -27,8 +28,9 @@ function yieldToNextPaint(): Promise<void> {
   });
 }
 
-export default function StocktakeModule({ employee, onClose }: Props) {
+export default function StocktakeModule({ employee, onClose, platform }: Props) {
   useBodyScrollLock(true);
+  const scannerCapabilityAvailable = CAMERA_SCANNER_PLATFORM_AVAILABILITY[platform] === 'available' && isScannerSupportedDevice();
   const scannerViewportStyle = useScannerViewportStyle();
   const [session, setSession] = useState<StocktakeSession | null>(null);
   const [zones, setZones] = useState<StocktakeZone[]>([]);
@@ -46,6 +48,13 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     setScannerOpen(false);
   };
   useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
+  useEffect(() => {
+    if (CAMERA_SCANNER_PLATFORM_AVAILABILITY[platform] === 'available') return;
+    cameraLeaseRequestRef.current?.cancel();
+    cameraLeaseRequestRef.current = null;
+    setScannerMotionOrigin(null);
+    setScannerOpen(false);
+  }, [platform]);
   const [zoneInput, setZoneInput] = useState('');
   const [pendingZone, setPendingZone] = useState<{ code: string; prefix: string; number: string; previous?: StocktakeZone } | null>(null);
   const [currentZone, setCurrentZone] = useState<StocktakeZone | null>(null);
@@ -439,7 +448,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     barcode,
     quantity,
     editingEntry,
-    scannerSupported: screen === 'scan' && isScannerSupportedDevice(),
+    scannerSupported: screen === 'scan' && scannerCapabilityAvailable,
     busy,
     pendingZone,
     showClearConfirm,
@@ -455,7 +464,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     onResumeZone: (zone: StocktakeZone) => { void resumeZone(zone); },
     onRequestClear: () => setShowClearConfirm(true),
     onOpenScanner: (button: HTMLButtonElement) => {
-      if (scannerOpen) return;
+      if (!scannerCapabilityAvailable || scannerOpen) return;
       cameraLeaseRequestRef.current = requestCameraLease(DEFAULT_SCANNER_CAMERA_REQUEST);
       setScannerMotionOrigin(getMotionOrigin(button));
       void unlockScannerAudio();
@@ -508,7 +517,7 @@ export default function StocktakeModule({ employee, onClose }: Props) {
     return <StocktakePresentation model={presentationModel} actions={presentationActions} />;
   }
 
-  const scannerOverlay = scannerOpen && screen === 'scan' ? (
+  const scannerOverlay = scannerOpen && screen === 'scan' && scannerCapabilityAvailable ? (
     <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ ...scannerViewportStyle, '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string; '--scanner-visual-viewport-height': string; '--scanner-visual-viewport-top': string }}>
       <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={closeScanner}>Đóng</button></div>}>
         <StocktakeScanner onDetected={acceptBarcode} onClose={closeScanner} cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
