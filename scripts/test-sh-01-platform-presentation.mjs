@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
+const context = read('../src/shared/platform/platformContext.ts');
+const root = read('../src/platform/home/HomePresentationRoot.tsx');
+const desktop = read('../src/platform/home/presentations/DesktopHomePresentation.tsx');
+const mobile = read('../src/platform/home/presentations/MobileHomePresentation.tsx');
+const tablet = read('../src/platform/home/presentations/TabletHomeCompatibilityPresentation.tsx');
+const home = read('../src/features/home/HomeScreen.tsx');
+const settings = read('../src/features/home/components/SettingsHub.tsx');
+const shell = read('../src/platform/shell/AuthenticatedAppShell.tsx');
+
+assert.match(context, /primaryFinePointer/);
+assert.match(context, /primaryHover/);
+assert.match(context, /primaryCoarsePointer/);
+assert.match(context, /touchPoints/);
+assert.match(context, /Math\.min\(signals\.screenWidth, signals\.screenHeight\)/);
+assert.match(context, /shortScreenEdge >= 600 \? 'tablet' : 'mobile'/);
+assert.match(context, /return 'tablet'/);
+assert.doesNotMatch(context, /matchMedia\('\(max-width:/);
+assert.match(root, /platform === 'desktop'/);
+assert.match(root, /platform === 'mobile'/);
+assert.match(desktop, /data-retailos-platform="desktop"/);
+assert.match(mobile, /data-retailos-platform="mobile"/);
+assert.match(tablet, /data-retailos-platform="tablet"/);
+assert.match(tablet, /Tablet remains review-required/);
+assert.match(shell, /useRetailPlatform\(\)/);
+assert.match(home, /<HomePresentationRoot platform=\{platform\}>/);
+assert.match(home, /platform === 'mobile' && isScannerSupportedDevice\(\)/);
+assert.match(settings, /showScannerSettings &&/);
+assert.match(home, /showScannerSettings=\{platform === 'mobile'\}/);
+
+console.log('SH-01C explicit platform presentation and Tablet safety contract tests passed.');
