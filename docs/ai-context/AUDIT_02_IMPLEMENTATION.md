@@ -1,6 +1,6 @@
 # AUDIT-02A–02D — Ownership implementation
 
-**Status:** Implemented on an isolated branch; CI verification pending  
+**Status:** Implemented; RetailOS CI passed on commit `9e03b92aa3431b8312a935af94fa28e76b1adc52`  
 **Baseline:** `main` at `e58bce634b9ff67e95250d36c8653593680463e9`  
 **Implementation branch:** `refactor/audit-02-ownership-contracts`  
 **Pull request:** #184
@@ -39,4 +39,4 @@
 
 No runtime dependency was added. No storage schema/key, business workflow identity, snapshot identity, scanner lifecycle, camera lease, PWA update blocker or service-worker behavior was intentionally changed.
 
-CI must confirm TypeScript, production build, preflight, browser/runtime evidence and bundle comparison. A source-only audit cannot claim runtime or performance gains. No merge or deployment is included in this change.
+**Verification:** RetailOS CI passed, including preflight regression suite, TypeScript + Vite production build, PR-base bundle comparison, Playwright responsive/runtime evidence tests and artifact uploads (run `45933417498`). No merge or deployment is included in this change. Passing these checks confirms regression coverage; it does not by itself prove a measurable performance gain.
