@@ -41,7 +41,7 @@ This file records verified repository state, not an authorization to merge, depl
 - PR #187 remains open / Draft; it is being refreshed from main `6925cf968ea2b9c37377856abaf4c4a2ca6785a0` after UI-04F merge.
 - PA-02 owner matrix is now confirmed: nine Home workflows shared Desktop/Mobile; camera scanner and dedicated copy/CSS Mobile-only; manual lookup shared; Tablet review-required.
 - This PR adds typed platform-availability metadata to the module registry and a focused preflight contract. It does not yet implement a platform resolver, filtering, separate shells or presentation migration.
-- CI #1860 validates the old audit-only head and is not evidence for the refreshed source changes. Exact new-head CI is pending.
+- The old CI #1860 applies only to the earlier audit-only head. Refreshed source/test head `1067a21d402ada5b0baa21c53241a57284e07932` passed exact-head RetailOS CI #1914: full preflight (including the new matrix contract), TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests. Physical-device PWA acceptance and computed-style/runtime CSS validation remain pending.
 - Physical-device PWA acceptance and computed-style/runtime CSS validation remain pending.
 
 ### AUDIT-03 — CSS & Design Foundation

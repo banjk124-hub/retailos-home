@@ -17,7 +17,7 @@ RetailOS shares identity, journeys and business semantics. A generic feature req
 - PR #181 UI-04 initial feature presentation migration is merged at e58bce634b9ff67e95250d36c8653593680463e9.
 - PR #185 AUDIT-03 CSS & Design Foundation static audit is merged at bddb84259f7bc68656a42d467ec83fdddfe17b1f. AUDIT-03A production CSS delivery baseline is the next proposed step; no CSS cleanup implementation is authorized by the audit.
 - PR #186 cross-platform governance is merged. UI-04E PR #190 and UI-04F PR #191 are also merged; current main HEAD is `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`.
-- PR #187 Platform Experience & Architecture Audit remains open / Draft and is being advanced from the post-UI-04F main baseline. Owner has confirmed the PA-02 matrix: nine Home workflows shared Desktop/Mobile; camera scanner and dedicated copy/CSS Mobile-only; manual lookup shared; Tablet review-required. CI and matrix source contract are pending on the refreshed PR head.
+- PR #187 Platform Experience & Architecture Audit remains open / Draft and is being advanced from the post-UI-04F main baseline. Owner has confirmed the PA-02 matrix: nine Home workflows shared Desktop/Mobile; camera scanner and dedicated copy/CSS Mobile-only; manual lookup shared; Tablet review-required. Exact-head CI run #1914 passed on `1067a21d402ada5b0baa21c53241a57284e07932`, including preflight, TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests.
 - PR #189 completes UI-04D Stocktake presentation and is merged at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 
 ## UI-04 continuation
