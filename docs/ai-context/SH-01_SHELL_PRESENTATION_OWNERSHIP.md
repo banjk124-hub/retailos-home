@@ -40,7 +40,7 @@ Implemented:
 - Added independent `DesktopHomePresentation`, `MobileHomePresentation` and `TabletHomeCompatibilityPresentation` roots. Desktop and Mobile have separate ownership components and stylesheet entry points; they currently use `display: contents` to preserve the existing DOM layout while establishing a safe composition seam for CSS-01 and bounded feature migration.
 - `AuthenticatedAppShell` resolves the active platform once and passes it to Home. `HomeScreen` remains the single shared stateful Home controller; it does not fork business state.
 - `ShellNavigation` now explicitly renders only the Desktop rail or Mobile dock for those contexts. Tablet temporarily retains the prior responsive shell as a compatibility fallback; this is not a Tablet product design or approval.
-- Camera scanner affordances and scanner settings entry/copy are offered only when the resolved context is Mobile **and** the existing scanner runtime detector reports support. Manual barcode lookup remains available across all contexts.
+- Camera scanner affordances and scanner settings entry/copy are offered only when the resolved context is Mobile **and** the existing scanner runtime detector reports support. Manual barcode lookup remains a shared Desktop/Mobile capability; its presence in the Tablet compatibility surface is legacy behavior only, not an approved Tablet capability.
 - Leaving Mobile context cancels any pending camera lease, closes scanner UI and clears scanner-settings state; stale camera affordances cannot remain mounted after a context change.
 - Tablet therefore does not inherit Mobile scanner capability even where the legacy runtime detector recognizes iPadOS.
 
