@@ -4,6 +4,36 @@ This document contains cross-feature and cross-system architecture decisions. Sc
 
 Scanner-specific ADRs were moved to the Scanner archive to keep this register focused and avoid maintaining a second Scanner specification. Current project-wide ADRs remain here.
 
+
+## ADR-030 — Shared business core with platform-specific capability and presentation (2026-11-27)
+
+**Status:** Owner-confirmed target architecture; implementation/audit pending.
+
+### Context
+RetailOS is an installed PWA used in different operating contexts. Treating Desktop and Mobile as one layout with accumulating responsive overrides can conflate three separate questions: whether a workflow belongs on a platform, how that workflow should be presented, and how that presentation adapts to available space. Brand and business consistency do not require identical feature availability or identical screens.
+
+### Decision
+1. **Shared product identity:** retain consistent RetailOS identity, terminology and meaning for shared business concepts across platforms.
+2. **Platform capability policy:** each workflow may be Desktop-only, Mobile-only or cross-platform. Feature parity is not mandatory. Availability is decided from task fit, operating context, input/output, permissions, security and operational value.
+3. **Shared business core:** reuse domain rules, data contracts, identity and state transitions when the underlying business operation is the same. Do not duplicate business logic merely to create separate interfaces.
+4. **Independent presentation:** Desktop and Mobile may have distinct shells, navigation, information architecture, layouts, density and component composition. Tablet is evaluated as its own context or an evidence-based transition, not automatically treated as either form factor.
+5. **Responsive boundary:** responsive rules adapt a platform presentation to viewport, orientation and available space. They do not decide feature availability and do not force one universal layout.
+6. **Capability selection:** use feature detection and relevant input/display/permission signals; do not classify solely by User-Agent or viewport breakpoint.
+7. **Installed PWA behavior:** prefer standalone for installed app mode where supported. Fullscreen/immersive behavior is conditional, workflow-specific and must respect system UI, safe areas, dynamic viewport, virtual keyboard, permissions and OS/browser lifecycle. Provide a usable fallback.
+8. **Truthful states:** distinguish unsupported on platform, not implemented, permission required, data unavailable and runtime failure.
+
+### Consequences
+- A platform capability matrix becomes a prerequisite for substantial feature/presentation migration.
+- Shell/navigation ownership may diverge without forking domain/data contracts.
+- Global CSS overrides must not become the policy layer for platform feature availability or separate presentation ownership.
+- Existing source must be audited before claiming separate shells, fullscreen behavior or parity policy is implemented.
+
+### Protected boundaries
+Preserve auth/session semantics, stable workflow/module IDs, data and snapshot contracts, persistence, scanner engine/camera lifecycle, stocktake/import/export contracts, overlay/focus/scroll-lock lifecycle, PWA update consent/staging/integrity/safe activation/rollback, lazy-loading and deployment boundaries. This ADR does not authorize source changes, a visual redesign, new dependencies or deployment.
+
+### Validation required
+Audit current shell/navigation ownership and feature entry points; inventory workflow availability by platform; inspect manifest/display-mode and viewport/safe-area behavior; map CSS cascade ownership; then propose bounded migrations with responsive, accessibility, performance and physical-device evidence.
+
 ## ADR-029 — Shared cross-feature overlay scroll-lock and viewport contract (2026-11-14)
 
 **Status:** Implemented on Draft PR #102; automated regression coverage added. Physical desktop/Android/iOS acceptance is pending.
