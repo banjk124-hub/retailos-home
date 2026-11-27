@@ -3,7 +3,7 @@
 **Status:** Owner-confirmed product policy, 2026-11-27  
 **Canonical decisions:** DECISIONS.md PD-007 / PD-008; ARCHITECTURE.md ADR-030  
 **Scope:** Desktop and Mobile product capability; Tablet is tracked separately as review-required.  
-**Last reconciled against main:** `a64a49fe516b03cc7c8641a6e23c54a3391a6887` (2026-11-27).
+**Last reconciled against main:** `adc2ec310c46f3f050b2af81b02ba622e8dc18b3` (2026-11-27).
 
 ## 1. Operating rules
 

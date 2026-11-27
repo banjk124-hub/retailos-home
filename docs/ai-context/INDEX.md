@@ -33,8 +33,8 @@
 - **SH-01 and camera capability enforcement — merged:** SH-01 PR #193 merged at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; follow-up PR #195 closed the Stocktake Mobile-only camera policy gap at `a64a49fe516b03cc7c8641a6e23c54a3391a6887`. Exact-head CI #1948 and #1968 passed on their respective PR heads. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01. See [SH-01_SHELL_PRESENTATION_OWNERSHIP.md](./SH-01_SHELL_PRESENTATION_OWNERSHIP.md) and [PLATFORM_CAPABILITY_MATRIX.md](./PLATFORM_CAPABILITY_MATRIX.md).
 - **UI-04 feature presentation migration — complete:** UI-04A–F are merged. UI-04F closure is PR #191; exact-head CI #1909 passed with 9 browser tests. See [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md).
 - **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 is merged; AUDIT-03A production CSS delivery baseline remains proposed. No source cleanup is implied.
-- **PW-01 physical PWA acceptance — pending:** validate installed mode, safe areas, keyboard, orientation, permissions and lifecycle on target physical devices.
-- **CSS-01 CSS ownership migration — pending:** map shared foundation/platform/feature ownership and measure cascade before moving rules. No broad deletion is implied.
+- **PW-01 physical PWA acceptance — deferred by owner:** no reproducible device defect observed; physical acceptance is not claimed complete and may be reopened on a reproducible issue or explicit release requirement.
+- **CSS-01 CSS ownership migration — in progress:** CSS-01A inventory/import-owner map and CSS-01B static source audit are complete at the recorded baseline; CSS-01C bounded migration and before/after cascade evidence remain open. No broad deletion is implied.
 
 ## Experience governance
 There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former UI_UX_M0_GOVERNING_SPEC.md is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
