@@ -566,7 +566,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const zoneItems = (result?.zones ?? []).map((zone, index) => {
     const rowErrors = zone.rows.filter((row) => getRowIssues(row).length > 0).length;
     const isDirty = dirtyZones.includes(zone.zoneCode);
-    const actionState = rowErrors || (result?.blockingIssues.length ?? 0) > 0
+    const actionState: StocktakeImportZoneActionState | 'invalid' = rowErrors || (result?.blockingIssues.length ?? 0) > 0
       ? 'invalid'
       : isDirty || !historyPersisted ? 'dirty' : (zoneActionStates[zone.zoneCode] ?? 'ready');
     const actionLabel: Record<string, string> = {
