@@ -181,10 +181,9 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await expect(page.locator('main.login-experience')).toBeVisible();
   await capture(page, info, 'login-1440x900');
 
-  await page.goto('about:blank');
   await emulatePlatform(page, 'desktop', 1440, 900);
   await seedSession(page);
-  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
   await page.waitForTimeout(500);
   await capture(page, info, 'home-1440x900');
@@ -218,11 +217,10 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await page.keyboard.press('Escape');
   await expect(desktopSettings).toBeHidden();
 
-  await page.goto('about:blank');
   await emulatePlatform(page, 'mobile', 390, 844);
   await seedSession(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-retailos-platform="mobile"]')).toHaveCount(1);
   await expect(page.locator('.mobile-shell-navigation .liquid-dock')).toBeVisible();
   await expect(page.locator('.desktop-shell-navigation')).toHaveCount(0);
@@ -309,7 +307,6 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
 
 
 test('Tablet remains review-required and does not inherit camera scanner capability', async ({ page }, info) => {
-  await page.goto('about:blank');
   await emulatePlatform(page, 'tablet', 768, 1024);
   await seedSession(page);
   await page.setViewportSize({ width: 768, height: 1024 });
