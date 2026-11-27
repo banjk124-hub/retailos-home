@@ -7,7 +7,7 @@ import { clearLastLoginName, saveLastLoginName } from './features/auth/services/
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';
 import type { EmployeeSession } from './shared/domain/employee';
-import { getDepartment, type DepartmentConfig } from './shared/config/departments';
+import { getDepartment } from './shared/config/departments';
 import { ExperienceBackground } from './shared/components/ExperienceBackground';
 import AuthenticatedAppShell from './platform/shell/AuthenticatedAppShell';
 import { useAdaptiveAppearance } from './shared/hooks/useAdaptiveAppearance';
