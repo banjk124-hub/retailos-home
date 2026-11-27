@@ -98,7 +98,84 @@ export default function App() {
   }, [employee]);
 
   useEffect(() => {
-    return <AuthenticatedAppShell
+    if (authJourney === 'identity') {
+      const timer = window.setTimeout(() => {
+        setAuthJourney('home');
+        setIsEnteringHome(true);
+      }, prefersReducedMotion ? 0 : MOTION_CONFIG.journey.identityHoldMs);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (authJourney === 'home') {
+      const timer = window.setTimeout(() => setIsEnteringHome(false), prefersReducedMotion ? 0 : MOTION_CONFIG.journey.homeArrivalMs);
+      return () => window.clearTimeout(timer);
+    }
+  }, [authJourney, prefersReducedMotion]);
+
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOffline(!navigator.onLine);
+    const handleBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      deferredPromptRef.current = event as BeforeInstallPromptEvent;
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        setCanInstall(false);
+        return;
+      }
+      setCanInstall(true);
+    };
+
+    updateOnlineStatus();
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    };
+  }, []);
+
+  useLayoutEffect(() => registerPwaUpdateBlocker('app-transition', () => {
+    const { isEnteringHome: entering, isLeavingHome: leaving } = transitionStateRef.current;
+    return entering || leaving
+      ? 'RetailOS đang chuyển màn hình. Bản mới sẽ chờ xác nhận sau khi chuyển cảnh hoàn tất.'
+      : null;
+  }), []);
+
+  useEffect(() => {
+    if (!employee || authJourney === 'login') reportBootHealthy();
+  }, [employee, authJourney, reportBootHealthy]);
+
+  useEffect(() => {
+    notifyPwaUpdateSafetyChanged();
+  }, [isEnteringHome, isLeavingHome]);
+
+  if (!employee) return <div className="retailos-scene">
+    <ExperienceBackground experience="login" />
+    <div className="retailos-interface">
+      <LoginExperience onAuthenticated={handleAuthenticated} />
+    </div>
+  </div>;
+
+  const department = getDepartment(employee.departmentId);
+  if (!department) return <div className="retailos-scene">
+    <ExperienceBackground experience="login" />
+    <div className="retailos-interface">
+      <LoginExperience onAuthenticated={handleAuthenticated} />
+    </div>
+  </div>;
+
+  if (authJourney === 'login') {
+    return <div className="retailos-scene">
+      <ExperienceBackground experience="login" />
+      <div className="retailos-interface">
+        <LoginExperience onAuthenticated={handleAuthenticated} />
+      </div>
+    </div>;
+  }
+
+  return <AuthenticatedAppShell
     employee={employee}
     department={department}
     journey={authJourney}
