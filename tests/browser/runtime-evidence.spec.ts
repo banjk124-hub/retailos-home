@@ -164,7 +164,12 @@ async function capture(page: Page, info: TestInfo, label: string) {
   const dir = info.outputPath('runtime-evidence');
   await mkdir(dir, { recursive: true });
   const name = label.replace(/[^a-z0-9-]+/gi, '-').toLowerCase();
-  await page.screenshot({ path: path.join(dir, name + '.png'), fullPage: true, animations: 'disabled' });
+  // The library overlay uses a full-screen backdrop blur. A full-page capture
+  // forces Chromium to rasterize that effect across the entire scrolled page;
+  // capture the visible viewport for this overlay while the JSON evidence above
+  // retains full-document geometry and computed styles.
+  const screenshotFullPage = !label.startsWith('library-');
+  await page.screenshot({ path: path.join(dir, name + '.png'), fullPage: screenshotFullPage, animations: 'disabled', timeout: 60_000 });
   await writeFile(path.join(dir, name + '.json'), JSON.stringify(data, null, 2));
   return data;
 }
