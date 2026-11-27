@@ -44,10 +44,6 @@ async function createZipArchive() {
   return new JSZip();
 }
 
-function localDate(value: string): string {
-  return new Date(value).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' });
-}
-
 function validateRow(row: Pick<ImportedStocktakeRow, 'barcode' | 'quantity'>): string[] {
   const issues: string[] = [];
   const barcode = row.barcode.trim();
