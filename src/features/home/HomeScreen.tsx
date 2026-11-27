@@ -5,7 +5,7 @@ import {
   ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode, Search,
   ShieldCheck, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
-import type { EmployeeSession } from '../auth/types';
+import type { EmployeeSession } from '../../shared/domain/employee';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
@@ -20,7 +20,8 @@ import { useHomeFeedback } from './hooks/useHomeFeedback';
 import { isScannerSupportedDevice, unlockScannerAudio } from '../scanner/integration';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
-import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
+import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
+import { getHomeNavigationIcon, getLibraryIcon, getModuleIcon } from './homeIconRegistry';
 import { ShellNavigation } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
