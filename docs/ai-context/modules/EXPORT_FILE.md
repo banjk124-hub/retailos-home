@@ -5,13 +5,10 @@
 **Library:** Kiểm kê  
 **Implementation directory:** `src/features/stocktake-import/`  
 **Dedicated IndexedDB:** `retailos-stocktake-import`  
-**Current status:** PR #70–#73 merged and deployed (user-confirmed). Workspace v2 is in draft PR #74; not merged/deployed. CI #545 passed full preflight, TypeScript, production and Pages builds on code head `c61746272f2b31cd8be222cc4012e38de1ce3ddc`. Physical-device QA remains pending.  
-**PR #70 baseline:** `b9cc4ce9a848acd51027dff64f5620f65e660a4b`  
-**Current main after PR #73:** `629c31c28e808cd5c3181c42b7d29e611a8ad890`  
-**PR #70:** https://github.com/banjk124-hub/retailos-home/pull/70  
-**PR #71 merge:** `1c1afb5d2a9c89b955340735cf3f5e77a7f138b9`  
-**Current workspace v2 branch:** `feat/stocktake-import-workspace-v2`  
-**Current PR:** https://github.com/banjk124-hub/retailos-home/pull/74 (draft; CI pending; physical desktop/iOS/Android QA pending)
+**Verified main baseline:** `e88ae240959a8deea85aee2fd2992d40563ad365`  
+**Current work:** UI-04E presentation ownership refactor in open/Draft [PR #190](https://github.com/banjk124-hub/retailos-home/pull/190), branch `refactor/ui-04e-stocktake-import-presentation`. Not merged or deployed; exact-head CI #1900 passed on source head `ef5b93900a95080fdab7966bb986558ce5cd2438`, including 9 responsive/runtime browser tests. Physical iOS/Android acceptance remains pending.  
+**Historical workspace v2:** PR #74 merged at `6ac1eefad1c47d87d2c83f9002050c8a7d7802fe`. Earlier PR #70–#73 implementation and CI milestones remain recorded below as history.  
+**Canonical functional contract:** `docs/ai-context/STOCKTAKE_FILE_IMPORT.md`
 
 ## 1. Purpose and current capability
 
@@ -40,6 +37,15 @@ The registry's `availability` answers whether an employee can open the workflow.
 - `maintenance`: released, with bounded maintenance/fixes ongoing.
 
 `workStatus` is informational only. It must not change routing, module visibility, permission checks, data loading, scanner behavior or runtime execution. The current value is `in-progress`.
+
+## 2A. Presentation ownership — UI-04E
+
+- `StocktakeImportModule.tsx` remains the workflow coordinator and owns parser invocation, fingerprint/duplicate detection, conflict/merge decisions, dirty-edit state, IndexedDB persistence/history, export operations and PWA update blockers.
+- `StocktakeImportPresentation.tsx` owns the import/history workspace, conflict and confirmation dialogs, zone navigation, editable table and TXT preview.
+- Presentation receives a typed model and action callbacks. It must not import or call parser/session/store runtime services, clipboard, file download or PWA update-safety services.
+- The existing `stocktake-import.css` remains unchanged and is imported by the presentation owner. Do not split or redesign it as part of UI-04E.
+- Preserve decimal precision, BARCODE/CODE/GOLDCODE/TILLCODE precedence, SHA-256 source identity, conflict review/merge/skip, dirty-edit protection, IndexedDB history, TXT/ZIP output and local-only/offline behavior.
+- PR #190 is the implementation branch for this boundary; its final CI/browser evidence must be checked before merge.
 
 ## 3. Isolation contract — do not cross
 
@@ -96,7 +102,7 @@ Do not rename the stable module ID, database name, IndexedDB schema, or output r
 When the user says “tiếp tục Xuất file” or asks to resume this module:
 
 1. Read this document first, then `STOCKTAKE_FILE_IMPORT.md`, ADR-029/ADR-030/ADR-033 and the current top of `AI_HANDOFF.md`.
-2. Query GitHub for PR #74 and branch `feat/stocktake-import-workspace-v2`; verify actual state, base SHA, head SHA, changed files and CI. Treat recorded SHAs as historical checkpoints, not assumed current state.
+2. Query GitHub for the active PR #190 and branch `refactor/ui-04e-stocktake-import-presentation`; verify actual state, base SHA, head SHA, changed files and CI. Treat recorded SHAs as historical checkpoints, not assumed current state.
 3. Audit current `main` and PR diff. Confirm no unexpected changes to scanner, Stocktake core, snapshot/cache, auth or deployment.
 4. Inspect the actual parser, store, module component, registry entry and regression tests. Do not rely solely on this summary.
 5. Reconcile user-reported changes or newly merged PRs before editing. Do not overwrite newer work with this document.

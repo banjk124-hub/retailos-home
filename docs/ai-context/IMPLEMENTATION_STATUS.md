@@ -1,7 +1,7 @@
 # Current verified implementation status — 2026-11-27
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** 96209fd226b6efef4b8bb9a00859115baa78bcdf
+**Verified main HEAD:** e88ae240959a8deea85aee2fd2992d40563ad365
 
 This file records verified repository state, not an authorization to merge, deploy or transfer production.
 
@@ -26,11 +26,12 @@ This file records verified repository state, not an authorization to merge, depl
 ### UI-04 — Feature Presentation Migration
 
 - UI-04A Login, UI-04B Settings/Update Center and UI-04C Scanner presentation are implemented and validated in merged PR #181.
-- UI-04D Stocktake presentation ownership is implemented and validated in open/Draft PR #189.
-- PR #189 head: 0e2b730ecd64cca42cd618f66caf1b4fea1a37da; base: main 96209fd226b6efef4b8bb9a00859115baa78bcdf.
-- Exact-head CI run #1873 passed: focused preflight, TypeScript, production/Pages builds, bundle comparison, responsive/runtime Playwright evidence and dedicated Stocktake workflow test (zone creation, duplicate rows, review, export/download, history, mobile/desktop geometry).
-- UI-04E Stocktake Import presentation remains pending; UI-04F cross-feature regression/closure remains pending.
-- PR #189 has not been merged or deployed. Continue subsequent work from current main after the owner reviews/merges this slice; do not merge or deploy automatically.
+- UI-04D Stocktake presentation ownership is implemented, validated and merged in PR #189 at `e88ae240959a8deea85aee2fd2992d40563ad365`.
+- PR #189 exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`, including the dedicated Stocktake browser workflow.
+- UI-04E Stocktake Import presentation is implemented in open/Draft PR #190, based on current main `e88ae240959a8deea85aee2fd2992d40563ad365`.
+- PR #190 separates presentation markup/CSS ownership from the workflow coordinator. Parser, decimal precision, source fingerprints, conflict/merge decisions, dirty-edit handling, IndexedDB persistence/history, TXT/ZIP output and PWA update blockers remain coordinator/service-owned.
+- PR #190 adds focused ownership assertions and a dedicated browser flow for local XLSX import, duplicate-row retention, edit/save, conflict merge, TXT download, history restore and responsive geometry. Exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438`: preflight, TypeScript, production/Pages builds, bundle comparison and 9 responsive/runtime browser tests. Physical device acceptance is not claimed.
+- UI-04F cross-feature regression/closure remains pending. PR #190 has not been merged or deployed; do not merge or deploy automatically.
 - Canonical detail: UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 
 ### Platform Experience & Architecture Audit
@@ -52,8 +53,8 @@ Preserve auth/session, module registry and destination identity, snapshot/cache/
 
 ## Evidence classification
 
-- **Repository/source and PR metadata inspected:** current main documentation, PR #181, #185, #186, #187, #189 and exact-head CI #1873.
-- **Application source changes in PR #189:** no persistence/schema or scanner-engine changes; source and focused tests are isolated to Stocktake presentation ownership.
-- **Exact-head CI:** passed on PR #189 head 0e2b730ecd64cca42cd618f66caf1b4fea1a37da.
-- **Browser/device acceptance:** Chromium browser viewport tests passed; physical iOS/Android device acceptance is not claimed.
-- **Merge/deployment:** PR #189 remains open/Draft; no merge or deployment performed.
+- **Repository/source and PR metadata inspected:** main HEAD `e88ae240959a8deea85aee2fd2992d40563ad365`; PR #181, #185, #186, #187, #189 and #190 metadata.
+- **UI-04D:** merged PR #189; exact-head CI #1877 passed on source head `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
+- **UI-04E:** source and test changes are in open/Draft PR #190; exact-head CI #1900 passed on `ef5b93900a95080fdab7966bb986558ce5cd2438` (9 browser tests passed).
+- **Browser/device acceptance:** no physical iOS/Android device acceptance is claimed by this status update.
+- **Merge/deployment:** PR #190 remains open/Draft; no merge or deployment performed.
