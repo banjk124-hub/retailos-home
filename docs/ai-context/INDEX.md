@@ -12,7 +12,8 @@
 | Concern | Owner |
 |---|---|
 | Product principles and experience/creative workflow | RETAILOS_PRODUCT_SKILL.md |
-| Cross-platform capability/presentation policy | DECISIONS.md (PD-007) / ARCHITECTURE.md (ADR-030) |
+| Cross-platform capability/presentation policy | DECISIONS.md (PD-007/PD-008), ARCHITECTURE.md (ADR-030), PLATFORM_CAPABILITY_MATRIX.md |
+| Shell & presentation ownership | SH-01_SHELL_PRESENTATION_OWNERSHIP.md |
 | Architecture ADRs and technical invariants | ARCHITECTURE.md |
 | Product/cross-domain decisions and superseded direction | DECISIONS.md |
 | Shared components, patterns and feature ownership | COMPONENT_AND_PATTERN_GOVERNANCE.md |
