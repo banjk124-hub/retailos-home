@@ -5,7 +5,7 @@ import ts from "typescript";
 const parser = readFileSync("src/features/stocktake-import/services/stocktakeImportParser.ts", "utf8");
 const component = readFileSync("src/features/stocktake-import/components/StocktakeImportModule.tsx", "utf8");
 const presentation = readFileSync("src/features/stocktake-import/components/StocktakeImportPresentation.tsx", "utf8");
-const combined = component + "\\n" + presentation;
+const combined = component + "\n" + presentation;
 const store = readFileSync("src/features/stocktake-import/services/stocktakeImportStore.ts", "utf8");
 const sessionService = readFileSync("src/features/stocktake-import/services/stocktakeImportSession.ts", "utf8");
 const registry = readFileSync("src/features/home/moduleRegistry.ts", "utf8");
