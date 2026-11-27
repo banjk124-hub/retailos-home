@@ -137,3 +137,79 @@ UI-03 already retired nine proven-unused legacy selector families and consolidat
 - CSS source byte counts are not emitted bundle sizes or network transfer metrics.
 - Browser viewport emulation is not physical iOS/Android acceptance.
 - PW-01 remains deferred, not passed. Reopen physical validation if a reproducible device/browser defect, a material platform-sensitive CSS change or an explicit release acceptance requirement appears.
+
+
+## 9. CSS-01B — Consumer and cascade trace (static source pass)
+
+**Audit ref:** `206637af0b6fc7b7bad81e925daa7e16fa25a8e6`  
+**Method:** Read current stylesheet source and the current TSX owners for Login, Home, Home library, Home navigation and Desktop/Mobile/Tablet shell navigation. Extracted selector blocks and literal/template `className` tokens. This is a static source trace, not runtime CSSOM or computed-style proof.
+
+### 9.1 Root cascade and rule volume
+
+| Stylesheet | Source bytes | Selector blocks | Trace result |
+|---|---:|---:|---|
+| `responsive.css` | 10,467 | 181 | Cross-feature responsive composition: Login, Home, sidebar/navigation, metrics and notifications |
+| `mobile-tuning.css` | 80,306 | 703 | Mixed legacy override layer; Login, Home, navigation, spotlight, calendar, notification and app-library rules |
+| `interactions.css` | 1,584 | 8 | Small cross-cutting state/interaction rules; overlaps several Home class families |
+| `native-experience.css` | 7,885 | 50 | Shared app shell, buttons, search, transition, push-notification and icon-motion contracts |
+| `adaptive-appearance.css` | 4,191 | 34 | Adaptive/energy rules touching Home composition and notification states |
+| `performance.css` | 1,000 | 10 | Low-cost visual effects and ambient layers; preserve until device/runtime evidence says otherwise |
+| `motion.css` | 11,112 | 91 | Shared motion primitives, semantic motion classes and icon variants |
+| `home.css` | 19,251 | 192 | Base Home layout and component rules |
+| `home-ux.css` | 21,136 | 149 | Home interaction, notifications, library, scanner result and calendar rules |
+| `home-engine.css` | 12,011 | 98 | Current Home library engine and shell composition |
+| `home-redesign.css` | 12,587 | 113 | Later Home surface/presentation overrides plus reduced-motion and loading surface rules |
+
+Selector-block counts are source parser counts, not unique CSSOM rules. Nested at-rules and grouped selectors mean they must not be interpreted as one selector = one independent behavior.
+
+### 9.2 Confirmed consumer families
+
+| Consumer / source | Current class families observed | Ownership interpretation |
+|---|---|---|
+| `LoginExperience.tsx` | `login-experience`, `login-experience__*`, `is-authenticating`, ambient/layout classes | Current Login screen root |
+| `LoginForm.tsx` | `login-panel__*`, `login-form__*`, `ro-button*`, `motion-energy-sweep` | Current Login form/panel; feature-owned |
+| `LoginHero.tsx` | `login-hero__*` | Current Login hero; feature-owned |
+| `HomeScreen.tsx` | Home shell, topbar, spotlight, notifications, calendar, library, barcode result, notice detail, toast and loading classes; includes conditional/template-generated class families | Shared Home controller with platform presentation root; not evidence of platform-specific feature CSS |
+| `HomeModuleLibrarySection.tsx` | `app-library-section`, `app-library-heading`, `search-field`, `home-search-field`, empty-state classes | Home library feature |
+| `ModuleLibraryEngine.tsx` | `library-engine__*` and dynamic tone modifier | Home library engine; dynamic modifier must be included in consumer checks |
+| Desktop navigation | `desktop-shell-navigation__*`, `is-active` | Desktop navigation-owned |
+| Mobile navigation | `mobile-shell-navigation` | Mobile navigation component boundary |
+| Tablet compatibility navigation | `shell-navigation__*`, `shell-navigation--tablet-compat` | Temporary Tablet compatibility only |
+
+The current Login component class vocabulary differs substantially from the older generic Login selectors still present in `responsive.css` and `mobile-tuning.css` (for example `.login-shell`, `.showcase-copy`, `.login-heading`, `.input-wrap`). These are **legacy candidates**, not yet PROVEN-UNUSED: the static pass did not exhaust every non-TSX source, generated class, test fixture, external selector contract or runtime state.
+
+The current navigation components expose platform-specific class families, while the global legacy sheets still contain `.mobile-nav` and `.mobile-nav-icon` rules. Treat these as **DYNAMIC/UNKNOWN / legacy candidates** until all imports, render paths, tests and runtime DOM states are checked. Do not migrate them into Mobile navigation solely from their names.
+
+### 9.3 Cascade and breakpoint dependencies
+
+- The 11 eager imports in `main.tsx` remain in their existing order. The broad global sheets load before the Home feature's four ordered sheets; shared Brand/Motion/LiquidDock are loaded later in the root entry chain.
+- `responsive.css` contains several desktop/tablet/mobile transitions, including max-width 1200px, 940px and 700px, plus compact-width behavior. It hides/collapses sidebar labels and changes the Home shell, Login layout and metric/grid composition. It is not a Mobile-only sheet.
+- `mobile-tuning.css` contains repeated max-width 700px and compact-width blocks, repeated reduced-motion handling, base interaction declarations and later Home/spotlight/calendar/library rules. Later blocks intentionally override earlier values in the same file; flattening or reordering changes the cascade.
+- The Home chain is ordered `home.css` → `home-ux.css` → `home-engine.css` → `home-redesign.css`. The chain contains intentional cross-file selector reuse (for example `.app-shell`, `.topbar`, `.content-wrap`, `.spotlight-art`, `.panel-card`, `.mobile-nav`, `.search-field`). Selector reuse alone is not duplication.
+- `prefers-reduced-motion` is handled in more than one layer, including global/adaptive and Home presentation CSS. Preserve the combined behavior; do not remove a local rule based only on finding a global reduced-motion rule.
+- `performance.css`, `adaptive-appearance.css`, `native-experience.css` and `motion.css` each have distinct but intersecting responsibilities. Similar ambient, motion or interaction class names are not proof of equivalent declarations.
+
+### 9.4 Preliminary classification
+
+| Cluster | Classification | Evidence / action |
+|---|---|---|
+| Current Home shell and Home library class families | **USED** | Present in current Home TSX and Home CSS chain; retain Home ownership |
+| Current Login feature class families | **USED** | Present in Login TSX; retain Login feature CSS ownership |
+| Desktop/Mobile/Tablet navigation class families | **USED** | Present in corresponding navigation components; keep platform boundaries |
+| `.login-shell`, `.showcase-copy`, generic legacy Login form classes in global responsive sheets | **DYNAMIC/UNKNOWN — legacy candidate** | Not found in sampled current Login TSX vocabulary; require whole-repository and test/runtime proof before retirement |
+| `.mobile-nav` / `.mobile-nav-icon` global rules | **DYNAMIC/UNKNOWN — legacy candidate** | Current navigation uses platform component class families; verify all render paths and runtime DOM before retirement |
+| Dynamic Home modifier classes (department, tone, state, notice status, selected/active) | **DYNAMIC/UNKNOWN** | Built through template literals/conditional expressions; token extraction alone cannot prove each runtime value |
+| Focus, active, hover, pseudo-elements, media and reduced-motion selectors | **TEST/CONTRACT-REFERENCED** | Must be checked through keyboard, pointer, touch, viewport and motion-preference behavior, not only static class usage |
+| Any selector with no discovered TSX token | **Not automatically PROVEN-UNUSED** | Search tests, non-TSX templates, portal/third-party output, data attributes and generated class names before deletion |
+
+No selector has been marked **PROVEN-UNUSED** in this pass. This is intentional: absence from a bounded TSX sample is insufficient proof of dead CSS.
+
+### 9.5 CSS-01B remaining verification gates
+
+1. Complete repository-wide consumer search for legacy Login/navigation selectors, including non-TSX source, tests, story/demo fixtures and generated class expressions.
+2. Inspect all relevant component source for conditional/template class construction and portal/modal output; static literal-token extraction is not exhaustive.
+3. Run the current production build and inspect emitted CSS chunks to establish eager/lazy loading and actual CSS asset composition before any import-boundary change.
+4. Capture browser computed-style and responsive behavior at representative widths (desktop, tablet compatibility, mobile and compact mobile), including keyboard focus, active/hover/touch, safe-area and reduced-motion states.
+5. Only after these checks classify a candidate as PROVEN-UNUSED or select a bounded CSS-01C migration cluster.
+
+**CSS-01B outcome:** Root/Home cascade and primary consumer families are mapped; high-risk legacy candidates and behavior contracts are identified. Full repository-wide dead-selector proof and computed-style evidence remain open. No runtime CSS changes are authorized by this audit slice.
