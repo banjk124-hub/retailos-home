@@ -36,7 +36,7 @@ assert.match(stocktake, /if \(!scannerCapabilityAvailable \|\| scannerOpen\) ret
   'Stocktake camera-open action must fail closed when policy/runtime support is absent');
 assert.match(stocktake, /scannerOverlay = scannerOpen && screen === 'scan' && scannerCapabilityAvailable/,
   'Stocktake must not mount a camera surface outside the allowed capability');
-assert.match(stocktake, /CAMERA_SCANNER_PLATFORM_AVAILABILITY\[platform\] !== 'available'[\s\S]*?cameraLeaseRequestRef\.current\?\.cancel\(\)[\s\S]*?setScannerOpen\(false\)/,
+assert.match(stocktake, /if \(CAMERA_SCANNER_PLATFORM_AVAILABILITY\[platform\] === 'available'\) return;[\s\S]*?cameraLeaseRequestRef\.current\?\.cancel\(\)[\s\S]*?setScannerOpen\(false\)/,
   'Leaving an allowed platform must cancel and close an active Stocktake camera session');
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'/,
   'Scanner Preferences must have its own Mobile-only policy gate');
