@@ -28,6 +28,10 @@ assert.match(tablet, /Tablet remains review-required/);
 assert.match(shell, /useRetailPlatform\(\)/);
 assert.match(home, /<HomePresentationRoot platform=\{platform\}>/);
 assert.match(home, /platform === 'mobile' && isScannerSupportedDevice\(\)/);
+assert.match(home, /if \(platform !== 'mobile' \|\| !isScannerSupportedDevice\(\) \|\| isBarcodeScannerOpen\) return/);
+assert.match(home, /if \(platform === 'mobile'\) return;[\s\S]*?setIsBarcodeScannerOpen\(false\)/);
+assert.match(home, /platform === 'mobile' && isBarcodeScannerOpen/);
+assert.match(home, /platform === 'mobile' && showScannerSettings/);
 assert.match(settings, /showScannerSettings &&/);
 assert.match(home, /showScannerSettings=\{platform === 'mobile'\}/);
 
