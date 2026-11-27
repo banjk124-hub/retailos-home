@@ -1,7 +1,7 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** 6925cf968ea2b9c37377856abaf4c4a2ca6785a0  
+**Verified main HEAD:** ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45  
 **Product/experience workflow:** [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md)  
 **Decision register:** [DECISIONS.md](./DECISIONS.md)  
 **Verified state:** [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md)
@@ -16,7 +16,7 @@ RetailOS shares identity, journeys and business semantics. A generic feature req
 
 - PR #181 UI-04 initial feature presentation migration is merged at e58bce634b9ff67e95250d36c8653593680463e9.
 - PR #185 AUDIT-03 CSS & Design Foundation static audit is merged at bddb84259f7bc68656a42d467ec83fdddfe17b1f. AUDIT-03A production CSS delivery baseline is the next proposed step; no CSS cleanup implementation is authorized by the audit.
-- PR #186 cross-platform governance is merged. UI-04E PR #190 and UI-04F PR #191 are also merged; current main HEAD is `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`.
+- PR #186 cross-platform governance, PR #187 PA-02 capability matrix, UI-04E PR #190 and UI-04F PR #191 are merged. Current main HEAD is `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`.
 - PR #187 Platform Experience & Architecture Audit remains open / Draft and is being advanced from the post-UI-04F main baseline. Owner has confirmed the PA-02 matrix: nine Home workflows shared Desktop/Mobile; camera scanner and dedicated copy/CSS Mobile-only; manual lookup shared; Tablet review-required. Exact-head CI run #1914 passed on `1067a21d402ada5b0baa21c53241a57284e07932`, including preflight, TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests.
 - PR #189 completes UI-04D Stocktake presentation and is merged at `e88ae240959a8deea85aee2fd2992d40563ad365`; exact-head CI #1877 passed on `3a8c56423f34cb82e59985b10bce56f8f2af42a6`.
 
@@ -29,7 +29,7 @@ RetailOS shares identity, journeys and business semantics. A generic feature req
 
 ## Platform audit continuation
 
-Continue PR #187 from main `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`. PA-02 is owner-confirmed and recorded in `PLATFORM_CAPABILITY_MATRIX.md`; next gates are typed source metadata, shell/presentation ownership design, CSS ownership migration plan and runtime/device evidence. Do not use viewport breakpoints as feature policy. Physical PWA display-mode/safe-area/keyboard acceptance and computed-style/runtime CSS evidence remain separate validation gates.
+Continue SH-01 on branch `refactor/sh-01b-authenticated-shell`, based on main `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45`. SH-01B extracted authenticated composition while App remains auth/session and PWA lifecycle owner. SH-01C added platform context, separate Desktop/Mobile Home roots, Tablet compatibility fallback, explicit navigation renderers and Mobile-only scanner/settings gates. SH-01D adds integration contracts and exact-head CI/browser validation. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`. Do not use viewport breakpoints as feature policy. Physical PWA acceptance and CSS computed-style validation remain separate gates.
 
 ## Technical boundaries
 
