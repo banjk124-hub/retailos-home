@@ -25,6 +25,9 @@ assert.match(presentationSource, /screen === 'history'/);
 assert.match(presentationSource, /screen === 'exports'/);
 assert.match(presentationSource, /className="stocktake-backdrop"/);
 assert.match(presentationSource, /className="stocktake-panel"/);
+assert.match(presentationSource, /\{scannerOverlay\}/, 'camera overlay remains inside the Stocktake workspace stacking context');
+assert.match(moduleSource, /scannerOverlay = scannerOpen && screen === 'scan'/, 'coordinator owns scanner overlay lifecycle visibility');
+assert.match(moduleSource, /scannerOverlay=\{scannerOverlay\}/, 'coordinator hands the live scanner surface to the presentation owner');
 
 // Workspace and scanner remain separate presentation surfaces.
 assert.match(scannerSource, /import '\.\/stocktake-scanner-presentation\.css'/);
