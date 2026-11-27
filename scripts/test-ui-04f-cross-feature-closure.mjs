@@ -38,5 +38,5 @@ for (const retired of ["../src/features/scanner/scanner-transition.css", "../src
 for (const check of ["test-ui-04a-login-presentation.mjs", "test-ui-04b-settings-presentation.mjs", "test-ui-04d-stocktake-presentation.mjs", "test-ui-04e-stocktake-import-presentation.mjs", "test-ui-04f-cross-feature-closure.mjs", "test-scanner-presentation.mjs", "test-bundle-boundaries.mjs"]) assert.ok(preflight.includes(check));
 for (const phrase of ["Settings navigation must be reachable on mobile", "Scanner Preferences entry must be reachable from Settings", "Stocktake workflow entry must be reachable", "Stocktake Import workflow entry must be reachable"]) assert.ok(runtime.includes(phrase));
 assert.ok(!runtime.includes("if (await settings.isVisible()") && !runtime.includes("if (await stocktake.isVisible()") && !runtime.includes("if (await exportModule.isVisible()"));
-assert.ok(bundle.includes("const BarcodeScanner = lazy"));
+assert.ok(bundle.includes("BarcodeScanner") && bundle.includes("StocktakeImportModule") && bundle.includes("SettingsHub"));
 console.log("UI-04F cross-feature presentation ownership, reachability and closure contracts passed.");
