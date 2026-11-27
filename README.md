@@ -2,6 +2,21 @@
 
 PWA nội bộ được xây dựng bằng React, TypeScript và Vite. Repository hiện là frontend prototype: tài khoản được khai báo trong code, dữ liệu nghiệp vụ chưa kết nối Google Drive/Sheets, và Web Push cần backend để gửi thông báo.
 
+## Desktop, tablet và mobile — product/platform contract
+
+RetailOS dùng chung một bộ nhận diện thương hiệu và một ngôn ngữ nghiệp vụ cốt lõi, nhưng **không bắt buộc dùng chung feature set, shell, navigation, layout hay component composition trên mọi nền tảng**.
+
+- **Shared identity:** tên gọi, nhận diện thương hiệu, thuật ngữ nghiệp vụ, ý nghĩa dữ liệu và các quy tắc nghiệp vụ thực sự dùng chung phải nhất quán.
+- **Platform-specific capability:** một workflow có thể chỉ được cung cấp trên Desktop, chỉ trên Mobile, hoặc trên cả hai. Không suy luận rằng có trên Desktop thì bắt buộc phải có trên Mobile và ngược lại. Quyết định dựa trên tác vụ, thiết bị đầu vào/đầu ra, môi trường vận hành, quyền hệ điều hành, bảo mật và giá trị thực tế.
+- **Shared business rules, selective workflows:** dùng chung domain/data/state và quy tắc nghiệp vụ khi cùng một nghiệp vụ; cho phép feature, thao tác, mức độ đầy đủ và cách tổ chức workflow khác nhau theo nền tảng. Không nhân đôi logic chỉ để tạo hai presentation.
+- **Independent presentation:** Desktop và Mobile được phép có shell, navigation, information architecture, mật độ thông tin và component arrangement riêng. Tablet được đánh giá như một context riêng hoặc dạng chuyển tiếp theo bằng chứng, không mặc định là Desktop thu nhỏ hay Mobile phóng lớn.
+- **Responsive is not platform parity:** responsive xử lý biến thiên viewport/orientation/available space bên trong presentation phù hợp; nó không phải cơ chế ép tất cả nền tảng dùng cùng một layout.
+- **PWA app experience:** installed PWA ưu tiên chế độ standalone khi nền tảng hỗ trợ. Fullscreen là chế độ/flow có điều kiện, không phải giả định rằng mọi OS đều cho phép ẩn system UI. Tôn trọng status/navigation bars, safe areas, dynamic viewport, keyboard, permission prompts và lifecycle của từng nền tảng. Chỉ dùng immersive fullscreen cho workflow cần thiết và có fallback rõ ràng.
+- **Capability detection:** chọn presentation/capability bằng feature detection và các tín hiệu phù hợp (viewport, pointer/hover, touch, display mode, API/permission availability); không dựa duy nhất vào User-Agent hoặc breakpoint để suy ra loại thiết bị.
+- **Truthful availability:** UI phải phân biệt feature không được cung cấp trên nền tảng, feature chưa triển khai, thiếu quyền, thiếu dữ liệu và lỗi vận hành. Không hiển thị entry point giả hoặc đánh dấu ready chỉ vì có tile.
+
+Đây là product/architecture direction được owner xác nhận; nó không khẳng định source hiện tại đã được tổ chức thành hai shell độc lập hoặc có feature availability matrix hoàn chỉnh. Việc triển khai phải đi theo audit, migration plan và regression evidence. Xem thêm DECISIONS.md (PD-007), ARCHITECTURE.md (ADR-030), RETAILOS_PRODUCT_SKILL.md và PWA_RUNTIME_RELEASE.md.
+
 ## Yêu cầu
 
 - Node.js 20.19+ hoặc 22.12+
