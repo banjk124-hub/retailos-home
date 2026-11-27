@@ -186,47 +186,61 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.setViewportSize({ width: 390, height: 844 });
   const settings = page.getByRole('button', { name: /cài đặt/i }).first();
-  if (await settings.isVisible().catch(() => false)) {
-    await settings.click();
-    await page.waitForTimeout(500);
-    await capture(page, info, 'settings-390x844');
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(350);
-  }
-
+  await expect(settings, 'Settings navigation must be reachable on mobile').toBeVisible();
+  await settings.click();
+  const settingsDialog = page.getByRole('dialog', { name: 'Cài đặt' });
+  await expect(settingsDialog).toBeVisible();
+  await capture(page, info, 'settings-390x844');
+  const updateCenter = page.getByRole('button', { name: /Trung tâm cập nhật/ });
+  await expect(updateCenter, 'Update Center entry must be reachable from Settings').toBeVisible();
+  await updateCenter.click();
+  await expect(page.getByRole('heading', { name: 'Trung tâm cập nhật' })).toBeVisible();
+  await capture(page, info, 'update-center-390x844');
+  await page.getByRole('button', { name: 'Quay lại cài đặt' }).click();
+  await expect(settingsDialog).toBeVisible();
+  const scannerSettings = page.getByRole('button', { name: /Cài đặt máy quét/ });
+  await expect(scannerSettings, 'Scanner Preferences entry must be reachable from Settings').toBeVisible();
+  await scannerSettings.click();
+  await expect(page.getByRole('heading', { name: 'Cài đặt máy quét' })).toBeVisible();
+  expect(await page.getByRole('switch').count()).toBeGreaterThan(0);
+  await expect(page.getByRole('slider', { name: 'Âm lượng beep' })).toBeVisible();
+  await capture(page, info, 'scanner-preferences-390x844');
+  await page.keyboard.press('Escape');
+  await expect(settingsDialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(settingsDialog).toBeHidden();
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(350);
   const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
-  if (await moduleNav.isVisible().catch(() => false)) await moduleNav.click();
+  await expect(moduleNav, 'Module navigation must be reachable').toBeVisible();
+  await moduleNav.click();
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
-  if (await library.isVisible().catch(() => false)) {
-    await library.click();
-    await page.waitForTimeout(250);
-    await capture(page, info, 'library-390x844');
-    const stocktake = page.getByRole('button', { name: /^kiểm kê/i }).first();
-    if (await stocktake.isVisible().catch(() => false)) {
-      await stocktake.click();
-      await page.waitForTimeout(700);
-      await capture(page, info, 'stocktake-390x844');
-    }
-  }
-
+  await expect(library, 'Stocktake library must be reachable').toBeVisible();
+  await library.click();
+  await page.waitForTimeout(250);
+  await capture(page, info, 'library-390x844');
+  const stocktake = page.getByRole('button', { name: /^kiểm kê/i }).first();
+  await expect(stocktake, 'Stocktake workflow entry must be reachable').toBeVisible();
+  await stocktake.click();
+  await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
+  await capture(page, info, 'stocktake-390x844');
+  await page.getByRole('button', { name: 'Đóng kiểm kê' }).click();
   await page.reload({ waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(350);
   const importNav = page.getByRole('button', { name: /^module$/i }).first();
-  if (await importNav.isVisible().catch(() => false)) await importNav.click();
+  await expect(importNav).toBeVisible();
+  await importNav.click();
   const importLibrary = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
-  if (await importLibrary.isVisible().catch(() => false)) {
-    await importLibrary.click();
-    const exportModule = page.getByRole('button', { name: /^xuất file/i }).first();
-    if (await exportModule.isVisible().catch(() => false)) {
-      await exportModule.click();
-      await page.waitForTimeout(700);
-      await capture(page, info, 'import-390x844');
-    }
-  }
-
+  await expect(importLibrary).toBeVisible();
+  await importLibrary.click();
+  const exportModule = page.getByRole('button', { name: /^xuất file/i }).first();
+  await expect(exportModule, 'Stocktake Import workflow entry must be reachable').toBeVisible();
+  await exportModule.click();
+  await expect(page.getByRole('heading', { name: 'Xuất file' })).toBeVisible();
+  await capture(page, info, 'import-390x844');
   await writeFile(info.outputPath('runtime-evidence/health-summary.json'), JSON.stringify({
     capturedAt: new Date().toISOString(), errors, failedRequests, viewportResults,
-    note: 'Feature screenshots are emitted only when existing user-facing navigation controls are reachable.',
+    note: 'All required feature surfaces are asserted reachable; a missing entry point fails the runtime evidence test.',
   }, null, 2));
   expect(errors, 'browser and console errors').toEqual([]);
   expect(viewportResults.every((v) => v.horizontalOverflow <= 1), 'Home horizontal overflow').toBe(true);
