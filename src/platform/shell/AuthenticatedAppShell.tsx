@@ -148,6 +148,7 @@ export default function AuthenticatedAppShell({
                 canInstall={canInstall}
                 onInstall={onInstall}
                 onBootReady={onBootReady}
+                platform={platform}
               />
             </div>
           </Suspense>
