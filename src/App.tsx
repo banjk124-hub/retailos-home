@@ -6,7 +6,7 @@ import './styles/auth-journey.css';
 import { clearLastLoginName, saveLastLoginName } from './features/auth/services/lastLoginStore';
 import { clearSession, readSession, saveSession } from './features/auth/services/sessionStore';
 import { clearCachedModuleData } from './features/data/moduleDataService';
-import type { EmployeeSession } from './features/auth/types';
+import type { EmployeeSession } from './shared/domain/employee';
 import { getDepartment, type DepartmentConfig } from './shared/config/departments';
 import { ExperienceBackground } from './shared/components/ExperienceBackground';
 import { Brand, BrandMotion } from './shared/brand';

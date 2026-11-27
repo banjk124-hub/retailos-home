@@ -1,4 +1,4 @@
-import type { EmployeeSession } from '../types';
+import type { EmployeeSession } from '../../../shared/domain/employee';
 
 /**
  * Persist only the signed-in identity needed to restore the current UI.

@@ -3,7 +3,7 @@ import {
   AlertTriangle, ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Copy, Download, FileSpreadsheet, Info,
   FileText, History, LoaderCircle, Pencil, Save, Trash2, Upload, X,
 } from 'lucide-react';
-import type { EmployeeSession } from '../../auth/types';
+import type { EmployeeSession } from '../../../shared/domain/employee';
 import { LOCAL_EMPLOYEE_DIRECTORY } from '../../auth/services/employeeDirectory';
 import {
   buildStocktakeOutput,

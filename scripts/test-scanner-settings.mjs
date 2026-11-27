@@ -96,8 +96,12 @@ assert.match(home, /setShowSettings\(true\)/);
 assert.match(home, /<SettingsHub/);
 assert.match(home, /<ScannerSettingsPanel/);
 
-const iconRegistry = await read('../src/shared/icons/icon.registry.ts');
-assert.match(iconRegistry, /settings: Settings,/);
-assert.doesNotMatch(iconRegistry, /SlidersHorizontal/);
+const sharedIconRegistry = await read('../src/shared/icons/icon.registry.ts');
+const homeIconRegistry = await read('../src/features/home/homeIconRegistry.ts');
+assert.doesNotMatch(sharedIconRegistry, /settings: Settings,/,
+  'Home navigation semantics must not be owned by the Shared icon registry');
+assert.match(homeIconRegistry, /settings: Settings,/,
+  'Home owns its settings navigation icon mapping');
+assert.doesNotMatch(homeIconRegistry, /SlidersHorizontal/);
 
 console.log('Scanner settings persistence, feedback policy, UI wiring and shared-consumer regression tests passed.');

@@ -5,7 +5,7 @@ import {
   ClipboardList, CreditCard, Grid2X2, House, LogOut, PackageSearch, ScanBarcode, Search,
   ShieldCheck, Sparkles, Truck, Warehouse, X,
 } from 'lucide-react';
-import type { EmployeeSession } from '../auth/types';
+import type { EmployeeSession } from '../../shared/domain/employee';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import { Brand, BrandMark } from '../../shared/brand';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
@@ -17,10 +17,11 @@ import { useHomeNavigation } from './hooks/useHomeNavigation';
 import { type SnapshotNotice } from './snapshotNoticeRules';
 import { useHomeBarcodeLookup } from './hooks/useHomeBarcodeLookup';
 import { useHomeFeedback } from './hooks/useHomeFeedback';
-import { isScannerSupportedDevice } from '../scanner/services/scannerCapabilities';
+import { isScannerSupportedDevice, unlockScannerAudio } from '../scanner/integration';
 import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection';
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
-import { getDepartmentIcon, getHomeNavigationIcon, getLibraryIcon, getModuleIcon, MotionIcon } from '../../shared/icons';
+import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
+import { getHomeNavigationIcon, getLibraryIcon, getModuleIcon } from './homeIconRegistry';
 import { ShellNavigation } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
@@ -31,8 +32,8 @@ import '../../styles/home-redesign.css';
 import { useHomePushNotifications } from './hooks/useHomePushNotifications';
 import { useHomeUpdateNoticeCount } from './hooks/useHomeUpdateNoticeCount';
 import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';
-import { isPushConfigured } from '../notifications/pushNotifications';
-import { unlockScannerAudio } from '../scanner/services/scannerAudio';
+import { isPushConfigured } from '../notifications/integration';
+
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
 import { useBodyScrollLock } from '../../shared/hooks/useBodyScrollLock';

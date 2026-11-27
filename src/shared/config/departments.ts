@@ -1,4 +1,4 @@
-import type { DepartmentId } from '../../features/auth/types';
+import type { DepartmentId } from '../domain/department';
 
 export type DepartmentConfig = {
   id: DepartmentId;

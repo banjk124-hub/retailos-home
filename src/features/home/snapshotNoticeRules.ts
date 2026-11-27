@@ -1,4 +1,4 @@
-import type { CachedModuleSnapshot, ModuleDataId } from '../data/moduleDataService';
+import type { CachedModuleSnapshot, SnapshotModuleId } from '../../shared/contracts/moduleSnapshot';
 
 export type SnapshotNotice = {
   id: string;
@@ -6,7 +6,7 @@ export type SnapshotNotice = {
   summary: string;
   details: string;
   category: string;
-  moduleId: ModuleDataId;
+  moduleId: SnapshotModuleId;
   tone: string;
   snapshotDate: string;
 };
@@ -38,7 +38,7 @@ function countRows(data: unknown, matches: (record: Record<string, unknown>) => 
   return count;
 }
 
-export const HOME_NOTICE_MODULE_IDS: readonly ModuleDataId[] = [
+export const HOME_NOTICE_MODULE_IDS: readonly SnapshotModuleId[] = [
   'inventory',
   'product-dates',
   'sales',

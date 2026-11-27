@@ -3,7 +3,8 @@ import { ArrowUpRight } from 'lucide-react';
 import type { ModuleLibraryGroup } from '../moduleRegistry';
 import { Surface } from '../../../shared/components/surface/Surface';
 import { MotionCard } from '../../../shared/motion';
-import { getLibraryIcon, getModuleIcon, MotionIcon } from '../../../shared/icons';
+import { MotionIcon } from '../../../shared/icons';
+import { getLibraryIcon, getModuleIcon } from '../homeIconRegistry';
 
 type Props = {
   groups: ModuleLibraryGroup[];

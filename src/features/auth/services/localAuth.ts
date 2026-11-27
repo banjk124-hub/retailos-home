@@ -1,4 +1,5 @@
-import type { EmployeeSession, LoginCredentials } from '../types';
+import type { LoginCredentials } from '../types';
+import type { EmployeeSession } from '../../../shared/domain/employee';
 import { getDepartment } from '../../../shared/config/departments';
 import { findLocalEmployeeByCode, LOCAL_EMPLOYEE_DIRECTORY } from './employeeDirectory';
 
