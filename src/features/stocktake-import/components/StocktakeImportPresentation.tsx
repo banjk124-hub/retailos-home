@@ -56,6 +56,7 @@ export type StocktakeImportPresentationModel = {
   canExportAll: boolean;
   zoneItems: Array<{
     zone: StocktakeImportResult['zones'][number];
+    index: number;
     rowErrors: number;
     actionState: string;
     actionLabel: string;
