@@ -6,6 +6,7 @@ export type RetailPlatformSignals = Readonly<{
   primaryHover: boolean;
   primaryCoarsePointer: boolean;
   touchPoints: number;
+  userAgent: string;
   screenWidth: number;
   screenHeight: number;
 }>;
@@ -17,6 +18,11 @@ export type RetailPlatformSignals = Readonly<{
  */
 export function resolveRetailPlatform(signals: RetailPlatformSignals): RetailPlatform {
   const shortScreenEdge = Math.min(signals.screenWidth, signals.screenHeight);
+  const hasTabletPhysicalSignals = shortScreenEdge >= 600
+    && signals.touchPoints > 0
+    && (/iPad|Macintosh/i.test(signals.userAgent) || /Android/i.test(signals.userAgent));
+  if (hasTabletPhysicalSignals) return 'tablet';
+
   if (signals.primaryFinePointer && signals.primaryHover) return 'desktop';
 
   const hasTouchInput = signals.primaryCoarsePointer || signals.touchPoints > 0;
@@ -36,6 +42,7 @@ function readPlatform(): RetailPlatform {
     primaryHover: query('(hover: hover)'),
     primaryCoarsePointer: query('(pointer: coarse)'),
     touchPoints: navigator.maxTouchPoints ?? 0,
+    userAgent: navigator.userAgent,
     screenWidth: window.screen?.width ?? 0,
     screenHeight: window.screen?.height ?? 0,
   });
