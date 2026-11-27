@@ -5,7 +5,7 @@ import type { MotionOrigin } from '../../shared/motion';
 import { ExperienceBackground } from '../../shared/components/ExperienceBackground';
 import { Brand, BrandMotion } from '../../shared/brand';
 import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
-import { MOTION_CONFIG, useMotionState } from '../../shared/motion';
+import { useMotionState } from '../../shared/motion';
 
 const HomeScreen = lazy(() => import('../../features/home/HomeScreen'));
 
@@ -47,7 +47,7 @@ function PageGlassDock() {
 function IdentityJourneyView({
   employee,
   department,
-  origin,
+  identityOrigin,
 }: Pick<Props, 'employee' | 'department' | 'identityOrigin'>) {
   const DepartmentIcon = getDepartmentIcon(department.id);
   const initials = employee.name
@@ -57,8 +57,8 @@ function IdentityJourneyView({
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('')
     .slice(0, 2) || 'RT';
-  const originX = origin?.x ?? window.innerWidth / 2;
-  const originY = origin?.y ?? window.innerHeight / 2;
+  const originX = identityOrigin?.x ?? window.innerWidth / 2;
+  const originY = identityOrigin?.y ?? window.innerHeight / 2;
   const viewportWidth = document.documentElement.clientWidth;
   const viewportHeight = window.innerHeight;
   const revealRadius = Math.ceil(Math.max(
