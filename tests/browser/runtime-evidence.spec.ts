@@ -36,6 +36,14 @@ async function emulatePlatform(page: Page, platform: 'desktop' | 'mobile' | 'tab
       configurable: true,
       get: () => platform === 'desktop' ? 0 : 5,
     });
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => platform === 'mobile'
+        ? 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36'
+        : platform === 'tablet'
+          ? 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15'
+          : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+    });
     Object.defineProperty(window.screen, 'width', { configurable: true, get: () => screenWidth });
     Object.defineProperty(window.screen, 'height', { configurable: true, get: () => screenHeight });
   }, { platform, screenWidth, screenHeight });
