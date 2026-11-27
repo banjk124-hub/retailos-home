@@ -119,7 +119,7 @@ Browser viewport emulation is useful for responsive checks but does not certify 
 
 1. **PA-02 — Capability matrix:** owner-confirmed and represented in typed Home registry metadata and cross-feature policy constants; all nine workflows and cross-feature capabilities are inventoried.
 2. **SH-01 — Shell and presentation ownership:** merged to `main` in PR #193 at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` with 10 Playwright tests. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01.
-3. **Capability enforcement closure:** ensure every camera scanner entry point (Home and Stocktake) applies the same Mobile-only product policy plus runtime support check; verify Tablet exclusion and shared manual entry. This is a bounded follow-up, not a scanner-engine change.
+3. **Capability enforcement closure — in review on PR #195:** Home and Stocktake camera entry points apply the same Mobile-only product policy plus runtime support check; automated evidence covers Tablet exclusion, Mobile Stocktake availability and shared manual entry. Merge remains pending final exact-head CI and owner review.
 4. **CSS-01 — Styling ownership migration:** trace global/mobile-tuning consumers, move styles incrementally to shared foundation/platform/feature owners, preserve cascade and avoid stacked overrides.
 5. **PW-01 — PWA runtime validation:** verify standalone/display-mode, safe areas, dynamic viewport, keyboard, orientation, permission and fallback on target OS/browser combinations.
 6. **MIG-01 — Bounded feature migration:** choose one workflow, preserve shared business result and validate platform isolation before expanding.
