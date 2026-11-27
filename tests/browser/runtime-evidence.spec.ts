@@ -13,6 +13,34 @@ const viewports = [
 ];
 const auditSession = { name: 'RetailOS UI Audit', department: 'FMCG', departmentId: 'fmcg', signedInAt: '2026-01-01T00:00:00.000Z' };
 
+async function emulatePlatform(page: Page, platform: 'desktop' | 'mobile' | 'tablet', screenWidth: number, screenHeight: number) {
+  await page.addInitScript(({ platform, screenWidth, screenHeight }) => {
+    const originalMatchMedia = window.matchMedia.bind(window);
+    const forcedMatches: Record<string, boolean> = {
+      '(pointer: fine)': platform === 'desktop',
+      '(hover: hover)': platform === 'desktop',
+      '(pointer: coarse)': platform !== 'desktop',
+    };
+    window.matchMedia = ((query: string) => {
+      const media = originalMatchMedia(query);
+      if (!(query in forcedMatches)) return media;
+      return new Proxy(media, {
+        get(target, property) {
+          if (property === 'matches') return forcedMatches[query];
+          const value = Reflect.get(target, property, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      }) as MediaQueryList;
+    }) as typeof window.matchMedia;
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      configurable: true,
+      get: () => platform === 'desktop' ? 0 : 5,
+    });
+    Object.defineProperty(window.screen, 'width', { configurable: true, get: () => screenWidth });
+    Object.defineProperty(window.screen, 'height', { configurable: true, get: () => screenHeight });
+  }, { platform, screenWidth, screenHeight });
+}
+
 async function seedSession(page: Page) {
   await page.addInitScript((session) => localStorage.setItem('retailos.session.v2', JSON.stringify(session)), auditSession);
 }
@@ -146,6 +174,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await capture(page, info, 'login-1440x900');
 
   await page.goto('about:blank');
+  await emulatePlatform(page, 'desktop', 1440, 900);
   await seedSession(page);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
@@ -158,32 +187,33 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
     const data = await capture(page, info, 'home-' + v.name);
     viewportResults.push({ viewport: v.name, horizontalOverflow: data.document.horizontalOverflow, documentHeight: data.document.height });
 
-    const desktopNavigation = page.locator('.shell-navigation__desktop');
-    const mobileDock = page.locator('.shell-navigation__mobile .liquid-dock');
-    if (v.width >= 901) {
-      await expect(desktopNavigation, `desktop navigation at ${v.name}`).toBeVisible();
-      await expect(mobileDock, `mobile dock hidden at ${v.name}`).toBeHidden();
-      const layout = await page.evaluate(() => ({
-        rail: document.querySelector('.shell-navigation__desktop')!.getBoundingClientRect().toJSON(),
-        main: document.querySelector('.home-main')!.getBoundingClientRect().toJSON(),
-      }));
-      expect(layout.rail.right, `desktop rail must not overlap Home content at ${v.name}`).toBeLessThanOrEqual(layout.main.left + 1);
-    } else {
-      await expect(mobileDock, `mobile dock at ${v.name}`).toBeVisible();
-      await expect(desktopNavigation, `desktop navigation hidden at ${v.name}`).toBeHidden();
-      const dockBounds = await mobileDock.boundingBox();
-      expect(dockBounds, `mobile dock bounds at ${v.name}`).not.toBeNull();
-      expect(dockBounds!.x, `mobile dock left edge at ${v.name}`).toBeGreaterThanOrEqual(0);
-      expect(dockBounds!.x + dockBounds!.width, `mobile dock right edge at ${v.name}`).toBeLessThanOrEqual(v.width + 1);
-      expect(dockBounds!.y + dockBounds!.height, `mobile dock bottom edge at ${v.name}`).toBeLessThanOrEqual(v.height + 1);
-    }
+    const desktopNavigation = page.locator('.desktop-shell-navigation');
+    const mobileDock = page.locator('.mobile-shell-navigation .liquid-dock');
+    await expect(page.locator('[data-retailos-platform="desktop"]'), `Desktop presentation identity at ${v.name}`).toHaveCount(1);
+    await expect(desktopNavigation, `Desktop navigation remains selected at ${v.name}`).toBeVisible();
+    await expect(mobileDock, `Mobile dock must not be selected by viewport width at ${v.name}`).toBeHidden();
+    const layout = await page.evaluate(() => ({
+      rail: document.querySelector('.desktop-shell-navigation')!.getBoundingClientRect().toJSON(),
+      main: document.querySelector('.home-main')!.getBoundingClientRect().toJSON(),
+    }));
+    expect(layout.rail.right, `Desktop rail must not overlap Home content at ${v.name}`).toBeLessThanOrEqual(layout.main.left + 1);
   }
 
+  await page.goto('about:blank');
+  await emulatePlatform(page, 'mobile', 390, 844);
+  await seedSession(page);
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-retailos-platform="mobile"]')).toHaveCount(1);
+  await expect(page.locator('.mobile-shell-navigation .liquid-dock')).toBeVisible();
+  await expect(page.locator('.desktop-shell-navigation')).toHaveCount(0);
+  await page.waitForTimeout(350);
+  await capture(page, info, 'home-mobile-390x844');
+
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await page.waitForTimeout(80);
   const footerBottom = await page.locator('.app-footer').evaluate((node) => node.getBoundingClientRect().bottom);
-  const dockTop = (await page.locator('.shell-navigation__mobile .liquid-dock').boundingBox())?.y ?? 0;
+  const dockTop = (await page.locator('.mobile-shell-navigation .liquid-dock').boundingBox())?.y ?? 0;
   expect(footerBottom, 'mobile dock must not cover the final Home content').toBeLessThanOrEqual(dockTop - 4);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.setViewportSize({ width: 390, height: 844 });
@@ -248,3 +278,30 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   expect(failedRequests, 'runtime audit requests must not fail').toEqual([]);
   expect(viewportResults.every((v) => v.horizontalOverflow <= 1), 'Home horizontal overflow').toBe(true);
 });
+
+
+test('Tablet remains review-required and does not inherit camera scanner capability', async ({ page }, info) => {
+  await page.goto('about:blank');
+  await emulatePlatform(page, 'tablet', 768, 1024);
+  await seedSession(page);
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-retailos-platform="tablet"]')).toHaveCount(1);
+  await expect(page.locator('.shell-navigation--tablet-compat')).toBeVisible();
+  await expect(page.locator('.desktop-shell-navigation')).toHaveCount(0);
+  await expect(page.locator('.mobile-shell-navigation')).toHaveCount(0);
+
+  const quickLookup = page.getByRole('button', { name: 'Tra cứu nhanh' });
+  await expect(quickLookup, 'Tablet keeps shared manual barcode lookup').toBeVisible();
+  await quickLookup.click();
+  await expect(page.getByLabel('Tên sản phẩm hoặc mã barcode')).toBeVisible();
+  await page.getByRole('button', { name: 'Đóng kết quả' }).click();
+
+  await page.getByRole('button', { name: /cài đặt/i }).first().click();
+  const settingsDialog = page.getByRole('dialog', { name: 'Cài đặt' });
+  await expect(settingsDialog).toBeVisible();
+  await expect(page.getByRole('button', { name: /Trung tâm cập nhật/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Cài đặt máy quét/ })).toHaveCount(0);
+  await capture(page, info, 'tablet-settings-768x1024');
+});
+
