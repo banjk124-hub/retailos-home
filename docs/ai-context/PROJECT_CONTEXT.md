@@ -13,6 +13,10 @@
 - Scanner stabilization SC-00–SC-05 is closed. UI presentation work must not reopen scanner engine internals without a reproducible defect, measured bottleneck or new requirement.
 - Development work occurs on isolated branches. Merge, deployment and production-account transfer are separate explicit approval gates.
 
+## Owner-confirmed platform experience direction
+
+RetailOS shares one brand identity and consistent business semantics, but Desktop, Tablet and Mobile are distinct product contexts—not merely responsive sizes of one interface. A workflow may be Desktop-only, Mobile-only or cross-platform; feature parity is not mandatory. Share domain/data/state and business rules where the underlying business operation is the same, while allowing platform-specific capabilities, shell/navigation, information architecture, layout, density and component composition. Responsive behavior adapts within each presentation; it does not force parity. Installed PWA experience should prefer standalone where supported; fullscreen/immersive behavior is conditional and must respect OS chrome, safe areas, viewport, keyboard, permissions and lifecycle. See PD-007 in DECISIONS.md and ADR-030 in ARCHITECTURE.md. This is target direction, not a claim that the current source already implements separate shells or a complete platform capability matrix.
+
 ## Current owner direction — experience and visual design
 
 The owner has withdrawn previous global aesthetic constraints. No global visual style is currently selected. Do not assume minimal, Liquid Glass, burgundy/dark-red, retail photography, a particular typography system, card-based layouts or any other former concept is the default.
