@@ -1,11 +1,11 @@
 # RetailOS documentation index
 
 ## Start here
-1. AGENTS.md — agent operating contract, safety and evidence rules.
-2. RETAILOS_PRODUCT_SKILL.md — product principles, experience discovery, creative exploration and delivery workflow.
-3. PROJECT_CONTEXT.md — durable product/repository facts and current owner direction.
-4. IMPLEMENTATION_STATUS.md — verified implementation state and open gates.
-5. AI_HANDOFF.md — current continuation point.
+1. `AGENTS.md` — agent operating contract, safety and evidence rules.
+2. `RETAILOS_PRODUCT_SKILL.md` — product principles, experience discovery, creative exploration and delivery workflow.
+3. `PROJECT_CONTEXT.md` — durable product/repository facts and current owner direction.
+4. `IMPLEMENTATION_STATUS.md` — verified implementation state and open gates.
+5. `AI_HANDOFF.md` — current continuation point.
 6. Load only task-specific domain contracts and relevant decision history.
 
 ## Canonical ownership
@@ -30,9 +30,11 @@
 | Performance/bundle | PERFORMANCE_BUNDLE_PWA.md |
 
 ## Current technical workstreams
-- **UI-03 CSS consolidation — complete:** [UI_UX_PHASE_03_CSS_CONSOLIDATION.md](./UI_UX_PHASE_03_CSS_CONSOLIDATION.md) records the merged implementation and exact-head validation evidence.
-- **UI-04 feature presentation migration — active:** PR #181 is merged; UI-04A/B/C/D/E are complete and merged (UI-04D in PR #189; UI-04E in PR #190); UI-04F cross-feature closure is implemented and validated in Draft PR #191 (exact-head CI #1907 passed; owner review/merge pending). [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md) is the canonical phase record.
-- **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 is merged; AUDIT-03A production CSS delivery baseline is the next proposed step. No source cleanup is implied.
+- **SH-01 shell/platform presentation — merged:** PR #193 merged to `main` at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`. Exact PR-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` with 10 Playwright tests. Physical-device acceptance remains PW-01; CSS ownership migration remains CSS-01. See [SH-01_SHELL_PRESENTATION_OWNERSHIP.md](./SH-01_SHELL_PRESENTATION_OWNERSHIP.md).
+- **UI-04 feature presentation migration — complete:** UI-04A–F are merged. UI-04F closure is PR #191; exact-head CI #1908 passed with 9 browser tests. See [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md).
+- **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 is merged; AUDIT-03A production CSS delivery baseline remains proposed. No source cleanup is implied.
+- **PW-01 physical PWA acceptance — pending:** validate installed mode, safe areas, keyboard, orientation, permissions and lifecycle on target physical devices.
+- **CSS-01 CSS ownership migration — pending:** map shared foundation/platform/feature ownership and measure cascade before moving rules. No broad deletion is implied.
 
 ## Experience governance
 There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former UI_UX_M0_GOVERNING_SPEC.md is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
@@ -44,7 +46,7 @@ For a new experience:
 - Validate technical constraints and obtain explicit owner approval before substantial creative implementation.
 - Verify the result in browser/device contexts appropriate to the feature.
 
-Existing source audits and blueprints remain evidence about the current implementation, not a prescribed target design. Do not treat an audit's suggested layout, token, component or phase as an owner-approved creative decision.
+Existing source audits and blueprints remain evidence about the implementation at their recorded baseline, not prescribed target designs. Do not treat an audit's suggested layout, token, component or phase as an owner-approved creative decision.
 
 ## Historical/source evidence
 Historical audits, retired proposals, phase records and session logs preserve evidence only. Open them when a task needs the specific trace; do not treat them as current instructions. See DEPRECATION_REGISTER.md for retired documents and UI_UX_DOCUMENT_CONSOLIDATION.md for earlier consolidation history.
