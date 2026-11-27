@@ -34,7 +34,7 @@
 - **UI-04 feature presentation migration — complete:** UI-04A–F are merged. UI-04F closure is PR #191; exact-head CI #1909 passed with 9 browser tests. See [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md).
 - **AUDIT-03 CSS & Design Foundation — static audit complete:** PR #185 is merged; AUDIT-03A production CSS delivery baseline remains proposed. No source cleanup is implied.
 - **PW-01 physical PWA acceptance — deferred by owner:** no reproducible device defect observed; physical acceptance is not claimed complete and may be reopened on a reproducible issue or explicit release requirement.
-- **CSS-01 CSS ownership migration — in progress:** CSS-01A mapped 34 current CSS files and import owners; CSS-01B consumer/cascade tracing is next. See [CSS_01_CSS_OWNERSHIP_MIGRATION.md](./CSS_01_CSS_OWNERSHIP_MIGRATION.md). No broad deletion is implied.
+- **CSS-01 CSS ownership migration — in progress:** CSS-01A inventory/import-owner map complete; CSS-01B primary root/Home cascade and consumer trace documented. Full-repository legacy-selector proof and runtime/computed-style evidence remain open. See [CSS_01_CSS_OWNERSHIP_MIGRATION.md](./CSS_01_CSS_OWNERSHIP_MIGRATION.md). No CSS runtime rules changed.
 
 ## Experience governance
 There is no active global visual-style specification. Previous M0 art-direction requirements are superseded by owner direction recorded in DECISIONS.md and the current Product Skill. The former UI_UX_M0_GOVERNING_SPEC.md is retained as a historical record with a supersession notice; it is not an active constraint or acceptance authority.
