@@ -576,8 +576,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     };
     return { zone, index, uniqueProductCount: countUniqueProductCodes(zone.rows), actionState, actionLabel: actionLabel[actionState] };
   });
-  const presentationVisibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-    .map((row, visibleIndex) => ({
+  const presentationVisibleRows = visibleRows.map((row, visibleIndex) => ({
       row,
       issues: getRowIssues(row),
       rowIndex: page * PAGE_SIZE + visibleIndex,
