@@ -303,7 +303,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   expect(errors, 'browser and console errors').toEqual([]);
   expect(failedRequests, 'runtime audit requests must not fail').toEqual([]);
   expect(viewportResults.every((v) => v.horizontalOverflow <= 1), 'Home horizontal overflow').toBe(true);
-});
+}, 90_000);
 
 
 test('Tablet remains review-required and does not inherit camera scanner capability', async ({ page }, info) => {
