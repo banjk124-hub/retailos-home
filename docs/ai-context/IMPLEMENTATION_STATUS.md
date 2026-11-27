@@ -24,7 +24,7 @@ This file records verified repository state. It does not authorize deployment or
 | PA-02 capability matrix | PR #187 merged | Merge commit `ae0ee4cde5ce8ccd160b77cf5198dbb103b82b45` |
 | UI-04D Stocktake presentation | PR #189 merged | Merge commit `e88ae240959a8deea85aee2fd2992d40563ad365`; CI #1877 passed |
 | UI-04E Stocktake Import presentation | PR #190 merged | Merge commit `38192b2ce1c426edd6285594a57a2c2970bc14ee`; CI #1902 passed |
-| UI-04F cross-feature closure | PR #191 merged | Merge commit `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; exact-head CI #1908 passed |
+| UI-04F cross-feature closure | PR #191 merged | Merge commit `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`; exact-head CI #1909 passed |
 | SH-01B/C/D authenticated shell and platform roots | PR #193 merged | Merge commit `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a`; 10 Playwright tests passed |
 
 ## Open work and acceptance gates
