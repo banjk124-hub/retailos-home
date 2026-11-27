@@ -52,8 +52,8 @@ export type StocktakePresentationActions = {
   onSaveEntry: () => void;
   onOpenReview: () => void;
   onPauseZone: () => void;
-  onEditEntry: (entry: StocktakeEntry) => void;
-  onEnterManualEntry: () => void;
+  onEditEntry: (entry: StocktakeEntry, returnToScan?: boolean) => void;
+  onEnterManualEntry: (returnToScan?: boolean) => void;
   onLoadMoreReview: () => void;
   onRemoveEntry: (entry: StocktakeEntry) => void;
   onExportCurrentZone: () => void;
@@ -238,7 +238,7 @@ export default function StocktakePresentation({
           </div>
           <div className="stocktake-review-note">Kiểm tra và chỉnh sửa từng dòng trước khi xuất. Barcode trùng nhau được giữ nguyên thành các dòng riêng.</div>
           {currentZone.status !== 'exported' && (
-            <button className="stocktake-secondary" type="button" onClick={actions.onEnterManualEntry}>
+            <button className="stocktake-secondary" type="button" onClick={() => actions.onEnterManualEntry(true)}>
               <Plus size={16} /> Thêm dòng thủ công
             </button>
           )}
@@ -248,7 +248,7 @@ export default function StocktakePresentation({
                 <div><strong>{entry.barcode}</strong><small>Dòng {entry.sequence} · {entry.source === 'scan' ? 'Quét camera' : 'Nhập thủ công'}</small></div>
                 <b>{entry.quantity}</b>
                 {currentZone.status !== 'exported' && <>
-                  <button type="button" onClick={() => actions.onEditEntry(entry)} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button>
+                  <button type="button" onClick={() => actions.onEditEntry(entry, true)} aria-label="Sửa barcode hoặc số lượng"><RefreshCw size={15} /></button>
                   <button type="button" onClick={() => actions.onRemoveEntry(entry)} aria-label="Xóa dòng"><Trash2 size={15} /></button>
                 </>}
               </div>
