@@ -7,7 +7,7 @@ Scanner-specific ADRs were moved to the Scanner archive to keep this register fo
 
 ## ADR-030 — Shared business core with platform-specific capability and presentation (2026-11-27)
 
-**Status:** Owner-confirmed; PA-02 capability matrix approved and encoded in the platform capability contract; shell/presentation migration remains pending.
+**Status:** Owner-confirmed; PA-02 capability matrix approved and encoded. SH-01 has started with separate Desktop/Mobile navigation renderers; full App/Home shell and presentation separation remains in progress.
 
 ### Context
 RetailOS is an installed PWA used in different operating contexts. Treating Desktop and Mobile as one layout with accumulating responsive overrides can conflate three separate questions: whether a workflow belongs on a platform, how that workflow should be presented, and how that presentation adapts to available space. Brand and business consistency do not require identical feature availability or identical screens.

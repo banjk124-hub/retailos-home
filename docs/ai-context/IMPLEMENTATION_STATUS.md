@@ -36,6 +36,11 @@ This file records verified repository state, not an authorization to merge, depl
 - UI-04F cross-feature closure is implemented and validated in Draft PR #191. Exact-head CI run [#1907](https://github.com/banjk124-hub/retailos-home/actions/runs/45965306663) passed on `80aba62c8ee481014c4f47ce75be2422f0df32de`: preflight, TypeScript, production/Pages builds, bundle comparison and 9 Playwright browser tests. Runtime artifact confirms 14 captured surfaces with zero browser/console errors, failed requests, horizontal overflow or duplicate DOM IDs. PR #191 remains unmerged pending owner review.
 - Canonical detail: UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 
+### Shell & Presentation Ownership — SH-01
+- Initial slice: Desktop and Mobile navigation renderers and styles are separated while retaining one destination/state/callback contract.
+- `App.tsx` and `HomeScreen.tsx` remain shared composition roots; full shell separation is not complete. Tablet behavior remains review-required.
+- Exact-head validation is pending for the current SH-01 branch. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`.
+
 ### Platform Experience & Architecture Audit
 
 - PR #187 remains open / Draft; it is being refreshed from main `6925cf968ea2b9c37377856abaf4c4a2ca6785a0` after UI-04F merge.

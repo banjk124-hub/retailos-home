@@ -29,7 +29,7 @@ RetailOS shares identity, journeys and business semantics. A generic feature req
 
 ## Platform audit continuation
 
-Continue PR #187 from main `6925cf968ea2b9c37377856abaf4c4a2ca6785a0`. PA-02 is owner-confirmed and recorded in `PLATFORM_CAPABILITY_MATRIX.md`; next gates are typed source metadata, shell/presentation ownership design, CSS ownership migration plan and runtime/device evidence. Do not use viewport breakpoints as feature policy. Physical PWA display-mode/safe-area/keyboard acceptance and computed-style/runtime CSS evidence remain separate validation gates.
+PR #187 is the PA-02 foundation branch. SH-01 is stacked on its exact head `93968915ecbdfc4f40901c37d4e764636f5c4876` as `refactor/sh-01-shell-presentation`. The first SH-01 slice separates Desktop rail and Mobile dock renderers while preserving one shared navigation contract; App/Home composition roots remain shared and full shell separation is not complete. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md`. Do not infer capability from viewport breakpoints. Exact-head CI and physical PWA/device acceptance remain separate gates.
 
 ## Technical boundaries
 
