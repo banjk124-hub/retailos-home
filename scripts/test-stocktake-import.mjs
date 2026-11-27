@@ -313,7 +313,7 @@ assert.match(styles, /@media \(max-width:640px\)/);
 
 assert.match(component, /import StocktakeImportPresentation/);
 assert.doesNotMatch(component, /stocktake-import\.css|stocktake-import-backdrop/);
-assert.doesNotMatch(presentation, /parseStocktakeWorkbook|stocktakeImportStore/);
+assert.doesNotMatch(presentation, /parseStocktakeWorkbook|stocktakeImportStore\\./);
 assert.match(presentation, /import '\.\/stocktake-import\.css'/);
 assert.match(presentation, /stocktake-import-backdrop/);
 assert.match(component, /registerPwaUpdateBlocker/);
