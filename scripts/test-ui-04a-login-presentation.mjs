@@ -12,9 +12,13 @@ const [app, shell, login, identity, loginExperience] = await Promise.all([
 ]);
 
 assert.match(app, /import ['"]\.\/styles\/auth-journey\.css['"];/,
-  'App must load the identity presentation owned by UnifiedIdentityView');
-assert.match(app, /function UnifiedIdentityView[\s\S]*?auth-journey-recognition/,
-  'App must retain the identity recognition composition');
+  'App must load the authenticated identity journey stylesheet');
+assert.match(app, /AuthenticatedAppShell/,
+  'App must delegate authenticated rendering to the shell boundary');
+assert.doesNotMatch(app, /function UnifiedIdentityView|auth-journey-recognition/,
+  'App must not own authenticated identity presentation markup');
+assert.match(shell, /function IdentityJourneyView[\s\S]*?auth-journey-recognition/,
+  'AuthenticatedAppShell must own the identity recognition composition');
 assert.doesNotMatch(login, /auth-journey-recognition|identity-surface-expand|identity-panel-reveal/,
   'Login feature CSS must not own App-level identity recognition presentation');
 assert.match(loginExperience, /\.\.\/\.\.\/styles\/login-experience\.css/,
