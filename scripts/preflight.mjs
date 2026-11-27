@@ -54,6 +54,11 @@ const checks = [
     args: ["scripts/test-shell-navigation-contract.mjs"],
   },
   {
+    name: "SH-01D shared-state and platform-isolation integration contract tests",
+    command: process.execPath,
+    args: ["scripts/test-sh-01-integration.mjs"],
+  },
+  {
     name: "RetailOS Design Foundation semantic token and motion contract tests",
     command: process.execPath,
     args: ["scripts/test-design-foundation-contract.mjs"],
