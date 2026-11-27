@@ -6,11 +6,13 @@ const library = readFileSync('src/features/home/components/HomeModuleLibrarySect
 const engine = readFileSync('src/features/home/components/ModuleLibraryEngine.tsx', 'utf8');
 const dock = readFileSync('src/shared/navigation/LiquidDock.tsx', 'utf8');
 const app = readFileSync('src/App.tsx', 'utf8');
+const shell = readFileSync('src/platform/shell/AuthenticatedAppShell.tsx', 'utf8');
 
 assert.doesNotMatch(home, /Suspense\s+fallback=\{null\}/, 'Lazy Home features must not disappear silently while loading.');
 assert.match(home, /function ModuleLoadingSurface[\s\S]*role="status" aria-live="polite" aria-busy="true"/);
 assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 4);
-assert.match(app, /home-loading-surface[\s\S]*aria-busy="true"/);
+assert.match(app, /AuthenticatedAppShell/, 'App delegates authenticated loading composition to the shell.');
+assert.match(shell, /home-loading-surface[\s\S]*aria-busy="true"/);
 assert.match(home, /const MemoizedBarcodeScanner = memo\(/);
 assert.match(home, /const MemoizedStocktakeModule = memo\(/);
 assert.match(home, /const MemoizedStocktakeImportModule = memo\(/);
