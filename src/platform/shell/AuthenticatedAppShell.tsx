@@ -5,6 +5,7 @@ import type { MotionOrigin } from '../../shared/motion';
 import { ExperienceBackground } from '../../shared/components/ExperienceBackground';
 import { Brand, BrandMotion } from '../../shared/brand';
 import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
+import { useRetailPlatform } from '../../shared/platform/platformContext';
 
 const HomeScreen = lazy(() => import('../../features/home/HomeScreen'));
 
@@ -128,6 +129,8 @@ export default function AuthenticatedAppShell({
   onLogout,
   onBootReady,
 }: Props) {
+  const platform = useRetailPlatform();
+
   return (
     <div className="retailos-scene">
       <ExperienceBackground experience="home" />
