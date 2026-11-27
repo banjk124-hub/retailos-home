@@ -2,6 +2,7 @@ import {
   ArrowLeft, Camera, Check, ChevronRight, Clock3, Download, FileText, History, Plus,
   RefreshCw, ScanBarcode, Trash2, X,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { EmployeeSession } from '../../../shared/domain/employee';
 import type {
   StocktakeActionLog,
@@ -100,9 +101,11 @@ function screenTitle(screen: StocktakeScreen): string {
 export default function StocktakePresentation({
   model,
   actions,
+  scannerOverlay = null,
 }: {
   model: StocktakePresentationModel;
   actions: StocktakePresentationActions;
+  scannerOverlay?: ReactNode;
 }) {
   const {
     employee, screen, session, error, zoneInput, currentSessionExports, visibleSessionZones,
@@ -337,6 +340,8 @@ export default function StocktakePresentation({
           <span>Dữ liệu được lưu cục bộ trên thiết bị</span><span>RetailOS</span>
         </footer>
       </section>
+
+      {scannerOverlay}
 
       {pendingZone?.previous && (
         <div className="stocktake-confirm-backdrop">
