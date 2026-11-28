@@ -45,7 +45,7 @@ assert.match(moduleSource, /if \(state\.busy\)[\s\S]*resolution: 'wait'/);
 assert.match(moduleSource, /waitForSafeExit/);
 assert.match(moduleSource, /busyExitWaitersRef\.current\.forEach\(\(resolve\) => resolve\(\)\)/);
 assert.match(moduleSource, /busyExitWaitersRef\.current\.clear\(\)/);
-assert.match(moduleSource, /action: 'ZONE_PAUSED',[\s\S]*?await logStocktakeAction/);
+assert.match(moduleSource, /await logStocktakeAction\([\s\S]*?action: 'ZONE_PAUSED'/);
 assert.match(moduleSource, /if \(state\.scannerOpen\)[\s\S]*resolution: 'stay'/);
 assert.match(moduleSource, /if \(state\.pendingZone \|\| state\.showClearConfirm\)[\s\S]*resolution: 'stay'/);
 assert.match(moduleSource, /state\.editingEntry \|\| state\.manualEntry \|\| state\.barcode\.trim\(\)/);
