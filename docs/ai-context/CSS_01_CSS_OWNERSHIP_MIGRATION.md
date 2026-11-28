@@ -1,6 +1,6 @@
 # CSS-01 — CSS Ownership Migration
 
-**Status:** CSS-01A/B complete. CSS-01C is closed with three bounded runtime CSS retirement slices (PR #198, #199 and #201) plus orphan keyframe cleanup (PR #200). CSS-01D passed on the exact PR #199 and PR #201 heads. Remaining `.mobile-nav` / `.mobile-nav-icon` declarations are intentionally retained: their markup consumer is absent from tracked source, but safe selector-block isolation was not demonstrated without risking grouped-selector/cascade changes. CSS-01E documentation/status closure is this closeout; no broad CSS ownership rewrite or import-boundary change was made.
+**Status:** CSS-01A/B complete. CSS-01C is closed with three bounded runtime CSS retirement slices (PR #198, #199 and #201) plus orphan keyframe cleanup (PR #200). CSS-01D passed on the exact PR #199 and PR #201 heads. Remaining `.mobile-nav` / `.mobile-nav-icon` declarations are intentionally retained: their markup consumer is absent from tracked source, but safe selector-block isolation was not demonstrated without risking grouped-selector/cascade changes. CSS-01E documentation/status closeout is prepared in the current docs-only branch and awaits its own review/merge; no broad CSS ownership rewrite or import-boundary change was made.
 **Baseline:** `main` at `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f` (2026-11-28).
 **PW-01:** Deferred by owner. No reproducible device defect has been observed in current acceptance; physical-device validation is not claimed complete and is not a prerequisite for the static CSS ownership audit.
 **Scope:** Evidence-led ownership mapping and bounded CSS migration after SH-01. This is not a visual redesign.
@@ -202,7 +202,7 @@ The current navigation components expose platform-specific class families (`.des
 | Focus, active, hover, pseudo-elements, media and reduced-motion selectors | **TEST/CONTRACT-REFERENCED** | Must be checked through keyboard, pointer, touch, viewport and motion-preference behavior, not only static class usage |
 | Any selector with no discovered TSX token | **Not automatically PROVEN-UNUSED** | Search tests, non-TSX templates, portal/third-party output, data attributes and generated class names before deletion |
 
-No selector has been marked **PROVEN-UNUSED** in this pass. This is intentional: absence from a bounded TSX sample is insufficient proof of dead CSS.
+The `.mobile-nav` / `.mobile-nav-icon` vocabulary is **PROVEN-UNUSED as legacy markup selectors in tracked source** by repository-wide search, but that classification does not prove each remaining declaration block is safe to remove. Grouped selectors, responsive/reduced-motion contexts and shared declarations still require isolated, reviewable edits before retirement.
 
 ### 9.5 CSS-01B remaining verification gates
 
