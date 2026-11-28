@@ -30,8 +30,8 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 ## Current Journey direction
 
 - JRN-00 static source audit is complete at main HEAD `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. App owns auth/session and Login → Identity → Home timing; HomeScreen still renders Stocktake and Stocktake Import inside its own tree.
-- JRN-01 contract is now defined in `src/platform/journey/journey.types.ts` and ADR-043. Auth/session stays in App; Home sections/quick overlays stay Home-owned; authenticated page stack uses Home/Feature destinations, Home return context, push/pop/replace, and typed safe-exit guards. No runtime controller or router has been added.
-- Next work is JRN-02: create the lazy Feature Page host and move only Stocktake and Stocktake Import out of HomeScreen.
+- JRN-01 contract is implemented on the current branch in `src/platform/journey/journey.types.ts` and ADR-043. Stable `RetailModuleId` now lives in `src/shared/domain/retailModule.ts` to prevent Platform depending on Home. Auth/session stays in App; Home sections/quick overlays stay Home-owned; authenticated page stack uses Home/Feature destinations, Home return context, push/pop/replace, and typed safe-exit guards. No runtime controller or router has been added.
+- After JRN-01 merges and exact-head CI passes, next work is JRN-02: create the lazy Feature Page host and move only Stocktake and Stocktake Import out of HomeScreen.
 - Stocktake and Stocktake Import are the only operationally ready feature workflows. Keep placeholders as placeholders; do not infer a roadmap from registry entries.
 - Keep Settings, quick lookup, quick Scanner, Calendar and Notifications Home-owned. Do not start backend/database or production Gmail migration in this workstream.
 
