@@ -1,8 +1,8 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`  
-**Latest merged work:** PR #210 — JRN-00 Experience System specification and Journey roadmap; documentation-only, no runtime changes  
+**Verified main HEAD:** `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`  
+**Latest merged work:** PR #211 — JRN-01 Journey, Persistent Shell and Shared System contract; contract/documentation change, no runtime navigation migration  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -29,13 +29,13 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 ## Current Journey direction
 
-- JRN-00 static source audit is complete at main HEAD `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. App owns auth/session and Login → Identity → Home timing; HomeScreen still renders Stocktake and Stocktake Import inside its own tree.
-- JRN-01 contract/model exists on PR #211 and is being clarified before merge. It defines authenticated destinations, Home return context, push/pop/replace and safe-exit guards. The agreed target is Single-App, Multi-Page, Persistent Shell: Desktop Dock stays fixed on the left across every Page; only the workspace changes. Mobile uses adaptive navigation but must keep Home, ready Pages and global quick actions quickly reachable. Both platforms share destination/action definitions.
-- App Shell owns persistent navigation chrome and global quick-action hosting. Quick Search, Scanner, Calendar, Notifications and Settings must be invokable from any Page and return to the invoking Page; they are not Page destinations and must not depend on Home being mounted. Home retains its own sections and Home-local content.
-- One Experience System governs typography, semantic colors, tokens, components, icon semantics, accessibility and motion. Each Page owns its layout, density and workflow-specific presentation and may evolve locally within shared contracts.
-- Shared system data flows through neutral contracts/repositories/domain services/change signals. Feature/domain persistence and UI state remain separately owned. Do not create a global mega-store or select a backend in this workstream.
-- PR #211 remains draft/unmerged; no runtime Shell/Page Host implementation is included. After JRN-01 is reviewed and exact-head CI passes, follow ROADMAP.md: JRN-02 persistent/adaptive Shell runtime; JRN-03 Page Host and migration of only Stocktake and Stocktake Import; then safe lifecycle, data contracts, Experience System refinement and integrated QA.
-- Stocktake and Stocktake Import are the only operationally ready feature workflows. Keep placeholders as placeholders; do not infer a roadmap from registry entries. Do not start backend/database selection or production Gmail migration.
+- JRN-00 source audit is complete. App owns auth/session and Login → Identity → authenticated handoff. HomeScreen previously owned both feature mounts and navigation rendering.
+- JRN-01 is merged in PR #211 at `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. It defines authenticated destination identity, Home return context, push/pop/replace, safe-exit semantics and the Single-App, Multi-Page, Persistent Shell architecture.
+- JRN-02 is in progress on `jrn-02-persistent-shell-navigation`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through a shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen and remain mounted at the authenticated Shell boundary.
+- JRN-02 does not yet extract global quick actions. JRN-03 adds real independent Page destinations; JRN-04 then moves Quick Search, Scanner, Settings, Calendar and Notifications into a global Shell host so they are available from every Page.
+- Stocktake and Stocktake Import remain the only operationally ready feature workflows. Their business logic, persistence and offline behavior are protected.
+- One Experience System governs global semantics; each Page owns its layout, density and workflow-specific composition. Shared system data must not become a global mega-store.
+- Do not select a backend/database or move to production/shared Gmail in this workstream.
 
 ## Next technical gates
 
