@@ -175,6 +175,9 @@ async function capture(page: Page, info: TestInfo, label: string) {
 }
 
 test('RetailOS runtime evidence capture', async ({ page }, info) => {
+  // This serial audit captures 15+ viewport/surface screenshots and CSSOM snapshots.
+  // The trailing numeric argument previously supplied below is not a Playwright timeout.
+  test.setTimeout(90_000);
   const errors: string[] = [];
   const failedRequests: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -279,7 +282,10 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await moduleNav.click();
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
   await expect(library, 'Stocktake library must be reachable').toBeVisible();
-  await library.click();
+  // The library tile has a continuous decorative transform. Force only this
+  // already-visible, semantically verified control to avoid Playwright's
+  // bounding-box stability gate timing out on the nonessential motion.
+  await library.click({ force: true });
   await page.waitForTimeout(250);
   await capture(page, info, 'library-390x844');
   const stocktake = page.getByRole('button', { name: /^kiểm kê/i }).first();
@@ -300,7 +306,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await importNav.click();
   const importLibrary = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
   await expect(importLibrary).toBeVisible();
-  await importLibrary.click();
+  await importLibrary.click({ force: true });
   const exportModule = page.getByRole('button', { name: /^xuất file/i }).first();
   await expect(exportModule, 'Stocktake Import workflow entry must be reachable').toBeVisible();
   await exportModule.click();
@@ -313,7 +319,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   expect(errors, 'browser and console errors').toEqual([]);
   expect(failedRequests, 'runtime audit requests must not fail').toEqual([]);
   expect(viewportResults.every((v) => v.horizontalOverflow <= 1), 'Home horizontal overflow').toBe(true);
-}, 90_000);
+});
 
 
 test('Tablet remains review-required and does not inherit camera scanner capability', async ({ page }, info) => {
@@ -338,7 +344,8 @@ test('Tablet remains review-required and does not inherit camera scanner capabil
   const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
   await moduleNav.click();
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
-  await library.click();
+  await expect(library).toBeVisible();
+  await library.click({ force: true });
   const stocktake = page.getByRole('button', { name: /^kiểm kê/i }).first();
   await stocktake.click();
   await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
