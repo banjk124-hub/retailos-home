@@ -1,8 +1,8 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`  
-**Latest merged work:** PR #196 — PCM-01–06 Platform Capability Matrix documentation reconciliation; PR #195 remains the latest runtime capability enforcement change  
+**Verified main HEAD:** `8b204a20d0959e291e4835f5977f0b313e56ab60`  
+**Latest merged work:** PR #203 — CSS-01E documentation/status closeout; latest runtime change remains PR #201 (CSS legacy selector retirement)  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -24,16 +24,13 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 - SH-01 exact-head CI #1948 passed: preflight, TypeScript, production/Pages build, bundle comparison and 10 Playwright tests.
 - PR #195 exact-head CI #1968 passed: preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence.
 - No physical-device acceptance is claimed. PW-01 remains open.
-- CSS-01 remains separate; SH-01 did not perform a broad CSS ownership migration.
+- CSS-01A–E is closed at bounded scope; see `CSS_01_CSS_OWNERSHIP_MIGRATION.md`. Remaining `.mobile-nav` declarations are intentionally retained cleanup debt; PR #202 was closed unmerged.
 - Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
 
 ## Next technical gates
 
-1. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
-2. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
-3. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.
-
-These are separate workstreams; do not combine them into a broad UI rewrite. Preserve auth/session, stable IDs, data snapshot/cache contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision, overlay lifecycle and PWA update-safety.
+1. **AUDIT-03A — active:** establish a reproducible production CSS delivery baseline from current `main`: Vite manifest, emitted CSS chunks, eager/lazy import graph, and raw/gzip/Brotli sizes. Measurement only; no source optimization or CSS movement.
+2. **PW-01 — deferred:** physical iOS/iPadOS and Android installed-PWA acceptance remains deferred by owner; do not treat browser emulation as device acceptance.
 
 ## Governance
 
