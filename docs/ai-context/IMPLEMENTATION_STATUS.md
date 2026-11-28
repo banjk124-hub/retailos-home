@@ -1,8 +1,8 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`  
-**Latest merge:** PR #201, merge commit `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`
+**Verified main HEAD:** `dc952b3204d7d7eaf53b82f805218e56f7ea2562`  
+**Latest merge:** PR #209, merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -32,6 +32,7 @@ This file records verified repository state. It does not authorize deployment or
 | CSS-01C remaining Login responsive retirement | PR #199 merged | Merge commit `2c2a5b60e87c05b06153fb534a0a4bbdc5c77e5`; removed legacy Login rules from `responsive.css` and obsolete `.login-identity-dock` cluster; exact-head CI #1985 passed on `e1e84f55829d374d676233ebefeff97dc72c3863` |
 | CSS-01C orphan keyframe cleanup | PR #200 merged | Merge commit `b0b36487c27239fa283b380767e43ec4092f928f`; removed orphan Login keyframes and refreshed CSS status documentation |
 | CSS-01C first mobile navigation legacy slice | PR #201 merged | Merge commit `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`; exact-head CI #1990 passed on `88fee8c6ca6374941bc5d47a57a9291547c986e5` |
+| AUDIT-03E CSS ownership closure | PR #209 merged | Merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`; documentation-only; CI #2025 evidence and Build & Deploy #200 were verified on its pre-merge baseline; physical iOS/Android acceptance remains pending |
 | CSS-01C closeout | PR #202 closed unmerged | No source changes accepted; remaining `.mobile-nav` groups intentionally retained because safe grouped-selector isolation was not demonstrated |
 
 ## Open work and acceptance gates
@@ -45,7 +46,7 @@ This file records verified repository state. It does not authorize deployment or
 ### UI-04
 UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRESENTATION.md`. Physical-device acceptance remains a separate gate where specified.
 
-## Protected technical boundaries
+## Experience and Journey workstream (proposed)\n\n- JRN-00 static source audit is complete at `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. The audit confirms that HomeScreen still mounts Stocktake and Stocktake Import, while App owns auth/session and the login/identity/home timing.\n- JRN-01–07 are proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.\n- The experience specification is an umbrella contract. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.\n\n## Protected technical boundaries
 
 Preserve auth/session and employee identity, stable module/workflow IDs, snapshot/cache/offline truth, scanner engine/camera lifecycle, Stocktake persistence/revisions/history/export, Stocktake Import parsing/precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA update consent/staging/integrity/activation/boot-health/rollback, Vite Pages base path and lazy-loading. Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
 
