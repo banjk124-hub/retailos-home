@@ -8,6 +8,15 @@ const auditSession = {
   signedInAt: '2026-01-01T00:00:00.000Z',
 };
 
+async function expectFeatureLibraryShortcut(page: import('@playwright/test').Page) {
+  const trigger = page.getByRole('button', { name: 'Mở thư viện nghiệp vụ' });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await expect(page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' })).toHaveCount(0);
+}
+
 async function openStocktakeFromHome(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
@@ -22,6 +31,7 @@ async function openStocktakeFromHome(page: import('@playwright/test').Page) {
   await expect(page.locator('.stocktake-page-shell')).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Điều hướng kiểm kê' });
   await expect(navigation).toBeVisible();
+  await expectFeatureLibraryShortcut(page);
   return { navigation, homeScrollY };
 }
 
@@ -37,6 +47,7 @@ async function openImportFromHome(page: import('@playwright/test').Page) {
   await expect(page.locator('.stocktake-import-page-shell')).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Điều hướng xuất file kiểm kê' });
   await expect(navigation).toBeVisible();
+  await expectFeatureLibraryShortcut(page);
   return { navigation, homeScrollY };
 }
 
