@@ -44,9 +44,9 @@ The new test captures:
 2. Home after seeding the authenticated session and loading the lazy Home chunk.
 3. Login after clicking Logout in that same Home page, without reloading it.
 
-It records computed document/body/button properties and the stylesheet list at each point. The test is marked as an expected failure while the known P0 ownership overlap remains unresolved. This keeps the finding visible in CI without changing runtime CSS or blocking an evidence-only PR.
+It records computed document/body/button properties and the stylesheet list at each point. The diagnostic is a normal passing evidence test: it records the measured parity result without converting a known mismatch into an expected-failure test or hiding the finding.
 
-The diagnostic does not authorize a CSS fix in this workstream. If a global difference is observed, retain the evidence and handle the declaration move in a separately scoped migration with before/after parity.
+**Latest measured result (CI #2015, run ID `46105448616`, HEAD `e3088a55f3c822bd89bd5de8917f004e815682b5`): `postLogoutParity: false`.** After Logout, the Home lazy stylesheet (`HomeScreen-CUz9n313.css` in this build) remains attached. The body background changes from transparent to `rgb(246, 241, 242)`, and `-webkit-tap-highlight-color` changes from `rgba(0, 0, 0, 0.18)` to transparent. These are captured differences, not inferred causes. They must be traced to their owning declarations before any migration. The diagnostic does not authorize a CSS fix in this workstream.
 
 ## 4. Focus, motion and adaptive evidence
 
@@ -76,11 +76,11 @@ It also uses Chromium DevTools Protocol:
 
 - Existing responsive/runtime evidence remains valid for the assertions it actually performs.
 - The new browser suite adds the missing route-sequence, focus, reduced-motion, power-mode, pseudo-element and CDP matched-rule captures.
-- The same-document leakage diagnostic remains an expected failure until global Home declarations are migrated safely.
+- The same-document leakage diagnostic passes as an evidence-capture test, but its measured parity result is **false**. This is an outstanding P0 finding, not a green acceptance result.
 - Browser acceptance is still Chromium automation, not physical iOS Safari or Android Chrome validation.
 - Full token alias consumer reconciliation remains separate and outstanding.
 
-**Decision:** keep all P0 selectors and compatibility aliases unchanged. Do not start AUDIT-03D until the same-document leakage finding is resolved, the required computed-style parity is demonstrated, and the remaining manual cascade review is recorded.
+**Decision:** keep all P0 selectors and compatibility aliases unchanged. Do not start AUDIT-03D until the remaining Home stylesheet/global-style leakage is traced and safely resolved, post-logout computed-style parity is demonstrated, and the remaining manual cascade review is recorded.
 
 
 ## 7. PR #206 merge and CI #2007 failure triage
@@ -100,4 +100,6 @@ Failure classification:
 
 The corrections are test-only. No production CSS, runtime component, import order, dependency, or business behavior is changed. Browser acceptance remains Chromium automation; physical iOS Safari/Android Chrome acceptance is not claimed.
 
-**Current gate:** wait for CI on the corrected PR head. Even with CI green, keep P0 selectors and aliases unchanged until the captured same-document parity result and manual cascade review are evaluated.
+**CI status as of 2026-11-28:** run #2013 (`46105082726`) failed in the browser suite. Its two failures were traced to an unstable power-mode `box-shadow` sample taken during transition and a test-timeout configuration error: the numeric third argument passed to `test()` was not the Playwright timeout. The follow-up commit `e3088a55f3c822bd89bd5de8917f004e815682b5` moved the timeout to `test.setTimeout(90_000)`. CI #2015 (`46105448616`) then passed preflight, TypeScript/production builds, bundle comparison, and all 15 browser tests (53.0 seconds total; runtime evidence capture 30.4 seconds). The power-mode comparison now runs with reduced motion and passed; focus visibility, dimensions and both pseudo-element snapshots were recorded.
+
+**Current gate:** browser CI is green on `e3088a5`, but AUDIT-03C's P0 ownership/parity gate is still open because the actual same-document capture reports `postLogoutParity: false`. Keep P0 selectors and aliases unchanged; do not begin AUDIT-03D.
