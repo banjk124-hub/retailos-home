@@ -55,9 +55,7 @@
   align-items: flex-end;
   justify-content: center;
   padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-  background: rgba(28,20,22,.38);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(28,20,22,.52);
 }
 .feature-library-sheet {
   display: flex;
