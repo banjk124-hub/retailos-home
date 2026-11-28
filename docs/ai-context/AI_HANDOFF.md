@@ -2,7 +2,7 @@
 
 **Repository:** banjk124-hub/retailos-home  
 **Verified main HEAD:** `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`  
-**Latest merged work:** PR #209 — AUDIT-03E CSS ownership closure and device acceptance boundary; documentation-only, no runtime changes  
+**Latest merged work:** PR #210 — JRN-00 Experience System specification and Journey roadmap; documentation-only, no runtime changes  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
