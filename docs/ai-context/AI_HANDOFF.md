@@ -1,8 +1,9 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`  
-**Latest merged work:** PR #212 — JRN-02 persistent Shell navigation ownership; exact-head CI #2047 and main CI #2048 passed, Pages deployment #204 succeeded  
+**JRN-03 audit baseline:** `b30505a86511909d94406bfd8467be4ec204c620` (main before documentation-only reconciliation)  
+**Latest runtime merge:** PR #212 — JRN-02 persistent Shell navigation ownership; exact-head CI #2047 and main CI #2048 passed; Pages deployments #204 and #205 succeeded  
+**Documentation reconciliation:** this handoff is updated on the documentation PR branch; its eventual merge commit will advance main without changing the audited runtime baseline.  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -31,15 +32,18 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 - JRN-00 source audit is complete. App owns auth/session and Login → Identity → authenticated handoff. HomeScreen previously owned both feature mounts and navigation rendering.
 - JRN-01 is merged in PR #211 at `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. It defines authenticated destination identity, Home return context, push/pop/replace, safe-exit semantics and the Single-App, Multi-Page, Persistent Shell architecture.
-- JRN-02 is merged in PR #212 at `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through a shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen and remain mounted at the authenticated Shell boundary.
-- JRN-02 does not yet extract global quick actions. JRN-03 adds real independent Page destinations; JRN-04 then moves Quick Search, Scanner, Settings, Calendar and Notifications into a global Shell host so they are available from every Page.
+- JRN-02 is merged in PR #212 at `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through an owner-scoped shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen at the authenticated Shell boundary.
+- Post-merge evidence: CI #2047 (PR head) and #2048 (main) passed, each with 15 Playwright tests; docs CI #2049 and main CI #2050 passed; Pages deployments #204 and #205 succeeded. Physical-device QA is not implied.
+- JRN-03 source audit is complete at `b30505a86511909d94406bfd8467be4ec204c620`; see [AUDIT_JRN_03_PAGE_HOST.md](./AUDIT_JRN_03_PAGE_HOST.md). It confirms no runtime Journey Controller/Page Host yet, and both workflows remain Home-owned mounts. The audit recommends a bounded Page Host foundation followed by Stocktake and Stocktake Import extraction, preserving their current feature coordinators/stores and lifecycle contracts.
+- JRN-03 does not include Global Quick Actions. JRN-04 remains the later workstream for Quick Search, Scanner, Settings, Calendar and Notifications at Shell level.
 - Stocktake and Stocktake Import remain the only operationally ready feature workflows. Their business logic, persistence and offline behavior are protected.
 - One Experience System governs global semantics; each Page owns its layout, density and workflow-specific composition. Shared system data must not become a global mega-store.
 - Do not select a backend/database or move to production/shared Gmail in this workstream.
 
 ## Next technical gates
 
-1. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
+1. **JRN-03:** implement the audited Page Host plan in `AUDIT_JRN_03_PAGE_HOST.md`; no implementation is claimed by the audit.
+2. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
 2. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
 3. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.
 
