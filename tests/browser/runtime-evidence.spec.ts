@@ -299,7 +299,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   await expect(page.getByRole('button', { name: 'Mở máy quét' }), 'Mobile Stocktake retains its camera scanner capability').toBeVisible();
   await page.getByRole('button', { name: 'Quay lại' }).click();
   await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
-  await page.getByRole('button', { name: 'Về trang chủ' }).click();
+  await page.locator('.stocktake-page-shell').getByRole('button', { name: 'Về trang chủ' }).click();
   await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
   await page.waitForTimeout(350);
   const importNav = page.getByRole('button', { name: /^module$/i }).first();
