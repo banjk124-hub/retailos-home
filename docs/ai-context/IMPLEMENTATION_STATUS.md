@@ -46,7 +46,13 @@ This file records verified repository state. It does not authorize deployment or
 ### UI-04
 UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRESENTATION.md`. Physical-device acceptance remains a separate gate where specified.
 
-## Experience and Journey workstream (proposed)\n\n- JRN-00 static source audit is complete at `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. The audit confirms that HomeScreen still mounts Stocktake and Stocktake Import, while App owns auth/session and the login/identity/home timing.\n- JRN-01–07 are proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.\n- The experience specification is an umbrella contract. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.\n\n## Protected technical boundaries
+## Experience and Journey workstream (proposed)
+
+- JRN-00 static source audit is complete at `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. The audit confirms that HomeScreen still mounts Stocktake and Stocktake Import, while App owns auth/session and the login/identity/home timing.
+- JRN-01–07 are proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.
+- The experience specification is an umbrella contract. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
+
+## Protected technical boundaries
 
 Preserve auth/session and employee identity, stable module/workflow IDs, snapshot/cache/offline truth, scanner engine/camera lifecycle, Stocktake persistence/revisions/history/export, Stocktake Import parsing/precision/conflicts/dirty edits/persistence/output, overlay focus/body-scroll-lock, PWA update consent/staging/integrity/activation/boot-health/rollback, Vite Pages base path and lazy-loading. Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
 
