@@ -1,4 +1,4 @@
-# RetailOS Roadmap — 2026-11-27
+# RetailOS Roadmap — 2026-11-28
 
 This roadmap records future work, not a visual-style authority. Product and experience work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md).
 
@@ -21,8 +21,8 @@ Discover the workflow, user context, environment and constraints; explore materi
 - **SH-01 shell/platform presentation — complete:** PR #193 merged to main at `58d478cf6e8d6e5277c7ca2b60b274731670dfd0`; exact-head CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a`, including 10 Playwright tests. The follow-up Mobile-only camera capability enforcement across Home and Stocktake was completed by PR #195 at `a64a49fe516b03cc7c8641a6e23c54a3391a6887`; exact-head CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c`. See SH-01_SHELL_PRESENTATION_OWNERSHIP.md and PLATFORM_CAPABILITY_MATRIX.md.
 - **PCM-01–06 Platform Capability Matrix reconciliation — complete:** PR #196 merged to `main` at `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`. Documentation-only reconciliation; this does not close physical-device acceptance.
 - **PW-01 physical PWA acceptance — deferred by owner:** physical iOS/iPadOS and Android installed-PWA validation is not claimed complete; reopen on a reproducible defect, material platform-sensitive change or explicit release requirement.
-- **CSS-01 CSS ownership migration — in progress:** CSS-01A inventory/import-owner map and CSS-01B static source audit are complete at the recorded baseline. CSS-01C bounded migration, emitted CSS chunk review and before/after computed-style evidence remain open. No broad deletion is authorized by this audit.
-- **AUDIT-03A production CSS baseline — proposed:** measure production CSS delivery and bundle composition before deciding whether optimization is warranted.
+- **CSS-01 CSS ownership migration — complete at bounded scope:** CSS-01A/B complete; CSS-01C closed after PRs #198–#201 and CSS-01E documentation closeout merged in PR #203. CSS-01D passed on exact PR #199/#201 heads. Remaining `.mobile-nav` declarations are intentionally retained cleanup debt; PR #202 was closed unmerged. No broad deletion or import-boundary change was made.
+- **AUDIT-03A production CSS delivery baseline — next active workstream:** capture a reproducible production Pages build baseline from current `main`: Vite manifest, emitted CSS chunk inventory, eager/lazy import graph, and per-file raw/gzip/Brotli sizes. This phase is measurement-only and must not change source or optimize CSS.
 - **UI-04 feature presentation migration — complete:** UI-04A–F are merged. See UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 - **UI-03 CSS consolidation — complete:** merged in PR #180; see UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
 
