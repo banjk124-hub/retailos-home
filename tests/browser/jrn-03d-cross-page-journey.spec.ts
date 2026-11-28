@@ -111,3 +111,27 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   expect(pageErrors, 'cross-Page flow must not throw browser errors').toEqual([]);
   expect(failedRequests, 'cross-Page flow must not fail resource requests').toEqual([]);
 });
+
+test('Desktop Home Module Dock item scrolls to Home library; Dock spans the viewport edge-to-edge', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await page.addInitScript((session) => {
+    localStorage.setItem('retailos.session.v2', JSON.stringify(session));
+  }, auditSession);
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.home-main')).toBeVisible();
+
+  const dock = page.getByRole('navigation', { name: 'Điều hướng chính' });
+  await expect(dock).toBeVisible();
+  const bounds = await dock.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.x).toBe(0);
+  expect(bounds!.y).toBe(0);
+  expect(bounds!.height).toBeGreaterThanOrEqual(799);
+
+  const moduleButton = dock.getByRole('button', { name: 'Module' });
+  await expect(moduleButton).toBeVisible();
+  await expect(dock.getByRole('button', { name: 'Mở thư viện nghiệp vụ' })).toHaveCount(0);
+  await moduleButton.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await expect(page.locator('#modules')).toBeVisible();
+});
