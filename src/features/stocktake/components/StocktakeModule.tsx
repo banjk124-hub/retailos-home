@@ -578,17 +578,30 @@ export default function StocktakeModule({ employee, onClose, platform }: Props) 
     onConfirmClear: () => { void clearAll(); },
   };
 
-  if (busy) {
-    return <div className="stocktake-page-workspace"><StocktakePresentation model={presentationModel} actions={presentationActions} /></div>;
-  }
-
   const scannerOverlay = scannerOpen && screen === 'scan' && scannerCapabilityAvailable ? (
     <div className="stocktake-scanner-layer scanner-stocktake-layer-enter" style={{ ...scannerViewportStyle, '--scanner-origin-x': scannerMotionOrigin ? `${scannerMotionOrigin.x}px` : '50vw', '--scanner-origin-y': scannerMotionOrigin ? `${scannerMotionOrigin.y}px` : '50vh' } as CSSProperties & { '--scanner-origin-x': string; '--scanner-origin-y': string; '--scanner-visual-viewport-height': string; '--scanner-visual-viewport-top': string }}>
       <AppErrorBoundary fallback={<div className="stocktake-error" role="alert"><p>Không thể tải máy quét. Hãy đóng cửa sổ và thử lại.</p><button type="button" onClick={closeScanner}>Đóng</button></div>}>
-        <StocktakeScanner onDetected={acceptBarcode} onClose={closeScanner} cameraLeaseRequest={cameraLeaseRequestRef.current} motionOrigin={scannerMotionOrigin} />
+        <StocktakeScanner
+          onDetected={acceptBarcode}
+          onClose={closeScanner}
+          cameraLeaseRequest={cameraLeaseRequestRef.current}
+          onCameraLeaseRequestClaimed={(request) => {
+            if (cameraLeaseRequestRef.current === request) cameraLeaseRequestRef.current = null;
+          }}
+          motionOrigin={scannerMotionOrigin}
+        />
       </AppErrorBoundary>
     </div>
   ) : null;
+
+  if (busy) {
+    return (
+      <div className="stocktake-page-workspace">
+        <StocktakePresentation model={presentationModel} actions={presentationActions} />
+        {scannerOverlay}
+      </div>
+    );
+  }
 
   return <div className="stocktake-page-workspace"><StocktakePresentation model={presentationModel} actions={presentationActions} scannerOverlay={scannerOverlay} /></div>;
 }
