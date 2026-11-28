@@ -13,8 +13,8 @@ const policy = read('../src/shared/platform/platformCapabilities.ts');
 const navigation = read('../src/shared/navigation/ShellNavigation.tsx');
 
 assert.equal((app.match(/<AuthenticatedAppShell/g) || []).length, 1);
-assert.equal((appShell.match(/const HomeScreen = lazy/g) || []).length, 1);
-assert.match(appShell, /<HomeScreen[\s\S]*platform=\{platform\}/);
+assert.match(appShell, /<ActivePageHost[\\s\\S]*platform=\\{platform\\}/);
+assert.match(appShell, /<JourneyControllerProvider>/);
 assert.match(home, /const \[initialUiState\] = useState\(readHomeUiState\)/);
 assert.match(home, /useHomeNavigation\(/);
 assert.match(home, /useHomeBarcodeLookup\(/);
