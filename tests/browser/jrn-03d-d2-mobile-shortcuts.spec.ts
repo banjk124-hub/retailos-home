@@ -103,9 +103,9 @@ test('JRN-03D-D3 Shell Module Library provides grouped navigation, search and ac
   await expect(dialog.getByRole('button', { name: /kiểm kê/i }).first()).toHaveAttribute('aria-pressed', 'true');
 
   const search = dialog.getByRole('textbox', { name: 'Tìm chức năng trong nhóm' });
-  await search.fill('xuất');
+  await search.fill('chuẩn hóa');
   await expect(dialog.getByRole('button', { name: /^02 Xuất file/i })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /^01 Kiểm kê/i })).toBeVisible();
+  await expect(dialog.locator('.shell-module-library__module')).toHaveCount(1);
   await search.fill('');
   await dialog.getByRole('button', { name: /kiểm soát hàng hóa/i }).click();
   await expect(dialog.getByRole('heading', { name: 'Kiểm soát hàng hóa' })).toBeVisible();
