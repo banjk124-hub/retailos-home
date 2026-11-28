@@ -90,7 +90,7 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
 
   // Stocktake -> Home -> Import. The Shell must replace, not retain, Page-owned navigation.
   await stocktakeNavigationAgain.getByRole('button', { name: 'Trang chủ' }).click();
-  await expectHomeRestored(page);
+  await expectHomeRestored(page, savedScrollY);
   const importNavigation = await openImportFromHome(page);
   await expect(page.getByRole('navigation', { name: 'Điều hướng kiểm kê' })).toHaveCount(0);
   await expect(importNavigation.getByRole('button', { name: 'Xuất file' })).toBeVisible();
@@ -98,7 +98,7 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
 
   // Import -> Home: the final owner cleanup must restore Home navigation without stale callbacks.
   await importNavigation.getByRole('button', { name: 'Trang chủ' }).click();
-  await expectHomeRestored(page);
+  await expectHomeRestored(page, savedScrollY);
   await expect(page.getByRole('navigation', { name: 'Điều hướng xuất file kiểm kê' })).toHaveCount(0);
   await expect(page.locator('.desktop-shell-navigation')).toBeVisible();
 
