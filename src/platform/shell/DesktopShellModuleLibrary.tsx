@@ -34,7 +34,11 @@ export function DesktopShellModuleLibrary({ triggerRef, onClose }: Props) {
   useEffect(() => {
     const updateAnchor = () => {
       const rect = triggerRef.current?.getBoundingClientRect();
-      if (rect) setAnchorTop(Math.max(12, Math.min(rect.top + rect.height / 2, window.innerHeight - 12)));
+      if (rect) {
+        const halfPanel = (panelRef.current?.offsetHeight ?? 360) / 2;
+        const center = rect.top + rect.height / 2;
+        setAnchorTop(Math.max(halfPanel + 12, Math.min(center, window.innerHeight - halfPanel - 12)));
+      }
     };
     updateAnchor();
     window.addEventListener('resize', updateAnchor);
