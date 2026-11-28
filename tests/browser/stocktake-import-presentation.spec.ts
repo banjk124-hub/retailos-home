@@ -130,6 +130,7 @@ test('Stocktake Import Page exit guard preserves dirty edits and pending conflic
 
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
   await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
