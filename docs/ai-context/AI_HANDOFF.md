@@ -1,7 +1,7 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `dc952b3204d7d7eaf53b82f805218e56f7ea2562`  
+**Verified main HEAD:** `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`  
 **Latest merged work:** PR #209 — AUDIT-03E CSS ownership closure and device acceptance boundary; documentation-only, no runtime changes  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
@@ -30,7 +30,8 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 ## Current Journey direction
 
 - JRN-00 static source audit is complete at main HEAD `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. App owns auth/session and Login → Identity → Home timing; HomeScreen still renders Stocktake and Stocktake Import inside its own tree.
-- Next proposed work is JRN-01: approve destination identity, return/history behavior, Home state restoration and safe-exit semantics before implementation.
+- JRN-01 contract is now defined in `src/platform/journey/journey.types.ts` and ADR-043. Auth/session stays in App; Home sections/quick overlays stay Home-owned; authenticated page stack uses Home/Feature destinations, Home return context, push/pop/replace, and typed safe-exit guards. No runtime controller or router has been added.
+- Next work is JRN-02: create the lazy Feature Page host and move only Stocktake and Stocktake Import out of HomeScreen.
 - Stocktake and Stocktake Import are the only operationally ready feature workflows. Keep placeholders as placeholders; do not infer a roadmap from registry entries.
 - Keep Settings, quick lookup, quick Scanner, Calendar and Notifications Home-owned. Do not start backend/database or production Gmail migration in this workstream.
 
