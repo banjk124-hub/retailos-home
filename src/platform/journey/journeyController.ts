@@ -3,7 +3,6 @@ import {
   getJourneyTransitionDirection,
   isSameJourneyDestination,
   type ExperienceDestination,
-  type JourneyExitGuardResult,
   type JourneyNavigationCommand,
   type JourneyStackEntry,
   type JourneyTransitionDirection,
@@ -27,7 +26,6 @@ type GuardRegistration = { owner: string; guard: JourneyExitGuard };
 type Listener = () => void;
 
 const INITIAL_STACK: readonly JourneyStackEntry[] = [{ destination: { kind: 'home' } }];
-const ALLOW_EXIT: JourneyExitGuardResult = { status: 'allow' };
 
 export class JourneyController {
   private snapshot: JourneySnapshot = {
@@ -96,6 +94,9 @@ export class JourneyController {
         isNavigating: true,
       });
       return true;
+    } catch {
+      // A guard failure must fail closed; the active Page remains mounted.
+      return false;
     } finally {
       this.setSnapshot({ ...this.snapshot, isNavigating: false });
     }
@@ -107,6 +108,7 @@ export class JourneyController {
 
     for (let attempt = 0; attempt < 8; attempt += 1) {
       const result = await registration.guard.evaluate();
+      if (this.exitGuard?.owner !== registration.owner || this.exitGuard.guard !== registration.guard) return false;
       if (result.status === 'allow') return true;
       if (result.resolution !== 'wait' || !registration.guard.waitForSafeExit) return false;
 
