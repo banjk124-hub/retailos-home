@@ -145,8 +145,6 @@ async function sampleGlobalStyles(page: Page) {
   );
   return { ...styles, stylesheetHrefs };
 }
-  });
-}
 
 function styleDifferences(before: any, after: any) {
   const differences: Array<{ target: string; property: string; before: string; after: string }> = [];
