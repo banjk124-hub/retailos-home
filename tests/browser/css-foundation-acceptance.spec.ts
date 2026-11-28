@@ -14,8 +14,8 @@ async function seedSession(page: Page) {
   }, auditSession);
 }
 
-async function emulateMobilePlatform(page: Page) {
-  await page.addInitScript(() => {
+async function emulateMobilePlatform(page: Page, screenWidth: number, screenHeight: number) {
+  await page.addInitScript(({ screenWidth, screenHeight }) => {
     const originalMatchMedia = window.matchMedia.bind(window);
     const forcedMatches: Record<string, boolean> = {
       '(pointer: fine)': false,
@@ -41,14 +41,14 @@ async function emulateMobilePlatform(page: Page) {
       configurable: true,
       get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36',
     });
-    Object.defineProperty(window.screen, 'width', { configurable: true, get: () => 390 });
-    Object.defineProperty(window.screen, 'height', { configurable: true, get: () => 844 });
-  });
+    Object.defineProperty(window.screen, 'width', { configurable: true, get: () => screenWidth });
+    Object.defineProperty(window.screen, 'height', { configurable: true, get: () => screenHeight });
+  }, { screenWidth, screenHeight });
 }
 
 async function openHome(page: Page, reducedMotion = false) {
   await page.setViewportSize({ width: 390, height: 844 });
-  await emulateMobilePlatform(page);
+  await emulateMobilePlatform(page, 390, 844);
   if (reducedMotion) await page.emulateMedia({ reducedMotion: 'reduce' });
   await seedSession(page);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
@@ -102,7 +102,9 @@ async function openSettings(page: Page) {
 
 async function openStocktake(page: Page) {
   await page.getByRole('button', { name: /^module$/i }).first().click();
-  await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
+  const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
+  await expect(library).toBeVisible();
+  await library.click({ force: true });
   await page.getByRole('button', { name: /^kiểm kê/i }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Kiểm kê' });
   await expect(dialog).toBeVisible();
@@ -112,7 +114,9 @@ async function openStocktake(page: Page) {
 
 async function openStocktakeImport(page: Page) {
   await page.getByRole('button', { name: /^module$/i }).first().click();
-  await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
+  const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
+  await expect(library).toBeVisible();
+  await library.click({ force: true });
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Xuất file' });
   await expect(dialog).toBeVisible();
@@ -189,7 +193,7 @@ async function reducedMotionEvidence(target: Locator, label: string) {
 test('AUDIT-03C P0 diagnostic: same-document Home lazy CSS leakage after logout', async ({ context, page }, testInfo) => {
   const baselinePage = await context.newPage();
   await baselinePage.setViewportSize({ width: 390, height: 844 });
-  await emulateMobilePlatform(baselinePage);
+  await emulateMobilePlatform(baselinePage, 390, 844);
   await baselinePage.goto('./', { waitUntil: 'networkidle' });
   await expect(baselinePage.locator('main.login-experience')).toBeVisible();
   const baseline = await sampleGlobalStyles(baselinePage);
