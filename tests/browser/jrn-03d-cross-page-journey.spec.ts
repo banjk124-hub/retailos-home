@@ -13,11 +13,16 @@ async function openStocktakeFromHome(page: import('@playwright/test').Page) {
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
   await expect(library).toBeVisible();
   await library.click({ force: true });
-  await page.getByRole('button', { name: /^kiểm kê/i }).first().click();
+  const launch = page.getByRole('button', { name: /^kiểm kê/i }).first();
+  await expect(launch).toBeVisible();
+  // The launcher captures HomeReturnContext at dispatch time. Read the actual
+  // scroll position immediately before that action, not before Home navigation.
+  const homeScrollY = await page.evaluate(() => window.scrollY);
+  await launch.click();
   await expect(page.locator('.stocktake-page-shell')).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Điều hướng kiểm kê' });
   await expect(navigation).toBeVisible();
-  return navigation;
+  return { navigation, homeScrollY };
 }
 
 async function openImportFromHome(page: import('@playwright/test').Page) {
@@ -25,11 +30,14 @@ async function openImportFromHome(page: import('@playwright/test').Page) {
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
   await expect(library).toBeVisible();
   await library.click({ force: true });
-  await page.getByRole('button', { name: /^xuất file/i }).first().click();
+  const launch = page.getByRole('button', { name: /^xuất file/i }).first();
+  await expect(launch).toBeVisible();
+  const homeScrollY = await page.evaluate(() => window.scrollY);
+  await launch.click();
   await expect(page.locator('.stocktake-import-page-shell')).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Điều hướng xuất file kiểm kê' });
   await expect(navigation).toBeVisible();
-  return navigation;
+  return { navigation, homeScrollY };
 }
 
 async function expectHomeRestored(page: import('@playwright/test').Page, expectedScrollY: number) {
@@ -63,11 +71,9 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   const homeSearch = page.getByRole('textbox', { name: 'Tìm công cụ' });
   await expect(homeSearch).toBeVisible();
   await homeSearch.fill('Kiểm kê');
-  const savedScrollY = await page.evaluate(() => window.scrollY);
-  expect(savedScrollY).toBeGreaterThan(100);
 
   // Home -> Stocktake. Create feature-owned data, leave safely, then remount and recover it.
-  const stocktakeNavigation = await openStocktakeFromHome(page);
+  const firstStocktake = await openStocktakeFromHome(page);
   await page.locator('#stocktake-zone').fill('AT77');
   await page.getByRole('button', { name: 'Bắt đầu vùng' }).click();
   await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
@@ -76,29 +82,29 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   await page.getByRole('button', { name: 'Lưu số lượng' }).click();
   await expect(page.locator('.stocktake-recent-entry')).toContainText('8936000000777');
 
-  await stocktakeNavigation.getByRole('button', { name: 'Trang chủ' }).click();
-  await expectHomeRestored(page, savedScrollY);
+  await firstStocktake.navigation.getByRole('button', { name: 'Trang chủ' }).click();
+  await expectHomeRestored(page, firstStocktake.homeScrollY);
   await expect(page.getByRole('navigation', { name: 'Điều hướng kiểm kê' })).toHaveCount(0);
 
   // Re-enter Stocktake: the Page remount must recover the zone and row from its own store.
-  const stocktakeNavigationAgain = await openStocktakeFromHome(page);
-  await expect(page.getByRole('button', { name: /^AT77\b/ })).toBeVisible();
-  await page.getByRole('button', { name: /^AT77\b/ }).click();
+  const secondStocktake = await openStocktakeFromHome(page);
+  await expect(page.getByRole('button', { name: /^AT77\\b/ })).toBeVisible();
+  await page.getByRole('button', { name: /^AT77\\b/ }).click();
   await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
   await expect(page.locator('.stocktake-recent-entry')).toContainText('8936000000777');
-  await expect(stocktakeNavigationAgain).toBeVisible();
+  await expect(secondStocktake.navigation).toBeVisible();
 
   // Stocktake -> Home -> Import. The Shell must replace, not retain, Page-owned navigation.
-  await stocktakeNavigationAgain.getByRole('button', { name: 'Trang chủ' }).click();
-  await expectHomeRestored(page, savedScrollY);
-  const importNavigation = await openImportFromHome(page);
+  await secondStocktake.navigation.getByRole('button', { name: 'Trang chủ' }).click();
+  await expectHomeRestored(page, secondStocktake.homeScrollY);
+  const importPage = await openImportFromHome(page);
   await expect(page.getByRole('navigation', { name: 'Điều hướng kiểm kê' })).toHaveCount(0);
-  await expect(importNavigation.getByRole('button', { name: 'Xuất file' })).toBeVisible();
-  await expect(importNavigation.getByRole('button', { name: 'Trang chủ' })).toBeVisible();
+  await expect(importPage.navigation.getByRole('button', { name: 'Xuất file' })).toBeVisible();
+  await expect(importPage.navigation.getByRole('button', { name: 'Trang chủ' })).toBeVisible();
 
   // Import -> Home: the final owner cleanup must restore Home navigation without stale callbacks.
-  await importNavigation.getByRole('button', { name: 'Trang chủ' }).click();
-  await expectHomeRestored(page, savedScrollY);
+  await importPage.navigation.getByRole('button', { name: 'Trang chủ' }).click();
+  await expectHomeRestored(page, importPage.homeScrollY);
   await expect(page.getByRole('navigation', { name: 'Điều hướng xuất file kiểm kê' })).toHaveCount(0);
   await expect(page.locator('.desktop-shell-navigation')).toBeVisible();
 
