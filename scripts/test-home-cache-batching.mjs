@@ -19,7 +19,8 @@ assert.ok(!home.includes('Promise.allSettled(MODULE_DATA_IDS.map(getCachedModule
 assert.ok(barcodeLookup.includes('getCachedModuleSnapshots(lookupSources.map(({ moduleId }) => moduleId))'), 'Barcode lookup must share the batch reader.');
 assert.ok(!barcodeLookup.includes('Promise.allSettled(lookupSources.map(({ moduleId }) => getCachedModuleSnapshot(moduleId)))'), 'Barcode lookup must not open one IndexedDB connection per source.');
 
-assert.ok(home.includes('const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>)'), 'The Stocktake Import tree must remain memoized until JRN-03C.');
+assert.ok(!home.includes('StocktakeImportModule') && !home.includes('isStocktakeImportOpen'), 'Home must not own the Stocktake Import Page mount.');
+assert.ok(home.includes("destination: { kind: 'feature', moduleId }"), 'Home must dispatch the selected ready feature through the typed Journey contract.');
 assert.ok(home.includes("destination: { kind: 'feature', moduleId: 'stocktake' }"), 'Home must dispatch a typed Stocktake Page destination.');
 assert.ok(home.includes('homeReturnContext: homeContext'), 'Home must capture its return context before leaving.');
 assert.ok(!home.includes('isStocktakeOpen') && !home.includes('MemoizedStocktakeModule'), 'Home must no longer own the Stocktake Page mount.');
@@ -32,8 +33,6 @@ assert.ok(home.includes('action: dockAction'), 'The persistent Shell registratio
 assert.ok(home.includes("useShellNavigationRegistration('home'"), 'Home must register its navigation model with the persistent Shell.');
 assert.ok(dock.includes('export const LiquidDock = memo('), 'LiquidDock must remain memoized at its component boundary.');
 
-assert.ok(home.includes('const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);'), 'Stocktake Import close callback must remain stable.');
-assert.ok(home.includes('<MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} />'), 'Stocktake Import must receive the stable close callback.');
 
 assert.ok(home.includes('const handleBarcodeDetected = useCallback('), 'Barcode callback must remain stable for the memoized scanner.');
 assert.ok(home.includes('const closeBarcodeScanner = useCallback('), 'Scanner close callback must remain stable.');

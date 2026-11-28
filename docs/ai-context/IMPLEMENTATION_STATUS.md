@@ -2,8 +2,8 @@
 
 **Repository:** banjk124-hub/retailos-home  
 **JRN-03 audit baseline (main before this documentation-only reconciliation):** `b30505a86511909d94406bfd8467be4ec204c620`  
-**Latest runtime merge:** PR #212, JRN-02, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`  
-**Post-merge verification:** PR-head CI #2047 and main CI #2048 passed; documentation PR CI #2049 and post-merge main CI #2050 passed; Pages deployments #204 and #205 succeeded.
+**Latest runtime merge:** PR #216, JRN-03B, merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`  
+**Post-merge verification:** PR #216 exact-head CI run `46122314448` passed; post-merge main CI run `46122598245` passed; GitHub Pages build/deploy run `46122598308` succeeded.
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -55,8 +55,9 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 - **JRN-02 — merged and verified:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`. AuthenticatedAppShell owns ShellNavigation rendering; Home registers its nav model through an owner-scoped shell context. Existing Desktop fixed-left Dock and Mobile adaptive navigation are retained. Exact PR-head CI #2047, main CI #2048, documentation CI #2049, post-merge main CI #2050 and Pages deployments #204/#205 succeeded. CI #2047/#2048 each ran 15 Playwright tests successfully. No physical-device acceptance is inferred.
 - **JRN-03 source audit — complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`:** see `AUDIT_JRN_03_PAGE_HOST.md` for the source-grounded migration boundaries.
 - **JRN-03A — merged:** PR #215, merge commit `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`. Exact-head CI #2076 passed on `f79c1f92f3cf6b310a1fd1f7d553ca561a01f0b2`: preflight, TypeScript, production/Pages builds, bundle comparison and 15 Playwright tests. No physical-device acceptance or deployment is implied.
-- **JRN-03B — implementation in progress on `feat/jrn-03b-stocktake-page`:** Stocktake now has a dedicated Page resolver and Shell navigation registration; Home launches it through typed Journey navigation with a captured Home return context. The existing Stocktake coordinator/store/PWA blocker/scanner remain feature-owned. Import remains Home-owned for JRN-03C. See `JRN_03B_STOCKTAKE_PAGE.md`.
-- JRN-03C/03D and JRN-04–08 remain planned in `ROADMAP.md`. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
+- **JRN-03B — merged and verified:** PR #216, merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`. Exact PR-head CI run `46122314448`, post-merge main CI run `46122598245`, and Pages deployment run `46122598308` succeeded. Stocktake Page and its feature-owned exit guard are active; no physical-device camera acceptance is inferred. See `JRN_03B_STOCKTAKE_PAGE.md`.
+- **JRN-03C — implementation in progress:** branch `feat/jrn-03c-stocktake-import-page`; extracting Stocktake Import into its own guarded Journey Page while preserving parser, IndexedDB history, conflict review, dirty edits, unpersisted results and export behavior. See `JRN_03C_STOCKTAKE_IMPORT_PAGE.md`.
+- JRN-03D and JRN-04–08 remain planned in `ROADMAP.md`. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
 
 ## Protected technical boundaries
 
