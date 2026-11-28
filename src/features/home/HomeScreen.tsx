@@ -390,12 +390,13 @@ export default function HomeScreen({
     () => HOME_DOCK_ITEMS.map((item) => item.id === 'settings' ? { ...item, noticeCount: updateNoticeCount } : item),
     [updateNoticeCount],
   );
-  useShellNavigationRegistration('home', {
+  const shellNavigationConfig = useMemo(() => ({
     items: shellNavigationItems,
     activeId: activeNav,
     onSelect: handleNav,
     action: dockAction,
-  });
+  }), [shellNavigationItems, activeNav, handleNav, dockAction]);
+  useShellNavigationRegistration('home', shellNavigationConfig);
   return <>
     <div className={`app-shell has-shell-navigation home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
