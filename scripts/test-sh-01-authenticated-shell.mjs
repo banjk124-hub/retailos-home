@@ -15,10 +15,10 @@ assert.match(app, /clearCachedModuleData\(\)/);
 assert.match(app, /<AuthenticatedAppShell/);
 assert.doesNotMatch(shell, /sessionStore|updateSafety|releaseCameraStream|clearCachedModuleData/);
 assert.match(shell, /<JourneyControllerProvider>/);
-assert.match(shell, /<ActivePageHost[\\s\\S]*platform=\\{platform\\}/);
+assert.match(shell, /<ActivePageHost[\s\S]*platform=\{platform\}/);
 assert.doesNotMatch(shell, /const HomeScreen = lazy/);
 assert.match(shell, /journey === 'identity'/);
-assert.match(shell, /<PersistentShellNavigation platform=\\{platform\\} \/>/);
+assert.match(shell, /<PersistentShellNavigation platform=\{platform\} \/>/);
 assert.match(shell, /onBootReady=\{onBootReady\}/);
 assert.match(shell, /platform=\{platform\}/);
 
