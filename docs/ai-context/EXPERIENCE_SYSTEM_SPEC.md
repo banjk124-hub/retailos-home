@@ -1,7 +1,7 @@
 # RetailOS Experience System Specification
 
 **Status:** Proposed architecture and interaction contract; owner review required before runtime migration or visual-system lock-in.  
-**Source baseline audited:** main at dc952b3204d7d7eaf53b82f805218e56f7ea2562 (2026-11-28).  
+**Source baseline audited:** main at e2976d807ad9bc596ec38dd5852ddadbc48d2f49 (2026-11-28).  
 **Scope:** application journeys, destination/page ownership, component boundaries, icon semantics, motion, feedback, lifecycle and future feature onboarding.
 
 This is the experience-system umbrella. It does not replace business-domain contracts, platform capability policy, PWA release policy or feature-specific workflows.
@@ -126,6 +126,56 @@ Never create a second route registry that duplicates the stable module/workflow 
 - Restore a feature's last view only if its own persistence contract explicitly supports it.
 - Do not keep a hidden heavy feature mounted just to animate it.
 - Transition completion must not be the sole trigger for saving data or releasing critical resources; cleanup must remain deterministic on unmount/error/logout.
+
+### 3.5 Canonical Journey Contract (JRN-01)
+
+The authenticated navigation model is defined in `src/platform/journey/journey.types.ts`. It is a typed contract and pure destination identity layer; it is not yet a mounted router or a navigation controller.
+
+**Ownership boundary**
+- `App.tsx` remains the only owner of authentication, employee session, Login → Identity → authenticated handoff, logout and app-level PWA lifecycle.
+- The authenticated Journey Controller owns only Home/Feature Page destination history, direction and return context.
+- Platform shells render the same destination semantics using platform-specific composition.
+- Home section navigation remains local to Home. `home`, `modules`, `activity` are Home sections/anchors, not app pages.
+- Settings, Scanner, Quick Search, Calendar, Notifications and Notice detail remain Home-owned overlay/quick-action state, not page destinations.
+
+**Destination identity**
+- `{ kind: 'home' }` identifies Home.
+- `{ kind: 'feature', moduleId: RetailModuleId }` identifies a workflow by the existing business workflow ID.
+- Destination keys are derived as `home` or `feature:<moduleId>`. Do not create a second list of feature IDs or derive identity from title, icon, snapshot/cache ID or display label.
+- A typed feature destination does not assert that a workflow is implemented or ready. The future Feature Page resolver must require both an implemented page resolver and the existing module registry's `availability === 'ready'`; `workStatus`, snapshot availability and platform availability are separate dimensions. Placeholders must not become navigable pages merely because their IDs exist.
+
+**Stack and navigation semantics**
+- `push`: enter a different authenticated destination; forward transition.
+- `pop`: return to the previous destination; backward transition.
+- `replace`: replace the current authenticated destination without implying a forward/back animation. Use for controlled normalization/recovery, not ordinary navigation.
+- Navigating to the current destination is a no-op; do not duplicate the same destination on the stack.
+- Normal feature entry is Home → Feature Page. Feature → Feature is allowed only as an explicit future workflow and must pass the current feature's exit guard.
+- Home is the fallback destination if a history entry is missing, invalid or cannot be restored.
+- Authentication transitions are not pushed into the authenticated page stack. Logout clears the authenticated stack and all Home overlay state.
+
+**Home return snapshot**
+- Capture `activeSection` (`home | modules | activity`), `searchQuery`, non-negative `scrollY` and optional semantic `returnFocusKey` when leaving Home.
+- Restore that context on Feature → Home; focus restoration is best-effort when the originating control still exists.
+- Do not persist transient overlays, an active camera session or ephemeral component state as part of the Home snapshot.
+- The snapshot is navigation context, not durable business data. Stocktake session/history and Import session/history/edit data remain owned by their existing feature stores.
+- If a reload removes in-memory navigation history, use the existing persisted Home UI state and return to Home; do not attempt to reconstruct a Feature Page from an unvalidated stale stack.
+
+**Safe-exit contract**
+- A destination may register an exit guard that returns `allow` or `block` with a user-facing reason and resolution `wait | confirm | stay`.
+- `wait`: a critical async operation must finish before leaving.
+- `confirm`: user must explicitly confirm discard/abandon or complete a save action.
+- `stay`: navigation is not permitted in the current state.
+- PWA update blockers remain a separate but coordinated safety channel. A navigation guard must not silently unregister or bypass a feature's PWA update blocker.
+- Camera lease release, worker/listener cleanup and feature persistence are lifecycle responsibilities of the feature/page; animation completion is not a cleanup guarantee.
+
+**Browser and platform Back policy**
+- JRN-01 uses an in-memory authenticated destination stack as the navigation contract. It does not add a router, URL routes, `history.pushState` or browser-history synchronization.
+- The in-app Back control calls the Journey Controller's `pop` behavior. Platform-specific back-button integration and browser Back/Forward mapping require a separately tested adapter in a later phase.
+- Deep links and direct Feature Page launch are not enabled by this contract. If introduced later, they must define session validation, unsupported/placeholder fallback and restore semantics before implementation.
+
+**Transition intent**
+- `push → forward`, `pop → back`, `replace → none`. The controller supplies semantic direction only; motion tokens, timing, easing and reduced-motion behavior remain in the shared motion system.
+- The controller must not delay the navigation state change or business operation for animation. The page host owns enter/exit presentation after navigation has been accepted.
 
 ## 4. Journey catalog
 
