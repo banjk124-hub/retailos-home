@@ -175,6 +175,9 @@ async function capture(page: Page, info: TestInfo, label: string) {
 }
 
 test('RetailOS runtime evidence capture', async ({ page }, info) => {
+  // This serial audit captures 15+ viewport/surface screenshots and CSSOM snapshots.
+  // The trailing numeric argument previously supplied below is not a Playwright timeout.
+  test.setTimeout(90_000);
   const errors: string[] = [];
   const failedRequests: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -316,7 +319,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   expect(errors, 'browser and console errors').toEqual([]);
   expect(failedRequests, 'runtime audit requests must not fail').toEqual([]);
   expect(viewportResults.every((v) => v.horizontalOverflow <= 1), 'Home horizontal overflow').toBe(true);
-}, 90_000);
+});
 
 
 test('Tablet remains review-required and does not inherit camera scanner capability', async ({ page }, info) => {
