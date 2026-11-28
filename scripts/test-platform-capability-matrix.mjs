@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [platform, registry, scanner, library, stocktake, home] = await Promise.all([
+const [platform, registry, scanner, library, stocktake, home, stocktakePage] = await Promise.all([
   read('../src/shared/platform/platformCapabilities.ts'),
   read('../src/features/home/moduleRegistry.ts'),
   read('../src/features/scanner/services/scannerCapabilities.ts'),
   read('../src/features/home/components/HomeModuleLibrarySection.tsx'),
   read('../src/features/stocktake/components/StocktakeModule.tsx'),
   read('../src/features/home/HomeScreen.tsx'),
+  read('../src/features/stocktake/StocktakePage.tsx'),
 ]);
 
 assert.match(platform, /desktop: 'available',[\s\S]*tablet: 'review-required',[\s\S]*mobile: 'available'/);
@@ -40,8 +41,10 @@ assert.match(stocktake, /if \(CAMERA_SCANNER_PLATFORM_AVAILABILITY\[platform\] =
   'Leaving an allowed platform must cancel and close an active Stocktake camera session');
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'/,
   'Scanner Preferences must have its own Mobile-only policy gate');
-assert.match(home, /MemoizedStocktakeModule employee=\{employee\} onClose=\{closeStocktake\} platform=\{platform\}/,
-  'Home must pass the resolved platform into the Stocktake capability boundary');
+assert.match(stocktakePage, /<StocktakeModule employee=\{employee\} onClose=\{returnHome\} platform=\{platform\}/,
+  'Stocktake Page must pass the resolved platform into the existing feature capability boundary');
+assert.match(home, /destination: \{ kind: 'feature', moduleId: 'stocktake' \}/,
+  'Home must open Stocktake through the typed Page destination');
 assert.doesNotMatch(library, /isScannerSupportedDevice|matchMedia|innerWidth|userAgent/,
   'module discovery must not infer workflow policy from viewport or device heuristics');
 console.log('Owner-confirmed platform capability matrix and registry contract passed.');

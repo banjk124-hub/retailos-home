@@ -84,6 +84,16 @@ export function useHomeNavigation({ initialState, prefersReducedMotion, onOpenSe
     saveHomeUiState({ activeNav: activeNavRef.current, search: nextSearch, scrollY: window.scrollY });
   }, []);
 
+  const captureHomeUiState = useCallback((): HomeUiState => {
+    const state: HomeUiState = {
+      activeNav: DESTINATIONS.has(activeNavRef.current) ? activeNavRef.current : 'home',
+      search: searchRef.current,
+      scrollY: Math.max(0, window.scrollY),
+    };
+    saveHomeUiState(state);
+    return state;
+  }, []);
+
   const handleNav = useCallback((id: string) => {
     const scrollBehavior: ScrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
     if (id === 'modules') document.getElementById('modules')?.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
@@ -92,5 +102,5 @@ export function useHomeNavigation({ initialState, prefersReducedMotion, onOpenSe
     else if (id === 'home') window.scrollTo({ top: 0, behavior: scrollBehavior });
   }, [onOpenSettings, prefersReducedMotion]);
 
-  return [activeNav, setActiveNav, handleNav, handleSearchChange] as const;
+  return [activeNav, setActiveNav, handleNav, handleSearchChange, captureHomeUiState] as const;
 }

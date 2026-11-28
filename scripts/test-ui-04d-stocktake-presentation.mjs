@@ -39,8 +39,9 @@ assert.match(scannerCss, /\.stocktake-scanner-reticle/);
 assert.match(scannerCss, /prefers-reduced-motion/);
 
 // Overlay and content panel retain separate geometry and responsibilities.
-assert.match(workspaceCss, /\.stocktake-backdrop\{position:fixed;z-index:120;inset:0/);
-assert.match(workspaceCss, /\.stocktake-panel\{width:min\(100%,720px\);max-height:min\(92dvh,900px\);overflow:auto/);
+assert.match(workspaceCss, /\.stocktake-backdrop\{position:relative;z-index:auto;inset:auto/);
+assert.match(workspaceCss, /\.stocktake-page-workspace/);
+assert.match(workspaceCss, /\.stocktake-panel\{width:min\(100%,920px\);max-height:none/);
 assert.match(workspaceCss, /\.stocktake-confirm-backdrop\{position:fixed;z-index:140;inset:0/);
 assert.match(workspaceCss, /\.stocktake-confirm\{width:min\(100%,460px\)/);
 assert.match(presentationSource, /className="stocktake-backdrop"/);
@@ -50,6 +51,11 @@ assert.match(presentationSource, /className="stocktake-confirm"/);
 
 // Operational contracts remain in the coordinator, local store and scanner lifecycle.
 assert.match(moduleSource, /registerPwaUpdateBlocker\('stocktake'/);
+assert.match(moduleSource, /registerExitGuard\('stocktake'/);
+assert.match(moduleSource, /waitForSafeExit/);
+assert.match(moduleSource, /useBodyScrollLock\(scannerOpen \|\| Boolean\(pendingZone\) \|\| showClearConfirm\)/);
+assert.doesNotMatch(moduleSource, /useBodyScrollLock\(true\)/);
+assert.doesNotMatch(presentationSource, /className="stocktake-panel" role="dialog"|aria-modal="true" aria-labelledby="stocktake-title"/);
 assert.match(moduleSource, /stocktakeStore\.putSession/);
 assert.match(moduleSource, /stocktakeStore\.putZone/);
 assert.match(moduleSource, /stocktakeStore\.putEntry/);

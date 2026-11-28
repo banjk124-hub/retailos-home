@@ -18,10 +18,11 @@ const bundleReport = await readFile(new URL('./report-bundle.mjs', import.meta.u
 assert.match(app, /AuthenticatedAppShell/);
 assert.match(authenticatedShell, /<ActivePageHost/);
 assert.match(pageRegistry, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/home\/HomeScreen'\)\)/);
+assert.match(pageRegistry, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/stocktake\/StocktakePage'\)\)/);
 assert.match(pageHost, /<Suspense fallback=\{<PageLoadingSurface \/>\}>/);
 assert.doesNotMatch(app, /import HomeScreen from/);
 for (const component of [
-  'BarcodeScanner', 'StocktakeModule', 'StocktakeImportModule',
+  'BarcodeScanner', 'StocktakeImportModule',
   'SettingsHub', 'ScannerSettingsPanel'
 ]) {
   assert.match(home, new RegExp('const ' + component + ' = lazy\\('));

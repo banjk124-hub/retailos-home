@@ -18,6 +18,8 @@ import type { RetailPlatform } from '../../../shared/platform/platformCapabiliti
 import { AppErrorBoundary } from '../../../shared/components/AppErrorBoundary';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
 import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
+import { useJourneyController } from '../../../platform/journey/JourneyControllerProvider';
+import type { JourneyExitGuard } from '../../../platform/journey/journeyController';
 
 type Props = { employee: EmployeeSession; onClose: () => void; platform: RetailPlatform };
 const STOCKTAKE_LIST_PAGE_SIZE = 100;
@@ -29,7 +31,8 @@ function yieldToNextPaint(): Promise<void> {
 }
 
 export default function StocktakeModule({ employee, onClose, platform }: Props) {
-  useBodyScrollLock(true);
+  const journeyController = useJourneyController();
+  const [scannerOpen, setScannerOpen] = useState(false);
   const scannerCapabilityAvailable = CAMERA_SCANNER_PLATFORM_AVAILABILITY[platform] === 'available' && isScannerSupportedDevice();
   const scannerViewportStyle = useScannerViewportStyle();
   const [session, setSession] = useState<StocktakeSession | null>(null);
@@ -38,16 +41,21 @@ export default function StocktakeModule({ employee, onClose, platform }: Props) 
   const [logs, setLogs] = useState<Awaited<ReturnType<typeof stocktakeStore.getLogs>>>([]);
   const [exports, setExports] = useState<StocktakeExport[]>([]);
   const [screen, setScreen] = useState<StocktakeScreen>('home');
-  const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
+  const busyExitWaitersRef = useRef(new Set<() => void>());
   const closeScanner = () => {
     cameraLeaseRequestRef.current?.cancel();
     cameraLeaseRequestRef.current = null;
     setScannerMotionOrigin(null);
     setScannerOpen(false);
+    setError('');
   };
-  useEffect(() => () => { cameraLeaseRequestRef.current?.cancel(); }, []);
+  useEffect(() => () => {
+    cameraLeaseRequestRef.current?.cancel();
+    busyExitWaitersRef.current.forEach((resolve) => resolve());
+    busyExitWaitersRef.current.clear();
+  }, []);
   useEffect(() => {
     if (CAMERA_SCANNER_PLATFORM_AVAILABILITY[platform] === 'available') return;
     cameraLeaseRequestRef.current?.cancel();
@@ -67,12 +75,56 @@ export default function StocktakeModule({ employee, onClose, platform }: Props) 
   const [historyVisibleCount, setHistoryVisibleCount] = useState(STOCKTAKE_LIST_PAGE_SIZE);
   const [error, setError] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  useBodyScrollLock(scannerOpen || Boolean(pendingZone) || showClearConfirm);
   const pwaUpdateStateRef = useRef({
     busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput,
   });
   pwaUpdateStateRef.current = {
     busy, scannerOpen, pendingZone, showClearConfirm, editingEntry, manualEntry, barcode, quantity, zoneInput,
   };
+
+  const exitGuard = useMemo<JourneyExitGuard>(() => ({
+    evaluate: () => {
+      const state = pwaUpdateStateRef.current;
+      if (state.busy) {
+        return { status: 'block', reason: 'Stocktake đang hoàn tất thao tác dữ liệu.', resolution: 'wait' };
+      }
+      if (state.scannerOpen) {
+        return { status: 'block', reason: 'Máy quét đang hoạt động.', resolution: 'stay' };
+      }
+      if (state.pendingZone || state.showClearConfirm) {
+        return { status: 'block', reason: 'Stocktake đang chờ xác nhận thao tác.', resolution: 'stay' };
+      }
+      const hasUncommittedInput = Boolean(
+        state.editingEntry || state.manualEntry || state.barcode.trim()
+        || state.quantity !== '1' || state.zoneInput.trim(),
+      );
+      if (hasUncommittedInput) {
+        const discard = window.confirm(
+          'Kiểm kê đang có nội dung nhập hoặc chỉnh sửa chưa lưu. Bạn có chắc muốn rời trang và bỏ nội dung này không?',
+        );
+        return discard
+          ? { status: 'allow' }
+          : { status: 'block', reason: 'Người dùng giữ lại nội dung đang nhập.', resolution: 'stay' };
+      }
+      return { status: 'allow' };
+    },
+    waitForSafeExit: () => {
+      if (!pwaUpdateStateRef.current.busy) return Promise.resolve();
+      return new Promise<void>((resolve) => busyExitWaitersRef.current.add(resolve));
+    },
+  }), []);
+
+  useLayoutEffect(
+    () => journeyController.registerExitGuard('stocktake', exitGuard),
+    [journeyController, exitGuard],
+  );
+
+  useEffect(() => {
+    if (busy) return;
+    busyExitWaitersRef.current.forEach((resolve) => resolve());
+    busyExitWaitersRef.current.clear();
+  }, [busy]);
 
   const resolvedEmployeeCode = employee.employeeCode.trim() || LOCAL_EMPLOYEE_DIRECTORY.find((record) => record.name === employee.name && record.departmentId === employee.departmentId && record.active !== false)?.employeeCode || '';
 
@@ -481,14 +533,27 @@ export default function StocktakeModule({ employee, onClose, platform }: Props) 
     onSaveEntry: () => { void saveEntry(); },
     onOpenReview: () => { void openReview(); },
     onPauseZone: () => {
-      if (session && currentZone) void logStocktakeAction({
-        sessionId: session.id,
-        zoneId: currentZone.id,
-        action: 'ZONE_PAUSED',
-        details: `Tạm dừng vùng ${currentZone.zoneCode}.`,
-      });
-      setScreen('home');
-      setCurrentZone(null);
+      if (busy) return;
+      const pause = async () => {
+        if (session && currentZone) {
+          setBusy(true);
+          try {
+            await logStocktakeAction({
+              sessionId: session.id,
+              zoneId: currentZone.id,
+              action: 'ZONE_PAUSED',
+              details: `Tạm dừng vùng ${currentZone.zoneCode}.`,
+            });
+          } catch (cause) {
+            setError(cause instanceof Error ? cause.message : 'Không thể ghi nhật ký tạm dừng vùng.');
+          } finally {
+            setBusy(false);
+          }
+        }
+        setScreen('home');
+        setCurrentZone(null);
+      };
+      void pause();
     },
     onEditEntry: (entry: StocktakeEntry, returnToScan = false) => {
       editEntry(entry);
@@ -514,7 +579,7 @@ export default function StocktakeModule({ employee, onClose, platform }: Props) 
   };
 
   if (busy) {
-    return <StocktakePresentation model={presentationModel} actions={presentationActions} />;
+    return <div className="stocktake-page-workspace"><StocktakePresentation model={presentationModel} actions={presentationActions} /></div>;
   }
 
   const scannerOverlay = scannerOpen && screen === 'scan' && scannerCapabilityAvailable ? (
@@ -525,5 +590,5 @@ export default function StocktakeModule({ employee, onClose, platform }: Props) 
     </div>
   ) : null;
 
-  return <StocktakePresentation model={presentationModel} actions={presentationActions} scannerOverlay={scannerOverlay} />;
+  return <div className="stocktake-page-workspace"><StocktakePresentation model={presentationModel} actions={presentationActions} scannerOverlay={scannerOverlay} /></div>;
 }

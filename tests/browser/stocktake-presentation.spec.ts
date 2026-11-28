@@ -31,6 +31,9 @@ test('Stocktake presentation preserves zone, duplicate-entry, review, export and
 
   const panel = page.locator('.stocktake-panel');
   await expect(panel).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Điều hướng kiểm kê' })).toBeVisible();
+  await expect(page.locator('.stocktake-backdrop')).toHaveCSS('position', 'relative');
+  await expect(panel).not.toHaveAttribute('role', 'dialog');
   await expect(page.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
 
   await page.locator('#stocktake-zone').fill('AT99');
@@ -89,7 +92,54 @@ test('Stocktake presentation preserves zone, duplicate-entry, review, export and
   await page.setViewportSize({ width: 1440, height: 900 });
   const desktopBounds = await panel.boundingBox();
   expect(desktopBounds).not.toBeNull();
-  expect(desktopBounds!.width).toBeLessThanOrEqual(722);
+  expect(desktopBounds!.width).toBeLessThanOrEqual(922);
   expect(desktopBounds!.x).toBeGreaterThanOrEqual(0);
   expect(desktopBounds!.x + desktopBounds!.width).toBeLessThanOrEqual(1441);
+});
+
+
+test('Stocktake Page exit guard protects unfinished input and restores Home return context', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript((session) => {
+    localStorage.setItem('retailos.session.v2', JSON.stringify(session));
+  }, auditSession);
+
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
+  await moduleNav.click();
+
+  const search = page.getByRole('textbox', { name: 'Tìm công cụ' });
+  await search.fill('Kiểm kê');
+  await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
+  await page.getByRole('button', { name: /^kiểm kê/i }).first().click();
+
+  await expect(page.getByRole('navigation', { name: 'Điều hướng kiểm kê' })).toBeVisible();
+  await page.locator('#stocktake-zone').fill('AT01');
+  const homeDock = page.getByRole('button', { name: 'Trang chủ' }).first();
+
+  const dismissed = new Promise<void>((resolve) => {
+    page.once('dialog', async (dialog) => {
+      expect(dialog.type()).toBe('confirm');
+      await dialog.dismiss();
+      resolve();
+    });
+  });
+  await homeDock.click();
+  await dismissed;
+  await expect(page.locator('.stocktake-page-shell')).toBeVisible();
+  await expect(page.locator('#stocktake-zone')).toHaveValue('AT01');
+
+  const accepted = new Promise<void>((resolve) => {
+    page.once('dialog', async (dialog) => {
+      expect(dialog.type()).toBe('confirm');
+      await dialog.accept();
+      resolve();
+    });
+  });
+  await homeDock.click();
+  await accepted;
+
+  await expect(page.locator('.stocktake-page-shell')).toHaveCount(0);
+  await expect(page.getByRole('textbox', { name: 'Tìm công cụ' })).toHaveValue('Kiểm kê');
+  await expect(page.locator('.mobile-shell-navigation')).toBeVisible();
 });

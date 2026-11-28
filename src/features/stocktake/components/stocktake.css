@@ -1,5 +1,5 @@
-.stocktake-backdrop{position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:clamp(8px,2vw,24px);background:rgba(24,17,21,.48)}
-.stocktake-panel{width:min(100%,720px);max-height:min(92dvh,900px);overflow:auto;padding:clamp(16px,3vw,26px);border:1px solid rgba(255,255,255,.8);border-radius:26px;background:linear-gradient(155deg,#fff 0%,#fbf8f9 100%);box-shadow:0 28px 90px rgba(29,13,19,.24);color:#29232a;box-sizing:border-box}
+.stocktake-backdrop{position:relative;z-index:auto;inset:auto;display:block;padding:0;background:transparent}
+.stocktake-panel{width:min(100%,920px);max-height:none;min-height:calc(100dvh - 64px);height:auto;overflow:visible;margin:0 auto;padding:clamp(16px,3vw,26px);border:1px solid rgba(255,255,255,.8);border-radius:26px;background:linear-gradient(155deg,#fff 0%,#fbf8f9 100%);box-shadow:0 28px 90px rgba(29,13,19,.12);color:#29232a;box-sizing:border-box}
 .stocktake-header{display:flex;align-items:center;gap:13px;padding-bottom:18px;border-bottom:1px solid #eee7ea}
 .stocktake-header>div{flex:1;min-width:0}.stocktake-header h2{margin:3px 0 0;font-size:clamp(21px,4vw,27px);letter-spacing:-.7px}.stocktake-eyebrow,.stocktake-section-title,.stocktake-export-preview>small{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#a08f97}
 .stocktake-icon-button{width:40px;height:40px;display:grid;place-items:center;border:1px solid #eee5e9;border-radius:13px;background:#fff;color:#51434a;cursor:pointer}
@@ -43,7 +43,7 @@
 .stocktake-confirm-backdrop{position:fixed;z-index:140;inset:0;display:grid;place-items:center;padding:18px;background:rgba(30,20,24,.48)}
 .stocktake-confirm{width:min(100%,460px);padding:22px;border:1px solid #fff;border-radius:20px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.22);box-sizing:border-box}
 .stocktake-confirm h3{margin:0 0 9px;font-size:19px}.stocktake-confirm p{font-size:13px;line-height:1.6;color:#766870}.stocktake-confirm>div{display:flex;gap:9px;margin-top:17px}.stocktake-confirm>div>*{flex:1}.stocktake-danger-button{background:#b51f34;color:#fff}
-@media(max-width:600px){.stocktake-backdrop{display:block;padding:0;background:#f8f4f5;height:100dvh;max-height:none;box-sizing:border-box;padding:calc(14px + env(safe-area-inset-top)) 15px calc(18px + env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none} .stocktake-panel{width:100%;height:100%;max-height:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}.stocktake-shortcuts{grid-template-columns:1fr 1fr}.stocktake-header{position:sticky;top:0;z-index:2;background:#fff;padding:4px 0 13px}}
+@media(max-width:600px){.stocktake-backdrop{display:block;padding:0;background:transparent;height:auto;max-height:none;box-sizing:border-box;border:0;border-radius:0;box-shadow:none}.stocktake-panel{width:100%;height:auto;min-height:calc(100dvh - 140px);max-height:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}.stocktake-shortcuts{grid-template-columns:1fr 1fr}.stocktake-header{position:sticky;top:0;z-index:2;background:#fff;padding:4px 0 13px}}
 @media(prefers-reduced-motion:reduce){.stocktake-backdrop *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 
 .stocktake-history-zones article{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid #f0e9ec}.stocktake-history-zones article>div{flex:1;min-width:0}.stocktake-history-zones strong{font-size:12px}.stocktake-history-zones p{margin:4px 0;font-size:11px;color:#786a70}.stocktake-history-zones small{font-size:10px;color:#a09399}.stocktake-history-log-heading{margin-top:22px;padding-top:16px;border-top:1px solid #eee7ea}
@@ -52,3 +52,27 @@
 .stocktake-busy-panel{display:grid;justify-items:center;gap:12px}
 .stocktake-busy-indicator{width:25px;height:25px;border:2px solid rgba(196,38,54,.16);border-top-color:#c52636;border-radius:50%;animation:stocktake-busy-spin 700ms linear infinite}
 @keyframes stocktake-busy-spin{to{transform:rotate(1turn)}}
+
+
+
+/* JRN-03B: the feature workspace owns its scroll surface inside the persistent Shell. */
+.stocktake-page-shell { min-height: 100dvh; width: 100%; }
+.stocktake-page-workspace {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100dvh;
+  padding: clamp(16px, 2.4vw, 32px);
+}
+.stocktake-page-workspace .stocktake-backdrop[role="status"] {
+  display: grid;
+  place-items: center;
+  min-height: 60dvh;
+}
+.stocktake-page-workspace .stocktake-busy-panel { min-height: 0; }
+@media (max-width: 600px) {
+  .stocktake-page-workspace {
+    min-height: calc(100dvh - 94px - env(safe-area-inset-bottom));
+    padding: calc(14px + env(safe-area-inset-top)) 15px 18px;
+  }
+  .stocktake-page-workspace .stocktake-panel { min-height: calc(100dvh - 140px); }
+}

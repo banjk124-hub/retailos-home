@@ -34,6 +34,8 @@ import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';
 import { isPushConfigured } from '../notifications/integration';
 import { PLATFORM_CAPABILITY_POLICY, type RetailPlatform } from '../../shared/platform/platformCapabilities';
 import { useShellNavigationRegistration } from '../../platform/shell/shellNavigationContext';
+import { useJourneyController } from '../../platform/journey/JourneyControllerProvider';
+import type { HomeReturnContext } from '../../platform/journey/journey.types';
 
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
@@ -42,14 +44,12 @@ import { clearUpdateCenterEntry, readUpdateCenterEntry } from '../../shared/pwa/
 declare const __RETAILOS_BUILD_ID__: string;
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
-const StocktakeModule = lazy(() => import('../stocktake/components/StocktakeModule'));
 const StocktakeImportModule = lazy(() => import('../stocktake-import/components/StocktakeImportModule'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
  
 // Isolate active feature trees from unrelated Home state updates.
 const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>) => <BarcodeScanner {...props} />);
-const MemoizedStocktakeModule = memo((props: React.ComponentProps<typeof StocktakeModule>) => <StocktakeModule {...props} />);
 const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>) => <StocktakeImportModule {...props} />);
 const MemoizedSettingsHub = memo((props: React.ComponentProps<typeof SettingsHub>) => <SettingsHub {...props} />);
 const MemoizedScannerSettingsPanel = memo((props: React.ComponentProps<typeof ScannerSettingsPanel>) => <ScannerSettingsPanel {...props} />);
@@ -65,6 +65,7 @@ type Props = {
   onInstall: () => Promise<void> | void;
   onBootReady: () => void;
   platform: RetailPlatform;
+  homeReturnContext?: HomeReturnContext;
 };
 function ModuleLoadingSurface({ title, onClose }: { title: string; onClose: () => void }) {
   const headingId = `module-loading-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -96,7 +97,7 @@ const HOME_DOCK_ITEMS = navItems.map((item) => ({
 }));
 
 export default function HomeScreen({
-  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall, onBootReady, platform,
+  employee, department, onLogout, isEnteringHome, isOffline, canInstall, onInstall, onBootReady, platform, homeReturnContext,
 }: Props) {
   useEffect(() => {
     onBootReady();
@@ -105,13 +106,21 @@ export default function HomeScreen({
   }, [onBootReady]);
   const DepartmentIcon = getDepartmentIcon(department.id);
   const { prefersReducedMotion } = useMotionState();
-  const [initialUiState] = useState(readHomeUiState);
+  const [initialUiState] = useState(() => {
+    const saved = readHomeUiState();
+    return homeReturnContext ? {
+      activeNav: homeReturnContext.activeSection,
+      search: homeReturnContext.searchQuery,
+      scrollY: homeReturnContext.scrollY,
+    } : saved;
+  });
+  const journeyController = useJourneyController();
   const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
   const [scannerMotionOrigin, setScannerMotionOrigin] = useState<MotionOrigin | null>(null);
   const cameraLeaseRequestRef = useRef<CameraLeaseRequest | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const openSettingsFromNavigation = useCallback(() => setShowSettings(true), []);
-  const [activeNav, setActiveNav, handleNav, handleSearchChange] = useHomeNavigation({
+  const [activeNav, setActiveNav, handleNav, handleSearchChange, captureHomeUiState] = useHomeNavigation({
     initialState: initialUiState,
     prefersReducedMotion,
     onOpenSettings: openSettingsFromNavigation,
@@ -164,9 +173,7 @@ export default function HomeScreen({
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
   const [selectedLibraryModules, setSelectedLibraryModules] = useState<RetailModule[]>([]);
-  const [isStocktakeOpen, setIsStocktakeOpen] = useState(false);
   const [isStocktakeImportOpen, setIsStocktakeImportOpen] = useState(false);
-  const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);
   const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
@@ -176,7 +183,7 @@ export default function HomeScreen({
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
     || isBarcodeScannerOpen || showSettings || showScannerSettings
-    || isStocktakeOpen || isStocktakeImportOpen || Boolean(barcodeLookup),
+    || isStocktakeImportOpen || Boolean(barcodeLookup),
   );
   const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
     ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
@@ -242,6 +249,24 @@ export default function HomeScreen({
     }
     setIsLibraryClosing(true);
   };
+
+  const launchStocktakePage = useCallback(async (library: ModuleLibraryDefinition) => {
+    const saved = captureHomeUiState();
+    const activeSection: HomeReturnContext['activeSection'] =
+      saved.activeNav === 'modules' || saved.activeNav === 'activity' ? saved.activeNav : 'home';
+    const homeContext: HomeReturnContext = {
+      activeSection,
+      searchQuery: saved.search,
+      scrollY: saved.scrollY,
+    };
+    setSelectedLibrary(null);
+    const accepted = await journeyController.dispatch({
+      kind: 'push',
+      destination: { kind: 'feature', moduleId: 'stocktake' },
+      homeReturnContext: homeContext,
+    });
+    if (!accepted) setSelectedLibrary(library);
+  }, [captureHomeUiState, journeyController]);
   const finishLibraryClose = (event: React.AnimationEvent<HTMLElement>) => {
     if (event.target !== event.currentTarget || event.animationName !== MOTION_CONFIG.animations.sheetExit) return;
     setSelectedLibrary(null);
@@ -646,12 +671,13 @@ export default function HomeScreen({
       </section>
     </div>}
     {selectedLibrary && (() => {
-      const LibraryIcon = getLibraryIcon(selectedLibrary.id);
+      const activeLibrary = selectedLibrary;
+      const LibraryIcon = getLibraryIcon(activeLibrary.id);
       return <div className="app-library-backdrop motion-backdrop" data-motion-preset="sheet-backdrop" data-motion-state={isLibraryClosing ? 'exit' : 'enter'} onClick={(event) => { if (event.target === event.currentTarget) closeLibrary(); }}>
         <MotionSheet
           origin={libraryOrigin}
           exiting={isLibraryClosing}
-          className={`app-library-modal library-${selectedLibrary.tone}`}
+          className={`app-library-modal library-${activeLibrary.tone}`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="app-library-title"
@@ -660,7 +686,7 @@ export default function HomeScreen({
           <header className="app-library-modal-header">
             <div className="app-library-modal-identity">
               <span className="app-library-icon"><MotionIcon icon={LibraryIcon} variant="module" size={22} /></span>
-              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{selectedLibrary.title}</h2><p>{selectedLibraryModules.length} chức năng</p></div>
+              <div><span className="library-eyebrow">RETAILOS · THƯ VIỆN NGHIỆP VỤ</span><h2 id="app-library-title">{activeLibrary.title}</h2><p>{selectedLibraryModules.length} chức năng</p></div>
             </div>
             <button ref={libraryCloseButtonRef} type="button" className="icon-button" aria-label="Đóng thư viện" onClick={closeLibrary}><X size={18} /></button>
           </header>
@@ -669,8 +695,7 @@ export default function HomeScreen({
               const ModuleIcon = getModuleIcon(module.id);
               return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => {
                 if (module.id === 'stocktake') {
-                  setSelectedLibrary(null);
-                  setIsStocktakeOpen(true);
+                  void launchStocktakePage(activeLibrary);
                   return;
                 }
                 if (module.id === 'stocktake-import') {
@@ -706,7 +731,6 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} platform={platform} /></Suspense>}
     {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;

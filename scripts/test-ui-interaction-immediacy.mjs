@@ -11,13 +11,14 @@ const pageHost = readFileSync('src/platform/journey/ActivePageHost.tsx', 'utf8')
 
 assert.doesNotMatch(home, /Suspense\s+fallback=\{null\}/, 'Lazy Home features must not disappear silently while loading.');
 assert.match(home, /function ModuleLoadingSurface[\s\S]*role="status" aria-live="polite" aria-busy="true"/);
-assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 4);
+assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 3);
 assert.match(app, /AuthenticatedAppShell/, 'App delegates authenticated loading composition to the shell.');
 assert.match(shell, /<ActivePageHost/);
 assert.match(pageHost, /journey-page-loading[\s\S]*aria-busy="true"/);
 assert.match(home, /const MemoizedBarcodeScanner = memo\(/);
-assert.match(home, /const MemoizedStocktakeModule = memo\(/);
 assert.match(home, /const MemoizedStocktakeImportModule = memo\(/);
+assert.match(home, /launchStocktakePage/);
+assert.doesNotMatch(home, /MemoizedStocktakeModule|isStocktakeOpen/);
 assert.match(home, /const MemoizedSettingsHub = memo\(/);
 assert.match(home, /const MemoizedScannerSettingsPanel = memo\(/);
 assert.match(home, /const HOME_DOCK_ITEMS = navItems\.map\(/);
@@ -28,10 +29,8 @@ assert.match(home, /const openBarcodeScanner = useCallback\(/);
 assert.match(home, /requestCameraLease\(DEFAULT_SCANNER_CAMERA_REQUEST\)/);
 assert.match(home, /const handleBarcodeDetected = useCallback\(/);
 assert.match(home, /const closeBarcodeScanner = useCallback\(/);
-assert.match(home, /const closeStocktake = useCallback\(/);
 assert.match(home, /const closeStocktakeImport = useCallback\(/);
 assert.match(home, /<MemoizedBarcodeScanner/);
-assert.match(home, /<MemoizedStocktakeModule/);
 assert.match(home, /<MemoizedStocktakeImportModule/);
 assert.match(home, /<MemoizedSettingsHub/);
 assert.match(home, /<MemoizedScannerSettingsPanel/);

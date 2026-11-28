@@ -29,6 +29,11 @@ const checks = [
     args: ["scripts/test-jrn-03a-controller-runtime.mjs"],
   },
   {
+    name: "JRN-03B Stocktake Page ownership and exit guard contracts",
+    command: process.execPath,
+    args: ["scripts/test-jrn-03b-stocktake-page.mjs"],
+  },
+  {
     name: "UI-02D lookup and feedback ownership contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-02d-lookup-feedback.mjs"],
