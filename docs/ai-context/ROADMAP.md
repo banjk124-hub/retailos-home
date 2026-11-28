@@ -1,4 +1,4 @@
-# RetailOS Roadmap — 2026-11-27
+# RetailOS Roadmap — 2026-11-28
 
 This roadmap records future work, not a visual-style authority. Product and experience work follows [RETAILOS_PRODUCT_SKILL.md](./RETAILOS_PRODUCT_SKILL.md).
 
