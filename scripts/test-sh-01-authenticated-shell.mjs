@@ -14,9 +14,11 @@ assert.match(app, /releaseCameraStream\(\)/);
 assert.match(app, /clearCachedModuleData\(\)/);
 assert.match(app, /<AuthenticatedAppShell/);
 assert.doesNotMatch(shell, /sessionStore|updateSafety|releaseCameraStream|clearCachedModuleData/);
-assert.match(shell, /const HomeScreen = lazy\(\(\) => import\('\.\.\/\.\.\/features\/home\/HomeScreen'\)\)/);
+assert.match(shell, /<JourneyControllerProvider>/);
+assert.match(shell, /<ActivePageHost[\s\S]*platform=\{platform\}/);
+assert.doesNotMatch(shell, /const HomeScreen = lazy/);
 assert.match(shell, /journey === 'identity'/);
-assert.match(shell, /<Suspense fallback=\{<HomeLoadingSurface \/>\}>/);
+assert.match(shell, /<PersistentShellNavigation platform=\{platform\} \/>/);
 assert.match(shell, /onBootReady=\{onBootReady\}/);
 assert.match(shell, /platform=\{platform\}/);
 

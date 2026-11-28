@@ -72,12 +72,12 @@
 .shell-navigation__mobile { display: none; }
 
 @media (min-width: 901px) {
-  .home-presentation-root--tablet .app-shell.has-shell-navigation { box-sizing: border-box; padding-left: 88px; }
+  .authenticated-shell-root--tablet .app-shell.has-shell-navigation { box-sizing: border-box; padding-left: 88px; }
 }
 @media (max-width: 900px) {
   .shell-navigation__desktop { display: none; }
   .shell-navigation__mobile { display: block; }
-  .home-presentation-root--tablet .app-shell.has-shell-navigation { padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
+  .authenticated-shell-root--tablet .app-shell.has-shell-navigation { padding-bottom: calc(94px + env(safe-area-inset-bottom)); }
   .shell-navigation__mobile .liquid-dock {
     right: auto;
     bottom: max(8px, env(safe-area-inset-bottom));

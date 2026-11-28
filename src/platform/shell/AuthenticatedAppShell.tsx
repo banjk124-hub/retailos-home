@@ -1,4 +1,4 @@
-import { lazy, Suspense, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import type { EmployeeSession } from '../../shared/domain/employee';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import type { MotionOrigin } from '../../shared/motion';
@@ -6,10 +6,10 @@ import { ExperienceBackground } from '../../shared/components/ExperienceBackgrou
 import { Brand, BrandMotion } from '../../shared/brand';
 import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
 import { useRetailPlatform } from '../../shared/platform/platformContext';
-import { HomePresentationRoot } from '../home/HomePresentationRoot';
+import { AuthenticatedShellPresentationRoot } from './AuthenticatedShellPresentationRoot';
 import { PersistentShellNavigation, ShellNavigationProvider } from './shellNavigationContext';
-
-const HomeScreen = lazy(() => import('../../features/home/HomeScreen'));
+import { JourneyControllerProvider } from '../journey/JourneyControllerProvider';
+import { ActivePageHost } from '../journey/ActivePageHost';
 
 type IdentityMotionStyle = CSSProperties & {
   '--identity-origin-x': string;
@@ -102,17 +102,6 @@ function IdentityJourneyView({
   );
 }
 
-function HomeLoadingSurface() {
-  return (
-    <div className="home-loading-surface" role="status" aria-live="polite" aria-busy="true">
-      <div className="home-loading-surface__panel">
-        <span className="home-loading-surface__indicator" aria-hidden="true" />
-        <strong>Đang mở RetailOS</strong>
-        <span>Đang chuẩn bị không gian làm việc…</span>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Authenticated shell composition only.
@@ -143,10 +132,10 @@ export default function AuthenticatedAppShell({
           <IdentityJourneyView employee={employee} department={department} identityOrigin={identityOrigin} />
         ) : (
           <ShellNavigationProvider>
-            <HomePresentationRoot platform={platform}>
-              <Suspense fallback={<HomeLoadingSurface />}>
+            <JourneyControllerProvider>
+              <AuthenticatedShellPresentationRoot platform={platform}>
                 <div className={isLeavingHome ? 'app-transition-leave' : ''}>
-                  <HomeScreen
+                  <ActivePageHost
                     employee={employee}
                     department={department}
                     onLogout={onLogout}
@@ -158,9 +147,9 @@ export default function AuthenticatedAppShell({
                     platform={platform}
                   />
                 </div>
-              </Suspense>
-              <PersistentShellNavigation platform={platform} />
-            </HomePresentationRoot>
+                <PersistentShellNavigation platform={platform} />
+              </AuthenticatedShellPresentationRoot>
+            </JourneyControllerProvider>
           </ShellNavigationProvider>
         )}
       </div>
