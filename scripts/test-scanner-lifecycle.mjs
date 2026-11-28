@@ -322,7 +322,7 @@ assert.ok(stocktakeScannerSource.includes('onCameraLeaseRequestClaimed?.(cameraL
   'Stocktake acknowledges the one-shot camera request handoff');
 assert.ok(stocktakeScannerSource.includes('setTimeout(() => {\n      exitGateRef.current?.completePresentation();\n    }, 360)'),
   'Stocktake has a bounded presentation fallback when animationend is not delivered');
-assert.ok(stocktakeScannerSource.includes('the exit gate still waits for the platform session to release the camera and dispose'),
+assert.ok(stocktakeScannerSource.includes('still waits for the platform session to release the camera and dispose'),
   'presentation fallback never bypasses camera release or session disposal');
 
 console.log('Scanner lifecycle contract, teardown-order and Stocktake C2 exit-gate tests passed.');
