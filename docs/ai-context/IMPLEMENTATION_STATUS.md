@@ -49,7 +49,7 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 ## Experience and Journey workstream (proposed)
 
 - JRN-00 static source audit is complete at `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. The audit confirms that HomeScreen still mounts Stocktake and Stocktake Import, while App owns auth/session and the login/identity/home timing.
-- **JRN-01 complete:** typed authenticated destination contract in `src/platform/journey/journey.types.ts`; Home return snapshot, push/pop/replace, safe-exit result and transition direction are defined. ADR-043 records the decision. Preflight contract test added. Runtime Journey Controller/Page Host and Back/history adapter remain unimplemented.
+- **JRN-01 implementation on branch:** typed authenticated destination contract in `src/platform/journey/journey.types.ts`; stable `RetailModuleId` is now neutral in `src/shared/domain/retailModule.ts` and re-exported by Home for compatibility. Home return snapshot, push/pop/replace, safe-exit result and transition direction are defined. ADR-043 records the decision. Contract tests are registered in preflight. Runtime Journey Controller/Page Host and Back/history adapter remain unimplemented until merge and exact-head CI.
 - JRN-02–07 remain proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.
 - The experience specification is an umbrella contract. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
 
