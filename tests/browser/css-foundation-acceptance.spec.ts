@@ -157,12 +157,32 @@ async function sampleGlobalStyles(page: Page) {
         const element = document.querySelector('.topbar-logout');
         if (!element) return null;
         const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
         return {
           fontFamily: style.fontFamily,
           fontSize: style.fontSize,
           lineHeight: style.lineHeight,
           minWidth: style.minWidth,
           minHeight: style.minHeight,
+          rect: { width: rect.width, height: rect.height },
+        };
+      })(),
+      wrappers: (() => {
+        const read = (selector: string) => {
+          const element = document.querySelector(selector);
+          if (!element) return null;
+          const style = getComputedStyle(element);
+          const rect = element.getBoundingClientRect();
+          return {
+            minHeight: style.minHeight,
+            minWidth: style.minWidth,
+            width: rect.width,
+            height: rect.height,
+          };
+        };
+        return {
+          scene: read('.retailos-scene'),
+          interface: read('.retailos-interface'),
         };
       })(),
     };
@@ -175,7 +195,7 @@ async function sampleGlobalStyles(page: Page) {
 
 function styleDifferences(before: any, after: any) {
   const differences: Array<{ target: string; property: string; before: string; after: string }> = [];
-  for (const target of ['html', 'body', 'button']) {
+  for (const target of ['html', 'body', 'button', 'wrappers']) {
     for (const property of Object.keys(before[target])) {
       if (before[target][property] !== after[target][property]) {
         differences.push({
