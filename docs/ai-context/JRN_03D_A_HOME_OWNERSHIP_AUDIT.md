@@ -18,6 +18,7 @@
 | D2 | PR #222 — `8247f76a98d4977bcca7489b7e0fa344a0012ad5` | Mobile Feature Pages receive Shell-owned Home and Module Library shortcuts through JourneyController |
 | D3 | PR #223 — `fa85395acfb9c949771114cb9106bd0d827623fe` | Shell-owned grouped/searchable Module Library with focus, Escape and scroll-lock lifecycle |
 | UX-01 | PR #224 — `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99` | Refined Mobile Library grouping, workspace, safe areas and module-row legibility without changing registry/Journey contracts |
+| Desktop Library tree | PR #225 | Adds the missing Desktop Dock entry and compact connected flyout: group navigation first, nested function tree second; Mobile presentation remains independent |
 
 ## 2. Final ownership model
 
