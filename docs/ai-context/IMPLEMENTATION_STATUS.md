@@ -1,9 +1,9 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**JRN-03 audit baseline (main before this documentation-only reconciliation):** `b30505a86511909d94406bfd8467be4ec204c620`  
-**Latest runtime merge:** PR #216, JRN-03B, merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`  
-**Post-merge verification:** PR #216 exact-head CI run `46122314448` passed; post-merge main CI run `46122598245` passed; GitHub Pages build/deploy run `46122598308` succeeded.
+**Documentation baseline:** `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`  
+**Latest runtime merge:** PR #224 UX-01, merge commit `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`  
+**Closeout verification:** main CI #2150 (run `46145238448`) passed; GitHub Pages Build & Deploy #216 succeeded on the current main baseline.
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -36,6 +36,12 @@ This file records verified repository state. It does not authorize deployment or
 | AUDIT-03E CSS ownership closure | PR #209 merged | Merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`; documentation-only; CI #2025 evidence and Build & Deploy #200 were verified on its pre-merge baseline; physical iOS/Android acceptance remains pending |
 | CSS-01C closeout | PR #202 closed unmerged | No source changes accepted; remaining `.mobile-nav` groups intentionally retained because safe grouped-selector isolation was not demonstrated |
 | JRN-02 Persistent Shell navigation | PR #212 merged | Runtime merge `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`; exact-head CI #2047 and main CI #2048 passed; 15 Playwright tests passed; Pages deployments #204 and #205 succeeded |
+| JRN-03C Stocktake Import Page | PR #217 merged | Merge `9e1c999bd27ab280e00cb1143b68f0865829c0f7`; guarded lazy Page; feature data/parser/history/export contracts retained |
+| JRN-03D-A/B/C | PRs #218–220 merged | Home ownership audit, targeted contracts and integrated browser journey QA |
+| JRN-03D-D1 scanner handoff | PR #221 merged | Merge `575e5e3d58da50d2561262b715e69951c78f9712`; one-shot camera handoff and bounded close fallback |
+| JRN-03D-D2 Mobile shortcuts | PR #222 merged | Merge `8247f76a98d4977bcca7489b7e0fa344a0012ad5`; Shell-owned Home/Module Library shortcuts |
+| JRN-03D-D3 Module Library | PR #223 merged | Merge `fa85395acfb9c949771114cb9106bd0d827623fe`; Shell-owned grouped/searchable Library |
+| UX-01 Module Library refinement | PR #224 merged | Merge `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; Mobile layout refinement, Journey contracts preserved |
 
 ## Open work and acceptance gates
 
@@ -50,14 +56,20 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 
 ## Experience and Journey workstream
 
-- JRN-00 static source audit is complete at main baseline `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`. It confirmed App auth/session ownership and HomeScreen's previous ownership of both feature mounts.
-- **JRN-01 — merged:** PR #211, merge commit `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. Typed authenticated destination contract, neutral workflow identity, Home return context, safe-exit semantics and the owner-approved Persistent Shell architecture are recorded. Contract/documentation phase only.
-- **JRN-02 — merged and verified:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`. AuthenticatedAppShell owns ShellNavigation rendering; Home registers its nav model through an owner-scoped shell context. Existing Desktop fixed-left Dock and Mobile adaptive navigation are retained. Exact PR-head CI #2047, main CI #2048, documentation CI #2049, post-merge main CI #2050 and Pages deployments #204/#205 succeeded. CI #2047/#2048 each ran 15 Playwright tests successfully. No physical-device acceptance is inferred.
-- **JRN-03 source audit — complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`:** see `AUDIT_JRN_03_PAGE_HOST.md` for the source-grounded migration boundaries.
-- **JRN-03A — merged:** PR #215, merge commit `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`. Exact-head CI #2076 passed on `f79c1f92f3cf6b310a1fd1f7d553ca561a01f0b2`: preflight, TypeScript, production/Pages builds, bundle comparison and 15 Playwright tests. No physical-device acceptance or deployment is implied.
-- **JRN-03B — merged and verified:** PR #216, merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`. Exact PR-head CI run `46122314448`, post-merge main CI run `46122598245`, and Pages deployment run `46122598308` succeeded. Stocktake Page and its feature-owned exit guard are active; no physical-device camera acceptance is inferred. See `JRN_03B_STOCKTAKE_PAGE.md`.
-- **JRN-03C — implementation in progress:** branch `feat/jrn-03c-stocktake-import-page`; extracting Stocktake Import into its own guarded Journey Page while preserving parser, IndexedDB history, conflict review, dirty edits, unpersisted results and export behavior. See `JRN_03C_STOCKTAKE_IMPORT_PAGE.md`.
-- JRN-03D and JRN-04–08 remain planned in `ROADMAP.md`. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
+**JRN-01 through JRN-03D core ownership/lifecycle scope — complete on main.** The authenticated Shell persists across Page changes; JourneyController owns typed destination navigation and active Exit Guard coordination; ActivePageHost mounts the active lazy Page. Home remains a Page and only launches ready Feature Pages. Stocktake and Stocktake Import are separate Feature Pages; their coordinators retain business state, persistence, resource lifecycle, PWA update blockers and Exit Guards. Shell owns active navigation rendering, Feature Page shortcuts and Module Library.
+
+- JRN-01 PR #211; JRN-02 PR #212; JRN-03A PR #215; JRN-03B PR #216; JRN-03C PR #217.
+- JRN-03D-A/B/C PRs #218–220: ownership audit, contract coverage and integrated browser QA.
+- JRN-03D-D1/D2/D3 PRs #221–223: scanner handoff, Mobile Feature shortcuts and Shell Module Library.
+- UX-01 PR #224 refined the Module Library. Current main: `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`.
+- Main CI #2150 and Pages Build & Deploy #216 passed on this baseline.
+
+**Deferred / not implemented**
+- D4 Page Snapshot/Restore is postponed. No Page capture/restore, keep-alive cache, snapshot store or generic Page-state persistence was introduced. Reconsider only after source-of-truth, freshness/version, invalidation and data reconciliation rules are defined and testable.
+- D5 overlay visual consistency is a separate UX follow-up, not part of the completed ownership/lifecycle scope.
+- Physical iOS/iPadOS and Android device acceptance remains separate; browser QA does not certify physical devices.
+
+Home's typed Module Library launcher and ephemeral Home return context (section/search/scroll only) are intentional. Journey stack is navigation context, not business persistence. JRN-04 Global Quick Actions, shared System Data contracts and broader Experience System work remain separate future work.
 
 ## Protected technical boundaries
 
