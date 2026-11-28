@@ -7,6 +7,7 @@ const provider = read('../src/platform/journey/JourneyControllerProvider.tsx');
 const registry = read('../src/platform/journey/journeyPageRegistry.tsx');
 const host = read('../src/platform/journey/ActivePageHost.tsx');
 const shell = read('../src/platform/shell/AuthenticatedAppShell.tsx');
+const shellRoot = read('../src/platform/shell/AuthenticatedShellPresentationRoot.tsx');
 const preflight = read('./preflight.mjs');
 
 assert.match(controller, /export class JourneyController/);
@@ -26,6 +27,10 @@ assert.match(host, /<AppErrorBoundary key=\{pageKey\}/);
 assert.match(host, /<Suspense fallback=\{<PageLoadingSurface \/>\}>/);
 assert.match(host, /Shell và phiên làm việc vẫn được giữ nguyên/);
 assert.match(shell, /<JourneyControllerProvider>/);
+assert.match(shell, /<AuthenticatedShellPresentationRoot platform=\{platform\}>/);
+assert.doesNotMatch(shell, /<HomePresentationRoot/);
+assert.match(host, /<HomePresentationRoot platform=\{props\.platform\}>/);
+assert.match(shellRoot, /authenticated-shell-root--\$\{platform\}/);
 assert.match(shell, /<ActivePageHost/);
 assert.match(shell, /<PersistentShellNavigation platform=\{platform\} \/>/);
 assert.doesNotMatch(shell, /BrowserRouter|createBrowserRouter|useNavigate/);
