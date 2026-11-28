@@ -10,6 +10,8 @@ const desktopStyles = read('../src/shared/navigation/DesktopShellNavigation.css'
 const mobileStyles = read('../src/shared/navigation/MobileShellNavigation.css');
 const tabletStyles = read('../src/shared/navigation/TabletShellNavigation.css');
 const home = read('../src/features/home/HomeScreen.tsx');
+const authenticatedShell = read('../src/platform/shell/AuthenticatedAppShell.tsx');
+const shellNavigationContext = read('../src/platform/shell/shellNavigationContext.tsx');
 const dock = read('../src/shared/navigation/LiquidDock.tsx');
 
 assert.match(shell, /platform === 'desktop'/);
@@ -31,7 +33,9 @@ assert.match(mobileStyles, /env\(safe-area-inset-bottom\)/);
 assert.match(mobileStyles, /transform: translateX\(-50%\)/);
 assert.match(tabletStyles, /\.home-presentation-root--tablet \.app-shell\.has-shell-navigation/);
 assert.match(tabletStyles, /@media \(max-width: 900px\)/);
-assert.match(home, /<ShellNavigation[\s\S]*platform=\{platform\}/);
+assert.match(authenticatedShell, /<PersistentShellNavigation platform=\{platform\} \/>/);
+assert.match(shellNavigationContext, /<ShellNavigation \{\.\.\.context\.registration\.config\} platform=\{platform\} \/>/);
+assert.doesNotMatch(home, /<ShellNavigation/);
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && isScannerSupportedDevice\(\)/);
 assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'\}/);
 assert.doesNotMatch(home, /<LiquidDock/);
