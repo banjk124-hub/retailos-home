@@ -1,8 +1,8 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`  
-**Latest merged work:** PR #196 — PCM-01–06 Platform Capability Matrix documentation reconciliation; PR #195 remains the latest runtime capability enforcement change  
+**Verified main HEAD:** `8b204a20d0959e291e4835f5977f0b313e56ab60`  
+**Latest merged work:** PR #203 — CSS-01E documentation/status closeout; latest runtime change remains PR #201 (CSS legacy selector retirement)  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -24,7 +24,7 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 - SH-01 exact-head CI #1948 passed: preflight, TypeScript, production/Pages build, bundle comparison and 10 Playwright tests.
 - PR #195 exact-head CI #1968 passed: preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence.
 - No physical-device acceptance is claimed. PW-01 remains open.
-- CSS-01 remains separate; SH-01 did not perform a broad CSS ownership migration.
+- CSS-01A–E is closed at bounded scope; see `CSS_01_CSS_OWNERSHIP_MIGRATION.md`. Remaining `.mobile-nav` declarations are intentionally retained cleanup debt; PR #202 was closed unmerged.
 - Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
 
 ## Next technical gates
