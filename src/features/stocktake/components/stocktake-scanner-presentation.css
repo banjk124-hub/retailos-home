@@ -1,6 +1,7 @@
 /* Stocktake keeps its feature-owned layout but shares visual viewport sizing and transition timing. */
 .stocktake-scanner-layer.scanner-stocktake-layer-enter {
   position: fixed;
+  z-index: 80;
   top: var(--scanner-visual-viewport-top, 0px);
   right: 0;
   bottom: auto;
@@ -109,3 +110,21 @@
   }
 }
 
+
+
+/* Keep scanner controls above the persistent Shell dock and visible on short viewports. */
+@media (max-width: 600px) {
+  .stocktake-scanner-surface .stocktake-scanner-heading {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    flex: 0 0 auto;
+    margin: calc(-1 * (16px + env(safe-area-inset-top))) -15px 0;
+    padding: calc(16px + env(safe-area-inset-top)) 15px 10px;
+    background: #fff;
+  }
+  .stocktake-scanner-surface {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
