@@ -1,7 +1,7 @@
 # CSS-01 — CSS Ownership Migration
 
-**Status:** CSS-01A source inventory/import-owner map and CSS-01B static consumer/cascade audit are complete. CSS-01C has completed two bounded legacy Login retirement slices (PR #198 and PR #199); CSS-01D automated/browser regression passed on the exact PR #199 head. CSS-01E documentation/status closure remains open. No broad CSS ownership rewrite or import-boundary change was made.
-**Baseline:** `main` at `adc2ec310c46f3f050b2af81b02ba622e8dc18b3` (2026-11-27).
+**Status:** CSS-01A/B complete. CSS-01C is closed with three bounded runtime CSS retirement slices (PR #198, #199 and #201) plus orphan keyframe cleanup (PR #200). CSS-01D passed on the exact PR #199 and PR #201 heads. Remaining `.mobile-nav` / `.mobile-nav-icon` declarations are intentionally retained: their markup consumer is absent from tracked source, but safe selector-block isolation was not demonstrated without risking grouped-selector/cascade changes. CSS-01E documentation/status closeout is prepared in the current docs-only branch and awaits its own review/merge; no broad CSS ownership rewrite or import-boundary change was made.
+**Baseline:** `main` at `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f` (2026-11-28).
 **PW-01:** Deferred by owner. No reproducible device defect has been observed in current acceptance; physical-device validation is not claimed complete and is not a prerequisite for the static CSS ownership audit.
 **Scope:** Evidence-led ownership mapping and bounded CSS migration after SH-01. This is not a visual redesign.
 
@@ -202,7 +202,7 @@ The current navigation components expose platform-specific class families (`.des
 | Focus, active, hover, pseudo-elements, media and reduced-motion selectors | **TEST/CONTRACT-REFERENCED** | Must be checked through keyboard, pointer, touch, viewport and motion-preference behavior, not only static class usage |
 | Any selector with no discovered TSX token | **Not automatically PROVEN-UNUSED** | Search tests, non-TSX templates, portal/third-party output, data attributes and generated class names before deletion |
 
-No selector has been marked **PROVEN-UNUSED** in this pass. This is intentional: absence from a bounded TSX sample is insufficient proof of dead CSS.
+The `.mobile-nav` / `.mobile-nav-icon` vocabulary is **PROVEN-UNUSED as legacy markup selectors in tracked source** by repository-wide search, but that classification does not prove each remaining declaration block is safe to remove. Grouped selectors, responsive/reduced-motion contexts and shared declarations still require isolated, reviewable edits before retirement.
 
 ### 9.5 CSS-01B remaining verification gates
 
@@ -237,6 +237,9 @@ GitHub code search was run against the current repository default branch (same C
 
 - PR #198 merged: retired the first bounded set of legacy Login overrides from `mobile-tuning.css` (merge `ec10d1ceaa05ff95a232d3ad276866b63e612282`).
 - PR #199 merged: retired remaining legacy Login responsive rules and the obsolete `.login-identity-dock` selector cluster (merge `2c2a5b60e87c05b06153fb534a0a4bbdc5c77e5`).
+- PR #200 merged: removed orphan `login-identity-*` keyframes and refreshed CSS-01 documentation (merge `b0b36487c27239fa283b380767e43ec4092f928f`).
+- PR #201 merged: retired the first bounded `.mobile-nav` legacy selector groups from Home/global presentation CSS (merge `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`). Exact PR #201 head `88fee8c6ca6374941bc5d47a57a9291547c986e5`, CI #1990 passed.
+- PR #202 was closed unmerged after the proposed selector rewrite failed review for safe formatting/block-boundary preservation; no changes were accepted.
 - Exact PR #199 head `e1e84f55829d374d676233ebefeff97dc72c3863`, RetailOS CI run #1985 — passed: preflight, PR-base production build and bundle comparison, Playwright Chromium installation, responsive/runtime evidence suite and artifact uploads.
 - The merge changed only `responsive.css` and `mobile-tuning.css`; no imports, TSX, feature CSS boundaries or business behavior changed.
 - Post-merge source review found two orphaned `login-identity-*` keyframe definitions left after PR #199; this PR removes them. No current Login DOM consumer references these keyframes.
@@ -262,4 +265,4 @@ This confirms the current baseline build and existing responsive/runtime test su
 - Current PR CI has passed preflight, production/Pages build, bundle comparison and Playwright responsive/runtime evidence.
 - CSS-01C has made bounded runtime CSS deletions; import order and feature loading boundaries remain unchanged.
 
-**CSS-01B static audit is complete for the audited selector clusters. CSS-01C has completed two bounded Login migrations. CSS-01D regression gate passed on PR #199's exact head.** The remaining `.mobile-nav` legacy declaration cluster is not automatically safe to delete because several rules are grouped with other selectors and spread across global/Home stylesheets. Any further removal must isolate those declarations without changing current `.liquid-dock` behavior, preserve cascade/import order, and pass exact-head bundle/browser regression. CSS-01E must update the current ownership/status record.
+**CSS-01B static audit is complete for the audited selector clusters. CSS-01C is closed after three bounded runtime CSS retirement slices and orphan keyframe cleanup. CSS-01D passed on exact PR #199 and PR #201 heads.** The remaining `.mobile-nav` / `.mobile-nav-icon` declarations are intentionally retained. PR #201 retired the first isolated Home/navigation groups; the remaining groups are interleaved with shared selectors and responsive/reduced-motion rules. A subsequent automated isolation attempt was rejected and PR #202 was closed unmerged because the generated diff did not preserve CSS block boundaries and formatting with sufficient confidence. No source changes from PR #202 were accepted. Further retirement requires a selector-aware, reviewable patch plus exact-head browser/bundle evidence; it is not a blocker for closing CSS-01C.
