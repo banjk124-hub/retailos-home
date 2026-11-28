@@ -22,7 +22,6 @@ import { HomeModuleLibrarySection } from './components/HomeModuleLibrarySection'
 import type { ModuleLibraryDefinition, RetailModule } from './moduleRegistry';
 import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
 import { getHomeNavigationIcon, getLibraryIcon, getModuleIcon } from './homeIconRegistry';
-import { ShellNavigation } from '../../shared/navigation';
 import { getMotionOrigin, MOTION_CONFIG, MotionSheet, useMotionState } from '../../shared/motion';
 import type { MotionOrigin } from '../../shared/motion';
 import '../../styles/home.css';
@@ -34,7 +33,7 @@ import { useHomeUpdateNoticeCount } from './hooks/useHomeUpdateNoticeCount';
 import { useHomeSpotlightViewport } from './hooks/useHomeSpotlightViewport';
 import { isPushConfigured } from '../notifications/integration';
 import { PLATFORM_CAPABILITY_POLICY, type RetailPlatform } from '../../shared/platform/platformCapabilities';
-import { HomePresentationRoot } from '../../platform/home/HomePresentationRoot';
+import { useShellNavigationRegistration } from '../../platform/shell/shellNavigationContext';
 
 import { requestCameraLease, type CameraLeaseRequest } from '../../shared/services/cameraSession';
 import { DEFAULT_SCANNER_CAMERA_REQUEST } from '../../platform/scanner/contracts';
@@ -387,7 +386,17 @@ export default function HomeScreen({
       } : {}),
     };
   }, [openBarcodeScanner, openManualProductLookup, platform]);
-  return <HomePresentationRoot platform={platform}>
+  const shellNavigationItems = useMemo(
+    () => HOME_DOCK_ITEMS.map((item) => item.id === 'settings' ? { ...item, noticeCount: updateNoticeCount } : item),
+    [updateNoticeCount],
+  );
+  useShellNavigationRegistration('home', {
+    items: shellNavigationItems,
+    activeId: activeNav,
+    onSelect: handleNav,
+    action: dockAction,
+  });
+  return <>
     <div className={`app-shell has-shell-navigation home-enter dept-${department.id} dept-motion-${department.motion} ${isEnteringHome ? 'home-enter-active' : ''}`}>
     <main className="home-main">
       <header className="topbar home-topbar" id="home">
@@ -560,13 +569,6 @@ export default function HomeScreen({
     </main>
 
     </div>
-    <ShellNavigation
-      items={HOME_DOCK_ITEMS.map((item) => item.id === 'settings' ? { ...item, noticeCount: updateNoticeCount } : item)}
-      activeId={activeNav}
-      onSelect={handleNav}
-      action={dockAction}
-      platform={platform}
-    />
     {showSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt" onClose={closeSettings} />}><MemoizedSettingsHub onClose={closeSettings} onOpenScannerSettings={openScannerSettings} showScannerSettings={PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] === 'available'} /></Suspense>}
     {PLATFORM_CAPABILITY_POLICY.scannerPreferences[platform] === 'available' && showScannerSettings && <Suspense fallback={<ModuleLoadingSurface title="Cài đặt máy quét" onClose={closeScannerSettings} />}><MemoizedScannerSettingsPanel onClose={closeScannerSettings} /></Suspense>}
     {PLATFORM_CAPABILITY_POLICY.cameraBarcodeScanner[platform] === 'available' && isBarcodeScannerOpen && <Suspense fallback={<div className="barcode-scanner" role="status">Đang tải máy quét…</div>}><AppErrorBoundary fallback={<section className="barcode-scanner" role="alert"><div className="barcode-scanner-card"><button className="barcode-scanner-close" type="button" aria-label="Đóng máy quét" onClick={closeBarcodeScanner}><X size={19} /></button><p>Máy quét gặp lỗi khi khởi tạo. Hãy đóng và mở lại.</p></div></section>}>
@@ -706,5 +708,5 @@ export default function HomeScreen({
     {isStocktakeOpen && <Suspense fallback={<ModuleLoadingSurface title="Kiểm kê" onClose={closeStocktake} />}><MemoizedStocktakeModule employee={employee} onClose={closeStocktake} platform={platform} /></Suspense>}
     {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
-  </HomePresentationRoot>;
+  </>;
 }
