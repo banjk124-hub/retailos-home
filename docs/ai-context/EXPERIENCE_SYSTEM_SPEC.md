@@ -487,14 +487,16 @@ Do not create detailed specifications for placeholder modules until a real workf
 | Workstream | Scope | Exit criteria | Status at audit |
 |---|---|---|---|
 | JRN-00 | Source audit of journeys, screens, owners, motion, icons and lifecycle | Evidence-backed baseline and risks recorded | Complete — static source audit |
-| JRN-01 | Journey, persistent Shell and shared-system contract | Single-App Multi-Page; persistent Desktop Dock; adaptive Mobile navigation; global quick actions; shared Experience/Data boundaries | Implemented on PR #211; review/CI pending |
-| JRN-02 | Persistent Shell and navigation runtime | Shell survives Page changes; Dock remains fixed; Mobile navigation resolves shared destinations/actions | Proposed |
+| JRN-01 | Journey, persistent Shell and shared-system contract | Single-App Multi-Page; typed destinations; Desktop/Mobile Shell policy; Experience/Data boundaries | Merged in PR #211 |
+| JRN-02 | Persistent Shell navigation runtime | Shell owns navigation rendering; active Page registers its navigation model; Desktop Dock/Mobile navigation no longer mounted by Home | In progress on `jrn-02-persistent-shell-navigation` |
 | JRN-03 | Page Host and independent workspaces | Stocktake and Stocktake Import become independent lazy Pages; Home remains an entry Page | Proposed |
-| JRN-04 | Journey restoration, safe exit and lifecycle | Return context, dirty-work protection, deterministic cleanup and PWA blocker coordination | Proposed |
-| JRN-05 | Shared System Data contracts | Canonical system data access/change signals without global mega-store or backend commitment | Proposed |
-| JRN-06 | Experience System implementation | Shared typography, color, components, icons, motion and feedback with Page-level expression freedom | Proposed |
-| JRN-07 | Cross-Page and cross-platform QA | Desktop Dock, Mobile reachability, quick-action return, data consistency and performance validated | Proposed |
-| DOC-01 | Canonical documentation reconciliation | Roadmap, architecture decisions, component governance, platform matrix and handoff link here without duplicate authority | Proposed |
+| JRN-04 | Global Quick Actions | Quick Search, Scanner, Settings, Calendar and Notifications are Shell-level and usable from every Page | Proposed |
+| JRN-05 | Journey restoration, safe exit and lifecycle | Return context, dirty-work protection, deterministic cleanup and PWA blocker coordination | Proposed |
+| JRN-06 | Shared System Data contracts | Canonical system data access/change signals without global mega-store or backend commitment | Proposed |
+| JRN-07 | Experience System implementation | Shared typography, color, components, icons, motion and feedback with Page-level expression freedom | Proposed |
+| JRN-08 | Cross-Page and cross-platform QA | Desktop Dock, Mobile reachability, quick-action return, data consistency and performance validated | Proposed |
+
+JRN-02 is deliberately limited to persistent navigation chrome and its registration boundary. Global quick-action extraction follows JRN-03 so it can be verified against actual independent Pages rather than built speculatively while Home is the only Page.
 
 Mandatory completion gates:
 - All journeys have explicit entry, exit, return and failure behavior.
