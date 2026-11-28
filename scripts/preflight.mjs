@@ -9,6 +9,11 @@ if (!npmCli) {
 
 const checks = [
   {
+    name: "JRN-01 authenticated Journey and destination contract tests",
+    command: process.execPath,
+    args: ["scripts/test-journey-contract.mjs"],
+  },
+  {
     name: "UI-02D lookup and feedback ownership contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-02d-lookup-feedback.mjs"],
