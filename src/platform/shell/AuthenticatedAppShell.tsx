@@ -102,17 +102,6 @@ function IdentityJourneyView({
   );
 }
 
-function HomeLoadingSurface() {
-  return (
-    <div className="home-loading-surface" role="status" aria-live="polite" aria-busy="true">
-      <div className="home-loading-surface__panel">
-        <span className="home-loading-surface__indicator" aria-hidden="true" />
-        <strong>Đang mở RetailOS</strong>
-        <span>Đang chuẩn bị không gian làm việc…</span>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Authenticated shell composition only.
