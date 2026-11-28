@@ -1,4 +1,7 @@
 import { SHARED_DESKTOP_MOBILE, type PlatformAvailability } from '../../shared/platform/platformCapabilities';
+import { RETAIL_MODULE_IDS, type RetailModuleId } from '../../shared/domain/retailModule';
+export { RETAIL_MODULE_IDS } from '../../shared/domain/retailModule';
+export type { RetailModuleId } from '../../shared/domain/retailModule';
 
 export const MODULE_LIBRARY_IDS = [
   'goods-control',
@@ -9,13 +12,6 @@ export const MODULE_LIBRARY_IDS = [
 ] as const;
 
 export type ModuleLibraryId = typeof MODULE_LIBRARY_IDS[number];
-
-/** Workflow IDs belong to the business UI domain and must not inherit snapshot/cache IDs. */
-export const RETAIL_MODULE_IDS = [
-  'inventory', 'price', 'orders', 'sales', 'products', 'delivery', 'product-dates', 'stocktake', 'stocktake-import',
-] as const;
-
-export type RetailModuleId = typeof RETAIL_MODULE_IDS[number];
 
 export type RetailModule = {
   id: RetailModuleId;
