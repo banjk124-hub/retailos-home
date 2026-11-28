@@ -42,6 +42,7 @@ This file records verified repository state. It does not authorize deployment or
 | JRN-03D-D2 Mobile shortcuts | PR #222 merged | Merge `8247f76a98d4977bcca7489b7e0fa344a0012ad5`; Shell-owned Home/Module Library shortcuts |
 | JRN-03D-D3 Module Library | PR #223 merged | Merge `fa85395acfb9c949771114cb9106bd0d827623fe`; Shell-owned grouped/searchable Library |
 | UX-01 Module Library refinement | PR #224 merged | Merge `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; Mobile layout refinement, Journey contracts preserved |
+| Desktop Module Library tree | PR #225 in progress | Adds a Dock-connected grouped flyout for Desktop; Mobile full-height Library remains unchanged. CI/browser validation pending |
 
 ## Open work and acceptance gates
 
@@ -56,7 +57,7 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 
 ## Experience and Journey workstream
 
-**JRN-01 through JRN-03D core ownership/lifecycle scope — complete on main.** The authenticated Shell persists across Page changes; JourneyController owns typed destination navigation and active Exit Guard coordination; ActivePageHost mounts the active lazy Page. Home remains a Page and only launches ready Feature Pages. Stocktake and Stocktake Import are separate Feature Pages; their coordinators retain business state, persistence, resource lifecycle, PWA update blockers and Exit Guards. Shell owns active navigation rendering, Feature Page shortcuts and Module Library.
+**JRN-01 through JRN-03D core ownership/lifecycle scope — complete on main.** The authenticated Shell persists across Page changes; JourneyController owns typed destination navigation and active Exit Guard coordination; ActivePageHost mounts the active lazy Page. Home remains a Page and only launches ready Feature Pages. Stocktake and Stocktake Import are separate Feature Pages; their coordinators retain business state, persistence, resource lifecycle, PWA update blockers and Exit Guards. Shell owns active navigation rendering, Feature Page shortcuts and Module Library. Desktop opens the Library as a Dock-connected group/tree flyout; Mobile retains its full-height group/module workspace.
 
 - JRN-01 PR #211; JRN-02 PR #212; JRN-03A PR #215; JRN-03B PR #216; JRN-03C PR #217.
 - JRN-03D-A/B/C PRs #218–220: ownership audit, contract coverage and integrated browser QA.
