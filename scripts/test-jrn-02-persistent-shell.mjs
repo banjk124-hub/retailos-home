@@ -12,7 +12,9 @@ const presentation = read('../src/platform/home/HomePresentationRoot.tsx');
 assert.match(shell, /<ShellNavigationProvider>/);
 assert.match(shell, /<HomePresentationRoot platform=\{platform\}>/);
 assert.match(shell, /<PersistentShellNavigation platform=\{platform\} \/>/);
-assert.match(shell, /<HomeScreen/);
+assert.match(shell, /<JourneyControllerProvider>/);
+assert.match(shell, /<ActivePageHost/);
+assert.doesNotMatch(shell, /<HomeScreen/);
 assert.doesNotMatch(shell, /<ShellNavigation\s/);
 
 assert.match(context, /createContext<ContextValue \| null>/);
