@@ -1,7 +1,9 @@
-import { memo } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
+import { LibraryBig } from 'lucide-react';
 import { MotionIcon } from '../icons';
 import { Surface } from '../components/surface/Surface';
 import type { LiquidDockProps } from './LiquidDock.types';
+import { DesktopShellModuleLibrary } from '../../platform/shell/DesktopShellModuleLibrary';
 import './DesktopShellNavigation.css';
 
 /** Desktop-owned navigation rendering over the shared destination contract. */
@@ -28,6 +30,14 @@ export const DesktopShellNavigation = memo(function DesktopShellNavigation({
           );
         })}
       </div>
+      <div className="desktop-shell-navigation__library-utility">
+        <button ref={libraryButtonRef} type="button" className={`desktop-shell-navigation__library${libraryOpen ? ' is-open' : ''}`}
+          aria-label="Mở thư viện nghiệp vụ" aria-expanded={libraryOpen} aria-haspopup="dialog" title="Thư viện nghiệp vụ"
+          onClick={() => setLibraryOpen((open) => !open)}>
+          <LibraryBig size={20} />
+          <span>Thư viện</span>
+        </button>
+      </div>
       {action && <div className="desktop-shell-navigation__utility">
         <button type="button" className="desktop-shell-navigation__action"
           aria-label={action.label} title={action.label} disabled={action.disabled}
@@ -37,5 +47,6 @@ export const DesktopShellNavigation = memo(function DesktopShellNavigation({
         </button>
       </div>}
     </Surface>
+    {libraryOpen && <DesktopShellModuleLibrary triggerRef={libraryButtonRef} onClose={closeLibrary} />}
   );
 });
