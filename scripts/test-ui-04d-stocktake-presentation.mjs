@@ -38,7 +38,7 @@ assert.match(scannerCss, /\.stocktake-scanner-preview/);
 assert.match(scannerCss, /\.stocktake-scanner-reticle/);
 assert.match(scannerCss, /prefers-reduced-motion/);
 
-// Overlay and content panel retain separate geometry and responsibilities.
+// The Page workspace and its nested confirmation surfaces retain separate geometry.
 assert.match(workspaceCss, /\.stocktake-backdrop\{position:relative;z-index:auto;inset:auto/);
 assert.match(workspaceCss, /\.stocktake-page-workspace/);
 assert.match(workspaceCss, /\.stocktake-panel\{width:min\(100%,920px\);max-height:none/);
