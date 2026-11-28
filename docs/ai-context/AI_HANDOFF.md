@@ -3,8 +3,8 @@
 **Repository:** `banjk124-hub/retailos-home`  
 **Latest verified runtime merge:** PR #228, merge commit `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`  
 **Latest merged work:** PR #228 — Desktop Feature Page Library shortcut styling.  
-**Verification:** main CI #2150 (run `46145238448`) passed; GitHub Pages Build & Deploy #216 succeeded.  
-**Documentation branch:** `docs/jrn-03d-technical-closeout` (documentation-only; pending review/merge).
+**Historical verification:** main CI #2150 and Pages Build & Deploy #216 passed on the earlier PR #224 baseline; do not infer these validate PR #226–228.  
+**Current documentation branch:** `docs/jrn-05-application-journey-transition` (documentation-only; pending review/merge).
 
 ## Current owner direction
 
@@ -14,7 +14,7 @@
 
 ## Journey implementation — JRN-01 to JRN-03D core scope complete
 
-PR #211 typed Journey contract; #212 persistent Shell navigation; #215 JourneyController/ActivePageHost; #216 Stocktake Page; #217 Stocktake Import Page; #218–220 ownership audit/contracts/integrated browser QA; #221 scanner exit/camera handoff; #222 Mobile Feature shortcuts; #223 Shell Module Library; #224 UX-01 refinement.
+PR #211 typed Journey contract; #212 persistent Shell navigation; #215 JourneyController/ActivePageHost; #216 Stocktake Page; #217 Stocktake Import Page; #218–220 ownership audit/contracts/integrated browser QA; #221 scanner exit/camera handoff; #222 Mobile Feature shortcuts; #223 Shell Module Library; #224 UX-01 refinement; #226–227 Desktop Dock/Home Library behavior; #228 Feature Page shortcut styling.
 
 Current ownership:
 - App: authentication, employee session and authenticated handoff.
