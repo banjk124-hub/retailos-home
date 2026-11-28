@@ -281,7 +281,7 @@ Required completion artifact before alias retirement:
 Suggested local inventory command (run from repository root; review matches rather than bulk-replacing):
 ```sh
 rg -n --hidden --glob '!node_modules/**' --glob '!dist/**' --glob '*.{css,ts,tsx}' \
-  -- '--(color-success|color-warning|color-error|color-info|color-neutral|text-primary|text-secondary|text-muted|surface-page|surface-card|surface-raised|surface-muted|surface-input|border-soft)\\b' src
+  -- '--(color-success|color-warning|color-error|color-info|color-neutral|text-primary|text-secondary|text-muted|surface-page|surface-card|surface-raised|surface-muted|surface-input|border-soft)\b' src
 ```
 
 ### 9.6 Browser evidence record format
