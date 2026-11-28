@@ -19,8 +19,8 @@
   gap: 3px;
   padding: 7px 4px 5px;
   border: 1px solid rgba(255,255,255,.92);
-  border-radius: 20px;
-  background: linear-gradient(155deg, rgba(255,255,255,.96), rgba(247,239,240,.92));
+  border-radius: 50%;
+  background: #fff;
   color: #9e2637;
   box-shadow: 0 5px 18px rgba(48,24,29,.16), inset 0 1px 0 #fff;
   font: inherit;
