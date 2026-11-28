@@ -28,23 +28,25 @@ Discover the workflow, user context, environment and constraints; explore materi
 
 ## Experience system and Journey workstream
 
-The canonical contract is `EXPERIENCE_SYSTEM_SPEC.md`; ADRs live in `ARCHITECTURE.md`. RetailOS follows **Single-App, Multi-Page, Persistent Shell**. The Shell survives Page changes; Desktop keeps a fixed left Dock, Mobile uses its existing adaptive bottom navigation. Pages own their workspace and business domain.
+The canonical Journey/Shell/Page contract is `EXPERIENCE_SYSTEM_SPEC.md`; ADRs remain in `ARCHITECTURE.md`. The implemented pattern is **Single-App, Multi-Page, Persistent Shell**.
 
-- **JRN-00 source audit — complete:** audited main at `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`. Static source audit only; no device/performance claims.
-- **JRN-01 Journey + Shell + Data contract — merged:** PR #211, merge commit `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. Typed destinations, neutral workflow identity, Home return context, push/pop/replace, safe-exit semantics and persistent-shell ownership contract are recorded. No runtime controller or Page Host was included.
-- **JRN-02 Persistent Shell navigation — merged:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`; ShellNavigation is rendered by AuthenticatedAppShell and Home registers its navigation model through the shell context. Existing Desktop fixed-left Dock and Mobile bottom navigation are retained.
-- **JRN-03 source audit — complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`:** source/contract findings and staged gates are recorded in `AUDIT_JRN_03_PAGE_HOST.md`.
-- **JRN-03A Journey Controller + Page Host — merged:** PR #215, merge commit `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`. Exact-head CI #2076 passed on `f79c1f92f3cf6b310a1fd1f7d553ca561a01f0b2` (preflight, TypeScript, production/Pages builds, bundle comparison and 15 Playwright tests).
-- **JRN-03B Stocktake Page — merged and verified:** PR #216, merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`; PR-head CI run `46122314448`, post-merge main CI run `46122598245`, and Pages deployment run `46122598308` succeeded. Preserve the existing Stocktake coordinator, local store, scanner lifecycle and PWA update blocker. See `JRN_03B_STOCKTAKE_PAGE.md`.
-- **JRN-03C Stocktake Import Page — in progress:** branch `feat/jrn-03c-stocktake-import-page`. Register Import as a lazy Page; Home dispatches typed navigation and captures return context; preserve parser precision, conflict/duplicate review, dirty edits, pending confirmations, unpersisted results, IndexedDB history and TXT/ZIP export. Add an owner-scoped exit guard that waits for active operations, stays during unresolved confirmations and requires explicit consent before discarding unsaved in-memory work.
-- **JRN-03D Home ownership removal/integrated QA — not started:** remove any remaining Home-owned workflow mounts after 03B/03C and verify both Page flows.
-- **JRN-04 Global Quick Actions — proposed:** extract Quick Search, Scanner, Settings, Calendar and Notifications from Home-owned state into a persistent Shell-level host, available from every Page; preserve invoking Page context and resource lifecycle. Do this after Page Host exists so the behavior is tested across actual destinations.
-- **JRN-05 Journey restoration, safe exit and lifecycle — proposed:** restore Home context, guard feature-to-feature exits, protect dirty/active work and coordinate with PWA update blockers.
-- **JRN-06 Shared System Data contracts — proposed:** audit existing sources first; define only the minimum neutral repositories/domain services/version signals needed for cross-Page consistency. Preserve offline/local persistence; no backend or global mega-store decision.
-- **JRN-07 Experience System implementation — proposed:** align typography, semantic colors, tokens, component contracts, icons, motion and feedback while preserving Page-level layout and composition freedom.
-- **JRN-08 Cross-Page and cross-platform QA — proposed:** verify persistent Desktop Dock, Mobile navigation, Page transitions, global action return, data consistency, dirty-work protection, reduced motion, keyboard/safe areas and target-device performance. Tablet remains governed by the capability matrix.
+**JRN-01 → JRN-03D core ownership/lifecycle — complete on main**
+- JRN-01 contract (#211), JRN-02 persistent Shell navigation (#212), JRN-03A JourneyController/Page Host (#215), JRN-03B Stocktake Page (#216), JRN-03C Stocktake Import Page (#217).
+- JRN-03D-A/B/C audit, ownership contracts and integrated browser QA (#218–220).
+- JRN-03D-D1 scanner exit/camera handoff (#221), D2 Mobile Feature shortcuts (#222), D3 Shell-owned Module Library (#223).
+- UX-01 Module Library refinement (#224).
+- Current main: `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; main CI #2150 and Pages Build & Deploy #216 passed.
 
-Sequence: JRN-01 merged → JRN-02 persistent navigation Shell → JRN-03 Page Host/two ready workflows → JRN-04 global quick actions → JRN-05 safe exit/lifecycle → JRN-06 shared system data → JRN-07 Experience System → JRN-08 integrated QA. Do not create abstractions before a real consumer requires them.
+**Explicitly deferred**
+- **D4 Page Snapshot/Restore:** postponed. Do not add Page capture/restore, keep-alive, generic snapshot persistence or global state to preserve UI state. First define source-of-truth, freshness/version, invalidation and reconciliation rules, with fixtures for data changes while a Page is inactive.
+- **D5 overlay visual consistency:** separate UX follow-up; not required to close the current ownership/lifecycle scope.
+- Physical-device acceptance remains separate from browser/CI evidence.
+
+**Remaining roadmap**
+- JRN-04 Global Quick Actions: proposed; no extraction of Quick Search, Scanner, Settings, Calendar or Notifications is implied.
+- JRN-06 shared System Data: audit source contracts first; no backend/realtime/global-store decision.
+- JRN-07 Experience System: proposed; visual direction remains open and owner-approved per scope.
+- JRN-08 broader cross-platform/device QA remains separate from completed browser integration coverage.
 
 ## Technical invariants
 Preserve auth/session, module registry and stable IDs, snapshot/cache/offline contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision/conflict handling, overlay lifecycle, PWA update-safety and GitHub Pages deployment boundaries. Scanner stabilization is closed; reopen only for a reproducible defect, measured bottleneck or new requirement.
