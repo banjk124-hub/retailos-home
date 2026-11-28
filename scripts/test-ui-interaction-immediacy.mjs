@@ -14,7 +14,7 @@ assert.match(home, /function ModuleLoadingSurface[\s\S]*role="status" aria-live=
 assert.equal((home.match(/fallback=\{<ModuleLoadingSurface/g) ?? []).length, 4);
 assert.match(app, /AuthenticatedAppShell/, 'App delegates authenticated loading composition to the shell.');
 assert.match(shell, /<ActivePageHost/);
-assert.match(pageHost, /home-loading-surface[\s\S]*aria-busy="true"/);
+assert.match(pageHost, /journey-page-loading[\s\S]*aria-busy="true"/);
 assert.match(home, /const MemoizedBarcodeScanner = memo\(/);
 assert.match(home, /const MemoizedStocktakeModule = memo\(/);
 assert.match(home, /const MemoizedStocktakeImportModule = memo\(/);
