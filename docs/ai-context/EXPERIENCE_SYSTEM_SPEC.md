@@ -1,7 +1,8 @@
 # RetailOS Experience System Specification
 
-**Status:** Proposed architecture and interaction contract; owner review required before runtime migration or visual-system lock-in.  
-**Source baseline audited:** main at e2976d807ad9bc596ec38dd5852ddadbc48d2f49 (2026-11-28).  
+**Status:** Architecture contract with implemented Journey/Shell foundations; broader Experience System and visual-system decisions remain proposed.  
+**Current implementation baseline:** main at `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99` (2026-11-28).  
+**Journey closeout:** JRN-01–JRN-03D core ownership/lifecycle scope merged; see `JRN_03D_A_HOME_OWNERSHIP_AUDIT.md`.  
 **Scope:** application journeys, destination/page ownership, component boundaries, icon semantics, motion, feedback, lifecycle and future feature onboarding.
 
 This is the experience-system umbrella. It does not replace business-domain contracts, platform capability policy, PWA release policy or feature-specific workflows.
@@ -24,29 +25,29 @@ RetailOS should have one coherent experience system, not one giant screen and no
 
 ## 2. Source baseline and audit findings
 
-### 2.1 Confirmed current journey
+### 2.1 Current implemented journey (main baseline above)
 
     App
     ├── no session -> LoginExperience
-    └── valid session -> AuthenticatedAppShell
-        ├── IdentityJourneyView
-        └── HomeScreen
-            ├── Home / Module Library / Activity
-            ├── Settings Hub / Scanner Preferences
-            ├── quick Scanner / Quick Search / Lookup Result
-            ├── Calendar / Notifications / Notice detail
-            ├── Module Library sheet
-            ├── StocktakeModule (currently rendered inside HomeScreen)
-            └── StocktakeImportModule (currently rendered inside HomeScreen)
+    └── AuthenticatedAppShell (persistent)
+        ├── JourneyController
+        ├── Shell navigation + Shell-owned Module Library/Feature shortcuts
+        └── ActivePageHost (active Page only)
+            ├── Home Page
+            ├── Stocktake Page (lazy)
+            └── Stocktake Import Page (lazy)
 
-Confirmed source ownership:
-- App.tsx owns employee session, authentication handoff, login/identity/home, logout, boot-health and app-transition PWA blocker.
-- AuthenticatedAppShell.tsx composes the authenticated scene, Identity and lazy Home. It is not yet a full destination/page controller.
-- HomeScreen.tsx owns Home navigation and many independent overlay/feature states.
-- Stocktake and Stocktake Import are lazy-loaded, but are still rendered as children of HomeScreen and opened/closed by Home-owned booleans.
-- Settings, Scanner, quick lookup, calendar and notices are currently lazy/conditional surfaces rendered through Home. This is the existing implementation, not the target ownership: global quick actions must be reachable from the persistent App Shell on every Page.
-- Home navigation currently represents sections plus a Settings action; it is not a general feature-page router.
-- Existing Home state persistence includes active section, search and scroll position. Feature state must not be assumed to survive unmount unless its own store guarantees it.
+Current ownership:
+- App owns authentication, employee session and authenticated handoff.
+- AuthenticatedAppShell owns persistent Shell composition and renders active Shell navigation outside ActivePageHost.
+- JourneyController owns typed destination stack, push/pop/replace and active Exit Guard coordination.
+- ActivePageHost resolves the lazy Page registry and mounts the active Page; inactive Pages unmount.
+- Home owns Home workspace state and typed Module Library launch; it does not mount Stocktake or Stocktake Import.
+- StocktakePage and StocktakeImportPage mount the existing feature coordinators and register owner-scoped Shell navigation.
+- Shell-owned Feature shortcuts and Module Library launch through JourneyController; registry readiness remains authoritative.
+- Module Library presentation is platform-specific: Desktop uses a compact group/tree flyout connected to the Dock; Mobile uses the full-height grouped workspace. Both consume the same module registry/library definitions.
+- Home return context is ephemeral section/search/scroll state only. Business state remains feature-owned and recovers through each feature's persistence.
+- Global Quick Actions extraction and broader shared-data contracts remain future work, not part of this implemented Journey slice.
 
 ### 2.2 Current shared foundations
 
@@ -56,14 +57,13 @@ Confirmed source ownership:
 - Shared PWA update-safety blockers, camera lease/session and body-scroll-lock services already protect important lifecycle boundaries.
 - Stocktake and Stocktake Import have separate feature coordinators and presentation components. Their business operations must remain feature-owned.
 
-### 2.3 Confirmed architecture gaps
+### 2.3 Remaining architecture gaps
 
-1. There is no general authenticated destination model for Home and dedicated feature pages.
-2. HomeScreen owns unrelated state domains and mounts the two ready operational modules inside its component tree.
-3. Motion has shared tokens and wrappers, but local CSS transitions and per-feature animation rules remain; wrappers do not prove centralized transition policy.
-4. Icon semantics are mapped in registries, but direct Lucide imports and multiple render paths still coexist.
-5. There is no canonical screen-by-screen Journey catalog defining entry, exit, return, state restoration, loading/error and resource cleanup.
-6. Existing component governance is sound, but the experience-level contract tying journey, component, icon, motion and feedback together is not explicit.
+1. Global Quick Actions are not yet extracted into a Shell-level host across all Pages.
+2. Shared System Data repositories/change signals and data reconciliation contracts remain proposed; no backend/realtime/global-store decision has been made.
+3. A broader Experience System contract for tokens, icon/motion semantics and cross-feature feedback remains proposed and requires scoped owner approval.
+4. Overlay visual consistency is a separate UX follow-up, not a prerequisite for the completed Journey ownership/lifecycle workstream.
+5. Physical-device acceptance remains separate from browser/CI evidence.
 
 These are architecture findings, not evidence that the current two ready workflows are unusable. The owner-confirmed product scope is that Stocktake and Stocktake Import are the two operationally ready modules; other registry items may remain placeholders and must not be treated as committed feature roadmaps.
 
@@ -178,7 +178,7 @@ Never create a second route registry that duplicates the stable module/workflow 
 
 ### 3.5 Canonical Journey Contract (JRN-01)
 
-The authenticated navigation model is defined in `src/platform/journey/journey.types.ts`. Stable workflow identity is owned by `src/shared/domain/retailModule.ts`; Home's `moduleRegistry.ts` re-exports the type and IDs for compatibility. It is a typed contract and pure destination identity layer; it is not yet a mounted router or a navigation controller.
+The authenticated navigation model is defined in `src/platform/journey/journey.types.ts`. Stable workflow identity is owned by `src/shared/domain/retailModule.ts`; Home's `moduleRegistry.ts` re-exports the type and IDs for compatibility. It is the typed destination identity contract consumed by the implemented JourneyController and ActivePageHost; navigation is state-driven and is not a URL router.
 
 **Ownership boundary**
 - `App.tsx` remains the only owner of authentication, employee session, Login → Identity → authenticated handoff, logout and app-level PWA lifecycle.

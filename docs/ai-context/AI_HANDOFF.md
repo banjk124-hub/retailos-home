@@ -1,57 +1,48 @@
 # Current handoff — RetailOS
 
-**Repository:** banjk124-hub/retailos-home  
-**JRN-03 audit baseline:** `b30505a86511909d94406bfd8467be4ec204c620` (main before documentation-only reconciliation)  
-**Latest runtime merge:** PR #216 — JRN-03B Stocktake Page; merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`; PR #216 exact-head CI run `46122314448` passed; post-merge main CI run `46122598245` passed; GitHub Pages build/deploy run `46122598308` succeeded.  
-**Current branch:** `feat/jrn-03c-stocktake-import-page`, based on verified `main` at `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`.  
-**Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
+**Repository:** `banjk124-hub/retailos-home`  
+**Current main:** `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`  
+**Latest merged work:** PR #224 UX-01 — Mobile Module Library refinement.  
+**Verification:** main CI #2150 (run `46145238448`) passed; GitHub Pages Build & Deploy #216 succeeded.  
+**Documentation branch:** `docs/jrn-03d-technical-closeout` (documentation-only; pending review/merge).
 
 ## Current owner direction
 
-- No global visual language is selected. Explore and obtain approval for experience-specific creative decisions; do not revive superseded M0 direction.
-- Shared business logic/data/results remain common where the underlying operation is shared. Desktop and Mobile own independent presentation composition and navigation.
-- Default scope for an unspecified workflow is Desktop + Mobile.
-- Camera barcode scanning and camera-only copy/presentation are Mobile-only. Manual barcode lookup remains shared.
-- Tablet remains review-required; viewport width is responsive input, not product capability policy.
+- No global visual language is selected; creative decisions remain scoped and require explicit approval.
+- Share domain rules/data contracts where operations are equivalent; allow platform-specific presentation.
+- Preserve feature-owned persistence and lifecycle. Do not create global state or Page caching without a demonstrated contract.
 
-Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md](./ARCHITECTURE.md) ADR-030 and [PLATFORM_CAPABILITY_MATRIX.md](./PLATFORM_CAPABILITY_MATRIX.md). The experience/Journey umbrella is [EXPERIENCE_SYSTEM_SPEC.md](./EXPERIENCE_SYSTEM_SPEC.md); it is proposed and does not authorize runtime migration.
+## Journey implementation — JRN-01 to JRN-03D core scope complete
 
-## Verified repository state
+PR #211 typed Journey contract; #212 persistent Shell navigation; #215 JourneyController/ActivePageHost; #216 Stocktake Page; #217 Stocktake Import Page; #218–220 ownership audit/contracts/integrated browser QA; #221 scanner exit/camera handoff; #222 Mobile Feature shortcuts; #223 Shell Module Library; #224 UX-01 refinement.
 
-- PA-02 capability matrix: merged in PR #187; PCM-01–06 documentation reconciliation merged in PR #196 at `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`.
-- UI-04A–F feature presentation migration and cross-feature closure: merged; see [UI_UX_PHASE_04_FEATURE_PRESENTATION.md](./UI_UX_PHASE_04_FEATURE_PRESENTATION.md).
-- SH-01B/C/D: merged in PR #193. Authenticated shell composition is separated from App auth/session ownership; Desktop/Mobile presentation roots are explicit; Tablet remains a compatibility fallback; Home business state is shared.
-- PR #195: closes the post-SH-01 Stocktake camera entry-point policy gap. Home and Stocktake camera surfaces enforce Mobile-only product policy plus runtime support; scanner preferences have independent Mobile-only policy; manual lookup remains shared.
-- SH-01 exact-head CI #1948 passed: preflight, TypeScript, production/Pages build, bundle comparison and 10 Playwright tests.
-- PR #195 exact-head CI #1968 passed: preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence.
-- No physical-device acceptance is claimed. PW-01 remains open.
-- CSS-01 remains separate; SH-01 did not perform a broad CSS ownership migration.
-- Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
+Current ownership:
+- App: authentication, employee session and authenticated handoff.
+- Authenticated Shell: persistent application chrome, active Shell navigation, Feature shortcuts and Module Library.
+- JourneyController: typed Page stack, push/pop/replace and active Exit Guard coordination.
+- ActivePageHost: lazy Page resolution; only active Page mounts.
+- Home: Home workspace and typed feature launcher; return context is ephemeral section/search/scroll only.
+- Stocktake and Import Pages: mount existing feature coordinators; feature state, persistence, resource lifecycle, PWA blockers and Exit Guards remain feature-owned.
+- Module registry/readiness remains the single source of truth. Desktop Library opens as a compact flyout attached to the left Dock: groups first, then each group's function tree. Mobile keeps its separate full-height library workspace.
 
-## Current Journey direction
+## Explicit deferrals
 
-- JRN-00 source audit is complete. App owns auth/session and Login → Identity → authenticated handoff. HomeScreen previously owned both feature mounts and navigation rendering.
-- JRN-01 is merged in PR #211 at `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. It defines authenticated destination identity, Home return context, push/pop/replace, safe-exit semantics and the Single-App, Multi-Page, Persistent Shell architecture.
-- JRN-02 is merged in PR #212 at `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through an owner-scoped shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen at the authenticated Shell boundary.
-- Post-merge evidence: CI #2047 (PR head) and #2048 (main) passed, each with 15 Playwright tests; docs CI #2049 and main CI #2050 passed; Pages deployments #204 and #205 succeeded. Physical-device QA is not implied.
-- JRN-03 source audit is complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`; see [AUDIT_JRN_03_PAGE_HOST.md](./AUDIT_JRN_03_PAGE_HOST.md).
-- JRN-03A merged as PR #215 at `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`; exact-head CI #2076 passed on `f79c1f92f3cf6b310a1fd1f7d553ca561a01f0b2` (preflight, TypeScript, production/Pages builds, bundle comparison, 15 Playwright tests).
-- JRN-03B is merged and verified in PR #216 at `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`; exact PR-head CI, post-merge main CI and Pages deployment all passed. See [JRN_03B_STOCKTAKE_PAGE.md](./JRN_03B_STOCKTAKE_PAGE.md).
-- JRN-03C is in progress on `feat/jrn-03c-stocktake-import-page`: Import is moving from Home-owned overlay to a lazy guarded Page. Preserve parsing precision, conflict review, dirty edits, pending confirmations, unpersisted results, IndexedDB history and TXT/ZIP output. See [JRN_03C_STOCKTAKE_IMPORT_PAGE.md](./JRN_03C_STOCKTAKE_IMPORT_PAGE.md).
-- JRN-03 does not include Global Quick Actions. JRN-04 remains the later workstream for Quick Search, Scanner, Settings, Calendar and Notifications at Shell level.
-- Stocktake and Stocktake Import remain the only operationally ready feature workflows. Their business logic, persistence and offline behavior are protected.
-- One Experience System governs global semantics; each Page owns its layout, density and workflow-specific composition. Shared system data must not become a global mega-store.
-- Do not select a backend/database or move to production/shared Gmail in this workstream.
+- **D4 Page Snapshot/Restore postponed.** No capture/restore, keep-alive, snapshot store or generic Page-state persistence exists. Revisit only after source-of-truth, freshness/version, invalidation and reconciliation semantics can be tested against upstream data changes.
+- **D5 overlay visual consistency** is a separate UX follow-up, not part of this closeout.
+- Physical iOS/iPadOS and Android PWA acceptance remains unverified; browser tests do not replace device testing.
 
-## Next technical gates
+## Other open gates
 
-1. **JRN-03C:** finish Import Page guard/layout/return-context tests and merge after exact-head CI + browser QA. Then JRN-03D removes any remaining Home-owned workflow mounts and performs cross-Page integration QA.
-2. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
-3. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
-4. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.
+- PW-01 physical-device acceptance remains deferred.
+- CSS-01 retained cleanup debt is documented in `CSS_01_CSS_OWNERSHIP_MIGRATION.md` and `AUDIT_03E_CSS_OWNERSHIP_CLOSURE.md`.
+- JRN-04 Global Quick Actions, JRN-06 shared System Data and JRN-07 Experience System remain separate proposed work.
 
-These are separate workstreams; do not combine them into a broad UI rewrite. Preserve auth/session, stable IDs, data snapshot/cache contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision, overlay lifecycle and PWA update-safety.
+## Documentation authority
 
-## Governance
+- `IMPLEMENTATION_STATUS.md`: verified implementation state.
+- `ROADMAP.md`: future work and deferrals.
+- `EXPERIENCE_SYSTEM_SPEC.md`: Journey/Shell/Page contract.
+- `JRN_03D_A_HOME_OWNERSHIP_AUDIT.md`: closeout evidence.
+- `INDEX.md`: selective documentation entry point.
 
-[IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) is the verified state source; [ROADMAP.md](./ROADMAP.md) owns future work. This handoff is a concise continuation point, not a competing technical contract. Verify live GitHub state before changing volatile status. Merge, deployment and production transfer remain separate approval gates.
+Merge, deployment and production transfer remain separate approval gates.

@@ -1,6 +1,8 @@
 # JRN-03C — Stocktake Import Page Extraction
 
-**Status:** Implementation in progress on `feat/jrn-03c-stocktake-import-page`  
+**Status:** Merged and verified  
+**PR:** #217  
+**Merge:** `9e1c999bd27ab280e00cb1143b68f0865829c0f7`  
 **Base:** JRN-03B merge `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`  
 **Scope:** Move Stocktake Import mount/entry ownership from the Home overlay to the authenticated Journey Page Host.  
 **Out of scope:** Parser/OOXML precision redesign, merge/conflict rule changes, IndexedDB schema migration, output format changes, global quick actions, backend adoption, Home's other overlays, JRN-03D cross-Page cleanup.

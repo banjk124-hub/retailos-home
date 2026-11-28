@@ -1,143 +1,64 @@
-# JRN-03D-A — Home Ownership Audit
+# JRN-03D — Journey ownership and lifecycle closeout
 
-**Status:** Source audit complete; no runtime source change authorized by this slice.  
-**Audited branch:** `main`  
-**Audited baseline:** `9e1c999bd27ab280e00cb1143b68f0865829c0f7` (JRN-03C merge commit).  
-**Scope:** Home ownership and dependencies related to Stocktake and Stocktake Import after JRN-03B/JRN-03C.  
-**Out of scope:** JRN-04 Global Quick Actions; moving Settings, Scanner, Calendar, Notifications or Quick Search into Shell; business logic/persistence changes; visual redesign; CSS cleanup; Journey Controller redesign; physical-device acceptance.
+**Status:** Core ownership/lifecycle scope complete on `main`; Page Snapshot/Restore postponed.  
+**Closeout baseline:** `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`  
+**Verification:** main CI #2150 (run `46145238448`) passed; Pages Build & Deploy #216 succeeded.  
+**Scope:** Home/Feature Page ownership, Journey navigation lifecycle, Shell navigation handoff, scanner exit handoff, Mobile Feature shortcuts and Shell-owned Module Library.  
+**Out of scope:** Page Snapshot/Restore, global Quick Actions extraction, shared System Data/realtime architecture, visual-system redesign and physical-device certification.
 
-## 1. Executive finding
+## 1. Delivered slices
 
-**The two Home-owned workflow mounts have already been removed.** The current `HomeScreen` does not import, lazy-load, memoize or render `StocktakeModule` or `StocktakeImportModule`. Their feature roots are now mounted only by their dedicated Journey Pages.
+| Slice | Delivery | Result |
+|---|---|---|
+| JRN-03C | PR #217 — `9e1c999bd27ab280e00cb1143b68f0865829c0f7` | Import is a guarded lazy Page; parser, history, conflict/edit and TXT/ZIP contracts remain feature-owned |
+| D-A | PR #218 | Source audit confirms Home no longer mounts either feature coordinator |
+| D-B | PR #219 | Preflight contracts protect typed launch, return context, Page navigation registration and Shell ownership |
+| D-C | PR #220 | Integrated Playwright covers Home → Stocktake → Home → Import → Home, context restoration, feature-state recovery and Shell owner handoff |
+| D1 | PR #221 — `575e5e3d58da50d2561262b715e69951c78f9712` | Stocktake scanner one-shot camera handoff and bounded presentation fallback; close still requires camera release/disposal |
+| D2 | PR #222 — `8247f76a98d4977bcca7489b7e0fa344a0012ad5` | Mobile Feature Pages receive Shell-owned Home and Module Library shortcuts through JourneyController |
+| D3 | PR #223 — `fa85395acfb9c949771114cb9106bd0d827623fe` | Shell-owned grouped/searchable Module Library with focus, Escape and scroll-lock lifecycle |
+| UX-01 | PR #224 — `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99` | Refined Mobile Library grouping, workspace, safe areas and module-row legibility without changing registry/Journey contracts |
+| Desktop Library tree | PR #225 | Adds the missing Desktop Dock entry and compact connected flyout: group navigation first, nested function tree second; Mobile presentation remains independent |
 
-Therefore JRN-03D's original phrase “remove any remaining Home-owned feature mounts” is already satisfied by the merged JRN-03B/JRN-03C implementation. A further mount-removal refactor in Home would be redundant and would add risk without changing ownership.
+## 2. Final ownership model
 
-Home still contains a deliberately narrow **entry adapter**: it selects one of the two stable module IDs from Module Library, captures ephemeral Home return context, and dispatches a typed Journey `push`. This is navigation initiation, not ownership of either workflow. Keep it until a separately approved entry-point architecture replaces it.
+- **App:** authentication, employee session and authenticated handoff.
+- **Authenticated Shell:** persistent application chrome, active Shell navigation rendering, Feature shortcuts and Module Library.
+- **JourneyController:** typed destination stack, push/pop/replace and active Page Exit Guard coordination.
+- **ActivePageHost:** resolves the lazy Page registry and mounts only the active Page.
+- **Home:** owns Home workspace and typed launch adapter. Captures only ephemeral `HomeReturnContext` (section, search query, scroll position); does not mount Feature Pages or own their business state.
+- **Stocktake / Stocktake Import Pages:** register owner-scoped Shell navigation, return via Journey `pop`, and mount existing feature coordinators.
+- **Feature coordinators:** retain domain state, local/IndexedDB persistence, scanner/resource lifecycle, PWA blockers and feature-specific Exit Guards.
+- **Module registry:** remains the single source of truth for module identity, readiness and Library metadata.
 
-**Recommendation:** Do not make a source cleanup solely to remove the remaining Journey references from Home. Proceed to JRN-03D-B only as a bounded contract/test hardening step if the audit's acceptance gaps are confirmed; otherwise mark the ownership-removal subtask satisfied and focus JRN-03D-C on integrated cross-Page runtime regression.
+Inactive Pages unmount. Journey stack is navigation context, not business persistence. Feature state recovers through each feature's persistence contract.
 
-## 2. Source evidence and current ownership
+## 3. Safety boundaries
 
-| Concern | Current source | Observed ownership | Audit result |
-|---|---|---|---|
-| Authenticated destination host | `src/platform/shell/AuthenticatedAppShell.tsx`, `src/platform/journey/ActivePageHost.tsx` | Shell owns persistent host; ActivePageHost resolves active destination | Correct |
-| Journey destination/readiness | `src/platform/journey/journeyPageRegistry.tsx` | Lazy Page resolvers plus `MODULE_REGISTRY.availability === 'ready'` gate | Correct |
-| Journey state/exit dispatch | `src/platform/journey/journeyController.ts` | Stack, push/pop/replace, active exit guard | Correct |
-| Home workspace | `src/features/home/HomeScreen.tsx` | Home sections, Home UI state, Module Library, Home-local utilities | Correct boundary |
-| Home feature entry | `HomeScreen.tsx` — `launchFeaturePage` | Captures section/search/scroll and dispatches typed push | Valid adapter; not workflow ownership |
-| Stocktake Page | `src/features/stocktake/StocktakePage.tsx` | Registers owner-scoped Shell navigation; dispatches pop; mounts StocktakeModule | Correct |
-| Stocktake coordinator | `src/features/stocktake/components/StocktakeModule.tsx` | Session, zones, entries, scanner lifecycle, local store, PWA blocker and exit guard | Feature-owned; preserve |
-| Import Page | `src/features/stocktake-import/StocktakeImportPage.tsx` | Registers owner-scoped Shell navigation; dispatches pop; mounts StocktakeImportModule | Correct |
-| Import coordinator | `src/features/stocktake-import/components/StocktakeImportModule.tsx` | Parser, validation, conflicts, dirty edits, history, persistence, export, PWA blocker and exit guard | Feature-owned; preserve |
-| Persistent navigation | `src/platform/shell/shellNavigationContext.tsx` | Active owner registers navigation intent; Shell renders it outside Page subtree | Correct |
-| Home return state | `journey.types.ts`, `journeyController.ts`, `ActivePageHost.tsx`, `useHomeNavigation.ts` | Journey stack carries only active section, search query and scroll position | Correct; no business data in stack |
+Preserve auth/session, stable `RetailModuleId`, module readiness, Home return context limited to section/search/scroll, Stocktake/Import persistence and output, camera lease/session close-release-disposal, owner-scoped Shell navigation and Exit Guard cleanup, separate PWA update blockers, lazy Page boundaries and Pages deployment configuration.
 
-### 2.1 Home no longer owns feature mounts
+No generic Page snapshot store, keep-alive cache, global feature-state container or cross-Page business-data store was added.
 
-The current `HomeScreen.tsx` imports `useJourneyController`, but does not import either feature coordinator or either Page component. The Home render tree has no Stocktake/Import feature mount and no feature-specific open boolean, close callback or body-scroll-lock condition.
+## 4. Deferred decisions
 
-The only remaining feature-specific Home code is the typed launcher called from the selected Module Library item:
+### D4 — Page Snapshot/Restore
 
-1. Read current Home UI state through `captureHomeUiState()`.
-2. Reduce it to `HomeReturnContext`: `activeSection`, `searchQuery`, `scrollY`.
-3. Close the selected library surface.
-4. Dispatch `{ kind: 'push', destination: { kind: 'feature', moduleId }, homeReturnContext }`.
-5. If the controller rejects navigation, restore the selected library surface.
+**Postponed by owner. Not implemented.**
 
-This adapter should remain Home-owned because the launch action originates in Home's Module Library. It does not own feature state, persistence, parser behavior, scanner state or feature lifecycle.
+Before reconsideration, establish source of truth, freshness/version signals, invalidation, reconciliation when upstream data changes while a Page is inactive, reload/recalculation versus UI-state restoration, offline/delayed/sync-failure behavior, and test fixtures that prove the result. Do not add Page snapshot persistence, keep-alive or generic restoration infrastructure before this work and explicit approval.
 
-### 2.2 Page and Shell ownership
+### D5 — Overlay visual consistency
 
-Both Page wrappers use the same minimal pattern:
+Not included in this ownership/lifecycle closeout. Track separately only if a concrete inconsistency remains after reviewing the current implementation.
 
-- Obtain the Journey controller.
-- Implement Home return as `dispatch({ kind: 'pop' })`.
-- Register their own navigation model with owner IDs `stocktake` and `stocktake-import`.
-- Mount their existing feature coordinator unchanged.
+## 5. Evidence and limitations
 
-The persistent Shell navigation is rendered by `AuthenticatedAppShell` outside `ActivePageHost`. The active Page supplies navigation configuration through an owner-scoped registration. The Desktop Dock therefore remains a Shell concern and must not be moved into individual Pages as part of JRN-03D.
+PR #217 merged Import Page extraction; #218 source audit; #219 ownership contracts; #220 integrated browser QA; #221–223 scanner handoff, Mobile shortcuts and Shell Module Library; #224 UX-01 refinement. Main CI #2150 passed on the closeout baseline and Pages Build & Deploy #216 succeeded. Browser/CI evidence does not certify physical iOS/iPadOS/Android acceptance; PW-01 remains separate.
 
-### 2.3 Exit guard and resource lifecycle
+## 6. Closure
 
-Both feature coordinators register an owner-scoped Journey exit guard. Stocktake blocks exit while data work is busy, scanner is active, confirmation is pending, or uncommitted inputs need user consent. Import waits for active parse/save/history/export work, blocks while decisions are pending, and protects dirty edits or results not persisted to history.
+**JRN-03D core ownership/lifecycle objective: CLOSED.**
 
-The guard is registered by the active feature coordinator, not by Home. The existing PWA update blocker remains separate. Do not duplicate either mechanism in Home or Journey Page wrappers.
+No further Home mount-removal refactor is required. Home's typed launcher is intentional; feature coordinators remain feature-owned; Shell navigation and Module Library are Shell-owned; integrated browser coverage is merged.
 
-## 3. Residual Home responsibilities — explicitly not JRN-03D
-
-Home still owns Settings, Scanner/Scanner Settings, manual Barcode Lookup, Calendar, Module Library, snapshot notices, notifications, toast feedback and Home presentation state. These are Home-local/global-action candidates, not remaining Stocktake/Import workflow mounts.
-
-The roadmap already assigns Quick Search, Scanner, Settings, Calendar and Notifications extraction to **JRN-04 Global Quick Actions**. Do not opportunistically move them into Shell during JRN-03D. Module Library remains the current Home entry point for the two ready workflows.
-
-## 4. Findings and risk assessment
-
-| ID | Finding | Severity | Required handling |
-|---|---|---|---|
-| A-01 | No remaining Home mount for Stocktake or Import found in current Home source and code-search results | Pass | No deletion/refactor required |
-| A-02 | Home retains a typed launcher and Home return-context capture | Intentional | Keep; verify acceptance/rejection and context restoration |
-| A-03 | Page wrappers own Shell navigation registration and return via Journey pop | Pass | Preserve |
-| A-04 | Shell navigation registration is a single active-owner slot | Review-required | Integrated runtime test must prove owner handoff on Home ↔ Stocktake ↔ Import and no stale navigation |
-| A-05 | Journey controller holds a single active exit-guard registration | Review-required | Test guard replacement/unregistration during Page transitions; do not redesign without a failing reproduction |
-| A-06 | Home's Module Library selection is the current entry route | Intentional | Test both ready modules from Home; unavailable modules must remain gated |
-| A-07 | Home, Stocktake and Import unmount/remount across Journey transitions | Lifecycle-sensitive | Verify Home return context and feature state recovery from feature-owned persistence |
-| A-08 | Old phase/status documents still describe JRN-03C as in progress | Documentation debt | Reconcile canonical status in a separate status-doc update after this audit is accepted |
-
-No source-level defect was established by this static audit. A-04 and A-05 are not asserted defects; they are integration acceptance risks requiring browser/runtime evidence.
-
-## 5. Existing contract coverage discovered
-
-The repository contains focused source-contract scripts that already protect important boundaries:
-
-- `scripts/test-jrn-03b-stocktake-page.mjs`
-- `scripts/test-jrn-03c-stocktake-import-page.mjs`
-- `scripts/test-jrn-03a-controller-page-host.mjs`
-- `scripts/test-jrn-03a-controller-runtime.mjs`
-- `scripts/test-ui-interaction-immediacy.mjs`
-- `scripts/test-home-cache-batching.mjs`
-- `scripts/test-bundle-boundaries.mjs`
-
-These contracts assert that Home does not mount the feature coordinators, the two feature Pages exist in the registry, the typed launcher is retained, and the feature coordinators register their exit guards. Prior JRN-03B/03C acceptance records also describe browser checks for their respective workflows.
-
-This audit did not execute the repository preflight or Playwright suite. No new runtime result is claimed here.
-
-## 6. JRN-03D acceptance plan after audit
-
-### JRN-03D-B — bounded ownership contract hardening
-
-Only add or adjust tests where current coverage is insufficient:
-
-1. Assert Home does not import or render either feature coordinator or either feature Page.
-2. Assert Home launcher uses canonical `RetailModuleId` values and typed Journey push; no direct feature component import.
-3. Assert failed/blocked push restores the Module Library surface without losing the captured Home search/section/scroll context.
-4. Assert each Page registers a unique owner ID and returns through Journey pop.
-5. Assert the persistent Shell navigation host remains outside ActivePageHost and retains its owner-scoped handoff behavior.
-6. Avoid production source changes unless a reproducible failure demonstrates a real ownership defect.
-
-### JRN-03D-C — integrated browser/runtime QA
-
-Add or verify Playwright coverage for:
-
-- Home → Stocktake → Home, including restored Home section/search/scroll context.
-- Home → Stocktake Import → Home, including restored Home context.
-- Stocktake → Import and Import → Stocktake, only through a supported Home-return/re-entry path; each exit guard must be honored.
-- Shell navigation owner handoff: Home → Stocktake → Home → Import → Home; no stale Home callbacks or blank Dock.
-- Dirty/active/pending state blocks or confirms exit according to each feature's guard.
-- Feature state is recovered from its own persistence after leaving and re-entering; Journey stack must not become business storage.
-- Desktop fixed-left Dock remains persistent; Mobile navigation remains adaptive.
-- No console/page errors, failed requests or horizontal overflow at the established responsive viewports.
-- Lazy Page/chunk boundaries remain intact; no unnecessary initial-bundle growth.
-
-### JRN-03D-D — closure
-
-Run exact-head preflight, TypeScript, production and Pages builds, bundle comparison, and the complete responsive/runtime Playwright suite. Update the canonical Roadmap, Implementation Status and AI Handoff only after the final evidence is available. Merge and Pages deployment remain separate gates. Physical-device QA is not inferred from browser emulation.
-
-## 7. Audit conclusion
-
-**JRN-03D-A: PASS — audit complete.**
-
-The original Home-owned Stocktake and Stocktake Import mounts were already removed by JRN-03B and JRN-03C. Home retains only the correct Module Library launch adapter and ephemeral return-context capture. Feature coordinators and guards are feature-owned; navigation rendering is Shell-owned.
-
-**Do not perform redundant component extraction.** The remaining value of JRN-03D is integrated lifecycle and cross-Page QA, plus narrowly targeted contract hardening where coverage is demonstrably missing. If those tests pass without source changes, close the ownership-removal portion as already satisfied and proceed to JRN-03D-D documentation/verification rather than manufacturing a refactor.
-
-**Audited baseline:** `9e1c999bd27ab280e00cb1143b68f0865829c0f7`.  
-**Evidence type:** GitHub source inspection and code-search results only; no local build, CI rerun, browser session or physical-device QA performed in this audit slice.
+Future work must be separately scoped: D4 data/state lifecycle audit before any Page Snapshot/Restore proposal; D5 UX review only if a concrete issue exists; JRN-04 Global Quick Actions and broader architecture remain separate.

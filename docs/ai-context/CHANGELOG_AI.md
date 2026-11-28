@@ -56,3 +56,14 @@ Use append-only entries. Each entry must say what was actually changed and teste
 - Behavior: instructions and context only; no application code changed by this pack.
 - Checks run: file structure reviewed by generation process; no application build is implied.
 - Unverified: current repository state and whether the previous architecture patch has been applied locally.
+
+---
+
+### 2026-11-28 — JRN-03D technical documentation closeout
+
+- Intent: reconcile technical documentation with the merged Journey/Shell/Page implementation and close the JRN-03D ownership/lifecycle workstream without speculative state infrastructure.
+- Files: `IMPLEMENTATION_STATUS.md`, `ROADMAP.md`, `AI_HANDOFF.md`, `INDEX.md`, `EXPERIENCE_SYSTEM_SPEC.md`, `JRN_03B_STOCKTAKE_PAGE.md`, `JRN_03C_STOCKTAKE_IMPORT_PAGE.md`, `JRN_03D_A_HOME_OWNERSHIP_AUDIT.md`, `SESSION_LOG.md` and this log.
+- Behavior: documentation-only. Records PR #217–#224 outcomes, current ownership, integrated browser evidence and deferred D4/D5 boundaries. No application runtime or data contract changed.
+- Verification evidence: main `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; main CI #2150 passed; Pages Build & Deploy #216 succeeded.
+- Unverified: physical iOS/iPadOS and Android PWA acceptance remains separate; documentation CI on this branch is pending.
+- Risks / rollback: revert this documentation-only change if any statement conflicts with source or owner direction; no application runtime rollback is required.
