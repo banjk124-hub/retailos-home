@@ -197,12 +197,25 @@ function styleDifferences(before: any, after: any) {
   const differences: Array<{ target: string; property: string; before: string; after: string }> = [];
   for (const target of ['html', 'body', 'button', 'wrappers']) {
     for (const property of Object.keys(before[target])) {
-      if (before[target][property] !== after[target][property]) {
+      const beforeValue = before[target][property];
+      const afterValue = after[target][property];
+      if (beforeValue && afterValue && typeof beforeValue === 'object' && typeof afterValue === 'object') {
+        for (const nestedProperty of Object.keys(beforeValue)) {
+          if (beforeValue[nestedProperty] !== afterValue[nestedProperty]) {
+            differences.push({
+              target,
+              property: `${property}.${nestedProperty}`,
+              before: beforeValue[nestedProperty],
+              after: afterValue[nestedProperty],
+            });
+          }
+        }
+      } else if (beforeValue !== afterValue) {
         differences.push({
           target,
           property,
-          before: before[target][property],
-          after: after[target][property],
+          before: beforeValue,
+          after: afterValue,
         });
       }
     }
