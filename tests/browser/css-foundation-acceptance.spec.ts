@@ -129,7 +129,11 @@ async function sampleGlobalStyles(page: Page) {
     const body = getComputedStyle(document.body);
     const button = getComputedStyle(document.querySelector('button')!);
     return {
-      html: { scrollBehavior: html.scrollBehavior, minWidth: html.minWidth },
+      html: {
+        scrollBehavior: html.scrollBehavior,
+        minWidth: html.minWidth,
+        backgroundColor: html.backgroundColor,
+      },
       body: {
         minHeight: body.minHeight,
         fontSize: body.fontSize,
@@ -144,6 +148,14 @@ async function sampleGlobalStyles(page: Page) {
         fontSize: button.fontSize,
         lineHeight: button.lineHeight,
       },
+      homePresentationRoot: (() => {
+        const element = document.querySelector('.home-presentation-root');
+        if (!element) return null;
+        const style = getComputedStyle(element);
+        return {
+          webkitTapHighlightColor: style.webkitTapHighlightColor,
+        };
+      })(),
       buttonIdentity: (() => {
         const element = document.querySelector('button')!;
         return {
@@ -262,6 +274,10 @@ test('AUDIT-03C P0 diagnostic: same-document Home lazy CSS leakage after logout'
   await expect(page.locator('main.login-experience')).toBeVisible({ timeout: 10_000 });
   const afterLogout = await sampleGlobalStyles(page);
 
+  expect(homeLoaded.html.backgroundColor).toBe('rgb(246, 241, 242)');
+  expect(homeLoaded.homePresentationRoot?.webkitTapHighlightColor).toBe('rgba(0, 0, 0, 0)');
+  expect(homeLoaded.body.backgroundColor).toBe(baseline.body.backgroundColor);
+
   const homeLoadDifferences = styleDifferences(baseline, homeLoaded);
   const postLogoutDifferences = styleDifferences(baseline, afterLogout);
   const baselineStylesheets = new Set(baseline.stylesheetHrefs);
@@ -286,6 +302,7 @@ test('AUDIT-03C P0 diagnostic: same-document Home lazy CSS leakage after logout'
   await baselinePage.close();
 
   expect(Array.isArray(evidence.postLogoutDifferences), 'The same-document parity result must be captured').toBe(true);
+  expect(evidence.postLogoutComputedStyleParity, 'Login computed styles must return to the fresh baseline after Home logout').toBe(true);
   expect(Array.isArray(evidence.stylesheetsRemainingAfterLogout), 'Remaining lazy stylesheet evidence must be captured').toBe(true);
 });
 
