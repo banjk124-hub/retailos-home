@@ -14,23 +14,31 @@ button:not(:disabled):active {
 
 /* State changes glide rather than popping between selected controls. */
 .side-nav-item,
-
 .filter-pill,
-
+.mobile-nav button,
+.mobile-nav-icon,
 .icon-button,
-
 .text-button,
-
 .module-arrow,
-
 .attention-copy button,
-
 .panel-footer-button {
   transition-timing-function: var(--motion-spring-responsive);
 }
 
-@media (prefers-reduced-motion: reduce) {undefined}
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled) { transition-duration: 0.01ms !important; }
+}
 
 
 /* Readable metadata sizing: the first prototype used several 6–8px labels. */
-@media (max-width: 700px) {undefined}
+@media (max-width: 700px) {
+  .app-shell :is(.system-status, .breadcrumb, .workspace-copy span, .help-card span,
+    .profile-copy span, .top-profile-copy small, .welcome-copy .eyebrow,
+    .hero-kicker, .metric-label, .metric-unit, .metric-note, .metric-trend,
+    .section-kicker, .section-heading p, .sample-tag, .module-card-bottom,
+    .activity-copy span, .activity-status, .attention-copy p, .attention-copy button,
+    .attention-foot, .app-footer, .mobile-nav button) {
+    font-size: max(9px, .7rem);
+  }
+  .app-shell :is(.metric-label, .hero-kicker, .section-kicker) { letter-spacing: .45px; }
+}
