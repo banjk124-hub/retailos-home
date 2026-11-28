@@ -66,6 +66,8 @@ export class JourneyController {
     } else if (command.kind === 'replace') {
       if (!isJourneyDestinationResolvable(command.destination)) return false;
       if (isSameJourneyDestination(current.destination, command.destination)) return false;
+    } else if (command.kind === 'popToHome') {
+      if (this.snapshot.stack.length <= 1) return false;
     } else if (this.snapshot.stack.length <= 1) {
       return false;
     }
@@ -84,6 +86,10 @@ export class JourneyController {
         stack.push({ destination: command.destination });
       } else if (command.kind === 'pop') {
         stack.pop();
+      } else if (command.kind === 'popToHome') {
+        const homeEntry = stack.find((entry) => entry.destination.kind === 'home');
+        if (!homeEntry) return false;
+        stack.splice(0, stack.length, homeEntry);
       } else {
         stack[stack.length - 1] = { destination: command.destination };
       }

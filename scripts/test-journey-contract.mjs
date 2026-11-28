@@ -24,6 +24,7 @@ assert.match(journey, /returnFocusKey\?: string/);
 assert.match(journey, /export type JourneyNavigationCommand =/);
 assert.match(journey, /kind: 'push'/);
 assert.match(journey, /kind: 'pop'/);
+assert.match(journey, /kind: 'popToHome'/);
 assert.match(journey, /kind: 'replace'/);
 assert.match(journey, /export type JourneyExitGuardResult =/);
 assert.match(journey, /resolution: 'wait' \| 'confirm' \| 'stay'/);

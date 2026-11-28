@@ -39,6 +39,7 @@ export type JourneyNavigationCommand =
       homeReturnContext?: HomeReturnContext;
     }
   | { kind: 'pop' }
+  | { kind: 'popToHome' }
   | {
       kind: 'replace';
       destination: ExperienceDestination;
@@ -74,6 +75,6 @@ export function getJourneyTransitionDirection(
   command: JourneyNavigationCommand,
 ): JourneyTransitionDirection {
   if (command.kind === 'push') return 'forward';
-  if (command.kind === 'pop') return 'back';
+  if (command.kind === 'pop' || command.kind === 'popToHome') return 'back';
   return 'none';
 }

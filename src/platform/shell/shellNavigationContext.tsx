@@ -2,6 +2,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { ShellNavigation } from '../../shared/navigation/ShellNavigation';
 import type { ShellNavigationProps } from '../../shared/navigation/ShellNavigation';
 import type { RetailPlatform } from '../../shared/platform/platformCapabilities';
+import { useJourneySnapshot } from '../journey/JourneyControllerProvider';
+import { getActiveJourneyDestination } from '../journey/journeyController';
+import { FeatureMobileShortcuts } from './FeatureMobileShortcuts';
 
 type NavigationConfig = Omit<ShellNavigationProps, 'platform'>;
 type Registration = { owner: string; config: NavigationConfig };
@@ -39,6 +42,16 @@ export function useShellNavigationRegistration(owner: string, config: Navigation
 
 export function PersistentShellNavigation({ platform }: { platform: RetailPlatform }) {
   const context = useContext(ShellNavigationContext);
+  const journey = useJourneySnapshot();
+  const destination = getActiveJourneyDestination(journey);
+
+  // Feature Pages use two independent global shortcuts on Mobile.
+  // Home keeps its existing navigation/dock unchanged; Desktop and Tablet
+  // retain their current Shell navigation presentation.
+  if (platform === 'mobile' && destination.kind === 'feature') {
+    return <FeatureMobileShortcuts />;
+  }
+
   if (!context?.registration) return null;
   return <ShellNavigation {...context.registration.config} platform={platform} />;
 }
