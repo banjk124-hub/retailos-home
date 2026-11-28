@@ -1,4 +1,4 @@
-import { useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
 import './stocktake-scanner-presentation.css';
 import '../../scanner/scanner-shared-controls.css';
 import type { ScannerLifecycleEvent } from '../../../platform/scanner/contracts';
@@ -20,10 +20,11 @@ type Props = {
   onClose: () => void;
   cameraLeaseRequest?: CameraLeaseRequest | null;
   motionOrigin?: MotionOrigin | null;
+  onCameraLeaseRequestClaimed?: (request: CameraLeaseRequest | null) => void;
 };
 
 /** Stocktake-owned scanner presentation; camera/decoder runtime stays shared. */
-export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null }: Props) {
+export default function StocktakeScanner({ onDetected, onClose, cameraLeaseRequest = null, motionOrigin = null, onCameraLeaseRequestClaimed }: Props) {
   const [isClosing, setIsClosing] = useState(false);
   const reticleRef = useRef<HTMLDivElement>(null);
   const [exitFrame, setExitFrame] = useState<string | null>(null);
@@ -46,6 +47,25 @@ export default function StocktakeScanner({ onDetected, onClose, cameraLeaseReque
     setIsClosing(true);
     onDetected(value);
   }, mode: 'single', cameraLeaseRequest, lifecycleObserver: handleLifecycleEvent });
+  // The hook consumes the one-shot request when it creates its first session.
+  // Release the parent reference at that ownership handoff so a remount can
+  // never receive and claim the same request a second time.
+  useEffect(() => {
+    onCameraLeaseRequestClaimed?.(cameraLeaseRequest);
+  }, [cameraLeaseRequest, onCameraLeaseRequestClaimed]);
+
+  // Animation events are not guaranteed when the browser cancels an animation
+  // (viewport changes, reduced motion, or a rapid presentation teardown).
+  // This fallback completes only the presentation milestone; the exit gate
+  // still waits for the platform session to release the camera and dispose.
+  useEffect(() => {
+    if (!isClosing) return;
+    const timeout = window.setTimeout(() => {
+      exitGateRef.current?.completePresentation();
+    }, 360);
+    return () => window.clearTimeout(timeout);
+  }, [isClosing]);
+
   useScannerPreviewRegionBinding({
     videoRef: scanner.videoRef,
     reticleRef,
