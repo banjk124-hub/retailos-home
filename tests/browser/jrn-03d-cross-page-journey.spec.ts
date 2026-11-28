@@ -75,6 +75,7 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   }, auditSession);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
 
   // Capture a non-default Home section and search state before the first Page push.
   await page.getByRole('button', { name: /^thư viện$/i }).first().click();
