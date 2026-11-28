@@ -488,7 +488,7 @@ Do not create detailed specifications for placeholder modules until a real workf
 |---|---|---|---|
 | JRN-00 | Source audit of journeys, screens, owners, motion, icons and lifecycle | Evidence-backed baseline and risks recorded | Complete — static source audit |
 | JRN-01 | Journey, persistent Shell and shared-system contract | Single-App Multi-Page; typed destinations; Desktop/Mobile Shell policy; Experience/Data boundaries | Merged in PR #211 |
-| JRN-02 | Persistent Shell navigation runtime | Shell owns navigation rendering; active Page registers its navigation model; Desktop Dock/Mobile navigation no longer mounted by Home | In progress on `jrn-02-persistent-shell-navigation` |
+| JRN-02 | Persistent Shell navigation runtime | Shell owns navigation rendering; active Page registers its navigation model; Desktop Dock/Mobile navigation no longer mounted by Home | Merged in PR #212 |
 | JRN-03 | Page Host and independent workspaces | Stocktake and Stocktake Import become independent lazy Pages; Home remains an entry Page | Proposed |
 | JRN-04 | Global Quick Actions | Quick Search, Scanner, Settings, Calendar and Notifications are Shell-level and usable from every Page | Proposed |
 | JRN-05 | Journey restoration, safe exit and lifecycle | Return context, dirty-work protection, deterministic cleanup and PWA blocker coordination | Proposed |
