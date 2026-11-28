@@ -427,13 +427,29 @@ test('AUDIT-03C Chromium CDP matched-rule evidence for P0 focus properties', asy
   const computedProperties = (computed.computedStyle ?? [])
     .filter((entry: any) => properties.has(entry.name))
     .map((entry: any) => ({ property: entry.name, value: entry.value }));
+  const inheritedMatchedRules = (matched.inherited ?? []).flatMap((ancestor: any) =>
+    (ancestor.matchedCSSRules ?? []).map((entry: any) => ({
+      nodeId: ancestor.inlineStyle?.nodeId ?? ancestor.nodeId ?? null,
+      selector: entry.rule.selectorList?.text ?? '',
+      matchingSelectors: entry.matchingSelectors ?? [],
+      origin: entry.rule.origin,
+      styleSheetId: entry.rule.style?.styleSheetId ?? null,
+      declarations: (entry.rule.style?.cssProperties ?? [])
+        .filter((declaration: any) => ['font-size', 'line-height'].includes(declaration.name))
+        .map((declaration: any) => ({
+          property: declaration.name, value: declaration.value,
+          important: declaration.important ?? false,
+        })),
+    })).filter((entry: any) => entry.declarations.length > 0),
+  );
 
   const evidence = {
     capturedAt: new Date().toISOString(),
     target: '.topbar-logout',
-    method: 'Chrome DevTools Protocol CSS.getMatchedStylesForNode + CSS.getComputedStyleForNode',
+    method: 'Chrome DevTools Protocol CSS.getMatchedStylesForNode + CSS.getComputedStyleForNode including inherited ancestors',
     computedProperties,
     matchedRules,
+    inheritedMatchedRules,
     limitation: 'CDP provides browser-resolved computed values and matching declarations. This preserves source candidates for review; it does not independently calculate winners for shorthand, cascade-layer or variable-resolution cases.',
   };
   const outputDir = testInfo.outputPath('css-foundation-evidence');
