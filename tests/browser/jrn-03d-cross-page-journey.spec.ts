@@ -111,3 +111,33 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   expect(pageErrors, 'cross-Page flow must not throw browser errors').toEqual([]);
   expect(failedRequests, 'cross-Page flow must not fail resource requests').toEqual([]);
 });
+
+test('Desktop Dock opens the connected grouped Module Library tree without replacing the workspace', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript((session) => {
+    localStorage.setItem('retailos.session.v2', JSON.stringify(session));
+  }, auditSession);
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.home-main')).toBeVisible();
+
+  const dock = page.getByRole('navigation', { name: 'Điều hướng chính' });
+  const libraryTrigger = dock.getByRole('button', { name: 'Mở thư viện nghiệp vụ' });
+  await expect(libraryTrigger).toBeVisible();
+  await libraryTrigger.click();
+
+  const library = page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' });
+  await expect(library).toBeVisible();
+  await expect(page.locator('.home-main')).toBeVisible();
+  await expect(library).toHaveCSS('position', 'fixed');
+
+  const stocktakeGroup = library.getByRole('button', { name: 'Kiểm kê' }).first();
+  await stocktakeGroup.click();
+  await expect(stocktakeGroup).toHaveAttribute('aria-expanded', 'true');
+  const stocktakeLaunch = library.getByRole('button', { name: /Kiểm kê.*Sẵn sàng/ });
+  await expect(stocktakeLaunch).toBeEnabled();
+  await stocktakeLaunch.click();
+
+  await expect(page.locator('.stocktake-page-shell')).toBeVisible();
+  await expect(library).toHaveCount(0);
+  await expect(page.locator('.desktop-shell-navigation')).toBeVisible();
+});
