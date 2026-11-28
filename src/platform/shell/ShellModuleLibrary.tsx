@@ -101,7 +101,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                     aria-pressed={active}
                     onClick={() => { setSelectedLibrary(library); setSearch(''); setMessage(''); }}>
                     <span className="shell-module-library__group-icon"><MotionIcon icon={Icon} variant="module" size={20} active={active} /></span>
-                    <span className="shell-module-library__group-copy"><small>NHÓM {String(moduleIndex + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
+                    <span className="shell-module-library__group-copy"><small>NHÓM {String(index + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
                     <ChevronRight size={16} />
                   </Surface>
                 </MotionCard>
@@ -130,7 +130,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                       className={`shell-module-library__module tone-${module.tone}`}
                       disabled={!available || active}
                       onClick={() => { void openModule(module); }}>
-                      <span className="shell-module-library__module-index">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="shell-module-library__module-index">{String(moduleIndex + 1).padStart(2, '0')}</span>
                       <span className="shell-module-library__module-icon"><MotionIcon icon={Icon} variant="module" size={21} /></span>
                       <span className="shell-module-library__module-copy"><strong>{module.title}</strong><small>{module.description}</small><em className={available ? 'is-ready' : 'is-pending'}>{active ? 'Đang mở' : available ? 'Sẵn sàng' : 'Đang tích hợp'}</em></span>
                       <ArrowUpRight size={17} />
