@@ -29,10 +29,12 @@ export function ShellNavigationProvider({ children }: { children: ReactNode }) {
 /** The active Page registers navigation intent; the persistent Shell renders the chrome. */
 export function useShellNavigationRegistration(owner: string, config: NavigationConfig) {
   const context = useContext(ShellNavigationContext);
+  const register = context?.register;
+  const unregister = context?.unregister;
   useEffect(() => {
-    context?.register(owner, config);
-  }, [context, owner, config]);
-  useEffect(() => () => context?.unregister(owner), [context, owner]);
+    register?.(owner, config);
+  }, [register, owner, config]);
+  useEffect(() => () => unregister?.(owner), [unregister, owner]);
 }
 
 export function PersistentShellNavigation({ platform }: { platform: RetailPlatform }) {
