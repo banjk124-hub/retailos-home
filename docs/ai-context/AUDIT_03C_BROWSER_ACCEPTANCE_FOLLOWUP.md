@@ -46,7 +46,7 @@ The new test captures:
 
 It records computed document/body/button properties and the stylesheet list at each point. The diagnostic is a normal passing evidence test: it records the measured parity result without converting a known mismatch into an expected-failure test or hiding the finding.
 
-**Latest measured result (CI #2015, run ID `46105448616`, HEAD `e3088a55f3c822bd89bd5de8917f004e815682b5`): `postLogoutParity: false`.** After Logout, the Home lazy stylesheet (`HomeScreen-CUz9n313.css` in this build) remains attached. The body background changes from transparent to `rgb(246, 241, 242)`, and `-webkit-tap-highlight-color` changes from `rgba(0, 0, 0, 0.18)` to transparent. These are captured differences, not inferred causes. They must be traced to their owning declarations before any migration. The diagnostic does not authorize a CSS fix in this workstream.
+**Latest measured result (CI #2020, run ID `46106621347`, HEAD `52dfb32930c9bd101e0fb34210acf325569e28f2`): `postLogoutComputedStyleParity: false`.** The Home lazy stylesheet remains attached, but that residue is expected under Vite and is diagnostic only. The actual post-logout differences are `body.backgroundColor` (transparent → `rgb(246, 241, 242)`) and `body.webkitTapHighlightColor` (`rgba(0, 0, 0, 0.18)` → transparent). The source is confirmed in `src/styles/home-redesign.css`: unscoped `body` sets both declarations. The same artifact identifies the Home first button as `.topbar-action-button.notification-button`; its 10px/15px typography is inherited from `.topbar`, while Login returns to 16px/24px after Logout. Wrapper geometry returns to baseline. CI #2021 adds CDP inherited-rule evidence and passes 15/15 tests.
 
 ## 4. Focus, motion and adaptive evidence
 
@@ -80,7 +80,7 @@ It also uses Chromium DevTools Protocol:
 - Browser acceptance is still Chromium automation, not physical iOS Safari or Android Chrome validation.
 - Full token alias consumer reconciliation remains separate and outstanding.
 
-**Decision:** keep all P0 selectors and compatibility aliases unchanged. Do not start AUDIT-03D until the remaining Home stylesheet/global-style leakage is traced and safely resolved, post-logout computed-style parity is demonstrated, and the remaining manual cascade review is recorded.
+**Decision:** the required Chromium browser evidence is now complete and reviewed. The remaining P0 global leakage is source-attributed to Home's unscoped `body` declarations. AUDIT-03D is now permitted as a separate, narrowly scoped ownership migration; no unrelated P0 selector or compatibility alias is authorized for cleanup.
 
 
 ## 7. PR #206 merge and CI #2007 failure triage
@@ -103,3 +103,39 @@ The corrections are test-only. No production CSS, runtime component, import orde
 **CI status as of 2026-11-28:** run #2013 (`46105082726`) failed in the browser suite. Its two failures were traced to an unstable power-mode `box-shadow` sample taken during transition and a test-timeout configuration error: the numeric third argument passed to `test()` was not the Playwright timeout. The follow-up commit `e3088a55f3c822bd89bd5de8917f004e815682b5` moved the timeout to `test.setTimeout(90_000)`. CI #2015 (`46105448616`) then passed preflight, TypeScript/production builds, bundle comparison, and all 15 browser tests (53.0 seconds total; runtime evidence capture 30.4 seconds). The power-mode comparison now runs with reduced motion and passed; focus visibility, dimensions and both pseudo-element snapshots were recorded.
 
 **Current gate:** browser CI is green on `e3088a5`, but AUDIT-03C's P0 ownership/parity gate is still open because the actual same-document capture reports `postLogoutParity: false`. Keep P0 selectors and aliases unchanged; do not begin AUDIT-03D.
+
+
+## 8. AUDIT-03C final evidence and AUDIT-03D migration boundary
+
+### 8.1 Confirmed source ownership
+
+| Source | Declaration / selector | Evidence | Classification |
+|---|---|---|---|
+| `src/styles/home-redesign.css` | Global `body { background: #f6f1f2; -webkit-tap-highlight-color: transparent; }` | Same-document Login → Home → Logout; both body properties remain changed after Logout | **P0 leakage — migrate** |
+| `src/styles/home.css` | Global `.topbar` includes `font-size: 10px` | CDP inherited matched-rule trace shows `.topbar` as font-size owner; source scan identifies this rule | P1 selector scope — preserve active Home typography |
+| `src/styles/home-redesign.css` | Global `html`, `button,a,input,select`, `button`, and global focus-visible rule | Duplicates foundation rules for scroll behavior, font inheritance and touch action; focus extension also matches anchors/role buttons | P1 ownership overlap — scope/remove only with parity |
+| `src/styles/home-redesign.css` | Global reduced-motion universal selector | Equivalent global policy exists in `adaptive-appearance.css` | Duplicate global policy — remove from lazy Home CSS |
+| `src/styles/home-redesign.css`, `src/styles/home-engine.css` | `:root` custom-property blocks (`--ro-*`, `--retail-*`) | Consumers belong to Home presentation CSS | Global token namespace — scope to Home presentation root |
+| `src/styles/home-redesign.css` | `.retailos-scene`, `.retailos-interface` wrapper rules | Fresh Login and post-logout geometry match; shared static wrapper styles also exist | No current parity defect; retain pending a separate deduplication review |
+
+### 8.2 Measured evidence
+
+- CI #2016 (run ID `46105741615`, HEAD `6582d79944654488fdd3c1404fa98fbb72ea66db`): 15/15 browser tests passed.
+- CI #2020 (run ID `46106621347`, HEAD `52dfb32930c9bd101e0fb34210acf325569e28f2`): 15/15 browser tests passed; same-document evidence expanded to capture button identity, body typography and wrapper geometry.
+- CI #2021 (run ID `46106915074`, HEAD `c31d5af9458bd91aeb07a07f5c3ce8ffd04df85e`): 15/15 browser tests passed; CDP now includes inherited ancestor declarations.
+- CI #2022 (run ID `46107478858`, HEAD `c3240c37b96de1a4e7b7e9dd2e5846ef7f9bd5d3`): preflight, TypeScript/production builds, bundle comparison and all 15 browser tests passed (45.6 seconds). Bundle comparison: raw bytes -145; gzip estimate -29 bytes.
+- In the measured 390×844 Login → Home → Logout sequence, Login body background/tap-highlight differences persist; the Home button's 10px/15px typography is active only while Home is mounted; shared wrapper geometry returns to 390×844 after Logout.
+- The Home logout target measures 42×44 CSS pixels. The existing focus ring is visible (3px outline, 3px offset); this is captured evidence, not a claim of physical-device touch acceptance.
+- All evidence is Chromium automation. Physical iOS Safari and Android Chrome acceptance remains outstanding.
+
+### 8.3 AUDIT-03D changes staged
+
+The stacked AUDIT-03D branch scopes Home-only tokens and focus/tap-highlight rules to `.home-presentation-root`, conditions the viewport background on the Home root being present, removes duplicate global base/touch/reduced-motion declarations from the lazy Home stylesheet, and scopes the legacy `.topbar` rule without increasing its specificity.
+
+The same-document test now requires:
+1. Home retains its intended viewport background and transparent tap-highlight behavior.
+2. The document body remains at its fresh Login baseline while Home is mounted.
+3. After Logout, html/body/button/wrapper computed styles return to the fresh Login baseline.
+4. Vite's remaining lazy stylesheet is recorded but does not itself fail parity.
+
+No business logic, authentication, runtime routing, import order, dependencies, scanner or stocktake behavior is changed. AUDIT-03D remains unaccepted until its own CI and evidence artifact prove parity and the existing focus/motion/workflow suite remains green.
