@@ -21,7 +21,7 @@ assert.ok(!barcodeLookup.includes('Promise.allSettled(lookupSources.map(({ modul
 
 assert.ok(!home.includes('StocktakeImportModule') && !home.includes('isStocktakeImportOpen'), 'Home must not own the Stocktake Import Page mount.');
 assert.ok(home.includes("destination: { kind: 'feature', moduleId }"), 'Home must dispatch the selected ready feature through the typed Journey contract.');
-assert.ok(home.includes("destination: { kind: 'feature', moduleId: 'stocktake' }"), 'Home must dispatch a typed Stocktake Page destination.');
+assert.ok(home.includes("moduleId: 'stocktake' | 'stocktake-import'") && home.includes("module.id === 'stocktake'"), 'Home must preserve the canonical Stocktake Page route through the shared typed launcher.');
 assert.ok(home.includes('homeReturnContext: homeContext'), 'Home must capture its return context before leaving.');
 assert.ok(!home.includes('isStocktakeOpen') && !home.includes('MemoizedStocktakeModule'), 'Home must no longer own the Stocktake Page mount.');
 assert.ok(home.includes('const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>)'), 'The scanner presentation must be memoized.');
