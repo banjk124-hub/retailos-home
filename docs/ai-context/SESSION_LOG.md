@@ -72,4 +72,13 @@ This file records concise cross-project session milestones only. Scanner-specifi
 - Regression coverage authored for unchanged reuse, same-path changed content, removed resources and network-byte accounting.
 - Verification: no local test/build or GitHub Actions run has yet been observed for this branch. Physical Android/iOS/Desktop acceptance is also outstanding. No merge or deployment.
 
+---
 
+### 2026-11-28 — JRN-03D Journey ownership/lifecycle closeout
+
+- Closed the JRN-03D core ownership/lifecycle scope on main after PRs #217–#224: Import Page extraction, Home ownership audit, contract hardening, integrated browser journey QA, scanner exit/camera handoff, Mobile Feature shortcuts, Shell-owned Module Library and UX-01 refinement.
+- Current main baseline: `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; main CI #2150 and Pages Build & Deploy #216 passed.
+- Reconciled Journey architecture, roadmap, implementation status, handoff and index with the merged implementation.
+- D4 Page Snapshot/Restore remains postponed; no capture/restore, keep-alive or generic Page snapshot store was implemented.
+- D5 overlay visual consistency is a separate UX follow-up. Physical-device acceptance remains unverified and separate.
+- Documentation-only closeout; no application source, feature behavior, tests, dependencies or deployment configuration changed.
