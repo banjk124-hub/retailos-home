@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import './ActivePageHost.css';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
 import { HomePresentationRoot } from '../home/HomePresentationRoot';
 import { getActiveJourneyDestination, getActiveJourneyKey } from './journeyController';
@@ -6,9 +7,9 @@ import { useJourneyController, useJourneySnapshot } from './JourneyControllerPro
 import { resolveJourneyPage, type JourneyPageProps } from './journeyPageRegistry';
 
 function PageLoadingSurface() {
-  return <div className="home-loading-surface" role="status" aria-live="polite" aria-busy="true">
-    <div className="home-loading-surface__panel">
-      <span className="home-loading-surface__indicator" aria-hidden="true" />
+  return <div className="journey-page-loading" role="status" aria-live="polite" aria-busy="true">
+    <div className="journey-page-loading__panel">
+      <span className="journey-page-loading__indicator" aria-hidden="true" />
       <strong>Đang mở không gian làm việc</strong>
       <span>Đang tải trang…</span>
     </div>
