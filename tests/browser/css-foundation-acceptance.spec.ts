@@ -118,9 +118,10 @@ async function openStocktakeImport(page: Page) {
   await expect(library).toBeVisible();
   await library.click({ force: true });
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
-  const dialog = page.getByRole('dialog', { name: 'Xuất file' });
-  await expect(dialog).toBeVisible();
-  return dialog;
+  const pageSurface = page.locator('.stocktake-import-page-shell');
+  await expect(pageSurface).toBeVisible();
+  await expect(pageSurface.getByRole('heading', { name: 'Xuất file' })).toBeVisible();
+  return pageSurface;
 }
 
 async function sampleGlobalStyles(page: Page) {
@@ -323,7 +324,7 @@ test('AUDIT-03C keyboard focus contract: Home, Settings, Stocktake and Stocktake
   await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
 
   const stocktakeImport = await openStocktakeImport(page);
-  await keyboardFocus(page, stocktakeImport.locator('button:visible').first(), 'Stocktake Import dialog first action');
+  await keyboardFocus(page, stocktakeImport.locator('button:visible').first(), 'Stocktake Import Page first action');
 });
 
 test('AUDIT-03C reduced-motion contract: shared and feature surfaces', async ({ page }) => {
@@ -347,7 +348,7 @@ test('AUDIT-03C reduced-motion contract: shared and feature surfaces', async ({ 
   await expect.poll(() => page.locator('html').getAttribute('data-motion-preference')).toBe('reduced');
 
   const stocktakeImport = await openStocktakeImport(page);
-  await reducedMotionEvidence(stocktakeImport.locator('button:visible').first(), 'Stocktake Import dialog first action');
+  await reducedMotionEvidence(stocktakeImport.locator('button:visible').first(), 'Stocktake Import Page first action');
 });
 
 test('AUDIT-03C power-conserve preserves focus visibility and geometry; captures pseudo-elements', async ({ page }, testInfo) => {

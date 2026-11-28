@@ -1,6 +1,9 @@
 # JRN-03B — Stocktake Page Extraction
 
-**Status:** Implementation in progress on `feat/jrn-03b-stocktake-page`  
+**Status:** Merged and verified  
+**PR:** #216  
+**Merge:** `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`  
+**Verification:** exact-head CI run `46122314448`, post-merge main CI run `46122598245`, and Pages deployment run `46122598308` succeeded  
 **Base:** JRN-03A merge `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`  
 **Scope:** Move Stocktake mount/entry ownership from Home overlay to the authenticated Journey Page Host.  
 **Explicitly out of scope:** Stocktake Import (JRN-03C), Home removal of Import overlay, Stocktake business/store schema redesign, scanner engine changes, URL/browser history, JRN-04 Global Quick Actions, visual redesign.
@@ -83,6 +86,6 @@ CI must pass on the exact final PR head: preflight, TypeScript, production/Pages
 
 ## 7. Next slices
 
-1. Complete JRN-03B exact-head CI and browser QA; merge only after review.
+1. JRN-03B is merged. Keep its scanner lifecycle, Stocktake store and update-safety ownership unchanged.
 2. JRN-03C extracts Stocktake Import with guard coverage for busy/history operations, dirty edits, pending import confirmation, unpersisted results and clear/new-session confirmations.
-3. JRN-03D removes remaining Home-owned workflow mounts and runs cross-Page integration QA.
+3. JRN-03D removes any remaining Home-owned workflow mounts and runs cross-Page integration QA.

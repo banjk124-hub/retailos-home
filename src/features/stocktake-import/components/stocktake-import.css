@@ -1000,3 +1000,51 @@
   .stocktake-import-zip-compact,.stocktake-import-preview-trigger { transition: none !important; }
 }
 :root[data-power-mode="conserve"] .stocktake-import-preview-screen { animation: none !important; }
+
+
+/* JRN-03C: Stocktake Import is a Page workspace; only nested confirmations remain modal. */
+.stocktake-import-page.stocktake-import-backdrop {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  display: block;
+  width: 100%;
+  min-height: calc(100dvh - 48px);
+  padding: 0;
+  background: transparent;
+  animation: none;
+  box-sizing: border-box;
+}
+.stocktake-import-page .stocktake-import-panel {
+  width: min(1540px, 100%);
+  height: auto;
+  min-height: calc(100dvh - 96px);
+  max-height: none;
+  overflow: visible;
+  margin: 0 auto;
+  border-radius: 24px;
+  box-sizing: border-box;
+}
+.stocktake-import-page .stocktake-import-content {
+  flex: initial;
+  min-height: 0;
+  overflow: visible;
+}
+.stocktake-import-page .stocktake-import-review-backdrop {
+  position: absolute;
+}
+@media (max-width: 640px) {
+  .stocktake-import-page.stocktake-import-backdrop {
+    min-height: calc(100dvh - 72px);
+    padding: 0;
+  }
+  .stocktake-import-page .stocktake-import-panel {
+    width: 100%;
+    height: auto;
+    min-height: calc(100dvh - 72px);
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    padding: calc(12px + env(safe-area-inset-top)) 12px calc(16px + env(safe-area-inset-bottom));
+  }
+}

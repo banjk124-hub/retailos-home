@@ -19,15 +19,16 @@ assert.match(app, /AuthenticatedAppShell/);
 assert.match(authenticatedShell, /<ActivePageHost/);
 assert.match(pageRegistry, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/home\/HomeScreen'\)\)/);
 assert.match(pageRegistry, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/stocktake\/StocktakePage'\)\)/);
+assert.match(pageRegistry, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/stocktake-import\/StocktakeImportPage'\)\)/);
 assert.match(pageHost, /<Suspense fallback=\{<PageLoadingSurface \/>\}>/);
 assert.doesNotMatch(app, /import HomeScreen from/);
 for (const component of [
-  'BarcodeScanner', 'StocktakeImportModule',
-  'SettingsHub', 'ScannerSettingsPanel'
+  'BarcodeScanner', 'SettingsHub', 'ScannerSettingsPanel'
 ]) {
   assert.match(home, new RegExp('const ' + component + ' = lazy\\('));
 }
 assert.doesNotMatch(home, /import (?:BarcodeScanner|StocktakeModule|StocktakeImportModule|SettingsHub|ScannerSettingsPanel) from/);
+assert.doesNotMatch(home, /StocktakeImportModule|isStocktakeImportOpen/);
 assert.match(exportFormats, /await import\('jszip'\)/);
 assert.match(exportFormats, /await import\('pptxgenjs'\)/);
 assert.doesNotMatch(stocktakeImport, /import JSZip from 'jszip'/, 'Stocktake Import must not eagerly load JSZip when the module opens.');

@@ -311,6 +311,7 @@ test('RetailOS runtime evidence capture', async ({ page }, info) => {
   const exportModule = page.getByRole('button', { name: /^xuất file/i }).first();
   await expect(exportModule, 'Stocktake Import workflow entry must be reachable').toBeVisible();
   await exportModule.click();
+  await expect(page.locator('.stocktake-import-page-shell'), 'Stocktake Import must resolve through the authenticated Page Host').toBeVisible();
   await expect(page.getByRole('heading', { name: 'Xuất file' })).toBeVisible();
   await capture(page, info, 'import-390x844');
   await writeFile(info.outputPath('runtime-evidence/health-summary.json'), JSON.stringify({

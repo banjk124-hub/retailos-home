@@ -2,8 +2,8 @@
 
 **Repository:** banjk124-hub/retailos-home  
 **JRN-03 audit baseline:** `b30505a86511909d94406bfd8467be4ec204c620` (main before documentation-only reconciliation)  
-**Latest runtime merge:** PR #212 — JRN-02 persistent Shell navigation ownership; exact-head CI #2047 and main CI #2048 passed; Pages deployments #204 and #205 succeeded  
-**Documentation reconciliation:** this handoff is updated on the documentation PR branch; its eventual merge commit will advance main without changing the audited runtime baseline.  
+**Latest runtime merge:** PR #216 — JRN-03B Stocktake Page; merge commit `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`; PR #216 exact-head CI run `46122314448` passed; post-merge main CI run `46122598245` passed; GitHub Pages build/deploy run `46122598308` succeeded.  
+**Current branch:** `feat/jrn-03c-stocktake-import-page`, based on verified `main` at `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`.  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -36,7 +36,8 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 - Post-merge evidence: CI #2047 (PR head) and #2048 (main) passed, each with 15 Playwright tests; docs CI #2049 and main CI #2050 passed; Pages deployments #204 and #205 succeeded. Physical-device QA is not implied.
 - JRN-03 source audit is complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`; see [AUDIT_JRN_03_PAGE_HOST.md](./AUDIT_JRN_03_PAGE_HOST.md).
 - JRN-03A merged as PR #215 at `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`; exact-head CI #2076 passed on `f79c1f92f3cf6b310a1fd1f7d553ca561a01f0b2` (preflight, TypeScript, production/Pages builds, bundle comparison, 15 Playwright tests).
-- JRN-03B is in progress on `feat/jrn-03b-stocktake-page`. Stocktake Page is registered, Home dispatches typed navigation with Home return context, and the existing Stocktake coordinator/store/PWA blocker/scanner remain unchanged in ownership. See [JRN_03B_STOCKTAKE_PAGE.md](./JRN_03B_STOCKTAKE_PAGE.md). Import remains Home-owned until JRN-03C.
+- JRN-03B is merged and verified in PR #216 at `ff36f4b1105c00051a2ed38ddfe0b09480acf3f5`; exact PR-head CI, post-merge main CI and Pages deployment all passed. See [JRN_03B_STOCKTAKE_PAGE.md](./JRN_03B_STOCKTAKE_PAGE.md).
+- JRN-03C is in progress on `feat/jrn-03c-stocktake-import-page`: Import is moving from Home-owned overlay to a lazy guarded Page. Preserve parsing precision, conflict review, dirty edits, pending confirmations, unpersisted results, IndexedDB history and TXT/ZIP output. See [JRN_03C_STOCKTAKE_IMPORT_PAGE.md](./JRN_03C_STOCKTAKE_IMPORT_PAGE.md).
 - JRN-03 does not include Global Quick Actions. JRN-04 remains the later workstream for Quick Search, Scanner, Settings, Calendar and Notifications at Shell level.
 - Stocktake and Stocktake Import remain the only operationally ready feature workflows. Their business logic, persistence and offline behavior are protected.
 - One Experience System governs global semantics; each Page owns its layout, density and workflow-specific composition. Shared system data must not become a global mega-store.
@@ -44,7 +45,7 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 ## Next technical gates
 
-1. **JRN-03B:** finish Stocktake Page guard/layout/return-context tests and merge after exact-head CI + browser QA. Then implement JRN-03C Import Page with dirty/pending/unpersisted-result guards. JRN-03D removes remaining Home-owned workflow mounts and performs cross-Page integration QA.
+1. **JRN-03C:** finish Import Page guard/layout/return-context tests and merge after exact-head CI + browser QA. Then JRN-03D removes any remaining Home-owned workflow mounts and performs cross-Page integration QA.
 2. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
 3. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
 4. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.

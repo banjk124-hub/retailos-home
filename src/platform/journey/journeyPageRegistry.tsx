@@ -22,10 +22,12 @@ export type JourneyPageProps = {
 
 const HomePage = lazy(() => import('../../features/home/HomeScreen'));
 const StocktakePage = lazy(() => import('../../features/stocktake/StocktakePage'));
+const StocktakeImportPage = lazy(() => import('../../features/stocktake-import/StocktakeImportPage'));
 
 /** Feature Page resolvers are added only in their bounded extraction slices. */
 const FEATURE_PAGES: Partial<Record<RetailModuleId, LazyExoticComponent<ComponentType<JourneyPageProps>>>> = {
   stocktake: StocktakePage,
+  'stocktake-import': StocktakeImportPage,
 };
 
 export function isJourneyDestinationResolvable(destination: ExperienceDestination): boolean {

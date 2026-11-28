@@ -16,7 +16,9 @@ const store = read('../src/features/stocktake/services/stocktakeLocalStore.ts');
 const preflight = read('./preflight.mjs');
 
 // Home launches the Page via the canonical typed destination and captures only transient UI context.
-assert.match(home, /destination: \{ kind: 'feature', moduleId: 'stocktake' \}/);
+assert.match(home, /moduleId: 'stocktake' \| 'stocktake-import'/);
+assert.match(home, /destination: \{ kind: 'feature', moduleId \}/);
+assert.match(home, /module.id === 'stocktake'/);
 assert.match(home, /homeReturnContext: homeContext/);
 assert.match(home, /activeSection/);
 assert.match(home, /searchQuery: saved\.search/);
@@ -26,7 +28,8 @@ assert.match(homeNavigation, /captureHomeUiState = useCallback/);
 assert.match(homeNavigation, /saveHomeUiState\(state\)/);
 assert.match(home, /homeReturnContext\.activeSection/);
 assert.doesNotMatch(home, /isStocktakeOpen|MemoizedStocktakeModule|lazy\(\(\) => import\('\.\.\/stocktake\/components\/StocktakeModule'\)\)/);
-assert.match(home, /isStocktakeImportOpen/, 'Stocktake Import remains in Home until JRN-03C.');
+assert.doesNotMatch(home, /StocktakeImportModule|isStocktakeImportOpen/, 'JRN-03C removes the remaining Home-owned Import mount.');
+assert.match(registry, /'stocktake-import': StocktakeImportPage/);
 assert.match(host, /homeReturnContext = destination\.kind === 'home'/);
 assert.match(host, /<Page \{\.\.\.props\} homeReturnContext=\{homeReturnContext\} \/>/);
 assert.match(registry, /stocktake: StocktakePage/);

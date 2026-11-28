@@ -64,7 +64,10 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
   await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
 
+  const pageSurface = page.locator('.stocktake-import-page-shell');
   const panel = page.locator('.stocktake-import-panel');
+  await expect(pageSurface).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Xuất file' })).toHaveCount(0);
   await expect(panel).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Xuất file' })).toBeVisible();
 
@@ -115,4 +118,55 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
   expect(desktopBounds!.width).toBeLessThanOrEqual(1412);
   expect(desktopBounds!.x).toBeGreaterThanOrEqual(0);
   expect(desktopBounds!.x + desktopBounds!.width).toBeLessThanOrEqual(1441);
+});
+
+
+test('Stocktake Import Page exit guard preserves dirty edits and pending conflict review', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.addInitScript((session) => {
+    localStorage.setItem('retailos.session.v2', JSON.stringify(session));
+  }, auditSession);
+
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.retailos-interface')).toBeVisible();
+  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
+  await page.getByRole('button', { name: /^xuất file/i }).first().click();
+  const pageSurface = page.locator('.stocktake-import-page-shell');
+  await expect(pageSurface).toBeVisible();
+
+  const firstWorkbook = await createWorkbook([['8936000000001', '1.250']], 'BT01-guard-first.xlsx');
+  const fileInput = page.locator('.stocktake-import-file-input');
+  await fileInput.setInputFiles(firstWorkbook);
+  await expect(page.locator('.stocktake-import-edit-table tbody tr')).toHaveCount(1);
+
+  await page.getByRole('button', { name: 'Chỉnh sửa' }).click();
+  await page.getByLabel('Kết quả thực tế dòng 2').fill('2.750');
+  page.once('dialog', (dialog) => dialog.dismiss());
+  await page.getByRole('button', { name: 'Về trang chủ' }).click();
+  await expect(pageSurface).toBeVisible();
+  await expect(page.getByLabel('Kết quả thực tế dòng 2')).toHaveValue('2.750');
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Về trang chủ' }).click();
+  await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
+  await expect(pageSurface).toBeHidden();
+
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
+  await page.getByRole('button', { name: /^xuất file/i }).first().click();
+  await expect(pageSurface).toBeVisible();
+  const pendingBase = await createWorkbook([['8936000000002', '1.000']], 'BT02-pending-base.xlsx');
+  await fileInput.setInputFiles(pendingBase);
+  await expect(page.locator('.stocktake-import-edit-table tbody tr')).toHaveCount(1);
+  const pendingConflict = await createWorkbook([['8936000000003', '2.000']], 'BT02-pending-conflict.xlsx');
+  await fileInput.setInputFiles(pendingConflict);
+  await expect(page.getByRole('alertdialog', { name: 'Kiểm tra file bổ sung' })).toBeVisible();
+  await page.getByRole('button', { name: 'Trang chủ', exact: true }).first().click();
+  await expect(pageSurface).toBeVisible();
+  await expect(page.getByRole('alertdialog', { name: 'Kiểm tra file bổ sung' })).toBeVisible();
+  await page.getByRole('button', { name: 'Hủy bổ sung' }).click();
+  await page.getByRole('button', { name: 'Trang chủ', exact: true }).first().click();
+  await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
 });

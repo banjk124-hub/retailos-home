@@ -44,13 +44,11 @@ import { clearUpdateCenterEntry, readUpdateCenterEntry } from '../../shared/pwa/
 declare const __RETAILOS_BUILD_ID__: string;
 
 const BarcodeScanner = lazy(() => import('../scanner/components/BarcodeScanner'));
-const StocktakeImportModule = lazy(() => import('../stocktake-import/components/StocktakeImportModule'));
 const SettingsHub = lazy(() => import('./components/SettingsHub'));
 const ScannerSettingsPanel = lazy(() => import('../scanner/components/ScannerSettingsPanel'));
  
 // Isolate active feature trees from unrelated Home state updates.
 const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>) => <BarcodeScanner {...props} />);
-const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>) => <StocktakeImportModule {...props} />);
 const MemoizedSettingsHub = memo((props: React.ComponentProps<typeof SettingsHub>) => <SettingsHub {...props} />);
 const MemoizedScannerSettingsPanel = memo((props: React.ComponentProps<typeof ScannerSettingsPanel>) => <ScannerSettingsPanel {...props} />);
 
@@ -173,8 +171,6 @@ export default function HomeScreen({
   const noticeTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition | null>(null);
   const [selectedLibraryModules, setSelectedLibraryModules] = useState<RetailModule[]>([]);
-  const [isStocktakeImportOpen, setIsStocktakeImportOpen] = useState(false);
-  const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);
   const [libraryOrigin, setLibraryOrigin] = useState<MotionOrigin | undefined>();
   const [isLibraryClosing, setIsLibraryClosing] = useState(false);
   const libraryCloseButtonRef = useRef<HTMLButtonElement>(null);
@@ -183,7 +179,7 @@ export default function HomeScreen({
   useBodyScrollLock(
     showCalendar || Boolean(selectedNotice) || Boolean(selectedLibrary)
     || isBarcodeScannerOpen || showSettings || showScannerSettings
-    || isStocktakeImportOpen || Boolean(barcodeLookup),
+    || Boolean(barcodeLookup),
   );
   const snapshotNoticeStatusMessage = snapshotNoticeStatus === 'loading'
     ? 'Đang kiểm tra snapshot đã lưu trên thiết bị…'
@@ -250,7 +246,10 @@ export default function HomeScreen({
     setIsLibraryClosing(true);
   };
 
-  const launchStocktakePage = useCallback(async (library: ModuleLibraryDefinition) => {
+  const launchFeaturePage = useCallback(async (
+    moduleId: 'stocktake' | 'stocktake-import',
+    library: ModuleLibraryDefinition,
+  ) => {
     const saved = captureHomeUiState();
     const activeSection: HomeReturnContext['activeSection'] =
       saved.activeNav === 'modules' || saved.activeNav === 'activity' ? saved.activeNav : 'home';
@@ -262,7 +261,7 @@ export default function HomeScreen({
     setSelectedLibrary(null);
     const accepted = await journeyController.dispatch({
       kind: 'push',
-      destination: { kind: 'feature', moduleId: 'stocktake' },
+      destination: { kind: 'feature', moduleId },
       homeReturnContext: homeContext,
     });
     if (!accepted) setSelectedLibrary(library);
@@ -694,13 +693,8 @@ export default function HomeScreen({
             {selectedLibraryModules.map((module) => {
               const ModuleIcon = getModuleIcon(module.id);
               return <button key={module.id} type="button" className={`app-library-module module-${module.tone}`} onClick={() => {
-                if (module.id === 'stocktake') {
-                  void launchStocktakePage(activeLibrary);
-                  return;
-                }
-                if (module.id === 'stocktake-import') {
-                  setSelectedLibrary(null);
-                  setIsStocktakeImportOpen(true);
+                if (module.id === 'stocktake' || module.id === 'stocktake-import') {
+                  void launchFeaturePage(module.id, activeLibrary);
                   return;
                 }
                 announce(`${module.title}: giao diện nghiệp vụ đang được tích hợp. Dữ liệu snapshot và chức năng nghiệp vụ là hai trạng thái riêng biệt.`);
@@ -731,7 +725,6 @@ export default function HomeScreen({
         </section>
       </div>;
     })()}
-    {isStocktakeImportOpen && <Suspense fallback={<ModuleLoadingSurface title="Xuất file kiểm kê" onClose={closeStocktakeImport} />}><MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} /></Suspense>}
     {toast && <div className="toast-message" role="status"><span className="toast-check"><Check size={16} /></span><span>{toast}</span><button onClick={clearToast} aria-label="Đóng thông báo"><X size={15} /></button></div>}
   </>;
 }

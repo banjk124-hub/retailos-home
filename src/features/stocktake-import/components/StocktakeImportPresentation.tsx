@@ -113,13 +113,12 @@ export default function StocktakeImportPresentation({
   const hasDirtyZones = dirtyZones.length > 0;
 
   return (
-    <div className="stocktake-import-backdrop" role="presentation" data-motion-state="enter">
-      <section className="stocktake-import-panel" role="dialog" aria-modal="true"
-        aria-labelledby="stocktake-import-title" aria-busy={busy}>
+    <div className="stocktake-import-backdrop stocktake-import-page" role="presentation">
+      <section className="stocktake-import-panel" aria-labelledby="stocktake-import-title" aria-busy={busy}>
         <header className="stocktake-import-header">
           <button className="stocktake-import-icon-button" type="button" disabled={busy}
             onClick={view === 'history' ? actions.onBackFromHistory : actions.onClose}
-            aria-label={view === 'history' ? 'Quay lại' : 'Đóng'}>
+            aria-label={view === 'history' ? 'Quay lại' : 'Về trang chủ'}>
             {view === 'history' ? <ArrowLeft size={20} /> : <X size={20} />}
           </button>
           <div>
@@ -130,7 +129,7 @@ export default function StocktakeImportPresentation({
             onClick={actions.onOpenHistory} aria-label="Lịch sử"><History size={19} /></button>
         </header>
 
-        <main className="stocktake-import-content">
+        <div className="stocktake-import-content">
           {error && <p className="stocktake-import-error" role="alert">{error}</p>}
 
           {view === 'import' && <>
@@ -332,7 +331,7 @@ export default function StocktakeImportPresentation({
           </>}
 
           <footer className="stocktake-import-footer"><span>Dữ liệu xử lý được lưu riêng với module Xuất file</span><span>RetailOS</span></footer>
-        </main>
+        </div>
       </section>
 
       {notice && <div className={'stocktake-import-feedback is-' + noticeTone} role="status" aria-live="polite">
