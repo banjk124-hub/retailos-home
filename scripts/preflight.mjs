@@ -39,6 +39,11 @@ const checks = [
     args: ["scripts/test-jrn-03c-stocktake-import-page.mjs"],
   },
   {
+    name: "JRN-03D-B Home launcher, Page ownership and Shell handoff contract tests",
+    command: process.execPath,
+    args: ["scripts/test-jrn-03d-b-ownership-contracts.mjs"],
+  },
+  {
     name: "UI-02D lookup and feedback ownership contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-02d-lookup-feedback.mjs"],
