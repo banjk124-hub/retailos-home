@@ -123,6 +123,7 @@ The corrections are test-only. No production CSS, runtime component, import orde
 - CI #2016 (run ID `46105741615`, HEAD `6582d79944654488fdd3c1404fa98fbb72ea66db`): 15/15 browser tests passed.
 - CI #2020 (run ID `46106621347`, HEAD `52dfb32930c9bd101e0fb34210acf325569e28f2`): 15/15 browser tests passed; same-document evidence expanded to capture button identity, body typography and wrapper geometry.
 - CI #2021 (run ID `46106915074`, HEAD `c31d5af9458bd91aeb07a07f5c3ce8ffd04df85e`): 15/15 browser tests passed; CDP now includes inherited ancestor declarations.
+- CI #2022 (run ID `46107478858`, HEAD `c3240c37b96de1a4e7b7e9dd2e5846ef7f9bd5d3`): preflight, TypeScript/production builds, bundle comparison and all 15 browser tests passed (45.6 seconds). Bundle comparison: raw bytes -145; gzip estimate -29 bytes.
 - In the measured 390×844 Login → Home → Logout sequence, Login body background/tap-highlight differences persist; the Home button's 10px/15px typography is active only while Home is mounted; shared wrapper geometry returns to 390×844 after Logout.
 - The Home logout target measures 42×44 CSS pixels. The existing focus ring is visible (3px outline, 3px offset); this is captured evidence, not a claim of physical-device touch acceptance.
 - All evidence is Chromium automation. Physical iOS Safari and Android Chrome acceptance remains outstanding.
