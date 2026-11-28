@@ -2,7 +2,8 @@
 
 **Authority:** Governance for shared foundations, components, patterns and feature-owned experiences.  
 **Parent authority:** RETAILOS_PRODUCT_SKILL.md.  
-**Status:** Active; does not authorize implementation or migration by itself.
+**Status:** Active; does not authorize implementation or migration by itself.  
+**Experience contract:** [EXPERIENCE_SYSTEM_SPEC.md](./EXPERIENCE_SYSTEM_SPEC.md) defines where components participate in Journeys, screens, icons, motion and feedback. This file remains the authority for reuse and component promotion.
 
 ## 1. Purpose
 Prevent duplicate solutions without forcing unrelated workflows into one visual or technical abstraction. Reuse is based on equivalent responsibility, semantics, state behavior, accessibility and lifecycle—not merely similar appearance.

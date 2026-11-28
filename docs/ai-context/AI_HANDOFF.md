@@ -1,8 +1,8 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `adc2ec310c46f3f050b2af81b02ba622e8dc18b3`  
-**Latest merged work:** PR #196 — PCM-01–06 Platform Capability Matrix documentation reconciliation; PR #195 remains the latest runtime capability enforcement change  
+**Verified main HEAD:** `dc952b3204d7d7eaf53b82f805218e56f7ea2562`  
+**Latest merged work:** PR #209 — AUDIT-03E CSS ownership closure and device acceptance boundary; documentation-only, no runtime changes  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -13,7 +13,7 @@
 - Camera barcode scanning and camera-only copy/presentation are Mobile-only. Manual barcode lookup remains shared.
 - Tablet remains review-required; viewport width is responsive input, not product capability policy.
 
-Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md](./ARCHITECTURE.md) ADR-030 and [PLATFORM_CAPABILITY_MATRIX.md](./PLATFORM_CAPABILITY_MATRIX.md).
+Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md](./ARCHITECTURE.md) ADR-030 and [PLATFORM_CAPABILITY_MATRIX.md](./PLATFORM_CAPABILITY_MATRIX.md). The experience/Journey umbrella is [EXPERIENCE_SYSTEM_SPEC.md](./EXPERIENCE_SYSTEM_SPEC.md); it is proposed and does not authorize runtime migration.
 
 ## Verified repository state
 
@@ -26,6 +26,13 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 - No physical-device acceptance is claimed. PW-01 remains open.
 - CSS-01 remains separate; SH-01 did not perform a broad CSS ownership migration.
 - Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
+
+## Current Journey direction
+
+- JRN-00 static source audit is complete at main HEAD `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. App owns auth/session and Login → Identity → Home timing; HomeScreen still renders Stocktake and Stocktake Import inside its own tree.
+- Next proposed work is JRN-01: approve destination identity, return/history behavior, Home state restoration and safe-exit semantics before implementation.
+- Stocktake and Stocktake Import are the only operationally ready feature workflows. Keep placeholders as placeholders; do not infer a roadmap from registry entries.
+- Keep Settings, quick lookup, quick Scanner, Calendar and Notifications Home-owned. Do not start backend/database or production Gmail migration in this workstream.
 
 ## Next technical gates
 

@@ -1,8 +1,8 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`  
-**Latest merge:** PR #201, merge commit `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`
+**Verified main HEAD:** `dc952b3204d7d7eaf53b82f805218e56f7ea2562`  
+**Latest merge:** PR #209, merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -32,6 +32,7 @@ This file records verified repository state. It does not authorize deployment or
 | CSS-01C remaining Login responsive retirement | PR #199 merged | Merge commit `2c2a5b60e87c05b06153fb534a0a4bbdc5c77e5`; removed legacy Login rules from `responsive.css` and obsolete `.login-identity-dock` cluster; exact-head CI #1985 passed on `e1e84f55829d374d676233ebefeff97dc72c3863` |
 | CSS-01C orphan keyframe cleanup | PR #200 merged | Merge commit `b0b36487c27239fa283b380767e43ec4092f928f`; removed orphan Login keyframes and refreshed CSS status documentation |
 | CSS-01C first mobile navigation legacy slice | PR #201 merged | Merge commit `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`; exact-head CI #1990 passed on `88fee8c6ca6374941bc5d47a57a9291547c986e5` |
+| AUDIT-03E CSS ownership closure | PR #209 merged | Merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`; documentation-only; CI #2025 evidence and Build & Deploy #200 were verified on its pre-merge baseline; physical iOS/Android acceptance remains pending |
 | CSS-01C closeout | PR #202 closed unmerged | No source changes accepted; remaining `.mobile-nav` groups intentionally retained because safe grouped-selector isolation was not demonstrated |
 
 ## Open work and acceptance gates
@@ -39,11 +40,17 @@ This file records verified repository state. It does not authorize deployment or
 ### Platform experience
 - **SH-01:** implementation and automated integration closure are merged. PR #195 subsequently closed the Stocktake camera policy enforcement gap. See `SH-01_SHELL_PRESENTATION_OWNERSHIP.md` and `PLATFORM_CAPABILITY_MATRIX.md`.
 - **PW-01:** physical iOS/iPadOS and Android installed-PWA validation is deferred by owner, not passed or complete. Browser emulation is not device acceptance.
-- **CSS-01:** CSS-01A/B complete; CSS-01C closed after the bounded PR #198/#199 Login retirements, PR #200 orphan-keyframe cleanup and PR #201 first mobile-navigation legacy slice. CSS-01D exact-head automated/browser regression passed on PR #199 (CI #1985) and PR #201 (CI #1990). Remaining `.mobile-nav` declaration groups are intentionally retained as documented cleanup debt; PR #202 was closed unmerged with no source changes. CSS-01E documentation/status closeout is prepared in the current documentation PR. See `CSS_01_CSS_OWNERSHIP_MIGRATION.md`.
+- **CSS-01:** CSS-01A/B complete; CSS-01C closed after the bounded PR #198/#199 Login retirements, PR #200 orphan-keyframe cleanup and PR #201 first mobile-navigation legacy slice. CSS-01D exact-head automated/browser regression passed on PR #199 (CI #1985) and PR #201 (CI #1990). Remaining `.mobile-nav` declaration groups are intentionally retained as documented cleanup debt; PR #202 was closed unmerged with no source changes. AUDIT-03E CSS ownership closure is recorded in `AUDIT_03E_CSS_OWNERSHIP_CLOSURE.md` and merged through PR #209. No broad selector rewrite was justified; physical iOS/Android acceptance remains pending. See `AUDIT_03E_CSS_OWNERSHIP_CLOSURE.md` and `CSS_01_CSS_OWNERSHIP_MIGRATION.md`.
 - **AUDIT-03A:** production CSS delivery/bundle baseline is proposed; implementation has not started.
 
 ### UI-04
 UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRESENTATION.md`. Physical-device acceptance remains a separate gate where specified.
+
+## Experience and Journey workstream (proposed)
+
+- JRN-00 static source audit is complete at `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. The audit confirms that HomeScreen still mounts Stocktake and Stocktake Import, while App owns auth/session and the login/identity/home timing.
+- JRN-01–07 are proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.
+- The experience specification is an umbrella contract. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
 
 ## Protected technical boundaries
 
