@@ -106,6 +106,7 @@ test('Stocktake Page exit guard protects unfinished input and restores Home retu
   }, auditSession);
 
   await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
   const moduleNav = page.getByRole('button', { name: /^thư viện$/i }).first();
   await moduleNav.click();
 
