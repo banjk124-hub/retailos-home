@@ -11,9 +11,13 @@ input,
 select,
 textarea {
   touch-action: manipulation;
-}button:not(:disabled),
+}
+
+button:not(:disabled),
 .side-nav-item,
 .filter-pill,
+.mobile-nav button,
+.mobile-nav-icon,
 .icon-button,
 .text-button,
 .module-arrow,
@@ -103,6 +107,25 @@ button:not(:disabled):active {
   .attention-copy button { min-height: 36px; font-size: 12px; }
   .attention-foot { padding: 12px 0 14px; font-size: 11px; line-height: 1.5; }
   .app-footer { padding-top: 20px; gap: 9px; font-size: 10px; line-height: 1.5; }
+
+  /* Native-app dock: always visible and pinned above content, without scroll-driven hiding. */
+  .mobile-nav {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 30;
+    padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
+    border-radius: 21px;
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: box-shadow 260ms var(--motion-standard), opacity 220ms ease;
+    will-change: transform;
+  }
+  .mobile-nav button { min-height: 52px; gap: 4px; padding: 4px 1px; font-size: 11px; line-height: 1.2; }
+  .mobile-nav-icon { width: 43px; height: 31px; border-radius: 12px; }
   .toast-message { bottom: calc(91px + env(safe-area-inset-bottom)); font-size: 12px; line-height: 1.45; }
   .notification-popover { top: calc(66px + env(safe-area-inset-top)); }
 }
@@ -112,13 +135,12 @@ button:not(:disabled):active {
   .metric-card { padding: 11px 8px; }
   .metric-label { font-size: 9px; }
   .module-title-row h3 { font-size: 12px; }
+  .mobile-nav button { font-size: 10px; }
 }
 
-@media (prefers-reduced-motion: reduce) {.home-enter,
-  .home-enter-active .content-wrap > *,
-  .transition-wash,
-  .transition-mark,
-  button:not(:disabled):active {
+@media (prefers-reduced-motion: reduce) {
+  .home-enter, .home-enter-active .content-wrap > *, .transition-wash, .transition-mark,
+  .mobile-nav, button:not(:disabled):active {
     animation: none !important;
     transition-duration: .01ms !important;
   }
@@ -139,11 +161,75 @@ button:not(:disabled):active {
   .app-shell .section-heading p { font-size: 13px; }
   .app-shell .attention-copy p { font-size: 12px; }
   .app-shell .attention-copy button { font-size: 12px; }
+  .app-shell .mobile-nav button { font-size: 11px; }
+}
+
+
+/* Navigation should behave like a native app control: persistently pinned to the viewport. */
+@media (max-width: 700px) {
+  .mobile-nav {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: box-shadow 360ms cubic-bezier(.2, .8, .2, 1), opacity 240ms ease;
+    touch-action: manipulation;
+  }
+  .mobile-nav button {
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+    transition: color 240ms ease, transform 240ms cubic-bezier(.2, .8, .2, 1);
+  }
+  .mobile-nav button::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.3);
+    pointer-events: none;
+  }
+  .mobile-nav button:active::after {
+    animation: nav-touch-ripple 420ms ease-out;
+  }
+  .mobile-nav button:active .mobile-nav-icon {
+    transform: scale(.9);
+  }
+  .mobile-nav button.active .mobile-nav-icon {
+    animation: nav-active-settle 360ms cubic-bezier(.2, .8, .2, 1);
+  }
+}
+
+@keyframes nav-touch-ripple {
+  0% { opacity: .16; transform: translate(-50%, -50%) scale(.4); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(7); }
+}
+
+@keyframes nav-active-settle {
+  0% { transform: translateY(2px) scale(.9); }
+  65% { transform: translateY(-2px) scale(1.04); }
+  100% { transform: translateY(-1px) scale(1); }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-nav,
+  .mobile-nav button,
+  .mobile-nav button .mobile-nav-icon {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
 }
 
 /* Legacy login-shell overrides retired: current Login is owned by login-experience.css. */
 
-@media (max-width: 700px) and (prefers-reduced-motion: reduce) {.topbar {
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+  .topbar,
+  .mobile-nav {
     transition-duration: .01ms;
   }
 }
@@ -212,7 +298,17 @@ button:not(:disabled):active {
   .panel-footer-button {
     min-height: 44px;
     font-size: 13px;
-  }.filter-pill,
+  }
+  .mobile-nav button {
+    min-height: 54px;
+    font-size: 11px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-nav button:active .mobile-nav-icon {
+    transform: scale(.92);
+  }
+  .filter-pill,
+  .mobile-nav button,
   .icon-button,
   .text-button {
     transition-duration: 180ms;
@@ -229,7 +325,9 @@ button:not(:disabled):active {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {.filter-pill,
+@media (prefers-reduced-motion: reduce) {
+  .filter-pill,
+  .mobile-nav button,
   .icon-button,
   .text-button {
     transition-duration: .01ms !important;
@@ -1273,22 +1371,41 @@ button:not(:disabled):active {
   font-size: 0;
 }
 .app-shell .icon-only-action svg { transition: transform 220ms var(--motion-standard); }
-.app-shell .icon-only-action:hover svg { transform: rotate(90deg); }.app-shell .module-icon svg,
-.app-shell .calendar-modal-icon svg {
+.app-shell .icon-only-action:hover svg { transform: rotate(90deg); }
+.app-shell .module-icon svg,
+.app-shell .mobile-nav-icon svg,
+.app-shell .calendar-modal-icon svg{
   transition: transform 240ms var(--motion-standard), color 200ms ease;
 }
+.app-shell .mobile-nav button:hover .mobile-nav-icon svg { transform: translateY(-2px) scale(1.08); }
 @keyframes icon-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
 }
 @media (max-width: 700px) {
+  .app-shell .mobile-nav button {
+    min-height: 48px;
+    gap: 0;
+    padding: 4px 2px;
+  }
+  .mobile-nav button > span:last-child { display: none; }
+  .mobile-nav .mobile-nav-icon {
+    width: 46px;
+    height: 40px;
+    border-radius: 14px;
+  }
+  .mobile-nav button.active .mobile-nav-icon {
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 4px 14px rgba(185,29,47,.12);
+  }
   .app-shell .icon-section-title { width: 42px; height: 42px; }
 }
-@media (prefers-reduced-motion: reduce) {.app-shell .icon-section-title svg,
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .icon-section-title svg,
   .app-shell .spotlight-tools-button svg,
   .app-shell .icon-only-action svg,
   .app-shell .module-icon svg,
-  .app-shell .calendar-modal-icon svg {
+  .app-shell .mobile-nav-icon svg,
+  .app-shell .calendar-modal-icon svg{
     transition-duration: .01ms;
     animation: none;
   }
@@ -2078,10 +2195,19 @@ button:not(:disabled):active {
   border-bottom-color: rgba(255,255,255,.78);
   background: rgba(255,251,251,.76);
   box-shadow: 0 8px 26px rgba(105,34,42,.045), inset 0 1px 0 rgba(255,255,255,.94);
-}.app-shell .topbar-action-button,
+}
+.app-shell .mobile-nav {
+  border-color: rgba(255,255,255,.84);
+  background: linear-gradient(140deg, rgba(255,255,255,.82), rgba(255,246,247,.68));
+  box-shadow: 0 15px 38px rgba(105,34,42,.13), inset 0 1px 0 rgba(255,255,255,.96), inset 0 -1px 0 rgba(255,255,255,.42);
+}
+.app-shell .topbar-action-button,
+.app-shell .mobile-nav button,
 .app-shell .side-nav-item {
   box-shadow: 0 4px 12px rgba(74,32,38,.045), inset 0 1px 0 rgba(255,255,255,.88);
-}.app-shell .topbar-action-button:hover,
+}
+.app-shell .topbar-action-button:hover,
+.app-shell .mobile-nav button:hover,
 .app-shell .side-nav-item:hover {
   box-shadow: 0 8px 19px rgba(105,34,42,.1), inset 0 1px 0 #fff;
 }
