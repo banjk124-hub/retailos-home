@@ -192,3 +192,133 @@ Before 03C changes policy or source, capture:
 **Cleanup implementation: not started.**
 
 Next safe step: AUDIT-03C should establish the foundation ownership policy and browser-computed contracts from this map. It must not begin broad cleanup until the 03B evidence gates are satisfied.
+
+
+## 9. Supplemental evidence protocol (AUDIT-03C prerequisite)
+
+This section makes the static findings actionable without treating the static scan as runtime proof. It is a capture specification, not evidence that the captures have already been performed.
+
+### 9.1 Browser capture matrix
+
+Use the same production-equivalent build and a pinned browser version for each comparison. Record commit SHA, browser/version, OS, viewport CSS pixels, device scale factor, route, application state and preference state with every capture. Do not compare screenshots or computed styles from different source SHAs as if they were one baseline.
+
+| Surface / route | Representative targets | Required states |
+|---|---|---|
+| Login | page root, heading/body text, text input, primary action, department selector, focus ring | initial, validation/error, keyboard focus |
+| Home | topbar, spotlight/hero, module card, search field, mobile navigation, toast, modal | initial, hover where supported, active, focus-visible, overlay open |
+| Settings | page shell, settings row/control, dialog, destructive/secondary action | initial, dialog open, keyboard focus |
+| Stocktake | page shell, scanner entry/action presentation, data surface, status/feedback | initial, representative active state |
+| Stocktake Import | page shell, import drop/input, preview/table, conflict/error state, primary action | initial, populated preview, validation/conflict |
+
+Viewport profiles (CSS pixels; do not substitute device labels for actual dimensions):
+- Desktop: 1440 × 900.
+- Tablet: 1024 × 768.
+- Mobile portrait: 390 × 844.
+- Narrow landscape: 844 × 390.
+
+If a target route or state cannot be reached without production credentials or operational data, record it as blocked and capture the nearest safe state. Never fabricate a state or use live business data merely to complete the matrix.
+
+### 9.2 Computed-style property contract
+
+For each representative target, record the resolved value and the winning stylesheet/rule (where DevTools protocol exposes it) for:
+- typography: `font-family`, `font-size`, `font-weight`, `line-height`, `letter-spacing`;
+- surface: `color`, `background-color`, `border-color`, `border-radius`, `box-shadow`;
+- geometry: `display`, `position`, `width`, `min-height`, `padding`, `gap`, `z-index`;
+- interaction: `outline-style`, `outline-width`, `outline-offset`, `transition-property`, `transition-duration`, `transform`, `opacity`;
+- motion: computed animation name/duration/iteration and transition values.
+
+A computed value without its matched rule/source is useful for parity but insufficient to assign ownership. Record both when available. For each selector overlap, compare the same element/property/state/media condition; do not mark a conflict merely because selector text appears in multiple files.
+
+### 9.3 Preference and cascade states
+
+Capture each applicable route in these three preference states:
+1. Default: no forced reduced-motion or power-conserve attribute.
+2. Reduced motion: emulate `prefers-reduced-motion: reduce`.
+3. Power conserve: set `data-power-mode="conserve"` on the actual element used by the application contract; verify the root/ancestor placement from source before capture.
+
+Also capture keyboard-only focus-visible separately from pointer focus. Record browser emulation settings; do not assume an operating-system preference is reflected in the test browser.
+
+### 9.4 Pre-Home / post-Home global leakage check
+
+For at least one non-Home route (Login or Settings):
+1. Open a fresh page and capture baseline computed styles before Home has ever loaded.
+2. Navigate to Home and wait for its lazy CSS to load.
+3. Navigate back to the same non-Home route without reloading the document.
+4. Re-capture the exact same elements and properties.
+5. Compare stylesheet/rule winners and computed values.
+
+A difference after Home CSS loads is evidence of cross-route cascade influence, not automatically a user-visible defect. Reproduce with a fresh document and record route order to distinguish lazy-style persistence from route-specific state.
+
+### 9.5 Alias registry: confirmed canonical mapping vs pending consumer coverage
+
+The mappings below are read from the later compatibility-alias declarations in `src/styles/theme.css`. They establish the intended alias target, not the complete set of consumers or proof that all consumers are migrated.
+
+| Compatibility alias | Canonical target | Current audit disposition |
+|---|---|---|
+| `--color-success` | `--color-status-success` | retain; search all CSS/TS/TSX consumers |
+| `--color-warning` | `--color-status-warning` | retain; search all CSS/TS/TSX consumers |
+| `--color-error` | `--color-status-danger` | retain; search all CSS/TS/TSX consumers |
+| `--color-info` | `--color-status-info` | retain; search all CSS/TS/TSX consumers |
+| `--color-neutral` | `--color-status-neutral` | retain; search all CSS/TS/TSX consumers |
+| `--text-primary` | `--color-text-primary` | retain; search all CSS/TS/TSX consumers |
+| `--text-secondary` | `--color-text-secondary` | retain; search all CSS/TS/TSX consumers |
+| `--text-muted` | `--color-text-tertiary` | retain; search all CSS/TS/TSX consumers |
+| `--surface-page` | `--color-surface-canvas` | retain; search all CSS/TS/TSX consumers |
+| `--surface-card` | `--color-surface-panel` | retain; search all CSS/TS/TSX consumers |
+| `--surface-raised` | `--color-surface-raised` | retain; self-named canonical target; inspect for redundant indirection before any migration |
+| `--surface-muted` | `--color-surface-subtle` | retain; search all CSS/TS/TSX consumers |
+| `--surface-input` | `--color-surface-input` | retain; self-named canonical target; inspect for redundant indirection before any migration |
+| `--border-soft` | `--color-border-subtle` | retain; search all CSS/TS/TSX consumers |
+
+Known fallback/compatibility consumption is already asserted in `scripts/test-design-foundation-contract.mjs` for selected Login, native-experience, adaptive-appearance, Stocktake Import and theme body declarations. Those assertions are a targeted contract, not a repository-wide consumer inventory.
+
+Required completion artifact before alias retirement:
+- one row per alias consumer with file, line, selector/component, current alias, replacement token and migration status;
+- separate counts for direct CSS `var(--alias)`, nested fallback `var(--canonical, var(--alias))`, and non-CSS string references;
+- test coverage for each migrated consumer family;
+- zero unresolved consumers before removing an alias.
+
+Suggested local inventory command (run from repository root; review matches rather than bulk-replacing):
+```sh
+rg -n --hidden --glob '!node_modules/**' --glob '!dist/**' --glob '*.{css,ts,tsx}' \
+  -- '--(color-success|color-warning|color-error|color-info|color-neutral|text-primary|text-secondary|text-muted|surface-page|surface-card|surface-raised|surface-muted|surface-input|border-soft)\\b' src
+```
+
+### 9.6 Browser evidence record format
+
+Store evidence outside production source, grouped by exact audited SHA. Minimum record:
+
+| Field | Required value |
+|---|---|
+| Audit SHA | Full Git commit SHA |
+| Build | Command and build result; identify Pages-equivalent base path |
+| Browser | Name and exact version |
+| Environment | OS, viewport, device scale factor |
+| Route/state | Route, interaction state and route navigation sequence |
+| Preferences | Default / reduced-motion / power-conserve |
+| Target | Stable selector or accessible role/name |
+| Property | Computed value |
+| Winner | Matched selector, source file and line when available |
+| Artifact | Screenshot/trace/JSON path or attached CI artifact |
+| Result | Pass / difference / blocked, with concise reason |
+
+A screenshot alone does not prove the cascade winner. A computed-style dump alone does not prove visual parity. Use both for high-risk global selector changes.
+
+### 9.7 Gate decision
+
+AUDIT-03C may define the CSS foundation ownership policy from the static map, but any implementation that moves, removes, scopes or reorders selectors remains blocked until:
+- all P0 global selector groups have pre/post route evidence;
+- the Home property-level winner map covers the listed surfaces and viewport profiles;
+- reduced-motion and power-conserve behavior is verified for the same target elements;
+- the 14-alias consumer inventory is complete for any alias proposed for retirement;
+- relevant browser regression checks pass on the exact candidate commit.
+
+If browser automation is unavailable for a route/state, document the gap and keep the corresponding rule unchanged. Do not replace missing browser evidence with selector-regex output.
+
+## 10. Supplemental disposition
+
+The supplemental protocol and canonical alias target registry are documentation additions only. They do not change the original AUDIT-03B findings:
+- static source ownership inventory: complete;
+- complete alias consumer map: outstanding;
+- browser computed-style/cascade evidence: outstanding;
+- runtime cleanup or stylesheet migration: not started.
