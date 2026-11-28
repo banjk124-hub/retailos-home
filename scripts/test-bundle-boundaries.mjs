@@ -3,6 +3,8 @@ import { access, readFile } from 'node:fs/promises';
 
 const app = await readFile(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const authenticatedShell = await readFile(new URL('../src/platform/shell/AuthenticatedAppShell.tsx', import.meta.url), 'utf8');
+const pageRegistry = await readFile(new URL('../src/platform/journey/journeyPageRegistry.tsx', import.meta.url), 'utf8');
+const pageHost = await readFile(new URL('../src/platform/journey/ActivePageHost.tsx', import.meta.url), 'utf8');
 const home = await readFile(new URL('../src/features/home/HomeScreen.tsx', import.meta.url), 'utf8');
 const main = await readFile(new URL('../src/main.tsx', import.meta.url), 'utf8');
 const exportFormats = await readFile(new URL('../src/features/data/exportFormats.ts', import.meta.url), 'utf8');
@@ -14,7 +16,9 @@ const scannerDecoderFactory = await readFile(new URL('../src/platform/scanner/de
 const bundleReport = await readFile(new URL('./report-bundle.mjs', import.meta.url), 'utf8');
 
 assert.match(app, /AuthenticatedAppShell/);
-assert.match(authenticatedShell, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/home\/HomeScreen'\)\)/);
+assert.match(authenticatedShell, /<ActivePageHost/);
+assert.match(pageRegistry, /lazy\(\(\) => import\('\.\.\/\.\.\/features\/home\/HomeScreen'\)\)/);
+assert.match(pageHost, /<Suspense fallback=\{<PageLoadingSurface \/>\}>/);
 assert.doesNotMatch(app, /import HomeScreen from/);
 for (const component of [
   'BarcodeScanner', 'StocktakeModule', 'StocktakeImportModule',
