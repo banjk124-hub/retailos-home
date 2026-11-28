@@ -1,8 +1,8 @@
 # Current handoff — RetailOS
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`  
-**Latest merged work:** PR #211 — JRN-01 Journey, Persistent Shell and Shared System contract; contract/documentation change, no runtime navigation migration  
+**Verified main HEAD:** `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`  
+**Latest merged work:** PR #212 — JRN-02 persistent Shell navigation ownership; exact-head CI #2047 and main CI #2048 passed, Pages deployment #204 succeeded  
 **Exact PR-head validation:** PR #193 CI #1948 passed on `3381cdf9c79521f29641ab41ef95b60033d9169a` (10 Playwright tests); PR #195 CI #1968 passed on `ed466383ceaad2d619fd7e99932e65ebf23e311c` (preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence)
 
 ## Current owner direction
@@ -31,7 +31,7 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 - JRN-00 source audit is complete. App owns auth/session and Login → Identity → authenticated handoff. HomeScreen previously owned both feature mounts and navigation rendering.
 - JRN-01 is merged in PR #211 at `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. It defines authenticated destination identity, Home return context, push/pop/replace, safe-exit semantics and the Single-App, Multi-Page, Persistent Shell architecture.
-- JRN-02 is in progress on `jrn-02-persistent-shell-navigation`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through a shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen and remain mounted at the authenticated Shell boundary.
+- JRN-02 is merged in PR #212 at `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through a shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen and remain mounted at the authenticated Shell boundary.
 - JRN-02 does not yet extract global quick actions. JRN-03 adds real independent Page destinations; JRN-04 then moves Quick Search, Scanner, Settings, Calendar and Notifications into a global Shell host so they are available from every Page.
 - Stocktake and Stocktake Import remain the only operationally ready feature workflows. Their business logic, persistence and offline behavior are protected.
 - One Experience System governs global semantics; each Page owns its layout, density and workflow-specific composition. Shared system data must not become a global mega-store.
