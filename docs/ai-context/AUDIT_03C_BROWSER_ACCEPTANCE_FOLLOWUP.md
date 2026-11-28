@@ -72,7 +72,9 @@ It also uses Chromium DevTools Protocol:
 
 **Important limitation:** CDP matched declarations plus computed values are stronger than the existing approximate CSSOM specificity trace, but this report does not claim an independently calculated winner for shorthand expansion, cascade layers or CSS-variable resolution. Those cases remain manual DevTools review items. No selector migration may rely on the old heuristic alone.
 
-## 6. Gate and decision
+## 6. Gate and decision — historical pre-merge snapshot
+
+The status in this section records the decision at the time of the original AUDIT-03C follow-up. It is superseded by Section 9 below.
 
 - Existing responsive/runtime evidence remains valid for the assertions it actually performs.
 - The new browser suite adds the missing route-sequence, focus, reduced-motion, power-mode, pseudo-element and CDP matched-rule captures.
@@ -128,7 +130,7 @@ The corrections are test-only. No production CSS, runtime component, import orde
 - The Home logout target measures 42×44 CSS pixels. The existing focus ring is visible (3px outline, 3px offset); this is captured evidence, not a claim of physical-device touch acceptance.
 - All evidence is Chromium automation. Physical iOS Safari and Android Chrome acceptance remains outstanding.
 
-### 8.3 AUDIT-03D changes staged
+### 8.3 AUDIT-03D merged implementation
 
 The stacked AUDIT-03D branch scopes Home-only tokens and focus/tap-highlight rules to `.home-presentation-root`, conditions the viewport background on the Home root being present, removes duplicate global base/touch/reduced-motion declarations from the lazy Home stylesheet, and scopes the legacy `.topbar` rule without increasing its specificity.
 
@@ -138,4 +140,4 @@ The same-document test now requires:
 3. After Logout, html/body/button/wrapper computed styles return to the fresh Login baseline.
 4. Vite's remaining lazy stylesheet is recorded but does not itself fail parity.
 
-No business logic, authentication, runtime routing, import order, dependencies, scanner or stocktake behavior is changed. AUDIT-03D remains unaccepted until its own CI and evidence artifact prove parity and the existing focus/motion/workflow suite remains green.
+No business logic, authentication, runtime routing, import order, dependencies, scanner or stocktake behavior was changed. AUDIT-03D merged through PR #208 and is accepted on main after CI #2025 passed all 15 browser tests and confirmed post-logout computed-style parity.
