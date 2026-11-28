@@ -132,6 +132,8 @@ async function sampleGlobalStyles(page: Page) {
       html: { scrollBehavior: html.scrollBehavior, minWidth: html.minWidth },
       body: {
         minHeight: body.minHeight,
+        fontSize: body.fontSize,
+        lineHeight: body.lineHeight,
         backgroundColor: body.backgroundColor,
         color: body.color,
         fontFamily: body.fontFamily,
@@ -142,6 +144,27 @@ async function sampleGlobalStyles(page: Page) {
         fontSize: button.fontSize,
         lineHeight: button.lineHeight,
       },
+      buttonIdentity: (() => {
+        const element = document.querySelector('button')!;
+        return {
+          tag: element.tagName.toLowerCase(),
+          className: typeof element.className === 'string' ? element.className : '',
+          ariaLabel: element.getAttribute('aria-label'),
+          parentClassName: typeof element.parentElement?.className === 'string' ? element.parentElement.className : '',
+        };
+      })(),
+      topbarLogout: (() => {
+        const element = document.querySelector('.topbar-logout');
+        if (!element) return null;
+        const style = getComputedStyle(element);
+        return {
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          lineHeight: style.lineHeight,
+          minWidth: style.minWidth,
+          minHeight: style.minHeight,
+        };
+      })(),
     };
   });
   const stylesheetHrefs = await page.evaluate(() =>
@@ -351,7 +374,7 @@ test('AUDIT-03C Chromium CDP matched-rule evidence for P0 focus properties', asy
   const computed = await client.send('CSS.getComputedStyleForNode', { nodeId });
   const properties = new Set([
     'outline', 'outline-width', 'outline-style', 'outline-offset',
-    'box-shadow', 'background-color', 'transition-duration',
+    'box-shadow', 'background-color', 'transition-duration', 'font-size', 'line-height',
   ]);
   const matchedRules = (matched.matchedCSSRules ?? []).map((entry: any) => ({
     selector: entry.rule.selectorList?.text ?? '',
