@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { saveHomeUiState, type HomeUiState } from '../homeStateStore';
 
 type Options = {
@@ -22,11 +22,10 @@ export function useHomeNavigation({ initialState, prefersReducedMotion, onOpenSe
     saveHomeUiState({ activeNav, search: searchRef.current, scrollY: window.scrollY });
   }, [activeNav]);
 
-  useEffect(() => {
-    const restore = window.requestAnimationFrame(() => {
-      if (initialState.scrollY > 0) window.scrollTo({ top: initialState.scrollY, behavior: 'auto' });
-    });
-    return () => window.cancelAnimationFrame(restore);
+  useLayoutEffect(() => {
+    if (initialState.scrollY > 0) {
+      window.scrollTo({ top: initialState.scrollY, behavior: 'auto' });
+    }
   }, [initialState]);
 
   useEffect(() => {

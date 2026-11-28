@@ -9,7 +9,7 @@ assert.doesNotMatch(home, /activeNavRef|scrollSaveTimer|syncActiveSection|saveHo
 assert.match(hook, /addEventListener\('scroll'/);
 assert.match(hook, /addEventListener\('pagehide'/);
 assert.match(hook, /removeEventListener\('scroll'/);
-assert.match(hook, /cancelAnimationFrame\(restore\)/);
+assert.match(hook, /useLayoutEffect\(\(\) => \{[\s\S]*?window\.scrollTo\(\{ top: initialState\.scrollY, behavior: 'auto' \}\);[\s\S]*?\}, \[initialState\]\)/);
 assert.match(hook, /setTimeout\([\s\S]*?140\)/);
 assert.match(hook, /prefersReducedMotion \? 'auto' : 'smooth'/);
 assert.match(hook, /onOpenSettings\(\)/);
