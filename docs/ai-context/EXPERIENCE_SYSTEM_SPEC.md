@@ -74,20 +74,19 @@ These are architecture findings, not evidence that the current two ready workflo
     Application Root (App)
     ├── Authentication + Employee Session
     ├── Application Lifecycle (PWA, connectivity, install state)
-    └── Authenticated Experience
+    └── Persistent Authenticated App Shell
         ├── Journey Controller
         │   ├── current destination identity
         │   ├── navigation history / return target
         │   ├── transition intent and direction
         │   └── safe handoff coordination
-        └── Persistent Authenticated App Shell
-            ├── Desktop Navigation Dock / Mobile Adaptive Navigation
-            ├── Journey Controller
-            ├── Active Page Workspace (Home OR one Feature Page)
-            ├── Global QuickActionHost (available from every Page)
-            └── Global Feedback Host
-            ├── Stocktake Page
-            └── Stocktake Import Page
+        ├── Desktop Navigation Dock / Mobile Adaptive Navigation
+        ├── Active Page Host (mounts current destination only)
+        │   ├── Home Page
+        │   ├── Stocktake Page (lazy)
+        │   └── Stocktake Import Page (lazy)
+        ├── Global QuickActionHost (available from every Page)
+        └── Global Feedback Host
 
 ### 3.1.1 Persistent App Shell and adaptive navigation
 
