@@ -88,8 +88,8 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
 
   // Re-enter Stocktake: the Page remount must recover the zone and row from its own store.
   const secondStocktake = await openStocktakeFromHome(page);
-  await expect(page.getByRole('button', { name: /^AT77\\b/ })).toBeVisible();
-  await page.getByRole('button', { name: /^AT77\\b/ }).click();
+  await expect(page.getByRole('button', { name: /^AT77\b/ })).toBeVisible();
+  await page.getByRole('button', { name: /^AT77\b/ }).click();
   await expect(page.getByRole('heading', { name: 'Quét hàng hóa' })).toBeVisible();
   await expect(page.locator('.stocktake-recent-entry')).toContainText('8936000000777');
   await expect(secondStocktake.navigation).toBeVisible();
