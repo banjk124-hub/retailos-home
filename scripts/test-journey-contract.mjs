@@ -4,13 +4,14 @@ import { readFileSync } from 'node:fs';
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const journey = read('../src/platform/journey/journey.types.ts');
 const modules = read('../src/features/home/moduleRegistry.ts');
+const workflowIdentity = read('../src/shared/domain/retailModule.ts');
 const app = read('../src/App.tsx');
 const homeNavigation = read('../src/features/home/hooks/useHomeNavigation.ts');
 const homeState = read('../src/features/home/homeStateStore.ts');
 const updateSafety = read('../src/shared/pwa/updateSafety.ts');
 const cameraSession = read('../src/shared/services/cameraSession.ts');
 
-assert.match(journey, /import type \{ RetailModuleId \} from '\.\.\/\.\.\/features\/home\/moduleRegistry'/);
+assert.match(journey, /import type \{ RetailModuleId \} from '\.\.\/\.\.\/shared\/domain\/retailModule'/);
 assert.match(journey, /export type ExperienceDestination =/);
 assert.match(journey, /\| \{ kind: 'home' \}/);
 assert.match(journey, /\| \{ kind: 'feature'; moduleId: RetailModuleId \}/);
@@ -31,7 +32,9 @@ assert.match(journey, /isSameJourneyDestination/);
 assert.match(journey, /getJourneyTransitionDirection/);
 
 // Destination IDs derive from the existing workflow registry; no parallel ID list.
-assert.match(modules, /export const RETAIL_MODULE_IDS = \[/);
+assert.match(modules, /export \{ RETAIL_MODULE_IDS \} from '\.\.\/\.\.\/shared\/domain\/retailModule'/);
+assert.match(workflowIdentity, /export const RETAIL_MODULE_IDS = \[/);
+assert.match(workflowIdentity, /export type RetailModuleId = typeof RETAIL_MODULE_IDS\[number\]/);
 assert.doesNotMatch(journey, /stocktake-import|stocktake|inventory|product-dates/);
 
 // App continues to own authentication; JRN-01 does not duplicate auth/session state.
