@@ -65,10 +65,10 @@ test('JRN-03D-D2 provides independent global shortcuts on Mobile Feature Pages a
 
   // Open the Shell-owned Module Library from a Feature Page and launch another module.
   await shortcuts.getByRole('button', { name: 'Mở thư viện nghiệp vụ' }).click();
-  const library = page.getByRole('dialog', { name: 'Chọn nhóm chức năng' });
+  const library = page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' });
   await expect(library).toBeVisible();
   await library.getByRole('button', { name: /kiểm kê/i }).first().click();
-  await library.getByRole('button', { name: /^xuất file/i }).click();
+  await library.getByRole('button', { name: /^02 Xuất file/i }).click();
   await expect(page.locator('.stocktake-import-page-shell')).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Lối tắt chức năng' })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Điều hướng xuất file kiểm kê' })).toHaveCount(0);
@@ -104,8 +104,8 @@ test('JRN-03D-D3 Shell Module Library provides grouped navigation, search and ac
 
   const search = dialog.getByRole('textbox', { name: 'Tìm chức năng trong nhóm' });
   await search.fill('xuất');
-  await expect(dialog.getByRole('button', { name: /xuất file/i })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /kiểm kê trực tiếp/i })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: /^02 Xuất file/i })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /^01 Kiểm kê/i })).toBeVisible();
   await search.fill('');
   await dialog.getByRole('button', { name: /kiểm soát hàng hóa/i }).click();
   await expect(dialog.getByRole('heading', { name: 'Kiểm soát hàng hóa' })).toBeVisible();
