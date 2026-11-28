@@ -129,7 +129,7 @@ Never create a second route registry that duplicates the stable module/workflow 
 
 ### 3.5 Canonical Journey Contract (JRN-01)
 
-The authenticated navigation model is defined in `src/platform/journey/journey.types.ts`. It is a typed contract and pure destination identity layer; it is not yet a mounted router or a navigation controller.
+The authenticated navigation model is defined in `src/platform/journey/journey.types.ts`. Stable workflow identity is owned by `src/shared/domain/retailModule.ts`; Home's `moduleRegistry.ts` re-exports the type and IDs for compatibility. It is a typed contract and pure destination identity layer; it is not yet a mounted router or a navigation controller.
 
 **Ownership boundary**
 - `App.tsx` remains the only owner of authentication, employee session, Login → Identity → authenticated handoff, logout and app-level PWA lifecycle.
@@ -142,6 +142,7 @@ The authenticated navigation model is defined in `src/platform/journey/journey.t
 - `{ kind: 'home' }` identifies Home.
 - `{ kind: 'feature', moduleId: RetailModuleId }` identifies a workflow by the existing business workflow ID.
 - Destination keys are derived as `home` or `feature:<moduleId>`. Do not create a second list of feature IDs or derive identity from title, icon, snapshot/cache ID or display label.
+- `RetailModuleId` lives in the neutral shared domain contract, not under Home or Platform. Home re-exports the contract to preserve existing imports; platform/shared layers must not depend on Home implementation folders.
 - A typed feature destination does not assert that a workflow is implemented or ready. The future Feature Page resolver must require both an implemented page resolver and the existing module registry's `availability === 'ready'`; `workStatus`, snapshot availability and platform availability are separate dimensions. Placeholders must not become navigable pages merely because their IDs exist.
 
 **Stack and navigation semantics**
