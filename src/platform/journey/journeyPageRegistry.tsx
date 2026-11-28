@@ -2,7 +2,7 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import type { EmployeeSession } from '../../shared/domain/employee';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import type { RetailPlatform } from '../../shared/platform/platformCapabilities';
-import type { ExperienceDestination } from './journey.types';
+import type { ExperienceDestination, HomeReturnContext } from './journey.types';
 import { MODULE_REGISTRY } from '../../features/home/moduleRegistry';
 import type { RetailModuleId } from '../../shared/domain/retailModule';
 
@@ -16,12 +16,17 @@ export type JourneyPageProps = {
   onInstall: () => Promise<void> | void;
   onBootReady: () => void;
   platform: RetailPlatform;
+  /** Ephemeral context attached to the Home stack entry when returning from a Feature Page. */
+  homeReturnContext?: HomeReturnContext;
 };
 
 const HomePage = lazy(() => import('../../features/home/HomeScreen'));
+const StocktakePage = lazy(() => import('../../features/stocktake/StocktakePage'));
 
 /** Feature Page resolvers are added only in their bounded extraction slices. */
-const FEATURE_PAGES: Partial<Record<RetailModuleId, LazyExoticComponent<ComponentType<JourneyPageProps>>>> = {};
+const FEATURE_PAGES: Partial<Record<RetailModuleId, LazyExoticComponent<ComponentType<JourneyPageProps>>>> = {
+  stocktake: StocktakePage,
+};
 
 export function isJourneyDestinationResolvable(destination: ExperienceDestination): boolean {
   if (destination.kind === 'home') return true;

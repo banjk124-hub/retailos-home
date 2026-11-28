@@ -125,16 +125,16 @@ export default function StocktakePresentation({
   }
 
   return (
-    <div className="stocktake-backdrop" role="presentation">
-      <section className="stocktake-panel" role="dialog" aria-modal="true" aria-labelledby="stocktake-title">
+    <div className="stocktake-backdrop">
+      <section className="stocktake-panel" aria-labelledby="stocktake-title">
         <header className="stocktake-header">
           <button
             className="stocktake-icon-button"
             type="button"
             onClick={screen === 'home' ? actions.onClose : actions.onBackHome}
-            aria-label={screen === 'home' ? 'Đóng kiểm kê' : 'Quay lại'}
+            aria-label={screen === 'home' ? 'Về trang chủ' : 'Quay lại'}
           >
-            {screen === 'home' ? <X size={20} /> : <ArrowLeft size={20} />}
+            <ArrowLeft size={20} />
           </button>
           <div>
             <span className="stocktake-eyebrow">RETAILOS · NGHIỆP VỤ</span>

@@ -41,7 +41,7 @@ assert.match(calendarHook, /visibilitychange/);
 assert.equal((navigationHook.match(/window\.addEventListener\('scroll'/g) ?? []).length, 1);
 assert.match(home, /<HomeModuleLibrarySection/);
 assert.doesNotMatch(home, /filteredModules|visibleLibraries|MODULE_REGISTRY/);
-assert.match(home, /const \[initialUiState\] = useState\(readHomeUiState\)/);
+assert.match(home, /const \[initialUiState\] = useState\(\(\) =>/);
 assert.doesNotMatch(registry, /function getModulesForLibrary\(/);
 assert.doesNotMatch(homeState, /activeFilter/);
 assert.match(library, /export const HomeModuleLibrarySection = memo\(/);

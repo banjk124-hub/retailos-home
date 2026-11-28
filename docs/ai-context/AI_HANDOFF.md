@@ -35,7 +35,8 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 - JRN-02 is merged in PR #212 at `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`: AuthenticatedAppShell owns ShellNavigation rendering; Home registers its navigation model through an owner-scoped shell context. Desktop Dock/Mobile navigation are rendered outside HomeScreen at the authenticated Shell boundary.
 - Post-merge evidence: CI #2047 (PR head) and #2048 (main) passed, each with 15 Playwright tests; docs CI #2049 and main CI #2050 passed; Pages deployments #204 and #205 succeeded. Physical-device QA is not implied.
 - JRN-03 source audit is complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`; see [AUDIT_JRN_03_PAGE_HOST.md](./AUDIT_JRN_03_PAGE_HOST.md).
-- JRN-03A is implemented on PR #215 (pending merge): JourneyController, Home-only lazy Page Registry, ActivePageHost and owner-scoped async Exit Guard foundation are mounted below the existing Shell. Exact-head CI #2058 passed on `ba70bc1b563e2ae1e5b0336b2df3b1a785a13cc6`, including preflight, TypeScript, production/Pages builds, bundle comparison and 15 Playwright tests. Stocktake and Import remain Home-owned until JRN-03B/03C; no deployment or physical-device QA is claimed.
+- JRN-03A merged as PR #215 at `3920216dcea8ae04baa774cc62cc0d11c5f3ec77`; exact-head CI #2076 passed on `f79c1f92f3cf6b310a1fd1f7d553ca561a01f0b2` (preflight, TypeScript, production/Pages builds, bundle comparison, 15 Playwright tests).
+- JRN-03B is in progress on `feat/jrn-03b-stocktake-page`. Stocktake Page is registered, Home dispatches typed navigation with Home return context, and the existing Stocktake coordinator/store/PWA blocker/scanner remain unchanged in ownership. See [JRN_03B_STOCKTAKE_PAGE.md](./JRN_03B_STOCKTAKE_PAGE.md). Import remains Home-owned until JRN-03C.
 - JRN-03 does not include Global Quick Actions. JRN-04 remains the later workstream for Quick Search, Scanner, Settings, Calendar and Notifications at Shell level.
 - Stocktake and Stocktake Import remain the only operationally ready feature workflows. Their business logic, persistence and offline behavior are protected.
 - One Experience System governs global semantics; each Page owns its layout, density and workflow-specific composition. Shared system data must not become a global mega-store.
@@ -43,7 +44,7 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 ## Next technical gates
 
-1. **JRN-03A:** review and merge PR #215 after owner review; then implement JRN-03B Stocktake Page extraction with a complete feature exit guard. JRN-03C Import extraction follows separately, then JRN-03D removes the Home-owned mounts and performs integrated QA.
+1. **JRN-03B:** finish Stocktake Page guard/layout/return-context tests and merge after exact-head CI + browser QA. Then implement JRN-03C Import Page with dirty/pending/unpersisted-result guards. JRN-03D removes remaining Home-owned workflow mounts and performs cross-Page integration QA.
 2. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
 3. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
 4. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.

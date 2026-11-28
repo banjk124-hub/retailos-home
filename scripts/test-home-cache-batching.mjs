@@ -19,8 +19,10 @@ assert.ok(!home.includes('Promise.allSettled(MODULE_DATA_IDS.map(getCachedModule
 assert.ok(barcodeLookup.includes('getCachedModuleSnapshots(lookupSources.map(({ moduleId }) => moduleId))'), 'Barcode lookup must share the batch reader.');
 assert.ok(!barcodeLookup.includes('Promise.allSettled(lookupSources.map(({ moduleId }) => getCachedModuleSnapshot(moduleId)))'), 'Barcode lookup must not open one IndexedDB connection per source.');
 
-assert.ok(home.includes('const MemoizedStocktakeModule = memo((props: React.ComponentProps<typeof StocktakeModule>)'), 'The expensive Stocktake tree must be memoized.');
-assert.ok(home.includes('const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>)'), 'The Stocktake Import tree must be memoized.');
+assert.ok(home.includes('const MemoizedStocktakeImportModule = memo((props: React.ComponentProps<typeof StocktakeImportModule>)'), 'The Stocktake Import tree must remain memoized until JRN-03C.');
+assert.ok(home.includes("destination: { kind: 'feature', moduleId: 'stocktake' }"), 'Home must dispatch a typed Stocktake Page destination.');
+assert.ok(home.includes('homeReturnContext: homeContext'), 'Home must capture its return context before leaving.');
+assert.ok(!home.includes('isStocktakeOpen') && !home.includes('MemoizedStocktakeModule'), 'Home must no longer own the Stocktake Page mount.');
 assert.ok(home.includes('const MemoizedBarcodeScanner = memo((props: React.ComponentProps<typeof BarcodeScanner>)'), 'The scanner presentation must be memoized.');
 assert.ok(home.includes('const HOME_DOCK_ITEMS = navItems.map('), 'The dock item list must have stable identity.');
 assert.ok(home.includes('const HOME_DOCK_ITEMS = navItems.map('), 'Dock navigation items must have stable identity.');
@@ -30,9 +32,7 @@ assert.ok(home.includes('action: dockAction'), 'The persistent Shell registratio
 assert.ok(home.includes("useShellNavigationRegistration('home'"), 'Home must register its navigation model with the persistent Shell.');
 assert.ok(dock.includes('export const LiquidDock = memo('), 'LiquidDock must remain memoized at its component boundary.');
 
-assert.ok(home.includes('const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);'), 'Stocktake close callback must remain stable.');
 assert.ok(home.includes('const closeStocktakeImport = useCallback(() => setIsStocktakeImportOpen(false), []);'), 'Stocktake Import close callback must remain stable.');
-assert.ok(home.includes('<MemoizedStocktakeModule employee={employee} onClose={closeStocktake} platform={platform} />'), 'Stocktake must receive the stable close callback.');
 assert.ok(home.includes('<MemoizedStocktakeImportModule employee={employee} onClose={closeStocktakeImport} />'), 'Stocktake Import must receive the stable close callback.');
 
 assert.ok(home.includes('const handleBarcodeDetected = useCallback('), 'Barcode callback must remain stable for the memoized scanner.');

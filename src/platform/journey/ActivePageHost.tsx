@@ -31,6 +31,9 @@ export function ActivePageHost(props: JourneyPageProps) {
   const controller = useJourneyController();
   const destination = getActiveJourneyDestination(snapshot);
   const pageKey = getActiveJourneyKey(snapshot);
+  const homeReturnContext = destination.kind === 'home'
+    ? snapshot.stack.find((entry) => entry.destination.kind === 'home')?.homeReturnContext
+    : undefined;
   const Page = resolveJourneyPage(destination);
 
   if (!Page) {
@@ -49,7 +52,7 @@ export function ActivePageHost(props: JourneyPageProps) {
     {destination.kind === 'home' ? (
       <HomePresentationRoot platform={props.platform}>
         <Suspense fallback={<PageLoadingSurface />}>
-          <Page {...props} />
+          <Page {...props} homeReturnContext={homeReturnContext} />
         </Suspense>
       </HomePresentationRoot>
     ) : (
