@@ -163,10 +163,10 @@ test('Stocktake Import Page exit guard preserves dirty edits and pending conflic
   const pendingConflict = await createWorkbook([['8936000000003', '2.000']], 'BT02-pending-conflict.xlsx');
   await fileInput.setInputFiles(pendingConflict);
   await expect(page.getByRole('alertdialog', { name: 'Kiểm tra file bổ sung' })).toBeVisible();
-  await page.getByRole('button', { name: 'Trang chủ' }).first().click();
+  await page.getByRole('button', { name: 'Trang chủ', exact: true }).first().click();
   await expect(pageSurface).toBeVisible();
   await expect(page.getByRole('alertdialog', { name: 'Kiểm tra file bổ sung' })).toBeVisible();
   await page.getByRole('button', { name: 'Hủy bổ sung' }).click();
-  await page.getByRole('button', { name: 'Trang chủ' }).first().click();
+  await page.getByRole('button', { name: 'Trang chủ', exact: true }).first().click();
   await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
 });
