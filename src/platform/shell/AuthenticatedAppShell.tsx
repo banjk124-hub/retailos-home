@@ -6,7 +6,7 @@ import { ExperienceBackground } from '../../shared/components/ExperienceBackgrou
 import { Brand, BrandMotion } from '../../shared/brand';
 import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
 import { useRetailPlatform } from '../../shared/platform/platformContext';
-import { HomePresentationRoot } from '../home/HomePresentationRoot';
+import { AuthenticatedShellPresentationRoot } from './AuthenticatedShellPresentationRoot';
 import { PersistentShellNavigation, ShellNavigationProvider } from './shellNavigationContext';
 import { JourneyControllerProvider } from '../journey/JourneyControllerProvider';
 import { ActivePageHost } from '../journey/ActivePageHost';
@@ -133,7 +133,7 @@ export default function AuthenticatedAppShell({
         ) : (
           <ShellNavigationProvider>
             <JourneyControllerProvider>
-              <HomePresentationRoot platform={platform}>
+              <AuthenticatedShellPresentationRoot platform={platform}>
                 <div className={isLeavingHome ? 'app-transition-leave' : ''}>
                   <ActivePageHost
                     employee={employee}
@@ -148,7 +148,7 @@ export default function AuthenticatedAppShell({
                   />
                 </div>
                 <PersistentShellNavigation platform={platform} />
-              </HomePresentationRoot>
+              </AuthenticatedShellPresentationRoot>
             </JourneyControllerProvider>
           </ShellNavigationProvider>
         )}
