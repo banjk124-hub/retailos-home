@@ -103,7 +103,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                     <span className="shell-module-library__group-copy"><small>NHÓM {String(index + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
                     <ChevronRight size={16} />
                   </Surface>
-                </>
+                </Fragment>
               );
             })}
           </div>
