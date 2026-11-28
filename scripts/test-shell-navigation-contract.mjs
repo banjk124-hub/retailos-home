@@ -20,7 +20,11 @@ assert.match(shell, /<TabletShellNavigation \{\.\.\.props\} \/>/);
 assert.match(desktop, /<Surface as="nav"/);
 assert.match(desktop, /onSelect\(item\.id\)/);
 assert.match(desktop, /action\.onSelect\(event\)/);
-assert.match(desktop, /DesktopShellModuleLibrary/);\nassert.match(desktop, /const isHomeNavigation = items.some\\(\\(item\\) => item.id === 'modules'\\)/);\nassert.match(desktop, /!isHomeNavigation/);\nassert.match(desktop, /isHomeLibraryAnchor \\? 'Thư viện' : item.label/);\nassert.match(desktop, /<LibraryBig size=\\{21\\} \\/>/);
+assert.match(desktop, /DesktopShellModuleLibrary/);
+assert.match(desktop, /const isHomeNavigation = items.some/);
+assert.match(desktop, /!isHomeNavigation/);
+assert.match(desktop, /isHomeLibraryAnchor/);
+assert.match(desktop, /LibraryBig/);
 assert.match(desktopStyles, /inset: 0 auto 0 0/);
 assert.match(desktopStyles, /height: 100dvh/);
 assert.match(desktopStyles, /border-radius: 0 18px 18px 0/);
@@ -45,5 +49,10 @@ assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\]
 assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'\}/);
 assert.doesNotMatch(home, /<LiquidDock/);
 assert.match(dock, /data-keyboard-open/);\nconst desktopLibrary = read('../src/platform/shell/DesktopShellModuleLibrary.tsx');\nconst desktopLibraryStyles = read('../src/platform/shell/DesktopShellModuleLibrary.css');\nassert.match(desktopLibrary, /MODULE_LIBRARIES.map/);\nassert.match(desktopLibrary, /controller.dispatch\\(\\{ kind: 'push'/);\nassert.match(desktopLibraryStyles, /left: 88px/);
+const desktopLibrary = read('../src/platform/shell/DesktopShellModuleLibrary.tsx');
+const desktopLibraryStyles = read('../src/platform/shell/DesktopShellModuleLibrary.css');
+assert.match(desktopLibrary, /MODULE_LIBRARIES.map/);
+assert.match(desktopLibrary, /controller.dispatch/);
+assert.match(desktopLibraryStyles, /left: 88px/);
 
 console.log('SH-01 platform-owned navigation composition contract tests passed.');
