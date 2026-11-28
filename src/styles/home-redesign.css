@@ -1,6 +1,6 @@
 /* RetailOS Home presentation layer — semantic surface roles only.
    Intentionally scoped to existing UI classes. Does not alter business behavior. */
-:root {
+.home-presentation-root {
   --ro-red: #e51f2d;
   --ro-red-deep: #a90f22;
   --ro-red-soft: var(--color-brand-subtle, #fff0f1);
@@ -16,15 +16,15 @@
   --ro-safe-left: max(0px, env(safe-area-inset-left));
   --ro-shell-padding-x: clamp(16px, 2.2vw, 28px);
 }
-html { scroll-behavior: smooth; }
-body {
-  min-height: 100vh;
+.home-presentation-root {
   -webkit-tap-highlight-color: transparent;
-  background: #f6f1f2;
 }
-button, a, input, select { touch-action: manipulation; }
-button { font: inherit; }
-:where(button, a, input, select, [role="button"]):focus-visible {
+@supports selector(:root:has(.home-presentation-root)) {
+  :root:has(.home-presentation-root) {
+    background-color: #f6f1f2;
+  }
+}
+:where(.home-presentation-root) :where(button, a, input, select, [role="button"]):focus-visible {
   outline: 3px solid rgba(229,31,45,.7);
   outline-offset: 3px;
 }
@@ -191,10 +191,7 @@ button { font: inherit; }
 
   .spotlight-art { border-radius: 20px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
-}
+
 
 
 /* Immediate feedback while a lazy-loaded feature chunk is resolving. */
