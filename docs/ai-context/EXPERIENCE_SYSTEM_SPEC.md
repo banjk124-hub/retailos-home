@@ -10,11 +10,13 @@ This is the experience-system umbrella. It does not replace business-domain cont
 
 RetailOS should have one coherent experience system, not one giant screen and not separate applications for every feature.
 
-- One application identity, authentication/session lifecycle and shared domain/data contracts.
-- One Journey/navigation contract with stable destination identity.
-- Home remains a first-class destination and retains quick/local interactions.
+- One application identity, authentication/session lifecycle and shared domain/data contracts: **Single App, not multiple apps or embedded mini-apps**.
+- Multiple independently owned Pages define distinct user workspaces; navigation changes the active workspace, not the application.
+- The authenticated App Shell persists across Page changes. Desktop keeps a compact, persistent left Navigation Dock; Mobile uses an adaptive navigation pattern suited to limited space.
+- The active Page occupies the workspace region. The Dock/navigation chrome is not owned or remounted by individual Pages.
+- Home remains a first-class Page and entry point, not a container that owns other feature Pages.
 - Operational workflows with independent state, persistence, substantial work surfaces or resource lifecycles are dedicated Feature Pages.
-- Overlays remain overlays when the task is brief and context-preserving.
+- Global quick actions remain reachable from the shell on every Page; their transient surfaces are not Home-owned merely because Home originally hosted them.
 - Desktop and Mobile may compose different shells/presentations while sharing destination identity, domain operations and results. Tablet remains review-required under the platform matrix.
 - Shared components are promoted only after real consumers prove equivalent semantics. Feature-owned composition remains valid.
 - Motion, icons and feedback communicate state and intent; they are not decoration applied indiscriminately.
@@ -89,6 +91,51 @@ These are architecture findings, not evidence that the current two ready workflo
             ├── Stocktake Page
             └── Stocktake Import Page
 
+### 3.1.1 Persistent App Shell and adaptive navigation
+
+The authenticated App Shell is persistent infrastructure around the active Page, not a Page itself.
+
+**Desktop**
+- Keep a compact Navigation Dock fixed at the left edge throughout the authenticated experience.
+- The Dock remains mounted while Home and Feature Pages change in the workspace to its right.
+- It provides Home, available/ready Feature Page destinations and global quick-action entry points. Do not expose placeholder registry entries as working destinations.
+- Dock width, grouping, tooltip, active state and expand/collapse behavior belong to Desktop Shell presentation, not individual Pages.
+
+**Mobile**
+- Do not squeeze the desktop Dock into the narrow viewport.
+- Provide an adaptive navigation pattern that keeps Home, primary work destinations and high-value quick actions reachable with minimal steps. A compact bottom navigation plus a full navigation/quick-action sheet is a candidate pattern; exact slots and behavior must be validated against real viewport and workflow use before lock-in.
+- Navigation must remain discoverable from every Page. Returning Home or switching to another ready Page must not require closing the current workflow manually unless its exit guard requires it.
+- Respect safe areas, keyboard/viewport changes, touch targets and content space. Tablet behavior remains governed by the platform capability matrix.
+
+**Shared behavior**
+- Desktop Dock and Mobile Navigation are separate presentations over the same destination and action definitions; do not maintain parallel module registries or permission rules.
+- App Shell owns navigation chrome, global quick-action entry points and app-level feedback surfaces. The active Page owns its workspace and feature-specific UI.
+- Global quick actions (for example Quick Search, Scanner, Calendar, Notifications and Settings) may be invoked from any Page. Their host/lifecycle is shell-level; they are not authenticated Page destinations and must not be mounted under Home solely for historical reasons.
+- Quick-action surfaces preserve the invoking Page context when closed. Scanner camera leases and other resources must be released on close or owner lifecycle exit.
+- Authentication/Login/Identity screens do not show the authenticated Navigation Shell.
+
+### 3.1.2 Shared Experience and local presentation ownership
+
+RetailOS has one Experience System, not one mandatory layout.
+
+- Global foundations define typography roles, color semantics, spacing/radius/elevation tokens, icon semantics, interaction states, accessibility and motion primitives.
+- Shared components define stable reusable behavior and APIs. A Page may compose them differently, add local variants or own specialized components when its workflow requires it.
+- Page-level layout, density, content hierarchy, local component composition and contextual motion may differ by workflow.
+- A local Page refinement must not silently change other Pages. Shared token/component changes require consumer impact review and regression coverage.
+- Do not promote a component to shared only because two screens look similar; prove equivalent semantics and lifecycle first.
+- Motion uses a common vocabulary and performance/accessibility constraints, while each Page may choose appropriate local choreography within that contract.
+
+### 3.1.3 Shared System Data Flow
+
+One App must provide a coherent data system without collapsing all state into one global store.
+
+- **System data:** shared canonical entities and app context such as employee/permissions, store identity, product identifiers/catalog references, shared inventory facts, configuration, source versions and sync status.
+- **Domain data:** workflow-owned records, rules, drafts, history and persistence remain owned by their respective business domains (for example Stocktake and Stocktake Import).
+- **UI state:** selection, open panels, filters, temporary edits and presentation state remain local to the Page/component unless an explicit cross-Page contract requires otherwise.
+- Pages access shared system data through platform-neutral repositories/domain services/data contracts, not by importing another Page's stores or reaching into its component state.
+- Shared data changes are exposed through explicit version/change signals and consistency rules. Each Page decides how and when to reconcile its own domain state; shared updates must not overwrite dirty user work.
+- Keep existing local/offline persistence and ETL/snapshot contracts. This architecture does not select a backend, database, global state library or continuous synchronization strategy.
+
 ### 3.2 Shared versus separate
 
 | Concern | Shared or separate? | Contract |
@@ -96,11 +143,16 @@ These are architecture findings, not evidence that the current two ready workflo
 | App identity, auth/session, employee context | Shared | One source of truth in App/auth services |
 | Destination IDs and navigation semantics | Shared | Stable typed IDs; no duplicate route registry |
 | Journey controller | Shared policy/state | Platform shells consume the same navigation contract |
+| Authenticated App Shell | Shared lifecycle, adaptive presentation | Persists across Page changes; owns navigation chrome and global quick-action host |
+| Desktop Navigation Dock / Mobile Navigation | Separate presentation, shared definitions | Dock stays fixed on Desktop; Mobile uses adaptive navigation; both resolve the same destinations/actions |
+| Active Page workspace | Page-owned | Only active Page content changes during Page navigation |
 | Desktop/Mobile shell composition | Separate presentation | Different layouts; no duplicated business logic |
-| Home content and Home-specific actions | Home-owned | Keep local quick actions and Home overlays here |
+| Home content and Home-specific actions | Home-owned | Home sections and truly Home-local overlays stay here; global quick actions are shell-level |
 | Stocktake workflow | Separate Feature Page | Owns workflow state, persistence orchestration and resource lifecycle |
 | Stocktake Import workflow | Separate Feature Page | Owns import/edit/history/export state and lifecycle |
+| Shared system data access and canonical contracts | Shared | Repositories/domain services/change signals; no cross-Page store imports |
 | Domain operations, persistence contracts, data models | Shared where genuinely common | Platform-neutral; feature/domain-owned |
+| UI state | Page/component-owned | No globalizing transient presentation state without a cross-Page contract |
 | Feature presentation | Separate by feature | Platform variants only when justified |
 | Generic primitives | Shared only after proven reuse | Follow component governance |
 | Feature-specific icon maps | Feature/domain-owned | Departments shared; Home module IDs remain Home-owned |
@@ -137,6 +189,29 @@ The authenticated navigation model is defined in `src/platform/journey/journey.t
 - Platform shells render the same destination semantics using platform-specific composition.
 - Home section navigation remains local to Home. `home`, `modules`, `activity` are Home sections/anchors, not app pages.
 - Settings, Scanner, Quick Search, Calendar, Notifications and Notice detail remain Home-owned overlay/quick-action state, not page destinations.
+
+**Persistent shell and workspace boundary**
+- The authenticated App Shell persists across all authenticated destination changes. Page navigation must not remount the shell or discard its navigation state.
+- Desktop has a compact persistent left Navigation Dock. It remains visible on Home and every Feature Page; only the workspace content to its right changes.
+- Mobile uses an adaptive navigation presentation rather than a compressed desktop Dock. The exact mobile control arrangement remains a design/QA decision, but Home, ready Pages and global quick actions must remain quickly reachable from every Page.
+- Both platform presentations resolve the same destination IDs, readiness/permission rules and global action definitions. They must not maintain separate module registries.
+- The shell owns global navigation chrome and global quick-action hosting. Home owns Home sections and Home-local content, not global actions merely because they were historically rendered from Home.
+- Quick actions are transient surfaces, not Page destinations. Closing one returns to the invoking Page and context. Resource-owning actions (especially Scanner) must release resources on close.
+- Only the active Page workspace is mounted by default; the persistent shell is not a hidden Page and must not be torn down during transitions.
+
+**Experience and presentation boundary**
+- One global Experience System governs typography roles, semantic colors, design tokens, icon meaning, accessibility, motion vocabulary and shared component contracts.
+- Each Page owns its layout, density, hierarchy, composition and workflow-specific components. Different Pages may express the same design language differently.
+- A Page may introduce local components/variants and evolve them independently. Promote to shared only after real consumers demonstrate the same behavior and lifecycle.
+- Changes to global tokens or shared component APIs require impact review across all consumers; Page-local styling changes must remain scoped.
+- Common motion rules govern intent, accessibility and performance; local choreography can differ when it better communicates that Page's workflow.
+
+**Shared system data boundary**
+- System data is accessed through shared, platform-neutral data contracts/repositories/domain services and explicit change/version signals.
+- Feature/domain data and persistence remain owned by each workflow. UI state remains local to its Page/component.
+- Pages must not access another Page's internal store or component state. Cross-Page data exchange goes through shared contracts/services or explicit domain events.
+- Shared system updates must not overwrite dirty domain work. Each consumer reconciles changes according to its domain rules.
+- This is a logical architecture contract only; it does not select a backend, database, global store, realtime transport or replace current offline/ETL/snapshot behavior.
 
 **Destination identity**
 - `{ kind: 'home' }` identifies Home.
@@ -189,22 +264,23 @@ The authenticated navigation model is defined in `src/platform/journey/journey.t
 | Login success | Valid login accepted | Login to Identity | Recognition | Persist once; prevent duplicate submit |
 | Identity recognition | Authenticated identity | Short reveal/hold | Identity to Home | Correct employee/department; bounded hold; reduced-motion bypass |
 | Home arrival | Identity completes | Home settle | Home interactive | Boot healthy only when primary surface is ready |
-| Home to Feature Page | Select ready module | Directional forward | Feature ready | Save Home context; lazy-load; loading/error states |
-| Feature to Home | Back/close | Directional reverse | Home restored | Restore return target and scroll/search context |
+| Home to Feature Page | Select ready module from Home or persistent navigation | Workspace forward | Feature ready | Keep shell/Dock mounted; save Home context when applicable; lazy-load; loading/error states |
+| Feature Page to another ready Page | Select destination from persistent navigation | Workspace forward | Target Page ready | Keep shell mounted; run current Page exit guard; preserve shared system context |
+| Feature to Home | Dock/Home navigation or Page Back | Workspace reverse | Home restored | Keep shell mounted; restore return target and scroll/search context |
 | Feature to Feature | Explicit navigation | Directional | New feature | Safe exit previous feature; no hidden resources |
 | Logout | User invokes logout | Exit to Login | Session cleared | Release camera; clear session/cache per existing policy |
 | Update handoff | Explicit approval at safe point | Controlled handoff | New build | Existing PWA consent/blocker/rollback remains authoritative |
 
 ### 4.2 Home-owned quick journeys
 
-| Action | Presentation | Return behavior |
+| Action | Presentation | Availability and return behavior |
 |---|---|---|
-| Quick Search | Compact overlay or anchored search surface | Close returns to same Home state |
-| Quick Scanner | Mobile camera surface | Close releases camera and returns to same Home state |
-| Settings | Sheet/dialog or overlay | Close returns to Home; preserve focus |
-| Scanner Preferences | Nested Settings surface | Back returns to Settings, not Home |
-| Calendar | Lightweight dialog/sheet | Close returns to Home and restores trigger focus |
-| Notifications / Notice detail | Popover/list to detail overlay | Back returns to notification list when appropriate |
+| Quick Search | Compact overlay or anchored search surface | Invokable from any Page; close returns to the invoking Page/context |
+| Quick Scanner | Platform-appropriate camera surface | Invokable from any Page where supported; close releases camera and returns to invoking Page |
+| Settings | Sheet/dialog or dedicated lightweight surface | Globally reachable; close returns to invoking Page and restores focus |
+| Scanner Preferences | Nested Settings surface | Back returns to Settings, not the originating Page directly |
+| Calendar | Lightweight dialog/sheet | Globally reachable; close returns to invoking Page and restores trigger focus |
+| Notifications / Notice detail | Popover/list to detail overlay | Globally reachable; detail back returns to notification list when appropriate |
 | Module Library | Home-owned catalog surface | Selecting a ready module navigates to Feature Page; placeholder gets honest unavailable/integration feedback |
 
 ### 4.3 Feature Page contract
@@ -243,7 +319,7 @@ These are semantic responsibilities, not a mandate to create every component imm
 
 - Stocktake owns workspace, zone controls, review/history/export views, scanner overlay and operational confirmation dialogs.
 - Stocktake Import owns file intake, parsing/review, conflict resolution, editable rows, output preview, history and export actions.
-- Home owns Module Library, Home sections, quick lookup and quick scanner entry.
+- Home owns Module Library and Home sections. Global Quick Search, Scanner, Calendar, Notifications and Settings entry points are exposed by the App Shell and may be invoked from any Page; their actual surface/lifecycle is not Home-owned.
 - Do not split components only to reduce file length. Extract when it creates a stable responsibility, measurable performance boundary or testable contract.
 
 ### 5.3 Reuse and promotion
