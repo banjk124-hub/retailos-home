@@ -17,7 +17,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
   const snapshot = useJourneySnapshot();
   const destination = getActiveJourneyDestination(snapshot);
   const activeModuleId = destination.kind === 'feature' ? destination.moduleId : null;
-  const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition>(MODULE_LIBRARIES[0]);
+  const [selectedLibrary, setSelectedLibrary] = useState<ModuleLibraryDefinition>(() => MODULE_LIBRARIES.find((library) => activeModuleId && library.moduleIds.includes(activeModuleId)) ?? MODULE_LIBRARIES[0]);
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
   const dialogRef = useRef<HTMLElement>(null);
