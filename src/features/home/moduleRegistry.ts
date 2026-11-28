@@ -1,5 +1,5 @@
 import { SHARED_DESKTOP_MOBILE, type PlatformAvailability } from '../../shared/platform/platformCapabilities';
-import { RETAIL_MODULE_IDS, type RetailModuleId } from '../../shared/domain/retailModule';
+import type { RetailModuleId } from '../../shared/domain/retailModule';
 export { RETAIL_MODULE_IDS } from '../../shared/domain/retailModule';
 export type { RetailModuleId } from '../../shared/domain/retailModule';
 
