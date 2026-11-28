@@ -3,6 +3,7 @@ import {
   getJourneyTransitionDirection,
   isSameJourneyDestination,
   type ExperienceDestination,
+  type JourneyExitGuardResult,
   type JourneyNavigationCommand,
   type JourneyStackEntry,
   type JourneyTransitionDirection,
