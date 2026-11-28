@@ -1,8 +1,8 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `dc952b3204d7d7eaf53b82f805218e56f7ea2562`  
-**Latest merge:** PR #209, merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`
+**Verified main HEAD:** `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`  
+**Latest merge:** PR #210, merge commit `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -49,7 +49,8 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 ## Experience and Journey workstream (proposed)
 
 - JRN-00 static source audit is complete at `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. The audit confirms that HomeScreen still mounts Stocktake and Stocktake Import, while App owns auth/session and the login/identity/home timing.
-- JRN-01–07 are proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.
+- **JRN-01 complete:** typed authenticated destination contract in `src/platform/journey/journey.types.ts`; Home return snapshot, push/pop/replace, safe-exit result and transition direction are defined. ADR-043 records the decision. Preflight contract test added. Runtime Journey Controller/Page Host and Back/history adapter remain unimplemented.
+- JRN-02–07 remain proposed in `EXPERIENCE_SYSTEM_SPEC.md`; no runtime navigation, motion, icon or component migration is claimed complete.
 - The experience specification is an umbrella contract. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
 
 ## Protected technical boundaries
