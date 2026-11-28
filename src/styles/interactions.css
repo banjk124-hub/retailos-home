@@ -14,13 +14,17 @@ button:not(:disabled):active {
 
 /* State changes glide rather than popping between selected controls. */
 .side-nav-item,
+
 .filter-pill,
-.mobile-nav button,
-.mobile-nav-icon,
+
 .icon-button,
+
 .text-button,
+
 .module-arrow,
+
 .attention-copy button,
+
 .panel-footer-button {
   transition-timing-function: var(--motion-spring-responsive);
 }
@@ -37,7 +41,7 @@ button:not(:disabled):active {
     .hero-kicker, .metric-label, .metric-unit, .metric-note, .metric-trend,
     .section-kicker, .section-heading p, .sample-tag, .module-card-bottom,
     .activity-copy span, .activity-status, .attention-copy p, .attention-copy button,
-    .attention-foot, .app-footer, .mobile-nav button) {
+    .attention-foot, .app-footer) {
     font-size: max(9px, .7rem);
   }
   .app-shell :is(.metric-label, .hero-kicker, .section-kicker) { letter-spacing: .45px; }
