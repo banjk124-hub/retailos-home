@@ -23,7 +23,7 @@ Current ownership:
 - ActivePageHost: lazy Page resolution; only active Page mounts.
 - Home: Home workspace and typed feature launcher; return context is ephemeral section/search/scroll only.
 - Stocktake and Import Pages: mount existing feature coordinators; feature state, persistence, resource lifecycle, PWA blockers and Exit Guards remain feature-owned.
-- Module registry/readiness remains the single source of truth.
+- Module registry/readiness remains the single source of truth. Desktop Library opens as a compact flyout attached to the left Dock: groups first, then each group's function tree. Mobile keeps its separate full-height library workspace.
 
 ## Explicit deferrals
 
