@@ -44,7 +44,7 @@ Confirmed source ownership:
 - AuthenticatedAppShell.tsx composes the authenticated scene, Identity and lazy Home. It is not yet a full destination/page controller.
 - HomeScreen.tsx owns Home navigation and many independent overlay/feature states.
 - Stocktake and Stocktake Import are lazy-loaded, but are still rendered as children of HomeScreen and opened/closed by Home-owned booleans.
-- Settings, Scanner, quick lookup, calendar and notices are also lazy or conditional Home-owned surfaces. Their context-preserving ownership is appropriate.
+- Settings, Scanner, quick lookup, calendar and notices are currently lazy/conditional surfaces rendered through Home. This is the existing implementation, not the target ownership: global quick actions must be reachable from the persistent App Shell on every Page.
 - Home navigation currently represents sections plus a Settings action; it is not a general feature-page router.
 - Existing Home state persistence includes active section, search and scroll position. Feature state must not be assumed to survive unmount unless its own store guarantees it.
 
@@ -80,14 +80,12 @@ These are architecture findings, not evidence that the current two ready workflo
         │   ├── navigation history / return target
         │   ├── transition intent and direction
         │   └── safe handoff coordination
-        ├── Platform Shell (Desktop / Mobile / Tablet fallback)
-        │   ├── global navigation chrome
-        │   ├── page host
-        │   └── global feedback host
-        ├── Home Page
-        │   ├── quick actions and Home sections
-        │   └── Home-owned overlay host
-        └── Feature Page Host (lazy; active destination only)
+        └── Persistent Authenticated App Shell
+            ├── Desktop Navigation Dock / Mobile Adaptive Navigation
+            ├── Journey Controller
+            ├── Active Page Workspace (Home OR one Feature Page)
+            ├── Global QuickActionHost (available from every Page)
+            └── Global Feedback Host
             ├── Stocktake Page
             └── Stocktake Import Page
 
@@ -188,7 +186,7 @@ The authenticated navigation model is defined in `src/platform/journey/journey.t
 - The authenticated Journey Controller owns only Home/Feature Page destination history, direction and return context.
 - Platform shells render the same destination semantics using platform-specific composition.
 - Home section navigation remains local to Home. `home`, `modules`, `activity` are Home sections/anchors, not app pages.
-- Settings, Scanner, Quick Search, Calendar, Notifications and Notice detail remain Home-owned overlay/quick-action state, not page destinations.
+- Settings, Scanner, Quick Search, Calendar, Notifications and Notice detail remain global quick actions/transient surfaces, not Page destinations. Their entry points and hosting belong to the persistent App Shell, not Home.
 
 **Persistent shell and workspace boundary**
 - The authenticated App Shell persists across all authenticated destination changes. Page navigation must not remount the shell or discard its navigation state.
@@ -271,7 +269,7 @@ The authenticated navigation model is defined in `src/platform/journey/journey.t
 | Logout | User invokes logout | Exit to Login | Session cleared | Release camera; clear session/cache per existing policy |
 | Update handoff | Explicit approval at safe point | Controlled handoff | New build | Existing PWA consent/blocker/rollback remains authoritative |
 
-### 4.2 Home-owned quick journeys
+### 4.2 Global quick-action journeys
 
 | Action | Presentation | Availability and return behavior |
 |---|---|---|
@@ -308,7 +306,8 @@ These are semantic responsibilities, not a mandate to create every component imm
 | PlatformShell | Navigation chrome, safe areas, page frame | Desktop/Mobile composition separate |
 | PageHost | Lazy active destination and error/loading boundary | Authenticated shell |
 | FeaturePageFrame | Title, Back, status and content/action slots | Shared only if real feature pages share semantics |
-| OverlayHost | Home-owned overlays, focus and scroll-lock coordination | Home-owned; no second scroll-lock manager |
+| GlobalQuickActionHost | Quick-action surfaces available from every Page | Authenticated App Shell; preserve invoking Page context |
+| HomeOverlayHost | Home-local overlays and focus/scroll-lock coordination | Home-owned; no second scroll-lock manager |
 | Button / IconButton | Action semantics, focus, disabled/busy state | Shared after contract tests |
 | Icon | Consistent rendering, size and accessibility | Shared primitive |
 | Status / Feedback | Inline status, toast, alert, progress and announcements | Shared primitives; feature owns messages |
@@ -334,7 +333,7 @@ A component becomes SHARED only after at least two real consumers demonstrate eq
 
 - Shared icon package owns generic icon rendering, sizes, stroke defaults and department icon semantics.
 - Feature/domain registry owns mapping from stable business IDs to icon glyphs.
-- Home owns Home navigation, library and module icon mappings.
+- Home owns Home sections, Module Library and Home-specific presentation. App Shell owns global navigation/action entry points.
 - A new feature owns its internal action/status icon mapping unless another real consumer establishes a shared semantic contract.
 - Never use an icon glyph as the only source of meaning. Important actions require visible text or an accessible label.
 
@@ -489,13 +488,13 @@ Do not create detailed specifications for placeholder modules until a real workf
 | Workstream | Scope | Exit criteria | Status at audit |
 |---|---|---|---|
 | JRN-00 | Source audit of journeys, screens, owners, motion, icons and lifecycle | Evidence-backed baseline and risks recorded | Complete — static source audit |
-| JRN-01 | Journey contract and destination identity | Approved journey map, navigation semantics, return/history policy and state lifecycle | Proposed |
-| JRN-02 | Dedicated Feature Page host | Stocktake and Stocktake Import open as independent lazy pages; Home no longer mounts them | Proposed |
-| JRN-03 | Back/restore/safe exit | Home context restored; dirty work protected; no resource leaks | Proposed |
-| JRN-04 | Home quick-action and overlay boundary | Settings, Quick Search, Scanner and lightweight interactions remain Home-owned | Proposed |
-| JRN-05 | Motion and feedback contract | Shared semantic intents; per-screen motion/feedback map; reduced-motion parity | Proposed |
-| JRN-06 | Icon contract and registry audit | Semantic ownership, accessibility and state animation usage documented | Proposed |
-| JRN-07 | Cross-platform and performance QA | Desktop/Mobile journeys validated; Tablet policy respected; low-end evidence where relevant | Proposed |
+| JRN-01 | Journey, persistent Shell and shared-system contract | Single-App Multi-Page; persistent Desktop Dock; adaptive Mobile navigation; global quick actions; shared Experience/Data boundaries | Implemented on PR #211; review/CI pending |
+| JRN-02 | Persistent Shell and navigation runtime | Shell survives Page changes; Dock remains fixed; Mobile navigation resolves shared destinations/actions | Proposed |
+| JRN-03 | Page Host and independent workspaces | Stocktake and Stocktake Import become independent lazy Pages; Home remains an entry Page | Proposed |
+| JRN-04 | Journey restoration, safe exit and lifecycle | Return context, dirty-work protection, deterministic cleanup and PWA blocker coordination | Proposed |
+| JRN-05 | Shared System Data contracts | Canonical system data access/change signals without global mega-store or backend commitment | Proposed |
+| JRN-06 | Experience System implementation | Shared typography, color, components, icons, motion and feedback with Page-level expression freedom | Proposed |
+| JRN-07 | Cross-Page and cross-platform QA | Desktop Dock, Mobile reachability, quick-action return, data consistency and performance validated | Proposed |
 | DOC-01 | Canonical documentation reconciliation | Roadmap, architecture decisions, component governance, platform matrix and handoff link here without duplicate authority | Proposed |
 
 Mandatory completion gates:
