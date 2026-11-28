@@ -45,6 +45,7 @@ Current ownership:
 - Home owns Home workspace state and typed Module Library launch; it does not mount Stocktake or Stocktake Import.
 - StocktakePage and StocktakeImportPage mount the existing feature coordinators and register owner-scoped Shell navigation.
 - Shell-owned Feature shortcuts and Module Library launch through JourneyController; registry readiness remains authoritative.
+- Module Library presentation is platform-specific: Desktop uses a compact group/tree flyout connected to the Dock; Mobile uses the full-height grouped workspace. Both consume the same module registry/library definitions.
 - Home return context is ephemeral section/search/scroll state only. Business state remains feature-owned and recovers through each feature's persistence.
 - Global Quick Actions extraction and broader shared-data contracts remain future work, not part of this implemented Journey slice.
 
