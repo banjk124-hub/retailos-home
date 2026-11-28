@@ -35,7 +35,7 @@ export function FeatureMobileShortcuts() {
 
   const returnHome = async () => {
     setMessage('');
-    const moved = await controller.dispatch({ kind: 'pop' });
+    const moved = await controller.dispatch({ kind: 'popToHome' });
     if (!moved) setMessage('Chưa thể rời chức năng lúc này. Hãy hoàn tất hoặc đóng thao tác đang chạy trước.');
   };
 
