@@ -14,13 +14,17 @@ textarea {
 }
 
 button:not(:disabled),
+
 .side-nav-item,
+
 .filter-pill,
-.mobile-nav button,
-.mobile-nav-icon,
+
 .icon-button,
+
 .text-button,
+
 .module-arrow,
+
 .top-profile {
   transition-duration: var(--motion-duration);
   transition-timing-function: var(--motion-standard);
@@ -36,303 +40,31 @@ button:not(:disabled):active {
 .transition-wash { animation-duration: .5s; }
 .transition-mark { animation-duration: .82s; }
 
-@media (max-width: 700px) {
-  html { scroll-padding-top: calc(72px + env(safe-area-inset-top)); }
-  body { font-size: 16px; }
-  .search-field input,
-  input,
-  select,
-  textarea {
-    font-size: 16px !important;
-    line-height: 1.35;
-  }
+@media (max-width: 700px) {undefined}
 
-  .app-shell { padding-bottom: calc(30px + env(safe-area-inset-bottom)); }
-  .topbar { min-height: calc(62px + env(safe-area-inset-top)); height: auto; padding: env(safe-area-inset-top) 16px 8px; }
-  .breadcrumb { font-size: 12px; }
-  .topbar-actions { gap: 9px; }
-  .icon-button { width: 42px; height: 42px; }
-  .top-avatar { width: 38px; height: 38px; }
-  .content-wrap { padding: 24px 17px 28px; }
-  .welcome-section { gap: 14px; margin-bottom: 20px; }
-  .welcome-copy .eyebrow { font-size: 11px; letter-spacing: .7px; }
-  .welcome-copy h1 { font-size: clamp(28px, 7.5vw, 34px); line-height: 1.18; letter-spacing: -.8px; }
-  .welcome-copy > p { font-size: 14px; line-height: 1.55; }
-  .user-context-chip { gap: 8px; padding: 7px 11px 7px 7px; font-size: 12px; }
-  .context-avatar { width: 29px; height: 29px; }
-  .user-context-chip strong { font-size: 12px; }
-  .date-chip { padding: 9px 11px; gap: 10px; }
-  .date-icon { width: 34px; height: 34px; }
-  .date-chip span { font-size: 10px; letter-spacing: .35px; }
-  .date-chip strong { font-size: 13px; }
-  .hero-kicker { font-size: 10px; letter-spacing: .65px; }
-  .hero-content h2 { font-size: clamp(27px, 7.6vw, 33px); line-height: 1.15; margin: 17px 0 11px; }
-  .hero-content p { font-size: 14px; line-height: 1.6; max-width: 270px; }
-  .hero-button { min-height: 46px; gap: 10px; padding: 11px 14px; font-size: 13px; border-radius: 12px; }
-  .metric-card { padding: 13px 11px 12px; border-radius: 15px; }
-  .metric-label { font-size: 10px; letter-spacing: .2px; line-height: 1.35; }
-  .metric-icon { width: 30px; height: 30px; }
-  .metric-value { margin-top: 11px; font-size: 25px; }
-  .metric-unit { font-size: 11px; line-height: 1.35; }
-  .metric-trend { font-size: 10px; }
+@media (max-width: 380px) {undefined}
 
-  .section-block { margin-top: 30px; scroll-margin-top: calc(76px + env(safe-area-inset-top)); }
-  .section-heading h2 { font-size: 21px; line-height: 1.25; }
-  .section-heading p { font-size: 13px; line-height: 1.5; max-width: 250px; }
-  .text-button { min-height: 40px; padding: 8px 0 8px 8px; font-size: 12px; }
-  .module-toolbar { margin: 15px 0 13px; gap: 11px; }
-  .filter-pills { gap: 7px; }
-  .filter-pill { min-height: 40px; padding: 8px 13px; font-size: 12px; border-radius: 11px; }
-  .search-field { height: 46px; gap: 9px; padding: 0 12px; border-radius: 12px; }
-  .module-icon { width: 39px; height: 39px; border-radius: 12px; }
-  .module-arrow { width: 29px; height: 29px; }
-  .module-title-row { margin-top: 12px; gap: 6px; }
-  .module-title-row h3 { font-size: 13px; line-height: 1.35; letter-spacing: -.1px; }
-  .sample-tag { font-size: 10px; padding: 4px 6px; }
-  .module-card-bottom { padding-top: 9px; font-size: 11px; }
-  .module-card-bottom svg { width: 14px; height: 14px; }
-
-  .lower-grid { gap: 13px; margin-top: 27px; scroll-margin-top: calc(76px + env(safe-area-inset-top)); }
-  .panel-card { padding: 17px 15px 0; border-radius: 18px; }
-  .panel-heading h2 { font-size: 17px; line-height: 1.3; }
-  .section-kicker { margin-bottom: 6px; font-size: 10px; letter-spacing: .65px; }
-  .activity-icon { width: 36px; height: 36px; border-radius: 11px; }
-  .activity-copy strong { font-size: 12px; line-height: 1.4; }
-  .activity-copy span { font-size: 11px; line-height: 1.4; }
-  .activity-status { font-size: 10px; padding: 5px 7px; }
-  .panel-footer-button { min-height: 46px; padding: 13px; font-size: 12px; }
-  .attention-count { min-width: 29px; height: 29px; font-size: 12px; }
-  .attention-copy strong { font-size: 13px; line-height: 1.4; }
-  .attention-copy p { font-size: 12px; line-height: 1.5; margin: 5px 0 8px; }
-  .attention-copy button { min-height: 36px; font-size: 12px; }
-  .attention-foot { padding: 12px 0 14px; font-size: 11px; line-height: 1.5; }
-  .app-footer { padding-top: 20px; gap: 9px; font-size: 10px; line-height: 1.5; }
-
-  /* Native-app dock: always visible and pinned above content, without scroll-driven hiding. */
-  .mobile-nav {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 30;
-    padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
-    border-radius: 21px;
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transition: box-shadow 260ms var(--motion-standard), opacity 220ms ease;
-    will-change: transform;
-  }
-  .mobile-nav button { min-height: 52px; gap: 4px; padding: 4px 1px; font-size: 11px; line-height: 1.2; }
-  .mobile-nav-icon { width: 43px; height: 31px; border-radius: 12px; }
-  .toast-message { bottom: calc(91px + env(safe-area-inset-bottom)); font-size: 12px; line-height: 1.45; }
-  .notification-popover { top: calc(66px + env(safe-area-inset-top)); }
-}
-
-@media (max-width: 380px) {
-  .content-wrap { padding-left: 13px; padding-right: 13px; }
-  .metric-card { padding: 11px 8px; }
-  .metric-label { font-size: 9px; }
-  .module-title-row h3 { font-size: 12px; }
-  .mobile-nav button { font-size: 10px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-enter, .home-enter-active .content-wrap > *, .transition-wash, .transition-mark,
-  .mobile-nav, button:not(:disabled):active {
-    animation: none !important;
-    transition-duration: .01ms !important;
-  }
-}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 /* Match or exceed the specificity of the earlier compact-prototype rules. */
-@media (max-width: 700px) {
-  .app-shell .welcome-copy .eyebrow { font-size: 11px; }
-  .app-shell .metric-label,
-  .app-shell .metric-unit,
-  .app-shell .metric-trend,
-  .app-shell .module-card-bottom,
-  .app-shell .activity-copy span,
-  .app-shell .activity-status,
-  .app-shell .attention-foot,
-  .app-shell .app-footer { font-size: 11px; }
-  .app-shell .section-kicker { font-size: 10px; }
-  .app-shell .section-heading p { font-size: 13px; }
-  .app-shell .attention-copy p { font-size: 12px; }
-  .app-shell .attention-copy button { font-size: 12px; }
-  .app-shell .mobile-nav button { font-size: 11px; }
-}
+@media (max-width: 700px) {undefined}
 
 
 /* Navigation should behave like a native app control: persistently pinned to the viewport. */
-@media (max-width: 700px) {
-  .mobile-nav {
-    transform: translate3d(0, 0, 0);
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transition: box-shadow 360ms cubic-bezier(.2, .8, .2, 1), opacity 240ms ease;
-    touch-action: manipulation;
-  }
-  .mobile-nav button {
-    -webkit-tap-highlight-color: transparent;
-    overflow: hidden;
-    transition: color 240ms ease, transform 240ms cubic-bezier(.2, .8, .2, 1);
-  }
-  .mobile-nav button::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 30%;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.3);
-    pointer-events: none;
-  }
-  .mobile-nav button:active::after {
-    animation: nav-touch-ripple 420ms ease-out;
-  }
-  .mobile-nav button:active .mobile-nav-icon {
-    transform: scale(.9);
-  }
-  .mobile-nav button.active .mobile-nav-icon {
-    animation: nav-active-settle 360ms cubic-bezier(.2, .8, .2, 1);
-  }
-}
-
-@keyframes nav-touch-ripple {
-  0% { opacity: .16; transform: translate(-50%, -50%) scale(.4); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(7); }
-}
-
-@keyframes nav-active-settle {
-  0% { transform: translateY(2px) scale(.9); }
-  65% { transform: translateY(-2px) scale(1.04); }
-  100% { transform: translateY(-1px) scale(1); }
-}
+@media (max-width: 700px) {undefined}
 
 
-@media (prefers-reduced-motion: reduce) {
-  .mobile-nav,
-  .mobile-nav button,
-  .mobile-nav button .mobile-nav-icon {
-    animation: none !important;
-    transition-duration: .01ms !important;
-  }
-}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 /* Legacy login-shell overrides retired: current Login is owned by login-experience.css. */
 
-@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
-  .topbar,
-  .mobile-nav {
-    transition-duration: .01ms;
-  }
-}
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {undefined}
 
-@media (max-width: 700px) {
-  .app-shell {
-    padding-bottom: calc(102px + env(safe-area-inset-bottom));
-  }
-  .topbar {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-  .breadcrumb {
-    font-size: 13px;
-  }
-  .topbar-actions {
-    gap: 8px;
-  }
-  .icon-button {
-    width: 44px;
-    height: 44px;
-  }
-  .content-wrap {
-    padding: 22px 17px 24px;
-  }
-  .welcome-copy h1 {
-    font-size: clamp(30px, 8vw, 36px);
-  }
-  .hero-content h2 {
-    font-size: clamp(28px, 8vw, 34px);
-    letter-spacing: -1px;
-  }
-  .section-heading h2 {
-    font-size: 22px;
-  }
-  .module-title-row h3 {
-    font-size: 14px;
-    line-height: 1.35;
-  }
-  .filter-pills {
-    scroll-snap-type: x proximity;
-    overscroll-behavior-x: contain;
-    touch-action: pan-x;
-  }
-  .filter-pill {
-    min-height: 44px;
-    scroll-snap-align: start;
-  }
-  .search-field {
-    min-height: 48px;
-  }
-  .activity-copy strong,
-  .attention-copy strong {
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  .activity-copy span,
-  .attention-copy p {
-    font-size: 12px;
-    line-height: 1.5;
-  }
-  .activity-status {
-    font-size: 11px;
-  }
-  .attention-copy button,
-  .panel-footer-button {
-    min-height: 44px;
-    font-size: 13px;
-  }
-  .mobile-nav button {
-    min-height: 54px;
-    font-size: 11px;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mobile-nav button:active .mobile-nav-icon {
-    transform: scale(.92);
-  }
-  .filter-pill,
-  .mobile-nav button,
-  .icon-button,
-  .text-button {
-    transition-duration: 180ms;
-  }
-}
+@media (max-width: 700px) {undefined}
 
-@media (max-width: 380px) {
-  .module-title-row h3 {
-    font-size: 13px;
-  }
-  .content-wrap {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-}
+@media (max-width: 380px) {undefined}
 
-@media (prefers-reduced-motion: reduce) {
-  .filter-pill,
-  .mobile-nav button,
-  .icon-button,
-  .text-button {
-    transition-duration: .01ms !important;
-  }
-}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .app-shell .welcome-section {
   margin-bottom: 28px;
@@ -387,30 +119,7 @@ button:not(:disabled):active {
   line-height: 1.5;
 }
 
-@media (max-width: 700px) {
-  .app-shell .welcome-section {
-    margin-bottom: 25px;
-  }
-  .app-shell .welcome-copy h1 {
-    margin-top: 10px;
-  }
-  .app-shell .section-heading {
-    align-items: flex-start;
-    padding-bottom: 15px;
-  }
-  .app-shell .section-heading p {
-    max-width: 275px;
-  }
-  .app-shell .module-toolbar {
-    margin: 14px 0 13px;
-  }
-  .app-shell .module-card-bottom {
-    padding-top: 9px;
-  }
-  .app-shell .lower-grid {
-    margin-top: 30px;
-  }
-}
+@media (max-width: 700px) {undefined}
 
 .app-shell .home-spotlight {
   position: relative;
@@ -750,139 +459,10 @@ button:not(:disabled):active {
   0%,100% { transform: translateY(-50%) rotate(8deg); }
   50% { transform: translateY(calc(-50% - 5px)) rotate(2deg); }
 }
-@media (max-width: 940px) {
-  .app-shell .home-spotlight {
-    padding: 27px;
-  }
-  .app-shell .spotlight-art {
-    width: 34%;
-    min-width: 240px;
-  }
-}
-@media (max-width: 700px) {
-  .app-shell .welcome-section::after {
-    right: 2px;
-    top: 4px;
-    width: 35px;
-    height: 35px;
-    border-radius: 12px;
-  }
-  .app-shell .welcome-copy {
-    padding-right: 34px;
-  }
-  .app-shell .home-spotlight {
-    min-height: 304px;
-    display: block;
-    padding: 21px 20px;
-    margin-bottom: 29px;
-    border-radius: 23px;
-  }
-  .app-shell .spotlight-kicker {
-    font-size: 9px;
-  }
-  .app-shell .spotlight-copy h2 {
-    max-width: 255px;
-    margin: 14px 0 7px;
-    font-size: 30px;
-    line-height: 1.04;
-  }
-  .app-shell .spotlight-copy p {
-    max-width: 240px;
-    font-size: 12px;
-  }
-  .app-shell .spotlight-button {
-    min-height: 42px;
-    margin-top: 15px;
-    font-size: 12px;
-  }
-  .app-shell .spotlight-art {
-    position: absolute;
-    right: 0;
-    bottom: 1px;
-    width: 260px;
-    min-width: 0;
-    height: 132px;
-    opacity: .96;
-    transform: scale(.76);
-    transform-origin: right bottom;
-  }
-  .app-shell .spotlight-tile-main {
-    top: 20px;
-    left: 0;
-    width: 252px;
-    min-width: 0;
-    padding: 10px 11px;
-    border-radius: 16px;
-  }
-  .app-shell .spotlight-tile-icon {
-    width: 34px;
-    height: 34px;
-  }
-  .app-shell .spotlight-tile-main strong {
-    font-size: 23px;
-  }
-  .app-shell .spotlight-tile-main small {
-    font-size: 7px;
-  }
-  .app-shell .spotlight-tile-float {
-    display: none;
-  }
-  .app-shell .spotlight-chip {
-    display: none;
-  }
-  .app-shell .spotlight-orbit.orbit-one {
-    width: 205px;
-    height: 118px;
-  }
-  .app-shell .spotlight-orbit.orbit-two {
-    width: 175px;
-    height: 130px;
-  }
-  .app-shell .calendar-tile-heading {
-    gap: 8px;
-  }
-  .app-shell .calendar-tile-date {
-    gap: 7px;
-  }
-  .app-shell .calendar-tile-date strong {
-    font-size: 24px;
-  }
-  .app-shell .calendar-tile-date small {
-    font-size: 8px;
-  }
-  .app-shell .calendar-week {
-    gap: 3px;
-    margin-top: 9px;
-    padding-top: 7px;
-  }
-  .app-shell .calendar-day {
-    gap: 3px;
-    padding: 4px 1px;
-  }
-  .app-shell .calendar-day small {
-    font-size: 7px;
-  }
-  .app-shell .calendar-day strong {
-    font-size: 9px;
-  }
-  .app-shell .section-block {
-    scroll-margin-top: calc(80px + env(safe-area-inset-top));
-  }
-}
-@media (max-width: 380px) {
-  .app-shell .spotlight-art {
-    right: 0;
-    transform: scale(.68);
-  }
-  .app-shell .spotlight-copy h2 {
-    max-width: 230px;
-    font-size: 28px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {.app-shell .spotlight-live,.app-shell .spotlight-status-dot,.app-shell .spotlight-orbit,.app-shell .spotlight-tile,.app-shell .spotlight-chip,.app-shell .welcome-section::after{
-    animation: none !important;
-  }
-}
+@media (max-width: 940px) {undefined}
+@media (max-width: 700px) {undefined}
+@media (max-width: 380px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .app-shell .spotlight-tile-main {
   flex-direction: column;
@@ -1087,38 +667,8 @@ button:not(:disabled):active {
 @keyframes calendar-modal-out {
   to { opacity: 0; transform: translateY(18px) scale(.94); filter: blur(8px); }
 }
-@media (max-width: 700px) {
-  .calendar-modal {
-    width: min(100%, 440px);
-    padding: 19px;
-    border-radius: 25px;
-  }
-  .calendar-month-grid {
-    gap: 5px;
-  }
-  .calendar-month-day {
-    border-radius: 13px;
-  }
-  .app-shell .calendar-open-hint {
-    margin-top: 8px;
-    padding-top: 7px;
-    font-size: 9px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .calendar-modal-backdrop,
-  .calendar-modal {
-    animation-duration: .01ms;
-    animation-iteration-count: 1;
-  }
-  .calendar-month-day,
-  .app-shell .spotlight-tile-main {
-    transition-duration: .01ms;
-  }
-  .app-shell .calendar-open-hint svg {
-    transition-duration: .01ms;
-  }
-}
+@media (max-width: 700px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .app-shell .topbar {
   position: relative;
@@ -1285,43 +835,8 @@ button:not(:disabled):active {
 @keyframes notification-pop-out {
   to { opacity: 0; transform: translateY(-6px) scale(.96); filter: blur(5px); }
 }
-@media (max-width: 700px) {
-  .app-shell .topbar {
-    min-height: 58px;
-    margin: max(8px, env(safe-area-inset-top)) 12px 4px;
-    padding: 7px 8px;
-    gap: 7px;
-    border-radius: 18px;
-  }
-  .topbar-brand-mark { width: 36px; height: 36px; border-radius: 12px; }
-  .topbar-identity { gap: 8px; }
-  .topbar-identity-copy strong { font-size: 12px; }
-  .topbar-identity-copy > span { gap: 4px; font-size: 9px; }
-  .topbar-actions { gap: 5px; }
-  .topbar-action-button { width: 36px; height: 36px; border-radius: 12px; }
-  .topbar-action-button.notification-button::before { border-radius: 15px; }
-  .topbar-action-button.notification-button i { top: 5px; right: 5px; }
-  .topbar-status { display: none; }
-  .topbar-notification-popover {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(310px, calc(100vw - 28px));
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .topbar-action-button,
-  .topbar-notification-popover,
-  .topbar,
-  .topbar-action-button.notification-button::before {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
-  }
-  .topbar-notification-popover.notification-closing {
-    animation-duration: .01ms !important;
-  }
-}
+@media (max-width: 700px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .visually-hidden {
   position: absolute;
@@ -1373,43 +888,16 @@ button:not(:disabled):active {
 .app-shell .icon-only-action svg { transition: transform 220ms var(--motion-standard); }
 .app-shell .icon-only-action:hover svg { transform: rotate(90deg); }
 .app-shell .module-icon svg,
-.app-shell .mobile-nav-icon svg,
+
 .app-shell .calendar-modal-icon svg{
   transition: transform 240ms var(--motion-standard), color 200ms ease;
 }
-.app-shell .mobile-nav button:hover .mobile-nav-icon svg { transform: translateY(-2px) scale(1.08); }
 @keyframes icon-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
 }
-@media (max-width: 700px) {
-  .app-shell .mobile-nav button {
-    min-height: 48px;
-    gap: 0;
-    padding: 4px 2px;
-  }
-  .mobile-nav button > span:last-child { display: none; }
-  .mobile-nav .mobile-nav-icon {
-    width: 46px;
-    height: 40px;
-    border-radius: 14px;
-  }
-  .mobile-nav button.active .mobile-nav-icon {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 4px 14px rgba(185,29,47,.12);
-  }
-  .app-shell .icon-section-title { width: 42px; height: 42px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-shell .icon-section-title svg,
-  .app-shell .spotlight-tools-button svg,
-  .app-shell .icon-only-action svg,
-  .app-shell .module-icon svg,
-  .app-shell .mobile-nav-icon svg,
-  .app-shell .calendar-modal-icon svg{
-    transition-duration: .01ms;
-    animation: none;
-  }
-}
+@media (max-width: 700px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .notification-item-button:focus-visible {
   outline: 3px solid rgba(197,38,53,.45);
@@ -1538,24 +1026,9 @@ button:not(:disabled):active {
 @keyframes notice-detail-out {
   to { opacity: 0; transform: translateY(12px) scale(.96); filter: blur(6px); }
 }
-@media (max-width: 700px) {
-  .notice-detail-header { padding: 17px 16px 14px; }
-  .notice-detail-content { padding: 15px 16px 17px; }
-  .notice-detail-footer { padding: 11px 16px; }
-}
-@media (max-width: 360px) {
-  .topbar-action-button.install-icon-button { display: none; }
-  .topbar-identity-copy > span { max-width: 86px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .notice-detail-backdrop,
-  .notice-detail-modal,
-  .notice-detail-closing .notice-detail-modal {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
-  }
-}
+@media (max-width: 700px) {undefined}
+@media (max-width: 360px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .app-shell .spotlight-main-content {
   position: relative;
@@ -1692,108 +1165,10 @@ button:not(:disabled):active {
   from { opacity: 0; transform: translateY(8px) scale(.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
-@media (max-width: 940px) {
-  .app-shell .spotlight-main-content { width: 56%; }
-  .app-shell .spotlight-art { min-width: 245px; }
-}
-@media (max-width: 700px) {
-  .app-shell .home-spotlight {
-    min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 13px;
-    padding: 17px 15px 14px;
-    margin-bottom: 24px;
-    border-radius: 22px;
-  }
-  .app-shell .spotlight-main-content {
-    display: contents;
-    width: auto;
-  }
-  .app-shell .spotlight-copy {
-    width: 100%;
-    max-width: none;
-  }
-  .app-shell .spotlight-kicker { font-size: 8px; }
-  .app-shell .spotlight-main-content .spotlight-copy h2 {
-    max-width: none;
-    margin: 8px 0 4px;
-    font-size: 23px;
-    line-height: 1.05;
-    letter-spacing: -.7px;
-  }
-  .app-shell .spotlight-main-content .spotlight-copy p {
-    max-width: none;
-    font-size: 10px;
-  }
-  .app-shell .spotlight-main-content .spotlight-button {
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    width: 36px;
-    min-width: 36px;
-    height: 36px;
-    min-height: 36px;
-    margin: 0;
-    border-radius: 12px;
-  }
-  .spotlight-notifications {
-    grid-row: 2;
-    gap: 6px;
-    margin-top: 0;
-  }
-  .spotlight-notifications-heading { padding: 0 2px 1px; font-size: 8px; }
-  .spotlight-notification { gap: 8px; padding: 8px 9px; border-radius: 13px; }
-  .spotlight-notification-icon { width: 27px; height: 27px; border-radius: 9px; }
-  .spotlight-notification-title { font-size: 10px; }
-  .spotlight-notification-summary { font-size: 8px; }
-  .app-shell .spotlight-art {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    grid-row: 3;
-    width: 100%;
-    min-width: 0;
-    height: 126px;
-    opacity: 1;
-    transform: none;
-    transform-origin: center;
-  }
-  .app-shell .spotlight-tile-main {
-    top: 7px;
-    left: 50%;
-    width: min(100%, 300px);
-    padding: 8px 11px;
-    border-radius: 15px;
-    transform: translateX(-50%);
-    animation-duration: 6s;
-  }
-  .app-shell .spotlight-tile-icon { width: 29px; height: 29px; border-radius: 10px; }
-  .app-shell .spotlight-tile-icon svg { width: 15px; height: 15px; }
-  .app-shell .spotlight-tile-main strong { font-size: 21px; }
-  .app-shell .calendar-week { gap: 2px; margin-top: 7px; padding-top: 6px; }
-  .app-shell .calendar-day { gap: 3px; padding: 4px 1px; }
-  .app-shell .calendar-open-hint { margin-top: 6px; padding-top: 5px; font-size: 8px; }
-  .app-shell .spotlight-tile-float { display: none; }
-  .app-shell .spotlight-chip { display: none; }
-  .app-shell .spotlight-orbit.orbit-one { width: 235px; height: 108px; }
-  .app-shell .spotlight-orbit.orbit-two { width: 195px; height: 120px; }
-}
-@media (max-width: 360px) {
-  .spotlight-notification-meta { font-size: 7px; }
-  .spotlight-notification-title { font-size: 9px; }
-  .spotlight-notification-summary { font-size: 7px; }
-  .app-shell .spotlight-tile-date { gap: 6px; }
-  .app-shell .spotlight-tile-main small { font-size: 6px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .spotlight-notification,
-  .spotlight-notifications-heading > i,
-  .app-shell .spotlight-main-content .spotlight-button svg {
-    animation: none !important;
-    transition-duration: .01ms !important;
-  }
-}
+@media (max-width: 940px) {undefined}
+@media (max-width: 700px) {undefined}
+@media (max-width: 360px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 /* Keep decorative motion behind the readable spotlight content. */
 .app-shell .spotlight-main-content {
@@ -1835,24 +1210,7 @@ button:not(:disabled):active {
   border-color: rgba(255,255,255,.7);
   box-shadow: 0 4px 11px rgba(87,51,18,.06), inset 0 1px 0 rgba(255,255,255,.82);
 }
-@media (max-width: 700px) {
-  .app-shell .spotlight-main-content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 11px;
-    width: 100%;
-    z-index: 3;
-  }
-  .app-shell .spotlight-copy { grid-row: 1; }
-  .app-shell .spotlight-notifications { grid-row: 2; }
-  .app-shell .spotlight-art {
-    grid-row: 2;
-    z-index: 1;
-    overflow: visible;
-  }
-  .app-shell .spotlight-tile-main { z-index: 2; }
-  .app-shell .spotlight-notifications { z-index: 3; }
-}
+@media (max-width: 700px) {undefined}
 
 .app-library-section { scroll-margin-top: 88px; }
 .app-library-heading { align-items: flex-end; }
@@ -2092,34 +1450,9 @@ button:not(:disabled):active {
   from { opacity: 0; transform: translateY(13px) scale(.97); filter: blur(5px); }
   to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
-@media (max-width: 700px) {
-  .app-library-section { scroll-margin-top: calc(80px + env(safe-area-inset-top)); }
-  .app-library-heading { align-items: stretch; flex-direction: column; gap: 12px; }
-  .app-library-heading .search-field { width: 100%; max-width: none; flex-basis: 36px; }
-  .app-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 13px; }
-  .app-library-card { min-height: 150px; padding: 13px 12px 11px; border-radius: 17px; }
-  .app-library-icon { width: 39px; height: 39px; border-radius: 12px; }
-  .app-library-card-title { margin-top: 11px; font-size: 12px; }
-  .app-library-description { font-size: 9px; }
-  .app-library-modal { width: min(100%, 480px); max-height: min(78dvh, 620px, calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px)); padding: 18px; border-radius: 22px; }
-  .app-library-modules { gap: 8px; padding-top: 15px; }
-  .app-library-module { gap: 8px; padding: 10px 8px; border-radius: 14px; }
-  .app-library-module .module-icon { width: 34px; height: 34px; }
-  .app-library-module-copy strong { font-size: 10px; }
-  .app-library-module-copy small { font-size: 8px; }
-}
-@media (max-width: 370px) {
-  .app-library-modules { grid-template-columns: minmax(0, 1fr); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-library-card,
-  .app-library-module {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-  }
-  .app-library-card,
-  .app-library-module { transition-duration: .01ms !important; }
-}
+@media (max-width: 700px) {undefined}
+@media (max-width: 370px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .retailos-scene {
   position: relative;
@@ -2196,18 +1529,13 @@ button:not(:disabled):active {
   background: rgba(255,251,251,.76);
   box-shadow: 0 8px 26px rgba(105,34,42,.045), inset 0 1px 0 rgba(255,255,255,.94);
 }
-.app-shell .mobile-nav {
-  border-color: rgba(255,255,255,.84);
-  background: linear-gradient(140deg, rgba(255,255,255,.82), rgba(255,246,247,.68));
-  box-shadow: 0 15px 38px rgba(105,34,42,.13), inset 0 1px 0 rgba(255,255,255,.96), inset 0 -1px 0 rgba(255,255,255,.42);
-}
 .app-shell .topbar-action-button,
-.app-shell .mobile-nav button,
+
 .app-shell .side-nav-item {
   box-shadow: 0 4px 12px rgba(74,32,38,.045), inset 0 1px 0 rgba(255,255,255,.88);
 }
 .app-shell .topbar-action-button:hover,
-.app-shell .mobile-nav button:hover,
+
 .app-shell .side-nav-item:hover {
   box-shadow: 0 8px 19px rgba(105,34,42,.1), inset 0 1px 0 #fff;
 }
@@ -2223,14 +1551,8 @@ button:not(:disabled):active {
   from { transform: translate3d(-9%, 6%, 0) scale(.9); }
   to { transform: translate3d(11%, -7%, 0) scale(1.12); }
 }
-@media (max-width: 700px) {
-  .ambient-orb-one { top: -17%; left: -45%; width: 95vw; }
-  .ambient-orb-two { right: -48%; bottom: -26%; width: 110vw; }
-  .ambient-orb-three { top: 34%; left: 35%; width: 60vw; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ambient-orb { animation: none !important; }
-}
+@media (max-width: 700px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .page-floating-dock {
   position: fixed;
@@ -2305,16 +1627,8 @@ button:not(:disabled):active {
   from { transform: translate3d(-5%, -3%, 0) scale(.94); }
   to { transform: translate3d(8%, 9%, 0) scale(1.08); }
 }
-@media (max-width: 700px) {
-  .page-floating-dock { inset: 5px; border-radius: 23px; }
-  .page-floating-highlight-one { top: -25%; left: -55%; width: 92vw; }
-  .page-floating-highlight-two { right: -57%; bottom: -34%; width: 105vw; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .page-floating-dock,
-  .page-floating-dock::before,
-  .page-floating-highlight { animation: none !important; }
-}
+@media (max-width: 700px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .app-shell .topbar {
   position: sticky;
@@ -2408,40 +1722,8 @@ button:not(:disabled):active {
   0%, 35% { opacity: .24; }
   70%, 100% { opacity: .48; }
 }
-@media (max-width: 700px) {
-  .app-shell .topbar {
-    min-height: 0;
-    height: auto;
-    margin: max(8px, env(safe-area-inset-top)) 12px 4px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    transform-origin: center top;
-  }
-  .app-shell .topbar-dock {
-    min-height: 58px;
-    gap: 7px;
-    padding: 7px 8px 7px 10px;
-    border-radius: 18px;
-  }
-  .app-shell .topbar-identity { gap: 8px; }
-  .app-shell .topbar-actions { gap: 5px; }
-  .app-shell .topbar-action-button { width: 36px; height: 36px; border-radius: 12px; }
-  .app-shell .topbar-status { display: none; }
-  .app-shell .topbar-notification-popover {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(310px, calc(100vw - 28px));
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-shell .topbar-dock,
-  .app-shell .topbar-dock::before {
-    animation: none !important;
-  }
-}
+@media (max-width: 700px) {undefined}
+@media (prefers-reduced-motion: reduce) {undefined}
 
 .spotlight-notifications-toggle {
   width: 100%;
@@ -2470,124 +1752,6 @@ button:not(:disabled):active {
   transition: max-height 280ms var(--motion-standard), opacity 180ms ease;
 }
 
-@media (max-width: 700px) {
-  .spotlight-notifications-toggle {
-    min-height: 42px;
-    padding: 0 10px;
-    border: 1px solid rgba(255,255,255,.36);
-    border-radius: 13px;
-    color: rgba(255,255,255,.94);
-    background:
-      linear-gradient(115deg, rgba(255,255,255,.2), rgba(255,255,255,.06) 48%, rgba(255,255,255,.16)),
-      rgba(255,255,255,.08);
-    box-shadow: 0 8px 22px rgba(82,0,10,.1), inset 0 1px 0 rgba(255,255,255,.34), inset 0 -1px 0 rgba(255,255,255,.1);
-    
-    
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .spotlight-notifications-toggle:active { transform: scale(.985); }
-  .spotlight-notifications-count {
-    display: inline;
-    margin-left: auto;
-    color: rgba(255,255,255,.72);
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0;
-  }
-  .spotlight-notifications-toggle > i { margin-left: 0; }
-  .spotlight-notifications-chevron {
-    display: block;
-    flex: 0 0 auto;
-    transition: transform 220ms var(--motion-standard);
-  }
-  .spotlight-notifications-expanded .spotlight-notifications-chevron { transform: rotate(180deg); }
-  .spotlight-notification-list {
-    max-height: 220px;
-    overflow: hidden;
-    transition: max-height 280ms var(--motion-standard);
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list {
-    max-height: 64px;
-    padding: 0 4px 7px;
-    gap: 0;
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list::before,
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list::after {
-    position: absolute;
-    right: 9px;
-    left: 9px;
-    height: 48px;
-    border: 1px solid rgba(255,255,255,.52);
-    border-radius: 12px;
-    background:
-      linear-gradient(110deg, rgba(255,255,255,.48), rgba(255,255,255,.2) 52%, rgba(255,255,255,.36)),
-      rgba(255,255,255,.18);
-    box-shadow: 0 8px 20px rgba(82,0,10,.1), inset 0 1px 0 rgba(255,255,255,.6);
-    
-    
-    pointer-events: none;
-    content: "";
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list::before {
-    bottom: 3px;
-    transform: translateY(-3px);
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list::after {
-    right: 5px;
-    left: 5px;
-    bottom: 1px;
-    background:
-      linear-gradient(110deg, rgba(255,255,255,.64), rgba(255,255,255,.3) 54%, rgba(255,255,255,.48)),
-      rgba(255,255,255,.3);
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list > .spotlight-notification {
-    position: relative;
-    z-index: 1;
-    min-height: 49px;
-    gap: 8px;
-    padding: 8px 9px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,.76);
-    border-radius: 12px;
-    background:
-      radial-gradient(ellipse at 20% 0%, rgba(255,255,255,.96), transparent 65%),
-      linear-gradient(120deg, rgba(255,255,255,.82), rgba(255,249,250,.68) 52%, rgba(255,255,255,.78));
-    box-shadow: 0 10px 24px rgba(82,0,10,.16), inset 0 1px 0 rgba(255,255,255,.98), inset 0 -1px 0 rgba(255,255,255,.5);
-    
-    
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-group-preview::before {
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.98), transparent);
-    content: "";
-    pointer-events: none;
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-group-preview:active {
-    transform: scale(.985);
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-list > .spotlight-notification:not(:first-child) {
-    display: none;
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-meta,
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-summary,
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-arrow {
-    display: none;
-  }
-  .app-shell .home-spotlight:not(.spotlight-notifications-expanded) .spotlight-notification-title {
-    font-size: 10px;
-  }
-}
+@media (max-width: 700px) {undefined}
 
-@media (prefers-reduced-motion: reduce) {
-  .spotlight-notifications-toggle,
-  .spotlight-notification-list,
-  .spotlight-notifications-chevron {
-    transition-duration: .01ms !important;
-    animation-duration: .01ms !important;
-  }
-}
+@media (prefers-reduced-motion: reduce) {undefined}
