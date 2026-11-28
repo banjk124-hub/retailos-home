@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { AppErrorBoundary } from '../../shared/components/AppErrorBoundary';
+import { HomePresentationRoot } from '../home/HomePresentationRoot';
 import { getActiveJourneyDestination, getActiveJourneyKey } from './journeyController';
 import { useJourneyController, useJourneySnapshot } from './JourneyControllerProvider';
 import { resolveJourneyPage, type JourneyPageProps } from './journeyPageRegistry';
@@ -44,8 +45,16 @@ export function ActivePageHost(props: JourneyPageProps) {
       <button type="button" onClick={() => window.location.reload()}>Tải lại ứng dụng</button>
     </section>
   </main>}>
-    <Suspense fallback={<PageLoadingSurface />}>
-      <Page {...props} />
-    </Suspense>
+    {destination.kind === 'home' ? (
+      <HomePresentationRoot platform={props.platform}>
+        <Suspense fallback={<PageLoadingSurface />}>
+          <Page {...props} />
+        </Suspense>
+      </HomePresentationRoot>
+    ) : (
+      <Suspense fallback={<PageLoadingSurface />}>
+        <Page {...props} />
+      </Suspense>
+    )}
   </AppErrorBoundary>;
 }
