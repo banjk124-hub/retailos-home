@@ -101,7 +101,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                     aria-pressed={active}
                     onClick={() => { setSelectedLibrary(library); setSearch(''); setMessage(''); }}>
                     <span className="shell-module-library__group-icon"><MotionIcon icon={Icon} variant="module" size={20} active={active} /></span>
-                    <span className="shell-module-library__group-copy"><small>NHÓM {String(index + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
+                    <span className="shell-module-library__group-copy"><small>NHÓM {String(moduleIndex + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
                     <ChevronRight size={16} />
                   </Surface>
                 </MotionCard>
@@ -119,7 +119,8 @@ export function ShellModuleLibrary({ onClose }: Props) {
               </label>
             </div>
             <div className="shell-module-library__module-list">
-              {selectedModules.map((module, index) => {
+              {selectedModules.map((module) => {
+                const moduleIndex = selectedLibrary.moduleIds.indexOf(module.id);
                 const Icon = getModuleIcon(module.id);
                 const available = isJourneyDestinationResolvable({ kind: 'feature', moduleId: module.id });
                 const active = module.id === activeModuleId;
