@@ -26,6 +26,22 @@ Discover the workflow, user context, environment and constraints; explore materi
 - **UI-04 feature presentation migration — complete:** UI-04A–F are merged. See UI_UX_PHASE_04_FEATURE_PRESENTATION.md.
 - **UI-03 CSS consolidation — complete:** merged in PR #180; see UI_UX_PHASE_03_CSS_CONSOLIDATION.md.
 
+## Experience system and Journey workstream
+
+The canonical experience contract is [EXPERIENCE_SYSTEM_SPEC.md](./EXPERIENCE_SYSTEM_SPEC.md). It defines destination/page ownership, screen journeys, component boundaries, icon semantics, motion, feedback, resource lifecycle and future feature onboarding. This is a proposed target contract; it does not authorize runtime migration or lock a global visual style.
+
+- **JRN-00 source audit — complete:** audited main at dc952b3204d7d7eaf53b82f805218e56f7ea2562. Confirmed App owns auth/session and login/identity/home timing; AuthenticatedAppShell composes Identity/Home; HomeScreen still mounts Stocktake and Stocktake Import; motion wrappers/tokens coexist with local transitions; icon registries coexist with direct Lucide imports. Static review only; no browser/device performance claim.
+- **JRN-01 Journey contract — proposed:** agree typed destination identity, back/history behavior, Home context restoration and safe-exit semantics before runtime changes.
+- **JRN-02 Feature Page host — proposed:** move Stocktake and Stocktake Import to independently mounted lazy Feature Pages; Home remains an entry point, not their lifecycle owner.
+- **JRN-03 Return and safe exit — proposed:** preserve Home context and feature persistence; protect dirty/active work; verify resource cleanup and PWA update blockers.
+- **JRN-04 Home quick actions — proposed:** retain Settings, Quick Search, quick Scanner, Calendar and Notifications as Home-owned surfaces unless a later workflow proves otherwise.
+- **JRN-05 Motion and feedback contract — proposed:** map semantic transitions and feedback per journey/screen; preserve reduced-motion and low-end performance.
+- **JRN-06 Icon contract — proposed:** align semantic ownership, accessibility and state-driven animation; static icon remains default.
+- **JRN-07 Cross-platform/performance QA — proposed:** validate Desktop/Mobile composition, Tablet review gates, browser behavior and target-device performance.
+- **DOC-01 documentation reconciliation — proposed:** this umbrella spec is canonical for experience behavior; ARCHITECTURE.md remains ADR authority, COMPONENT_AND_PATTERN_GOVERNANCE.md remains reuse policy, PLATFORM_CAPABILITY_MATRIX.md remains capability policy and PWA_RUNTIME_RELEASE.md remains update lifecycle authority.
+
+Sequence: JRN-01 contract approval → JRN-02 page host and two ready workflows → JRN-03 safe return/resource lifecycle → JRN-04 Home quick-action boundary → JRN-05/JRN-06 interaction system → JRN-07 validation. Motion/icon visual details can be explored in parallel as design studies, but implementation must not get ahead of approved contracts.
+
 ## Technical invariants
 Preserve auth/session, module registry and stable IDs, snapshot/cache/offline contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision/conflict handling, overlay lifecycle, PWA update-safety and GitHub Pages deployment boundaries. Scanner stabilization is closed; reopen only for a reproducible defect, measured bottleneck or new requirement.
 
