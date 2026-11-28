@@ -112,8 +112,8 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   expect(failedRequests, 'cross-Page flow must not fail resource requests').toEqual([]);
 });
 
-test('Desktop Dock opens the connected grouped Module Library tree without replacing the workspace', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
+test('Desktop Home Module Dock item scrolls to Home library; Dock spans the viewport edge-to-edge', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
   await page.addInitScript((session) => {
     localStorage.setItem('retailos.session.v2', JSON.stringify(session));
   }, auditSession);
@@ -121,23 +121,17 @@ test('Desktop Dock opens the connected grouped Module Library tree without repla
   await expect(page.locator('.home-main')).toBeVisible();
 
   const dock = page.getByRole('navigation', { name: 'Điều hướng chính' });
-  const libraryTrigger = dock.getByRole('button', { name: 'Mở thư viện nghiệp vụ' });
-  await expect(libraryTrigger).toBeVisible();
-  await libraryTrigger.click();
+  await expect(dock).toBeVisible();
+  const bounds = await dock.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.x).toBe(0);
+  expect(bounds!.y).toBe(0);
+  expect(bounds!.height).toBeGreaterThanOrEqual(799);
 
-  const library = page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' });
-  await expect(library).toBeVisible();
-  await expect(page.locator('.home-main')).toBeVisible();
-  await expect(library).toHaveCSS('position', 'fixed');
-
-  const stocktakeGroup = library.getByRole('button', { name: 'Kiểm kê' }).first();
-  await stocktakeGroup.click();
-  await expect(stocktakeGroup).toHaveAttribute('aria-expanded', 'true');
-  const stocktakeLaunch = library.getByRole('button', { name: /Kiểm kê.*Sẵn sàng/ });
-  await expect(stocktakeLaunch).toBeEnabled();
-  await stocktakeLaunch.click();
-
-  await expect(page.locator('.stocktake-page-shell')).toBeVisible();
-  await expect(library).toHaveCount(0);
-  await expect(page.locator('.desktop-shell-navigation')).toBeVisible();
+  const moduleButton = dock.getByRole('button', { name: 'Module' });
+  await expect(moduleButton).toBeVisible();
+  await expect(dock.getByRole('button', { name: 'Mở thư viện nghiệp vụ' })).toHaveCount(0);
+  await moduleButton.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await expect(page.locator('#modules')).toBeVisible();
 });

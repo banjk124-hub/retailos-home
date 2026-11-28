@@ -29,7 +29,7 @@ assert.doesNotMatch(home, /HomePresentationRoot/);
 assert.match(home, /const shellNavigationItems = useMemo/);
 
 assert.match(desktopNav, /position: fixed/);
-assert.match(desktopNav, /left: max\(12px, env\(safe-area-inset-left\)\)/);
+assert.match(desktopNav, /inset: 0 auto 0 0/);
 assert.match(mobileNav, /bottom: max\(8px, env\(safe-area-inset-bottom\)\)/);
 assert.match(presentation, /authenticated-shell-root--\$\{platform\}/);
 assert.match(presentation, /data-retailos-shell-platform=\{platform\}/);
