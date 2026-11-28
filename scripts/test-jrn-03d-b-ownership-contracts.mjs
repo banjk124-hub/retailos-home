@@ -62,7 +62,7 @@ const hostIndex = authenticatedShell.indexOf('<ActivePageHost');
 const navigationIndex = authenticatedShell.indexOf('<PersistentShellNavigation');
 assert.ok(hostIndex >= 0 && navigationIndex > hostIndex, 'Persistent navigation must render after the Page host');
 assert.match(authenticatedShell, /<ShellNavigationProvider>[\s\S]*<JourneyControllerProvider>/);
-assert.match(authenticatedShell, /<ActivePageHost[\\s\\S]*?\\/>/);
+assert.match(authenticatedShell, /<ActivePageHost[\s\S]*?\/>/);
 assert.match(authenticatedShell, /<PersistentShellNavigation platform=\{platform\} \/>/);
 assert.match(activePageHost, /<Page \{\.\.\.props\} homeReturnContext=\{homeReturnContext\} \/>/);
 assert.match(preflight, /test-jrn-03d-b-ownership-contracts\.mjs/);
