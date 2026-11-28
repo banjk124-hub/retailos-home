@@ -15,10 +15,9 @@
   --ro-safe-bottom: max(0px, env(safe-area-inset-bottom));
   --ro-safe-left: max(0px, env(safe-area-inset-left));
   --ro-shell-padding-x: clamp(16px, 2.2vw, 28px);
-}
-.home-presentation-root {
   -webkit-tap-highlight-color: transparent;
 }
+/* Keep the viewport backdrop conditional on the Home route being mounted. */
 @supports selector(:root:has(.home-presentation-root)) {
   :root:has(.home-presentation-root) {
     background-color: #f6f1f2;
