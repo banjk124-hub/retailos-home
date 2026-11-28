@@ -54,7 +54,7 @@ assert.notEqual(
 // Owner-scoped cleanup must not clear a newer Page registration after handoff.
 assert.match(shellContext, /setRegistration\(\{ owner, config \}\)/);
 assert.match(shellContext, /current\?\.owner === owner \? null : current/);
-assert.match(shellContext, /return \(\) => unregister\?\.\(owner\)/);
+assert.match(shellContext, /useEffect\(\(\) => \(\) => unregister\?\.\(owner\)/);
 assert.match(shellContext, /context\.registration\.config/);
 
 // Persistent navigation is a Shell sibling of ActivePageHost, not a child of a Page.
