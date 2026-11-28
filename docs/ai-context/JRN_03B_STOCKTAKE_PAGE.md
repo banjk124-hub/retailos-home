@@ -84,8 +84,7 @@ Automated checks added/updated for:
 
 CI must pass on the exact final PR head: preflight, TypeScript, production/Pages builds, bundle baseline comparison and responsive/runtime Playwright. Manual desktop/mobile review and real-device camera QA remain separate acceptance gates. No deployment or physical-device certification is claimed by this source change.
 
-## 7. Next slices
+## 7. Completion
 
-1. JRN-03B is merged. Keep its scanner lifecycle, Stocktake store and update-safety ownership unchanged.
-2. JRN-03C extracts Stocktake Import with guard coverage for busy/history operations, dirty edits, pending import confirmation, unpersisted results and clear/new-session confirmations.
+JRN-03B was merged in PR #216 and its Stocktake Page/Exit Guard contract remains active. JRN-03C subsequently extracted Stocktake Import in PR #217. The integrated Journey ownership/lifecycle closeout is recorded in `JRN_03D_A_HOME_OWNERSHIP_AUDIT.md`.
 3. JRN-03D removes any remaining Home-owned workflow mounts and runs cross-Page integration QA.
