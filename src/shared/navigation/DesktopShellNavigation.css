@@ -31,7 +31,7 @@
 .desktop-shell-navigation__utility { padding-top: 7px; border-top: 1px solid #ece5e6; }
 .desktop-shell-navigation__action { min-height: 54px; color: #a92334; }
 .desktop-shell-navigation__action span { max-width: 100%; overflow: hidden; font-size: 8px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.home-presentation-root--desktop .app-shell.has-shell-navigation { box-sizing: border-box; padding-left: 88px; }
+.authenticated-shell-root--desktop .app-shell.has-shell-navigation { box-sizing: border-box; padding-left: 88px; }
 @media (prefers-reduced-motion: reduce) {
   .desktop-shell-navigation, .desktop-shell-navigation *, .desktop-shell-navigation *::before, .desktop-shell-navigation *::after {
     animation: none !important; transition-duration: 1ms !important;
