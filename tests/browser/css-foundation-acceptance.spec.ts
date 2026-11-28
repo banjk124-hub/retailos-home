@@ -277,7 +277,9 @@ test('AUDIT-03C reduced-motion contract: shared and feature surfaces', async ({ 
 });
 
 test('AUDIT-03C power-conserve preserves focus visibility and geometry; captures pseudo-elements', async ({ page }, testInfo) => {
-  await openHome(page);
+  // Remove time-dependent transitions from both samples; compare power modes at rest.
+  // Motion behavior itself is independently covered by the reduced-motion contract.
+  await openHome(page, true);
   const logout = page.getByRole('button', { name: 'Đăng xuất' });
   const focusEvidence = await keyboardFocus(page, logout, 'Home logout action');
 
