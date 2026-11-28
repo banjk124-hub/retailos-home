@@ -40,3 +40,8 @@
 No runtime dependency was added. No storage schema/key, business workflow identity, snapshot identity, scanner lifecycle, camera lease, PWA update blocker or service-worker behavior was intentionally changed.
 
 **Verification:** RetailOS CI passed, including preflight regression suite, TypeScript + Vite production build, PR-base bundle comparison, Playwright responsive/runtime evidence tests and artifact uploads (run `45933417498`). No merge or deployment is included in this change. Passing these checks confirms regression coverage; it does not by itself prove a measurable performance gain.
+
+
+## Follow-up — JRN-01 workflow identity clarification (2026-11-28)
+
+The AUDIT-02A implementation note that `RetailModuleId` remained Home-owned records the historical state after AUDIT-02. JRN-01 later moved only the stable workflow ID contract to `src/shared/domain/retailModule.ts`, because authenticated Platform navigation now consumes that identity. Home's module registry re-exports the contract for compatibility; Home library IDs and presentation metadata remain Home-owned. This does not change the separate `ModuleDataId`/snapshot identity contract.

@@ -1,5 +1,6 @@
 import { Activity, Boxes, CalendarDays, Check, ChartNoAxesCombined, ClipboardList, Compass, CreditCard, FileSpreadsheet, House, PackageOpen, PackageSearch, Settings, Truck, Warehouse } from 'lucide-react';
-import type { ModuleLibraryId, RetailModuleId } from './moduleRegistry';
+import type { ModuleLibraryId } from './moduleRegistry';
+import type { RetailModuleId } from '../../shared/domain/retailModule';
 import type { RetailIcon } from '../../shared/icons';
 
 export const MODULE_ICON_REGISTRY: Record<RetailModuleId, RetailIcon> = {

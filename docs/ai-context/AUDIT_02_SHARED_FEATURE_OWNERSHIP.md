@@ -194,3 +194,15 @@ These are implementation slices, not a mandate to create four new frameworks. If
 ## 9. Audit limitations
 
 This is a source ownership audit based on repository tree, source files and indexed code-search results. It does not claim a complete runtime call graph or prove the absence of dynamic imports/reflection. Implementation must re-check exact consumers at the target branch head before each move and validate the resulting dependency graph in CI.
+
+
+## Follow-up — JRN-01 workflow identity ownership clarification (2026-11-28)
+
+The original AUDIT-02 decision that `RetailModuleId` remained Home-owned was correct for that audit's then-current consumer graph. JRN-01 introduced a platform-level authenticated destination contract, making the stable business workflow identity a neutral cross-layer contract rather than a Home presentation detail.
+
+- `RetailModuleId` and `RETAIL_MODULE_IDS` now live in `src/shared/domain/retailModule.ts`.
+- `src/features/home/moduleRegistry.ts` re-exports them to preserve existing Home-facing imports.
+- `ModuleLibraryId`, `ModuleLibraryDefinition`, `RetailModule` presentation metadata and Home icon mappings remain Home-owned.
+- This is a narrow supersession of the prior `RetailModuleId` ownership row only. It does not move the Home registry, module library taxonomy or feature readiness policy into Shared.
+
+See ADR-043 and JRN-01 in `EXPERIENCE_SYSTEM_SPEC.md`.

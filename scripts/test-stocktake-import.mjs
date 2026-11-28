@@ -9,6 +9,7 @@ const combined = component + "\n" + presentation;
 const store = readFileSync("src/features/stocktake-import/services/stocktakeImportStore.ts", "utf8");
 const sessionService = readFileSync("src/features/stocktake-import/services/stocktakeImportSession.ts", "utf8");
 const registry = readFileSync("src/features/home/moduleRegistry.ts", "utf8");
+const workflowIdentity = readFileSync("src/shared/domain/retailModule.ts", "utf8");
 const snapshotService = readFileSync("src/features/data/moduleDataService.ts", "utf8");
 const styles = readFileSync("src/features/stocktake-import/components/stocktake-import.css", "utf8");
 
@@ -288,7 +289,8 @@ assert.match(sessionService, /skippedZoneWarnings/);
 assert.match(sessionService, /sourceFileName: sourceFiles.length/);
 assert.match(store, /blockingIssues: \[\.\.\.result\.blockingIssues\]/);
 assert.doesNotMatch(store, /retailos-module-data|retailos-stocktake['"]/);
-assert.ok(registry.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
+assert.ok(registry.includes("export type { RetailModuleId } from '../../shared/domain/retailModule'"));
+assert.ok(workflowIdentity.includes("export type RetailModuleId = typeof RETAIL_MODULE_IDS[number]"));
 assert.ok(registry.includes("title: 'Xuất file'"));
 assert.ok(registry.includes("workStatus: 'in-progress'"));
 assert.ok(registry.includes("workStatus?: 'planned' | 'in-progress' | 'paused' | 'operational' | 'maintenance'"));
