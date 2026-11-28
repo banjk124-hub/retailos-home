@@ -26,7 +26,8 @@ assert.ok(home.includes('const HOME_DOCK_ITEMS = navItems.map('), 'The dock item
 assert.ok(home.includes('const HOME_DOCK_ITEMS = navItems.map('), 'Dock navigation items must have stable identity.');
 assert.ok(home.includes('const openBarcodeScanner = useCallback('), 'The scanner dock action callback must be stable.');
 assert.ok(home.includes('const dockAction = useMemo('), 'The scanner dock action object must have stable identity.');
-assert.ok(home.includes('action={dockAction}'), 'The memoized dock must receive the stable scanner action object.');
+assert.ok(home.includes('action: dockAction'), 'The persistent Shell registration must receive the stable scanner action object.');
+assert.ok(home.includes("useShellNavigationRegistration('home'"), 'Home must register its navigation model with the persistent Shell.');
 assert.ok(dock.includes('export const LiquidDock = memo('), 'LiquidDock must remain memoized at its component boundary.');
 
 assert.ok(home.includes('const closeStocktake = useCallback(() => setIsStocktakeOpen(false), []);'), 'Stocktake close callback must remain stable.');
