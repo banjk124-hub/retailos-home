@@ -536,3 +536,108 @@ This workstream does not activate placeholder modules, select/migrate backend or
 ## 14. Audit limitations
 
 This is a remote static source/document/test-contract review at the baseline SHA above. It did not run a local production build, Playwright, real browser profiling or physical iOS/Android devices. Motion smoothness, frame pacing, camera teardown under navigation and low-end performance remain implementation QA gates, not established facts.
+
+---
+
+## 13. JRN-05 — Application Journey & Page Transition (owner direction, proposed)
+
+**Purpose:** define the complete application-level journey and the entry/exit contract between its major Pages before designing detailed motion choreography. This workstream extends the implemented Journey/Shell foundation; it does not reopen JRN-01–JRN-03D ownership decisions.
+
+### 13.1 Scope and boundary
+
+JRN-05 covers two connected but separately owned journey layers:
+
+1. **Application/session journey — App-owned**
+   - Login → authenticated handoff → Home.
+   - Authenticated session → Logout → Login.
+   - Authentication, employee identity/session, logout orchestration and app/PWA lifecycle remain owned by `App`.
+   - Login and Identity are not destinations in the authenticated JourneyController stack.
+
+2. **Authenticated Page journey — JourneyController-owned**
+   - Home → Stocktake → Home.
+   - Home → Stocktake Import → Home.
+   - Stocktake ↔ Stocktake Import when the current Page's Exit Guard permits the transition.
+   - Future ready Feature Pages use the same typed destination and guard contract; no placeholder module becomes navigable merely by appearing in the registry.
+   - The persistent Authenticated Shell remains mounted; the active workspace Page changes.
+
+The initial deliverable is a complete journey map and explicit transition contracts for every supported entry/exit edge. It is not a detailed animation implementation phase.
+
+### 13.2 Entry/exit contract
+
+Every supported transition must specify both sides:
+
+| Contract field | Required definition |
+|---|---|
+| Origin | Current application state/Page and its owner |
+| Trigger | User action or system event initiating the transition |
+| Exit | What the outgoing experience does before it is removed or handed off |
+| Guard | Whether navigation/session exit can proceed; wait, confirm or stay behavior where applicable |
+| Entry | What the incoming experience must establish before it is interactive |
+| Handoff | Session identity, destination identity and only the explicitly allowed return context |
+| Failure | Loading failure, rejected guard, logout failure or interrupted handoff behavior |
+| Completion | Observable condition that means the destination is ready for interaction |
+
+A transition is not considered specified if only its destination or its visual effect is documented. Exit and entry must be designed as one coordinated handoff while preserving the ownership boundary.
+
+### 13.3 Initial journey inventory
+
+| Journey ID | Flow | Owner boundary | Required outcome |
+|---|---|---|---|
+| J05-AUTH-01 | Login → authenticated Home | App → Authenticated Shell / Journey initial Home | Establish authenticated identity and present Home without exposing authenticated navigation before handoff |
+| J05-AUTH-02 | Home/session → Logout → Login | App | Complete the existing logout and resource cleanup safely, then return to Login; use the observed smooth Home-to-Login transition as the quality reference |
+| J05-PAGE-01 | Home → Stocktake | Home launcher → JourneyController → ActivePageHost | Preserve Shell; resolve and enter Stocktake only after navigation is accepted |
+| J05-PAGE-02 | Stocktake → Home | Stocktake Exit Guard → JourneyController pop → Home | Honor guard, restore only supported ephemeral Home return context |
+| J05-PAGE-03 | Home → Stocktake Import | Home launcher → JourneyController → ActivePageHost | Preserve Shell; enter Import without moving Import business state into Home |
+| J05-PAGE-04 | Stocktake Import → Home | Import Exit Guard → JourneyController pop → Home | Honor dirty/active/unpersisted-work guard and restore supported Home context |
+| J05-PAGE-05 | Stocktake ↔ Stocktake Import | Current Feature Page Exit Guard → JourneyController | Preserve current feature safety semantics; target must be ready and resolvable |
+| J05-PAGE-06 | Page loading/error/rejected exit | App Shell / ActivePageHost / active Page owner | Keep Shell and current safe state usable; provide explicit retry, stay or recovery behavior |
+
+This inventory is the initial supported surface, not a promise that every possible future route already exists. Browser Back/Forward, deep links, refresh restoration and external URL routing remain out of scope unless separately approved.
+
+### 13.4 Transition semantics before choreography
+
+- Define transition direction from journey intent: push is forward, pop is back, replace/normalization has no implied directional animation.
+- Every transition has an explicit outgoing **Exit** phase and incoming **Enter** phase. The phases may overlap only where lifecycle and readiness permit; visual overlap must never require retaining an inactive heavy Page.
+- The destination must not become interactive before its required identity, data/loading and navigation state are ready.
+- Navigation action execution, guard evaluation, persistence and resource cleanup must not be delayed until an animation finishes.
+- Exit Guard decisions precede destructive Page removal. A blocked transition keeps the current Page and its state intact.
+- The persistent Shell is not part of Page enter/exit and must not fade, slide, remount or lose navigation state during ordinary authenticated Page changes.
+- Authentication handoff is a distinct transition family; it must not be implemented as an ordinary Page push/pop.
+- Respect reduced-motion and power-conserve preferences. A transition may become shorter or non-animated without changing navigation semantics.
+
+### 13.5 Motion direction and reference use
+
+The owner identifies **Home → Logout → Login** as the current quality reference because its motion feels especially smooth. Treat it as a reference to inspect and measure, not a universal preset.
+
+- First audit the actual logout transition: state sequence, timing, easing, opacity/transform behavior, perceived continuity, cleanup ordering and reduced-motion behavior.
+- Record what makes it feel smooth, separating visual choreography from required application lifecycle.
+- Use the findings to establish quality criteria and reusable primitives only where semantics match.
+- Do not copy its duration, direction, easing, distance or layering indiscriminately to Home ↔ Feature Page transitions.
+- Different transition families may use different choreography: authentication handoff, forward Page entry, backward Page return, lateral Page replacement/switch, and loading/error recovery.
+- Motion is subordinate to clarity and operational speed. Micro-interactions and Page transitions must not delay the action itself.
+
+No universal duration, easing curve, animation distance or shared choreography is approved by this section. Existing timing values in the codebase are implementation observations, not validated standards.
+
+### 13.6 Work sequence and acceptance gates
+
+| Slice | Work | Completion gate |
+|---|---|---|
+| JRN-05A | Audit current App/Login/logout and authenticated Page lifecycle; map every supported journey edge | Source-backed as-is map, owners, triggers, Exit/Entry, guards, failures and current behavior |
+| JRN-05B | Define target Application Journey and Page Transition contract | All supported edges have explicit in/out and handoff behavior; App auth boundary and Page stack boundary remain separate |
+| JRN-05C | Evaluate the Home → Logout → Login reference | Evidence-based breakdown of the observed motion and lifecycle; no assumed universal timing |
+| JRN-05D | Define transition families and experience acceptance criteria | Distinct semantic profiles, reduced-motion behavior, interruption/failure rules and measurable QA criteria |
+| JRN-05E | Implement and validate the global Page transition foundation | Only after JRN-05A–D approval; Shell persistence, guards, state, resources and cross-platform behavior pass regression |
+
+Detailed per-Page choreography, component micro-motion, animation-duration tuning and broad motion-token redesign are later work. Do not start them while the global journey and in/out contracts are unsettled.
+
+### 13.7 Non-goals and protected invariants
+
+- No change to typed destination identity, module readiness source, JourneyController ownership or ActivePageHost's active-Page-only mounting rule.
+- No Page Snapshot/Restore, keep-alive cache, generic Page-state persistence or global business state.
+- No transfer of authentication/session/logout ownership into JourneyController.
+- No transition-completion-based persistence, camera release, worker cleanup or other critical resource lifecycle.
+- No blanket animation applied to all Pages and no global duration chosen by copying the logout reference.
+- No router, backend, realtime layer or new state-management dependency.
+- Preserve Stocktake/Import feature-owned state, persistence and Exit Guards; preserve Shell navigation and PWA update-safety boundaries.
+
+**Current status:** JRN-05 is a newly owner-directed proposed workstream. JRN-05A (source audit and journey mapping) is the next execution step; no runtime transition implementation is authorized by this specification alone.

@@ -34,18 +34,28 @@ The canonical Journey/Shell/Page contract is `EXPERIENCE_SYSTEM_SPEC.md`; ADRs r
 - JRN-01 contract (#211), JRN-02 persistent Shell navigation (#212), JRN-03A JourneyController/Page Host (#215), JRN-03B Stocktake Page (#216), JRN-03C Stocktake Import Page (#217).
 - JRN-03D-A/B/C audit, ownership contracts and integrated browser QA (#218–220).
 - JRN-03D-D1 scanner exit/camera handoff (#221), D2 Mobile Feature shortcuts (#222), D3 Shell-owned Module Library (#223).
-- UX-01 Module Library refinement (#224); Desktop Dock-connected Library tree is being completed in PR #225 while preserving the Mobile presentation.
-- Current main: `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; main CI #2150 and Pages Build & Deploy #216 passed.
+- UX-01 Module Library refinement (#224); Desktop Dock-connected Library tree and Feature Page shortcut styling are complete in PRs #227–228; Home uses its own Library anchor action.
+- Latest runtime merge in this sequence: PR #228, merge commit `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`. The older CI/Pages evidence above applies to its stated baseline only.
 
 **Explicitly deferred**
 - **D4 Page Snapshot/Restore:** postponed. Do not add Page capture/restore, keep-alive, generic snapshot persistence or global state to preserve UI state. First define source-of-truth, freshness/version, invalidation and reconciliation rules, with fixtures for data changes while a Page is inactive.
 - **D5 overlay visual consistency:** separate UX follow-up; not required to close the current ownership/lifecycle scope.
 - Physical-device acceptance remains separate from browser/CI evidence.
 
+**JRN-05 — Application Journey & Page Transition (new owner-directed priority)**
+- First define the total journey from Login → authenticated Home, Home ↔ each ready Feature Page, Feature Page ↔ Feature Page, and Logout → Login.
+- Treat App authentication/session transitions and authenticated Page-stack transitions as separate ownership layers.
+- Every edge must define both Exit and Enter, trigger, guard, handoff, failure/recovery and readiness before interaction.
+- Use Home → Logout → Login as the quality reference for motion analysis, not as a universal animation preset. Different transition families require distinct choreography.
+- Sequence: JRN-05A source audit/map → JRN-05B global in/out contract → JRN-05C logout reference analysis → JRN-05D transition-family/acceptance criteria → JRN-05E bounded implementation and regression.
+- Detailed durations, easing, per-component motion and Page-specific choreography are deferred until the global journey contract is approved. No universal timing is selected.
+- Preserve JRN-01–03D architecture: persistent Shell, typed JourneyController, active-Page-only host, feature-owned state/guards. No Page Snapshot/Restore or keep-alive.
+- Canonical specification: `EXPERIENCE_SYSTEM_SPEC.md`, section 13.
+
 **Remaining roadmap**
 - JRN-04 Global Quick Actions: proposed; no extraction of Quick Search, Scanner, Settings, Calendar or Notifications is implied.
 - JRN-06 shared System Data: audit source contracts first; no backend/realtime/global-store decision.
-- JRN-07 Experience System: proposed; visual direction remains open and owner-approved per scope.
+- JRN-07 Experience System: proposed; visual direction remains open and owner-approved per scope. Detailed motion system work follows JRN-05 global journey contract.
 - JRN-08 broader cross-platform/device QA remains separate from completed browser integration coverage.
 
 ## Technical invariants
