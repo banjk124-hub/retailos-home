@@ -10,6 +10,7 @@ import './DesktopShellNavigation.css';
 export const DesktopShellNavigation = memo(function DesktopShellNavigation({
   items, activeId, onSelect, action, label = 'Điều hướng chính',
 }: LiquidDockProps) {
+  const isHomeNavigation = items.some((item) => item.id === 'modules');
   const [libraryOpen, setLibraryOpen] = useState(false);
   const libraryButtonRef = useRef<HTMLButtonElement>(null);
   const closeLibrary = useCallback(() => {
@@ -23,29 +24,35 @@ export const DesktopShellNavigation = memo(function DesktopShellNavigation({
         <div className="desktop-shell-navigation__items">
           {items.map((item) => {
             const active = item.id === activeId && !item.disabled;
+            const isHomeLibraryAnchor = isHomeNavigation && item.id === 'modules';
             return (
               <button key={item.id} type="button"
                 className={`desktop-shell-navigation__item${active ? ' is-active' : ''}`}
-                aria-label={item.label} aria-current={active ? 'location' : undefined}
+                aria-label={isHomeLibraryAnchor ? 'Thư viện' : item.label} aria-current={active ? 'location' : undefined}
                 aria-disabled={item.disabled || undefined} disabled={item.disabled}
-                title={item.label} onClick={() => onSelect(item.id)}>
+                title={isHomeLibraryAnchor ? 'Thư viện' : item.label} onClick={() => onSelect(item.id)}>
                 <span className="desktop-shell-navigation__icon">
-                  <MotionIcon icon={item.icon} variant={item.id === 'home' ? 'home' : 'navigation'} active={active} state={item.disabled ? 'disabled' : active ? 'active' : 'idle'} size={21} />
+                  {isHomeLibraryAnchor
+                    ? <LibraryBig size={21} />
+                    : <MotionIcon icon={item.icon} variant={item.id === 'home' ? 'home' : 'navigation'} active={active} state={item.disabled ? 'disabled' : active ? 'active' : 'idle'} size={21} />}
                 </span>
-                <span className="desktop-shell-navigation__label">{item.label}</span>
+                <span className="desktop-shell-navigation__label">{isHomeLibraryAnchor ? 'Thư viện' : item.label}</span>
                 {Boolean(item.noticeCount) && <span className="desktop-shell-navigation__badge" aria-label={`${item.noticeCount} thông báo đang chờ`}>{item.noticeCount}</span>}
               </button>
             );
           })}
         </div>
-        <div className="desktop-shell-navigation__library-utility">
-          <button ref={libraryButtonRef} type="button" className={`desktop-shell-navigation__library${libraryOpen ? ' is-open' : ''}`}
-            aria-label="Mở thư viện nghiệp vụ" aria-expanded={libraryOpen} aria-haspopup="dialog" title="Thư viện nghiệp vụ"
-            onClick={() => setLibraryOpen((open) => !open)}>
-            <LibraryBig size={20} />
-            <span>Thư viện</span>
-          </button>
-        </div>
+        {!isHomeNavigation && <>
+          <div className="desktop-shell-navigation__library-utility">
+            <button ref={libraryButtonRef} type="button" className={`desktop-shell-navigation__library${libraryOpen ? ' is-open' : ''}`}
+              aria-label="Mở thư viện nghiệp vụ" aria-expanded={libraryOpen} aria-haspopup="dialog" title="Thư viện nghiệp vụ"
+              onClick={() => setLibraryOpen((open) => !open)}>
+              <LibraryBig size={20} />
+              <span>Thư viện</span>
+            </button>
+          </div>
+          {libraryOpen && <DesktopShellModuleLibrary triggerRef={libraryButtonRef} onClose={closeLibrary} />}
+        </>}
         {action && <div className="desktop-shell-navigation__utility">
           <button type="button" className="desktop-shell-navigation__action"
             aria-label={action.label} title={action.label} disabled={action.disabled}
@@ -55,7 +62,6 @@ export const DesktopShellNavigation = memo(function DesktopShellNavigation({
           </button>
         </div>}
       </Surface>
-      {libraryOpen && <DesktopShellModuleLibrary triggerRef={libraryButtonRef} onClose={closeLibrary} />}
     </>
   );
 });
