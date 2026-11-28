@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { House, LibraryBig } from 'lucide-react';
 import { MotionIcon } from '../../shared/icons';
 import { useJourneyController } from '../journey/JourneyControllerProvider';
@@ -9,7 +9,11 @@ export function FeatureMobileShortcuts() {
   const controller = useJourneyController();
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const closeLibrary = useCallback(() => setLibraryOpen(false), []);
+  const libraryButtonRef = useRef<HTMLButtonElement>(null);
+  const closeLibrary = useCallback(() => {
+    setLibraryOpen(false);
+    requestAnimationFrame(() => libraryButtonRef.current?.focus());
+  }, []);
 
   const returnHome = async () => {
     setMessage('');
@@ -24,7 +28,7 @@ export function FeatureMobileShortcuts() {
           <span className="feature-mobile-shortcut__icon"><MotionIcon icon={House} variant="home" size={21} /></span>
           <span>Trang chủ</span>
         </button>
-        <button type="button" className="feature-mobile-shortcut feature-mobile-shortcut--library" aria-label="Mở thư viện nghiệp vụ" title="Thư viện nghiệp vụ" onClick={() => { setMessage(''); setLibraryOpen(true); }}>
+        <button ref={libraryButtonRef} type="button" className="feature-mobile-shortcut feature-mobile-shortcut--library" aria-label="Mở thư viện nghiệp vụ" title="Thư viện nghiệp vụ" onClick={() => { setMessage(''); setLibraryOpen(true); }}>
           <span className="feature-mobile-shortcut__icon"><MotionIcon icon={LibraryBig} variant="navigation" size={21} /></span>
           <span>Thư viện</span>
         </button>
