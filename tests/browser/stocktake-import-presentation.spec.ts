@@ -60,7 +60,8 @@ test('Stocktake Import presentation preserves import, dirty edit, conflict revie
 
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
-  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
+  await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
 
@@ -129,7 +130,8 @@ test('Stocktake Import Page exit guard preserves dirty edits and pending conflic
 
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
-  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
+  await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
   const pageSurface = page.locator('.stocktake-import-page-shell');
@@ -153,7 +155,7 @@ test('Stocktake Import Page exit guard preserves dirty edits and pending conflic
   await expect(pageSurface).toBeHidden();
 
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click();
   await page.getByRole('button', { name: /^xuất file/i }).first().click();
   await expect(pageSurface).toBeVisible();

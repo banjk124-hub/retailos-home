@@ -16,8 +16,9 @@ test('Stocktake presentation preserves zone, duplicate-entry, review, export and
 
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
 
-  const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
+  const moduleNav = page.getByRole('button', { name: /^thư viện$/i }).first();
   await expect(moduleNav).toBeVisible();
   await moduleNav.click();
 
@@ -105,7 +106,8 @@ test('Stocktake Page exit guard protects unfinished input and restores Home retu
   }, auditSession);
 
   await page.goto('./', { waitUntil: 'domcontentloaded' });
-  const moduleNav = page.getByRole('button', { name: /^module$/i }).first();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
+  const moduleNav = page.getByRole('button', { name: /^thư viện$/i }).first();
   await moduleNav.click();
 
   const search = page.getByRole('textbox', { name: 'Tìm công cụ' });

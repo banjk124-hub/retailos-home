@@ -8,8 +8,17 @@ const auditSession = {
   signedInAt: '2026-01-01T00:00:00.000Z',
 };
 
+async function expectFeatureLibraryShortcut(page: import('@playwright/test').Page) {
+  const trigger = page.getByRole('button', { name: 'Mở thư viện nghiệp vụ' });
+  await expect(trigger).toBeVisible();
+  await trigger.click();
+  await expect(page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' })).toHaveCount(0);
+}
+
 async function openStocktakeFromHome(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
   await expect(library).toBeVisible();
   await library.click({ force: true });
@@ -22,11 +31,12 @@ async function openStocktakeFromHome(page: import('@playwright/test').Page) {
   await expect(page.locator('.stocktake-page-shell')).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Điều hướng kiểm kê' });
   await expect(navigation).toBeVisible();
+  await expectFeatureLibraryShortcut(page);
   return { navigation, homeScrollY };
 }
 
 async function openImportFromHome(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   const library = page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first();
   await expect(library).toBeVisible();
   await library.click({ force: true });
@@ -37,13 +47,14 @@ async function openImportFromHome(page: import('@playwright/test').Page) {
   await expect(page.locator('.stocktake-import-page-shell')).toBeVisible();
   const navigation = page.getByRole('navigation', { name: 'Điều hướng xuất file kiểm kê' });
   await expect(navigation).toBeVisible();
+  await expectFeatureLibraryShortcut(page);
   return { navigation, homeScrollY };
 }
 
 async function expectHomeRestored(page: import('@playwright/test').Page, expectedScrollY: number) {
   await expect(page.locator('.stocktake-page-shell, .stocktake-import-page-shell')).toHaveCount(0);
   await expect(page.locator('.home-main')).toBeVisible();
-  await expect(page.getByRole('button', { name: /^module$/i }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: /^thư viện$/i }).first()).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Tìm công cụ' })).toHaveValue('Kiểm kê');
   await expect.poll(async () => Math.abs(await page.evaluate(() => window.scrollY) - expectedScrollY)).toBeLessThanOrEqual(3);
 }
@@ -64,9 +75,10 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   }, auditSession);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.retailos-interface')).toBeVisible();
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
 
   // Capture a non-default Home section and search state before the first Page push.
-  await page.getByRole('button', { name: /^module$/i }).first().click();
+  await page.getByRole('button', { name: /^thư viện$/i }).first().click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
   const homeSearch = page.getByRole('textbox', { name: 'Tìm công cụ' });
   await expect(homeSearch).toBeVisible();
@@ -112,12 +124,13 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   expect(failedRequests, 'cross-Page flow must not fail resource requests').toEqual([]);
 });
 
-test('Desktop Home Module Dock item scrolls to Home library; Dock spans the viewport edge-to-edge', async ({ page }) => {
+test('Desktop Home Library anchor keeps Home scroll behavior; feature Pages retain Library flyout; Dock spans viewport', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.addInitScript((session) => {
     localStorage.setItem('retailos.session.v2', JSON.stringify(session));
   }, auditSession);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
   await expect(page.locator('.home-main')).toBeVisible();
 
   const dock = page.getByRole('navigation', { name: 'Điều hướng chính' });
@@ -128,7 +141,7 @@ test('Desktop Home Module Dock item scrolls to Home library; Dock spans the view
   expect(bounds!.y).toBe(0);
   expect(bounds!.height).toBeGreaterThanOrEqual(799);
 
-  const moduleButton = dock.getByRole('button', { name: 'Module' });
+  const moduleButton = dock.getByRole('button', { name: 'Thư viện' });
   await expect(moduleButton).toBeVisible();
   await expect(dock.getByRole('button', { name: 'Mở thư viện nghiệp vụ' })).toHaveCount(0);
   await moduleButton.click();
