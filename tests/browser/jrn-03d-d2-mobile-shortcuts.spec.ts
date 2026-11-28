@@ -8,6 +8,35 @@ const auditSession = {
   signedInAt: '2026-01-01T00:00:00.000Z',
 };
 
+async function emulateMobilePlatform(page: import('@playwright/test').Page) {
+  await page.addInitScript(() => {
+    const originalMatchMedia = window.matchMedia.bind(window);
+    const forcedMatches: Record<string, boolean> = {
+      '(pointer: fine)': false,
+      '(hover: hover)': false,
+      '(pointer: coarse)': true,
+    };
+    window.matchMedia = ((query: string) => {
+      const media = originalMatchMedia(query);
+      if (!(query in forcedMatches)) return media;
+      return new Proxy(media, {
+        get(target, property) {
+          if (property === 'matches') return forcedMatches[query];
+          const value = Reflect.get(target, property, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      }) as MediaQueryList;
+    }) as typeof window.matchMedia;
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, get: () => 5 });
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      get: () => 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 Chrome/120.0.0.0 Mobile Safari/537.36',
+    });
+    Object.defineProperty(window.screen, 'width', { configurable: true, get: () => 390 });
+    Object.defineProperty(window.screen, 'height', { configurable: true, get: () => 844 });
+  });
+}
+
 async function openStocktakeFromHome(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: /^module$/i }).first().click();
   await page.getByRole('button', { name: /mở thư viện kiểm kê/i }).first().click({ force: true });
@@ -19,6 +48,7 @@ test('JRN-03D-D2 provides independent global shortcuts on Mobile Feature Pages a
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.setViewportSize({ width: 390, height: 844 });
+  await emulateMobilePlatform(page);
   await page.addInitScript((session) => {
     localStorage.setItem('retailos.session.v2', JSON.stringify(session));
   }, auditSession);
