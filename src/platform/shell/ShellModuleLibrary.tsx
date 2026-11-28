@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, ChevronRight, Search, X } from 'lucide-react';
 import { MODULE_LIBRARIES, MODULE_REGISTRY, type ModuleLibraryDefinition, type RetailModule } from '../../features/home/moduleRegistry';
 import { getLibraryIcon, getModuleIcon } from '../../features/home/homeIconRegistry';
@@ -89,13 +89,13 @@ export function ShellModuleLibrary({ onClose }: Props) {
 
         <div className="shell-module-library__body">
           <div className="shell-module-library__group-list" aria-label="Nhóm chức năng">
-            <div className="shell-module-library__section-heading"><span>KHÔNG GIAN</span><small>{MODULE_LIBRARIES.length} nhóm</small></div>
+            <div className="shell-module-library__section-heading"><span>Nhóm chức năng</span><small>{MODULE_LIBRARIES.length} nhóm</small></div>
             {MODULE_LIBRARIES.map((library, index) => {
               const Icon = getLibraryIcon(library.id);
               const active = selectedLibrary.id === library.id;
               return (
-                <Fragment key={library.id}>
-                  <Surface as="button" variant="panel" interactive type="button"
+                
+                  <Surface key={library.id} as="button" variant="panel" interactive type="button"
                     className={`shell-module-library__group tone-${library.tone}${active ? ' is-selected' : ''}`}
                     aria-pressed={active}
                     onClick={() => { setSelectedLibrary(library); setSearch(''); setMessage(''); }}>
@@ -103,14 +103,14 @@ export function ShellModuleLibrary({ onClose }: Props) {
                     <span className="shell-module-library__group-copy"><small>NHÓM {String(index + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
                     <ChevronRight size={16} />
                   </Surface>
-                </Fragment>
+                
               );
             })}
           </div>
 
           <div className="shell-module-library__module-panel">
             <div className="shell-module-library__module-heading">
-              <div><span>ĐANG XEM</span><h3>{selectedLibrary.title}</h3><p>{selectedLibrary.description}</p></div>
+              <div><span>Chức năng trong nhóm</span><h3>{selectedLibrary.title}</h3><p>{selectedLibrary.description}</p></div>
               <label className="shell-module-library__search">
                 <Search size={16} />
                 <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm trong nhóm" aria-label="Tìm chức năng trong nhóm" />
@@ -124,8 +124,8 @@ export function ShellModuleLibrary({ onClose }: Props) {
                 const available = isJourneyDestinationResolvable({ kind: 'feature', moduleId: module.id });
                 const active = module.id === activeModuleId;
                 return (
-                  <Fragment key={module.id}>
-                    <Surface as="button" variant="panel" interactive type="button"
+                  
+                    <Surface key={module.id} as="button" variant="panel" interactive type="button"
                       className={`shell-module-library__module tone-${module.tone}`}
                       disabled={!available || active}
                       onClick={() => { void openModule(module); }}>
@@ -134,7 +134,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                       <span className="shell-module-library__module-copy"><strong>{module.title}</strong><small>{module.description}</small><em className={available ? 'is-ready' : 'is-pending'}>{active ? 'Đang mở' : available ? 'Sẵn sàng' : 'Đang tích hợp'}</em></span>
                       <ArrowUpRight size={17} />
                     </Surface>
-                  </Fragment>
+                  
                 );
               })}
               {selectedModules.length === 0 && <div className="shell-module-library__empty"><Search size={20} /><strong>Không tìm thấy chức năng</strong><span>Thử từ khóa ngắn hoặc chọn nhóm khác.</span></div>}
@@ -142,7 +142,6 @@ export function ShellModuleLibrary({ onClose }: Props) {
           </div>
         </div>
         {message && <p className="shell-module-library__message" role="status">{message}</p>}
-        <footer className="shell-module-library__footer"><span>RETAILOS</span><span>Trạng thái công việc được bảo toàn khi chuyển trang</span></footer>
       </section>
     </div>
   );
