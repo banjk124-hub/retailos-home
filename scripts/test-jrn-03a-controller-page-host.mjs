@@ -8,6 +8,8 @@ const registry = read('../src/platform/journey/journeyPageRegistry.tsx');
 const host = read('../src/platform/journey/ActivePageHost.tsx');
 const shell = read('../src/platform/shell/AuthenticatedAppShell.tsx');
 const shellRoot = read('../src/platform/shell/AuthenticatedShellPresentationRoot.tsx');
+const shellRootCss = read('../src/platform/shell/AuthenticatedShellPresentationRoot.css');
+const hostStyles = read('../src/platform/journey/ActivePageHost.css');
 const preflight = read('./preflight.mjs');
 
 assert.match(controller, /export class JourneyController/);
@@ -31,6 +33,8 @@ assert.match(shell, /<AuthenticatedShellPresentationRoot platform=\{platform\}>/
 assert.doesNotMatch(shell, /<HomePresentationRoot/);
 assert.match(host, /<HomePresentationRoot platform=\{props\.platform\}>/);
 assert.match(shellRoot, /authenticated-shell-root--\$\{platform\}/);
+assert.match(shellRootCss, /\.authenticated-shell-root \{ display: contents; \}/);
+assert.match(hostStyles, /\.journey-page-loading/);
 assert.match(shell, /<ActivePageHost/);
 assert.match(shell, /<PersistentShellNavigation platform=\{platform\} \/>/);
 assert.doesNotMatch(shell, /BrowserRouter|createBrowserRouter|useNavigate/);
