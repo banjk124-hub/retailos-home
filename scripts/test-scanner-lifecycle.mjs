@@ -304,4 +304,21 @@ const stocktakeTransitionCss = await readFile(
 assert.match(stocktakeTransitionCss, /scanner-stocktake-close 1ms linear both/,
   'reduced-motion Stocktake exit must still dispatch animationend');
 
+
+const stocktakeModuleRequestSource = await readFile(
+  new URL('../src/features/stocktake/components/StocktakeModule.tsx', import.meta.url),
+  'utf8',
+);
+assert.ok(stocktakeModuleRequestSource.includes('onCameraLeaseRequestClaimed={(request) => {'),
+  'Stocktake returns ownership of the one-shot camera request after the scanner hook consumes it');
+assert.ok(stocktakeModuleRequestSource.includes('if (cameraLeaseRequestRef.current === request) cameraLeaseRequestRef.current = null;'),
+  'the parent clears only the exact request transferred to the scanner session');
+
+assert.ok(stocktakeScannerSource.includes('onCameraLeaseRequestClaimed?.(cameraLeaseRequest)'),
+  'Stocktake acknowledges the one-shot camera request handoff');
+assert.ok(stocktakeScannerSource.includes('setTimeout(() => {\n      exitGateRef.current?.completePresentation();\n    }, 360)'),
+  'Stocktake has a bounded presentation fallback when animationend is not delivered');
+assert.ok(stocktakeScannerSource.includes('the exit gate still waits for the platform session to release the camera and dispose'),
+  'presentation fallback never bypasses camera release or session disposal');
+
 console.log('Scanner lifecycle contract, teardown-order and Stocktake C2 exit-gate tests passed.');
