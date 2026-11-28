@@ -44,8 +44,8 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 1. **JRN-03:** implement the audited Page Host plan in `AUDIT_JRN_03_PAGE_HOST.md`; no implementation is claimed by the audit.
 2. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
-2. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
-3. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.
+3. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
+4. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.
 
 These are separate workstreams; do not combine them into a broad UI rewrite. Preserve auth/session, stable IDs, data snapshot/cache contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision, overlay lifecycle and PWA update-safety.
 
