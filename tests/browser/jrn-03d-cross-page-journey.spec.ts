@@ -129,6 +129,7 @@ test('Desktop Home Library anchor keeps Home scroll behavior; feature Pages reta
     localStorage.setItem('retailos.session.v2', JSON.stringify(session));
   }, auditSession);
   await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-retailos-platform="desktop"]')).toHaveCount(1);
   await expect(page.locator('.home-main')).toBeVisible();
 
   const dock = page.getByRole('navigation', { name: 'Điều hướng chính' });
