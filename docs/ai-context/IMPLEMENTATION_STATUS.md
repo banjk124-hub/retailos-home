@@ -1,8 +1,9 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`  
-**Latest merge:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`
+**JRN-03 audit baseline (main before this documentation-only reconciliation):** `b30505a86511909d94406bfd8467be4ec204c620`  
+**Latest runtime merge:** PR #212, JRN-02, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`  
+**Post-merge verification:** PR-head CI #2047 and main CI #2048 passed; documentation PR CI #2049 and post-merge main CI #2050 passed; Pages deployments #204 and #205 succeeded.
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -34,6 +35,7 @@ This file records verified repository state. It does not authorize deployment or
 | CSS-01C first mobile navigation legacy slice | PR #201 merged | Merge commit `7e787576d2ad1013eb2e2e8f0cbed3efd7d3d02f`; exact-head CI #1990 passed on `88fee8c6ca6374941bc5d47a57a9291547c986e5` |
 | AUDIT-03E CSS ownership closure | PR #209 merged | Merge commit `dc952b3204d7d7eaf53b82f805218e56f7ea2562`; documentation-only; CI #2025 evidence and Build & Deploy #200 were verified on its pre-merge baseline; physical iOS/Android acceptance remains pending |
 | CSS-01C closeout | PR #202 closed unmerged | No source changes accepted; remaining `.mobile-nav` groups intentionally retained because safe grouped-selector isolation was not demonstrated |
+| JRN-02 Persistent Shell navigation | PR #212 merged | Runtime merge `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`; exact-head CI #2047 and main CI #2048 passed; 15 Playwright tests passed; Pages deployments #204 and #205 succeeded |
 
 ## Open work and acceptance gates
 
@@ -50,8 +52,9 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 
 - JRN-00 static source audit is complete at main baseline `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`. It confirmed App auth/session ownership and HomeScreen's previous ownership of both feature mounts.
 - **JRN-01 — merged:** PR #211, merge commit `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. Typed authenticated destination contract, neutral workflow identity, Home return context, safe-exit semantics and the owner-approved Persistent Shell architecture are recorded. Contract/documentation phase only.
-- **JRN-02 — merged:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`. AuthenticatedAppShell owns ShellNavigation rendering; Home registers its nav model through an owner-scoped shell context. Existing Desktop/Mobile navigation implementations and styles are retained. JRN-02 does not include PageHost, Stocktake/Import extraction or global quick-action migration.
-- JRN-03–08 remain planned in `ROADMAP.md`. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
+- **JRN-02 — merged and verified:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`. AuthenticatedAppShell owns ShellNavigation rendering; Home registers its nav model through an owner-scoped shell context. Existing Desktop fixed-left Dock and Mobile adaptive navigation are retained. Exact PR-head CI #2047, main CI #2048, documentation CI #2049, post-merge main CI #2050 and Pages deployments #204/#205 succeeded. CI #2047/#2048 each ran 15 Playwright tests successfully. No physical-device acceptance is inferred.
+- **JRN-03 source audit — complete at baseline `b30505a86511909d94406bfd8467be4ec204c620`:** see `AUDIT_JRN_03_PAGE_HOST.md`. Audit only; no runtime Page Host/controller or feature migration has been implemented.
+- JRN-03 implementation remains proposed and is gated by the findings and phased plan in `AUDIT_JRN_03_PAGE_HOST.md`; JRN-04–08 remain planned in `ROADMAP.md`. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
 
 ## Protected technical boundaries
 
@@ -64,4 +67,4 @@ Preserve auth/session and employee identity, stable module/workflow IDs, snapsho
 - Exact PR-head CI #1968 succeeded on `ed466383ceaad2d619fd7e99932e65ebf23e311c`: preflight, TypeScript, production/Pages builds, bundle comparison and Playwright responsive/runtime evidence.
 - Exact PR #199 head CI #1985 passed preflight, TypeScript, production/Pages build, PR-base bundle comparison and Playwright responsive/runtime evidence.
 - Exact PR #201 head CI #1990 passed; no merge/deployment or physical-device acceptance is inferred from this result.
-- No post-merge Pages deployment or physical-device QA is claimed.
+- Post-merge Pages deployment is confirmed: deployment #204 followed JRN-02 and deployment #205 followed the documentation closeout; both succeeded. Physical-device QA remains unclaimed and PW-01 remains deferred.
