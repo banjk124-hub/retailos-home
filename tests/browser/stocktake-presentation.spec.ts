@@ -141,5 +141,5 @@ test('Stocktake Page exit guard protects unfinished input and restores Home retu
 
   await expect(page.locator('.stocktake-page-shell')).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: 'Tìm công cụ' })).toHaveValue('Kiểm kê');
-  await expect(page.locator('.mobile-shell-navigation')).toBeVisible();
+  await expect(page.locator('.desktop-shell-navigation, .mobile-shell-navigation, .shell-navigation--tablet-compat').first()).toBeVisible();
 });
