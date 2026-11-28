@@ -3,7 +3,7 @@
 **Repository:** banjk124-hub/retailos-home  
 **Documentation baseline:** `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`  
 **Latest runtime merge:** PR #228 Desktop Library shortcut styling, merge commit `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`  
-**Closeout verification:** main CI #2150 (run `46145238448`) passed; GitHub Pages Build & Deploy #216 succeeded on the current main baseline.
+**Historical verification:** main CI #2150 (run `46145238448`) and Pages Build & Deploy #216 passed on the earlier PR #224 baseline; these results are not represented as verification of the later PR #226–228 merges.
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -63,8 +63,8 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 - JRN-01 PR #211; JRN-02 PR #212; JRN-03A PR #215; JRN-03B PR #216; JRN-03C PR #217.
 - JRN-03D-A/B/C PRs #218–220: ownership audit, contract coverage and integrated browser QA.
 - JRN-03D-D1/D2/D3 PRs #221–223: scanner handoff, Mobile Feature shortcuts and Shell Module Library.
-- UX-01 PR #224 refined the Module Library. Current main: `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`.
-- Main CI #2150 and Pages Build & Deploy #216 passed on this baseline.
+- UX-01 PR #224 refined the Module Library; PRs #226–228 subsequently completed Desktop Dock/Home Library behavior and shortcut styling.
+- Latest runtime merge recorded here: PR #228 at `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`. Historical CI/Pages results above apply only to their stated earlier baseline.
 
 **Deferred / not implemented**
 - D4 Page Snapshot/Restore is postponed. No Page capture/restore, keep-alive cache, snapshot store or generic Page-state persistence was introduced. Reconsider only after source-of-truth, freshness/version, invalidation and data reconciliation rules are defined and testable.
