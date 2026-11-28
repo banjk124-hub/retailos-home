@@ -1,4 +1,4 @@
-import type { RetailModuleId } from '../../features/home/moduleRegistry';
+import type { RetailModuleId } from '../../shared/domain/retailModule';
 
 /**
  * App authentication remains owned by App.tsx.
