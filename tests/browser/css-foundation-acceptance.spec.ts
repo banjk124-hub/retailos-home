@@ -106,10 +106,10 @@ async function openStocktake(page: Page) {
   await expect(library).toBeVisible();
   await library.click({ force: true });
   await page.getByRole('button', { name: /^kiểm kê/i }).first().click();
-  const dialog = page.getByRole('dialog', { name: 'Kiểm kê' });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
-  return dialog;
+  const pageSurface = page.locator('.stocktake-page-shell');
+  await expect(pageSurface).toBeVisible();
+  await expect(pageSurface.getByRole('heading', { name: 'Kiểm kê' })).toBeVisible();
+  return pageSurface;
 }
 
 async function openStocktakeImport(page: Page) {
@@ -317,7 +317,7 @@ test('AUDIT-03C keyboard focus contract: Home, Settings, Stocktake and Stocktake
 
   const stocktake = await openStocktake(page);
   await keyboardFocus(page, stocktake.locator('button:visible').first(), 'Stocktake dialog first action');
-  await stocktake.getByRole('button', { name: 'Đóng kiểm kê' }).click();
+  await stocktake.getByRole('button', { name: 'Về trang chủ' }).click();
   await expect(stocktake).toBeHidden();
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
@@ -340,7 +340,7 @@ test('AUDIT-03C reduced-motion contract: shared and feature surfaces', async ({ 
 
   const stocktake = await openStocktake(page);
   await reducedMotionEvidence(stocktake.locator('button:visible').first(), 'Stocktake dialog first action');
-  await stocktake.getByRole('button', { name: 'Đóng kiểm kê' }).click();
+  await stocktake.getByRole('button', { name: 'Về trang chủ' }).click();
   await expect(stocktake).toBeHidden();
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
