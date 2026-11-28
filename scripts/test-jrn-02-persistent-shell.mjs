@@ -7,10 +7,10 @@ const context = read('../src/platform/shell/shellNavigationContext.tsx');
 const home = read('../src/features/home/HomeScreen.tsx');
 const desktopNav = read('../src/shared/navigation/DesktopShellNavigation.css');
 const mobileNav = read('../src/shared/navigation/MobileShellNavigation.css');
-const presentation = read('../src/platform/home/HomePresentationRoot.tsx');
+const presentation = read('../src/platform/shell/AuthenticatedShellPresentationRoot.tsx');
 
 assert.match(shell, /<ShellNavigationProvider>/);
-assert.match(shell, /<HomePresentationRoot platform=\{platform\}>/);
+assert.match(shell, /<AuthenticatedShellPresentationRoot platform=\{platform\}>/);
 assert.match(shell, /<PersistentShellNavigation platform=\{platform\} \/>/);
 assert.match(shell, /<JourneyControllerProvider>/);
 assert.match(shell, /<ActivePageHost/);
