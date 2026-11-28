@@ -32,12 +32,12 @@ async function openImportFromHome(page: import('@playwright/test').Page) {
   return navigation;
 }
 
-async function expectHomeRestored(page: import('@playwright/test').Page) {
+async function expectHomeRestored(page: import('@playwright/test').Page, expectedScrollY: number) {
   await expect(page.locator('.stocktake-page-shell, .stocktake-import-page-shell')).toHaveCount(0);
   await expect(page.locator('.home-main')).toBeVisible();
   await expect(page.getByRole('button', { name: /^module$/i }).first()).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Tìm công cụ' })).toHaveValue('Kiểm kê');
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+  await expect.poll(async () => Math.abs(await page.evaluate(() => window.scrollY) - expectedScrollY)).toBeLessThanOrEqual(3);
 }
 
 test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and persisted Stocktake recovery', async ({ page }) => {
@@ -48,7 +48,9 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
     request.url() + ' :: ' + (request.failure()?.errorText || 'failed'),
   ));
 
-  await page.setViewportSize({ width: 1440, height: 900 });
+  // Short desktop height creates a real document scroll range so the test can
+  // exercise HomeReturnContext restoration instead of assuming a 900px viewport scrolls.
+  await page.setViewportSize({ width: 1440, height: 700 });
   await page.addInitScript((session) => {
     localStorage.setItem('retailos.session.v2', JSON.stringify(session));
   }, auditSession);
@@ -57,6 +59,7 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
 
   // Capture a non-default Home section and search state before the first Page push.
   await page.getByRole('button', { name: /^module$/i }).first().click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
   const homeSearch = page.getByRole('textbox', { name: 'Tìm công cụ' });
   await expect(homeSearch).toBeVisible();
   await homeSearch.fill('Kiểm kê');
@@ -74,7 +77,7 @@ test('JRN-03D-C integrates Home, Stocktake, Import, Shell owner handoff and pers
   await expect(page.locator('.stocktake-recent-entry')).toContainText('8936000000777');
 
   await stocktakeNavigation.getByRole('button', { name: 'Trang chủ' }).click();
-  await expectHomeRestored(page);
+  await expectHomeRestored(page, savedScrollY);
   await expect(page.getByRole('navigation', { name: 'Điều hướng kiểm kê' })).toHaveCount(0);
 
   // Re-enter Stocktake: the Page remount must recover the zone and row from its own store.
