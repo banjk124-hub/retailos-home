@@ -408,7 +408,7 @@ RetailOS currently has an App-owned authentication journey (Login â†’ Identity â
 ### Decision
 
 1. **Authentication ownership stays in App.** App remains authoritative for session restore, Login, Identity, logout and app/PWA lifecycle. These transitions are not entries in the authenticated page stack.
-2. **Authenticated destinations are typed.** Home is `{ kind: 'home' }`; a feature page is `{ kind: 'feature', moduleId: RetailModuleId }`. Destination keys derive from the existing workflow ID registry. No duplicate feature-ID list or label-based identity is allowed.
+2. **Authenticated destinations are typed.** Home is `{ kind: 'home' }`; a feature page is `{ kind: 'feature', moduleId: RetailModuleId }`. Destination keys derive from the existing workflow ID registry. No duplicate feature-ID list or label-based identity is allowed. The stable `RetailModuleId` union is owned by `src/shared/domain/retailModule.ts`; Home's module registry re-exports it for compatibility so Platform/Shared do not depend on Home implementation.
 3. **Registry identity is not readiness.** A feature destination is navigable only when a page resolver exists and the existing module registry reports `availability === 'ready'`. Snapshot presence, `workStatus` and platform capability do not independently establish a complete workflow.
 4. **One authenticated stack.** `push` means forward, `pop` means back, and `replace` means normalization without directional motion. Re-selecting the current destination is a no-op. Home is the safe fallback for missing/invalid history.
 5. **Home sections are not pages.** `home`, `modules`, and `activity` remain Home-owned sections/anchors. Settings, quick Scanner, Quick Search, Calendar, Notifications and notice detail remain Home-owned quick-action/overlay state.
@@ -421,7 +421,7 @@ RetailOS currently has an App-owned authentication journey (Login â†’ Identity â
 
 ### Implementation boundary
 
-The contract is defined in `src/platform/journey/journey.types.ts` and guarded by `scripts/test-journey-contract.mjs`. This ADR does not claim that a Journey Controller, Feature Page Host, Back integration or runtime navigation migration has been implemented. Those belong to JRN-02 and JRN-03.
+The contract is defined in `src/platform/journey/journey.types.ts`, stable workflow identity in `src/shared/domain/retailModule.ts`, and guarded by `scripts/test-journey-contract.mjs`. This ADR does not claim that a Journey Controller, Feature Page Host, Back integration or runtime navigation migration has been implemented. Those belong to JRN-02 and JRN-03.
 
 ### Acceptance
 
