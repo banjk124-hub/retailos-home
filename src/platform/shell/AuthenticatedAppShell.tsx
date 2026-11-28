@@ -1,4 +1,4 @@
-import { lazy, Suspense, type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 import type { EmployeeSession } from '../../shared/domain/employee';
 import type { DepartmentConfig } from '../../shared/config/departments';
 import type { MotionOrigin } from '../../shared/motion';
@@ -8,8 +8,8 @@ import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
 import { useRetailPlatform } from '../../shared/platform/platformContext';
 import { HomePresentationRoot } from '../home/HomePresentationRoot';
 import { PersistentShellNavigation, ShellNavigationProvider } from './shellNavigationContext';
-
-const HomeScreen = lazy(() => import('../../features/home/HomeScreen'));
+import { JourneyControllerProvider } from '../journey/JourneyControllerProvider';
+import { ActivePageHost } from '../journey/ActivePageHost';
 
 type IdentityMotionStyle = CSSProperties & {
   '--identity-origin-x': string;
@@ -143,10 +143,10 @@ export default function AuthenticatedAppShell({
           <IdentityJourneyView employee={employee} department={department} identityOrigin={identityOrigin} />
         ) : (
           <ShellNavigationProvider>
-            <HomePresentationRoot platform={platform}>
-              <Suspense fallback={<HomeLoadingSurface />}>
+            <JourneyControllerProvider>
+              <HomePresentationRoot platform={platform}>
                 <div className={isLeavingHome ? 'app-transition-leave' : ''}>
-                  <HomeScreen
+                  <ActivePageHost
                     employee={employee}
                     department={department}
                     onLogout={onLogout}
@@ -158,9 +158,9 @@ export default function AuthenticatedAppShell({
                     platform={platform}
                   />
                 </div>
-              </Suspense>
-              <PersistentShellNavigation platform={platform} />
-            </HomePresentationRoot>
+                <PersistentShellNavigation platform={platform} />
+              </HomePresentationRoot>
+            </JourneyControllerProvider>
           </ShellNavigationProvider>
         )}
       </div>
