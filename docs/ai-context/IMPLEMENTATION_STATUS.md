@@ -1,8 +1,8 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**Verified main HEAD:** `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`  
-**Latest merge:** PR #211, merge commit `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`
+**Verified main HEAD:** `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`  
+**Latest merge:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
 
@@ -50,7 +50,7 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 
 - JRN-00 static source audit is complete at main baseline `e2976d807ad9bc596ec38dd5852ddadbc48d2f49`. It confirmed App auth/session ownership and HomeScreen's previous ownership of both feature mounts.
 - **JRN-01 — merged:** PR #211, merge commit `2e0b9ee90e99a39d96ebe8598bcf00a4ec6a0020`. Typed authenticated destination contract, neutral workflow identity, Home return context, safe-exit semantics and the owner-approved Persistent Shell architecture are recorded. Contract/documentation phase only.
-- **JRN-02 — in progress on `jrn-02-persistent-shell-navigation`:** navigation chrome is moved from HomeScreen into AuthenticatedAppShell. Home registers its navigation model; the persistent Shell renders Desktop/Mobile navigation. The active Page registration boundary is intended for future PageHost consumers. No Stocktake/Import extraction or global quick-action migration is included.
+- **JRN-02 — merged:** PR #212, merge commit `b958d9033d8f5c1f7a0a48844bde1a9909ca66de`. AuthenticatedAppShell owns ShellNavigation rendering; Home registers its nav model through an owner-scoped shell context. Existing Desktop/Mobile navigation implementations and styles are retained. JRN-02 does not include PageHost, Stocktake/Import extraction or global quick-action migration.
 - JRN-03–08 remain planned in `ROADMAP.md`. ARCHITECTURE.md remains ADR authority; COMPONENT_AND_PATTERN_GOVERNANCE.md remains component reuse authority; PLATFORM_CAPABILITY_MATRIX.md and PWA_RUNTIME_RELEASE.md retain their existing authority.
 
 ## Protected technical boundaries
