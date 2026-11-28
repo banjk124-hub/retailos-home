@@ -419,6 +419,19 @@ RetailOS currently has an App-owned authentication journey (Login → Identity �
 10. **No router/history integration in JRN-01.** Use an in-memory authenticated stack contract first. Do not add URL routes, `history.pushState`, deep links or browser Back synchronization until a dedicated adapter is tested for PWA reload/session behavior.
 11. **Motion direction is semantic.** push → forward, pop → back, replace → none. Timing/easing/reduced-motion remain owned by the shared motion system.
 
+### Owner clarification — Persistent Shell, adaptive navigation and shared system (2026-11-28)
+
+The owner clarified that splitting Pages is a workspace boundary, not an application boundary. RetailOS remains one application with one authenticated runtime and shared system.
+
+12. **Single App, multiple Pages.** Home, Stocktake and Stocktake Import are independent Page workspaces within the same RetailOS application. Do not create separate React apps, nested PWAs or a single Home page that embeds all business workflows.
+13. **Persistent authenticated Shell.** The authenticated App Shell remains mounted while the active Page changes. The Shell owns navigation chrome, global quick-action entry points and app-level feedback; PageHost owns only the active Page workspace.
+14. **Desktop persistent Dock.** A compact Navigation Dock remains fixed at the left on Home and every Feature Page. Page transitions replace only the workspace to its right. Individual Pages must not render, hide or own the global Dock.
+15. **Mobile adaptive navigation.** Mobile uses a space-appropriate navigation presentation rather than a compressed Desktop Dock. Home, ready Pages and global quick actions must remain reachable from every Page. Exact control arrangement is subject to viewport and device QA. Desktop and Mobile share destination/action definitions and readiness/permission rules.
+16. **Global quick actions are shell-level.** Quick Search, Scanner, Calendar, Notifications and Settings are reachable from any authenticated Page. They are transient actions/surfaces, not Page destinations; closing returns to the invoking Page/context. They must not be mounted under Home solely because of historical implementation. Scanner and other resource-owning actions release resources on close.
+17. **One Experience System, multiple expressions.** Typography, semantic color, design tokens, icon meaning, accessibility, motion vocabulary and shared component contracts are consistent app-wide. Each Page may use a different layout, density, hierarchy, local component composition and contextual motion. Page-local evolution must not leak into other Pages; global token/API changes require impact review.
+18. **Shared system data, isolated domain ownership.** Canonical system data is accessed through neutral shared contracts/repositories/domain services and explicit version/change signals. Feature/domain persistence remains owned by its workflow; UI state remains local to the Page/component. No Page imports another Page's private store. Shared updates must not overwrite dirty domain work.
+19. **No speculative data infrastructure.** This decision does not select a backend, database, global state library, realtime transport or new synchronization engine. Preserve existing ETL/snapshot/offline contracts and implement only data abstractions proven necessary by source audit.
+
 ### Implementation boundary
 
 The contract is defined in `src/platform/journey/journey.types.ts`, stable workflow identity in `src/shared/domain/retailModule.ts`, and guarded by `scripts/test-journey-contract.mjs`. This ADR does not claim that a Journey Controller, Feature Page Host, Back integration or runtime navigation migration has been implemented. Those belong to JRN-02 and JRN-03.
