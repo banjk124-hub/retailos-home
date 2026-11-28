@@ -1,6 +1,6 @@
 /* RetailOS Phase 4 — new responsive layout engine.
    Structural rules are deliberately explicit to prevent legacy CSS grids from collapsing. */
-:root {
+.home-presentation-root {
   --retail-bg: #f7f4f5;
   --retail-ink: #211c22;
   --retail-muted: #79737d;
