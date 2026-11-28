@@ -34,7 +34,7 @@ The canonical Journey/Shell/Page contract is `EXPERIENCE_SYSTEM_SPEC.md`; ADRs r
 - JRN-01 contract (#211), JRN-02 persistent Shell navigation (#212), JRN-03A JourneyController/Page Host (#215), JRN-03B Stocktake Page (#216), JRN-03C Stocktake Import Page (#217).
 - JRN-03D-A/B/C audit, ownership contracts and integrated browser QA (#218–220).
 - JRN-03D-D1 scanner exit/camera handoff (#221), D2 Mobile Feature shortcuts (#222), D3 Shell-owned Module Library (#223).
-- UX-01 Module Library refinement (#224).
+- UX-01 Module Library refinement (#224); Desktop Dock-connected Library tree is being completed in PR #225 while preserving the Mobile presentation.
 - Current main: `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; main CI #2150 and Pages Build & Deploy #216 passed.
 
 **Explicitly deferred**
