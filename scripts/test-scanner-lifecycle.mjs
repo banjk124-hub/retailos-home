@@ -309,6 +309,10 @@ const stocktakeModuleRequestSource = await readFile(
   new URL('../src/features/stocktake/components/StocktakeModule.tsx', import.meta.url),
   'utf8',
 );
+assert.ok(stocktakeModuleRequestSource.indexOf('const scannerOverlay =') < stocktakeModuleRequestSource.indexOf('if (busy) {'),
+  'Stocktake keeps the scanner overlay mounted when its page renders a busy state');
+assert.ok(stocktakeModuleRequestSource.includes('{scannerOverlay}'),
+  'the busy presentation preserves the active scanner overlay as a sibling');
 assert.ok(stocktakeModuleRequestSource.includes('onCameraLeaseRequestClaimed={(request) => {'),
   'Stocktake returns ownership of the one-shot camera request after the scanner hook consumes it');
 assert.ok(stocktakeModuleRequestSource.includes('if (cameraLeaseRequestRef.current === request) cameraLeaseRequestRef.current = null;'),
