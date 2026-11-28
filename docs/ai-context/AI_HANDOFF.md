@@ -27,7 +27,14 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 - CSS-01 remains separate; SH-01 did not perform a broad CSS ownership migration.
 - Scanner stabilization SC-00–SC-05 remains closed unless a reproducible defect, measured bottleneck or new requirement appears.
 
-## Current Journey direction\n\n- JRN-00 static source audit is complete at main HEAD `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. App owns auth/session and Login → Identity → Home timing; HomeScreen still renders Stocktake and Stocktake Import inside its own tree.\n- Next proposed work is JRN-01: approve destination identity, return/history behavior, Home state restoration and safe-exit semantics before implementation.\n- Stocktake and Stocktake Import are the only operationally ready feature workflows. Keep placeholders as placeholders; do not infer a roadmap from registry entries.\n- Keep Settings, quick lookup, quick Scanner, Calendar and Notifications Home-owned. Do not start backend/database or production Gmail migration in this workstream.\n\n## Next technical gates
+## Current Journey direction
+
+- JRN-00 static source audit is complete at main HEAD `dc952b3204d7d7eaf53b82f805218e56f7ea2562`. App owns auth/session and Login → Identity → Home timing; HomeScreen still renders Stocktake and Stocktake Import inside its own tree.
+- Next proposed work is JRN-01: approve destination identity, return/history behavior, Home state restoration and safe-exit semantics before implementation.
+- Stocktake and Stocktake Import are the only operationally ready feature workflows. Keep placeholders as placeholders; do not infer a roadmap from registry entries.
+- Keep Settings, quick lookup, quick Scanner, Calendar and Notifications Home-owned. Do not start backend/database or production Gmail migration in this workstream.
+
+## Next technical gates
 
 1. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
 2. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
