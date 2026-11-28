@@ -48,7 +48,7 @@ assert.doesNotMatch(home, /<ShellNavigation/);
 assert.match(home, /PLATFORM_CAPABILITY_POLICY\.cameraBarcodeScanner\[platform\] === 'available' && isScannerSupportedDevice\(\)/);
 assert.match(home, /showScannerSettings=\{PLATFORM_CAPABILITY_POLICY\.scannerPreferences\[platform\] === 'available'\}/);
 assert.doesNotMatch(home, /<LiquidDock/);
-assert.match(dock, /data-keyboard-open/);\nconst desktopLibrary = read('../src/platform/shell/DesktopShellModuleLibrary.tsx');\nconst desktopLibraryStyles = read('../src/platform/shell/DesktopShellModuleLibrary.css');\nassert.match(desktopLibrary, /MODULE_LIBRARIES.map/);\nassert.match(desktopLibrary, /controller.dispatch\\(\\{ kind: 'push'/);\nassert.match(desktopLibraryStyles, /left: 88px/);
+assert.match(dock, /data-keyboard-open/);
 const desktopLibrary = read('../src/platform/shell/DesktopShellModuleLibrary.tsx');
 const desktopLibraryStyles = read('../src/platform/shell/DesktopShellModuleLibrary.css');
 assert.match(desktopLibrary, /MODULE_LIBRARIES.map/);
