@@ -6,6 +6,8 @@ import { ExperienceBackground } from '../../shared/components/ExperienceBackgrou
 import { Brand, BrandMotion } from '../../shared/brand';
 import { getDepartmentIcon, MotionIcon } from '../../shared/icons';
 import { useRetailPlatform } from '../../shared/platform/platformContext';
+import { HomePresentationRoot } from '../home/HomePresentationRoot';
+import { PersistentShellNavigation, ShellNavigationProvider } from './shellNavigationContext';
 
 const HomeScreen = lazy(() => import('../../features/home/HomeScreen'));
 
@@ -140,21 +142,26 @@ export default function AuthenticatedAppShell({
         {journey === 'identity' ? (
           <IdentityJourneyView employee={employee} department={department} identityOrigin={identityOrigin} />
         ) : (
-          <Suspense fallback={<HomeLoadingSurface />}>
-            <div className={isLeavingHome ? 'app-transition-leave' : ''}>
-              <HomeScreen
-                employee={employee}
-                department={department}
-                onLogout={onLogout}
-                isEnteringHome={isEnteringHome}
-                isOffline={isOffline}
-                canInstall={canInstall}
-                onInstall={onInstall}
-                onBootReady={onBootReady}
-                platform={platform}
-              />
-            </div>
-          </Suspense>
+          <ShellNavigationProvider>
+            <HomePresentationRoot platform={platform}>
+              <Suspense fallback={<HomeLoadingSurface />}>
+                <div className={isLeavingHome ? 'app-transition-leave' : ''}>
+                  <HomeScreen
+                    employee={employee}
+                    department={department}
+                    onLogout={onLogout}
+                    isEnteringHome={isEnteringHome}
+                    isOffline={isOffline}
+                    canInstall={canInstall}
+                    onInstall={onInstall}
+                    onBootReady={onBootReady}
+                    platform={platform}
+                  />
+                </div>
+              </Suspense>
+              <PersistentShellNavigation platform={platform} />
+            </HomePresentationRoot>
+          </ShellNavigationProvider>
         )}
       </div>
     </div>
