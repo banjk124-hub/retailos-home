@@ -19,6 +19,11 @@ const checks = [
     args: ["scripts/test-jrn-02-persistent-shell.mjs"],
   },
   {
+    name: "JRN-03A Journey Controller and Page Host contract tests",
+    command: process.execPath,
+    args: ["scripts/test-jrn-03a-controller-page-host.mjs"],
+  },
+  {
     name: "UI-02D lookup and feedback ownership contract tests",
     command: process.execPath,
     args: ["scripts/test-ui-02d-lookup-feedback.mjs"],
