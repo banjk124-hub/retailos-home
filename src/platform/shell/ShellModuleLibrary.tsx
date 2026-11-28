@@ -134,7 +134,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                       <span className="shell-module-library__module-copy"><strong>{module.title}</strong><small>{module.description}</small><em className={available ? 'is-ready' : 'is-pending'}>{active ? 'Đang mở' : available ? 'Sẵn sàng' : 'Đang tích hợp'}</em></span>
                       <ArrowUpRight size={17} />
                     </Surface>
-                  </>
+                  </Fragment>
                 );
               })}
               {selectedModules.length === 0 && <div className="shell-module-library__empty"><Search size={20} /><strong>Không tìm thấy chức năng</strong><span>Thử từ khóa ngắn hoặc chọn nhóm khác.</span></div>}
