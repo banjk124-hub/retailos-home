@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, ChevronRight, Search, X } from 'lucide-react';
 import { MODULE_LIBRARIES, MODULE_REGISTRY, type ModuleLibraryDefinition, type RetailModule } from '../../features/home/moduleRegistry';
 import { getLibraryIcon, getModuleIcon } from '../../features/home/homeIconRegistry';
@@ -94,7 +94,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
               const Icon = getLibraryIcon(library.id);
               const active = selectedLibrary.id === library.id;
               return (
-                <>
+                <Fragment key={library.id}>
                   <Surface as="button" variant="panel" interactive type="button"
                     className={`shell-module-library__group tone-${library.tone}${active ? ' is-selected' : ''}`}
                     aria-pressed={active}
@@ -124,7 +124,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                 const available = isJourneyDestinationResolvable({ kind: 'feature', moduleId: module.id });
                 const active = module.id === activeModuleId;
                 return (
-                  <>
+                  <Fragment key={module.id}>
                     <Surface as="button" variant="panel" interactive type="button"
                       className={`shell-module-library__module tone-${module.tone}`}
                       disabled={!available || active}
