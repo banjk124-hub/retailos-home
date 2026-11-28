@@ -29,11 +29,8 @@ Canonical policy: [DECISIONS.md](./DECISIONS.md) PD-007/PD-008, [ARCHITECTURE.md
 
 ## Next technical gates
 
-1. **PW-01:** physical iOS/iPadOS and Android installed-PWA validation, including low-end devices, permissions, safe areas, keyboard, orientation and lifecycle.
-2. **CSS-01:** evidence-based CSS ownership map across shared foundation, platform presentation and feature presentation. Trace imports, cascade, consumers and computed styles before moving rules.
-3. **AUDIT-03A:** establish production CSS delivery/bundle baseline before proposing optimization.
-
-These are separate workstreams; do not combine them into a broad UI rewrite. Preserve auth/session, stable IDs, data snapshot/cache contracts, scanner engine/lifecycle, Stocktake persistence/export, Import parsing/precision, overlay lifecycle and PWA update-safety.
+1. **AUDIT-03A — active:** establish a reproducible production CSS delivery baseline from current `main`: Vite manifest, emitted CSS chunks, eager/lazy import graph, and raw/gzip/Brotli sizes. Measurement only; no source optimization or CSS movement.
+2. **PW-01 — deferred:** physical iOS/iPadOS and Android installed-PWA acceptance remains deferred by owner; do not treat browser emulation as device acceptance.
 
 ## Governance
 
