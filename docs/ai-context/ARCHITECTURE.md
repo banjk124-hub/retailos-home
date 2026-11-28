@@ -395,3 +395,39 @@ No changes to release cache isolation, manifest resource integrity, first-instal
 
 ### Acceptance
 Persistent defer across reload/reopen; no download before consent; no auto-activation after stage/reopen/blocker-clear; explicit confirm only when safe; Settings badge/Update Center consistency; busy compact notification and idle centered dialog; worker multi-window/integrity/rollback regressions; physical Android/iOS/Desktop QA.
+
+
+## ADR-043 — Authenticated Journey destination and navigation contract (2026-11-28)
+
+**Status:** Owner-directed JRN-01 contract approved for implementation; typed contract added, runtime controller deferred to JRN-02/JRN-03.
+
+### Context
+
+RetailOS currently has an App-owned authentication journey (Login → Identity → Home), Home section navigation, Home-owned quick overlays and two operational workflows. Stocktake and Stocktake Import are still mounted inside HomeScreen. Treating all of these as one undifferentiated navigation state would mix authentication, page destinations, in-page sections and transient overlays.
+
+### Decision
+
+1. **Authentication ownership stays in App.** App remains authoritative for session restore, Login, Identity, logout and app/PWA lifecycle. These transitions are not entries in the authenticated page stack.
+2. **Authenticated destinations are typed.** Home is `{ kind: 'home' }`; a feature page is `{ kind: 'feature', moduleId: RetailModuleId }`. Destination keys derive from the existing workflow ID registry. No duplicate feature-ID list or label-based identity is allowed.
+3. **Registry identity is not readiness.** A feature destination is navigable only when a page resolver exists and the existing module registry reports `availability === 'ready'`. Snapshot presence, `workStatus` and platform capability do not independently establish a complete workflow.
+4. **One authenticated stack.** `push` means forward, `pop` means back, and `replace` means normalization without directional motion. Re-selecting the current destination is a no-op. Home is the safe fallback for missing/invalid history.
+5. **Home sections are not pages.** `home`, `modules`, and `activity` remain Home-owned sections/anchors. Settings, quick Scanner, Quick Search, Calendar, Notifications and notice detail remain Home-owned quick-action/overlay state.
+6. **Home return context is explicit.** Capture active section, search query, scroll position and optional semantic focus key when leaving Home; restore on return. Do not store overlays, camera state or business data in this navigation snapshot.
+7. **Business state remains feature-owned.** Stocktake and Import persistence/history/edit state continue to use their current feature stores. React component memory and the navigation stack are not durable storage.
+8. **Safe exit is a typed guard contract.** A page may allow exit or block with a reason and resolution `wait | confirm | stay`. Existing PWA update blockers remain independently authoritative and cannot be bypassed by navigation.
+9. **Lifecycle is deterministic.** Feature owners release camera leases, workers, listeners, subscriptions, timers and object URLs on exit/unmount. Motion completion is not a cleanup mechanism.
+10. **No router/history integration in JRN-01.** Use an in-memory authenticated stack contract first. Do not add URL routes, `history.pushState`, deep links or browser Back synchronization until a dedicated adapter is tested for PWA reload/session behavior.
+11. **Motion direction is semantic.** push → forward, pop → back, replace → none. Timing/easing/reduced-motion remain owned by the shared motion system.
+
+### Implementation boundary
+
+The contract is defined in `src/platform/journey/journey.types.ts` and guarded by `scripts/test-journey-contract.mjs`. This ADR does not claim that a Journey Controller, Feature Page Host, Back integration or runtime navigation migration has been implemented. Those belong to JRN-02 and JRN-03.
+
+### Acceptance
+
+- Typed destinations derive workflow identity from `RetailModuleId` without a parallel ID registry.
+- Home section IDs and overlay states remain distinct from page destinations.
+- Home return context and safe-exit result shapes are explicit.
+- App retains auth/session ownership.
+- Contract test is included in preflight and TypeScript build.
+- No business workflow, persistence schema, PWA update behavior, route library or production deployment changes.
