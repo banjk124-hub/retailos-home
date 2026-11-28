@@ -16,7 +16,9 @@ const store = read('../src/features/stocktake/services/stocktakeLocalStore.ts');
 const preflight = read('./preflight.mjs');
 
 // Home launches the Page via the canonical typed destination and captures only transient UI context.
-assert.match(home, /destination: \{ kind: 'feature', moduleId: 'stocktake' \}/);
+assert.match(home, /moduleId: 'stocktake' \\| 'stocktake-import'/);
+assert.match(home, /destination: \\{ kind: 'feature', moduleId \\}/);
+assert.match(home, /module.id === 'stocktake'/);
 assert.match(home, /homeReturnContext: homeContext/);
 assert.match(home, /activeSection/);
 assert.match(home, /searchQuery: saved\.search/);
