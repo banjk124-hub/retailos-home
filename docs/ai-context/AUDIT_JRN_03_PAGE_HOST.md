@@ -46,8 +46,8 @@ Do not build JRN-04 global actions in this phase.
 ### 3.1 No runtime Page Host
 
 - `AuthenticatedAppShell.tsx` lazy-loads `HomeScreen` directly and always renders it for the authenticated Home journey.
-- `ShellNavigationProvider` stores a single navigation registration; it does not manage destinations or history.
-- `HomePresentationRoot` selects a Home presentation composition. It is not a general Feature Page host.
+- `ShellNavigationProvider` stores a single owner-scoped navigation registration; it does not manage destinations or history. Home currently registers section IDs (`home/modules/activity`) plus a Settings action. A Feature Page must register its own valid navigation model/active state or receive a Shell-level destination model; do not leave the Shell Dock bound to stale Home section callbacks after Home unmounts.
+- `HomePresentationRoot` selects a Home presentation composition. It is not a general Feature Page host. Desktop/Mobile Home presentation roots are Home-scoped wrappers, not yet a neutral workspace frame for feature Pages.
 - `journey.types.ts` already defines `ExperienceDestination`, `JourneyStackEntry`, `JourneyNavigationCommand`, destination keys and transition direction, but these are contract types/helpers only.
 - No current route/history adapter exists. Continue with an in-memory authenticated stack; do not add URL/history integration in JRN-03.
 
@@ -158,7 +158,7 @@ A slice may be split into smaller PRs if needed. Do not combine the entire migra
 - Initialize the authenticated stack to Home; authentication remains outside Journey state.
 - Use existing `ExperienceDestination` and `getJourneyDestinationKey`; do not create another destination identity type.
 - `push` should avoid pushing the same destination as the current top entry; `pop` returns to the previous valid entry; `replace` is reserved for normalization/recovery.
-- Capture Home return context from the existing Home state: active section, search query, non-negative scroll position and optional semantic focus key. Restore on Feature → Home. Do not persist overlays, camera state or feature business data in this snapshot.
+- Existing `homeStateStore` persists `activeNav`, `search` and non-negative `scrollY`; it does not currently persist a semantic focus key. Capture/restore those existing fields on Feature → Home. Add a focus key only if a concrete launch control can provide a stable semantic key. Do not persist overlays, camera state or feature business data in this snapshot.
 - On reload/session restore, initialize to Home using existing persisted Home UI state; do not reconstruct an unvalidated feature stack.
 - Resolve a feature only if a concrete lazy Page resolver exists and the existing module registry says `availability === 'ready'`. Keep platform capability and data/permission state separate.
 - Keep the Page Host error/loading boundary local to the active Page; a feature render failure must not destroy authentication or the persistent Shell.
