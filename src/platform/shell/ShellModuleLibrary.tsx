@@ -3,7 +3,6 @@ import { ArrowUpRight, ChevronRight, Search, X } from 'lucide-react';
 import { MODULE_LIBRARIES, MODULE_REGISTRY, type ModuleLibraryDefinition, type RetailModule } from '../../features/home/moduleRegistry';
 import { getLibraryIcon, getModuleIcon } from '../../features/home/homeIconRegistry';
 import { Surface } from '../../shared/components/surface/Surface';
-import { MotionCard } from '../../shared/motion';
 import { MotionIcon } from '../../shared/icons';
 import { useJourneyController, useJourneySnapshot } from '../journey/JourneyControllerProvider';
 import { getActiveJourneyDestination } from '../journey/journeyController';
@@ -95,7 +94,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
               const Icon = getLibraryIcon(library.id);
               const active = selectedLibrary.id === library.id;
               return (
-                <MotionCard key={library.id}>
+                <>
                   <Surface as="button" variant="panel" interactive type="button"
                     className={`shell-module-library__group tone-${library.tone}${active ? ' is-selected' : ''}`}
                     aria-pressed={active}
@@ -104,7 +103,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                     <span className="shell-module-library__group-copy"><small>NHÓM {String(index + 1).padStart(2, '0')}</small><strong>{library.title}</strong><em>{library.description}</em></span>
                     <ChevronRight size={16} />
                   </Surface>
-                </MotionCard>
+                </>
               );
             })}
           </div>
@@ -125,7 +124,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                 const available = isJourneyDestinationResolvable({ kind: 'feature', moduleId: module.id });
                 const active = module.id === activeModuleId;
                 return (
-                  <MotionCard key={module.id}>
+                  <>
                     <Surface as="button" variant="panel" interactive type="button"
                       className={`shell-module-library__module tone-${module.tone}`}
                       disabled={!available || active}
@@ -135,7 +134,7 @@ export function ShellModuleLibrary({ onClose }: Props) {
                       <span className="shell-module-library__module-copy"><strong>{module.title}</strong><small>{module.description}</small><em className={available ? 'is-ready' : 'is-pending'}>{active ? 'Đang mở' : available ? 'Sẵn sàng' : 'Đang tích hợp'}</em></span>
                       <ArrowUpRight size={17} />
                     </Surface>
-                  </MotionCard>
+                  </>
                 );
               })}
               {selectedModules.length === 0 && <div className="shell-module-library__empty"><Search size={20} /><strong>Không tìm thấy chức năng</strong><span>Thử từ khóa ngắn hoặc chọn nhóm khác.</span></div>}
