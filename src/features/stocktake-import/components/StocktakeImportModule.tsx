@@ -19,6 +19,8 @@ import {
   type StocktakeImportHistoryItem,
 } from '../services/stocktakeImportStore';
 import { useBodyScrollLock } from '../../../shared/hooks/useBodyScrollLock';
+import { useJourneyController } from '../../../platform/journey/JourneyControllerProvider';
+import type { JourneyExitGuard } from '../../../platform/journey/journeyController';
 import { downloadFile } from '../../../shared/downloadFile';
 import { notifyPwaUpdateSafetyChanged, registerPwaUpdateBlocker } from '../../../shared/pwa/updateSafety';
 import StocktakeImportPresentation, {
@@ -90,7 +92,7 @@ function rowsFromLegacyContent(content: string): ImportedStocktakeRow[] {
 }
 
 export default function StocktakeImportModule({ employee, onClose }: Props) {
-  useBodyScrollLock(true);
+  const journeyController = useJourneyController();
   const inputRef = useRef<HTMLInputElement>(null);
   const outputTextareaRef = useRef<HTMLTextAreaElement>(null);
   const [view, setView] = useState<View>('import');
@@ -145,6 +147,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
   const visibleRows = activeZone?.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE) ?? [];
   const pageCount = Math.max(1, Math.ceil((activeZone?.rows.length ?? 0) / PAGE_SIZE));
   const hasDirtyZones = dirtyZones.length > 0;
+  useBodyScrollLock(Boolean(pendingImport) || showClearConfirm || showNewSessionConfirm);
   const noticeTone: 'warning' | 'info' | 'success' = /không|chưa|lỗi|cần xác nhận|cần bổ sung|bị bỏ qua|không được/i.test(notice)
     ? 'warning'
     : /đang|khôi phục|phiên mới/i.test(notice) ? 'info' : 'success';
@@ -162,6 +165,58 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     busy, historyBusy, historyExportingId, editingZone, hasDirtyZones, pendingImport,
     result, historyPersisted, showClearConfirm, showNewSessionConfirm,
   };
+
+  const exitWaitersRef = useRef(new Set<() => void>());
+  const exitGuard = useMemo<JourneyExitGuard>(() => ({
+    evaluate: () => {
+      const state = pwaUpdateStateRef.current;
+      if (state.busy || state.historyBusy || state.historyExportingId) {
+        return {
+          status: 'block',
+          reason: 'Stocktake Import đang xử lý workbook, lưu dữ liệu hoặc thao tác lịch sử/xuất file.',
+          resolution: 'wait',
+        };
+      }
+      if (state.pendingImport || state.showClearConfirm || state.showNewSessionConfirm) {
+        return {
+          status: 'block',
+          reason: 'Stocktake Import đang chờ người dùng xác nhận hoặc hủy thao tác.',
+          resolution: 'stay',
+        };
+      }
+      if (state.hasDirtyZones || (state.result && !state.historyPersisted)) {
+        const discard = window.confirm(
+          'Stocktake Import có chỉnh sửa chưa lưu hoặc phiên kết quả chưa được lưu vào lịch sử trên thiết bị. Bạn có chắc muốn rời trang và bỏ dữ liệu trong phiên hiện tại không?',
+        );
+        return discard
+          ? { status: 'allow' }
+          : { status: 'block', reason: 'Người dùng giữ lại dữ liệu Stocktake Import chưa lưu.', resolution: 'stay' };
+      }
+      return { status: 'allow' };
+    },
+    waitForSafeExit: () => {
+      const state = pwaUpdateStateRef.current;
+      if (!state.busy && !state.historyBusy && !state.historyExportingId) return Promise.resolve();
+      return new Promise<void>((resolve) => exitWaitersRef.current.add(resolve));
+    },
+  }), []);
+
+  useLayoutEffect(
+    () => journeyController.registerExitGuard('stocktake-import', exitGuard),
+    [journeyController, exitGuard],
+  );
+
+  useEffect(() => () => {
+    exitWaitersRef.current.forEach((resolve) => resolve());
+    exitWaitersRef.current.clear();
+  }, []);
+
+  useEffect(() => {
+    const state = pwaUpdateStateRef.current;
+    if (state.busy || state.historyBusy || state.historyExportingId) return;
+    exitWaitersRef.current.forEach((resolve) => resolve());
+    exitWaitersRef.current.clear();
+  }, [busy, historyBusy, historyExportingId]);
 
   const refreshHistory = async () => {
     setHistoryBusy(true);
@@ -582,13 +637,7 @@ export default function StocktakeImportModule({ employee, onClose }: Props) {
     rowIndex: page * PAGE_SIZE + visibleIndex,
   }));
 
-  const handleClose = () => {
-    if (hasDirtyZones) {
-      setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi đóng module.');
-      return;
-    }
-    onClose();
-  };
+  const handleClose = () => onClose();
   const onOpenHistory = () => {
     if (hasDirtyZones) {
       setNotice('Vùng đang có chỉnh sửa chưa lưu. Hãy lưu hoặc hủy chỉnh sửa trước khi mở lịch sử.');

@@ -113,13 +113,12 @@ export default function StocktakeImportPresentation({
   const hasDirtyZones = dirtyZones.length > 0;
 
   return (
-    <div className="stocktake-import-backdrop" role="presentation" data-motion-state="enter">
-      <section className="stocktake-import-panel" role="dialog" aria-modal="true"
-        aria-labelledby="stocktake-import-title" aria-busy={busy}>
+    <div className="stocktake-import-backdrop stocktake-import-page" role="presentation">
+      <section className="stocktake-import-panel" aria-labelledby="stocktake-import-title" aria-busy={busy}>
         <header className="stocktake-import-header">
           <button className="stocktake-import-icon-button" type="button" disabled={busy}
             onClick={view === 'history' ? actions.onBackFromHistory : actions.onClose}
-            aria-label={view === 'history' ? 'Quay lại' : 'Đóng'}>
+            aria-label={view === 'history' ? 'Quay lại' : 'Về trang chủ'}>
             {view === 'history' ? <ArrowLeft size={20} /> : <X size={20} />}
           </button>
           <div>
