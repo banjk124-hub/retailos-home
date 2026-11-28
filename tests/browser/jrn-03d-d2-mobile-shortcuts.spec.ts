@@ -82,3 +82,37 @@ test('JRN-03D-D2 provides independent global shortcuts on Mobile Feature Pages a
 
   expect(errors, 'Mobile shortcut flow must not throw browser errors').toEqual([]);
 });
+
+test('JRN-03D-D3 Shell Module Library provides grouped navigation, search and accessible dismissal', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await emulateMobilePlatform(page);
+  await page.addInitScript((session) => {
+    localStorage.setItem('retailos.session.v2', JSON.stringify(session));
+  }, auditSession);
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
+  await openStocktakeFromHome(page);
+
+  const trigger = page.getByRole('navigation', { name: 'Lối tắt chức năng' })
+    .getByRole('button', { name: 'Mở thư viện nghiệp vụ' });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: 'Thư viện nghiệp vụ' });
+  await expect(dialog).toBeVisible();
+  await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+  await expect(dialog.getByRole('button', { name: /kiểm kê/i }).first()).toHaveAttribute('aria-pressed', 'true');
+
+  const search = dialog.getByRole('textbox', { name: 'Tìm chức năng trong nhóm' });
+  await search.fill('xuất');
+  await expect(dialog.getByRole('button', { name: /xuất file/i })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /kiểm kê trực tiếp/i })).toHaveCount(0);
+  await search.fill('');
+  await dialog.getByRole('button', { name: /kiểm soát hàng hóa/i }).click();
+  await expect(dialog.getByRole('heading', { name: 'Kiểm soát hàng hóa' })).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
+  await expect(trigger).toBeFocused();
+  expect(errors, 'Shell Module Library must not throw browser errors').toEqual([]);
+});
