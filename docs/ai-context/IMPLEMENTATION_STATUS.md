@@ -1,8 +1,8 @@
 # Current verified implementation status — 2026-11-28
 
 **Repository:** banjk124-hub/retailos-home  
-**Documentation baseline:** `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`  
-**Latest runtime merge:** PR #224 UX-01, merge commit `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`  
+**Documentation baseline:** `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`  
+**Latest runtime merge:** PR #228 Desktop Library shortcut styling, merge commit `6f3ee077e4a4b45af47b4490aa32a93ef639c59f`  
 **Closeout verification:** main CI #2150 (run `46145238448`) passed; GitHub Pages Build & Deploy #216 succeeded on the current main baseline.
 
 This file records verified repository state. It does not authorize deployment or production-account transfer.
@@ -42,7 +42,8 @@ This file records verified repository state. It does not authorize deployment or
 | JRN-03D-D2 Mobile shortcuts | PR #222 merged | Merge `8247f76a98d4977bcca7489b7e0fa344a0012ad5`; Shell-owned Home/Module Library shortcuts |
 | JRN-03D-D3 Module Library | PR #223 merged | Merge `fa85395acfb9c949771114cb9106bd0d827623fe`; Shell-owned grouped/searchable Library |
 | UX-01 Module Library refinement | PR #224 merged | Merge `f8a3c511fcc9d7575b4da4b5f839d8eeee846c99`; Mobile layout refinement, Journey contracts preserved |
-| Desktop Module Library tree | PR #225 in progress | Adds a Dock-connected grouped flyout for Desktop; Mobile full-height Library remains unchanged. CI/browser validation pending |
+| Desktop Module Library tree | PR #227 merged | Restores the Feature Page Library flyout while Home retains its own Library anchor behavior |
+| Desktop Library shortcut styling | PR #228 merged | Restores Dock-consistent button styling for the Feature Page shortcut; CSS-only change |
 
 ## Open work and acceptance gates
 
@@ -70,7 +71,7 @@ UI-04A–F are merged. The canonical phase record is `UI_UX_PHASE_04_FEATURE_PRE
 - D5 overlay visual consistency is a separate UX follow-up, not part of the completed ownership/lifecycle scope.
 - Physical iOS/iPadOS and Android device acceptance remains separate; browser QA does not certify physical devices.
 
-Home's typed Module Library launcher and ephemeral Home return context (section/search/scroll only) are intentional. Journey stack is navigation context, not business persistence. JRN-04 Global Quick Actions, shared System Data contracts and broader Experience System work remain separate future work.
+PR #226–228 finalized Desktop Dock/Home Library behavior and corrected the Feature Page Library shortcut styling. Home's typed Module Library launcher and ephemeral Home return context (section/search/scroll only) are intentional. Journey stack is navigation context, not business persistence. JRN-05 Application Journey & Page Transition is newly proposed; it prioritizes the complete app/page journey map and explicit Exit/Enter contracts before detailed motion implementation. JRN-04 Global Quick Actions, JRN-06 shared System Data contracts and JRN-07 broader Experience System work remain separate future work.
 
 ## Protected technical boundaries
 
